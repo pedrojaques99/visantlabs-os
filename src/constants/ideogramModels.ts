@@ -32,6 +32,7 @@ export interface IdeogramModelConfig {
   defaultSpeed: IdeogramRenderingSpeed;
   supportedSpeeds: IdeogramRenderingSpeed[];
   providerDomain: string;
+  supportsI2I: boolean;
   deprecated?: boolean;
 }
 
@@ -45,6 +46,7 @@ export const IDEOGRAM_MODEL_CONFIG: Record<IdeogramModelId, IdeogramModelConfig>
     defaultSpeed: 'DEFAULT',
     supportedSpeeds: ['TURBO', 'DEFAULT', 'QUALITY'],
     providerDomain: 'ideogram.ai',
+    supportsI2I: false,
   },
   [IDEOGRAM_MODELS.V3]: {
     label: 'Ideogram 3',
@@ -55,6 +57,7 @@ export const IDEOGRAM_MODEL_CONFIG: Record<IdeogramModelId, IdeogramModelConfig>
     defaultSpeed: 'TURBO',
     supportedSpeeds: ['FLASH', 'TURBO', 'DEFAULT', 'QUALITY'],
     providerDomain: 'ideogram.ai',
+    supportsI2I: true,
   },
 };
 

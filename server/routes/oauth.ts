@@ -4,7 +4,15 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
-import { API_BASE_URL, MCP_ENDPOINT, MCP_SCOPES, MCP_SPEC_VERSION, MCP_HINTS, DEVICE_CODE_GRANT, OOB_REDIRECT_URI } from '../lib/mcp-constants.js';
+import {
+  API_BASE_URL,
+  MCP_ENDPOINT,
+  MCP_SCOPES,
+  MCP_SPEC_VERSION,
+  MCP_HINTS,
+  DEVICE_CODE_GRANT,
+  OOB_REDIRECT_URI,
+} from '../lib/mcp-constants.js';
 
 const router = express.Router();
 
@@ -159,9 +167,15 @@ router.get('/.well-known/oauth-authorization-server', (_req, res) => {
     token_endpoint_auth_methods_supported: ['none'],
     scopes_supported: [...MCP_SCOPES],
     client_id_metadata_document_supported: true,
-    _agent_hint: 'Register via POST ' + BASE_URL + '/oauth/register, then open '
-      + BASE_URL + '/oauth/authorize in the user\'s browser for consent. '
-      + 'Full step-by-step: ' + BASE_URL + '/llms-full.txt',
+    _agent_hint:
+      'Register via POST ' +
+      BASE_URL +
+      '/oauth/register, then open ' +
+      BASE_URL +
+      "/oauth/authorize in the user's browser for consent. " +
+      'Full step-by-step: ' +
+      BASE_URL +
+      '/llms-full.txt',
   });
 });
 
@@ -250,9 +264,7 @@ router.get('/oauth/authorize', async (req, res) => {
     !state && !isOobRequest && 'state',
   ].filter(Boolean);
   if (missingParams.length > 0) {
-    return res
-      .status(400)
-      .send(`Missing required parameters: ${missingParams.join(', ')}`);
+    return res.status(400).send(`Missing required parameters: ${missingParams.join(', ')}`);
   }
 
   if (code_challenge_method && code_challenge_method !== 'S256') {
@@ -614,7 +626,9 @@ router.post('/oauth/device/code', async (req, res) => {
     const { client_id, scope } = req.body as Record<string, string>;
 
     if (!client_id) {
-      return res.status(400).json({ error: 'invalid_request', error_description: 'client_id is required' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_request', error_description: 'client_id is required' });
     }
 
     const oauthClient = await resolveOrRegisterClient(client_id);
@@ -696,12 +710,14 @@ router.get('/oauth/device', async (req, res) => {
       return res.send(buildDeviceErrorPage('This code has expired. Ask your agent for a new one.'));
     }
 
-    return res.send(buildDeviceConsentPage({
-      clientName: record.clientName,
-      userCode: record.userCode,
-      scopes: record.scopes.join(' '),
-      token: rawToken || '',
-    }));
+    return res.send(
+      buildDeviceConsentPage({
+        clientName: record.clientName,
+        userCode: record.userCode,
+        scopes: record.scopes.join(' '),
+        token: rawToken || '',
+      })
+    );
   } catch (err) {
     console.error('[OAuth] device page error', err);
     return res.status(500).send('Internal server error');
@@ -767,7 +783,9 @@ async function handleDeviceCodeExchange(req: express.Request, res: express.Respo
     const record = await col.findOne({ deviceCode: device_code });
 
     if (!record) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'Unknown device code' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'Unknown device code' });
     }
 
     if (new Date() > record.expiresAt) {
@@ -775,7 +793,9 @@ async function handleDeviceCodeExchange(req: express.Request, res: express.Respo
     }
 
     if (record.clientId !== client_id) {
-      return res.status(400).json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
+      return res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'client_id mismatch' });
     }
 
     // Enforce polling interval (slow_down)
@@ -902,7 +922,9 @@ function buildDeviceLoginPage(prefillCode: string): string {
     <p class="subtitle">Sign in to authorize the device code shown by your agent.</p>
     <div class="divider"></div>
     <div class="code-input-group">
-      <input class="code-input" id="deviceCode" type="text" maxlength="9" placeholder="ABCD-1234" value="${esc(prefillCode)}" />
+      <input class="code-input" id="deviceCode" type="text" maxlength="9" placeholder="ABCD-1234" value="${esc(
+        prefillCode
+      )}" />
     </div>
     <div class="divider"></div>
     <div class="field">
@@ -983,14 +1005,21 @@ function buildDeviceCodeEntryPage(token: string): string {
     document.getElementById('submitBtn').addEventListener('click', function() {
       var code = document.getElementById('deviceCode').value.trim();
       if (!code) { document.getElementById('error').textContent = 'Enter the code from your agent'; document.getElementById('error').style.display = 'block'; return; }
-      window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent('${esc(token)}');
+      window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent('${esc(
+    token
+  )}');
     });
   </script>
 </body>
 </html>`;
 }
 
-function buildDeviceConsentPage(p: { clientName: string; userCode: string; scopes: string; token: string }): string {
+function buildDeviceConsentPage(p: {
+  clientName: string;
+  userCode: string;
+  scopes: string;
+  token: string;
+}): string {
   const esc = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -1009,9 +1038,21 @@ function buildDeviceConsentPage(p: { clientName: string; userCode: string; scope
     <p class="subtitle">This agent is requesting permission to access your Visant Labs account.</p>
     <div class="divider"></div>
     <div class="scopes">
-      ${p.scopes.includes('read') ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>' : ''}
-      ${p.scopes.includes('write') ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>' : ''}
-      ${p.scopes.includes('generate') ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>' : ''}
+      ${
+        p.scopes.includes('read')
+          ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>'
+          : ''
+      }
+      ${
+        p.scopes.includes('write')
+          ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>'
+          : ''
+      }
+      ${
+        p.scopes.includes('generate')
+          ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>'
+          : ''
+      }
     </div>
     <div class="divider"></div>
     <div class="actions">
@@ -1045,7 +1086,9 @@ function buildDeviceDonePage(approved: boolean): string {
 <body>
   <div class="card" style="text-align:center;">
     <div class="brand">VISANT LABS&reg;</div>
-    <div class="status-icon ${approved ? 'success' : 'denied'}">${approved ? '&#10003;' : '&#10005;'}</div>
+    <div class="status-icon ${approved ? 'success' : 'denied'}">${
+    approved ? '&#10003;' : '&#10005;'
+  }</div>
     <h1>${approved ? 'Agent Connected' : 'Access Denied'}</h1>
     <p class="subtitle">${
       approved
@@ -1103,7 +1146,9 @@ async function cleanupExpiredOAuthData() {
 
 // Run cleanup every 6 hours
 setInterval(cleanupExpiredOAuthData, 6 * 60 * 60 * 1000);
-cleanupExpiredOAuthData().catch((err) => console.error('[OAuth] initial cleanup error:', err.message));
+cleanupExpiredOAuthData().catch((err) =>
+  console.error('[OAuth] initial cleanup error:', err.message)
+);
 
 // ── Login HTML page (inline, no SPA dependency) ─────────────────────────────
 
@@ -1420,9 +1465,21 @@ function buildConsentPage(p: ConsentPageParams): string {
     <div class="divider"></div>
 
     <div class="scopes">
-      ${p.scopes.includes('read') ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>' : ''}
-      ${p.scopes.includes('write') ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>' : ''}
-      ${p.scopes.includes('generate') ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>' : ''}
+      ${
+        p.scopes.includes('read')
+          ? '<div class="scope-item"><span class="scope-dot"></span> Read your brand guidelines and projects</div>'
+          : ''
+      }
+      ${
+        p.scopes.includes('write')
+          ? '<div class="scope-item"><span class="scope-dot"></span> Write and update content on your behalf</div>'
+          : ''
+      }
+      ${
+        p.scopes.includes('generate')
+          ? '<div class="scope-item"><span class="scope-dot"></span> Generate images, mockups, and creatives</div>'
+          : ''
+      }
     </div>
 
     <div class="divider"></div>

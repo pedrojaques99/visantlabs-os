@@ -3160,4 +3160,163 @@ router.get('/references/stats', validateAdmin, async (req: Request, res: Respons
   }
 });
 
+// ═══════════════════════════════════════════════════════
+// MCP Usage Stats
+// ═══════════════════════════════════════════════════════
+
+router.get('/mcp-stats', validateAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const days = Math.min(
+      Math.max(parseInt(ensureString(req.query.days) || '30', 10) || 30, 1),
+      365
+    );
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    await connectToMongoDB();
+    const db = getDb();
+    const col = db.collection('mcp_tool_calls');
+
+    const baseMatch = { createdAt: { $gte: since } };
+
+    const [facetResult] = await col
+      .aggregate([
+        { $match: baseMatch },
+        {
+          $facet: {
+            summary: [
+              {
+                $group: {
+                  _id: null,
+                  totalCalls: { $sum: 1 },
+                  uniqueUsers: { $addToSet: '$userId' },
+                  uniqueTools: { $addToSet: '$toolName' },
+                  avgDuration: { $avg: '$durationMs' },
+                  successCount: { $sum: { $cond: ['$success', 1, 0] } },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  totalCalls: 1,
+                  uniqueUsers: { $size: '$uniqueUsers' },
+                  uniqueTools: { $size: '$uniqueTools' },
+                  avgDuration: { $round: ['$avgDuration', 0] },
+                  successRate: {
+                    $round: [
+                      {
+                        $multiply: [
+                          { $divide: ['$successCount', { $max: ['$totalCalls', 1] }] },
+                          100,
+                        ],
+                      },
+                      1,
+                    ],
+                  },
+                },
+              },
+            ],
+            byTool: [
+              {
+                $group: {
+                  _id: '$toolName',
+                  calls: { $sum: 1 },
+                  avgDuration: { $avg: '$durationMs' },
+                  scope: { $first: '$scope' },
+                },
+              },
+              { $sort: { calls: -1 } },
+              { $limit: 20 },
+              {
+                $project: {
+                  _id: 0,
+                  toolName: '$_id',
+                  calls: 1,
+                  avgDuration: { $round: ['$avgDuration', 0] },
+                  scope: 1,
+                },
+              },
+            ],
+            byUser: [
+              { $match: { userId: { $ne: null } } },
+              {
+                $group: {
+                  _id: '$userId',
+                  calls: { $sum: 1 },
+                  lastActive: { $max: '$createdAt' },
+                },
+              },
+              { $sort: { calls: -1 } },
+              { $limit: 10 },
+              { $project: { _id: 0, userId: '$_id', calls: 1, lastActive: 1 } },
+            ],
+            byDay: [
+              {
+                $group: {
+                  _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                  calls: { $sum: 1 },
+                },
+              },
+              { $sort: { _id: 1 } },
+              { $project: { _id: 0, date: '$_id', calls: 1 } },
+            ],
+            byScope: [
+              {
+                $group: {
+                  _id: '$scope',
+                  calls: { $sum: 1 },
+                  avgDuration: { $avg: '$durationMs' },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  scope: '$_id',
+                  calls: 1,
+                  avgDuration: { $round: ['$avgDuration', 0] },
+                },
+              },
+            ],
+          },
+        },
+      ])
+      .toArray();
+
+    const summary = facetResult.summary[0] || {
+      totalCalls: 0,
+      uniqueUsers: 0,
+      uniqueTools: 0,
+      avgDuration: 0,
+      successRate: 100,
+    };
+
+    // Enrich byUser with emails from Prisma
+    const userIds = facetResult.byUser.map((u: any) => u.userId).filter(Boolean);
+    const users =
+      userIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, email: true },
+          })
+        : [];
+    const emailMap = new Map(users.map((u) => [u.id, u.email]));
+    const byUser = facetResult.byUser.map((u: any) => ({
+      ...u,
+      email: emailMap.get(u.userId) || 'unknown',
+    }));
+
+    return res.json({
+      days,
+      summary,
+      byTool: facetResult.byTool,
+      byUser,
+      byDay: facetResult.byDay,
+      byScope: facetResult.byScope,
+    });
+  } catch (error: any) {
+    console.error('[admin] mcp-stats error:', error);
+    return res.status(500).json({ error: 'Failed to fetch MCP stats' });
+  }
+});
+
 export default router;

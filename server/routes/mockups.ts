@@ -15,8 +15,8 @@ import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js'
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
-import { generateIdeogramImage } from '../services/ideogramService.js';
-import { generateReveImage } from '../services/reveService.js';
+import { generateIdeogramImage, remixIdeogramImage } from '../services/ideogramService.js';
+import { generateReveImage, editReveImage, remixReveImage } from '../services/reveService.js';
 import { isSeedreamModel, SEEDREAM_MODELS } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
@@ -1029,52 +1029,92 @@ router.post(
         imageBase64 = seedreamResult.base64;
         usedSeed = seedreamResult.seed;
       } else if (provider === 'reve' || isReveModel(model)) {
-        // Use REVE API (text-to-image only — no reference image support)
-        if (finalReferenceImages?.length) {
-          console.warn(
-            `${logPrefix} [GENERATION] REVE is text-to-image only — ${finalReferenceImages.length} reference image(s) will be embedded in prompt context only`
-          );
-        }
+        const hasBaseImage = !!finalBaseImage;
+        const hasRefs = !!finalReferenceImages?.length;
         console.log(`${logPrefix} [GENERATION] Using REVE provider`, {
           model,
           aspectRatio,
           seed: validSeed ?? 'random',
+          mode: hasBaseImage ? 'edit' : hasRefs ? 'remix' : 'generate',
         });
 
-        const reveResult = await generateReveImage({
-          prompt: finalPromptText,
-          model: model as any,
-          aspectRatio: aspectRatio as any,
-          apiKey: userApiKey,
-          seed: validSeed,
-        });
-        imageBase64 = reveResult.base64;
-        usedSeed = reveResult.seed;
-      } else if (provider === 'ideogram' || isIdeogramModel(model)) {
-        // Use Ideogram API (text-to-image only — no reference image support)
-        if (finalReferenceImages?.length) {
-          console.warn(
-            `${logPrefix} [GENERATION] Ideogram is text-to-image only — ${finalReferenceImages.length} reference image(s) will be embedded in prompt context only`
-          );
+        if (hasBaseImage && hasRefs) {
+          const allImages = [finalBaseImage, ...finalReferenceImages!] as any;
+          const remixResult = await remixReveImage({
+            prompt: finalPromptText,
+            referenceImages: allImages,
+            aspectRatio: aspectRatio as any,
+            apiKey: userApiKey,
+          });
+          imageBase64 = remixResult.base64;
+        } else if (hasBaseImage) {
+          const editResult = await editReveImage({
+            editInstruction: finalPromptText,
+            baseImage: finalBaseImage as any,
+            aspectRatio: aspectRatio as any,
+            apiKey: userApiKey,
+          });
+          imageBase64 = editResult.base64;
+        } else if (hasRefs) {
+          const remixResult = await remixReveImage({
+            prompt: finalPromptText,
+            referenceImages: finalReferenceImages as any,
+            aspectRatio: aspectRatio as any,
+            apiKey: userApiKey,
+          });
+          imageBase64 = remixResult.base64;
+        } else {
+          const reveResult = await generateReveImage({
+            prompt: finalPromptText,
+            model: model as any,
+            aspectRatio: aspectRatio as any,
+            apiKey: userApiKey,
+            seed: validSeed,
+          });
+          imageBase64 = reveResult.base64;
+          usedSeed = reveResult.seed;
         }
+      } else if (provider === 'ideogram' || isIdeogramModel(model)) {
         const ideogramModel = isIdeogramModel(model) ? model : IDEOGRAM_MODELS.V4;
+        const hasBaseImage = !!finalBaseImage;
+        const hasRefs = !!finalReferenceImages?.length;
         console.log(`${logPrefix} [GENERATION] Using Ideogram provider`, {
           model: ideogramModel,
           resolution,
           aspectRatio,
           seed: validSeed ?? 'random',
+          mode: hasBaseImage ? 'remix' : hasRefs ? 'remix-refs' : 'generate',
         });
 
-        const ideogramResult = await generateIdeogramImage({
-          prompt: finalPromptText,
-          model: ideogramModel as any,
-          resolution: resolution as any,
-          aspectRatio: aspectRatio as any,
-          apiKey: userApiKey,
-          seed: validSeed,
-        });
-        imageBase64 = ideogramResult.base64;
-        usedSeed = ideogramResult.seed;
+        if (hasBaseImage) {
+          if (ideogramModel === IDEOGRAM_MODELS.V4) {
+            console.log(
+              `${logPrefix} [GENERATION] Ideogram V4 does not support i2i — falling back to V3 remix`
+            );
+          }
+          const remixResult = await remixIdeogramImage({
+            prompt: finalPromptText,
+            baseImage: finalBaseImage as any,
+            referenceImages: finalReferenceImages as any,
+            aspectRatio: aspectRatio as any,
+            apiKey: userApiKey,
+            seed: validSeed,
+          });
+          imageBase64 = remixResult.base64;
+          usedSeed = remixResult.seed;
+        } else {
+          const ideogramResult = await generateIdeogramImage({
+            prompt: finalPromptText,
+            model: ideogramModel as any,
+            resolution: resolution as any,
+            aspectRatio: aspectRatio as any,
+            apiKey: userApiKey,
+            seed: validSeed,
+            referenceImages: hasRefs ? (finalReferenceImages as any) : undefined,
+          });
+          imageBase64 = ideogramResult.base64;
+          usedSeed = ideogramResult.seed;
+        }
       } else if (provider === 'openai' || isOpenAIImageModel(model)) {
         // Use OpenAI image generation
         const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
@@ -1494,7 +1534,12 @@ router.post(
         };
       }
 
-      console.error('[mockup-generate] Error classified as', errorResponse.error, '— raw:', msg || error);
+      console.error(
+        '[mockup-generate] Error classified as',
+        errorResponse.error,
+        '— raw:',
+        msg || error
+      );
 
       res.status(statusCode).json(errorResponse);
     }

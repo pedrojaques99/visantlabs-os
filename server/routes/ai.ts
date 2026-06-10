@@ -1140,10 +1140,15 @@ router.post('/rename-colors', apiRateLimiter, authenticate, async (req: AuthRequ
     }
 
     const colorList = colors
-      .map((c: any, i: number) => `${i + 1}. HEX: ${c.hex}${c.currentName ? ` (current: "${c.currentName}")` : ''}`)
+      .map(
+        (c: any, i: number) =>
+          `${i + 1}. HEX: ${c.hex}${c.currentName ? ` (current: "${c.currentName}")` : ''}`
+      )
       .join('\n');
 
-    const prompt = `${brandContext ? `Brand context:\n${brandContext}\n\n` : ''}You are a brand color naming expert.
+    const prompt = `${
+      brandContext ? `Brand context:\n${brandContext}\n\n` : ''
+    }You are a brand color naming expert.
 
 Given these ${colors.length} colors, generate a unique single-word name for each that:
 - Reflects the tone/mood of the color AND the brand personality

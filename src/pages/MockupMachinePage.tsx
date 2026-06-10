@@ -79,15 +79,7 @@ import {
   getRandomArchetype,
 } from '@/utils/promptHelpers';
 import { API_BASE } from '@/config/api';
-
-function resolveProviderForModel(model: string): ImageProvider {
-  if (isSeedreamModel(model)) return 'seedream';
-  if (isOpenAIImageModel(model)) return 'openai';
-  if (isImagenModel(model)) return 'imagen';
-  if (isIdeogramModel(model)) return 'ideogram';
-  if (isReveModel(model)) return 'reve';
-  return 'gemini';
-}
+import { resolveProvider } from '@/utils/canvas/generationContext';
 
 function resolveModelLabel(model: string): string {
   if (isSeedreamModel(model))
@@ -1263,9 +1255,7 @@ const MockupMachinePageContent: React.FC = () => {
           const promises = Array.from({ length: slotCount }, (_, i) => {
             const overrideModel =
               isCompareMode && compareModels.length > 1 ? compareModels[i] : undefined;
-            const overrideProvider = overrideModel
-              ? resolveProviderForModel(overrideModel)
-              : undefined;
+            const overrideProvider = overrideModel ? resolveProvider(overrideModel) : undefined;
             return generateAndSet(i, overrideModel, overrideProvider)
               .then(() => {
                 if (mockups[i] !== null) {

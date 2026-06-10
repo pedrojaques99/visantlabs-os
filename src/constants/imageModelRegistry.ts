@@ -85,7 +85,7 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
       label: c.label,
       description: c.description,
       envVar: 'IDEOGRAM_API_KEY',
-      supportsLogoRef: false,
+      supportsLogoRef: c.supportsI2I,
     };
   }),
 
@@ -98,7 +98,7 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
       label: c.label,
       description: c.description,
       envVar: 'REVE_API_KEY',
-      supportsLogoRef: false,
+      supportsLogoRef: c.supportsEdit,
     };
   }),
 ];
@@ -113,6 +113,7 @@ export const IMAGE_MODEL_IDS = IMAGE_MODEL_REGISTRY.map((m) => m.id) as [string,
  * Unique image provider names derived from the registry.
  * Used by MCP tools, OpenAPI spec, and provider enums.
  */
-export const IMAGE_PROVIDERS = [
-  ...new Set(IMAGE_MODEL_REGISTRY.map((m) => m.provider)),
-] as [string, ...string[]];
+export const IMAGE_PROVIDERS = [...new Set(IMAGE_MODEL_REGISTRY.map((m) => m.provider))] as [
+  string,
+  ...string[]
+];

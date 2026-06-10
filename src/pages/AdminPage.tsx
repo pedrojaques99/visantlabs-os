@@ -29,6 +29,7 @@ import {
   BarChart2,
   ChevronRight,
   MessageSquare,
+  Activity,
 } from 'lucide-react';
 import {
   Area,
@@ -47,6 +48,7 @@ import {
 } from 'recharts';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { NavigationSidebar, type NavigationItem } from '../components/ui/NavigationSidebar';
 import {
   BreadcrumbWithBack,
   BreadcrumbList,
@@ -72,7 +74,7 @@ import {
   TableHead,
   TableCell,
 } from '../components/ui/table';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
+// Tabs components no longer used — admin uses NavigationSidebar
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -323,12 +325,32 @@ export const AdminPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated: isUserAuthenticated, isCheckingAuth } = useLayout();
+  const { isAuthenticated: isUserAuthenticated, isCheckingAuth, user: layoutUser } = useLayout();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<AdminResponse | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const adminNavItems = useMemo<NavigationItem[]>(
+    () => [
+      { id: 'overview', label: t('admin.dashboard') || 'Dashboard', icon: ShieldCheck },
+      ...(data?.generationStats
+        ? [{ id: 'generations', label: t('admin.generations') || 'Generations', icon: TrendingUp }]
+        : []),
+      { id: 'users', label: t('admin.users') || 'Users', icon: Users },
+      { id: 'financial', label: t('admin.financial') || 'Financial', icon: DollarSign },
+      { id: 'presets', label: t('common.presets') || 'Presets', icon: Settings },
+      { id: 'products', label: t('admin.products.title') || 'Products', icon: ShoppingCart },
+      { id: 'admin-chat', label: 'Chat Estratégico', icon: MessageSquare },
+      { id: 'design-system', label: t('admin.designSystem') || 'Design System', icon: Palette },
+      { id: 'mcp-usage', label: 'MCP Usage', icon: Activity },
+      { id: 'feedback-rag', label: 'Feedback & RAG', icon: BarChart2 },
+      { id: 'references', label: 'Reference Library', icon: Image },
+    ],
+    [t, data?.generationStats]
+  );
 
   // Canvas Analytics state
   const [canvasEventStats, setCanvasEventStats] = useState<{
@@ -338,6 +360,31 @@ export const AdminPage: React.FC = () => {
     period: { days: number; since: string };
   } | null>(null);
   const [canvasEventsLoading, setCanvasEventsLoading] = useState(false);
+
+  // MCP Usage tab state
+  const [mcpStats, setMcpStats] = useState<any>(null);
+  const [mcpStatsLoading, setMcpStatsLoading] = useState(false);
+
+  const fetchMcpStats = async (days = 30) => {
+    const token = authService.getToken();
+    if (!token) return;
+    setMcpStatsLoading(true);
+    try {
+      const resp = await fetch(`/api/admin/mcp-stats?days=${days}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error('Failed to fetch MCP stats');
+      setMcpStats(await resp.json());
+    } catch (err) {
+      console.error('[AdminPage] MCP stats error:', err);
+      toast.error('Failed to load MCP stats');
+    } finally {
+      setMcpStatsLoading(false);
+    }
+  };
+
+  // Sidebar dynamic width
+  const [sidebarWidth, setSidebarWidth] = useState(256);
 
   // Feedback & RAG tab state
   const [feedbackStats, setFeedbackStats] = useState<any>(null);
@@ -508,32 +555,19 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  // Check if user is admin and load data
+  // Check if user is admin and load data — uses Layout's cached user instead of re-verifying
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (isCheckingAuth) return;
+    if (isCheckingAuth) return;
 
-      if (isUserAuthenticated === true) {
-        try {
-          const user = await authService.verifyToken();
-          const userIsAdmin = user?.isAdmin || false;
-          setIsAdmin(userIsAdmin);
-
-          // Load data if user is admin
-          if (userIsAdmin) {
-            handleFetch();
-          }
-        } catch (error) {
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdminStatus();
+    if (isUserAuthenticated === true && layoutUser) {
+      const userIsAdmin = layoutUser.isAdmin || false;
+      setIsAdmin(userIsAdmin);
+      if (userIsAdmin) handleFetch();
+    } else {
+      setIsAdmin(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUserAuthenticated, isCheckingAuth]);
+  }, [isUserAuthenticated, isCheckingAuth, layoutUser]);
 
   const isAuthenticated = isUserAuthenticated === true && isAdmin === true && data !== null;
 
@@ -1111,17 +1145,20 @@ export const AdminPage: React.FC = () => {
       <SEO title={t('admin.title')} description={t('admin.description')} noindex={true} />
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0"></div>
-        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-          {/* Skeleton Loading States */}
-          {(isCheckingAuth ||
-            (isUserAuthenticated && isAdmin === null) ||
-            (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
-            <AdminDashboardSkeleton />
-          )}
 
-          {/* Access Denied States */}
-          {!isCheckingAuth && !isAuthenticated && !isLoading && (
-            <Card className="bg-neutral-900 border border-white/10 rounded-xl max-w-md mx-auto">
+        {/* Skeleton Loading States */}
+        {(isCheckingAuth ||
+          (isUserAuthenticated && isAdmin === null) ||
+          (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
+          <div className="max-w-5xl mx-auto px-4 pt-[30px]">
+            <AdminDashboardSkeleton />
+          </div>
+        )}
+
+        {/* Access Denied States */}
+        {!isCheckingAuth && !isAuthenticated && !isLoading && (
+          <div className="max-w-md mx-auto px-4 pt-[30px]">
+            <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
@@ -1146,1547 +1183,262 @@ export const AdminPage: React.FC = () => {
                 ) : null}
               </CardContent>
             </Card>
-          )}
+          </div>
+        )}
 
-          {isAuthenticated && data && (
-            <Tabs
-              value={activeTab}
-              onValueChange={(val) => {
-                if (val === 'presets') {
+        {isAuthenticated && data && (
+          <>
+            <NavigationSidebar
+              items={adminNavItems}
+              activeItemId={activeTab}
+              onItemClick={(itemId) => {
+                if (itemId === 'presets') {
                   navigate('/admin/presets');
-                } else if (val === 'products') {
+                } else if (itemId === 'products') {
                   navigate('/admin/products');
-                } else if (val === 'admin-chat') {
+                } else if (itemId === 'admin-chat') {
                   navigate('/admin/chat');
-                } else if (val === 'design-system') {
+                } else if (itemId === 'design-system') {
                   navigate('/design-system');
                 } else {
-                  setActiveTab(val);
-                  if (val === 'feedback-rag' && !feedbackStats) {
+                  setActiveTab(itemId);
+                  if (itemId === 'feedback-rag' && !feedbackStats) {
                     fetchFeedbackStats(feedbackFeatureFilter);
                   }
-                  if (val === 'generations' && !canvasEventStats) {
+                  if (itemId === 'generations' && !canvasEventStats) {
                     fetchCanvasEventStats();
+                  }
+                  if (itemId === 'mcp-usage' && !mcpStats) {
+                    fetchMcpStats();
                   }
                 }
               }}
-              className="space-y-6"
-            >
-              {/* Unified Header */}
-              <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-6">
-                <CardContent className="p-4 md:p-6">
-                  {/* Breadcrumb */}
-                  <div className="mb-4">
-                    <BreadcrumbWithBack to="/">
-                      <BreadcrumbList>
-                        <BreadcrumbItem>
-                          <BreadcrumbLink asChild>
-                            <Link to="/">{t('apps.home')}</Link>
-                          </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                          <BreadcrumbPage>{t('admin.title') || 'Admin'}</BreadcrumbPage>
-                        </BreadcrumbItem>
-                      </BreadcrumbList>
-                    </BreadcrumbWithBack>
-                  </div>
+              title="Admin"
+              isOpen={sidebarOpen}
+              onToggleOpen={setSidebarOpen}
+              storageKey="admin-sidebar-width"
+              onWidthChange={setSidebarWidth}
+            />
 
-                  {/* Separator */}
-                  <div className="border-t border-white/10 mb-4"></div>
-
-                  {/* Icon | Title | Description */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+            <div className="min-h-screen max-lg:!pl-0" style={{ paddingLeft: `${sidebarWidth}px` }}>
+              <div className="px-4 md:px-8 pt-6 pb-16 md:pb-24 relative z-10">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="h-5 w-5 text-neutral-500 hidden md:block" />
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
-                        {t('admin.panelTitle')}
+                      <h1 className="text-lg md:text-xl font-semibold text-neutral-200">
+                        {adminNavItems.find((i) => i.id === activeTab)?.label ||
+                          t('admin.panelTitle')}
                       </h1>
-                      <p className="text-neutral-500 font-mono text-xs md:text-sm">
+                      <p className="text-neutral-600 text-xs font-mono">
                         {t('admin.panelSubtitle')}
                       </p>
                     </div>
                   </div>
-
-                  {/* Separator */}
-                  <div className="border-t border-white/10 mb-4"></div>
-
-                  {/* Navbar abas | Botão atualizar (somente icon) */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
-                    <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
-                      <TabsTrigger
-                        value="overview"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        {t('admin.dashboard')}
-                      </TabsTrigger>
-                      {data.generationStats && (
-                        <TabsTrigger
-                          value="generations"
-                          className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                        >
-                          {t('admin.generations')}
-                        </TabsTrigger>
-                      )}
-                      <TabsTrigger
-                        value="users"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        {t('admin.users')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="financial"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        {t('admin.financial')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="presets"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('common.presets')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="products"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.products.title') || 'Produtos'}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="admin-chat"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <MessageSquare className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        Chat Estratégico
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="design-system"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.designSystem')}
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="feedback-rag"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <BarChart2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        Feedback & RAG
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="references"
-                        className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm"
-                      >
-                        <Image className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        Reference Library
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <Button
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center justify-center border-white/10 hover:bg-neutral-800/50 h-9 w-9 p-0"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <TabsContent
-                value="overview"
-                className={`space-y-6 ${activeTab === 'overview' ? 'admin-tab-enter' : ''}`}
-              >
-                {/* KPI Grid - Top Level Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                  {/* Total Users */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <User className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                          <TrendingUp className="h-3 w-3 text-brand-cyan" />
-                          <span>+12.5%</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                          {data.totalUsers}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.totalUsers')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.registeredInSystem')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Active Subscriptions */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <CreditCard className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {
-                            data.users.filter(
-                              (u) =>
-                                u.subscriptionStatus === 'active' ||
-                                u.subscriptionStatus === 'trialing'
-                            ).length
-                          }
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.activeSubscriptions')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.recurringPlans')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Total Transactions */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <ShoppingCart className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                          {totalTransactions}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.transactions')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.completedTransactions')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* New Users (Last 30 Days) */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <UserPlus className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                          <TrendingUp className="h-3 w-3 text-brand-cyan" />
-                          <span>30d</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                          {
-                            data.users.filter((u) => {
-                              const createdAt = new Date(u.createdAt);
-                              const thirtyDaysAgo = new Date();
-                              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                              return createdAt >= thirtyDaysAgo;
-                            }).length
-                          }
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.novos_usurios')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.ltimos_30_dias')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <Button
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    variant="outline"
+                    size="sm"
+                    className="border-neutral-800 hover:bg-neutral-800/50 h-8 w-8 p-0"
+                    aria-label="Refresh data"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                  </Button>
                 </div>
 
-                {/* Additional Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {/* Total Mockups */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <Image className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.totalMockupsGenerated}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.mockupsCreated')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.totalMockupsGenerated')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Total Credits Used */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <CreditCard className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.totalCreditsUsed}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.creditsDistributed')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.totalCreditsAssigned')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Total Storage Used */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <HardDrive className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.totalStorageUsed !== undefined
-                            ? formatBytes(data.totalStorageUsed)
-                            : '—'}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">{t('admin.storage')}</p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.totalDiskUsage')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* User Growth Chart */}
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                  <CardHeader>
-                    <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
-                    <CardDescription className="text-neutral-500">
-                      {t('admin.newUsersLast30Days')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px] w-full">
-                      <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
-                        <AreaChart
-                          accessibilityLayer
-                          data={userGrowthData}
-                          margin={{
-                            left: 12,
-                            right: 12,
-                          }}
-                        >
-                          <CartesianGrid
-                            vertical={false}
-                            strokeDasharray="3 3"
-                            stroke="#3b3b3bff"
-                          />
-                          <XAxis
-                            dataKey="date"
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            minTickGap={32}
-                            tickFormatter={(value) => {
-                              const date = new Date(value);
-                              return date.toLocaleDateString('pt-BR', {
-                                month: 'short',
-                                day: 'numeric',
-                              });
-                            }}
-                          />
-                          <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent indicator="dot" />}
-                          />
-                          <Area
-                            dataKey="users"
-                            type="natural"
-                            fill="#52ddeb"
-                            fillOpacity={0.05}
-                            stroke="#64f2ffff"
-                            stackId="a"
-                          />
-                        </AreaChart>
-                      </ChartContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {data.generationStats && (
-                <TabsContent
-                  value="generations"
-                  className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}
-                >
-                  {/* Summary KPIs */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <Image className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {Object.values(data.generationStats.imagesByModel).reduce(
-                              (sum, stats) => sum + stats.total,
-                              0
-                            )}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.images')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.total_gerado')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <Image className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {data.generationStats.videos.total}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">{t('admin.videos')}</p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.total_gerado_2')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <Type className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {data.generationStats.textTokens.totalSteps}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">
-                            {t('admin.passos_de_texto')}
-                          </p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.processamento_de_ia')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <Type className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {(
-                              data.generationStats.textTokens.inputTokens +
-                              data.generationStats.textTokens.outputTokens
-                            ).toLocaleString()}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">
-                            {t('admin.total_tokens')}
-                          </p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.input_output')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* By Feature - Enhanced Grid */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-neutral-300 font-mono">
-                        {t('admin.byFeature')}
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                      {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map((feature) => {
-                        const stats = data.generationStats.byFeature[feature];
-                        const total =
-                          stats.images + stats.videos + stats.textSteps + stats.promptGenerations;
-                        return (
-                          <Card
-                            key={feature}
-                            className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
-                          >
-                            <CardContent className="p-6">
-                              <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  {feature === 'mockupmachine' ? (
-                                    <Image className="h-6 w-6 text-brand-cyan" />
-                                  ) : feature === 'brandingmachine' ? (
-                                    <Type className="h-6 w-6 text-brand-cyan" />
-                                  ) : (
-                                    <Palette className="h-6 w-6 text-brand-cyan" />
-                                  )}
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] bg-neutral-950/70 border-[brand-cyan]/30 text-brand-cyan"
-                                >
-                                  {total} total
-                                </Badge>
-                              </div>
-                              <div className="mb-4">
-                                <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">
-                                  {feature}
-                                </p>
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">
-                                      {t('admin.images')}
-                                    </span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">
-                                      {stats.images}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">
-                                      {t('admin.videos')}
-                                    </span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">
-                                      {stats.videos}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">
-                                      {t('admin.textSteps')}
-                                    </span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">
-                                      {stats.textSteps}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs text-neutral-400 font-mono">
-                                      {t('admin.promptsGenerated')}
-                                    </span>
-                                    <span className="text-sm font-bold text-brand-cyan font-mono">
-                                      {stats.promptGenerations}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Model Usage Chart */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
-                    <CardHeader>
-                      <CardTitle className="text-neutral-300 flex items-center gap-2">
-                        <Image className="h-5 w-5 text-brand-cyan" />
-                        {t('admin.generationsByModel')}
-                      </CardTitle>
-                      <CardDescription className="text-neutral-500">
-                        Distribuição de gerações por modelo de IA
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[350px] w-full">
-                        <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
-                          <BarChart accessibilityLayer data={modelUsageData}>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
-                            <XAxis
-                              dataKey="model"
-                              tickLine={false}
-                              tickMargin={10}
-                              axisLine={false}
-                              tickFormatter={(value) => value.slice(0, 15)}
-                            />
-                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                            <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                              {modelUsageData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                              ))}
-                            </Bar>
-                          </BarChart>
-                        </ChartContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Detailed Breakdowns Grid */}
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Images by Model */}
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
-                      <CardHeader>
-                        <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Image className="h-5 w-5 text-brand-cyan" />
-                          {t('admin.imagesByModel')}
-                        </CardTitle>
-                        <CardDescription className="text-neutral-500">
-                          Detalhamento por modelo e resolução
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {Object.entries(data.generationStats.imagesByModel).map(
-                            ([model, stats]) => (
-                              <Card
-                                key={model}
-                                className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all"
-                              >
-                                <CardContent className="p-4">
-                                  <p
-                                    className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate"
-                                    title={model}
-                                  >
-                                    {model}
-                                  </p>
-                                  <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">
-                                    {stats.total}
-                                  </p>
-                                  {Object.keys(stats.byResolution).length > 0 && (
-                                    <div className="mt-3 pt-3 border-t border-white/10">
-                                      <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">
-                                        {t('admin.resolues')}
-                                      </p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {Object.entries(stats.byResolution).map(
-                                          ([resolution, count]) => (
-                                            <Badge
-                                              key={resolution}
-                                              variant="outline"
-                                              className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400"
-                                            >
-                                              {resolution}: {count}
-                                            </Badge>
-                                          )
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            )
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Videos by Model */}
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
-                      <CardHeader>
-                        <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Image className="h-5 w-5 text-brand-cyan" />
-                          {t('admin.videosByModel')}
-                        </CardTitle>
-                        <CardDescription className="text-neutral-500">
-                          Detalhamento por modelo
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="mb-4">
-                          <p className="text-3xl font-bold text-neutral-300 font-mono mb-2">
-                            {data.generationStats.videos.total}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">
-                            {t('admin.totalVideos')}
-                          </p>
-                        </div>
-                        {Object.keys(data.generationStats.videos.byModel).length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-white/10">
-                            <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
-                              {t('admin.byModel')}:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {Object.entries(data.generationStats.videos.byModel).map(
-                                ([model, count]) => (
-                                  <Badge
-                                    key={model}
-                                    variant="outline"
-                                    className="text-xs bg-neutral-950/10 border-neutral-700/50 text-neutral-300 px-3 py-1"
-                                  >
-                                    {model}: {count}
-                                  </Badge>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Text Tokens Section */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
-                    <CardHeader>
-                      <CardTitle className="text-neutral-300 flex items-center gap-2">
-                        <Type className="h-5 w-5 text-brand-cyan" />
-                        {t('admin.textProcessing')}
-                      </CardTitle>
-                      <CardDescription className="text-neutral-500">
-                        Estatísticas de processamento de texto e tokens
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        {/* Branding Steps */}
-                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                          <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">
-                              {t('admin.brandingSteps')}
-                            </p>
-                            <p className="text-2xl font-bold text-neutral-300 font-mono">
-                              {data.generationStats.textTokens.totalSteps}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* Input Tokens */}
-                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                          <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">
-                              {t('admin.inputTokens')}
-                            </p>
-                            <p className="text-2xl font-bold text-brand-cyan font-mono">
-                              {data.generationStats.textTokens.inputTokens.toLocaleString()}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* Output Tokens */}
-                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                          <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">
-                              {t('admin.outputTokens')}
-                            </p>
-                            <p className="text-2xl font-bold text-brand-cyan font-mono">
-                              {data.generationStats.textTokens.outputTokens.toLocaleString()}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* Analysis Cost */}
-                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                          <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">
-                              {t('admin.analysisCost')}
-                            </p>
-                            <p className="text-2xl font-bold text-green-400 font-mono">
-                              ${(data.generationStats.textTokens.totalCost || 0).toFixed(4)}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* Prompt Gen Total */}
-                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                          <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">
-                              {t('admin.promptGenTotal')}
-                            </p>
-                            <p className="text-2xl font-bold text-neutral-300 font-mono">
-                              {data.generationStats.byFeature['prompt-generation'].total}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* Prompt Input Tokens */}
-                        <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
-                          <CardContent className="p-4">
-                            <p className="text-xs text-neutral-500 font-mono mb-2">
-                              {t('admin.promptInput')}
-                            </p>
-                            <p className="text-2xl font-bold text-brand-cyan font-mono">
-                              {data.generationStats.byFeature[
-                                'prompt-generation'
-                              ].inputTokens.toLocaleString()}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Canvas Node Analytics */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
-                    <CardHeader>
-                      <CardTitle className="text-neutral-300 flex items-center gap-2">
-                        <Database className="h-5 w-5 text-brand-cyan" />
-                        Canvas Node Analytics
-                      </CardTitle>
-                      <CardDescription className="text-neutral-500">
-                        Uso de nodes e taxa de sucesso de gerações (últimos 30 dias)
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {canvasEventsLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                          <RefreshCw className="h-5 w-5 animate-spin text-brand-cyan" />
-                          <span className="ml-2 text-neutral-500 font-mono text-sm">
-                            {t('admin.carregando_analytics')}
-                          </span>
-                        </div>
-                      ) : canvasEventStats ? (
-                        <div className="space-y-6">
-                          {/* Event type KPIs */}
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {canvasEventStats.byEvent.map((e) => (
-                              <Card
-                                key={e.event}
-                                className="bg-neutral-900/50 border border-white/10 rounded-md"
-                              >
-                                <CardContent className="p-4">
-                                  <p className="text-xs text-neutral-500 font-mono mb-2">
-                                    {e.event.replace(/_/g, ' ')}
-                                  </p>
-                                  <p
-                                    className={`text-2xl font-bold font-mono ${
-                                      e.event === 'generation_failed'
-                                        ? 'text-destructive'
-                                        : e.event === 'generation_completed'
-                                        ? 'text-green-400'
-                                        : 'text-brand-cyan'
-                                    }`}
-                                  >
-                                    {e.count.toLocaleString()}
-                                  </p>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-
-                          {/* Node type ranking */}
-                          {canvasEventStats.byNodeType.length > 0 && (
-                            <div>
-                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
-                                {t('admin.ranking_de_nodes')}
-                              </p>
-                              <div className="space-y-2">
-                                {canvasEventStats.byNodeType.map((n, i) => {
-                                  const maxCount = canvasEventStats.byNodeType[0]?.count || 1;
-                                  const pct = Math.round((n.count / maxCount) * 100);
-                                  return (
-                                    <div key={n.nodeType} className="flex items-center gap-3">
-                                      <span className="text-xs text-neutral-500 font-mono w-5 text-right">
-                                        {i + 1}.
-                                      </span>
-                                      <span
-                                        className="text-sm text-neutral-300 font-mono w-28 truncate"
-                                        title={n.nodeType}
-                                      >
-                                        {n.nodeType}
-                                      </span>
-                                      <div className="flex-1 h-6 bg-neutral-800/50 rounded-md overflow-hidden">
-                                        <div
-                                          className="h-full bg-brand-cyan/30 rounded-md transition-all duration-500"
-                                          style={{ width: `${pct}%` }}
-                                        />
-                                      </div>
-                                      <span className="text-sm font-bold text-brand-cyan font-mono w-16 text-right">
-                                        {n.count}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Daily timeline */}
-                          {canvasEventStats.timeline.length > 0 && (
-                            <div>
-                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
-                                {t('admin.eventos_por_dia')}
-                              </p>
-                              <div className="h-[200px] w-full">
-                                <ChartContainer
-                                  config={{ events: { label: 'Eventos', color: '#52ddeb' } }}
-                                  className="aspect-auto h-full w-full"
-                                >
-                                  <AreaChart data={canvasEventStats.timeline}>
-                                    <CartesianGrid
-                                      vertical={false}
-                                      strokeDasharray="3 3"
-                                      stroke="#333"
-                                    />
-                                    <XAxis
-                                      dataKey="date"
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(v) => v.slice(5)}
-                                      tick={{ fill: '#666', fontSize: 10 }}
-                                    />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="count"
-                                      fill="#52ddeb"
-                                      fillOpacity={0.15}
-                                      stroke="#52ddeb"
-                                      strokeWidth={2}
-                                    />
-                                  </AreaChart>
-                                </ChartContainer>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <p className="text-neutral-500 font-mono text-sm">
-                            {t('admin.sem_dados_de_canvas_events_ainda')}
-                          </p>
-                          <button
-                            onClick={() => fetchCanvasEventStats()}
-                            className="mt-3 text-brand-cyan hover:underline text-sm font-mono"
-                          >
-                            Carregar agora
-                          </button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
-
-              <TabsContent
-                value="users"
-                className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}
-              >
-                {/* Summary Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <Users className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                          {data.users.length}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.totalUsers')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.registeredInSystem')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <CreditCard className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {
-                            data.users.filter(
-                              (u) =>
-                                u.subscriptionStatus === 'active' ||
-                                u.subscriptionStatus === 'trialing'
-                            ).length
-                          }
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.activeSubscriptions')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.usersWithActivePlan')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <CreditCard className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {totals.monthlyCredits + totals.manualCredits}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.creditsDistributed')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.totalCreditsAssigned')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-brand-cyan/10 rounded-md">
-                          <Image className="h-6 w-6 text-brand-cyan" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                          {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.mockupsCreated')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.totalMockupsGenerated')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Referral Stats */}
-                {data.referralStats && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <Link2 className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                            <TrendingUp className="h-3 w-3 text-brand-cyan" />
-                            <span>+10.2%</span>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                            {data.referralStats.totalReferralCount}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">
-                            {t('admin.referrals')}
-                          </p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.totalInvitesSent')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <UserPlus className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                            {data.referralStats.totalReferredUsers}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">
-                            {t('admin.referredUsers')}
-                          </p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.newAccountsViaInvite')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-brand-cyan/10 rounded-md">
-                            <Link2 className="h-6 w-6 text-brand-cyan" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                            {data.referralStats.usersWithReferralCode}
-                          </p>
-                          <p className="text-sm text-neutral-500 font-mono">
-                            {t('admin.activeLinks')}
-                          </p>
-                          <p className="text-xs text-neutral-400 font-mono mt-1">
-                            {t('admin.referralCodesInUse')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                {/* Table Card */}
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
-                  <CardContent className="p-6">
-                    <DataTable
-                      columns={columns}
-                      data={data.users}
-                      searchKey="name"
-                      searchPlaceholder={t('admin.searchPlaceholder')}
-                      title={t('admin.userList')}
-                      icon={<Users className="h-5 w-5 text-brand-cyan" />}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Financial Tab */}
-              <TabsContent
-                value="financial"
-                className={`space-y-6 ${activeTab === 'financial' ? 'admin-tab-enter' : ''}`}
-              >
-                {/* Financial Overview - Revenue, Cost, Profit */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                  {/* Revenue Total Card */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-green-500/10 rounded-md">
-                          <DollarSign className="h-6 w-6 text-green-500" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-green-500 mb-1 font-mono">
-                          {formatCurrency(data.totalRevenueBRL, 'BRL')}
-                        </p>
-                        <p className="text-sm font-semibold text-green-400 mb-2 font-mono">
-                          {formatCurrency(data.totalRevenueUSD, 'USD')}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.totalRevenue')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.completedTransactions')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Total Cost Card */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-orange-500/10 rounded-md">
-                          <Database className="h-6 w-6 text-orange-500" />
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] bg-neutral-950/70 border-orange-500/30 text-orange-500"
-                        >
-                          {t('admin.estimated')}
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                          {(data.totalApiCostUSD * 6).toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </p>
-                        <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                          ${' '}
-                          {data.totalApiCostUSD.toLocaleString('pt-BR', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.estimatedCost')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.basedOnUsage')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Profit Card */}
-                  <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div
-                          className={`p-3 rounded-md ${
-                            profitStats.isPositive ? 'bg-blue-500/10' : 'bg-destructive/10'
-                          }`}
-                        >
-                          <TrendingUp
-                            className={`h-6 w-6 ${
-                              profitStats.isPositive ? 'text-blue-500' : 'text-destructive'
-                            }`}
-                          />
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] bg-neutral-950/70 ${
-                            profitStats.isPositive
-                              ? 'border-blue-500/30 text-blue-500'
-                              : 'border-destructive/30 text-destructive'
-                          }`}
-                        >
-                          {profitStats.isPositive ? 'POSITIVO' : 'NEGATIVO'}
-                        </Badge>
-                      </div>
-                      <div>
-                        <p
-                          className={`text-3xl font-bold mb-1 font-mono ${
-                            profitStats.isPositive ? 'text-blue-500' : 'text-destructive'
-                          }`}
-                        >
-                          {profitStats.isPositive ? '+' : ''}
-                          {profitStats.profitBRL.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </p>
-                        <p
-                          className={`text-sm font-semibold mb-2 font-mono ${
-                            profitStats.isPositive ? 'text-blue-400' : 'text-destructive'
-                          }`}
-                        >
-                          {profitStats.isPositive ? '+' : ''}
-                          {profitStats.profitUSD.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'USD',
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </p>
-                        <p className="text-sm text-neutral-500 font-mono">
-                          {t('admin.totalProfit')}
-                        </p>
-                        <p className="text-xs text-neutral-400 font-mono mt-1">
-                          {t('admin.revenueMinusCost')}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Revenue & Cost Charts Grid */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-                  {/* Revenue Chart */}
-                  {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 transition-all duration-300">
-                      <CardHeader>
-                        <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <DollarSign className="h-5 w-5 text-green-500" />
-                          {t('admin.revenueOverTime') || 'Receita ao Longo do Tempo'}
-                        </CardTitle>
-                        <CardDescription className="text-neutral-500">
-                          {t('admin.cumulativeRevenue') || 'Receita acumulada (BRL)'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="h-[250px] w-full">
-                          <ChartContainer
-                            config={chartConfig}
-                            className="aspect-auto h-full w-full"
-                          >
-                            <AreaChart
-                              accessibilityLayer
-                              data={data.revenueTimeSeries}
-                              margin={{ left: 12, right: 12 }}
-                            >
-                              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
-                              <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                minTickGap={32}
-                                tickFormatter={(value) => {
-                                  const date = new Date(value);
-                                  return date.toLocaleDateString('pt-BR', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  });
-                                }}
-                              />
-                              <ChartTooltip
-                                cursor={false}
-                                content={
-                                  <ChartTooltipContent
-                                    indicator="dot"
-                                    formatter={(value, name) => {
-                                      if (name === 'cumulativeBRL') {
-                                        return [
-                                          formatCurrency(value as number, 'BRL'),
-                                          'Total BRL',
-                                        ];
-                                      }
-                                      return [value, name];
-                                    }}
-                                  />
-                                }
-                              />
-                              <Area
-                                dataKey="cumulativeBRL"
-                                type="natural"
-                                fill="#22c55e"
-                                fillOpacity={0.1}
-                                stroke="#22c55e"
-                                strokeWidth={2}
-                              />
-                            </AreaChart>
-                          </ChartContainer>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Cost Chart */}
-                  {data.costTimeSeries && data.costTimeSeries.length > 0 && (
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
-                      <CardHeader>
-                        <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Database className="h-5 w-5 text-orange-500" />
-                          {t('admin.costOverTime') || 'Custo Estimado ao Longo do Tempo'}
-                        </CardTitle>
-                        <CardDescription className="text-neutral-500">
-                          {t('admin.cumulativeCost') || 'Custo API acumulado (USD)'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="h-[250px] w-full">
-                          <ChartContainer
-                            config={chartConfig}
-                            className="aspect-auto h-full w-full"
-                          >
-                            <AreaChart
-                              accessibilityLayer
-                              data={data.costTimeSeries}
-                              margin={{ left: 12, right: 12 }}
-                            >
-                              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
-                              <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                minTickGap={32}
-                                tickFormatter={(value) => {
-                                  const date = new Date(value);
-                                  return date.toLocaleDateString('pt-BR', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  });
-                                }}
-                              />
-                              <ChartTooltip
-                                cursor={false}
-                                content={
-                                  <ChartTooltipContent
-                                    indicator="dot"
-                                    formatter={(value, name) => {
-                                      if (name === 'cumulative') {
-                                        const brl = ((value as number) * 6).toLocaleString(
-                                          'pt-BR',
-                                          { style: 'currency', currency: 'BRL' }
-                                        );
-                                        const usd = (value as number).toLocaleString('pt-BR', {
-                                          minimumFractionDigits: 2,
-                                          maximumFractionDigits: 2,
-                                        });
-                                        return [`${brl} ($ ${usd})`, 'Total'];
-                                      }
-                                      return [value, name];
-                                    }}
-                                  />
-                                }
-                              />
-                              <Area
-                                dataKey="cumulative"
-                                type="natural"
-                                fill="#f97316"
-                                fillOpacity={0.1}
-                                stroke="#f97316"
-                                strokeWidth={2}
-                              />
-                            </AreaChart>
-                          </ChartContainer>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Daily Cost Stats & Chart */}
-                {data.costTimeSeries && data.costTimeSeries.length > 0 && (
-                  <>
-                    {/* Daily Cost Stats Cards */}
+                {activeTab === 'overview' && (
+                  <div className="space-y-6 admin-tab-enter">
+                    {/* KPI Grid - Top Level Metrics */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      {/* Total Users */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-orange-500/10 rounded-md">
-                              <TrendingUp className="h-6 w-6 text-orange-500" />
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <User className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
+                              <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                              <span>+12.5%</span>
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.averageCost * 6).toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
-                            </p>
-                            <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              ${' '}
-                              {dailyCostStats.averageCost.toLocaleString('pt-BR', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                              {data.totalUsers}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.averageDailyCost')}
+                              {t('admin.totalUsers')}
                             </p>
                             <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.dailyCost')}
+                              {t('admin.registeredInSystem')}
                             </p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      {/* Active Subscriptions */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-orange-500/10 rounded-md">
-                              <TrendingUp className="h-6 w-6 text-orange-500" />
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <CreditCard className="h-6 w-6 text-brand-cyan" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.maxCost * 6).toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
-                            </p>
-                            <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              ${' '}
-                              {dailyCostStats.maxCost.toLocaleString('pt-BR', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {
+                                data.users.filter(
+                                  (u) =>
+                                    u.subscriptionStatus === 'active' ||
+                                    u.subscriptionStatus === 'trialing'
+                                ).length
+                              }
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.maxDailyCost')}
+                              {t('admin.activeSubscriptions')}
                             </p>
                             <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.dailyCost')}
+                              {t('admin.recurringPlans')}
                             </p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      {/* Total Transactions */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-orange-500/10 rounded-md">
-                              <Database className="h-6 w-6 text-orange-500" />
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <ShoppingCart className="h-6 w-6 text-brand-cyan" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.last7DaysCost * 6).toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
-                            </p>
-                            <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              ${' '}
-                              {dailyCostStats.last7DaysCost.toLocaleString('pt-BR', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                              {totalTransactions}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.last7DaysCost')}
+                              {t('admin.transactions')}
                             </p>
                             <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.dailyCost')}
+                              {t('admin.completedTransactions')}
                             </p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      {/* New Users (Last 30 Days) */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-orange-500/10 rounded-md">
-                              <Database className="h-6 w-6 text-orange-500" />
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <UserPlus className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
+                              <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                              <span>30d</span>
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
-                              {(dailyCostStats.last30DaysCost * 6).toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
-                            </p>
-                            <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
-                              ${' '}
-                              {dailyCostStats.last30DaysCost.toLocaleString('pt-BR', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
+                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                              {
+                                data.users.filter((u) => {
+                                  const createdAt = new Date(u.createdAt);
+                                  const thirtyDaysAgo = new Date();
+                                  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                                  return createdAt >= thirtyDaysAgo;
+                                }).length
+                              }
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.last30DaysCost')}
+                              {t('admin.novos_usurios')}
                             </p>
                             <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.dailyCost')}
+                              {t('admin.ltimos_30_dias')}
                             </p>
                           </div>
                         </CardContent>
                       </Card>
                     </div>
 
-                    {/* Daily Cost Chart */}
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
+                    {/* Additional Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                      {/* Total Mockups */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Image className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {data.totalMockupsGenerated}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.mockupsCreated')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.totalMockupsGenerated')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Total Credits Used */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <CreditCard className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {data.totalCreditsUsed}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.creditsDistributed')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.totalCreditsAssigned')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Total Storage Used */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <HardDrive className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {data.totalStorageUsed !== undefined
+                                ? formatBytes(data.totalStorageUsed)
+                                : '—'}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.storage')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.totalDiskUsage')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* User Growth Chart */}
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                       <CardHeader>
-                        <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Database className="h-5 w-5 text-orange-500" />
-                          {t('admin.dailyCostChart') || 'Custo Diário (USD)'}
-                        </CardTitle>
+                        <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
                         <CardDescription className="text-neutral-500">
-                          {t('admin.dailyCost') || 'Custo por dia'}
+                          {t('admin.newUsersLast30Days')}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -2695,12 +1447,19 @@ export const AdminPage: React.FC = () => {
                             config={chartConfig}
                             className="aspect-auto h-full w-full"
                           >
-                            <BarChart
+                            <AreaChart
                               accessibilityLayer
-                              data={data.costTimeSeries}
-                              margin={{ left: 12, right: 12 }}
+                              data={userGrowthData}
+                              margin={{
+                                left: 12,
+                                right: 12,
+                              }}
                             >
-                              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                              <CartesianGrid
+                                vertical={false}
+                                strokeDasharray="3 3"
+                                stroke="#3b3b3bff"
+                              />
                               <XAxis
                                 dataKey="date"
                                 tickLine={false}
@@ -2717,647 +1476,1424 @@ export const AdminPage: React.FC = () => {
                               />
                               <ChartTooltip
                                 cursor={false}
-                                content={
-                                  <ChartTooltipContent
-                                    indicator="line"
-                                    formatter={(value, name) => {
-                                      if (name === 'cost') {
-                                        const brl = ((value as number) * 6).toLocaleString(
-                                          'pt-BR',
-                                          { style: 'currency', currency: 'BRL' }
-                                        );
-                                        const usd = (value as number).toLocaleString('pt-BR', {
-                                          minimumFractionDigits: 2,
-                                          maximumFractionDigits: 2,
-                                        });
-                                        return [`${brl} ($ ${usd})`, t('admin.dailyCost')];
-                                      }
-                                      return [value, name];
-                                    }}
-                                  />
-                                }
+                                content={<ChartTooltipContent indicator="dot" />}
                               />
-                              <Bar dataKey="cost" radius={[8, 8, 0, 0]} fill="#f97316" />
+                              <Area
+                                dataKey="users"
+                                type="natural"
+                                fill="#52ddeb"
+                                fillOpacity={0.05}
+                                stroke="#64f2ffff"
+                                stackId="a"
+                              />
+                            </AreaChart>
+                          </ChartContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {activeTab === 'generations' && data.generationStats && (
+                  <div className="space-y-6 admin-tab-enter">
+                    {/* Summary KPIs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Image className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {Object.values(data.generationStats.imagesByModel).reduce(
+                                (sum, stats) => sum + stats.total,
+                                0
+                              )}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.images')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.total_gerado')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Image className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {data.generationStats.videos.total}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.videos')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.total_gerado_2')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Type className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {data.generationStats.textTokens.totalSteps}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.passos_de_texto')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.processamento_de_ia')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Type className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {(
+                                data.generationStats.textTokens.inputTokens +
+                                data.generationStats.textTokens.outputTokens
+                              ).toLocaleString()}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.total_tokens')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.input_output')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* By Feature - Enhanced Grid */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-neutral-300 font-mono">
+                          {t('admin.byFeature')}
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map(
+                          (feature) => {
+                            const stats = data.generationStats.byFeature[feature];
+                            const total =
+                              stats.images +
+                              stats.videos +
+                              stats.textSteps +
+                              stats.promptGenerations;
+                            return (
+                              <Card
+                                key={feature}
+                                className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                              >
+                                <CardContent className="p-6">
+                                  <div className="flex items-start justify-between mb-4">
+                                    <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                      {feature === 'mockupmachine' ? (
+                                        <Image className="h-6 w-6 text-brand-cyan" />
+                                      ) : feature === 'brandingmachine' ? (
+                                        <Type className="h-6 w-6 text-brand-cyan" />
+                                      ) : (
+                                        <Palette className="h-6 w-6 text-brand-cyan" />
+                                      )}
+                                    </div>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] bg-neutral-950/70 border-[brand-cyan]/30 text-brand-cyan"
+                                    >
+                                      {total} total
+                                    </Badge>
+                                  </div>
+                                  <div className="mb-4">
+                                    <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">
+                                      {feature}
+                                    </p>
+                                    <div className="space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-400 font-mono">
+                                          {t('admin.images')}
+                                        </span>
+                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                          {stats.images}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-400 font-mono">
+                                          {t('admin.videos')}
+                                        </span>
+                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                          {stats.videos}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-400 font-mono">
+                                          {t('admin.textSteps')}
+                                        </span>
+                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                          {stats.textSteps}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-400 font-mono">
+                                          {t('admin.promptsGenerated')}
+                                        </span>
+                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                          {stats.promptGenerations}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Model Usage Chart */}
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
+                          <Image className="h-5 w-5 text-brand-cyan" />
+                          {t('admin.generationsByModel')}
+                        </CardTitle>
+                        <CardDescription className="text-neutral-500">
+                          Distribuição de gerações por modelo de IA
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[350px] w-full">
+                          <ChartContainer
+                            config={chartConfig}
+                            className="aspect-auto h-full w-full"
+                          >
+                            <BarChart accessibilityLayer data={modelUsageData}>
+                              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                              <XAxis
+                                dataKey="model"
+                                tickLine={false}
+                                tickMargin={10}
+                                axisLine={false}
+                                tickFormatter={(value) => value.slice(0, 15)}
+                              />
+                              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                              <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                                {modelUsageData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                              </Bar>
                             </BarChart>
                           </ChartContainer>
                         </div>
                       </CardContent>
                     </Card>
-                  </>
-                )}
-              </TabsContent>
 
-              {/* ── Feedback & RAG ─────────────────────────────────────── */}
-              <TabsContent
-                value="feedback-rag"
-                className={`space-y-6 ${activeTab === 'feedback-rag' ? 'admin-tab-enter' : ''}`}
-              >
-                {/* Feature filter + refresh row */}
-                <div className="flex items-center gap-3 flex-wrap">
-                  <select
-                    value={feedbackFeatureFilter}
-                    onChange={(e) => {
-                      setFeedbackFeatureFilter(e.target.value);
-                      fetchFeedbackStats(e.target.value);
-                    }}
-                    className="bg-neutral-900 border border-neutral-800 text-neutral-200 text-xs font-mono rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                  >
-                    {[
-                      'all',
-                      'mockup',
-                      'branding',
-                      'canvas',
-                      'creative',
-                      'brand-intelligence',
-                      'node-builder',
-                      'chat',
-                      'image-gen',
-                    ].map((f) => (
-                      <option key={f} value={f}>
-                        {f === 'all' ? 'All Features' : f}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
-                    disabled={feedbackLoading}
-                    className="border-white/10 hover:bg-neutral-800/50 h-9 w-9 p-0"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${feedbackLoading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </div>
+                    {/* Detailed Breakdowns Grid */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                      {/* Images by Model */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                        <CardHeader>
+                          <CardTitle className="text-neutral-300 flex items-center gap-2">
+                            <Image className="h-5 w-5 text-brand-cyan" />
+                            {t('admin.imagesByModel')}
+                          </CardTitle>
+                          <CardDescription className="text-neutral-500">
+                            Detalhamento por modelo e resolução
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {Object.entries(data.generationStats.imagesByModel).map(
+                              ([model, stats]) => (
+                                <Card
+                                  key={model}
+                                  className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all"
+                                >
+                                  <CardContent className="p-4">
+                                    <p
+                                      className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate"
+                                      title={model}
+                                    >
+                                      {model}
+                                    </p>
+                                    <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">
+                                      {stats.total}
+                                    </p>
+                                    {Object.keys(stats.byResolution).length > 0 && (
+                                      <div className="mt-3 pt-3 border-t border-white/10">
+                                        <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">
+                                          {t('admin.resolues')}
+                                        </p>
+                                        <div className="flex flex-wrap gap-1">
+                                          {Object.entries(stats.byResolution).map(
+                                            ([resolution, count]) => (
+                                              <Badge
+                                                key={resolution}
+                                                variant="outline"
+                                                className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400"
+                                              >
+                                                {resolution}: {count}
+                                              </Badge>
+                                            )
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                {feedbackLoading && !feedbackStats ? (
-                  <div className="flex items-center justify-center py-20">
-                    <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
-                  </div>
-                ) : feedbackStats ? (
-                  <>
-                    {/* KPI Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
-                            {t('admin.approval_rate')}
-                          </p>
-                          <p className="text-4xl font-bold text-brand-cyan">
-                            {feedbackStats.overall.approvalRate.toFixed(1)}%
-                          </p>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            {feedbackStats.overall.total} total ratings (30d)
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
-                            Thumbs Up
-                          </p>
-                          <p className="text-4xl font-bold text-green-400">
-                            {feedbackStats.overall.up}
-                          </p>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            {t('admin.vectorizationeligible')}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
-                            {t('admin.thumbs_down')}
-                          </p>
-                          <p className="text-4xl font-bold text-destructive">
-                            {feedbackStats.overall.down}
-                          </p>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            {t('admin.mongoonly_review_below')}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardContent className="p-5">
-                          <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
-                            {t('admin.vectorized_proxy')}
-                          </p>
-                          <p className="text-4xl font-bold text-purple-400">
-                            {feedbackStats.vectorizedCount}
-                          </p>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            {t('admin.uprated_docs_in_window')}
-                          </p>
+                      {/* Videos by Model */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                        <CardHeader>
+                          <CardTitle className="text-neutral-300 flex items-center gap-2">
+                            <Image className="h-5 w-5 text-brand-cyan" />
+                            {t('admin.videosByModel')}
+                          </CardTitle>
+                          <CardDescription className="text-neutral-500">
+                            Detalhamento por modelo
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="mb-4">
+                            <p className="text-3xl font-bold text-neutral-300 font-mono mb-2">
+                              {data.generationStats.videos.total}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.totalVideos')}
+                            </p>
+                          </div>
+                          {Object.keys(data.generationStats.videos.byModel).length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-white/10">
+                              <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
+                                {t('admin.byModel')}:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(data.generationStats.videos.byModel).map(
+                                  ([model, count]) => (
+                                    <Badge
+                                      key={model}
+                                      variant="outline"
+                                      className="text-xs bg-neutral-950/10 border-neutral-700/50 text-neutral-300 px-3 py-1"
+                                    >
+                                      {model}: {count}
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </div>
 
-                    {/* Daily time series */}
-                    {feedbackStats.timeSeries.length > 0 && (
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.daily_feedback_30d')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={220}>
-                            <LineChart
-                              data={feedbackStats.timeSeries}
-                              margin={{ top: 4, right: 16, bottom: 4, left: 0 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
-                              <XAxis
-                                dataKey="date"
-                                tick={{ fontSize: 10, fill: '#737373', fontFamily: 'monospace' }}
-                                tickFormatter={(v) => v.slice(5)}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 10, fill: '#737373' }}
-                                allowDecimals={false}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: '#171717',
-                                  border: '1px solid #404040',
-                                  borderRadius: 8,
-                                }}
-                                labelStyle={{ color: '#a3a3a3', fontSize: 11 }}
-                              />
-                              <Legend wrapperStyle={{ fontSize: 11 }} />
-                              <Line
-                                type="monotone"
-                                dataKey="up"
-                                stroke="#22d3ee"
-                                strokeWidth={2}
-                                dot={false}
-                                name="Up"
-                              />
-                              <Line
-                                type="monotone"
-                                dataKey="down"
-                                stroke="#f87171"
-                                strokeWidth={2}
-                                dot={false}
-                                name="Down"
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                    )}
+                    {/* Text Tokens Section */}
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
+                          <Type className="h-5 w-5 text-brand-cyan" />
+                          {t('admin.textProcessing')}
+                        </CardTitle>
+                        <CardDescription className="text-neutral-500">
+                          Estatísticas de processamento de texto e tokens
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                          {/* Branding Steps */}
+                          <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <CardContent className="p-4">
+                              <p className="text-xs text-neutral-500 font-mono mb-2">
+                                {t('admin.brandingSteps')}
+                              </p>
+                              <p className="text-2xl font-bold text-neutral-300 font-mono">
+                                {data.generationStats.textTokens.totalSteps}
+                              </p>
+                            </CardContent>
+                          </Card>
 
-                    {/* Feature breakdown table */}
-                    {feedbackStats.featureStats.length > 0 && (
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.feature_breakdown')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="border-neutral-800 hover:bg-transparent">
-                                <TableHead>
-                                  <MicroTitle as="span" className="uppercase">
-                                    Feature
-                                  </MicroTitle>
-                                </TableHead>
-                                <TableHead>
-                                  <MicroTitle as="span" className="uppercase">
-                                    Up
-                                  </MicroTitle>
-                                </TableHead>
-                                <TableHead>
-                                  <MicroTitle as="span" className="uppercase">
-                                    {t('admin.down')}
-                                  </MicroTitle>
-                                </TableHead>
-                                <TableHead>
-                                  <MicroTitle as="span" className="uppercase">
-                                    Total
-                                  </MicroTitle>
-                                </TableHead>
-                                <TableHead>
-                                  <MicroTitle as="span" className="uppercase">
-                                    {t('admin.approval')}
-                                  </MicroTitle>
-                                </TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {feedbackStats.featureStats.map((row: any) => (
-                                <TableRow
-                                  key={row.feature}
-                                  className="border-white/10 hover:bg-white/5"
+                          {/* Input Tokens */}
+                          <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <CardContent className="p-4">
+                              <p className="text-xs text-neutral-500 font-mono mb-2">
+                                {t('admin.inputTokens')}
+                              </p>
+                              <p className="text-2xl font-bold text-brand-cyan font-mono">
+                                {data.generationStats.textTokens.inputTokens.toLocaleString()}
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          {/* Output Tokens */}
+                          <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <CardContent className="p-4">
+                              <p className="text-xs text-neutral-500 font-mono mb-2">
+                                {t('admin.outputTokens')}
+                              </p>
+                              <p className="text-2xl font-bold text-brand-cyan font-mono">
+                                {data.generationStats.textTokens.outputTokens.toLocaleString()}
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          {/* Analysis Cost */}
+                          <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <CardContent className="p-4">
+                              <p className="text-xs text-neutral-500 font-mono mb-2">
+                                {t('admin.analysisCost')}
+                              </p>
+                              <p className="text-2xl font-bold text-green-400 font-mono">
+                                ${(data.generationStats.textTokens.totalCost || 0).toFixed(4)}
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          {/* Prompt Gen Total */}
+                          <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <CardContent className="p-4">
+                              <p className="text-xs text-neutral-500 font-mono mb-2">
+                                {t('admin.promptGenTotal')}
+                              </p>
+                              <p className="text-2xl font-bold text-neutral-300 font-mono">
+                                {data.generationStats.byFeature['prompt-generation'].total}
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          {/* Prompt Input Tokens */}
+                          <Card className="bg-neutral-900/50 border border-white/10 rounded-md hover:border-[brand-cyan]/20 transition-all">
+                            <CardContent className="p-4">
+                              <p className="text-xs text-neutral-500 font-mono mb-2">
+                                {t('admin.promptInput')}
+                              </p>
+                              <p className="text-2xl font-bold text-brand-cyan font-mono">
+                                {data.generationStats.byFeature[
+                                  'prompt-generation'
+                                ].inputTokens.toLocaleString()}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Canvas Node Analytics */}
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
+                          <Database className="h-5 w-5 text-brand-cyan" />
+                          Canvas Node Analytics
+                        </CardTitle>
+                        <CardDescription className="text-neutral-500">
+                          Uso de nodes e taxa de sucesso de gerações (últimos 30 dias)
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {canvasEventsLoading ? (
+                          <div className="flex items-center justify-center py-12">
+                            <RefreshCw className="h-5 w-5 animate-spin text-brand-cyan" />
+                            <span className="ml-2 text-neutral-500 font-mono text-sm">
+                              {t('admin.carregando_analytics')}
+                            </span>
+                          </div>
+                        ) : canvasEventStats ? (
+                          <div className="space-y-6">
+                            {/* Event type KPIs */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {canvasEventStats.byEvent.map((e) => (
+                                <Card
+                                  key={e.event}
+                                  className="bg-neutral-900/50 border border-white/10 rounded-md"
                                 >
-                                  <TableCell className="font-mono text-xs text-neutral-200">
-                                    {row.feature}
-                                  </TableCell>
-                                  <TableCell className="text-green-400 text-xs font-mono">
-                                    {row.up}
-                                  </TableCell>
-                                  <TableCell className="text-destructive text-xs font-mono">
-                                    {row.down}
-                                  </TableCell>
-                                  <TableCell className="text-xs font-mono text-neutral-400">
-                                    {row.total}
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge
-                                      className={`text-xs font-mono ${
-                                        row.approvalRate >= 70
-                                          ? 'bg-emerald-900/40 text-green-400 border-emerald-800'
-                                          : row.approvalRate >= 40
-                                          ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800'
-                                          : 'bg-red-900/40 text-destructive border-red-800'
+                                  <CardContent className="p-4">
+                                    <p className="text-xs text-neutral-500 font-mono mb-2">
+                                      {e.event.replace(/_/g, ' ')}
+                                    </p>
+                                    <p
+                                      className={`text-2xl font-bold font-mono ${
+                                        e.event === 'generation_failed'
+                                          ? 'text-destructive'
+                                          : e.event === 'generation_completed'
+                                          ? 'text-green-400'
+                                          : 'text-brand-cyan'
                                       }`}
                                     >
-                                      {row.approvalRate.toFixed(1)}%
-                                    </Badge>
-                                  </TableCell>
-                                </TableRow>
+                                      {e.count.toLocaleString()}
+                                    </p>
+                                  </CardContent>
+                                </Card>
                               ))}
-                            </TableBody>
-                          </Table>
+                            </div>
+
+                            {/* Node type ranking */}
+                            {canvasEventStats.byNodeType.length > 0 && (
+                              <div>
+                                <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
+                                  {t('admin.ranking_de_nodes')}
+                                </p>
+                                <div className="space-y-2">
+                                  {canvasEventStats.byNodeType.map((n, i) => {
+                                    const maxCount = canvasEventStats.byNodeType[0]?.count || 1;
+                                    const pct = Math.round((n.count / maxCount) * 100);
+                                    return (
+                                      <div key={n.nodeType} className="flex items-center gap-3">
+                                        <span className="text-xs text-neutral-500 font-mono w-5 text-right">
+                                          {i + 1}.
+                                        </span>
+                                        <span
+                                          className="text-sm text-neutral-300 font-mono w-28 truncate"
+                                          title={n.nodeType}
+                                        >
+                                          {n.nodeType}
+                                        </span>
+                                        <div className="flex-1 h-6 bg-neutral-800/50 rounded-md overflow-hidden">
+                                          <div
+                                            className="h-full bg-brand-cyan/30 rounded-md transition-all duration-500"
+                                            style={{ width: `${pct}%` }}
+                                          />
+                                        </div>
+                                        <span className="text-sm font-bold text-brand-cyan font-mono w-16 text-right">
+                                          {n.count}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Daily timeline */}
+                            {canvasEventStats.timeline.length > 0 && (
+                              <div>
+                                <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">
+                                  {t('admin.eventos_por_dia')}
+                                </p>
+                                <div className="h-[200px] w-full">
+                                  <ChartContainer
+                                    config={{ events: { label: 'Eventos', color: '#52ddeb' } }}
+                                    className="aspect-auto h-full w-full"
+                                  >
+                                    <AreaChart data={canvasEventStats.timeline}>
+                                      <CartesianGrid
+                                        vertical={false}
+                                        strokeDasharray="3 3"
+                                        stroke="#333"
+                                      />
+                                      <XAxis
+                                        dataKey="date"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(v) => v.slice(5)}
+                                        tick={{ fill: '#666', fontSize: 10 }}
+                                      />
+                                      <ChartTooltip content={<ChartTooltipContent />} />
+                                      <Area
+                                        type="monotone"
+                                        dataKey="count"
+                                        fill="#52ddeb"
+                                        fillOpacity={0.15}
+                                        stroke="#52ddeb"
+                                        strokeWidth={2}
+                                      />
+                                    </AreaChart>
+                                  </ChartContainer>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className="text-neutral-500 font-mono text-sm">
+                              {t('admin.sem_dados_de_canvas_events_ainda')}
+                            </p>
+                            <button
+                              onClick={() => fetchCanvasEventStats()}
+                              className="mt-3 text-brand-cyan hover:underline text-sm font-mono"
+                            >
+                              Carregar agora
+                            </button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {activeTab === 'users' && (
+                  <div className="space-y-6 admin-tab-enter">
+                    {/* Summary Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Users className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                              {data.users.length}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.totalUsers')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.registeredInSystem')}
+                            </p>
+                          </div>
                         </CardContent>
                       </Card>
+
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <CreditCard className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {
+                                data.users.filter(
+                                  (u) =>
+                                    u.subscriptionStatus === 'active' ||
+                                    u.subscriptionStatus === 'trialing'
+                                ).length
+                              }
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.activeSubscriptions')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.usersWithActivePlan')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <CreditCard className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {totals.monthlyCredits + totals.manualCredits}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.creditsDistributed')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.totalCreditsAssigned')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-brand-cyan/10 rounded-md">
+                              <Image className="h-6 w-6 text-brand-cyan" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.mockupsCreated')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.totalMockupsGenerated')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Referral Stats */}
+                    {data.referralStats && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                <Link2 className="h-6 w-6 text-brand-cyan" />
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
+                                <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                                <span>+10.2%</span>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                {data.referralStats.totalReferralCount}
+                              </p>
+                              <p className="text-sm text-neutral-500 font-mono">
+                                {t('admin.referrals')}
+                              </p>
+                              <p className="text-xs text-neutral-400 font-mono mt-1">
+                                {t('admin.totalInvitesSent')}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                <UserPlus className="h-6 w-6 text-brand-cyan" />
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                                {data.referralStats.totalReferredUsers}
+                              </p>
+                              <p className="text-sm text-neutral-500 font-mono">
+                                {t('admin.referredUsers')}
+                              </p>
+                              <p className="text-xs text-neutral-400 font-mono mt-1">
+                                {t('admin.newAccountsViaInvite')}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                <Link2 className="h-6 w-6 text-brand-cyan" />
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                                {data.referralStats.usersWithReferralCode}
+                              </p>
+                              <p className="text-sm text-neutral-500 font-mono">
+                                {t('admin.activeLinks')}
+                              </p>
+                              <p className="text-xs text-neutral-400 font-mono mt-1">
+                                {t('admin.referralCodesInUse')}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
                     )}
 
-                    {/* Models / Design Types / Vibes / Brand Guidelines — 4 compact tables */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Models */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.top_models_by_approval')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          {feedbackStats.modelStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">
-                              {t('admin.no_data_yet_min_5_ratings_required')}
-                            </p>
-                          ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Model
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Up
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      {t('admin.down_2')}
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      %
-                                    </MicroTitle>
-                                  </TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {feedbackStats.modelStats.map((r: any) => (
-                                  <TableRow
-                                    key={r.model}
-                                    className="border-white/10 hover:bg-white/5"
-                                  >
-                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
-                                      {r.model}
-                                    </TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">
-                                      {r.up}
-                                    </TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">
-                                      {r.down}
-                                    </TableCell>
-                                    <TableCell className="text-xs font-mono text-brand-cyan">
-                                      {r.approvalRate?.toFixed(1)}%
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          )}
-                        </CardContent>
-                      </Card>
+                    {/* Table Card */}
+                    <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
+                      <CardContent className="p-6">
+                        <DataTable
+                          columns={columns}
+                          data={data.users}
+                          searchKey="name"
+                          searchPlaceholder={t('admin.searchPlaceholder')}
+                          title={t('admin.userList')}
+                          icon={<Users className="h-5 w-5 text-brand-cyan" />}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
 
-                      {/* Design Types */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.top_design_types')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          {feedbackStats.designTypeStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">
-                              {t('admin.no_data_yet_min_5_ratings_required_2')}
+                {/* Financial Tab */}
+                {activeTab === 'financial' && (
+                  <div className="space-y-6 admin-tab-enter">
+                    {/* Financial Overview - Revenue, Cost, Profit */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                      {/* Revenue Total Card */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-green-500/10 rounded-md">
+                              <DollarSign className="h-6 w-6 text-green-500" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-green-500 mb-1 font-mono">
+                              {formatCurrency(data.totalRevenueBRL, 'BRL')}
                             </p>
-                          ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Type
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Up
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      {t('admin.down_3')}
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      %
-                                    </MicroTitle>
-                                  </TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {feedbackStats.designTypeStats.map((r: any) => (
-                                  <TableRow
-                                    key={r.designType}
-                                    className="border-white/10 hover:bg-white/5"
-                                  >
-                                    <TableCell className="font-mono text-xs text-neutral-300">
-                                      {r.designType}
-                                    </TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">
-                                      {r.up}
-                                    </TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">
-                                      {r.down}
-                                    </TableCell>
-                                    <TableCell className="text-xs font-mono text-brand-cyan">
-                                      {r.approvalRate?.toFixed(1)}%
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          )}
-                        </CardContent>
-                      </Card>
-
-                      {/* Vibes */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.top_vibes')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          {feedbackStats.vibeStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">
-                              {t('admin.no_data_yet_min_5_ratings_required_3')}
+                            <p className="text-sm font-semibold text-green-400 mb-2 font-mono">
+                              {formatCurrency(data.totalRevenueUSD, 'USD')}
                             </p>
-                          ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      {t('admin.vibe')}
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Up
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      {t('admin.down_4')}
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      %
-                                    </MicroTitle>
-                                  </TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {feedbackStats.vibeStats.map((r: any) => (
-                                  <TableRow
-                                    key={r.vibeId}
-                                    className="border-white/10 hover:bg-white/5"
-                                  >
-                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
-                                      {r.vibeId}
-                                    </TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">
-                                      {r.up}
-                                    </TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">
-                                      {r.down}
-                                    </TableCell>
-                                    <TableCell className="text-xs font-mono text-brand-cyan">
-                                      {r.approvalRate?.toFixed(1)}%
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          )}
-                        </CardContent>
-                      </Card>
-
-                      {/* Brand Guidelines */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.top_brand_guidelines')}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          {feedbackStats.brandGuidelineStats.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">
-                              {t('admin.no_data_yet')}
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.totalRevenue')}
                             </p>
-                          ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="border-neutral-800 hover:bg-transparent">
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      {t('admin.guideline_id')}
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Up
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      {t('admin.down_5')}
-                                    </MicroTitle>
-                                  </TableHead>
-                                  <TableHead>
-                                    <MicroTitle as="span" className="uppercase">
-                                      Total
-                                    </MicroTitle>
-                                  </TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {feedbackStats.brandGuidelineStats.map((r: any) => (
-                                  <TableRow
-                                    key={r.brandGuidelineId}
-                                    className="border-white/10 hover:bg-white/5"
-                                  >
-                                    <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
-                                      {r.brandGuidelineId}
-                                    </TableCell>
-                                    <TableCell className="text-green-400 text-xs font-mono">
-                                      {r.up}
-                                    </TableCell>
-                                    <TableCell className="text-destructive text-xs font-mono">
-                                      {r.down}
-                                    </TableCell>
-                                    <TableCell className="text-xs font-mono text-neutral-400">
-                                      {r.total}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Tags sections */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Tags mais utilizadas */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.tags_mais_utilizadas')}
-                          </CardTitle>
-                          <CardDescription className="text-xs text-neutral-500">
-                            {t('admin.top_20_by_usage_count')}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex flex-wrap gap-2">
-                            {feedbackStats.tagsMostUsed.length === 0 ? (
-                              <p className="text-xs text-neutral-500 font-mono">
-                                {t('admin.no_tag_data_yet')}
-                              </p>
-                            ) : (
-                              feedbackStats.tagsMostUsed.map((t: any, i: number) => (
-                                <div key={i} className="flex items-center gap-1">
-                                  <Badge
-                                    className={`text-xs font-mono gap-1 ${
-                                      t.category === 'branding'
-                                        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                                        : t.category === 'category'
-                                        ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                        : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
-                                    }`}
-                                  >
-                                    {t.tag}
-                                    <span className="opacity-60">×{t.count}</span>
-                                  </Badge>
-                                </div>
-                              ))
-                            )}
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.completedTransactions')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      {/* Tags mais votadas */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-mono text-neutral-300">
-                            {t('admin.tags_mais_votadas')}
-                          </CardTitle>
-                          <CardDescription className="text-xs text-neutral-500">
-                            {t('admin.top_20_by_approval_rate_min_3_ratings')}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex flex-wrap gap-2">
-                            {feedbackStats.tagsMostUpvoted.length === 0 ? (
-                              <p className="text-xs text-neutral-500 font-mono">
-                                {t('admin.no_data_yet_min_3_ratings_required')}
-                              </p>
-                            ) : (
-                              feedbackStats.tagsMostUpvoted.map((t: any, i: number) => (
-                                <div key={i} className="flex items-center gap-1">
-                                  <Badge
-                                    className={`text-xs font-mono gap-1 ${
-                                      t.category === 'branding'
-                                        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                                        : t.category === 'category'
-                                        ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                        : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
-                                    }`}
-                                  >
-                                    {t.tag}
-                                    <span className="opacity-60">
-                                      {t.approvalRate.toFixed(0)}% ({t.up}↑{t.down}↓)
-                                    </span>
-                                  </Badge>
-                                </div>
-                              ))
-                            )}
+                      {/* Total Cost Card */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="p-3 bg-orange-500/10 rounded-md">
+                              <Database className="h-6 w-6 text-orange-500" />
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-neutral-950/70 border-orange-500/30 text-orange-500"
+                            >
+                              {t('admin.estimated')}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
+                              {(data.totalApiCostUSD * 6).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
+                            </p>
+                            <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
+                              ${' '}
+                              {data.totalApiCostUSD.toLocaleString('pt-BR', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.estimatedCost')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.basedOnUsage')}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Profit Card */}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div
+                              className={`p-3 rounded-md ${
+                                profitStats.isPositive ? 'bg-blue-500/10' : 'bg-destructive/10'
+                              }`}
+                            >
+                              <TrendingUp
+                                className={`h-6 w-6 ${
+                                  profitStats.isPositive ? 'text-blue-500' : 'text-destructive'
+                                }`}
+                              />
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] bg-neutral-950/70 ${
+                                profitStats.isPositive
+                                  ? 'border-blue-500/30 text-blue-500'
+                                  : 'border-destructive/30 text-destructive'
+                              }`}
+                            >
+                              {profitStats.isPositive ? 'POSITIVO' : 'NEGATIVO'}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p
+                              className={`text-3xl font-bold mb-1 font-mono ${
+                                profitStats.isPositive ? 'text-blue-500' : 'text-destructive'
+                              }`}
+                            >
+                              {profitStats.isPositive ? '+' : ''}
+                              {profitStats.profitBRL.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
+                            </p>
+                            <p
+                              className={`text-sm font-semibold mb-2 font-mono ${
+                                profitStats.isPositive ? 'text-blue-400' : 'text-destructive'
+                              }`}
+                            >
+                              {profitStats.isPositive ? '+' : ''}
+                              {profitStats.profitUSD.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </p>
+                            <p className="text-sm text-neutral-500 font-mono">
+                              {t('admin.totalProfit')}
+                            </p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
+                              {t('admin.revenueMinusCost')}
+                            </p>
                           </div>
                         </CardContent>
                       </Card>
                     </div>
 
-                    {/* Recent downvotes */}
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                      <CardHeader
-                        className="pb-2 cursor-pointer"
-                        onClick={() => setDownvotesExpanded((e) => !e)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
-                            <ThumbsDown className="h-4 w-4 text-destructive" />
-                            Recent Thumbs Down (last 20) — manual curation queue
-                          </CardTitle>
-                          <ChevronRight
-                            className={`h-4 w-4 text-neutral-500 transition-transform ${
-                              downvotesExpanded ? 'rotate-90' : ''
-                            }`}
-                          />
+                    {/* Revenue & Cost Charts Grid */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+                      {/* Revenue Chart */}
+                      {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 transition-all duration-300">
+                          <CardHeader>
+                            <CardTitle className="text-neutral-300 flex items-center gap-2">
+                              <DollarSign className="h-5 w-5 text-green-500" />
+                              {t('admin.revenueOverTime') || 'Receita ao Longo do Tempo'}
+                            </CardTitle>
+                            <CardDescription className="text-neutral-500">
+                              {t('admin.cumulativeRevenue') || 'Receita acumulada (BRL)'}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-[250px] w-full">
+                              <ChartContainer
+                                config={chartConfig}
+                                className="aspect-auto h-full w-full"
+                              >
+                                <AreaChart
+                                  accessibilityLayer
+                                  data={data.revenueTimeSeries}
+                                  margin={{ left: 12, right: 12 }}
+                                >
+                                  <CartesianGrid
+                                    vertical={false}
+                                    strokeDasharray="3 3"
+                                    stroke="#333"
+                                  />
+                                  <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    minTickGap={32}
+                                    tickFormatter={(value) => {
+                                      const date = new Date(value);
+                                      return date.toLocaleDateString('pt-BR', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                      });
+                                    }}
+                                  />
+                                  <ChartTooltip
+                                    cursor={false}
+                                    content={
+                                      <ChartTooltipContent
+                                        indicator="dot"
+                                        formatter={(value, name) => {
+                                          if (name === 'cumulativeBRL') {
+                                            return [
+                                              formatCurrency(value as number, 'BRL'),
+                                              'Total BRL',
+                                            ];
+                                          }
+                                          return [value, name];
+                                        }}
+                                      />
+                                    }
+                                  />
+                                  <Area
+                                    dataKey="cumulativeBRL"
+                                    type="natural"
+                                    fill="#22c55e"
+                                    fillOpacity={0.1}
+                                    stroke="#22c55e"
+                                    strokeWidth={2}
+                                  />
+                                </AreaChart>
+                              </ChartContainer>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Cost Chart */}
+                      {data.costTimeSeries && data.costTimeSeries.length > 0 && (
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
+                          <CardHeader>
+                            <CardTitle className="text-neutral-300 flex items-center gap-2">
+                              <Database className="h-5 w-5 text-orange-500" />
+                              {t('admin.costOverTime') || 'Custo Estimado ao Longo do Tempo'}
+                            </CardTitle>
+                            <CardDescription className="text-neutral-500">
+                              {t('admin.cumulativeCost') || 'Custo API acumulado (USD)'}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-[250px] w-full">
+                              <ChartContainer
+                                config={chartConfig}
+                                className="aspect-auto h-full w-full"
+                              >
+                                <AreaChart
+                                  accessibilityLayer
+                                  data={data.costTimeSeries}
+                                  margin={{ left: 12, right: 12 }}
+                                >
+                                  <CartesianGrid
+                                    vertical={false}
+                                    strokeDasharray="3 3"
+                                    stroke="#333"
+                                  />
+                                  <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    minTickGap={32}
+                                    tickFormatter={(value) => {
+                                      const date = new Date(value);
+                                      return date.toLocaleDateString('pt-BR', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                      });
+                                    }}
+                                  />
+                                  <ChartTooltip
+                                    cursor={false}
+                                    content={
+                                      <ChartTooltipContent
+                                        indicator="dot"
+                                        formatter={(value, name) => {
+                                          if (name === 'cumulative') {
+                                            const brl = ((value as number) * 6).toLocaleString(
+                                              'pt-BR',
+                                              { style: 'currency', currency: 'BRL' }
+                                            );
+                                            const usd = (value as number).toLocaleString('pt-BR', {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            });
+                                            return [`${brl} ($ ${usd})`, 'Total'];
+                                          }
+                                          return [value, name];
+                                        }}
+                                      />
+                                    }
+                                  />
+                                  <Area
+                                    dataKey="cumulative"
+                                    type="natural"
+                                    fill="#f97316"
+                                    fillOpacity={0.1}
+                                    stroke="#f97316"
+                                    strokeWidth={2}
+                                  />
+                                </AreaChart>
+                              </ChartContainer>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+
+                    {/* Daily Cost Stats & Chart */}
+                    {data.costTimeSeries && data.costTimeSeries.length > 0 && (
+                      <>
+                        {/* Daily Cost Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-orange-500/10 rounded-md">
+                                  <TrendingUp className="h-6 w-6 text-orange-500" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
+                                  {(dailyCostStats.averageCost * 6).toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                  })}
+                                </p>
+                                <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
+                                  ${' '}
+                                  {dailyCostStats.averageCost.toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.averageDailyCost')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.dailyCost')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-orange-500/10 rounded-md">
+                                  <TrendingUp className="h-6 w-6 text-orange-500" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
+                                  {(dailyCostStats.maxCost * 6).toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                  })}
+                                </p>
+                                <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
+                                  ${' '}
+                                  {dailyCostStats.maxCost.toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.maxDailyCost')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.dailyCost')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-orange-500/10 rounded-md">
+                                  <Database className="h-6 w-6 text-orange-500" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
+                                  {(dailyCostStats.last7DaysCost * 6).toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                  })}
+                                </p>
+                                <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
+                                  ${' '}
+                                  {dailyCostStats.last7DaysCost.toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.last7DaysCost')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.dailyCost')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-orange-500/10 rounded-md">
+                                  <Database className="h-6 w-6 text-orange-500" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-orange-500 mb-1 font-mono">
+                                  {(dailyCostStats.last30DaysCost * 6).toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                  })}
+                                </p>
+                                <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
+                                  ${' '}
+                                  {dailyCostStats.last30DaysCost.toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.last30DaysCost')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.dailyCost')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
                         </div>
-                      </CardHeader>
-                      {downvotesExpanded && (
-                        <CardContent className="p-0">
-                          {feedbackStats.recentDownvotes.length === 0 ? (
-                            <p className="text-xs text-neutral-500 font-mono p-4">
-                              {t('admin.no_downvotes_in_this_window')}
-                            </p>
-                          ) : (
-                            <div className="overflow-x-auto">
+
+                        {/* Daily Cost Chart */}
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
+                          <CardHeader>
+                            <CardTitle className="text-neutral-300 flex items-center gap-2">
+                              <Database className="h-5 w-5 text-orange-500" />
+                              {t('admin.dailyCostChart') || 'Custo Diário (USD)'}
+                            </CardTitle>
+                            <CardDescription className="text-neutral-500">
+                              {t('admin.dailyCost') || 'Custo por dia'}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-[300px] w-full">
+                              <ChartContainer
+                                config={chartConfig}
+                                className="aspect-auto h-full w-full"
+                              >
+                                <BarChart
+                                  accessibilityLayer
+                                  data={data.costTimeSeries}
+                                  margin={{ left: 12, right: 12 }}
+                                >
+                                  <CartesianGrid
+                                    vertical={false}
+                                    strokeDasharray="3 3"
+                                    stroke="#333"
+                                  />
+                                  <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    minTickGap={32}
+                                    tickFormatter={(value) => {
+                                      const date = new Date(value);
+                                      return date.toLocaleDateString('pt-BR', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                      });
+                                    }}
+                                  />
+                                  <ChartTooltip
+                                    cursor={false}
+                                    content={
+                                      <ChartTooltipContent
+                                        indicator="line"
+                                        formatter={(value, name) => {
+                                          if (name === 'cost') {
+                                            const brl = ((value as number) * 6).toLocaleString(
+                                              'pt-BR',
+                                              { style: 'currency', currency: 'BRL' }
+                                            );
+                                            const usd = (value as number).toLocaleString('pt-BR', {
+                                              minimumFractionDigits: 2,
+                                              maximumFractionDigits: 2,
+                                            });
+                                            return [`${brl} ($ ${usd})`, t('admin.dailyCost')];
+                                          }
+                                          return [value, name];
+                                        }}
+                                      />
+                                    }
+                                  />
+                                  <Bar dataKey="cost" radius={[8, 8, 0, 0]} fill="#f97316" />
+                                </BarChart>
+                              </ChartContainer>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Feedback & RAG ─────────────────────────────────────── */}
+                {activeTab === 'feedback-rag' && (
+                  <div className="space-y-6 admin-tab-enter">
+                    {/* Feature filter + refresh row */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <select
+                        value={feedbackFeatureFilter}
+                        onChange={(e) => {
+                          setFeedbackFeatureFilter(e.target.value);
+                          fetchFeedbackStats(e.target.value);
+                        }}
+                        className="bg-neutral-900 border border-neutral-800 text-neutral-200 text-xs font-mono rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                      >
+                        {[
+                          'all',
+                          'mockup',
+                          'branding',
+                          'canvas',
+                          'creative',
+                          'brand-intelligence',
+                          'node-builder',
+                          'chat',
+                          'image-gen',
+                        ].map((f) => (
+                          <option key={f} value={f}>
+                            {f === 'all' ? 'All Features' : f}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
+                        disabled={feedbackLoading}
+                        className="border-white/10 hover:bg-neutral-800/50 h-9 w-9 p-0"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${feedbackLoading ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </div>
+
+                    {feedbackLoading && !feedbackStats ? (
+                      <div className="flex items-center justify-center py-20">
+                        <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
+                      </div>
+                    ) : feedbackStats ? (
+                      <>
+                        {/* KPI Cards */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardContent className="p-5">
+                              <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                                {t('admin.approval_rate')}
+                              </p>
+                              <p className="text-4xl font-bold text-brand-cyan">
+                                {feedbackStats.overall.approvalRate.toFixed(1)}%
+                              </p>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                {feedbackStats.overall.total} total ratings (30d)
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardContent className="p-5">
+                              <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                                Thumbs Up
+                              </p>
+                              <p className="text-4xl font-bold text-green-400">
+                                {feedbackStats.overall.up}
+                              </p>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                {t('admin.vectorizationeligible')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardContent className="p-5">
+                              <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                                {t('admin.thumbs_down')}
+                              </p>
+                              <p className="text-4xl font-bold text-destructive">
+                                {feedbackStats.overall.down}
+                              </p>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                {t('admin.mongoonly_review_below')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardContent className="p-5">
+                              <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
+                                {t('admin.vectorized_proxy')}
+                              </p>
+                              <p className="text-4xl font-bold text-purple-400">
+                                {feedbackStats.vectorizedCount}
+                              </p>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                {t('admin.uprated_docs_in_window')}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Daily time series */}
+                        {feedbackStats.timeSeries.length > 0 && (
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.daily_feedback_30d')}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <ResponsiveContainer width="100%" height={220}>
+                                <LineChart
+                                  data={feedbackStats.timeSeries}
+                                  margin={{ top: 4, right: 16, bottom: 4, left: 0 }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                                  <XAxis
+                                    dataKey="date"
+                                    tick={{
+                                      fontSize: 10,
+                                      fill: '#737373',
+                                      fontFamily: 'monospace',
+                                    }}
+                                    tickFormatter={(v) => v.slice(5)}
+                                  />
+                                  <YAxis
+                                    tick={{ fontSize: 10, fill: '#737373' }}
+                                    allowDecimals={false}
+                                  />
+                                  <Tooltip
+                                    contentStyle={{
+                                      background: '#171717',
+                                      border: '1px solid #404040',
+                                      borderRadius: 8,
+                                    }}
+                                    labelStyle={{ color: '#a3a3a3', fontSize: 11 }}
+                                  />
+                                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="up"
+                                    stroke="#22d3ee"
+                                    strokeWidth={2}
+                                    dot={false}
+                                    name="Up"
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="down"
+                                    stroke="#f87171"
+                                    strokeWidth={2}
+                                    dot={false}
+                                    name="Down"
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Feature breakdown table */}
+                        {feedbackStats.featureStats.length > 0 && (
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.feature_breakdown')}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
                               <Table>
                                 <TableHeader>
                                   <TableRow className="border-neutral-800 hover:bg-transparent">
-                                    <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Prompt
-                                      </MicroTitle>
-                                    </TableHead>
                                     <TableHead>
                                       <MicroTitle as="span" className="uppercase">
                                         Feature
@@ -3365,95 +2901,806 @@ export const AdminPage: React.FC = () => {
                                     </TableHead>
                                     <TableHead>
                                       <MicroTitle as="span" className="uppercase">
-                                        Model
+                                        Up
                                       </MicroTitle>
                                     </TableHead>
                                     <TableHead>
                                       <MicroTitle as="span" className="uppercase">
-                                        Tags
+                                        {t('admin.down')}
                                       </MicroTitle>
                                     </TableHead>
                                     <TableHead>
                                       <MicroTitle as="span" className="uppercase">
-                                        Date
+                                        Total
+                                      </MicroTitle>
+                                    </TableHead>
+                                    <TableHead>
+                                      <MicroTitle as="span" className="uppercase">
+                                        {t('admin.approval')}
                                       </MicroTitle>
                                     </TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {feedbackStats.recentDownvotes.map((r: any, i: number) => (
+                                  {feedbackStats.featureStats.map((row: any) => (
                                     <TableRow
-                                      key={r.generationId || i}
+                                      key={row.feature}
                                       className="border-white/10 hover:bg-white/5"
                                     >
-                                      <TableCell className="font-mono text-xs text-neutral-400 max-w-[200px]">
-                                        <span title={r.prompt}>
-                                          {r.prompt
-                                            ? r.prompt.slice(0, 80) +
-                                              (r.prompt.length > 80 ? '…' : '')
-                                            : '—'}
-                                        </span>
+                                      <TableCell className="font-mono text-xs text-neutral-200">
+                                        {row.feature}
                                       </TableCell>
-                                      <TableCell className="text-xs font-mono text-neutral-300">
-                                        {r.feature}
+                                      <TableCell className="text-green-400 text-xs font-mono">
+                                        {row.up}
                                       </TableCell>
-                                      <TableCell className="text-xs font-mono text-neutral-400 max-w-[100px] truncate">
-                                        {r.model || '—'}
+                                      <TableCell className="text-destructive text-xs font-mono">
+                                        {row.down}
                                       </TableCell>
-                                      <TableCell className="text-xs">
-                                        {r.tags
-                                          ? Object.entries(r.tags)
-                                              .flatMap(([, arr]: any) => arr || [])
-                                              .slice(0, 3)
-                                              .map((tag: string, j: number) => (
-                                                <Badge
-                                                  key={j}
-                                                  className="mr-1 text-[10px] bg-neutral-800 text-neutral-400 border-neutral-700"
-                                                >
-                                                  {tag}
-                                                </Badge>
-                                              ))
-                                          : '—'}
+                                      <TableCell className="text-xs font-mono text-neutral-400">
+                                        {row.total}
                                       </TableCell>
-                                      <TableCell className="text-xs font-mono text-neutral-500">
-                                        {r.createdAt ? formatDate(r.createdAt) : '—'}
+                                      <TableCell>
+                                        <Badge
+                                          className={`text-xs font-mono ${
+                                            row.approvalRate >= 70
+                                              ? 'bg-emerald-900/40 text-green-400 border-emerald-800'
+                                              : row.approvalRate >= 40
+                                              ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800'
+                                              : 'bg-red-900/40 text-destructive border-red-800'
+                                          }`}
+                                        >
+                                          {row.approvalRate.toFixed(1)}%
+                                        </Badge>
                                       </TableCell>
                                     </TableRow>
                                   ))}
                                 </TableBody>
                               </Table>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Models / Design Types / Vibes / Brand Guidelines — 4 compact tables */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Models */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.top_models_by_approval')}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                              {feedbackStats.modelStats.length === 0 ? (
+                                <p className="text-xs text-neutral-500 font-mono p-4">
+                                  {t('admin.no_data_yet_min_5_ratings_required')}
+                                </p>
+                              ) : (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-neutral-800 hover:bg-transparent">
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Model
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Up
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          {t('admin.down_2')}
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          %
+                                        </MicroTitle>
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {feedbackStats.modelStats.map((r: any) => (
+                                      <TableRow
+                                        key={r.model}
+                                        className="border-white/10 hover:bg-white/5"
+                                      >
+                                        <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
+                                          {r.model}
+                                        </TableCell>
+                                        <TableCell className="text-green-400 text-xs font-mono">
+                                          {r.up}
+                                        </TableCell>
+                                        <TableCell className="text-destructive text-xs font-mono">
+                                          {r.down}
+                                        </TableCell>
+                                        <TableCell className="text-xs font-mono text-brand-cyan">
+                                          {r.approvalRate?.toFixed(1)}%
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              )}
+                            </CardContent>
+                          </Card>
+
+                          {/* Design Types */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.top_design_types')}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                              {feedbackStats.designTypeStats.length === 0 ? (
+                                <p className="text-xs text-neutral-500 font-mono p-4">
+                                  {t('admin.no_data_yet_min_5_ratings_required_2')}
+                                </p>
+                              ) : (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-neutral-800 hover:bg-transparent">
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Type
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Up
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          {t('admin.down_3')}
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          %
+                                        </MicroTitle>
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {feedbackStats.designTypeStats.map((r: any) => (
+                                      <TableRow
+                                        key={r.designType}
+                                        className="border-white/10 hover:bg-white/5"
+                                      >
+                                        <TableCell className="font-mono text-xs text-neutral-300">
+                                          {r.designType}
+                                        </TableCell>
+                                        <TableCell className="text-green-400 text-xs font-mono">
+                                          {r.up}
+                                        </TableCell>
+                                        <TableCell className="text-destructive text-xs font-mono">
+                                          {r.down}
+                                        </TableCell>
+                                        <TableCell className="text-xs font-mono text-brand-cyan">
+                                          {r.approvalRate?.toFixed(1)}%
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              )}
+                            </CardContent>
+                          </Card>
+
+                          {/* Vibes */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.top_vibes')}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                              {feedbackStats.vibeStats.length === 0 ? (
+                                <p className="text-xs text-neutral-500 font-mono p-4">
+                                  {t('admin.no_data_yet_min_5_ratings_required_3')}
+                                </p>
+                              ) : (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-neutral-800 hover:bg-transparent">
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          {t('admin.vibe')}
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Up
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          {t('admin.down_4')}
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          %
+                                        </MicroTitle>
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {feedbackStats.vibeStats.map((r: any) => (
+                                      <TableRow
+                                        key={r.vibeId}
+                                        className="border-white/10 hover:bg-white/5"
+                                      >
+                                        <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
+                                          {r.vibeId}
+                                        </TableCell>
+                                        <TableCell className="text-green-400 text-xs font-mono">
+                                          {r.up}
+                                        </TableCell>
+                                        <TableCell className="text-destructive text-xs font-mono">
+                                          {r.down}
+                                        </TableCell>
+                                        <TableCell className="text-xs font-mono text-brand-cyan">
+                                          {r.approvalRate?.toFixed(1)}%
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              )}
+                            </CardContent>
+                          </Card>
+
+                          {/* Brand Guidelines */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.top_brand_guidelines')}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                              {feedbackStats.brandGuidelineStats.length === 0 ? (
+                                <p className="text-xs text-neutral-500 font-mono p-4">
+                                  {t('admin.no_data_yet')}
+                                </p>
+                              ) : (
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-neutral-800 hover:bg-transparent">
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          {t('admin.guideline_id')}
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Up
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          {t('admin.down_5')}
+                                        </MicroTitle>
+                                      </TableHead>
+                                      <TableHead>
+                                        <MicroTitle as="span" className="uppercase">
+                                          Total
+                                        </MicroTitle>
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {feedbackStats.brandGuidelineStats.map((r: any) => (
+                                      <TableRow
+                                        key={r.brandGuidelineId}
+                                        className="border-white/10 hover:bg-white/5"
+                                      >
+                                        <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
+                                          {r.brandGuidelineId}
+                                        </TableCell>
+                                        <TableCell className="text-green-400 text-xs font-mono">
+                                          {r.up}
+                                        </TableCell>
+                                        <TableCell className="text-destructive text-xs font-mono">
+                                          {r.down}
+                                        </TableCell>
+                                        <TableCell className="text-xs font-mono text-neutral-400">
+                                          {r.total}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Tags sections */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Tags mais utilizadas */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.tags_mais_utilizadas')}
+                              </CardTitle>
+                              <CardDescription className="text-xs text-neutral-500">
+                                {t('admin.top_20_by_usage_count')}
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="flex flex-wrap gap-2">
+                                {feedbackStats.tagsMostUsed.length === 0 ? (
+                                  <p className="text-xs text-neutral-500 font-mono">
+                                    {t('admin.no_tag_data_yet')}
+                                  </p>
+                                ) : (
+                                  feedbackStats.tagsMostUsed.map((t: any, i: number) => (
+                                    <div key={i} className="flex items-center gap-1">
+                                      <Badge
+                                        className={`text-xs font-mono gap-1 ${
+                                          t.category === 'branding'
+                                            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                            : t.category === 'category'
+                                            ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
+                                            : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
+                                        }`}
+                                      >
+                                        {t.tag}
+                                        <span className="opacity-60">×{t.count}</span>
+                                      </Badge>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Tags mais votadas */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm font-mono text-neutral-300">
+                                {t('admin.tags_mais_votadas')}
+                              </CardTitle>
+                              <CardDescription className="text-xs text-neutral-500">
+                                {t('admin.top_20_by_approval_rate_min_3_ratings')}
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="flex flex-wrap gap-2">
+                                {feedbackStats.tagsMostUpvoted.length === 0 ? (
+                                  <p className="text-xs text-neutral-500 font-mono">
+                                    {t('admin.no_data_yet_min_3_ratings_required')}
+                                  </p>
+                                ) : (
+                                  feedbackStats.tagsMostUpvoted.map((t: any, i: number) => (
+                                    <div key={i} className="flex items-center gap-1">
+                                      <Badge
+                                        className={`text-xs font-mono gap-1 ${
+                                          t.category === 'branding'
+                                            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                            : t.category === 'category'
+                                            ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
+                                            : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
+                                        }`}
+                                      >
+                                        {t.tag}
+                                        <span className="opacity-60">
+                                          {t.approvalRate.toFixed(0)}% ({t.up}↑{t.down}↓)
+                                        </span>
+                                      </Badge>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Recent downvotes */}
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                          <CardHeader
+                            className="pb-2 cursor-pointer"
+                            onClick={() => setDownvotesExpanded((e) => !e)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-sm font-mono text-neutral-300 flex items-center gap-2">
+                                <ThumbsDown className="h-4 w-4 text-destructive" />
+                                Recent Thumbs Down (last 20) — manual curation queue
+                              </CardTitle>
+                              <ChevronRight
+                                className={`h-4 w-4 text-neutral-500 transition-transform ${
+                                  downvotesExpanded ? 'rotate-90' : ''
+                                }`}
+                              />
                             </div>
+                          </CardHeader>
+                          {downvotesExpanded && (
+                            <CardContent className="p-0">
+                              {feedbackStats.recentDownvotes.length === 0 ? (
+                                <p className="text-xs text-neutral-500 font-mono p-4">
+                                  {t('admin.no_downvotes_in_this_window')}
+                                </p>
+                              ) : (
+                                <div className="overflow-x-auto">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow className="border-neutral-800 hover:bg-transparent">
+                                        <TableHead>
+                                          <MicroTitle as="span" className="uppercase">
+                                            Prompt
+                                          </MicroTitle>
+                                        </TableHead>
+                                        <TableHead>
+                                          <MicroTitle as="span" className="uppercase">
+                                            Feature
+                                          </MicroTitle>
+                                        </TableHead>
+                                        <TableHead>
+                                          <MicroTitle as="span" className="uppercase">
+                                            Model
+                                          </MicroTitle>
+                                        </TableHead>
+                                        <TableHead>
+                                          <MicroTitle as="span" className="uppercase">
+                                            Tags
+                                          </MicroTitle>
+                                        </TableHead>
+                                        <TableHead>
+                                          <MicroTitle as="span" className="uppercase">
+                                            Date
+                                          </MicroTitle>
+                                        </TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {feedbackStats.recentDownvotes.map((r: any, i: number) => (
+                                        <TableRow
+                                          key={r.generationId || i}
+                                          className="border-white/10 hover:bg-white/5"
+                                        >
+                                          <TableCell className="font-mono text-xs text-neutral-400 max-w-[200px]">
+                                            <span title={r.prompt}>
+                                              {r.prompt
+                                                ? r.prompt.slice(0, 80) +
+                                                  (r.prompt.length > 80 ? '…' : '')
+                                                : '—'}
+                                            </span>
+                                          </TableCell>
+                                          <TableCell className="text-xs font-mono text-neutral-300">
+                                            {r.feature}
+                                          </TableCell>
+                                          <TableCell className="text-xs font-mono text-neutral-400 max-w-[100px] truncate">
+                                            {r.model || '—'}
+                                          </TableCell>
+                                          <TableCell className="text-xs">
+                                            {r.tags
+                                              ? Object.entries(r.tags)
+                                                  .flatMap(([, arr]: any) => arr || [])
+                                                  .slice(0, 3)
+                                                  .map((tag: string, j: number) => (
+                                                    <Badge
+                                                      key={j}
+                                                      className="mr-1 text-[10px] bg-neutral-800 text-neutral-400 border-neutral-700"
+                                                    >
+                                                      {tag}
+                                                    </Badge>
+                                                  ))
+                                              : '—'}
+                                          </TableCell>
+                                          <TableCell className="text-xs font-mono text-neutral-500">
+                                            {r.createdAt ? formatDate(r.createdAt) : '—'}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
+                              )}
+                            </CardContent>
                           )}
-                        </CardContent>
-                      )}
-                    </Card>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-20 gap-3 text-neutral-500">
-                    <BarChart2 className="h-10 w-10" />
-                    <p className="font-mono text-sm">
-                      {t('admin.click_refresh_to_load_feedback_analytics')}
-                    </p>
-                    <Button
-                      size="sm"
-                      onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
-                      className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20"
-                    >
-                      Load Stats
-                    </Button>
+                        </Card>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-20 gap-3 text-neutral-500">
+                        <BarChart2 className="h-10 w-10" />
+                        <p className="font-mono text-sm">
+                          {t('admin.click_refresh_to_load_feedback_analytics')}
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
+                          className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20"
+                        >
+                          Load Stats
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
-              </TabsContent>
 
-              <TabsContent
-                value="references"
-                className={`space-y-6 ${activeTab === 'references' ? 'admin-tab-enter' : ''}`}
-              >
-                <AdminReferenceLibrary />
-              </TabsContent>
-            </Tabs>
-          )}
-        </div>
+                {activeTab === 'mcp-usage' && (
+                  <div className="space-y-6 admin-tab-enter">
+                    {mcpStatsLoading && !mcpStats ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <Card key={i} className="bg-neutral-900 border border-white/10">
+                            <CardContent className="p-6">
+                              <SkeletonLoader width="80px" height="12px" className="rounded mb-3" />
+                              <SkeletonLoader width="120px" height="32px" className="rounded" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : mcpStats ? (
+                      <>
+                        {/* Refresh */}
+                        <div className="flex justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchMcpStats()}
+                            disabled={mcpStatsLoading}
+                            className="border-neutral-800 hover:bg-neutral-800/50 text-xs gap-1.5"
+                            aria-label="Refresh MCP stats"
+                          >
+                            <RefreshCw
+                              className={cn('h-3 w-3', mcpStatsLoading && 'animate-spin')}
+                            />
+                            Refresh
+                          </Button>
+                        </div>
+
+                        {/* KPI Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {[
+                            {
+                              label: 'Total Calls',
+                              value: mcpStats.summary.totalCalls.toLocaleString(),
+                              icon: Activity,
+                            },
+                            {
+                              label: 'Unique Users',
+                              value: mcpStats.summary.uniqueUsers.toLocaleString(),
+                              icon: Users,
+                            },
+                            {
+                              label: 'Avg Latency',
+                              value: `${mcpStats.summary.avgDuration}ms`,
+                              icon: TrendingUp,
+                            },
+                            {
+                              label: 'Success Rate',
+                              value: `${mcpStats.summary.successRate}%`,
+                              icon: ShieldCheck,
+                            },
+                          ].map((kpi) => (
+                            <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
+                              <CardContent className="p-5">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                                    {kpi.label}
+                                  </span>
+                                  <kpi.icon className="h-3.5 w-3.5 text-neutral-600" />
+                                </div>
+                                <span className="text-2xl font-semibold text-neutral-200">
+                                  {kpi.value}
+                                </span>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+
+                        {/* Scope Breakdown */}
+                        {mcpStats.byScope?.length > 0 && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {mcpStats.byScope.map((s: any) => (
+                              <Card key={s.scope} className="bg-neutral-900 border border-white/10">
+                                <CardContent className="p-5">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-mono uppercase tracking-wider text-neutral-400">
+                                      {s.scope}
+                                    </span>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[9px] border-neutral-700 text-neutral-500"
+                                    >
+                                      {s.avgDuration}ms avg
+                                    </Badge>
+                                  </div>
+                                  <span className="text-xl font-semibold text-neutral-200">
+                                    {s.calls.toLocaleString()} calls
+                                  </span>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Daily Calls Chart */}
+                        {mcpStats.byDay?.length > 0 && (
+                          <Card className="bg-neutral-900 border border-white/10">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium text-neutral-300">
+                                Daily Tool Calls
+                              </CardTitle>
+                              <CardDescription className="text-xs text-neutral-600 font-mono">
+                                Last {mcpStats.days} days
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <ResponsiveContainer width="100%" height={260}>
+                                <AreaChart data={mcpStats.byDay}>
+                                  <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    stroke="rgba(255,255,255,0.05)"
+                                  />
+                                  <XAxis
+                                    dataKey="date"
+                                    tick={{ fill: '#525252', fontSize: 10 }}
+                                    tickFormatter={(v: string) => v.slice(5)}
+                                  />
+                                  <YAxis tick={{ fill: '#525252', fontSize: 10 }} width={40} />
+                                  <Tooltip
+                                    contentStyle={{
+                                      background: '#171717',
+                                      border: '1px solid rgba(255,255,255,0.1)',
+                                      borderRadius: 8,
+                                      fontSize: 12,
+                                    }}
+                                    labelStyle={{ color: '#a3a3a3' }}
+                                  />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="calls"
+                                    stroke="#737373"
+                                    fill="rgba(115,115,115,0.15)"
+                                    strokeWidth={1.5}
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Top Tools + Top Users side by side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {/* Top Tools */}
+                          {mcpStats.byTool?.length > 0 && (
+                            <Card className="bg-neutral-900 border border-white/10">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-neutral-300">
+                                  Top Tools
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-0">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-white/5 hover:bg-transparent">
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono">
+                                        Tool
+                                      </TableHead>
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                        Calls
+                                      </TableHead>
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                        Avg ms
+                                      </TableHead>
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                        Scope
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {mcpStats.byTool.map((tool: any) => (
+                                      <TableRow key={tool.toolName} className="border-white/5">
+                                        <TableCell className="text-xs text-neutral-300 font-mono">
+                                          {tool.toolName}
+                                        </TableCell>
+                                        <TableCell className="text-xs text-neutral-400 text-right">
+                                          {tool.calls}
+                                        </TableCell>
+                                        <TableCell className="text-xs text-neutral-500 text-right">
+                                          {tool.avgDuration}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[9px] border-neutral-700 text-neutral-500"
+                                          >
+                                            {tool.scope}
+                                          </Badge>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {/* Top Users */}
+                          {mcpStats.byUser?.length > 0 && (
+                            <Card className="bg-neutral-900 border border-white/10">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-neutral-300">
+                                  Top Users
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-0">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-white/5 hover:bg-transparent">
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono">
+                                        User
+                                      </TableHead>
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                        Calls
+                                      </TableHead>
+                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                        Last Active
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {mcpStats.byUser.map((u: any) => (
+                                      <TableRow key={u.userId} className="border-white/5">
+                                        <TableCell className="text-xs text-neutral-300">
+                                          {u.email}
+                                        </TableCell>
+                                        <TableCell className="text-xs text-neutral-400 text-right">
+                                          {u.calls}
+                                        </TableCell>
+                                        <TableCell className="text-xs text-neutral-500 text-right">
+                                          {u.lastActive ? formatDate(new Date(u.lastActive)) : '—'}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </CardContent>
+                            </Card>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <Card className="bg-neutral-900 border border-white/10">
+                        <CardContent className="p-12 text-center">
+                          <Activity className="h-8 w-8 text-neutral-700 mx-auto mb-3" />
+                          <p className="text-sm text-neutral-500">No MCP usage data yet</p>
+                          <p className="text-xs text-neutral-600 mt-1">
+                            Tool calls will appear here once agents start using the MCP server
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchMcpStats()}
+                            disabled={mcpStatsLoading}
+                            className="mt-4 border-neutral-800 hover:bg-neutral-800/50 text-xs gap-1.5"
+                          >
+                            <RefreshCw
+                              className={cn('h-3 w-3', mcpStatsLoading && 'animate-spin')}
+                            />
+                            Load Stats
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'references' && (
+                  <div className="space-y-6 admin-tab-enter">
+                    <AdminReferenceLibrary />
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Usage History Modal */}

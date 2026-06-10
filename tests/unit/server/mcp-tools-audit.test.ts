@@ -234,7 +234,12 @@ describe('mockup-generate tool contract', () => {
   });
 
   it('accepts all valid models', () => {
-    const models = [OPENAI_IMAGE_MODELS.GPT_IMAGE_2, OPENAI_IMAGE_MODELS.GPT_IMAGE_1, GEMINI_MODELS.IMAGE_NB2, SEEDREAM_MODELS.SD_5_LITE];
+    const models = [
+      OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
+      OPENAI_IMAGE_MODELS.GPT_IMAGE_1,
+      GEMINI_MODELS.IMAGE_NB2,
+      SEEDREAM_MODELS.SD_5_LITE,
+    ];
     for (const model of models) {
       const r = simulateMockupGenerate(
         { prompt: 'test', model },

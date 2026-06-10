@@ -2,13 +2,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { request } from '../../helpers/app.js';
 import { createUser } from '../../factories/user.js';
 
-// Mock google-auth-library before any server module imports it
+// Controllable mock — set to an Error instance to make getToken throw
+let getTokenOverride: Error | null = null;
+
 vi.mock('google-auth-library', () => {
   class MockOAuth2Client {
     generateAuthUrl() {
       return 'https://accounts.google.com/mock-auth-url';
     }
     async getToken(_code: string) {
+      if (getTokenOverride) throw getTokenOverride;
       return { tokens: { access_token: 'mock-access', id_token: 'mock-id-token' } };
     }
     setCredentials(_tokens: unknown) {}
@@ -115,6 +118,28 @@ describe('GET /api/auth/google/callback', () => {
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toMatch(/token=/);
+  });
+
+  it('redirects with error when Google rejects token exchange (invalid_client)', async () => {
+    getTokenOverride = Object.assign(new Error('invalid_client'), {
+      code: 401,
+      response: {
+        data: {
+          error: 'invalid_client',
+          error_description: 'The provided client secret is invalid.',
+        },
+      },
+    });
+    const agent = await request();
+
+    const res = await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'bad-code' })
+      .redirects(0);
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain('error=oauth_failed');
+    getTokenOverride = null;
   });
 });
 

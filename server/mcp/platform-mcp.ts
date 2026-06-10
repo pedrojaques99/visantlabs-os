@@ -13,6 +13,7 @@ import { ObjectId } from 'mongodb';
 import { improvePrompt, describeImage } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
+import { trackMcpToolCall } from './mcp-tracking.js';
 import {
   buildBrandContext,
   BRAND_SECTION_PRESETS,
@@ -54,8 +55,15 @@ function mergeStrategy(existing: any, patch: any): any {
   const base = existing || {};
   const merged = { ...base };
   const keys = [
-    'manifesto', 'positioning', 'archetypes', 'personas', 'voiceValues',
-    'coreMessage', 'pillars', 'marketResearch', 'graphicSystem',
+    'manifesto',
+    'positioning',
+    'archetypes',
+    'personas',
+    'voiceValues',
+    'coreMessage',
+    'pillars',
+    'marketResearch',
+    'graphicSystem',
   ];
   for (const key of keys) {
     if (patch[key] !== undefined) merged[key] = patch[key];
@@ -191,7 +199,13 @@ async function getQuotaMeta(userId: string) {
   };
 }
 
-import { MCP_RESULT_MAX_CHARS, MCP_ENDPOINT, MCP_SPEC_VERSION, API_BASE_URL, MCP_HINTS } from '../lib/mcp-constants.js';
+import {
+  MCP_RESULT_MAX_CHARS,
+  MCP_ENDPOINT,
+  MCP_SPEC_VERSION,
+  API_BASE_URL,
+  MCP_HINTS,
+} from '../lib/mcp-constants.js';
 
 function jsonResponse(data: unknown) {
   const text = JSON.stringify(data, null, 2);
@@ -201,7 +215,9 @@ function jsonResponse(data: unknown) {
   const meta = JSON.stringify({
     _truncated: true,
     _originalChars: text.length,
-    _message: `Result exceeded ${Math.round(MCP_RESULT_MAX_CHARS / 1000)}k chars. Use pagination (limit/skip) or filter parameters to reduce the response.`,
+    _message: `Result exceeded ${Math.round(
+      MCP_RESULT_MAX_CHARS / 1000
+    )}k chars. Use pagination (limit/skip) or filter parameters to reduce the response.`,
   });
   const budget = MCP_RESULT_MAX_CHARS - meta.length - 20;
   return {
@@ -287,10 +303,14 @@ You are connected via OAuth 2.1 or API key. If you need to authenticate a new ag
 - **Manage connected apps:** use \`oauth-authorized-apps\` tool to list, \`oauth-revoke-app\` to revoke
 
 ### For custom agents connecting via OAuth:
-${MCP_HINTS.oauthSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
+${MCP_HINTS.oauthSteps(API_BASE_URL)
+  .map((s) => `- ${s}`)
+  .join('\n')}
 
 **No local server? Use Device Flow (recommended):**
-${MCP_HINTS.deviceFlowSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
+${MCP_HINTS.deviceFlowSteps(API_BASE_URL)
+  .map((s) => `- ${s}`)
+  .join('\n')}
 
 **Fallback (OOB):** Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — the auth code is displayed on screen for the user to copy back to you.
 
@@ -299,10 +319,12 @@ ${MCP_HINTS.deviceFlowSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
 All communication is JSON-RPC 2.0 via a single endpoint: \`POST ${MCP_ENDPOINT}\`
 
 **Required headers:**
-${MCP_HINTS.requiredHeaders.map(h => `- \`${h}\``).join('\n')}
+${MCP_HINTS.requiredHeaders.map((h) => `- \`${h}\``).join('\n')}
 
 **Steps:**
-${MCP_HINTS.jsonRpcSteps(MCP_ENDPOINT, MCP_SPEC_VERSION).map(s => `- ${s}`).join('\n')}
+${MCP_HINTS.jsonRpcSteps(MCP_ENDPOINT, MCP_SPEC_VERSION)
+  .map((s) => `- ${s}`)
+  .join('\n')}
 
 **IMPORTANT:**
 - ${MCP_HINTS.warnings.argumentsRequired}
@@ -398,17 +420,30 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
   const originalTool = server.tool.bind(server);
 
   const GENERATE_TOOLS_SET = new Set([
-    'mockup-generate', 'creative-generate', 'creative-full', 'branding-generate',
-    'ai-generate-image', 'ai-generate-naming', 'ai-improve-prompt',
-    'ai-suggest-prompt-variations', 'ai-change-object', 'ai-apply-theme',
-    'moodboard-upscale', 'moodboard-suggest', 'video-generate',
-    'campaign-generate', 'playground-generate',
+    'mockup-generate',
+    'creative-generate',
+    'creative-full',
+    'branding-generate',
+    'ai-generate-image',
+    'ai-generate-naming',
+    'ai-improve-prompt',
+    'ai-suggest-prompt-variations',
+    'ai-change-object',
+    'ai-apply-theme',
+    'moodboard-upscale',
+    'moodboard-suggest',
+    'video-generate',
+    'campaign-generate',
+    'playground-generate',
   ]);
 
-  const WRITE_PATTERN = /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart|revoke)($|-)/;
+  const WRITE_PATTERN =
+    /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart|revoke)($|-)/;
   const WRITE_PREFIXES = /^(auth-|pdf-|images-to-)/;
   const READ_OVERRIDES = new Set([
-    'api-key-list', 'brand-guidelines-compile', 'brand-guidelines-export',
+    'api-key-list',
+    'brand-guidelines-compile',
+    'brand-guidelines-export',
     'brand-guidelines-compare-versions',
   ]);
 
@@ -426,9 +461,18 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     const originalHandler = rest[handlerIdx];
     if (typeof originalHandler === 'function') {
       rest[handlerIdx] = async (...args: any[]) => {
-        const scopeErr = requireScope(scopeForTool(name));
+        const scope = scopeForTool(name);
+        const scopeErr = requireScope(scope);
         if (scopeErr) return mcpError('FORBIDDEN', scopeErr);
-        return originalHandler(...args);
+        const start = Date.now();
+        try {
+          const result = await originalHandler(...args);
+          trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, true);
+          return result;
+        } catch (err) {
+          trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, false);
+          throw err;
+        }
       };
     }
     return (originalTool as any)(name, ...rest);
@@ -591,7 +635,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
 
   server.tool(
     'oauth-authorized-apps',
-    'List all AI agents and applications authorized to access the user\'s account via OAuth. Shows client name, scopes granted, and when access was granted.',
+    "List all AI agents and applications authorized to access the user's account via OAuth. Shows client name, scopes granted, and when access was granted.",
     {},
     { title: 'List Connected OAuth Apps', readOnlyHint: true },
     async () => {
@@ -614,7 +658,9 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'oauth-revoke-app',
     'Revoke OAuth access for a connected app. The app will no longer be able to act on behalf of the user. Requires confirm: true.',
     {
-      appId: z.string().describe('The ID of the authorized app grant to revoke (from oauth-authorized-apps).'),
+      appId: z
+        .string()
+        .describe('The ID of the authorized app grant to revoke (from oauth-authorized-apps).'),
       confirm: z.boolean().describe('Must be true to confirm revocation.'),
     },
     { title: 'Revoke Connected App', destructiveHint: true },
@@ -644,11 +690,12 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'oauth-setup',
     'Step-by-step guide for connecting an AI agent to Visant Labs via OAuth 2.1 + PKCE',
     async () => ({
-      messages: [{
-        role: 'user' as const,
-        content: {
-          type: 'text' as const,
-          text: `# OAuth 2.1 Setup Guide for AI Agents
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `# OAuth 2.1 Setup Guide for AI Agents
 
 ## Step 1 — Register a Dynamic Client
 \`\`\`
@@ -714,8 +761,9 @@ Content-Type: application/json
 
 ## Discovery
 \`GET https://api.visantlabs.com/.well-known/oauth-authorization-server\``,
+          },
         },
-      }],
+      ],
     })
   );
 
@@ -1068,7 +1116,12 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .string()
         .optional()
         .describe('Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.'),
-      baseImageUrl: z.string().optional().describe('Base image for img2img transformation (rare). For placing a design in a scene, use referenceImages instead.'),
+      baseImageUrl: z
+        .string()
+        .optional()
+        .describe(
+          'Base image for img2img transformation (rare). For placing a design in a scene, use referenceImages instead.'
+        ),
       referenceImages: z
         .array(z.string())
         .optional()
@@ -1388,7 +1441,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             });
             const result = (await response.json()) as any;
             if (!response.ok) {
-              const detail = [result.error, result.message, result.hint].filter(Boolean).join(' — ');
+              const detail = [result.error, result.message, result.hint]
+                .filter(Boolean)
+                .join(' — ');
               return ERR.internal(detail || `Visant step ${stepNum} failed`);
             }
             // Accumulate data for cascading context
@@ -1958,9 +2013,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
               emotionalBond: z.string(),
             })
             .optional(),
-          pillars: z
-            .array(z.object({ value: z.string(), description: z.string() }))
-            .optional(),
+          pillars: z.array(z.object({ value: z.string(), description: z.string() })).optional(),
           marketResearch: z
             .object({
               competitors: z.array(z.string()).optional(),
@@ -1986,7 +2039,14 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           shadows: z
             .record(
               z.string(),
-              z.object({ x: z.number(), y: z.number(), blur: z.number(), spread: z.number(), color: z.string(), opacity: z.number() })
+              z.object({
+                x: z.number(),
+                y: z.number(),
+                blur: z.number(),
+                spread: z.number(),
+                color: z.string(),
+                opacity: z.number(),
+              })
             )
             .optional(),
           components: z.record(z.string(), z.any()).optional(),
@@ -2072,9 +2132,18 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           donts: z.array(z.string()).optional(),
           imagery: z.string().optional(),
           accessibility: z.string().optional(),
-          person: z.enum(['first', 'second', 'third']).optional().describe('Point of view for brand copy.'),
-          emojiPolicy: z.enum(['none', 'informal', 'free']).optional().describe('When emojis are acceptable.'),
-          casingRules: z.array(z.string()).optional().describe('Capitalization rules, e.g. "Always capitalize product name"'),
+          person: z
+            .enum(['first', 'second', 'third'])
+            .optional()
+            .describe('Point of view for brand copy.'),
+          emojiPolicy: z
+            .enum(['none', 'informal', 'free'])
+            .optional()
+            .describe('When emojis are acceptable.'),
+          casingRules: z
+            .array(z.string())
+            .optional()
+            .describe('Capitalization rules, e.g. "Always capitalize product name"'),
         })
         .optional(),
       strategy: z
@@ -2120,7 +2189,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
               emotionalBond: z.string(),
             })
             .optional()
-            .describe('Core brand message: what the product is, how it differs, emotional connection.'),
+            .describe(
+              'Core brand message: what the product is, how it differs, emotional connection.'
+            ),
           pillars: z
             .array(
               z.object({
@@ -2147,7 +2218,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
               editorialGrid: z.string().optional(),
             })
             .optional()
-            .describe('Graphic system rules: patterns, grafisms, image guidelines, editorial grid.'),
+            .describe(
+              'Graphic system rules: patterns, grafisms, image guidelines, editorial grid.'
+            ),
         })
         .optional(),
       tokens: z
@@ -2266,11 +2339,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       validation: z
         .record(z.string(), z.enum(['pending', 'approved', 'needs_work']))
         .optional()
-        .describe('Per-section validation state, e.g. { "colors": "approved", "typography": "needs_work" }'),
-      folder: z
-        .string()
-        .optional()
-        .describe('Folder name for organizing guidelines.'),
+        .describe(
+          'Per-section validation state, e.g. { "colors": "approved", "typography": "needs_work" }'
+        ),
+      folder: z.string().optional().describe('Folder name for organizing guidelines.'),
     },
     { title: 'Update Brand Guideline', destructiveHint: false },
     async ({ id, ...patch }) => {
@@ -2311,9 +2383,17 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
         // Full-replacement fields (array or scalar, no merge needed)
         const replaceFields = [
-          'colors', 'typography', 'tags', 'gradients', 'shadows',
-          'borders', 'colorThemes', 'activeSections', 'orderedBlocks',
-          'validation', 'folder',
+          'colors',
+          'typography',
+          'tags',
+          'gradients',
+          'shadows',
+          'borders',
+          'colorThemes',
+          'activeSections',
+          'orderedBlocks',
+          'validation',
+          'folder',
         ] as const;
         for (const key of replaceFields) {
           if ((patch as any)[key] !== undefined) updateData[key] = (patch as any)[key];
@@ -2325,7 +2405,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const { calculateCompleteness } = await import('../types/brandGuideline.js');
         const fullData = { ...existing, ...updateData } as any;
         const completeness = calculateCompleteness(fullData);
-        const extraction = ((updateData.extraction || existing.extraction || { sources: [] }) as any);
+        const extraction = (updateData.extraction || existing.extraction || { sources: [] }) as any;
         extraction.completeness = completeness;
         updateData.extraction = extraction;
 
@@ -2343,13 +2423,17 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             const matches = await redisClient.keys(pattern);
             if (matches.length > 0) await redisClient.del(...matches);
           }
-        } catch { /* Redis down — graceful degradation */ }
+        } catch {
+          /* Redis down — graceful degradation */
+        }
 
         // Dispatch webhook
         try {
           const { dispatchWebhookEvent } = await import('../utils/webhookDispatch.js');
           dispatchWebhookEvent(currentUserId, 'brand.updated', { id: updated.id });
-        } catch { /* webhook dispatch is best-effort */ }
+        } catch {
+          /* webhook dispatch is best-effort */
+        }
 
         return jsonResponse({
           id: updated.id,
@@ -5615,19 +5699,25 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
     }
   );
 
-  server.tool('playground-list', "List the authenticated user's saved mini-apps.", {}, { title: 'List Mini-Apps', readOnlyHint: true }, async () => {
-    const currentUserId = getMcpUserId();
-    if (!currentUserId) return ERR.auth();
-    try {
-      const res = await fetch(`${INTERNAL_API_BASE}/api/playground/my`, {
-        headers: { 'x-mcp-user-id': currentUserId },
-      });
-      if (!res.ok) return ERR.internal(await res.text());
-      return jsonResponse(await res.json());
-    } catch (err: any) {
-      return ERR.internal(err.message);
+  server.tool(
+    'playground-list',
+    "List the authenticated user's saved mini-apps.",
+    {},
+    { title: 'List Mini-Apps', readOnlyHint: true },
+    async () => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/playground/my`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
     }
-  });
+  );
 
   server.tool(
     'playground-get',

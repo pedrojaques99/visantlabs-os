@@ -397,11 +397,17 @@ export const DocsPage: React.FC = () => {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <button
-                      onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+                      onClick={() =>
+                        document.dispatchEvent(
+                          new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })
+                        )
+                      }
                       className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all duration-200"
                     >
                       <span>Search</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] font-mono text-neutral-400">⌘K</kbd>
+                      <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] font-mono text-neutral-400">
+                        ⌘K
+                      </kbd>
                     </button>
                     <Button
                       variant="brand"
@@ -414,7 +420,11 @@ export const DocsPage: React.FC = () => {
                           : 'bg-secondary/60 border-border text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5'
                       )}
                     >
-                      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? (
+                        <Check className="w-3.5 h-3.5" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
                       {copied ? 'Copied!' : 'Copy as Markdown'}
                     </Button>
                   </div>

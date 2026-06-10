@@ -283,6 +283,7 @@
     "ip-address": ">=10.2.0",
     "lodash": ">=4.17.24",
     "phin": ">=3.7.1",
+    "hono": ">=4.12.25",
     "@imgly/background-removal-node": {
       "zod": ">=3.22.3"
     }

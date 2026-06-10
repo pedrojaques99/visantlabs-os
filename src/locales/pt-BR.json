@@ -4808,5 +4808,9 @@
     "copy": "Copiar",
     "image": "Imagem",
     "resuming": "Retomando geração anterior..."
+  },
+  "premium": {
+    "upgradeRequired": "Este recurso requer uma assinatura Pro.",
+    "seePlans": "Ver Planos"
   }
 }

@@ -14,7 +14,7 @@ import {
   FileJson,
   Upload,
   Plus,
-  Library,
+  Palette,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
@@ -234,7 +234,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               )}
               title={t('mockup.openMediaLibrary') || 'Brand Media Library'}
             >
-              <Library size={16} />
+              <Palette size={16} />
             </Button>
           </div>
 

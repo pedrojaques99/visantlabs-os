@@ -4515,14 +4515,17 @@ export const CanvasPage: React.FC = () => {
     );
   }
 
-  // Don't render content if redirecting
-  if (!hasAccess) {
+  // Redirect to auth if not logged in
+  if (!isAuthenticated) {
     return null;
   }
 
+  // Free users only get core nodes; premium users get everything
+  const gated = <T,>(fn: T): T | undefined => (hasAccess ? fn : undefined);
+
   // Show loading screen only if we're actually loading a project from backend
   // Allow visual rendering of canvas even during authentication
-  if (isLoadingProject && isAuthenticated !== false) {
+  if (isLoadingProject) {
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
@@ -4844,33 +4847,33 @@ export const CanvasPage: React.FC = () => {
             nodes={nodes}
             onClose={() => setContextMenu(null)}
             onExport={handleExport}
-            onAddImage={() => handleAddNode(addImageNode)}
-            onAddText={() => handleAddNode(addTextNode)}
-            onAddMerge={() => handleAddNode(addMergeNode)}
+            onAddImage={gated(() => handleAddNode(addImageNode))}
+            onAddText={gated(() => handleAddNode(addTextNode))}
+            onAddMerge={gated(() => handleAddNode(addMergeNode))}
             onAddPrompt={() => handleAddNode(addPromptNode, { targetHandle: 'input-1' })}
-            onAddVideo={() => handleAddNode(addVideoNode, { targetHandle: 'input-image' })}
-            onAddBrand={() => handleAddNode(addBrandNode)}
-            onAddUpscale={() => handleAddNode(addUpscaleNode)}
+            onAddVideo={gated(() => handleAddNode(addVideoNode, { targetHandle: 'input-image' }))}
+            onAddBrand={gated(() => handleAddNode(addBrandNode))}
+            onAddUpscale={gated(() => handleAddNode(addUpscaleNode))}
             onAddUpscaleBicubic={() => handleAddNode(addUpscaleBicubicNode)}
-            onAddMockup={() => handleAddNode(addMockupNode)}
-            onAddAngle={() => handleAddNode(addAngleNode)}
-            onAddTexture={() => handleAddNode(addTextureNode)}
-            onAddAmbience={() => handleAddNode(addAmbienceNode)}
-            onAddLuminance={() => handleAddNode(addLuminanceNode)}
+            onAddMockup={gated(() => handleAddNode(addMockupNode))}
+            onAddAngle={gated(() => handleAddNode(addAngleNode))}
+            onAddTexture={gated(() => handleAddNode(addTextureNode))}
+            onAddAmbience={gated(() => handleAddNode(addAmbienceNode))}
+            onAddLuminance={gated(() => handleAddNode(addLuminanceNode))}
             onAddShader={() => handleAddNode(addShaderNode)}
-            onAddTextureFilter={() => handleAddNode(addTextureFilterNode)}
-            onAddStudio3D={() => handleAddNode(addStudio3DNode)}
+            onAddTextureFilter={gated(() => handleAddNode(addTextureFilterNode))}
+            onAddStudio3D={gated(() => handleAddNode(addStudio3DNode))}
             onAddColorExtractor={() =>
               handleAddNode(addColorExtractorNode, { targetHandle: 'image-input' })
             }
-            onAddBrandKit={() => handleAddNode((pos) => addBrandKitNodes(pos)[0])}
-            onAddPDF={() => handleAddNode(addPDFNode)}
-            onAddVideoInput={() => handleAddNode(addVideoInputNode)}
-            onAddStrategy={() => handleAddNode(addStrategyNode)}
-            onAddBrandCore={() => handleAddNode(addBrandCoreNode)}
+            onAddBrandKit={gated(() => handleAddNode((pos) => addBrandKitNodes(pos)[0]))}
+            onAddPDF={gated(() => handleAddNode(addPDFNode))}
+            onAddVideoInput={gated(() => handleAddNode(addVideoInputNode))}
+            onAddStrategy={gated(() => handleAddNode(addStrategyNode))}
+            onAddBrandCore={gated(() => handleAddNode(addBrandCoreNode))}
             onAddBrandBatch={() => handleAddNode(addBrandBatchNode)}
-            onAddChat={() => handleAddNode(addChatNode)}
-            onAddNodeBuilder={() => handleAddNode(addNodeBuilderNode)}
+            onAddChat={gated(() => handleAddNode(addChatNode))}
+            onAddNodeBuilder={gated(() => handleAddNode(addNodeBuilderNode))}
             experimentalMode={experimentalMode}
             onPaste={handlePaste}
             onToggleUI={() => canvasHeader.setShowControls(!canvasHeader.showControls)}
@@ -5163,7 +5166,7 @@ export const CanvasPage: React.FC = () => {
       )}
 
       {/* Auth Modal - shown when user is not authenticated, overlaid on canvas */}
-      {showAuthModal && isAuthenticated === false && (
+      {showAuthModal && (
         <div className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center">
           <AuthModal
             isOpen={showAuthModal}
@@ -5241,26 +5244,26 @@ export const CanvasPage: React.FC = () => {
           position="left"
           selectedNodesCount={nodes.filter((n) => n.selected).length}
           experimentalMode={experimentalMode}
-          onAddMerge={toolbarActions.onAddMerge}
-          onAddUpscale={toolbarActions.onAddUpscale}
-          onAddMockup={toolbarActions.onAddMockup}
-          onAddAngle={toolbarActions.onAddAngle}
-          onAddTexture={toolbarActions.onAddTexture}
-          onAddAmbience={toolbarActions.onAddAmbience}
-          onAddLuminance={toolbarActions.onAddLuminance}
-          onAddBrandKit={toolbarActions.onAddBrandKit}
-          onAddPDF={toolbarActions.onAddPDF}
-          onAddStrategy={toolbarActions.onAddStrategy}
-          onAddBrandCore={toolbarActions.onAddBrandCore}
-          onAddChat={toolbarActions.onAddChat}
-          onAddNodeBuilder={() => handleAddNode(addNodeBuilderNode)}
+          onAddMerge={gated(toolbarActions.onAddMerge)}
+          onAddUpscale={gated(toolbarActions.onAddUpscale)}
+          onAddMockup={gated(toolbarActions.onAddMockup)}
+          onAddAngle={gated(toolbarActions.onAddAngle)}
+          onAddTexture={gated(toolbarActions.onAddTexture)}
+          onAddAmbience={gated(toolbarActions.onAddAmbience)}
+          onAddLuminance={gated(toolbarActions.onAddLuminance)}
+          onAddBrandKit={gated(toolbarActions.onAddBrandKit)}
+          onAddPDF={gated(toolbarActions.onAddPDF)}
+          onAddStrategy={gated(toolbarActions.onAddStrategy)}
+          onAddBrandCore={gated(toolbarActions.onAddBrandCore)}
+          onAddChat={gated(toolbarActions.onAddChat)}
+          onAddNodeBuilder={gated(() => handleAddNode(addNodeBuilderNode))}
           onAddPrompt={toolbarActions.onAddPrompt}
           onAddColorExtractor={toolbarActions.onAddColorExtractor}
           onAddShader={toolbarActions.onAddShader}
-          onAddTextureFilter={toolbarActions.onAddTextureFilter}
-          onAddStudio3D={toolbarActions.onAddStudio3D}
+          onAddTextureFilter={gated(toolbarActions.onAddTextureFilter)}
+          onAddStudio3D={gated(toolbarActions.onAddStudio3D)}
           onAddBrandBatch={() => handleAddNode(addBrandBatchNode)}
-          onAddDirector={toolbarActions.onAddDirector}
+          onAddDirector={gated(toolbarActions.onAddDirector)}
           onToggleDrawing={() => {
             drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);
           }}

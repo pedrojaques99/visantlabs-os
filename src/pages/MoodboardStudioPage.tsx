@@ -170,7 +170,7 @@ function MoodboardStudio() {
 
   const getImageDimensions = (url: string): Promise<{ width: number; height: number }> =>
     loadImage(url, null)
-      .then(img => ({ width: img.width, height: img.height }))
+      .then((img) => ({ width: img.width, height: img.height }))
       .catch(() => ({ width: 1920, height: 1080 }));
 
   const handleAISuggest = useCallback(

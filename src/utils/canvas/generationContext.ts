@@ -19,6 +19,9 @@ import {
 } from '@/constants/geminiModels';
 import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamModels';
 import { isOpenAIImageModel, getOpenAIImageModelConfig } from '@/constants/openaiModels';
+import { isImagenModel } from '@/constants/imagenModels';
+import { isIdeogramModel } from '@/constants/ideogramModels';
+import { isReveModel } from '@/constants/reveModels';
 
 export interface GenerationContext {
   provider: ImageProvider;
@@ -88,7 +91,12 @@ export function supportsOutputConfig(model: string): boolean {
   return isAdvancedModel(model as GeminiModel);
 }
 
-/** Convenience: derive provider only */
+/** Convenience: derive provider only — SSOT for all provider detection */
 export function resolveProvider(model: string): ImageProvider {
-  return isSeedreamModel(model) ? 'seedream' : isOpenAIImageModel(model) ? 'openai' : 'gemini';
+  if (isSeedreamModel(model)) return 'seedream';
+  if (isOpenAIImageModel(model)) return 'openai';
+  if (isImagenModel(model)) return 'imagen';
+  if (isIdeogramModel(model)) return 'ideogram';
+  if (isReveModel(model)) return 'reve';
+  return 'gemini';
 }

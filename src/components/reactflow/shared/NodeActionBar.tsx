@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNodes } from '@xyflow/react';
 import { cn } from '@/lib/utils';
 
 interface NodeActionBarProps {
@@ -14,8 +15,12 @@ export const NodeActionBar: React.FC<NodeActionBarProps> = ({
   children,
   className,
 }) => {
+  const nodes = useNodes();
+  const selectedCount = nodes.filter((n) => n.selected).length;
   const zoom = getZoom();
-  const scale = Math.min(1 / zoom, 3); // Limita o scale máximo a 3x
+  const scale = Math.min(1 / zoom, 3);
+
+  if (selectedCount > 1) return null;
 
   return (
     <div

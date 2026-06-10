@@ -28,7 +28,9 @@ interface ParsedIssue {
   incomplete: boolean;
 }
 
-interface PresetMap { [format: string]: string[] }
+interface PresetMap {
+  [format: string]: string[];
+}
 
 interface BridgeOptions {
   linearApiKey: string;
@@ -52,8 +54,13 @@ async function gql(apiKey: string, query: string, variables: Record<string, any>
   });
   const text = await res.text();
   let json: any;
-  try { json = JSON.parse(text); } catch { throw new Error(`Linear ${res.status}: ${text.slice(0, 200)}`); }
-  if (!res.ok) throw new Error(`Linear ${res.status}: ${json.errors?.[0]?.message || text.slice(0, 200)}`);
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Linear ${res.status}: ${text.slice(0, 200)}`);
+  }
+  if (!res.ok)
+    throw new Error(`Linear ${res.status}: ${json.errors?.[0]?.message || text.slice(0, 200)}`);
   if (json.errors) throw new Error(json.errors[0].message);
   return json.data;
 }
@@ -66,19 +73,21 @@ export function scanPresets(): PresetMap {
   const presets: PresetMap = {};
   const seen = new Set<string>();
 
-  figma.currentPage.findAll(n => {
-    if (n.type !== 'FRAME') return false;
-    return /^Template\s*-\s*\w+\s*::/.test(n.name);
-  }).forEach(n => {
-    const match = n.name.match(/^Template\s*-\s*(\w+)\s*::\s*(.+)$/);
-    if (!match) return;
-    const [, format, variant] = match;
-    const key = `${format}::${variant.trim()}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    if (!presets[format]) presets[format] = [];
-    presets[format].push(variant.trim());
-  });
+  figma.currentPage
+    .findAll((n) => {
+      if (n.type !== 'FRAME') return false;
+      return /^Template\s*-\s*\w+\s*::/.test(n.name);
+    })
+    .forEach((n) => {
+      const match = n.name.match(/^Template\s*-\s*(\w+)\s*::\s*(.+)$/);
+      if (!match) return;
+      const [, format, variant] = match;
+      const key = `${format}::${variant.trim()}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (!presets[format]) presets[format] = [];
+      presets[format].push(variant.trim());
+    });
 
   return presets;
 }
@@ -88,11 +97,14 @@ export function scanPresets(): PresetMap {
 // ---------------------------------------------------------------------------
 
 export async function fetchProjects(apiKey: string) {
-  const data = await gql(apiKey, `query {
+  const data = await gql(
+    apiKey,
+    `query {
     projects(first: 50) {
       nodes { id name }
     }
-  }`);
+  }`
+  );
   return data.projects.nodes as { id: string; name: string }[];
 }
 
@@ -101,12 +113,20 @@ export async function fetchProjects(apiKey: string) {
 // ---------------------------------------------------------------------------
 
 export async function fetchMilestones(apiKey: string, projectId: string) {
-  const data = await gql(apiKey, `query($projectId: ID!) {
+  const data = await gql(
+    apiKey,
+    `query($projectId: ID!) {
     project(id: $projectId) {
       projectMilestones { nodes { id name sortOrder } }
     }
-  }`, { projectId });
-  const milestones = data.project.projectMilestones.nodes as { id: string; name: string; sortOrder: number }[];
+  }`,
+    { projectId }
+  );
+  const milestones = data.project.projectMilestones.nodes as {
+    id: string;
+    name: string;
+    sortOrder: number;
+  }[];
   return milestones.sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
@@ -114,17 +134,21 @@ export async function fetchMilestones(apiKey: string, projectId: string) {
 // 4. Fetch issues (with optional milestone filter)
 // ---------------------------------------------------------------------------
 
-async function fetchIssues(apiKey: string, projectId: string, milestoneId?: string): Promise<LinearIssue[]> {
+async function fetchIssues(
+  apiKey: string,
+  projectId: string,
+  milestoneId?: string
+): Promise<LinearIssue[]> {
   const allIssues: LinearIssue[] = [];
   let cursor: string | null = null;
   let hasMore = true;
 
-  const milestoneFilter = milestoneId
-    ? `projectMilestone: { id: { eq: "${milestoneId}" } }`
-    : '';
+  const milestoneFilter = milestoneId ? `projectMilestone: { id: { eq: "${milestoneId}" } }` : '';
 
   while (hasMore) {
-    const data = await gql(apiKey, `query($projectId: ID!, $cursor: String) {
+    const data = await gql(
+      apiKey,
+      `query($projectId: ID!, $cursor: String) {
       issues(
         filter: {
           project: { id: { eq: $projectId } }
@@ -144,7 +168,9 @@ async function fetchIssues(apiKey: string, projectId: string, milestoneId?: stri
           projectMilestone { id name }
         }
       }
-    }`, { projectId, cursor });
+    }`,
+      { projectId, cursor }
+    );
 
     allIssues.push(...data.issues.nodes);
     hasMore = data.issues.pageInfo.hasNextPage;
@@ -191,7 +217,10 @@ function parseIssue(issue: LinearIssue): ParsedIssue {
       briefing = aboveFold.replace(/\n+/g, ' ');
     }
   }
-  briefing = briefing.replace(/["""""]/g, '').replace(/\s{2,}/g, ' ').trim();
+  briefing = briefing
+    .replace(/["""""]/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   // \* or * prefix = incomplete briefing, needs manual attention
   if (/^\\?\*/.test(briefing)) {
     incomplete = true;
@@ -231,10 +260,10 @@ async function cloneAndPopulate(
   frameName: string,
   textOverrides: Record<string, string>,
   x: number,
-  y: number,
+  y: number
 ): Promise<{ id: string; name: string } | null> {
   const source = figma.currentPage.findOne(
-    n => n.name === templateName && n.type === 'FRAME',
+    (n) => n.name === templateName && n.type === 'FRAME'
   ) as FrameNode | null;
 
   if (!source) return null;
@@ -246,7 +275,9 @@ async function cloneAndPopulate(
   figma.currentPage.appendChild(clone);
 
   for (const [layerName, content] of Object.entries(textOverrides)) {
-    const textNode = clone.findOne(n => n.type === 'TEXT' && n.name === layerName) as TextNode | null;
+    const textNode = clone.findOne(
+      (n) => n.type === 'TEXT' && n.name === layerName
+    ) as TextNode | null;
     if (!textNode) continue;
     const segments = textNode.getStyledTextSegments(['fontName']);
     for (const seg of segments) {
@@ -263,7 +294,15 @@ async function cloneAndPopulate(
 // ---------------------------------------------------------------------------
 
 export async function linearToFigma(opts: BridgeOptions) {
-  const { linearApiKey, projectId, strategy = 'random', formats = ['Story'], filterIssues, milestoneId, dryRun } = opts;
+  const {
+    linearApiKey,
+    projectId,
+    strategy = 'random',
+    formats = ['Story'],
+    filterIssues,
+    milestoneId,
+    dryRun,
+  } = opts;
 
   postToUI({ type: 'BRIDGE_PROGRESS', step: 'scan', message: 'Scanning templates…' });
   const presets = scanPresets();
@@ -277,7 +316,7 @@ export async function linearToFigma(opts: BridgeOptions) {
   let issues = await fetchIssues(linearApiKey, projectId, milestoneId);
 
   if (filterIssues && filterIssues.length > 0) {
-    issues = issues.filter(i => filterIssues.includes(i.identifier));
+    issues = issues.filter((i) => filterIssues.includes(i.identifier));
   }
 
   if (issues.length === 0) {
@@ -327,7 +366,7 @@ export async function linearToFigma(opts: BridgeOptions) {
       dryRun: true,
       presets,
       issueCount: issues.length,
-      operations: operations.map(op => ({
+      operations: operations.map((op) => ({
         template: op.templateName,
         frame: op.frameName,
         overrides: op.overrides,
@@ -335,7 +374,11 @@ export async function linearToFigma(opts: BridgeOptions) {
     };
   }
 
-  postToUI({ type: 'BRIDGE_PROGRESS', step: 'clone', message: `Creating ${operations.length} frames…` });
+  postToUI({
+    type: 'BRIDGE_PROGRESS',
+    step: 'clone',
+    message: `Creating ${operations.length} frames…`,
+  });
 
   let startX = 0;
   for (const child of figma.currentPage.children) {
@@ -369,7 +412,11 @@ export async function linearToFigma(opts: BridgeOptions) {
     }
 
     if ((i + 1) % 5 === 0 || i === operations.length - 1) {
-      postToUI({ type: 'BRIDGE_PROGRESS', step: 'clone', message: `${i + 1}/${operations.length} frames` });
+      postToUI({
+        type: 'BRIDGE_PROGRESS',
+        step: 'clone',
+        message: `${i + 1}/${operations.length} frames`,
+      });
     }
   }
 
@@ -379,7 +426,7 @@ export async function linearToFigma(opts: BridgeOptions) {
     issueCount: issues.length,
     created: results.length,
     errors,
-    createdNodeIds: results.map(r => r.id),
+    createdNodeIds: results.map((r) => r.id),
   };
 }
 

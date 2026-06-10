@@ -407,11 +407,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     const checkAuth = async () => {
       // Debounce mínimo no primeiro check para dar tempo do backend (MongoDB) inicializar
-      // Evita erro loop no cold start do serverless
       if (isFirstCheck) {
         isFirstCheck = false;
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        if (!isMounted) return;
       }
 
       try {

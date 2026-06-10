@@ -4804,5 +4804,9 @@
     "copy": "Copy",
     "image": "Image",
     "resuming": "Resuming previous generation..."
+  },
+  "premium": {
+    "upgradeRequired": "This feature requires a Pro subscription.",
+    "seePlans": "See Plans"
   }
 }

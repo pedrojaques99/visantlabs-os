@@ -20,7 +20,11 @@ function rgbToHex(r: number, g: number, b: number): string {
   return (
     '#' +
     [r, g, b]
-      .map((c) => Math.round(c * 255).toString(16).padStart(2, '0'))
+      .map((c) =>
+        Math.round(c * 255)
+          .toString(16)
+          .padStart(2, '0')
+      )
       .join('')
       .toUpperCase()
   );
@@ -62,9 +66,9 @@ async function extractColorFromNode(node: SceneNode): Promise<ColorScanItem | nu
   if ('fills' in node) {
     const fills = (node as GeometryMixin).fills;
     if (Array.isArray(fills)) {
-      const solid = fills.find(
-        (f: Paint) => f.type === 'SOLID' && f.visible !== false
-      ) as SolidPaint | undefined;
+      const solid = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as
+        | SolidPaint
+        | undefined;
       if (solid) {
         hex = rgbToHex(solid.color.r, solid.color.g, solid.color.b);
       }
@@ -79,9 +83,9 @@ async function extractColorFromNode(node: SceneNode): Promise<ColorScanItem | nu
       if ('fills' in child) {
         const fills = (child as GeometryMixin).fills;
         if (Array.isArray(fills)) {
-          const solid = fills.find(
-            (f: Paint) => f.type === 'SOLID' && f.visible !== false
-          ) as SolidPaint | undefined;
+          const solid = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as
+            | SolidPaint
+            | undefined;
           if (solid) {
             const area = child.width * child.height;
             if (area > bestArea) {
@@ -110,15 +114,11 @@ async function extractColorFromNode(node: SceneNode): Promise<ColorScanItem | nu
   };
 }
 
-function collectTextNodes(
-  parent: FrameNode | GroupNode,
-  out: ColorScanItem['textChildren']
-) {
+function collectTextNodes(parent: FrameNode | GroupNode, out: ColorScanItem['textChildren']) {
   for (const child of parent.children) {
     if (child.type === 'TEXT') {
       const textNode = child as TextNode;
-      const content =
-        typeof textNode.characters === 'string' ? textNode.characters : '';
+      const content = typeof textNode.characters === 'string' ? textNode.characters : '';
       out.push({ nodeId: child.id, name: child.name, content });
     } else if ('children' in child) {
       collectTextNodes(child as FrameNode, out);
@@ -181,9 +181,9 @@ export async function applyColorRename(payload: {
 
           const fills = (node as GeometryMixin).fills;
           if (!Array.isArray(fills)) continue;
-          const solid = fills.find(
-            (f: Paint) => f.type === 'SOLID' && f.visible !== false
-          ) as SolidPaint | undefined;
+          const solid = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as
+            | SolidPaint
+            | undefined;
           if (!solid) continue;
 
           // Clean name for variable (remove number prefix like "01 ")
@@ -192,8 +192,7 @@ export async function applyColorRename(payload: {
           // Check if variable already exists
           const existingVars = await figma.variables.getLocalVariablesAsync('COLOR');
           const exists = existingVars.some(
-            (v: Variable) =>
-              v.name === varName && v.variableCollectionId === collection!.id
+            (v: Variable) => v.name === varName && v.variableCollectionId === collection!.id
           );
           if (exists) continue;
 
@@ -229,9 +228,9 @@ export async function applyColorRename(payload: {
 
         const fills = (node as GeometryMixin).fills;
         if (!Array.isArray(fills)) continue;
-        const solid = fills.find(
-          (f: Paint) => f.type === 'SOLID' && f.visible !== false
-        ) as SolidPaint | undefined;
+        const solid = fills.find((f: Paint) => f.type === 'SOLID' && f.visible !== false) as
+          | SolidPaint
+          | undefined;
         if (!solid) continue;
 
         const styleName = entry.newName.replace(/^\d+\s*/, '').trim();

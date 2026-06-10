@@ -49,5 +49,12 @@ export { exportTextToMarkdown } from './exportText';
 export { scanFontsInSelection, scanFontsInPage, swapFonts, getStylesForFamily } from './text';
 export { generateVariants, DEFAULT_PRESETS } from './variantGenerator';
 export { convertToPreset } from './convertToPreset';
-export { scanPresets, linearToFigma, fetchProjects, fetchMilestones, saveLinearConfig, getLinearConfig } from './linearBridge';
+export {
+  scanPresets,
+  linearToFigma,
+  fetchProjects,
+  fetchMilestones,
+  saveLinearConfig,
+  getLinearConfig,
+} from './linearBridge';
 export { scanColorsForRename, applyColorRename } from './colorRename';

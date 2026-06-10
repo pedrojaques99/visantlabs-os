@@ -178,9 +178,7 @@ export function useFigmaMessages() {
           // Legacy pluginData list — extract IDs only for the selector.
           // Never overwrite brandGuideline (single selected) with the array.
           if (msg.guidelines && Array.isArray(msg.guidelines)) {
-            const ids = msg.guidelines
-              .map((g: any) => g?.id ?? g?._id)
-              .filter(Boolean) as string[];
+            const ids = msg.guidelines.map((g: any) => g?.id ?? g?._id).filter(Boolean) as string[];
             usePluginStore.setState({ savedGuidelineIds: ids });
           }
           break;

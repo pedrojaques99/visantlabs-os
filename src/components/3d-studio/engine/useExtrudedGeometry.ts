@@ -296,8 +296,9 @@ export function useExtrudedGeometry(
       const bevelSegments = Math.max(2, Math.min(Math.round(idealBevel * reductionFactor), 64));
       const curveSegments = Math.max(8, Math.min(Math.round(idealCurve * reductionFactor), 128));
 
-      const bevelThickness = bevelScale * userThickness;
-      const bevelSize = bevelScale * userSize;
+      const maxBevel = Math.max(0.01, scaledDepth * 0.5);
+      const bevelThickness = Math.min(bevelScale * userThickness, maxBevel);
+      const bevelSize = Math.min(bevelScale * userSize, maxBevel);
 
       const extrudeSettings = {
         depth: scaledDepth,

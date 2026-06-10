@@ -324,7 +324,7 @@ function generateAgentsMarkdown(platformMcpSpec?: MCPSpec | null): string {
     '### OAuth 2.1 (recommended)',
     '1. **Register:** `POST /oauth/register` with `{client_name, redirect_uris, grant_types: ["authorization_code"]}`',
     '2. **PKCE:** generate `code_verifier` → `code_challenge` = base64url(sha256(verifier))',
-    '3. **Authorize:** open `/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=...&response_type=code&scope=read+write+generate` in user\'s browser',
+    "3. **Authorize:** open `/oauth/authorize?client_id=...&redirect_uri=...&code_challenge=...&code_challenge_method=S256&state=...&response_type=code&scope=read+write+generate` in user's browser",
     '4. **Exchange:** `POST /oauth/token` with `grant_type=authorization_code&code=...&code_verifier=...&client_id=...`',
     '5. **Refresh:** `POST /oauth/token` with `grant_type=refresh_token&refresh_token=...`',
     '',

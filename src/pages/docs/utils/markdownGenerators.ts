@@ -6,4 +6,11 @@
  */
 
 export { generateTabMarkdown, generateFullDocsMarkdown } from '@/lib/docs-markdown';
-export type { DocsTabId, OpenAPISpec, MCPSpec, MCPTool, PricingData, ApiEndpoint } from '@/lib/docs-markdown';
+export type {
+  DocsTabId,
+  OpenAPISpec,
+  MCPSpec,
+  MCPTool,
+  PricingData,
+  ApiEndpoint,
+} from '@/lib/docs-markdown';

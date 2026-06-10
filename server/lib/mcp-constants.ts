@@ -36,13 +36,18 @@ export const MCP_HINTS = {
   ],
 
   warnings: {
-    argumentsRequired: '"arguments": {} is REQUIRED in every tools/call, even for parameterless tools. Omitting it causes a validation error.',
-    notRestApi: 'This is NOT a REST API. Do NOT call paths like GET /auth/profile. Use tools/call with the tool name.',
-    persistToken: 'Persist the access token (1h lifetime) and reuse it across requests. Use the refresh token when it expires. Do NOT re-authenticate for every call.',
-    verificationUri: 'Show user ONLY the verification_uri_complete link — the code is already embedded in the URL. Do NOT show the code separately.',
+    argumentsRequired:
+      '"arguments": {} is REQUIRED in every tools/call, even for parameterless tools. Omitting it causes a validation error.',
+    notRestApi:
+      'This is NOT a REST API. Do NOT call paths like GET /auth/profile. Use tools/call with the tool name.',
+    persistToken:
+      'Persist the access token (1h lifetime) and reuse it across requests. Use the refresh token when it expires. Do NOT re-authenticate for every call.',
+    verificationUri:
+      'Show user ONLY the verification_uri_complete link — the code is already embedded in the URL. Do NOT show the code separately.',
   },
 
-  responseFormat: 'By default, responses are SSE (Server-Sent Events). If your client cannot parse SSE, add Accept: application/json header to get plain JSON responses.',
+  responseFormat:
+    'By default, responses are SSE (Server-Sent Events). If your client cannot parse SSE, add Accept: application/json header to get plain JSON responses.',
 
   oauthSteps: (baseUrl: string) => [
     `1. Register: POST ${baseUrl}/oauth/register with {"client_name":"YourAgent","redirect_uris":["http://localhost:3456/callback"],"grant_types":["authorization_code"]}`,
@@ -60,19 +65,19 @@ export const MCP_HINTS = {
   ],
 
   protocolHintCompact: (endpoint: string, version: string) =>
-    `MCP uses JSON-RPC 2.0. POST to ${endpoint}: `
-    + `(1) {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"${version}","capabilities":{},"clientInfo":{"name":"...","version":"1.0"}},"id":1} → save mcp-session-id header, `
-    + `(2) {"method":"tools/list","params":{},"id":2}, `
-    + `(3) {"method":"tools/call","params":{"name":"tool-name","arguments":{}},"id":3}. `
-    + `IMPORTANT: "arguments":{} is required even for parameterless tools. `
-    + `Headers: Authorization: Bearer <token>, Content-Type: application/json, Mcp-Session-Id: <id>. `
-    + `Add Accept: application/json for plain JSON responses instead of SSE streams.`,
+    `MCP uses JSON-RPC 2.0. POST to ${endpoint}: ` +
+    `(1) {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"${version}","capabilities":{},"clientInfo":{"name":"...","version":"1.0"}},"id":1} → save mcp-session-id header, ` +
+    `(2) {"method":"tools/list","params":{},"id":2}, ` +
+    `(3) {"method":"tools/call","params":{"name":"tool-name","arguments":{}},"id":3}. ` +
+    `IMPORTANT: "arguments":{} is required even for parameterless tools. ` +
+    `Headers: Authorization: Bearer <token>, Content-Type: application/json, Mcp-Session-Id: <id>. ` +
+    `Add Accept: application/json for plain JSON responses instead of SSE streams.`,
 
   unauthorizedMessage: (baseUrl: string, fullGuideUrl: string) =>
-    `Unauthorized — you need an access token. `
-    + `Options: (1) OAuth 2.1 + PKCE: GET ${baseUrl}/.well-known/oauth-authorization-server, `
-    + `(2) Device Flow (Telegram/CLI/remote agents): POST ${baseUrl}/oauth/device/code, `
-    + `(3) API key: Authorization: Bearer visant_sk_xxx. `
-    + `After authenticating, use JSON-RPC to this endpoint: {"jsonrpc":"2.0","method":"initialize",...} then tools/list, then tools/call. `
-    + `Full guide: ${fullGuideUrl}`,
+    `Unauthorized — you need an access token. ` +
+    `Options: (1) OAuth 2.1 + PKCE: GET ${baseUrl}/.well-known/oauth-authorization-server, ` +
+    `(2) Device Flow (Telegram/CLI/remote agents): POST ${baseUrl}/oauth/device/code, ` +
+    `(3) API key: Authorization: Bearer visant_sk_xxx. ` +
+    `After authenticating, use JSON-RPC to this endpoint: {"jsonrpc":"2.0","method":"initialize",...} then tools/list, then tools/call. ` +
+    `Full guide: ${fullGuideUrl}`,
 } as const;

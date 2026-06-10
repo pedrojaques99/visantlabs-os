@@ -16,7 +16,11 @@
 import OpenAI from 'openai';
 import { uploadImage } from './r2Service.js';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
-import { OPENAI_IMAGE_MODELS, resolveOpenAISize, OPENAI_QUALITY_MAP } from '../../src/constants/openaiModels.js';
+import {
+  OPENAI_IMAGE_MODELS,
+  resolveOpenAISize,
+  OPENAI_QUALITY_MAP,
+} from '../../src/constants/openaiModels.js';
 
 const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 60_000;

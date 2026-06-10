@@ -40,7 +40,10 @@ export const validateFile = (
  * Format image to 16:9 aspect ratio without cropping
  * Adds padding (letterboxing/pillarboxing) when necessary
  */
-export const formatImageTo16_9 = async (base64: string, mimeType: string): Promise<UploadedImage> => {
+export const formatImageTo16_9 = async (
+  base64: string,
+  mimeType: string
+): Promise<UploadedImage> => {
   const dataUrl = base64.startsWith('data:') ? base64 : `data:${mimeType};base64,${base64}`;
   const img = await loadImage(dataUrl, null);
 

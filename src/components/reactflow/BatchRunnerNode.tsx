@@ -51,7 +51,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           left: -6,
           width: 10,
           height: 10,
-          background: 'var(--color-violet-400)',
+          background: 'var(--color-neutral-500)',
           border: '2px solid var(--color-neutral-950)',
         }}
       />
@@ -64,7 +64,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           left: -6,
           width: 10,
           height: 10,
-          background: 'var(--color-blue-400)',
+          background: 'var(--color-neutral-500)',
           border: '2px solid var(--color-neutral-950)',
         }}
       />

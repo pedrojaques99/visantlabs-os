@@ -160,7 +160,9 @@ export async function generateSeedreamImage(
   console.log(
     `[Seedream] Generating: model=${model}, size=${
       resolvedSize ?? 'adaptive'
-    }, seed=${usedSeed}, images=${imageArray.length}, keySource=${specificApiKey ? 'user' : 'server'}`
+    }, seed=${usedSeed}, images=${imageArray.length}, keySource=${
+      specificApiKey ? 'user' : 'server'
+    }`
   );
 
   const response = await safeFetch(BYTEPLUS_ENDPOINT, {

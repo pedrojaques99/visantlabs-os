@@ -54,9 +54,13 @@ router.get('/llms.txt', (_req, res) => {
 MCP uses JSON-RPC 2.0 over HTTP. All requests are POST to \`${MCP_ENDPOINT}\`.
 
 1. Authenticate (see below) → get access_token
-${MCP_HINTS.jsonRpcSteps(MCP_ENDPOINT, MCP_SPEC_VERSION).map(s => `${s}`).join('\n')}
+${MCP_HINTS.jsonRpcSteps(MCP_ENDPOINT, MCP_SPEC_VERSION)
+  .map((s) => `${s}`)
+  .join('\n')}
 
-**Important:** ${MCP_HINTS.warnings.notRestApi} ${MCP_HINTS.warnings.argumentsRequired} ${MCP_HINTS.warnings.persistToken} ${MCP_HINTS.responseFormat}
+**Important:** ${MCP_HINTS.warnings.notRestApi} ${MCP_HINTS.warnings.argumentsRequired} ${
+    MCP_HINTS.warnings.persistToken
+  } ${MCP_HINTS.responseFormat}
 
 Full reference: ${API_BASE_URL}/llms-full.txt
 
@@ -65,7 +69,9 @@ Full reference: ${API_BASE_URL}/llms-full.txt
 **Option A — OAuth 2.1 (recommended for AI agents)**
 Full Authorization Code + PKCE flow. No API key needed — the user authorizes you via browser.
 
-${MCP_HINTS.oauthSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
+${MCP_HINTS.oauthSteps(API_BASE_URL)
+  .map((s) => `- ${s}`)
+  .join('\n')}
 
 Discovery: \`GET ${API_BASE_URL}/.well-known/oauth-authorization-server\`
 Scopes: \`read\`, \`write\`, \`generate\`
@@ -73,7 +79,9 @@ Scopes: \`read\`, \`write\`, \`generate\`
 **Option B — Device Flow (recommended for agents without a local server)**
 Best for Telegram bots, CLI tools, remote agents. Zero copy-paste — agent polls automatically.
 
-${MCP_HINTS.deviceFlowSteps(API_BASE_URL).map(s => `- ${s}`).join('\n')}
+${MCP_HINTS.deviceFlowSteps(API_BASE_URL)
+  .map((s) => `- ${s}`)
+  .join('\n')}
 
 **Option C — OOB flow (fallback — manual copy-paste)**
 Use \`redirect_uri=urn:ietf:wg:oauth:2.0:oob\` — user sees the code on screen and pastes it back to the agent.
@@ -223,7 +231,9 @@ Best for Telegram bots, CLI tools, IoT, remote agents. User approves in browser;
    \`\`\`
    Response: \`{"device_code": "...", "user_code": "ABCD-1234", "verification_uri": "${API_BASE_URL}/oauth/device", "verification_uri_complete": "${API_BASE_URL}/oauth/device?code=ABCD-1234", "expires_in": 600, "interval": 5}\`
 
-2. **${MCP_HINTS.warnings.verificationUri}** Example: "Click here to authorize: ${API_BASE_URL}/oauth/device?code=ABCD-1234"
+2. **${
+    MCP_HINTS.warnings.verificationUri
+  }** Example: "Click here to authorize: ${API_BASE_URL}/oauth/device?code=ABCD-1234"
 
 3. **Poll for token** every \`interval\` seconds:
    \`\`\`

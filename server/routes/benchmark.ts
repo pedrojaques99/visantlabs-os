@@ -86,8 +86,16 @@ const BENCHMARK_EXTRAS: Record<string, BenchmarkExtra> = {
     released: '2025-05',
     strengths: ['quality-cost', 'text'],
   },
-  [SEEDREAM_MODELS.SD_4_5]: { tier: 'balanced', released: '2025-03', strengths: ['resolution', 'multi-ref'] },
-  [OPENAI_IMAGE_MODELS.GPT_IMAGE_1]: { tier: 'balanced', released: '2025-01', strengths: ['editing', 'versatile'] },
+  [SEEDREAM_MODELS.SD_4_5]: {
+    tier: 'balanced',
+    released: '2025-03',
+    strengths: ['resolution', 'multi-ref'],
+  },
+  [OPENAI_IMAGE_MODELS.GPT_IMAGE_1]: {
+    tier: 'balanced',
+    released: '2025-01',
+    strengths: ['editing', 'versatile'],
+  },
   [IDEOGRAM_MODELS.V3]: {
     tier: 'balanced',
     released: '2025-02',
