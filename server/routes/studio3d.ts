@@ -13,9 +13,11 @@ const exportLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  // Throttle per authenticated user (falls back to IP for safety).
+  keyGenerator: (req) => (req as AuthRequest).userId || req.ip || 'anon',
 });
 
-router.post('/export-glb', exportLimiter, async (req, res) => {
+router.post('/export-glb', authenticate, exportLimiter, async (req: AuthRequest, res) => {
   try {
     const {
       svgData,
