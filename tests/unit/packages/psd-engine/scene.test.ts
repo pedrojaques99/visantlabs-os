@@ -109,4 +109,23 @@ describe('scene extract → render roundtrip', () => {
     const { doc } = extractScene(psd, cc);
     expect(doc.warnings.some((w) => w.includes('totally unknown blend'))).toBe(true);
   });
+
+  it('SceneDoc survives a JSON serialize → parse roundtrip and still renders', () => {
+    // This is exactly what the scene store persists (scene.json) and the fast
+    // path reads back: the geometry must round-trip losslessly.
+    const fresh = makePsd();
+    const { doc, assets } = extractScene(fresh.psd, cc);
+
+    const roundTripped = JSON.parse(JSON.stringify(doc));
+    expect(roundTripped).toEqual(doc);
+    expect(roundTripped.version).toBe(1);
+    expect(roundTripped.faces[0].quad).toEqual(doc.faces[0].quad);
+
+    // Rendering from the round-tripped doc + the same (in-memory) assets works.
+    const art = artCanvas(64, 64);
+    const faceKey = roundTripped.faces[0].key;
+    const out = renderScene(roundTripped, assets, { [faceKey]: art }, cc);
+    expect(out.width).toBe(doc.width);
+    expect(out.height).toBe(doc.height);
+  });
 });
