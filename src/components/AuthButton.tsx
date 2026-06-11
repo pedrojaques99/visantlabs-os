@@ -391,11 +391,11 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 }}
                 onClick={() => setIsDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[160px] dropdown-menu">
+              <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[150px] py-1 dropdown-menu">
                 <Button
                   variant="ghost"
                   onClick={handleProfileClick}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
                 >
                   <span className="flex items-center gap-2">
                     <UserIcon size={14} />
@@ -412,7 +412,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/community');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
                 >
                   <Globe size={14} />
                   {t('common.community') || 'Community'}
@@ -424,7 +424,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/docs');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
                 >
                   <BookOpen size={14} />
                   Docs
@@ -439,7 +439,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                         window.history.pushState({}, '', '/admin');
                         window.dispatchEvent(new PopStateEvent('popstate'));
                       }}
-                      className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center justify-start gap-2"
                     >
                       <ShieldCheck size={14} />
                       {t('auth.adminPanel') || 'Admin'}
@@ -451,7 +451,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
                 >
                   <LogOut size={14} />
                   {t('auth.logout')}

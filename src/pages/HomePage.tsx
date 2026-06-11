@@ -233,9 +233,9 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
         {locked && <Lock size={9} className="ml-2 text-neutral-800 shrink-0" aria-hidden />}
       </div>
 
-      {/* Description */}
+      {/* Description — single line, never wraps (keeps rows compact) */}
       <div
-        className={`pl-9 font-mono text-[10px] tracking-wide transition-colors duration-100 ${
+        className={`pl-9 pr-2 font-mono text-[10px] tracking-wide truncate max-w-[340px] transition-colors duration-100 ${
           locked ? 'text-neutral-800' : focused ? 'text-neutral-500' : 'text-neutral-700'
         }`}
         aria-hidden
@@ -267,7 +267,6 @@ const AppList: React.FC<AppListProps> = ({
   isMobile,
 }) => {
   const { t } = useTranslation();
-  const [listHovered, setListHovered] = useState(false);
 
   return (
     <div className="w-max">
@@ -278,12 +277,7 @@ const AppList: React.FC<AppListProps> = ({
         ref={listRef}
         role="listbox"
         aria-label={t('home.selecione_um_app')}
-        onMouseEnter={() => setListHovered(true)}
-        onMouseLeave={() => setListHovered(false)}
-        className={`flex flex-col gap-[2px] max-h-[55vh] transition-all duration-200 ${
-          listHovered ? 'overflow-y-auto' : 'overflow-y-hidden'
-        }`}
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#262626 transparent' }}
+        className="flex flex-col gap-[2px] max-h-[55vh] overflow-y-auto scrollbar-none"
       >
         {apps.map((app, i) => (
           <motion.div
