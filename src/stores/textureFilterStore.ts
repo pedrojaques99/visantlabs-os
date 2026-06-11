@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
 import { getProceduralTexture } from '@/utils/proceduralTextures';
+import { TEXTURE_PRESETS_DATA } from '../../shared/imagelab/presets';
 
 export type TextureBlendMode =
   | 'multiply'
@@ -40,65 +41,9 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
   { name: 'Halftone Dots', src: '__procedural__' },
 ];
 
-export const FILTER_PRESETS: Record<string, Partial<TextureFilterSettings>> = {
-  Subtle: {
-    opacity: 0.15,
-    scale: 1.0,
-    blendMode: 'soft-light',
-    tileMode: true,
-    tileGapX: 0,
-    tileGapY: 0,
-  },
-  Bold: {
-    opacity: 0.8,
-    scale: 1.2,
-    blendMode: 'multiply',
-    tileMode: true,
-    tileGapX: 0,
-    tileGapY: 0,
-  },
-  'Screen Glow': {
-    opacity: 0.5,
-    scale: 1.0,
-    blendMode: 'screen',
-    tileMode: true,
-    tileGapX: 0,
-    tileGapY: 0,
-  },
-  Overlay: {
-    opacity: 0.6,
-    scale: 0.8,
-    blendMode: 'overlay',
-    tileMode: true,
-    tileGapX: 10,
-    tileGapY: 10,
-  },
-  Burn: {
-    opacity: 0.4,
-    scale: 1.5,
-    blendMode: 'color-burn',
-    tileMode: true,
-    tileGapX: 0,
-    tileGapY: 0,
-  },
-  Spaced: {
-    opacity: 0.7,
-    scale: 0.5,
-    blendMode: 'multiply',
-    tileMode: true,
-    tileGapX: 40,
-    tileGapY: 40,
-  },
-  Single: { opacity: 1.0, scale: 2.0, blendMode: 'multiply', tileMode: false },
-  'Mask Cut': {
-    opacity: 1.0,
-    scale: 1.0,
-    blendMode: 'multiply',
-    maskMode: true,
-    maskInvert: false,
-    tileMode: true,
-  },
-};
+// Single source of truth: shared/imagelab/presets.ts (also consumed server-side).
+export const FILTER_PRESETS: Record<string, Partial<TextureFilterSettings>> =
+  TEXTURE_PRESETS_DATA as Record<string, Partial<TextureFilterSettings>>;
 
 export interface TextureFilterSettings {
   opacity: number;
