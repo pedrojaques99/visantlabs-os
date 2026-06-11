@@ -9,7 +9,7 @@ import { resolve } from 'path';
 import { pathToFileURL } from 'url';
 import {
   createGLContext,
-  createProgram,
+  getOrCreateProgram,
   setupFullscreenQuad,
   uploadTexture,
   readPixels,
@@ -232,7 +232,8 @@ export async function renderShader(
   if (!gl) return null;
 
   try {
-    const program = createProgram(gl, VERTEX_SHADER, fragmentSrc);
+    // Cache key = the resolved shader source key (e.g. 'vhs', 'halftone:lines').
+    const program = getOrCreateProgram(gl, key, VERTEX_SHADER, fragmentSrc);
     gl.useProgram(program);
     setupFullscreenQuad(gl, program);
 

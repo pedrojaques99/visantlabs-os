@@ -80,6 +80,44 @@ export function createProgram(
   return program;
 }
 
+// ── Compiled-program cache ──
+//
+// WHY per-context (WeakMap), not a global source-keyed Map:
+// A WebGLProgram is bound to the GL context it was linked against. The ImageLab
+// renderers create a fresh headless-gl context per request and destroy it in a
+// `finally` (see riso/shaderRenderer). A global `Map<shaderSource, program>`
+// would therefore hand out programs whose context has already been destroyed —
+// undefined behaviour / crash. Keying the cache by context (WeakMap) keeps each
+// program valid for exactly the lifetime of its context and is concurrency-safe
+// (each in-flight request owns its own context + cache slice). Entries are GC'd
+// automatically when the context is collected after destroyContext().
+//
+// In today's one-render-per-context flow this dedupes repeated programs only if
+// a single context renders more than once (e.g. a future multi-effect pass on a
+// shared context). The larger latency win — reusing one resized context across
+// requests so compiled programs survive — is intentionally left as a follow-up:
+// it needs request serialization + resize handling and carries concurrency risk
+// beyond this change.
+const programCache = new WeakMap<WebGLRenderingContext, Map<string, WebGLProgram>>();
+
+export function getOrCreateProgram(
+  gl: WebGLRenderingContext,
+  cacheKey: string,
+  vertexSrc: string,
+  fragmentSrc: string
+): WebGLProgram {
+  let perContext = programCache.get(gl);
+  if (!perContext) {
+    perContext = new Map();
+    programCache.set(gl, perContext);
+  }
+  const cached = perContext.get(cacheKey);
+  if (cached) return cached;
+  const program = createProgram(gl, vertexSrc, fragmentSrc);
+  perContext.set(cacheKey, program);
+  return program;
+}
+
 export function setupFullscreenQuad(gl: WebGLRenderingContext, program: WebGLProgram): void {
   const positions = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
   const texCoords = new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]);

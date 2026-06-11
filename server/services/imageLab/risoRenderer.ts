@@ -8,7 +8,7 @@ import type { RisoSettings } from './types.js';
 import { RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER } from '../../../shared/riso/shaders.js';
 import {
   createGLContext,
-  createProgram,
+  getOrCreateProgram,
   setupFullscreenQuad,
   uploadTexture,
   readPixels,
@@ -47,7 +47,8 @@ export async function renderRiso(
   if (!gl) return null;
 
   try {
-    const program = createProgram(gl, RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER);
+    // Riso always uses the same shader pair → constant cache key.
+    const program = getOrCreateProgram(gl, 'riso', RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER);
     gl.useProgram(program);
     setupFullscreenQuad(gl, program);
 
