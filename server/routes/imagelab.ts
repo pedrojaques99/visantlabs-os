@@ -7,7 +7,7 @@
 import { Router, json } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
-import { chargeCredits } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry } from '../lib/credits.js';
 import {
   imageLabApplyEffect,
   imageLabApplyShader,
@@ -147,21 +147,33 @@ router.post(
       if (!imageUrl) {
         return res.status(400).json({ error: 'imageUrl is required.' });
       }
-      await chargeCredits(req.userId!, 2);
-      const result = await generativeExpand(
-        {
-          imageUrl,
-          direction,
-          anchor,
-          targetAspectRatio,
-          expandFactor,
-          prompt,
-          resolution,
-          apiKey,
-        },
-        req.userId!
-      );
-      res.json(result);
+      // Charge BEFORE the operation; refund if it fails AFTER a successful charge.
+      const charge = await chargeCredits(req.userId!, 2);
+      try {
+        const result = await generativeExpand(
+          {
+            imageUrl,
+            direction,
+            anchor,
+            targetAspectRatio,
+            expandFactor,
+            prompt,
+            resolution,
+            apiKey,
+          },
+          req.userId!
+        );
+        res.json(result);
+      } catch (opErr: any) {
+        if (charge.charged && charge.creditsDeducted > 0) {
+          await refundCreditsWithRetry(
+            req.userId!,
+            charge.creditsDeducted,
+            charge.deductionSource
+          ).catch(() => {});
+        }
+        throw opErr;
+      }
     } catch (err: any) {
       next(err);
     }
@@ -186,12 +198,24 @@ router.post(
       if (!maskBase64 && !maskRegion) {
         return res.status(400).json({ error: 'Either maskBase64 or maskRegion is required.' });
       }
-      await chargeCredits(req.userId!, 2);
-      const result = await inpaint(
-        { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
-        req.userId!
-      );
-      res.json(result);
+      // Charge BEFORE the operation; refund if it fails AFTER a successful charge.
+      const charge = await chargeCredits(req.userId!, 2);
+      try {
+        const result = await inpaint(
+          { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
+          req.userId!
+        );
+        res.json(result);
+      } catch (opErr: any) {
+        if (charge.charged && charge.creditsDeducted > 0) {
+          await refundCreditsWithRetry(
+            req.userId!,
+            charge.creditsDeducted,
+            charge.deductionSource
+          ).catch(() => {});
+        }
+        throw opErr;
+      }
     } catch (err: any) {
       next(err);
     }
@@ -209,9 +233,21 @@ router.post(
       if (!imageUrl) {
         return res.status(400).json({ error: 'imageUrl is required.' });
       }
-      await chargeCredits(req.userId!, 1);
-      const result = await removeBackgroundFromImage({ imageUrl, outputFormat }, req.userId!);
-      res.json(result);
+      // Charge BEFORE the operation; refund if it fails AFTER a successful charge.
+      const charge = await chargeCredits(req.userId!, 1);
+      try {
+        const result = await removeBackgroundFromImage({ imageUrl, outputFormat }, req.userId!);
+        res.json(result);
+      } catch (opErr: any) {
+        if (charge.charged && charge.creditsDeducted > 0) {
+          await refundCreditsWithRetry(
+            req.userId!,
+            charge.creditsDeducted,
+            charge.deductionSource
+          ).catch(() => {});
+        }
+        throw opErr;
+      }
     } catch (err: any) {
       next(err);
     }
