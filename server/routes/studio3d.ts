@@ -1,10 +1,30 @@
-import { Router } from 'express';
+import { Router, type NextFunction } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { tracePipeline, parseBase64Image } from './trace.js';
 
 const router = Router();
+
+// Populate req.userId when a valid token is present, but never reject. Used on
+// GET /:id so owners can read their own *private* scenes (the route serves
+// public scenes anonymously). Without this the private-scene branch could never
+// see a userId and always 404'd, locking owners out of their own scenes.
+function optionalAuth(req: AuthRequest, _res: unknown, next: NextFunction) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string; sub?: string };
+      if (decoded.userId) req.userId = decoded.userId;
+      else if (decoded.sub) req.userId = decoded.sub;
+    } catch {
+      /* ignore invalid tokens — anonymous access still allowed for public scenes */
+    }
+  }
+  next();
+}
 
 // ─── Export GLB (no Prisma dependency) ──────────────────────────────────────
 
@@ -378,7 +398,7 @@ router.get('/public', apiRateLimiter, async (_req, res) => {
 
 // ─── Get scene ───────────────────────────────────────────────────────────────
 
-router.get('/:id', apiRateLimiter, async (req: AuthRequest, res) => {
+router.get('/:id', apiRateLimiter, optionalAuth, async (req: AuthRequest, res) => {
   try {
     const scene = await prisma.studio3DScene.findUnique({ where: { id: req.params.id } });
     if (!scene) return res.status(404).json({ error: 'Scene not found' });
