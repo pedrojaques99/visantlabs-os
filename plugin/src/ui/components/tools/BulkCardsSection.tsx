@@ -11,21 +11,21 @@ interface Influencer {
 }
 
 function parseJson(raw: unknown): Influencer[] {
-  if (Array.isArray(raw)) {
-    for (const collection of raw) {
-      const firstCollection = (collection?.Influencers ?? Object.values(collection ?? {})[0]) as any;
-      const modes = firstCollection?.modes;
-      if (modes && typeof modes === 'object') {
-        return Object.values(modes as Record<string, Record<string, { $value: unknown }>>).map(
-          (vars) => ({
-            nome: String(vars.nome?.$value ?? vars.Nome?.$value ?? ''),
-            instagram: String(vars.instagram?.$value ?? vars.Instagram?.$value ?? ''),
-            foto_arquivo: vars.foto_arquivo?.$value
-              ? String(vars.foto_arquivo.$value)
-              : undefined,
-          })
-        ).filter((inf) => inf.nome);
-      }
+  const collections = Array.isArray(raw) ? raw : [raw];
+  for (const collection of collections) {
+    if (!collection || typeof collection !== 'object') continue;
+    const firstCollection = ((collection as any)?.Influencers ?? Object.values(collection as object)[0]) as any;
+    const modes = firstCollection?.modes;
+    if (modes && typeof modes === 'object') {
+      return Object.values(modes as Record<string, Record<string, { $value: unknown }>>).map(
+        (vars) => ({
+          nome: String(vars.nome?.$value ?? vars.Nome?.$value ?? ''),
+          instagram: String(vars.instagram?.$value ?? vars.Instagram?.$value ?? ''),
+          foto_arquivo: vars.foto_arquivo?.$value
+            ? String(vars.foto_arquivo.$value)
+            : undefined,
+        })
+      ).filter((inf) => inf.nome);
     }
   }
   return [];
@@ -74,31 +74,36 @@ export function BulkCardsSection() {
     setBusy(true);
     setStatus(`Gerando ${influencers.length} cards…`);
 
-    const operations = influencers.map((inf, i) => {
-      const op: any = {
-        type: 'CLONE_NODE',
-        sourceName: 'Influencer',
-        sourceScope: 'page',
-        x: (i % COLS) * (CARD_W + GAP),
-        y: Math.floor(i / COLS) * (CARD_H + GAP),
-        textOverrides: [
-          { name: 'Name', content: inf.nome },
-          { name: 'Handle', content: inf.instagram },
-        ],
-      };
-      if (useImages && inf.foto_arquivo) {
-        op.imageOverrides = [{ layerName: 'Image', sourceNodeName: inf.foto_arquivo }];
-      }
-      return op;
-    });
+    try {
+      const operations = influencers.map((inf, i) => {
+        const op: any = {
+          type: 'CLONE_NODE',
+          sourceName: 'Influencer',
+          sourceScope: 'page',
+          x: (i % COLS) * (CARD_W + GAP),
+          y: Math.floor(i / COLS) * (CARD_H + GAP),
+          textOverrides: [
+            { name: 'Name', content: inf.nome },
+            { name: 'Handle', content: inf.instagram },
+          ],
+        };
+        if (useImages && inf.foto_arquivo) {
+          op.imageOverrides = [{ layerName: 'Image', sourceNodeName: inf.foto_arquivo }];
+        }
+        return op;
+      });
 
-    applyOperations(operations);
+      applyOperations(operations);
 
-    const waitMs = Math.max(3000, influencers.length * 250);
-    await new Promise((r) => setTimeout(r, waitMs));
-
-    setBusy(false);
-    setStatus(`${influencers.length} cards gerados`);
+      const waitMs = Math.max(3000, influencers.length * 250);
+      await new Promise((r) => setTimeout(r, waitMs));
+      setStatus(`${influencers.length} cards gerados`);
+    } catch (err) {
+      setStatus('Erro ao gerar cards');
+      console.error(err);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

@@ -72,7 +72,7 @@ async function resolveTier(req: TierRequest, _res: express.Response, next: expre
   next();
 }
 
-router.post('/render', authenticate, resolveTier, renderLimiter, async (req: TierRequest, res) => {
+router.post('/render', authenticate, renderLimiter, resolveTier, async (req: TierRequest, res) => {
   const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview } = req.body;
 
   // PSD: URL http(s) OU nome de arquivo no Google Drive

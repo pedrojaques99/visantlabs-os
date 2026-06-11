@@ -61,7 +61,6 @@ try {
 
   const agPsd = await import('ag-psd');
   const { createCanvas, loadImage } = await import('canvas');
-  const sharp = (await import('sharp')).default;
   agPsd.initializeCanvas(createCanvas as never);
 
   const psdBuffer = readFileSync(resolve(job.psdPath));
@@ -116,16 +115,7 @@ try {
   for (const slot of slots) {
     let artBuffer = artCache.get(slot.artPath);
     if (!artBuffer) {
-      const raw = readFileSync(resolve(slot.artPath));
-      const meta = await sharp(raw).metadata();
-      const longest = Math.max(meta.width || 0, meta.height || 0);
-      artBuffer =
-        longest > 0 && longest < 4000
-          ? await sharp(raw)
-              .resize((meta.width || 1) * Math.ceil(4000 / longest), (meta.height || 1) * Math.ceil(4000 / longest), { fit: 'fill' })
-              .png()
-              .toBuffer()
-          : raw;
+      artBuffer = readFileSync(resolve(slot.artPath));
       artCache.set(slot.artPath, artBuffer);
     }
 

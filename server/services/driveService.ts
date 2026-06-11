@@ -18,6 +18,7 @@
  */
 import { createWriteStream, existsSync, mkdirSync, readdirSync, rmSync, statSync, utimesSync } from 'fs';
 import path from 'path';
+import { randomBytes } from 'crypto';
 import { pipeline } from 'stream/promises';
 
 const CACHE_DIR = process.env.PSD_CACHE_DIR || '/tmp/psd-cache';
@@ -115,7 +116,7 @@ async function isInsideAllowedFolder(fileId: string, allowed: string[]): Promise
         next.push(...(res.data.parents || []));
       } catch {}
     }
-    frontier = next;
+    frontier = Array.from(new Set(next));
   }
   ancestryCache.set(cacheKey, false);
   return false;
@@ -153,21 +154,38 @@ export async function findFileByName(fileName: string, folderScope?: string[]): 
 }
 
 function safeCacheName(fileName: string): string {
-  return fileName.replace(/[^\w.\- À-ɏ]+/g, '_');
+  return fileName
+    .replace(/[^\w.\- À-ɏ]+/g, '_')
+    .replace(/\.\./g, '_')
+    .replace(/^\./, '_');
 }
 
+const activeDownloads = new Map<string, Promise<void>>();
+
 async function downloadToCache(file: DriveFile, destPath: string): Promise<void> {
-  const drive = await getDrive();
-  const tmpPath = `${destPath}.part`;
-  const res = await drive.files.get(
-    { fileId: file.id, alt: 'media', supportsAllDrives: true },
-    { responseType: 'stream' }
-  );
-  await pipeline(res.data, createWriteStream(tmpPath));
-  rmSync(destPath, { force: true });
-  // rename atômico
-  const { renameSync } = await import('fs');
-  renameSync(tmpPath, destPath);
+  const existing = activeDownloads.get(destPath);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    const tmpPath = `${destPath}.${randomBytes(4).toString('hex')}.part`;
+    try {
+      const drive = await getDrive();
+      const res = await drive.files.get(
+        { fileId: file.id, alt: 'media', supportsAllDrives: true },
+        { responseType: 'stream' }
+      );
+      await pipeline(res.data, createWriteStream(tmpPath));
+      rmSync(destPath, { force: true });
+      const { renameSync } = await import('fs');
+      renameSync(tmpPath, destPath);
+    } finally {
+      activeDownloads.delete(destPath);
+      rmSync(tmpPath, { force: true });
+    }
+  })();
+
+  activeDownloads.set(destPath, promise);
+  return promise;
 }
 
 /** Evict LRU até o cache caber em CACHE_MAX_BYTES. */

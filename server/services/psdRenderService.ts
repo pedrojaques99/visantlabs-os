@@ -77,8 +77,8 @@ function getDoSpacesClient(): S3Client | null {
 
 function parseSpacesUrl(url: string): { bucket: string; key: string } | null {
   const patterns = [
-    /https?:\/\/([^.]+)\.[^.]+\.cdn\.digitaloceanspaces\.com\/(.+)/,
-    /https?:\/\/([^.]+)\.[^.]+\.digitaloceanspaces\.com\/(.+)/,
+    /^https?:\/\/([^.]+)\.[^.]+\.cdn\.digitaloceanspaces\.com\/([^?#]+)/,
+    /^https?:\/\/([^.]+)\.[^.]+\.digitaloceanspaces\.com\/([^?#]+)/,
   ];
 
   for (const pattern of patterns) {

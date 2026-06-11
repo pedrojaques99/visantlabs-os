@@ -46,7 +46,8 @@ const server = createServer(async (req, res) => {
   const err = url.searchParams.get('error');
 
   if (err) {
-    res.end(`Erro: ${err}. Pode fechar esta aba.`);
+    const safeErr = String(err).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    res.end(`Erro: ${safeErr}. Pode fechar esta aba.`);
     console.error(`✗ OAuth error: ${err}`);
     process.exit(1);
   }
