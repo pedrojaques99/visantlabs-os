@@ -2,7 +2,7 @@ import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Environment, ContactShadows, OrbitControls, Text3D, Center } from '@react-three/drei';
 import * as THREE from 'three';
-import { materialPresets } from '@/components/3d-studio/engine/materials';
+import { getSimpleMaterialProps } from '@/components/3d-studio/engine/materials';
 
 interface PlaygroundScene3DProps {
   mode: 'text' | 'shape';
@@ -14,7 +14,13 @@ interface PlaygroundScene3DProps {
   depth: number;
 }
 
-// Three.js typeface JSON format — helvetiker is bundled with three-stdlib
+// Three.js typeface JSON format — helvetiker is bundled with three-stdlib.
+// NOTE: this is a deliberately separate font path from the Studio3D engine's
+// `useFont` (opentype.js TTF → SVG → extruded geometry). The playground uses
+// drei's <Text3D>, which consumes typeface JSON directly. Unifying the two
+// would change the rendered glyph geometry on one side, so the loaders stay
+// distinct by design; only the material-preset mapping is shared (see
+// getSimpleMaterialProps).
 const FONT_URL =
   'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json';
 
@@ -27,26 +33,10 @@ const SHAPE_GEOMETRIES: Record<string, () => THREE.BufferGeometry> = {
   pendant: () => new THREE.TorusGeometry(1, 0.3, 16, 100),
 };
 
+// Reuses the Studio3D engine's preset→material resolver (leaf module — no store,
+// no texture/shader pipeline) so the preset PBR mapping lives in one place.
 function MaterialProps({ material, color }: { material: string; color: string }) {
-  const preset = materialPresets[material] || materialPresets.default;
-  return (
-    <meshPhysicalMaterial
-      color={color}
-      metalness={preset.metalness}
-      roughness={preset.roughness}
-      opacity={preset.opacity}
-      transparent={preset.transparent}
-      emissiveIntensity={preset.emissiveIntensity || 0}
-      emissive={preset.emissiveIntensity ? color : '#000000'}
-      clearcoat={preset.clearcoat || 0}
-      clearcoatRoughness={preset.clearcoatRoughness || 0}
-      sheen={preset.sheen || 0}
-      sheenRoughness={preset.sheenRoughness || 0}
-      transmission={preset.transmission || 0}
-      ior={preset.ior || 1.5}
-      iridescence={preset.iridescence || 0}
-    />
-  );
+  return <meshPhysicalMaterial {...getSimpleMaterialProps(material, color)} />;
 }
 
 function useAnimation(

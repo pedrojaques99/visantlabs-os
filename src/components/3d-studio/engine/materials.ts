@@ -505,3 +505,51 @@ export function resolveMaterial(preset: string, overrides: MaterialOverrides): R
     reflectivity: overrides.reflectivity ?? base.reflectivity,
   };
 }
+
+/**
+ * Flat prop bag for a `<meshPhysicalMaterial>` rendered from a preset + color,
+ * with no texture maps, shaders, blend modes, or shape-specific tweaks. This is
+ * the "light" material path used by simple consumers (e.g. the Playground 3D
+ * scene) that want preset-driven PBR without the full `ExtrudedSVG` pipeline
+ * (which is store-coupled and carries texture/fresnel/blend logic).
+ *
+ * Single source of truth for the preset→material-prop mapping so consumers stop
+ * re-deriving it inline. Pure: depends only on `materialPresets` data.
+ */
+export interface SimpleMaterialProps {
+  color: string;
+  metalness: number;
+  roughness: number;
+  opacity: number;
+  transparent: boolean;
+  emissiveIntensity: number;
+  emissive: string;
+  clearcoat: number;
+  clearcoatRoughness: number;
+  sheen: number;
+  sheenRoughness: number;
+  transmission: number;
+  ior: number;
+  iridescence: number;
+}
+
+export function getSimpleMaterialProps(preset: string, color: string): SimpleMaterialProps {
+  const base = materialPresets[preset] ?? materialPresets.default;
+  const emissiveIntensity = base.emissiveIntensity || 0;
+  return {
+    color,
+    metalness: base.metalness,
+    roughness: base.roughness,
+    opacity: base.opacity,
+    transparent: base.transparent,
+    emissiveIntensity,
+    emissive: emissiveIntensity ? color : '#000000',
+    clearcoat: base.clearcoat || 0,
+    clearcoatRoughness: base.clearcoatRoughness || 0,
+    sheen: base.sheen || 0,
+    sheenRoughness: base.sheenRoughness || 0,
+    transmission: base.transmission || 0,
+    ior: base.ior || 1.5,
+    iridescence: base.iridescence || 0,
+  };
+}
