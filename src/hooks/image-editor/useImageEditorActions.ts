@@ -1,12 +1,52 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useImageEditorStore } from '@/stores/imageEditorStore';
-import { imagelabApi } from '@/services/imagelabApi';
+import {
+  imagelabApi,
+  pollImageLabJob,
+  type GenerativeExpandResult,
+  type InpaintResult,
+} from '@/services/imagelabApi';
 import { useMaskCanvas } from './useMaskCanvas';
 import { toast } from 'sonner';
 interface Options {
   imageUrl: string;
   imageWidth: number;
   imageHeight: number;
+}
+
+// ── Pending-job persistence (resume across reloads, like Content Studio) ──
+// Keyed by the source image so a stale job is never applied to a different one.
+const PENDING_JOB_KEY = 'imagelab:pending-job';
+
+interface PendingJob {
+  jobId: string;
+  kind: 'expand' | 'inpaint';
+  imageUrl: string;
+}
+
+function savePendingJob(job: PendingJob) {
+  try {
+    localStorage.setItem(PENDING_JOB_KEY, JSON.stringify(job));
+  } catch {
+    /* storage unavailable — async still works, just no reload-resume */
+  }
+}
+
+function clearPendingJob() {
+  try {
+    localStorage.removeItem(PENDING_JOB_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function readPendingJob(): PendingJob | null {
+  try {
+    const raw = localStorage.getItem(PENDING_JOB_KEY);
+    return raw ? (JSON.parse(raw) as PendingJob) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Options) {
@@ -27,19 +67,24 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
 
     try {
       const maskBase64 = exportMaskBase64(state.maskOperations);
-      const result = await imagelabApi.inpaint({
+      const { jobId } = await imagelabApi.inpaintAsync({
         imageUrl,
         mode: state.activeMode,
         prompt: state.prompt || undefined,
         maskBase64,
       });
+      savePendingJob({ jobId, kind: 'inpaint', imageUrl });
 
-      state.setResult(result.imageUrl, result.base64);
+      const result = await pollImageLabJob<InpaintResult>(jobId);
+      clearPendingJob();
+
+      useImageEditorStore.getState().setResult(result.imageUrl, result.base64);
       toast.success('Image edited successfully!');
     } catch (err: any) {
+      clearPendingJob();
       toast.error(err?.message || 'Failed to edit image');
     } finally {
-      state.setGenerating(false);
+      useImageEditorStore.getState().setGenerating(false);
     }
   }, [imageUrl, exportMaskBase64]);
 
@@ -77,19 +122,24 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
         (imageHeight + expandEdges.top + expandEdges.bottom) / imageHeight
       );
 
-      const result = await imagelabApi.generativeExpand({
+      const { jobId } = await imagelabApi.generativeExpandAsync({
         imageUrl,
         direction,
         expandFactor: maxExpand,
         prompt: state.prompt || undefined,
       });
+      savePendingJob({ jobId, kind: 'expand', imageUrl });
 
-      state.setResult(result.imageUrl, result.base64);
+      const result = await pollImageLabJob<GenerativeExpandResult>(jobId);
+      clearPendingJob();
+
+      useImageEditorStore.getState().setResult(result.imageUrl, result.base64);
       toast.success('Image expanded!');
     } catch (err: any) {
+      clearPendingJob();
       toast.error(err?.message || 'Failed to expand image');
     } finally {
-      state.setGenerating(false);
+      useImageEditorStore.getState().setGenerating(false);
     }
   }, [imageUrl, imageWidth, imageHeight]);
 
@@ -106,6 +156,39 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
     } finally {
       state.setGenerating(false);
     }
+  }, [imageUrl]);
+
+  // Resume a job left in-flight by a reload — only for the current image, so a
+  // result is never applied to the wrong photo. Mirrors Content Studio's resume.
+  useEffect(() => {
+    const pending = readPendingJob();
+    if (!pending || pending.imageUrl !== imageUrl) return;
+
+    let cancelled = false;
+    const state = useImageEditorStore.getState();
+    state.setGenerating(true);
+    toast.info('Resuming in-progress edit…');
+
+    pollImageLabJob<GenerativeExpandResult | InpaintResult>(pending.jobId)
+      .then((result) => {
+        if (cancelled) return;
+        clearPendingJob();
+        useImageEditorStore.getState().setResult(result.imageUrl, result.base64);
+        toast.success(pending.kind === 'expand' ? 'Image expanded!' : 'Image edited successfully!');
+      })
+      .catch((err: any) => {
+        if (cancelled) return;
+        clearPendingJob();
+        toast.error(err?.message || 'Could not resume the previous edit');
+      })
+      .finally(() => {
+        if (!cancelled) useImageEditorStore.getState().setGenerating(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageUrl]);
 
   const handleGenerate = useCallback(() => {

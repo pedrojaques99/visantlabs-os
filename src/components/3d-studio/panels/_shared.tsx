@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { NodeSlider } from '@/components/ui/NodeSlider';
+import { ScrubInput } from '@/components/ui/ScrubInput';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore, MATERIAL_PRESETS } from '@/stores/studio3dStore';
 import { ToolPanelGrid, ToolPanelChip } from '@/components/shared/ToolPanel';
@@ -122,7 +122,10 @@ export const LightPositionSliders: React.FC<{
 
 /* ── Material Category Tabs ─────────────────────────────── */
 
-export const MaterialCategoryTabs: React.FC<{ activeCat: string; store: StoreState }> = React.memo(
+export const MaterialCategoryTabs: React.FC<{
+  activeCat: string;
+  store: Pick<StoreState, 'material' | 'setMaterial'>;
+}> = React.memo(
   ({ activeCat, store }) => {
     const { t } = useTranslation();
     const [openCat, setOpenCat] = useState(activeCat);
@@ -290,7 +293,7 @@ export const PROCEDURAL_TEXTURES = [
 /* ── Texture Controls ─────────────────────────────────── */
 
 export const TextureControls: React.FC<{
-  store: StoreState;
+  store: Pick<StoreState, 'texture' | 'setTexture' | 'textureRepeat' | 'setTextureRepeat'>;
   textureOpacity: number;
   setTextureOpacity: (v: number) => void;
   textureRotation: number;
@@ -351,31 +354,36 @@ export const TextureControls: React.FC<{
           aria-label="Upload texture"
         />
         {hasTexture && (
-          <div className="pt-2 space-y-3">
-            <NodeSlider
-              label={t('studio3d.texture.opacity')}
-              value={textureOpacity}
-              min={0}
-              max={1}
-              step={0.01}
-              onChange={setTextureOpacity}
-            />
-            <NodeSlider
-              label={t('studio3d.texture.repeat')}
-              value={store.textureRepeat}
-              min={0.5}
-              max={10}
-              step={0.5}
-              onChange={store.setTextureRepeat}
-            />
-            <NodeSlider
-              label="Rotation"
-              value={textureRotation}
-              min={0}
-              max={6.28}
-              step={0.1}
-              onChange={setTextureRotation}
-            />
+          <div className="pt-2 space-y-2">
+            <div className="grid grid-cols-3 gap-1.5">
+              <ScrubInput
+                label={t('studio3d.texture.opacity')}
+                value={textureOpacity}
+                min={0}
+                max={1}
+                step={0.01}
+                onChange={setTextureOpacity}
+                hint="Texture opacity — double-click to type a value"
+              />
+              <ScrubInput
+                label={t('studio3d.texture.repeat')}
+                value={store.textureRepeat}
+                min={0.5}
+                max={10}
+                step={0.5}
+                onChange={store.setTextureRepeat}
+                hint="Texture tiling repeat — double-click to type a value"
+              />
+              <ScrubInput
+                label="Rotation"
+                value={textureRotation}
+                min={0}
+                max={6.28}
+                step={0.1}
+                onChange={setTextureRotation}
+                hint="Texture rotation (radians) — double-click to type a value"
+              />
+            </div>
             {activeProc && (
               <button
                 onClick={() =>

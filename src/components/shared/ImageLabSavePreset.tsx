@@ -10,6 +10,7 @@ import { useHalftoneStore } from '@/stores/halftoneStore';
 import { useTextureFilterStore } from '@/stores/textureFilterStore';
 import { useRisoStore } from '@/stores/risoStore';
 import { useShaderLabStore } from '@/stores/shaderLabStore';
+import { applyImageLabPreset } from '@/lib/imagelab/applyPreset';
 
 interface SavedPreset {
   id: string;
@@ -45,26 +46,7 @@ function collectSettings(mode: ImageLabMode) {
 }
 
 function applyPreset(preset: SavedPreset) {
-  if (!preset.data?.mode) return;
-  const { mode, settings, layers } = preset.data;
-  useImageLabStore.getState().setMode(mode);
-
-  if (mode === 'halftone') {
-    const store = useHalftoneStore.getState();
-    Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-  } else if (mode === 'texture') {
-    const store = useTextureFilterStore.getState();
-    Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-  } else if (mode === 'riso') {
-    const store = useRisoStore.getState();
-    Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-    if (layers) store.setLayers(layers);
-  } else if (mode === 'shaders') {
-    const store = useShaderLabStore.getState();
-    if (settings.shaderType) store.setShaderType(settings.shaderType);
-    if (settings.values)
-      Object.entries(settings.values).forEach(([k, v]) => store.setShaderValue(k, v as number));
-  }
+  applyImageLabPreset(preset);
 }
 
 export const ImageLabSavePreset: React.FC = React.memo(() => {

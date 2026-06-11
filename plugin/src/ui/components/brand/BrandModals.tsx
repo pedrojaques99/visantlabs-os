@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -49,7 +49,7 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
       <DialogContent className="max-w-2xl max-h-96 overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-sm font-semibold">Smart Scan Results</DialogTitle>
-          <p className="text-xs text-muted-foreground mt-1">Categorize detected design elements</p>
+          <DialogDescription className="text-xs mt-1">Categorize detected design elements</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
@@ -133,9 +133,7 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-sm font-semibold">Push to Web App</DialogTitle>
-          <p className="text-xs text-muted-foreground mt-1">
-            Select what to push to your brand guideline
-          </p>
+          <DialogDescription className="text-xs mt-1">Select what to push to your brand guideline</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -233,9 +231,7 @@ export function ComponentLibraryModal({
           <DialogTitle className="text-lg font-bold uppercase tracking-widest text-brand-cyan">
             Library Index
           </DialogTitle>
-          <p className="text-xs text-neutral-500">
-            View and insert components from your design system
-          </p>
+          <DialogDescription className="text-xs">View and insert components from your design system</DialogDescription>
 
           <div className="mt-4">
             <input
@@ -312,7 +308,7 @@ export function NamingGuideModal({ isOpen, onClose }: { isOpen: boolean; onClose
             <BookOpen size={20} />
             Naming Guide
           </DialogTitle>
-          <p className="text-xs text-neutral-500">How to name layers for Smart Integration</p>
+          <DialogDescription className="text-xs">How to name layers for Smart Integration</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar text-xs leading-relaxed text-neutral-400">

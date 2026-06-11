@@ -124,64 +124,36 @@ const WHITE_OPACITY_FIXES = [
   { from: /(-white\/)\[0\.3[0-5]\]/g, to: '$130' },
 ];
 
-// Status color normalization — raw red → destructive, raw green → success pattern
+// Status color normalization — raw status colors → semantic tokens.
+// red → destructive, green/emerald → success, amber/yellow → warning.
+// Shades 200–600 collapse to the single token (semantic intent, not a shade).
 const STATUS_COLOR_FIXES = [
-  { from: /\btext-red-500\b(?!\/)/g, to: 'text-destructive' },
-  { from: /\btext-red-400\b(?!\/)/g, to: 'text-destructive' },
-  { from: /\btext-red-600\b(?!\/)/g, to: 'text-destructive' },
-  { from: /\bbg-red-500\b(?!\/)/g,   to: 'bg-destructive' },
-  { from: /\bbg-red-600\b(?!\/)/g,   to: 'bg-destructive' },
-  // green/emerald → we can't use a semantic token yet, so normalize to green-500
-  { from: /\btext-emerald-400\b(?!\/)/g, to: 'text-green-500' },
-  { from: /\btext-emerald-500\b(?!\/)/g, to: 'text-green-500' },
-  { from: /\bbg-emerald-500\b(?!\/)/g,   to: 'bg-green-500' },
-  { from: /\bbg-emerald-400\b(?!\/)/g,   to: 'bg-green-500' },
-  { from: /\bbg-red-400\b(?!\/)/g,       to: 'bg-destructive' },
-  { from: /\btext-emerald-200\b(?!\/)/g,  to: 'text-green-400' },
+  // red → destructive
+  { from: /\btext-red-[2-6]00\b(?!\/)/g,   to: 'text-destructive' },
+  { from: /\bbg-red-[2-6]00\b(?!\/)/g,     to: 'bg-destructive' },
+  { from: /\bborder-red-[2-6]00\b(?!\/)/g, to: 'border-destructive' },
+  // green / emerald → success
+  { from: /\btext-(?:emerald|green)-[2-6]00\b(?!\/)/g,   to: 'text-success' },
+  { from: /\bbg-(?:emerald|green)-[2-6]00\b(?!\/)/g,     to: 'bg-success' },
+  { from: /\bborder-(?:emerald|green)-[2-6]00\b(?!\/)/g, to: 'border-success' },
+  // amber / yellow → warning
+  { from: /\btext-(?:amber|yellow)-[2-6]00\b(?!\/)/g,   to: 'text-warning' },
+  { from: /\bbg-(?:amber|yellow)-[2-6]00\b(?!\/)/g,     to: 'bg-warning' },
+  { from: /\bborder-(?:amber|yellow)-[2-6]00\b(?!\/)/g, to: 'border-warning' },
 ];
 
-// Opacity-suffixed status colors → normalize
+// Opacity-suffixed status colors → semantic tokens (opacity preserved).
+// Covers state prefixes (hover:/focus:/group-hover:) and arbitrary opacities.
 const STATUS_OPACITY_FIXES = [
-  { from: /\bbg-red-500\/10\b/g,     to: 'bg-destructive/10' },
-  { from: /\bbg-red-500\/20\b/g,     to: 'bg-destructive/20' },
-  { from: /\bborder-red-500\/20\b/g, to: 'border-destructive/20' },
-  { from: /\bborder-red-500\/30\b/g, to: 'border-destructive/30' },
-  { from: /\btext-red-500\/60\b/g,   to: 'text-destructive/60' },
-  { from: /\btext-red-400\/60\b/g,   to: 'text-destructive/60' },
-  { from: /\bbg-emerald-500\/10\b/g,     to: 'bg-green-500/10' },
-  { from: /\bbg-emerald-500\/20\b/g,     to: 'bg-green-500/20' },
-  { from: /\bborder-emerald-500\/20\b/g, to: 'border-green-500/20' },
-  { from: /\bborder-emerald-500\/30\b/g, to: 'border-green-500/30' },
-  { from: /\btext-emerald-300\b(?!\/)/g,  to: 'text-green-400' },
-  { from: /\btext-emerald-400\b(?!\/)/g,  to: 'text-green-400' },
-  { from: /\btext-emerald-500\b(?!\/)/g,  to: 'text-green-500' },
-  { from: /\bhover:bg-emerald-500\/20\b/g, to: 'hover:bg-green-500/20' },
-  { from: /\bbg-red-400\/10\b/g,     to: 'bg-destructive/10' },
-  { from: /\bbg-red-400\/20\b/g,     to: 'bg-destructive/20' },
-  { from: /\bborder-red-400\/20\b/g, to: 'border-destructive/20' },
-  { from: /\bborder-red-400\/30\b/g, to: 'border-destructive/30' },
-  { from: /\btext-red-300\b(?!\/)/g,  to: 'text-destructive' },
-  { from: /\bbg-red-500\/5\b/g,      to: 'bg-destructive/5' },
-  { from: /\bbg-red-400\/5\b/g,      to: 'bg-destructive/5' },
-  { from: /\bbg-emerald-500\/30\b/g, to: 'bg-green-500/30' },
-  { from: /\btext-emerald-400\/80\b/g, to: 'text-green-400/80' },
-  { from: /\bbg-red-500\/40\b/g,       to: 'bg-destructive/40' },
-  { from: /\bbg-emerald-500\/60\b/g,   to: 'bg-green-500/60' },
-  { from: /\bbg-emerald-500\/(\[[\d.]+\])/g,     to: 'bg-green-500/$1' },
-  { from: /\bborder-emerald-500\/(\[[\d.]+\])/g,  to: 'border-green-500/$1' },
-  { from: /\btext-emerald-500\/(\[[\d.]+\])/g,    to: 'text-green-500/$1' },
-  { from: /\btext-emerald-400\/(\[[\d.]+\])/g,    to: 'text-green-400/$1' },
-  { from: /\btext-emerald-300\/(\[[\d.]+\])/g,    to: 'text-green-400/$1' },
-  { from: /\bbg-red-500\/(\[[\d.]+\])/g,          to: 'bg-destructive/$1' },
-  { from: /\bborder-red-500\/(\[[\d.]+\])/g,      to: 'border-destructive/$1' },
-  { from: /\btext-red-500\/(\[[\d.]+\])/g,        to: 'text-destructive/$1' },
-  { from: /\btext-red-400\/(\[[\d.]+\])/g,        to: 'text-destructive/$1' },
-  // Catch-all: any red-N00/opacity → destructive/opacity (covers hover:, focus:, etc.)
-  { from: /\b((?:hover:|focus:)?(?:bg|border|text))-red-[3-6]00\/(\d+)\b/g, to: '$1-destructive/$2' },
-  { from: /\b((?:hover:|focus:)?(?:bg|border|text))-red-[3-6]00\/(\[[\d.]+\])/g, to: '$1-destructive/$2' },
-  // Catch-all: any emerald-N00/opacity → green-500/opacity
-  { from: /\b((?:hover:|focus:)?(?:bg|border|text))-emerald-[3-6]00\/(\d+)\b/g, to: '$1-green-500/$2' },
-  { from: /\b((?:hover:|focus:)?(?:bg|border|text))-emerald-[3-6]00\/(\[[\d.]+\])/g, to: '$1-green-500/$2' },
+  // red → destructive
+  { from: /\b((?:hover:|focus:|group-hover:)?(?:bg|border|text|ring))-red-[2-6]00\/(\d+)\b/g, to: '$1-destructive/$2' },
+  { from: /\b((?:hover:|focus:|group-hover:)?(?:bg|border|text|ring))-red-[2-6]00\/(\[[\d.]+\])/g, to: '$1-destructive/$2' },
+  // green / emerald → success
+  { from: /\b((?:hover:|focus:|group-hover:)?(?:bg|border|text|ring))-(?:emerald|green)-[2-6]00\/(\d+)\b/g, to: '$1-success/$2' },
+  { from: /\b((?:hover:|focus:|group-hover:)?(?:bg|border|text|ring))-(?:emerald|green)-[2-6]00\/(\[[\d.]+\])/g, to: '$1-success/$2' },
+  // amber / yellow → warning
+  { from: /\b((?:hover:|focus:|group-hover:)?(?:bg|border|text|ring))-(?:amber|yellow)-[2-6]00\/(\d+)\b/g, to: '$1-warning/$2' },
+  { from: /\b((?:hover:|focus:|group-hover:)?(?:bg|border|text|ring))-(?:amber|yellow)-[2-6]00\/(\[[\d.]+\])/g, to: '$1-warning/$2' },
 ];
 
 // Border scope expansion — ghost borders everywhere, not just nodes
@@ -232,9 +204,9 @@ const RULES = [
   {
     id: 'hardcoded-status-with-opacity',
     severity: WARN,
-    description: 'Status color with opacity — normalize red→destructive, emerald→green-500',
+    description: 'Status color with opacity — normalize red→destructive, green→success, amber→warning',
     scope: 'all',
-    pattern: /(?:text|bg|border)-(?:red|emerald)-(?:3|4|5|6)00\//,
+    pattern: /(?:text|bg|border|ring)-(?:red|emerald|green|amber|yellow)-(?:2|3|4|5|6)00\//,
     exclude: /(?:from-|via-|to-)/,
     autofix: STATUS_OPACITY_FIXES,
   },
@@ -452,18 +424,27 @@ const RULES = [
   {
     id: 'raw-destructive-color',
     severity: WARN,
-    description: 'Raw red color class — use text-destructive / bg-destructive',
+    description: 'Raw red color class — use text-destructive / bg-destructive / border-destructive',
     scope: 'all',
-    pattern: /(?:text|bg)-red-(?:4|5|6)00\b(?!\/)/,
+    pattern: /(?:text|bg|border)-red-(?:2|3|4|5|6)00\b(?!\/)/,
     exclude: /(?:from-|via-|to-|Badge|variant)/,
     autofix: STATUS_COLOR_FIXES,
   },
   {
     id: 'raw-success-color',
     severity: WARN,
-    description: 'Raw emerald color — normalize to green-500 (future: --success token)',
+    description: 'Raw green/emerald color — use the --success token (text-success / bg-success / border-success)',
     scope: 'all',
-    pattern: /(?:text|bg)-emerald-(?:4|5|6)00\b(?!\/)/,
+    pattern: /(?:text|bg|border)-(?:emerald|green)-(?:2|3|4|5|6)00\b(?!\/)/,
+    exclude: /(?:from-|via-|to-)/,
+    autofix: STATUS_COLOR_FIXES,
+  },
+  {
+    id: 'raw-warning-color',
+    severity: WARN,
+    description: 'Raw amber/yellow color — use the --warning token (text-warning / bg-warning / border-warning)',
+    scope: 'all',
+    pattern: /(?:text|bg|border)-(?:amber|yellow)-(?:2|3|4|5|6)00\b(?!\/)/,
     exclude: /(?:from-|via-|to-)/,
     autofix: STATUS_COLOR_FIXES,
   },

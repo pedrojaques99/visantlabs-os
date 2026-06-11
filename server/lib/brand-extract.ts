@@ -1,6 +1,7 @@
 // server/lib/brand-extract.ts
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ParsedChunk } from './brand-parse.js';
+import { stripDataUriPrefix } from './dataUri.js';
 import { BrandGuideline } from '../types/brandGuideline.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
@@ -90,7 +91,7 @@ export async function extractBrandData(
       parts.push({
         inlineData: {
           mimeType: 'image/png',
-          data: imgBase64.replace(/^data:image\/\w+;base64,/, ''),
+          data: stripDataUriPrefix(imgBase64),
         },
       });
     }

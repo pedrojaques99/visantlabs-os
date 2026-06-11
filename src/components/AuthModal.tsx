@@ -43,8 +43,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
 
-  const hcaptchaSiteKey =
+  // Site key resolved from the server at runtime (deploy-env driven, no rebuild),
+  // falling back to the build-time VITE var if the config fetch fails.
+  const buildTimeSiteKey =
     typeof window !== 'undefined' ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY : undefined;
+  const [runtimeSiteKey, setRuntimeSiteKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    authService.getAuthConfig().then((cfg) => {
+      if (active) setRuntimeSiteKey(cfg.hcaptchaSiteKey);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const hcaptchaSiteKey = runtimeSiteKey || buildTimeSiteKey;
   const captchaEnabled = !!hcaptchaSiteKey;
 
   // Use external state if provided, otherwise use internal state

@@ -517,6 +517,7 @@
     "donts": "Evitar",
     "dos": "Fazer",
     "emptyState": "Nenhuma brand guideline ainda. Crie uma para começar.",
+    "emptyStateDesc": "Crie e organize suas diretrizes de marca em um único lugar.",
     "fontFamily": "Família da fonte",
     "fontRole": "Função (heading...)",
     "fontStyle": "Estilo (Bold...)",
@@ -2526,6 +2527,15 @@
     "brandWizardImagesPlaceholderShort": "IMAGENS",
     "brandWizardPdfPlaceholderShort": "PDF",
     "brandWizardExtractionHint": "extração essencialista de estratégia, arquétipos e tokens.",
+    "brandWizardUrlHint": "Cores, tipografia e detalhes da marca serão extraídos automaticamente.",
+    "brandWizardFigmaPlaceholder": "figma.com/file/... ou figma.com/design/...",
+    "brandWizardFigmaHint": "Cores e tipografia serão extraídas via API do Figma.",
+    "brandWizardFigmaUrlDetected": "URL do Figma detectada",
+    "brandWizardFigExtractSuccess": "Arquivo Figma extraído com sucesso",
+    "brandWizardFigExtractError": "Erro ao extrair arquivo Figma",
+    "brandWizardFigmaTokensImported": "Tokens do Figma importados. Cores e tipografia extraídas.",
+    "brandWizardFigmaNoToken": "Token do Figma não configurado. Vá em Perfil, depois Configuração.",
+    "brandWizardFigmaLinkedTokensFailed": "Figma vinculado, mas a extração de tokens falhou.",
     "brandWizardImagesPasted": "Imagens coladas da área de transferência",
     "brandWizardPdfPasted": "PDF colado da área de transferência",
     "brandWizardErrorImage": "Erro ao extrair dados das imagens",
@@ -3237,7 +3247,24 @@
     "uploadPicture": "Clique para enviar foto",
     "viewAllTransactions": "Transações",
     "viewOutputs": "Ver resultados",
-    "viewPublicProfile": "Ver Perfil Público"
+    "viewPublicProfile": "Ver Perfil Público",
+    "apiKeys": "API Keys",
+    "danger": {
+      "title": "Zona de perigo",
+      "description": "Ao excluir sua conta, seus dados serão anonimizados e a assinatura cancelada. Esta ação não pode ser desfeita.",
+      "deleteAccount": "Excluir minha conta"
+    },
+    "deleteDialog": {
+      "title": "Excluir conta",
+      "description": "Esta ação é irreversível. Sua assinatura será cancelada e seus dados anonimizados. Digite",
+      "toConfirm": "para confirmar.",
+      "placeholder": "Digite {word}",
+      "confirm": "Excluir permanentemente",
+      "deleting": "Excluindo...",
+      "success": "Conta excluída com sucesso.",
+      "error": "Erro ao excluir conta.",
+      "confirmWord": "EXCLUIR"
+    }
   },
   "referral": {
     "copy": "Copiar",
@@ -4347,6 +4374,14 @@
     "hidePanel": "Ocultar painel (⌘\\)",
     "showPanel": "Mostrar painel (⌘\\)",
     "controls": "Controles",
+    "status": {
+      "depth": "prof {value}"
+    },
+    "autosave": {
+      "saving": "salvando…",
+      "saved": "salvo",
+      "failed": "falha ao salvar"
+    },
     "tabs": {
       "shape": "Forma",
       "material": "Material",
@@ -4552,6 +4587,11 @@
     "dropGlb": "Solte GLB / GLTF",
     "dropHere": "Solte o arquivo aqui"
   },
+  "imagelab": {
+    "title": "IMAGE LAB",
+    "documentTitle": "Image Lab — Visant",
+    "dropPrompt": "Solte ou cole uma imagem ou vídeo para começar"
+  },
   "wind": {
     "tunnel": {
       "export_png": "Export PNG",
@@ -4709,7 +4749,12 @@
         "access_denied": "Access Denied",
         "decrypting_brand_assets": "Decrypting Brand Assets",
         "downloaded_as_css": "Downloaded as CSS",
-        "downloaded_as_json": "Downloaded as JSON"
+        "downloaded_as_json": "Downloaded as JSON",
+        "edit_mode": "EDITAR",
+        "viewing_mode": "VER",
+        "edit_section": "Editar seção",
+        "open_full_editor": "Abrir editor completo →",
+        "editing_section": "Editando"
       }
     }
   },
@@ -4812,5 +4857,35 @@
   "premium": {
     "upgradeRequired": "Este recurso requer uma assinatura Pro.",
     "seePlans": "Ver Planos"
+  },
+  "landing": {
+    "hero": {
+      "titleLine1": "A IA que entende",
+      "titleLine2": "a sua marca.",
+      "subtitle": "Suas brand guidelines viram contexto vivo de IA. Mockups, peças e campanhas sempre na sua identidade.",
+      "ctaPrimary": "Começar grátis",
+      "ctaSecondary": "Ver os apps"
+    },
+    "bento": {
+      "eyebrow": "A plataforma",
+      "title": "Tudo conectado pela sua marca.",
+      "mockupName": "Mockup Machine",
+      "mockupDesc": "Mockups realistas do produto em segundos.",
+      "brandName": "Brand Guidelines",
+      "brandDesc": "Sua identidade, viva como contexto de IA.",
+      "canvasName": "Canvas",
+      "canvasDesc": "Editor visual com pipelines de IA.",
+      "studioName": "3D Studio",
+      "studioDesc": "Cenas e render 3D no navegador.",
+      "brandingName": "Branding",
+      "brandingDesc": "Identidades de marca geradas por IA."
+    },
+    "finalCta": {
+      "title": "Sua marca, agora com IA.",
+      "button": "Começar grátis"
+    },
+    "footer": {
+      "tagline": "A única IA que conhece a sua marca."
+    }
   }
 }

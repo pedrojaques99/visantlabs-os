@@ -699,6 +699,18 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
   }
 });
 
+// Public runtime config for the auth UI. The hCaptcha *site* key is public (not
+// a secret), so serving it from the server's runtime env lets the frontend
+// render the widget without a rebuild — the widget no longer depends on the
+// build-time VITE var being baked into the bundle. Keeps site/secret in sync:
+// the widget shows exactly when the server is configured to verify.
+router.get('/config', apiRateLimiter, (_req, res) => {
+  res.json({
+    hcaptchaSiteKey:
+      process.env.HCAPTCHA_SITE_KEY || process.env.VITE_HCAPTCHA_SITE_KEY || null,
+  });
+});
+
 // Email/Password Sign Up
 // CAPTCHA middleware removed - CAPTCHA is disabled
 router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Settings, Pickaxe, User as UserIcon } from 'lucide-react';
 
 export function Header() {
-  const { setActiveView, credits, activeView, userInfo, toggleDevMode, devMode } = usePluginStore();
+  const { setActiveView, credits, activeView, userInfo, authEmail, toggleDevMode, devMode } = usePluginStore();
   const { isConnected } = useServerStatus();
   const clickCount = useRef(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,25 +68,34 @@ export function Header() {
           </Button>
         )}
 
-        {userInfo?.photoUrl ? (
-          <img
-            src={userInfo.photoUrl}
-            alt={userInfo.name}
-            className="w-7 h-7 rounded-md object-cover"
-          />
-        ) : userInfo ? (
-          <div className="w-7 h-7 rounded-md bg-neutral-800 flex items-center justify-center border border-border">
-            <UserIcon size={14} className="text-neutral-400" />
-          </div>
-        ) : null}
+        <button
+          onClick={() => setActiveView(activeView === 'profile' ? 'main' : 'profile')}
+          className="w-7 h-7 rounded-md overflow-hidden border border-border hover:border-brand-cyan/40 transition-colors focus:outline-none flex-shrink-0"
+          title={userInfo?.name ?? authEmail ?? 'Profile'}
+          aria-label="Open profile"
+        >
+          {userInfo?.photoUrl ? (
+            <img src={userInfo.photoUrl} alt={userInfo.name} className="w-full h-full object-cover" />
+          ) : (authEmail || userInfo?.name) ? (
+            <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+              <span className="text-[10px] font-bold text-neutral-300 uppercase">
+                {(userInfo?.name ?? authEmail ?? '?').charAt(0)}
+              </span>
+            </div>
+          ) : (
+            <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+              <UserIcon size={14} className="text-neutral-400" />
+            </div>
+          )}
+        </button>
 
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setActiveView(activeView === 'main' ? 'settings' : 'main')}
+          onClick={() => setActiveView(activeView === 'settings' ? 'main' : 'settings')}
           className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
           title="Settings"
-          aria-label={activeView === 'main' ? 'Open settings' : 'Close settings'}
+          aria-label={activeView === 'settings' ? 'Close settings' : 'Open settings'}
         >
           <Settings size={14} className="text-neutral-400" />
         </Button>

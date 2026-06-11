@@ -29,6 +29,38 @@ vi.mock('google-auth-library', () => {
   return { OAuth2Client: MockOAuth2Client };
 });
 
+describe('GET /api/auth/config', () => {
+  it('returns the hCaptcha site key from server runtime env', async () => {
+    const prev = process.env.HCAPTCHA_SITE_KEY;
+    process.env.HCAPTCHA_SITE_KEY = 'test-site-key-123';
+    try {
+      const agent = await request();
+      const res = await agent.get('/api/auth/config');
+      expect(res.status).toBe(200);
+      expect(res.body.hcaptchaSiteKey).toBe('test-site-key-123');
+    } finally {
+      if (prev === undefined) delete process.env.HCAPTCHA_SITE_KEY;
+      else process.env.HCAPTCHA_SITE_KEY = prev;
+    }
+  });
+
+  it('returns null when no site key is configured', async () => {
+    const prevSite = process.env.HCAPTCHA_SITE_KEY;
+    const prevVite = process.env.VITE_HCAPTCHA_SITE_KEY;
+    delete process.env.HCAPTCHA_SITE_KEY;
+    delete process.env.VITE_HCAPTCHA_SITE_KEY;
+    try {
+      const agent = await request();
+      const res = await agent.get('/api/auth/config');
+      expect(res.status).toBe(200);
+      expect(res.body.hcaptchaSiteKey).toBeNull();
+    } finally {
+      if (prevSite !== undefined) process.env.HCAPTCHA_SITE_KEY = prevSite;
+      if (prevVite !== undefined) process.env.VITE_HCAPTCHA_SITE_KEY = prevVite;
+    }
+  });
+});
+
 describe('POST /api/auth/signin', () => {
   it('returns 200 + token for valid credentials', async () => {
     const { user, password } = await createUser();

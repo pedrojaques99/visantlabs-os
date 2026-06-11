@@ -110,6 +110,7 @@ export const Studio3DPage: React.FC = () => {
       setAutoRenderState('loading');
     }
     if (!sceneId) return;
+    const autoplay = searchParams.get('autoplay') === 'true';
     const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
     fetch(`${API_BASE}/studio3d/${sceneId}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -121,6 +122,13 @@ export const Studio3DPage: React.FC = () => {
         if (inputMode) store.getState().applyConfig({ inputMode });
         if (text) store.getState().applyConfig({ text });
         if (font) store.getState().applyConfig({ font });
+        // Shared link requested autoplay: ensure the animation runs on load.
+        // The saved config already drives the loop when `animate !== 'none'`;
+        // if it happens to be 'none', fall back to a gentle spin so the share
+        // opens moving instead of frozen.
+        if (autoplay && store.getState().animate === 'none') {
+          store.getState().setAnimate('spin');
+        }
         toast.success(`Scene "${data.scene.name}" loaded`);
       })
       .catch(() => toast.error('Failed to load scene'));
@@ -194,9 +202,131 @@ export const Studio3DPage: React.FC = () => {
       }
     };
 
-    // Wait for scene to stabilize (geometry build + first render)
-    setTimeout(runExport, 2000);
+    // Poll for real readiness instead of a fixed delay: canvas mounted with
+    // rendered pixels, scene not loading, and input still present. Requires a
+    // couple of consecutive ready ticks so geometry has built before the first
+    // frame is captured. Gives up after ~15s into an error state.
+    const POLL_MS = 150;
+    const GIVE_UP_MS = 15000;
+    const STABLE_TICKS = 3; // ~450ms of sustained readiness
+    const startedAt = Date.now();
+    let stableCount = 0;
+    let started = false;
+    let pollId: ReturnType<typeof setInterval> | undefined;
+
+    const isReady = () => {
+      const canvas = canvasRef.current;
+      const s = store.getState();
+      return (
+        !!canvas &&
+        canvas.width > 0 &&
+        canvas.height > 0 &&
+        !s.isLoading &&
+        !(s.inputMode === 'svg' ? !s.svgData : s.inputMode === 'text' ? !s.text : !s.modelUrl)
+      );
+    };
+
+    pollId = setInterval(() => {
+      if (started) return;
+      if (isReady()) {
+        stableCount += 1;
+        if (stableCount >= STABLE_TICKS) {
+          started = true;
+          if (pollId) clearInterval(pollId);
+          void runExport();
+        }
+      } else {
+        stableCount = 0;
+        if (Date.now() - startedAt > GIVE_UP_MS) {
+          started = true;
+          if (pollId) clearInterval(pollId);
+          console.error('Auto-render timed out waiting for scene to become ready');
+          setAutoRenderState('error');
+        }
+      }
+    }, POLL_MS);
+
+    return () => {
+      if (pollId) clearInterval(pollId);
+    };
   }, [autoRender, isEmpty]);
+
+  // Revoke any outstanding GLB/GLTF blob URL when leaving the page so the
+  // loaded model isn't leaked after navigation.
+  useEffect(() => {
+    return () => {
+      const url = store.getState().modelUrl;
+      if (url && url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+  }, [store]);
+
+  // ─── Autosave (5.1) ─────────────────────────────────────────────────────────
+  // Debounced background save every ~30s, but only for scenes that already have
+  // a server id (i.e. the user saved once via Ctrl+S / Share). This avoids
+  // creating phantom records for scenes that were never explicitly saved.
+  // Skips while exporting/auto-rendering so we never capture a thumbnail of a
+  // mid-export frame or fight the export's transient state mutations. Failures
+  // are silent and simply retried on the next tick; only repeated failures
+  // surface a single toast.
+  const [autosaveState, setAutosaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const dirtyRef = useRef(false);
+  const autosaveFailuresRef = useRef(0);
+  const autosaveInFlightRef = useRef(false);
+
+  useEffect(() => {
+    // Any tracked store change marks the scene dirty. The temporal/persist
+    // partialize already strips transient fields, so this only fires on real
+    // design edits.
+    const unsub = store.subscribe(() => {
+      dirtyRef.current = true;
+    });
+    return () => unsub();
+  }, [store]);
+
+  useEffect(() => {
+    const AUTOSAVE_INTERVAL_MS = 30_000;
+    const id = setInterval(async () => {
+      const s = store.getState();
+      // Gate: only saved scenes, only when something changed, never mid-export.
+      if (!s._sceneId) return;
+      if (!dirtyRef.current) return;
+      if (s.isExporting || autoRenderState) return;
+      if (autosaveInFlightRef.current) return;
+
+      autosaveInFlightRef.current = true;
+      dirtyRef.current = false;
+      setAutosaveState('saving');
+      try {
+        const name = s._sceneName || s.fileName || 'Untitled';
+        const scene = await saveScene(name, captureThumb());
+        if (scene) {
+          autosaveFailuresRef.current = 0;
+          setAutosaveState('saved');
+        } else {
+          throw new Error('autosave returned null');
+        }
+      } catch {
+        // Mark dirty again so the next tick retries.
+        dirtyRef.current = true;
+        autosaveFailuresRef.current += 1;
+        setAutosaveState('error');
+        // Only nag after repeated failures, not on a single transient blip.
+        if (autosaveFailuresRef.current === 3) {
+          toast.error('Autosave is failing — your changes may not be saved');
+        }
+      } finally {
+        autosaveInFlightRef.current = false;
+      }
+    }, AUTOSAVE_INTERVAL_MS);
+    return () => clearInterval(id);
+    // captureThumb is stable (useCallback []); autoRenderState read fresh via closure recreation.
+  }, [store, autoRenderState]);
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -380,6 +510,18 @@ export const Studio3DPage: React.FC = () => {
     return t.toDataURL('image/jpeg', 0.6);
   }, []);
 
+  // Full-resolution PNG snapshot of the current render — used by "Send to →"
+  // to push the result into another tool's pipeline.
+  const captureCanvasPng = useCallback(() => {
+    const c = canvasRef.current;
+    if (!c) return undefined;
+    try {
+      return c.toDataURL('image/png');
+    } catch {
+      return undefined;
+    }
+  }, []);
+
   useHotkeys(
     'mod+s',
     async (e) => {
@@ -493,16 +635,33 @@ export const Studio3DPage: React.FC = () => {
     }
   }, []);
 
+  const autosaveLabel =
+    autosaveState === 'saving'
+      ? t('studio3d.autosave.saving')
+      : autosaveState === 'saved'
+        ? t('studio3d.autosave.saved')
+        : autosaveState === 'error'
+          ? t('studio3d.autosave.failed')
+          : null;
+
   const statusItems = [
     { label: material },
-    { label: `depth ${depth}` },
+    { label: t('studio3d.status.depth', { value: depth }) },
     { label: animate !== 'none' ? animate : 'static' },
-    ...(shaderEnabled ? [{ label: shaderType, color: 'text-cyan-400' }] : []),
+    ...(shaderEnabled ? [{ label: shaderType, color: 'text-neutral-400' }] : []),
     ...(cameraInfo?.view ? [{ label: cameraInfo.view, color: 'text-cyan-400' }] : []),
     ...(cameraInfo
       ? [
           { label: `${cameraInfo.polar}° / ${cameraInfo.azimuth}°` },
           { label: `d:${cameraInfo.distance}` },
+        ]
+      : []),
+    ...(autosaveLabel
+      ? [
+          {
+            label: autosaveLabel,
+            color: autosaveState === 'error' ? 'text-destructive' : 'text-neutral-500',
+          },
         ]
       : []),
   ];
@@ -520,7 +679,12 @@ export const Studio3DPage: React.FC = () => {
         resetConfirmText={t('studio3d.resetConfirmButton')}
         undo={{ handler: () => undo(), disabled: !canUndo }}
         redo={{ handler: () => redo(), disabled: !canRedo }}
-        controlsPanel={<ControlsPanel onExport={() => setExportModalOpen(true)} />}
+        controlsPanel={
+          <ControlsPanel
+            onExport={() => setExportModalOpen(true)}
+            getCanvasPng={captureCanvasPng}
+          />
+        }
         controlsPanelWidth={300}
         mobileSheetLabel={t('studio3d.controls')}
         statusItems={statusItems}

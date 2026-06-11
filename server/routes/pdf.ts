@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import {
   compressPdf,
   convertToCmyk,
@@ -90,7 +91,7 @@ router.post('/from-images', pdfRateLimit, authenticate, async (req: AuthRequest,
     if (!images?.length) return res.status(400).json({ error: 'images[] (base64) is required' });
 
     const buffers = images.map((img) => {
-      const cleaned = img.replace(/^data:image\/\w+;base64,/, '');
+      const cleaned = stripDataUriPrefix(img);
       return Buffer.from(cleaned, 'base64');
     });
 

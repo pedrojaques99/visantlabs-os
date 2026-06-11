@@ -1,4 +1,5 @@
 import { hexToRgb } from '@/utils/colorUtils';
+import { RISO_FULL_PRESETS_DATA } from '../../../shared/imagelab/presets';
 
 export interface InkLayer {
   color: [number, number, number];
@@ -159,102 +160,9 @@ export interface RisoFullPreset {
   halftoneShape?: HalftoneShape;
 }
 
-export const RISO_FULL_PRESETS: Record<string, RisoFullPreset> = {
-  'Vintage Poster': {
-    frequency: 45,
-    dotSize: 0.95,
-    paperColor: '#f5f0e0',
-    paperNoise: 0.4,
-    inkNoise: 0.5,
-    inkDropout: 0.04,
-    misregistration: 3,
-    edgeBleed: 1.5,
-    colors: ['#e3503e', '#00838a', '#f5c520', '#1a1a1a'],
-  },
-  'Clean Modern': {
-    frequency: 80,
-    dotSize: 0.8,
-    paperColor: '#faf8f2',
-    paperNoise: 0.1,
-    inkNoise: 0.2,
-    inkDropout: 0.01,
-    misregistration: 1,
-    edgeBleed: 0.5,
-    colors: ['#005f73', '#ee6c4d', '#e0e0e0', '#2b2b2b'],
-  },
-  'Punk Zine': {
-    frequency: 35,
-    dotSize: 1.0,
-    paperColor: '#f0e8d0',
-    paperNoise: 0.6,
-    inkNoise: 0.7,
-    inkDropout: 0.06,
-    misregistration: 5,
-    edgeBleed: 2,
-    colors: ['#ff6eb4', '#00c9a7', '#ffe135', '#333333'],
-  },
-  'Minimal Duo': {
-    frequency: 65,
-    dotSize: 0.85,
-    paperColor: '#faf8f2',
-    paperNoise: 0.15,
-    inkNoise: 0.3,
-    inkDropout: 0.02,
-    misregistration: 2,
-    edgeBleed: 1,
-    colors: ['#264653', '#e63946'],
-  },
-  'Atkinson Mono': {
-    frequency: 50,
-    dotSize: 0.9,
-    paperColor: '#f5f0e0',
-    paperNoise: 0.3,
-    inkNoise: 0.3,
-    inkDropout: 0.02,
-    misregistration: 2,
-    edgeBleed: 1,
-    colors: ['#000000', '#ff665e'],
-    ditherMode: 'atkinson',
-  },
-  'Bayer Retro': {
-    frequency: 40,
-    dotSize: 0.85,
-    paperColor: '#f0e8d0',
-    paperNoise: 0.2,
-    inkNoise: 0.2,
-    inkDropout: 0.01,
-    misregistration: 1,
-    edgeBleed: 0.5,
-    colors: ['#3255a4', '#ff6c2f', '#ffe800'],
-    ditherMode: 'bayer',
-  },
-  'Halftone Pop': {
-    frequency: 35,
-    dotSize: 0.95,
-    paperColor: '#faf8f2',
-    paperNoise: 0.1,
-    inkNoise: 0.15,
-    inkDropout: 0.01,
-    misregistration: 2,
-    edgeBleed: 0.5,
-    colors: ['#ff48b0', '#44d62c', '#0078bf', '#000000'],
-    ditherMode: 'halftone',
-    halftoneShape: 'circle',
-  },
-  'Line Screen': {
-    frequency: 45,
-    dotSize: 0.9,
-    paperColor: '#f5f0e0',
-    paperNoise: 0.25,
-    inkNoise: 0.3,
-    inkDropout: 0.02,
-    misregistration: 2,
-    edgeBleed: 1,
-    colors: ['#914e72', '#00838a', '#bb8b41'],
-    ditherMode: 'halftone',
-    halftoneShape: 'line',
-  },
-};
+// Single source of truth: shared/imagelab/presets.ts (also consumed server-side).
+export const RISO_FULL_PRESETS: Record<string, RisoFullPreset> =
+  RISO_FULL_PRESETS_DATA as unknown as Record<string, RisoFullPreset>;
 
 // GLSL shaders — single source of truth in shared/riso/shaders.ts
 import {

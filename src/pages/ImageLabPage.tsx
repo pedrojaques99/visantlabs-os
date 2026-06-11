@@ -43,6 +43,7 @@ import {
 } from '@/components/shader-lab/ShaderLabCanvas';
 import { ShaderLabControls } from '@/components/shader-lab/ShaderLabControls';
 import { BeforeAfterOverlay } from '@/components/shared/BeforeAfterOverlay';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { ExportModal } from '@/components/shared/ExportModal';
 import { ImageLabPresetLibrary } from '@/components/shared/ImageLabPresetLibrary';
 import { useHalftoneStore, HALFTONE_PRESETS } from '@/stores/halftoneStore';
@@ -55,10 +56,12 @@ import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
+import { useTranslation } from '@/hooks/useTranslation';
 import { loadImage } from '@/utils/imageUtils';
 import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
+import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
 import { useToolInput } from '@/hooks/useToolInput';
@@ -256,30 +259,38 @@ function useCanvasThumbnails(
   });
 
   const frameId = useRef<number>(0);
+  const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 3.6: debounce thumbnail capture ~500ms. History changes can fire rapidly
+  // (slider drags commit several entries); without this we toDataURL+JPEG-encode
+  // on every one. The trailing rAF (added in Phase 2.2) is preserved and still
+  // cancelled on unmount so a queued capture can't setState after unmount.
   const capture = useCallback(
     (modeKey: ImageLabMode) => {
-      const canvas = canvasRefsMap.current[modeKey];
-      if (!canvas || canvas.width === 0 || canvas.height === 0) return;
-      cancelAnimationFrame(frameId.current);
-      frameId.current = requestAnimationFrame(() => {
-        try {
-          const tmp = document.createElement('canvas');
-          const size = 72;
-          tmp.width = size;
-          tmp.height = size;
-          const ctx = tmp.getContext('2d');
-          if (!ctx) return;
-          const scale = Math.max(size / canvas.width, size / canvas.height);
-          const w = canvas.width * scale;
-          const h = canvas.height * scale;
-          ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
-          const url = tmp.toDataURL('image/jpeg', 0.6);
-          setThumbs((prev) => ({ ...prev, [modeKey]: url }));
-        } catch {
-          /* tainted canvas, ignore */
-        }
-      });
+      if (debounceId.current) clearTimeout(debounceId.current);
+      debounceId.current = setTimeout(() => {
+        const canvas = canvasRefsMap.current[modeKey];
+        if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+        cancelAnimationFrame(frameId.current);
+        frameId.current = requestAnimationFrame(() => {
+          try {
+            const tmp = document.createElement('canvas');
+            const size = 72;
+            tmp.width = size;
+            tmp.height = size;
+            const ctx = tmp.getContext('2d');
+            if (!ctx) return;
+            const scale = Math.max(size / canvas.width, size / canvas.height);
+            const w = canvas.width * scale;
+            const h = canvas.height * scale;
+            ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
+            const url = tmp.toDataURL('image/jpeg', 0.6);
+            setThumbs((prev) => ({ ...prev, [modeKey]: url }));
+          } catch {
+            /* tainted canvas, ignore */
+          }
+        });
+      }, 500);
     },
     [canvasRefsMap]
   );
@@ -296,6 +307,16 @@ function useCanvasThumbnails(
   useEffect(() => {
     if (sImg) capture('shaders');
   }, [sHi, sImg, capture]);
+
+  // Cancel any pending debounce timer + capture frame on unmount so neither can
+  // fire a setState on an unmounted component (e.g. after a fast mode switch).
+  useEffect(
+    () => () => {
+      if (debounceId.current) clearTimeout(debounceId.current);
+      cancelAnimationFrame(frameId.current);
+    },
+    []
+  );
 
   return thumbs;
 }
@@ -360,6 +381,7 @@ function usePresetCycling(mode: ImageLabMode) {
 /* ─── Main Page ─── */
 
 export const ImageLabPage: React.FC = () => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const labStore = useImageLabStore;
@@ -419,6 +441,10 @@ export const ImageLabPage: React.FC = () => {
     return () => clearTimeout(t);
   }, [canAutoHide]);
 
+  // Clear the proximity-driven auto-hide timer on unmount (it's scheduled from
+  // pointer handlers, outside the effect above).
+  useEffect(() => () => clearTimeout(fxHideTimer.current), []);
+
   const handleCanvasPointerMove = useCallback(
     (e: RPointerEvent<HTMLDivElement>) => {
       if (!canAutoHide) return;
@@ -466,6 +492,36 @@ export const ImageLabPage: React.FC = () => {
   );
 
   const shaderLabStore = useShaderLabStore;
+
+  // Track the latest blob URL this page created so we can revoke the previous
+  // one when a new file is loaded and clean up on unmount (avoids leaking
+  // object URLs across uploads / mode switches).
+  const lastBlobUrlRef = useRef<string | null>(null);
+  const createTrackedObjectUrl = useCallback((file: File) => {
+    const prev = lastBlobUrlRef.current;
+    if (prev) {
+      try {
+        URL.revokeObjectURL(prev);
+      } catch {
+        /* ignore */
+      }
+    }
+    const url = URL.createObjectURL(file);
+    lastBlobUrlRef.current = url;
+    return url;
+  }, []);
+  useEffect(
+    () => () => {
+      if (lastBlobUrlRef.current) {
+        try {
+          URL.revokeObjectURL(lastBlobUrlRef.current);
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    []
+  );
 
   const broadcastImage = useCallback(
     (url: string, name: string, mediaType: 'image' | 'video' = 'image') => {
@@ -596,11 +652,11 @@ export const ImageLabPage: React.FC = () => {
     onFile: useCallback(
       (file: File) => {
         const isVideo = file.type.startsWith('video/');
-        const url = URL.createObjectURL(file);
+        const url = createTrackedObjectUrl(file);
         broadcastImage(url, file.name || 'pasted', isVideo ? 'video' : 'image');
         toast.success(`Loaded ${file.name || 'pasted image'}`);
       },
-      [broadcastImage]
+      [broadcastImage, createTrackedObjectUrl]
     ),
     dropMessage: 'Drop image or video here',
   });
@@ -619,62 +675,71 @@ export const ImageLabPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
-      if (e.key === '1' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('halftone');
-      if (e.key === '2' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('texture');
-      if (e.key === '3' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('riso');
-      if (e.key === '4' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('shaders');
-
-      if (e.altKey && e.key === 'z') {
+    // Declarative shortcut map keyed by `e.key`. Each handler keeps the exact
+    // modifier guards and preventDefault placement of the original if/else
+    // chain — no behavior change, just a flat table instead of 50 lines of ifs.
+    const noMods = (e: KeyboardEvent) => !e.altKey && !e.shiftKey && !e.ctrlKey;
+    const SHORTCUTS: Record<string, (e: KeyboardEvent) => void> = {
+      '1': (e) => noMods(e) && handleModeChange('halftone'),
+      '2': (e) => noMods(e) && handleModeChange('texture'),
+      '3': (e) => noMods(e) && handleModeChange('riso'),
+      '4': (e) => noMods(e) && handleModeChange('shaders'),
+      z: (e) => {
+        if (!e.altKey) return;
         e.preventDefault();
         const current = labStore.getState().compareMode;
         setCompareMode(current === 'toggle' ? 'off' : 'toggle');
-      }
-
-      if (e.altKey && e.key === 'x') {
+      },
+      x: (e) => {
+        if (!e.altKey) return;
         e.preventDefault();
         const current = labStore.getState().compareMode;
         setCompareMode(current === 'split' ? 'off' : 'split');
-      }
-
-      if (e.key === 'm' && !e.altKey && !e.shiftKey && !e.ctrlKey) {
+      },
+      m: (e) => {
+        if (!noMods(e)) return;
         e.preventDefault();
         setMagicHandActive(!labStore.getState().magicHandActive);
-      }
-
-      if (e.key === 'Escape') {
+      },
+      Escape: (e) => {
         const current = labStore.getState().compareMode;
         if (current !== 'off') {
           e.preventDefault();
           setCompareMode('off');
         }
-      }
-
-      if (e.key === '[') {
+      },
+      '[': (e) => {
         e.preventDefault();
         cyclePreset(-1);
-      }
-      if (e.key === ']') {
+      },
+      ']': (e) => {
         e.preventDefault();
         cyclePreset(1);
-      }
-
-      if (e.shiftKey && e.key === 'E') {
+      },
+      E: (e) => {
+        if (!e.shiftKey) return;
         e.preventDefault();
         setExportModalOpen(true);
-      }
-
-      if (e.shiftKey && e.key === 'P') {
+      },
+      P: (e) => {
+        if (!e.shiftKey) return;
         e.preventDefault();
         setPresetLibraryOpen(true);
-      }
-
-      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+      },
+      '?': (e) => {
         e.preventDefault();
         setShortcutsOpen((v) => !v);
-      }
+      },
+      '/': (e) => {
+        if (!e.shiftKey) return;
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
+      },
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      SHORTCUTS[e.key]?.(e);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -707,13 +772,22 @@ export const ImageLabPage: React.FC = () => {
     if (!canvasRef.current) return;
     setIsAiProcessing(true);
     try {
-      const dataUrl = canvasRef.current.toDataURL('image/png');
+      // 3.5: encode as WebP q0.9 instead of lossless PNG. A full-res riso canvas
+      // as PNG inflated the base64 JSON payload and pushed it toward the 10MB
+      // body limit; WebP preserves the hard-edged halftone/dither dots far
+      // better than JPEG (which rings on sharp edges) while cutting the payload
+      // several-fold. The image is about to be re-generated by Gemini anyway, so
+      // q0.9 is visually lossless for this use. mimeType is sent to match.
+      // (True multipart upload — multer on /ai/riso-enhance + relaxed body
+      // parser — is a follow-up; this route is the sole JSON-contract caller.)
+      const MIME = 'image/webp';
+      const dataUrl = canvasRef.current.toDataURL(MIME, 0.9);
       const base64 = dataUrl.split(',')[1];
       const res = await fetch(`${API_BASE}/ai/riso-enhance`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: { base64, mimeType: 'image/png' }, prompt: RISO_AI_PROMPT }),
+        body: JSON.stringify({ image: { base64, mimeType: MIME }, prompt: RISO_AI_PROMPT }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -743,6 +817,17 @@ export const ImageLabPage: React.FC = () => {
       toast.success('Copied as PNG');
     } catch {
       toast.error('Failed to copy — try again');
+    }
+  }, [canvasRef]);
+
+  // Snapshot the processed result canvas as a PNG data URL for "Send to →".
+  const captureResultPng = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    try {
+      return canvas.toDataURL('image/png');
+    } catch {
+      return undefined;
     }
   }, [canvasRef]);
 
@@ -821,8 +906,8 @@ export const ImageLabPage: React.FC = () => {
   return (
     <>
       <ToolEditorShell
-        title="IMAGE LAB"
-        documentTitle="Image Lab — Visant"
+        title={t('imagelab.title')}
+        documentTitle={t('imagelab.documentTitle')}
         panelVisible={panelVisible}
         setPanelVisible={setPanelVisible}
         onReset={handleReset}
@@ -999,6 +1084,17 @@ export const ImageLabPage: React.FC = () => {
 
             {/* Help + Pin + Panel toggle */}
             <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
+              {hasImage && (
+                <SendToButton
+                  source="image-lab"
+                  outputMime="image/png"
+                  mimeType="image/png"
+                  label={`Image Lab — ${mode}`}
+                  variant="node"
+                  getImageBase64={captureResultPng}
+                  className="mr-0.5"
+                />
+              )}
               <button
                 onClick={() => setShortcutsOpen(true)}
                 title="Shortcuts (?)"
@@ -1041,18 +1137,20 @@ export const ImageLabPage: React.FC = () => {
           </div>
         </div>
 
-        <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
-          <HalftoneCanvas ref={halftoneRef} onCanvasReady={onHalftoneCanvasReady} />
-        </div>
-        <div className={mode !== 'texture' ? 'hidden' : 'contents'}>
-          <TextureFilterCanvas ref={textureRef} onCanvasReady={onTextureCanvasReady} />
-        </div>
-        <div className={mode !== 'riso' ? 'hidden' : 'contents'}>
-          <RisoCanvas ref={risoRef} onCanvasReady={onRisoCanvasReady} />
-        </div>
-        <div className={mode !== 'shaders' ? 'hidden' : 'contents'}>
-          <ShaderLabCanvas ref={shaderRef} onCanvasReady={onShaderCanvasReady} />
-        </div>
+        <CanvasErrorBoundary fallbackMessage="Image engine crashed">
+          <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
+            <HalftoneCanvas ref={halftoneRef} onCanvasReady={onHalftoneCanvasReady} />
+          </div>
+          <div className={mode !== 'texture' ? 'hidden' : 'contents'}>
+            <TextureFilterCanvas ref={textureRef} onCanvasReady={onTextureCanvasReady} />
+          </div>
+          <div className={mode !== 'riso' ? 'hidden' : 'contents'}>
+            <RisoCanvas ref={risoRef} onCanvasReady={onRisoCanvasReady} />
+          </div>
+          <div className={mode !== 'shaders' ? 'hidden' : 'contents'}>
+            <ShaderLabCanvas ref={shaderRef} onCanvasReady={onShaderCanvasReady} />
+          </div>
+        </CanvasErrorBoundary>
 
         <div
           ref={magicHandAreaRef}
@@ -1085,7 +1183,7 @@ export const ImageLabPage: React.FC = () => {
                 />
               </div>
               <p className="text-[11px] uppercase tracking-widest">
-                Drop or paste an image or video to begin
+                {t('imagelab.dropPrompt')}
               </p>
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[10px] tracking-wide opacity-60">
@@ -1104,7 +1202,7 @@ export const ImageLabPage: React.FC = () => {
                 const file = e.target.files?.[0];
                 if (file) {
                   const isVideo = file.type.startsWith('video/');
-                  const url = URL.createObjectURL(file);
+                  const url = createTrackedObjectUrl(file);
                   broadcastImage(url, file.name, isVideo ? 'video' : 'image');
                   toast.success(`Loaded ${file.name}`);
                 }
@@ -1295,7 +1393,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `freq ${hFrequency}` },
           { label: `dot ${hDotSize.toFixed(2)}` },
           { label: ['subtractive', 'additive', 'normal'][hBlendMode] },
-          ...(hShaderEnabled ? [{ label: hShaderType, color: 'text-cyan-400' }] : []),
+          ...(hShaderEnabled ? [{ label: hShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
       case 'texture':
@@ -1305,7 +1403,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `${(tOpacity * 100).toFixed(0)}%` },
           { label: tTextureName },
           ...(tMaskMode ? [{ label: 'mask', color: 'text-purple-400' }] : []),
-          ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-cyan-400' }] : []),
+          ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
       case 'riso':
@@ -1318,14 +1416,14 @@ function useStatusItems(mode: ImageLabMode) {
           ...(rSoloLayer >= 0
             ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-amber-400' }]
             : []),
-          ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-cyan-400' }] : []),
+          ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
       case 'shaders':
         return [
           { label: `${Math.round(sZoom * 100)}%` },
           ...(sShaderEnabled
-            ? [{ label: sShaderType, color: 'text-cyan-400' }]
+            ? [{ label: sShaderType, color: 'text-neutral-400' }]
             : [{ label: 'off' }]),
           ...extras,
         ];

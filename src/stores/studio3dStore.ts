@@ -2,7 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
-import { materialPresets } from '@/components/3d-studio/engine/materials';
+import {
+  materialPresets,
+  MATERIAL_LIB,
+  type MaterialCategory,
+} from '@/components/3d-studio/engine/materials';
 import { authService } from '@/services/authService';
 
 type MaterialPreset =
@@ -297,6 +301,23 @@ export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<st
 
 const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
 
+// Only allow custom HDRI URLs served over https from our own R2 buckets
+// (same whitelist used by FullScreenViewer / shaderRenderer). Blocks SSRF /
+// arbitrary remote env maps.
+const ALLOWED_HDRI_HOSTS = ['r2.dev', 'r2.cloudflarestorage.com'];
+function isAllowedHdriUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    const hostname = parsed.hostname.toLowerCase();
+    return ALLOWED_HDRI_HOSTS.some(
+      (host) => hostname === host || hostname.endsWith('.' + host)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export type { ToneMappingType, BlendMode };
 
 export const BLEND_MODE_OPTIONS: { id: BlendMode; label: string }[] = [
@@ -331,45 +352,22 @@ export const ENVIRONMENT_PRESETS = [
 export interface MaterialPresetDef {
   id: MaterialPreset;
   label: string;
-  category: 'basic' | 'metals' | 'surfaces' | 'glass' | 'special';
+  category: MaterialCategory;
   color?: string;
 }
 
-export const MATERIAL_PRESETS: MaterialPresetDef[] = [
-  // Basic
-  { id: 'default', label: 'Default', category: 'basic' },
-  { id: 'plastic', label: 'Plastic', category: 'basic' },
-  { id: 'clay', label: 'Clay', category: 'basic', color: '#e8ddd3' },
-  { id: 'emissive', label: 'Emissive', category: 'basic' },
-  // Metals
-  { id: 'chrome', label: 'Chrome', category: 'metals', color: '#cccccc' },
-  { id: 'brushedSteel', label: 'Brushed Steel', category: 'metals', color: '#c0c0c0' },
-  { id: 'gold', label: 'Gold', category: 'metals', color: '#ffd891' },
-  { id: 'roseGold', label: 'Rose Gold', category: 'metals', color: '#e8a090' },
-  { id: 'copper', label: 'Copper', category: 'metals', color: '#f7bc9e' },
-  // Surfaces
-  { id: 'marble', label: 'Marble', category: 'surfaces', color: '#e8e0d8' },
-  { id: 'wood', label: 'Wood', category: 'surfaces', color: '#8b6a4a' },
-  { id: 'leather', label: 'Leather', category: 'surfaces', color: '#6b4226' },
-  { id: 'carbonFiber', label: 'Carbon Fiber', category: 'surfaces', color: '#222222' },
-  { id: 'carPaint', label: 'Car Paint', category: 'surfaces' },
-  // Glass & Gem
-  { id: 'glass', label: 'Glass', category: 'glass' },
-  { id: 'frostedGlass', label: 'Frosted', category: 'glass' },
-  { id: 'diamond', label: 'Diamond', category: 'glass', color: '#ffffff' },
-  // Special
-  { id: 'pearl', label: 'Pearl', category: 'special', color: '#fef0e0' },
-  { id: 'obsidian', label: 'Obsidian', category: 'special', color: '#1a1a1a' },
-  { id: 'holographic', label: 'Holo', category: 'special' },
-  { id: 'y2kGloss', label: 'Y2K Gloss', category: 'special' },
-  { id: 'liquidChrome', label: 'Liquid Chrome', category: 'metals', color: '#e0e0e0' },
-  { id: 'titanium', label: 'Titanium', category: 'metals', color: '#8a8a8a' },
-  { id: 'candyInflate', label: 'Candy', category: 'special' },
-  { id: 'soapBubble', label: 'Soap Bubble', category: 'glass' },
-  { id: 'opal', label: 'Opal', category: 'special', color: '#e8dff5' },
-  { id: 'neonTube', label: 'Neon Tube', category: 'special' },
-  { id: 'resin', label: 'Resin', category: 'glass' },
-];
+/**
+ * Studio3D material picker list. Derived from the single material library in
+ * `engine/materials.ts` (`MATERIAL_LIB`) — labels come from the PBR presets,
+ * ordering/category/swatch-color from the UI metadata there. No values are
+ * declared twice.
+ */
+export const MATERIAL_PRESETS: MaterialPresetDef[] = MATERIAL_LIB.map((m) => ({
+  id: m.id as MaterialPreset,
+  label: m.label,
+  category: m.category,
+  ...(m.color ? { color: m.color } : {}),
+}));
 
 export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
   { id: 'none', label: 'None' },
@@ -576,6 +574,7 @@ interface Studio3DState {
   resetKey: number;
 
   // Scene persistence metadata (excluded from undo history)
+  _sceneId: string | null;
   _sceneName: string;
   _lastSavedAt: number;
 
@@ -712,6 +711,7 @@ interface Studio3DState {
   setActiveTab: (t: Studio3DState['activeTab']) => void;
   setShowStats: (v: boolean) => void;
   setIsLoading: (v: boolean) => void;
+  setSceneId: (v: string | null) => void;
   setSceneName: (v: string) => void;
   setLastSavedAt: (v: number) => void;
   applyScenePreset: (name: string) => void;
@@ -863,6 +863,7 @@ const INITIAL_STATE = {
   showStats: false,
   isLoading: false,
   resetKey: 0,
+  _sceneId: null,
   _sceneName: '',
   _lastSavedAt: 0,
 };
@@ -879,8 +880,19 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         setText: (text) => set({ text }),
         setFont: (font) => set({ font }),
         setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
-        setModelUrl: (url, fileName) =>
-          set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
+        setModelUrl: (url, fileName) => {
+          // Revoke the previous blob URL before replacing it to avoid leaking
+          // object URLs when the user loads multiple GLB/GLTF files.
+          const prev = get().modelUrl;
+          if (prev && prev.startsWith('blob:') && prev !== url) {
+            try {
+              URL.revokeObjectURL(prev);
+            } catch {
+              /* ignore */
+            }
+          }
+          set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const });
+        },
         setTracePreset: (preset: import('@/services/svgPipeline').TracePreset) => {
           if (preset !== 'custom') {
             import('@/services/svgPipeline').then(({ TRACE_PRESETS }) => {
@@ -998,7 +1010,14 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           set(preset.values);
         },
         setEnvironment: (environment) => set({ environment, customHdriUrl: '' }),
-        setCustomHdriUrl: (customHdriUrl) => set({ customHdriUrl, environment: '' }),
+        setCustomHdriUrl: (customHdriUrl) => {
+          // Empty string clears the custom HDRI; otherwise enforce R2/https whitelist.
+          if (customHdriUrl && !isAllowedHdriUrl(customHdriUrl)) {
+            console.warn('[studio3d] Rejected custom HDRI URL (not an allowed R2/https host)');
+            return;
+          }
+          set({ customHdriUrl, environment: '' });
+        },
         setBackground: (background) => set({ background }),
         setBgType: (bgType) => set({ bgType }),
         setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
@@ -1071,6 +1090,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         setActiveTab: (activeTab) => set({ activeTab }),
         setShowStats: (showStats) => set({ showStats }),
         setIsLoading: (isLoading) => set({ isLoading }),
+        setSceneId: (_sceneId) => set({ _sceneId }),
         setSceneName: (_sceneName) => set({ _sceneName }),
         setLastSavedAt: (_lastSavedAt) => set({ _lastSavedAt }),
 
@@ -1193,6 +1213,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           const {
             _cameraControlsRef,
             _cameraInfo,
+            _sceneId,
             _sceneName,
             _lastSavedAt,
             panelVisible,
@@ -1206,14 +1227,14 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           } = state;
           return tracked;
         },
+        // No time-based debounce on history recording: a trailing 300ms debounce
+        // dropped intermediate states (fast drags vanished from history) and let
+        // an undo fired inside the window restore a stale state. High-frequency
+        // sliders already debounce at the source (useDebouncedSlider, ~60ms), so
+        // they don't flood history. The one un-source-debounced rapid action
+        // (react-colorful drag in ExpandableColorPicker) is bounded by `limit`
+        // below, which caps total history entries and memory.
         limit: 50,
-        handleSet: (handleSet) => {
-          let timer: ReturnType<typeof setTimeout> | undefined;
-          return (state) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => handleSet(state), 300);
-          };
-        },
       }
     ),
     {
@@ -1312,49 +1333,70 @@ export async function saveScene(name: string, thumbnail?: string): Promise<Saved
   config.shaderType = state.shaderType;
   config.shaderValues = state.shaderValues;
 
+  // If this scene already has a server id, UPDATE it in place (PATCH) instead of
+  // creating a new record — autosave reuses this path so it never spawns phantom
+  // scenes on every tick.
+  const existingId = state._sceneId;
+
   try {
-    const res = await fetch(`${API_BASE}/studio3d`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({
-        name,
-        config,
-        svgData: state.svgData || undefined,
-        inputMode: state.inputMode,
-        text: state.text || undefined,
-        font: state.font || undefined,
-        thumbnailUrl: thumbnail || undefined,
-      }),
+    const body = JSON.stringify({
+      name,
+      config,
+      svgData: state.svgData || undefined,
+      inputMode: state.inputMode,
+      text: state.text || undefined,
+      font: state.font || undefined,
+      thumbnailUrl: thumbnail || undefined,
     });
+    const res = existingId
+      ? await fetch(`${API_BASE}/studio3d/${existingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body,
+        })
+      : await fetch(`${API_BASE}/studio3d`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body,
+        });
     if (!res.ok) throw new Error('save failed');
     const data = await res.json();
     const scene: SavedScene = {
       id: data.scene.id,
       name: data.scene.name,
-      savedAt: new Date(data.scene.createdAt).getTime(),
+      savedAt: new Date(data.scene.updatedAt || data.scene.createdAt).getTime(),
       config,
       thumbnail,
     };
-    const scenes = getCachedScenes();
+    const scenes = getCachedScenes().filter((s) => s.id !== scene.id);
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;
     localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
-    useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
+    useStudio3DStore.setState({
+      _sceneId: scene.id,
+      _sceneName: name,
+      _lastSavedAt: Date.now(),
+    });
     return scene;
   } catch {
-    // Fallback to localStorage only
+    // Fallback to localStorage only — reuse the existing id when present so the
+    // local cache is also updated in place rather than duplicated.
     const scene: SavedScene = {
-      id: crypto.randomUUID(),
+      id: existingId || crypto.randomUUID(),
       name,
       savedAt: Date.now(),
       config,
       thumbnail,
     };
-    const scenes = getCachedScenes();
+    const scenes = getCachedScenes().filter((s) => s.id !== scene.id);
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;
     localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
-    useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
+    useStudio3DStore.setState({
+      _sceneId: scene.id,
+      _sceneName: name,
+      _lastSavedAt: Date.now(),
+    });
     return scene;
   }
 }
@@ -1368,7 +1410,13 @@ export async function shareScene(name: string, thumbnail?: string): Promise<stri
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ isPublic: true }),
     });
-    return `${window.location.origin}/3d-studio?sceneId=${scene.id}`;
+    // If the scene has an active animation, append ?autoplay=true so the
+    // shared link opens playing instead of frozen on the first frame.
+    const hasAnimation = useStudio3DStore.getState().animate !== 'none';
+    const url = new URL(`${window.location.origin}/3d-studio`);
+    url.searchParams.set('sceneId', scene.id);
+    if (hasAnimation) url.searchParams.set('autoplay', 'true');
+    return url.toString();
   } catch {
     return null;
   }
@@ -1418,7 +1466,11 @@ export async function forkScene(id: string): Promise<boolean> {
       if (data.scene.svgData) {
         useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
       }
-      useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
+      useStudio3DStore.setState({
+        _sceneId: data.scene.id || null,
+        _sceneName: data.scene.name || '',
+        _lastSavedAt: Date.now(),
+      });
     }
     return true;
   } catch {
@@ -1443,7 +1495,11 @@ export async function loadScene(id: string): Promise<boolean> {
         if (data.scene.svgData) {
           useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
         }
-        useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
+        useStudio3DStore.setState({
+          _sceneId: data.scene.id || id,
+          _sceneName: data.scene.name || '',
+          _lastSavedAt: Date.now(),
+        });
         return true;
       }
     }
@@ -1459,6 +1515,11 @@ export async function loadScene(id: string): Promise<boolean> {
       shaderValues: scene.config.shaderValues || {},
     });
   }
+  useStudio3DStore.setState({
+    _sceneId: scene.id,
+    _sceneName: scene.name || '',
+    _lastSavedAt: scene.savedAt || Date.now(),
+  });
   return true;
 }
 
@@ -1469,4 +1530,9 @@ export async function deleteScene(id: string): Promise<void> {
   // Always clean local cache too
   const scenes = getCachedScenes().filter((s) => s.id !== id);
   localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+  // If the deleted scene was the one currently bound to autosave, detach it so
+  // the next save creates a fresh record instead of PATCHing a missing id.
+  if (useStudio3DStore.getState()._sceneId === id) {
+    useStudio3DStore.setState({ _sceneId: null });
+  }
 }

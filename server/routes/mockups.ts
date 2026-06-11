@@ -12,6 +12,7 @@ import {
   ModelResponseTextError,
 } from '../../src/services/geminiService.js';
 import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
+import { withResilience } from '../lib/ai-resilience.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
@@ -22,6 +23,8 @@ import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/ope
 import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
+import { DEFAULT_IMAGE_MODEL_ID } from '../../src/constants/imageModelRegistry.js';
+import { flattenAlphaIfNeeded } from '../lib/imageFlatten.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -458,6 +461,19 @@ router.post(
           ? rawSeed
           : undefined;
 
+      // Flatten RGBA reference images to a white bg — providers (gpt-image, gemini,
+      // seedream) reject/degrade transparency. Applied here at the generation choke
+      // point so the original logo keeps its alpha everywhere else.
+      const flattenForProvider = async (base64: string, mimeType: string) => {
+        try {
+          const out = await flattenAlphaIfNeeded(Buffer.from(base64, 'base64'), mimeType);
+          return { base64: out.buffer.toString('base64'), mimeType: out.mimeType };
+        } catch (error: unknown) {
+          console.warn(`${logPrefix} [IMAGE PROCESSING] Alpha flatten skipped:`, error);
+          return { base64, mimeType };
+        }
+      };
+
       // Helper to download image from URL if base64 is not provided
       const processImageInput = async (img: any) => {
         if (!img) return null;
@@ -465,11 +481,11 @@ router.post(
         if (typeof img === 'string') {
           if (img.startsWith('data:') || (!img.startsWith('http') && img.length > 200)) {
             const base64Data = img.startsWith('data:') ? img.split(',')[1] || img : img;
-            return { base64: base64Data, mimeType: 'image/png' };
+            return flattenForProvider(base64Data, 'image/png');
           }
           img = { url: img };
         }
-        if (img.base64) return img;
+        if (img.base64) return flattenForProvider(img.base64, img.mimeType || 'image/png');
         if (img.url) {
           try {
             console.log(
@@ -480,10 +496,10 @@ router.post(
             if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
-            return {
-              base64: buffer.toString('base64'),
-              mimeType: img.mimeType || response.headers.get('content-type') || 'image/png',
-            };
+            return flattenForProvider(
+              buffer.toString('base64'),
+              img.mimeType || response.headers.get('content-type') || 'image/png'
+            );
           } catch (error: unknown) {
             console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
             throw new Error(`Failed to process image URL: ${getErrorMessage(error)}`);
@@ -620,7 +636,7 @@ router.post(
         ? hashQuery(
             finalBaseImage.base64
               ? `${finalBaseImage.base64.slice(0, 500)}:${finalBaseImage.base64.length}`
-              : finalBaseImage.url || '',
+              : '',
             finalBaseImage.mimeType || ''
           )
         : 'no-image';
@@ -877,6 +893,22 @@ router.post(
         }
       } catch (apiKeyError: any) {
         console.warn(`${logPrefix} [API KEY] Error checking for user API key:`, apiKeyError);
+      }
+
+      // Seedream is BYOK-only: fail fast with an actionable error BEFORE deducting
+      // credits when neither a user key nor the system BYTEPLUS_API_KEY is available,
+      // otherwise the agent burns credits on a generation that can only fail deep
+      // inside seedreamService.
+      if (provider === 'seedream' && !usingUserKey && !process.env.BYTEPLUS_API_KEY) {
+        if (lockKey) {
+          await db.collection('credit_locks').deleteOne({ lockKey, requestId });
+        }
+        return res.status(400).json({
+          error: 'byok_required',
+          message:
+            'Seedream requires your own BytePlus API key. Configure it in Settings → BYOK (or check status via the settings-byok-status tool).',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
+        });
       }
 
       if (isAdmin) {
@@ -1137,16 +1169,28 @@ router.post(
         imageBase64 = openaiResult.base64;
         // OpenAI doesn't support seed — leave usedSeed undefined
       } else {
-        // Use Gemini (default)
-        imageBase64 = await generateMockup(
-          finalPromptText,
-          finalBaseImage as any,
-          model as any,
-          resolution as any,
-          aspectRatio as any,
-          finalReferenceImages as any,
-          undefined,
-          userApiKey
+        // Use Gemini (default). Wrap with withResilience for parity with the
+        // other providers (ideogram/reve/openai/seedream wrap their HTTP calls).
+        // generateMockup lives in src/services (frontend-shared) and already has
+        // its own inner withRetry (503 backoff + 429 fail-fast); we deliberately
+        // do NOT touch it to avoid pulling the server-only resilience lib into
+        // the frontend bundle. Wrapping here at the server call site gives gemini
+        // the circuit breaker without a double-retry loop: shouldRetry()
+        // classifies the terminal errors that escape generateMockup's withRetry
+        // (RateLimitError "rate limit", ModelOverloadedError "overloaded",
+        // safety/blocked) as non-retryable, so withResilience only counts the
+        // failure toward the breaker. (Decision: G4, 0-gaps round.)
+        imageBase64 = await withResilience('gemini', () =>
+          generateMockup(
+            finalPromptText,
+            finalBaseImage as any,
+            model as any,
+            resolution as any,
+            aspectRatio as any,
+            finalReferenceImages as any,
+            undefined,
+            userApiKey
+          )
         );
       }
 
@@ -1468,7 +1512,8 @@ router.post(
         errorResponse = {
           error: 'rate_limit',
           message: 'Too many requests. Please wait a moment and try again.',
-          hint: 'Try a different model or wait 30 seconds.',
+          hint: 'Wait ~30 seconds, or switch to a different model (the rate limit is per provider).',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
         };
       } else if (
         error.name === 'ModelResponseTextError' ||
@@ -1523,7 +1568,11 @@ router.post(
         errorResponse = {
           error: 'content_blocked',
           message: 'The content was blocked by the AI safety filter.',
-          hint: 'Adjust your prompt and try again.',
+          hint:
+            'gpt-image has the most aggressive safety filter — besides rephrasing the ' +
+            'prompt, try switching to a different model (e.g. the suggested alternative), ' +
+            'which may not block the same content.',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
         };
       } else {
         errorResponse = {

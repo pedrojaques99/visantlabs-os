@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { User, X, ShieldCheck, Trash2 } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
@@ -12,7 +12,6 @@ import { referralService, type ReferralStats } from '../services/referralService
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
-import { Card, CardContent } from '../components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { BackButton } from '../components/ui/BackButton';
 import { Button } from '../components/ui/button';
@@ -36,6 +35,7 @@ export const ProfilePage: React.FC = () => {
   const { isAuthenticated, isCheckingAuth } = useLayout();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const deleteConfirmWord = t('profile.deleteDialog.confirmWord');
 
   // State
   const [user, setUser] = useState<UserType | null>(null);
@@ -266,30 +266,26 @@ export const ProfilePage: React.FC = () => {
         )}
 
         <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-          <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-            <CardContent className="p-2">
-              <TabsList className="bg-transparent border-0 w-full justify-start overflow-x-auto">
-                <TabsTrigger
-                  value="overview"
-                  className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6"
-                >
-                  {t('common.tabs.overview') || 'Dashboard'}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="history"
-                  className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6"
-                >
-                  {t('common.tabs.history') || 'Histórico'}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="configuration"
-                  className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6"
-                >
-                  {t('common.tabs.configuration') || 'Configurações'}
-                </TabsTrigger>
-              </TabsList>
-            </CardContent>
-          </Card>
+          <TabsList className="bg-neutral-900/60 border border-white/10 rounded-xl p-1 w-full sm:w-auto justify-start overflow-x-auto">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-brand-cyan data-[state=active]:text-black px-4 sm:px-6"
+            >
+              {t('common.tabs.overview')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="data-[state=active]:bg-brand-cyan data-[state=active]:text-black px-4 sm:px-6"
+            >
+              {t('common.tabs.history')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="configuration"
+              className="data-[state=active]:bg-brand-cyan data-[state=active]:text-black px-4 sm:px-6"
+            >
+              {t('common.tabs.configuration')}
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="overview">
             <ProfileOverview
@@ -312,28 +308,25 @@ export const ProfilePage: React.FC = () => {
             <UsageHistory isAuthenticated={true} />
           </TabsContent>
 
-          <TabsContent value="configuration">
+          <TabsContent value="configuration" className="space-y-8">
             <ApiSettings />
 
-            <div className="mt-8">
-              <SecuritySettings totpEnabled={user?.totpEnabled} />
-            </div>
+            <SecuritySettings totpEnabled={user?.totpEnabled} />
 
-            <div className="mt-8 p-4 border border-red-900/30 rounded-lg bg-red-950/10">
-              <h3 className="text-sm font-mono font-semibold text-red-400 mb-2 flex items-center gap-2">
-                <Trash2 size={14} /> Zona de perigo
+            <div className="p-5 border border-destructive/20 rounded-2xl bg-destructive/5">
+              <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
+                <Trash2 size={14} /> {t('profile.danger.title')}
               </h3>
-              <p className="text-xs text-neutral-500 font-mono mb-4">
-                Ao excluir sua conta, seus dados serao anonimizados e a assinatura cancelada. Esta
-                acao nao pode ser desfeita.
+              <p className="text-xs text-neutral-500 font-mono mb-4 max-w-md">
+                {t('profile.danger.description')}
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsDeleteDialogOpen(true)}
-                className="border-red-800/50 text-red-400 hover:bg-red-950/30 hover:text-red-300"
+                className="border-destructive/30 text-destructive hover:bg-destructive/10"
               >
-                Excluir minha conta
+                {t('profile.danger.deleteAccount')}
               </Button>
             </div>
           </TabsContent>
@@ -358,18 +351,19 @@ export const ProfilePage: React.FC = () => {
         }}
       />
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-neutral-900 border-neutral-800">
+        <DialogContent className="bg-neutral-900 border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-red-400 font-mono">Excluir conta</DialogTitle>
+            <DialogTitle className="text-destructive">{t('profile.deleteDialog.title')}</DialogTitle>
             <DialogDescription className="text-neutral-400 text-sm font-mono">
-              Esta acao e irreversivel. Sua assinatura sera cancelada e seus dados anonimizados.
-              Digite <strong className="text-white">EXCLUIR</strong> para confirmar.
+              {t('profile.deleteDialog.description')}{' '}
+              <strong className="text-white">{deleteConfirmWord}</strong>{' '}
+              {t('profile.deleteDialog.toConfirm')}
             </DialogDescription>
           </DialogHeader>
           <Input
             value={deleteConfirmText}
             onChange={(e) => setDeleteConfirmText(e.target.value)}
-            placeholder="Digite EXCLUIR"
+            placeholder={t('profile.deleteDialog.placeholder', { word: deleteConfirmWord })}
             className="font-mono"
           />
           <DialogFooter>
@@ -380,19 +374,19 @@ export const ProfilePage: React.FC = () => {
                 setDeleteConfirmText('');
               }}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
-              disabled={deleteConfirmText !== 'EXCLUIR' || isDeletingAccount}
+              disabled={deleteConfirmText !== deleteConfirmWord || isDeletingAccount}
               onClick={async () => {
                 setIsDeletingAccount(true);
                 try {
                   await authService.deleteAccount();
-                  toast.success('Conta excluída com sucesso.');
+                  toast.success(t('profile.deleteDialog.success'));
                   navigate('/');
                 } catch (err: any) {
-                  toast.error(err.message || 'Erro ao excluir conta.');
+                  toast.error(err.message || t('profile.deleteDialog.error'));
                 } finally {
                   setIsDeletingAccount(false);
                   setIsDeleteDialogOpen(false);
@@ -400,7 +394,9 @@ export const ProfilePage: React.FC = () => {
                 }
               }}
             >
-              {isDeletingAccount ? 'Excluindo...' : 'Excluir permanentemente'}
+              {isDeletingAccount
+                ? t('profile.deleteDialog.deleting')
+                : t('profile.deleteDialog.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

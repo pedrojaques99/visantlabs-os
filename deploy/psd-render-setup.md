@@ -87,12 +87,40 @@ curl https://api.visantlabs.com/api/psd-render/status \
   -H "Authorization: Bearer <token>"
 ```
 
+## Auth & scopes
+
+`POST /render` runs `authenticate → requireScope('generate') → renderLimiter → resolveTier`.
+
+- **Interactive sessions** (logged-in browser, JWT) and trusted internal **MCP** calls are full-access and bypass the scope check.
+- **Scoped credentials** — API keys (`visant_sk_*`) and OAuth tokens — must carry the **`generate`** scope or the request is rejected with `403 Insufficient scope`. A read-only key cannot trigger renders.
+- **Access tier** (`resolveTier`) is computed from the *credential owner*: admin / team-member / `PSD_RENDER_ALLOWED_USERS` → `all` (full library + arbitrary `psdUrl`); everyone else → `public` (only `GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`, no `psdUrl`). A partner key minted on a **dedicated non-admin account** therefore resolves to `public` by construction — it can never escalate to the full library even if leaked.
+
 ## Constraints
 
 - Max 1 concurrent render (Redis semaphore)
-- Rate limit: 5 requests/minute per IP
 - Render timeout: 120 seconds
 - Temp files cleaned up after each render
+- Rate limit: **per account, not per IP** (a single partner proxy IP no longer shares one bucket across users)
+  - Interactive auth: **5 renders/min**
+  - API-key (partner) auth: **`PSD_RENDER_PARTNER_MAX`** env (default **120**/min)
+
+## Boxy partner integration — go-live runbook
+
+The Boxy app proxies its users' renders to this endpoint server-to-server. Boxy enforces its own 3:1 render:download quota locally; Visant only executes the render. Steps to flip it on:
+
+1. **Mint the partner key on a dedicated, non-admin Visant account** (e.g. `partner-boxy@…`). Scopes: `generate` (include `read`/`write` if other partner calls need them). The non-admin owner is what pins the key to `public` tier — do **not** use a team/admin account.
+2. **Boxy `.env`:** set `VISANT_RENDER_API_KEY=visant_sk_…` and confirm `VISANT_RENDER_API_URL=https://api.visantlabs.com`.
+3. **Visant `.env`:** set `GOOGLE_DRIVE_PUBLIC_FOLDER_IDS=<folder ids>` (the BOXY mockup library) + Drive auth (`GOOGLE_SERVICE_ACCOUNT_KEY` or refresh-token trio). Optionally tune `PSD_RENDER_PARTNER_MAX`.
+4. **Boxy DB:** `npx prisma db push`, then set `render_enabled=true` + `psd_file_name` on the pilot products.
+5. **Smoke test** the full path (curl below) and confirm a valid R2 URL comes back.
+
+```bash
+# Proves auth + generate-scope + public-tier render, end to end:
+curl -X POST https://api.visantlabs.com/api/psd-render/render \
+  -H "Authorization: Bearer $VISANT_RENDER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"psdFileName":"<file-in-public-folder>.psd","arts":[{"smartObject":"*","artBase64":"<base64>"}],"hideLayers":["[BOXY]"]}'
+```
 
 ## Deploy
 

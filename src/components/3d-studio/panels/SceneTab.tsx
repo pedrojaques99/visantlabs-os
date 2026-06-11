@@ -21,6 +21,8 @@ import {
   type SavedScene,
   type PublicScene,
 } from '@/stores/studio3dStore';
+import { useShallow } from 'zustand/react/shallow';
+import type { StoreState } from './_shared';
 import {
   Upload,
   FileText,
@@ -50,10 +52,95 @@ import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
 import { usePresetPreviews } from '../usePresetPreviews';
 
+// Fine-grained subscription: the input / geometry / shape / chain slice this
+// tab renders (was a full-store subscription re-rendering on any store
+// mutation). Trace params used only inside async callbacks are read via
+// useStudio3DStore.getState() (non-reactive) and intentionally excluded here.
+const scenePanelSelector = (s: StoreState) => ({
+  _sceneName: s._sceneName,
+  inputMode: s.inputMode,
+  isLoading: s.isLoading,
+  fileName: s.fileName,
+  text: s.text,
+  font: s.font,
+  svgData: s.svgData,
+  color: s.color,
+  depth: s.depth,
+  objectScale: s.objectScale,
+  smoothness: s.smoothness,
+  bevelEnabled: s.bevelEnabled,
+  bevelThickness: s.bevelThickness,
+  bevelSize: s.bevelSize,
+  shapeType: s.shapeType,
+  shapeColor: s.shapeColor,
+  reliefDepth: s.reliefDepth,
+  coinRadius: s.coinRadius,
+  badgeWidth: s.badgeWidth,
+  badgeHeight: s.badgeHeight,
+  badgeRadius: s.badgeRadius,
+  stampRadius: s.stampRadius,
+  stampTeeth: s.stampTeeth,
+  stampToothDepth: s.stampToothDepth,
+  shieldWidth: s.shieldWidth,
+  shieldHeight: s.shieldHeight,
+  hexRadius: s.hexRadius,
+  showChain: s.showChain,
+  chainLinks: s.chainLinks,
+  chainScale: s.chainScale,
+  chainColor: s.chainColor,
+  bailSize: s.bailSize,
+  bailOffset: s.bailOffset,
+  chainOffset: s.chainOffset,
+  tracePreset: s.tracePreset,
+  traceTurdSize: s.traceTurdSize,
+  traceOptTolerance: s.traceOptTolerance,
+  traceThreshold: s.traceThreshold,
+  traceAlphaMax: s.traceAlphaMax,
+  applyScenePreset: s.applyScenePreset,
+  randomize: s.randomize,
+  setInputMode: s.setInputMode,
+  setIsLoading: s.setIsLoading,
+  setModelUrl: s.setModelUrl,
+  setSvgData: s.setSvgData,
+  setText: s.setText,
+  setFont: s.setFont,
+  setDepth: s.setDepth,
+  setObjectScale: s.setObjectScale,
+  setSmoothness: s.setSmoothness,
+  setBevelEnabled: s.setBevelEnabled,
+  setBevelThickness: s.setBevelThickness,
+  setBevelSize: s.setBevelSize,
+  setShapeType: s.setShapeType,
+  setShapeColor: s.setShapeColor,
+  setReliefDepth: s.setReliefDepth,
+  setCoinRadius: s.setCoinRadius,
+  setBadgeWidth: s.setBadgeWidth,
+  setBadgeHeight: s.setBadgeHeight,
+  setBadgeRadius: s.setBadgeRadius,
+  setStampRadius: s.setStampRadius,
+  setStampTeeth: s.setStampTeeth,
+  setStampToothDepth: s.setStampToothDepth,
+  setShieldWidth: s.setShieldWidth,
+  setShieldHeight: s.setShieldHeight,
+  setHexRadius: s.setHexRadius,
+  setShowChain: s.setShowChain,
+  setChainLinks: s.setChainLinks,
+  setChainScale: s.setChainScale,
+  setChainColor: s.setChainColor,
+  setBailSize: s.setBailSize,
+  setBailOffset: s.setBailOffset,
+  setChainOffset: s.setChainOffset,
+  setTracePreset: s.setTracePreset,
+  setTraceTurdSize: s.setTraceTurdSize,
+  setTraceOptTolerance: s.setTraceOptTolerance,
+  setTraceThreshold: s.setTraceThreshold,
+  setTraceAlphaMax: s.setTraceAlphaMax,
+});
+
 export const SceneTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const store = useStudio3DStore();
+  const store = useStudio3DStore(useShallow(scenePanelSelector));
   const [isDragging, setIsDragging] = useState(false);
   const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
   const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);

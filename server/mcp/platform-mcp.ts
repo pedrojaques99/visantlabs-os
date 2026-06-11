@@ -7,6 +7,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { prisma } from '../db/prisma.js';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { getUserStorageLimit } from '../services/r2Service.js';
 import { ObjectId } from 'mongodb';
@@ -20,7 +21,11 @@ import {
   type BrandContextSection,
 } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
-import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
+import {
+  IMAGE_MODEL_IDS,
+  IMAGE_PROVIDERS,
+  DEFAULT_IMAGE_MODEL_ID,
+} from '../../src/constants/imageModelRegistry.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -114,6 +119,20 @@ function getMcpUserId(): string | null {
 }
 
 async function getQuotaMeta(userId: string) {
+  try {
+    return await computeQuotaMeta(userId);
+  } catch (err) {
+    // _meta is advisory: a Mongo/Prisma hiccup must never turn an already-
+    // successful tool result into INTERNAL_ERROR. Degrade to no quota meta.
+    console.warn(
+      '[getQuotaMeta] failed to compute quota meta, returning null:',
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
+}
+
+async function computeQuotaMeta(userId: string) {
   await connectToMongoDB();
   const db = getDb();
   const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
@@ -1020,8 +1039,10 @@ Content-Type: application/json
         .describe('Full image description — style, composition, colors, lighting, mood.'),
       model: z
         .enum(IMAGE_MODEL_IDS)
-        .default(IMAGE_MODEL_IDS[0])
-        .describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
+        .default(DEFAULT_IMAGE_MODEL_ID)
+        .describe(
+          'gpt-image-2=best, gemini=fast, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).'
+        ),
       aspectRatio: z
         .enum(['1:1', '9:16', '16:9', '4:5'])
         .default('1:1')
@@ -1098,9 +1119,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         ),
       model: z
         .enum(IMAGE_MODEL_IDS)
-        .default(IMAGE_MODEL_IDS[0])
+        .default(DEFAULT_IMAGE_MODEL_ID)
         .describe(
-          'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'
+          'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).'
         ),
       provider: z
         .enum(IMAGE_PROVIDERS)
@@ -3681,7 +3702,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .describe('Output aspect ratio.'),
       model: z
         .enum(IMAGE_MODEL_IDS)
-        .default(IMAGE_MODEL_IDS[0])
+        .default(DEFAULT_IMAGE_MODEL_ID)
         .describe('Model for background image generation.'),
       resolution: z
         .enum(['1K', '2K', '4K'])
@@ -4608,7 +4629,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       try {
         const { imagesToPdf } = await import('../services/ghostscriptService.js');
         const buffers = images.map((img) => {
-          const cleaned = img.replace(/^data:image\/\w+;base64,/, '');
+          const cleaned = stripDataUriPrefix(img);
           return Buffer.from(cleaned, 'base64');
         });
         const result = await imagesToPdf(buffers);

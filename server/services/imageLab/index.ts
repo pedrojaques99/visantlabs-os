@@ -13,7 +13,7 @@ async function getNapiCanvas() {
   if (!_napiCanvas) _napiCanvas = await import('@napi-rs/canvas');
   return _napiCanvas;
 }
-import { uploadImage } from '../r2Service.js';
+import { uploadEphemeralImage } from '../r2Service.js';
 import { generateHalftoneSvg } from './halftoneRenderer.js';
 import { renderRiso } from './risoRenderer.js';
 import { renderShader } from './shaderRenderer.js';
@@ -89,6 +89,39 @@ function validateImageUrl(url: string): void {
 
 // ── Image loading ──
 
+/**
+ * Verify a buffer's file signature matches a supported image format.
+ * Defends against fetching arbitrary non-image content (SSRF payloads,
+ * HTML error pages, executables) that slipped past the URL check.
+ * Accepts PNG, JPEG, GIF, WebP (RIFF/WEBP) and SVG (text-based).
+ */
+function isSupportedImageBuffer(buf: Buffer): boolean {
+  if (buf.length < 4) return false;
+  // PNG: 89 50 4E 47
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return true;
+  // JPEG: FF D8 FF
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return true;
+  // GIF: "GIF8"
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return true;
+  // WebP: "RIFF"...."WEBP"
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 &&
+    buf[1] === 0x49 &&
+    buf[2] === 0x46 &&
+    buf[3] === 0x46 &&
+    buf[8] === 0x57 &&
+    buf[9] === 0x45 &&
+    buf[10] === 0x42 &&
+    buf[11] === 0x50
+  )
+    return true;
+  // SVG: text-based — look for "<svg" or an XML prolog near the start.
+  const head = buf.subarray(0, 256).toString('utf8').trimStart().toLowerCase();
+  if (head.startsWith('<svg') || head.startsWith('<?xml')) return true;
+  return false;
+}
+
 async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
   validateImageUrl(imageUrl);
   if (imageUrl.startsWith('data:')) {
@@ -100,6 +133,7 @@ async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
           MAX_IMAGE_BYTES / 1024 / 1024
         } MB).`
       );
+    if (!isSupportedImageBuffer(buf)) throw new Error('Unsupported or invalid image content.');
     return buf;
   }
   const controller = new AbortController();
@@ -114,6 +148,7 @@ async function fetchImageBuffer(imageUrl: string): Promise<Buffer> {
           MAX_IMAGE_BYTES / 1024 / 1024
         } MB).`
       );
+    if (!isSupportedImageBuffer(buf)) throw new Error('Unsupported or invalid image content.');
     return buf;
   } finally {
     clearTimeout(timer);
@@ -408,7 +443,9 @@ export async function imageLabApplyEffect(
       throw new Error(`Unknown mode: ${mode}`);
   }
 
-  const url = await uploadImage(result.base64, userId, `imagelab-${mode}`);
+  // Ephemeral: filter outputs are regenerable and downloaded immediately, so
+  // they go under the lifecycle-expired imagelab/outputs prefix (see r2Service).
+  const url = await uploadEphemeralImage(result.base64, userId, `imagelab-${mode}`);
   return { imageUrl: url, format, width: result.width, height: result.height, mode, preset };
 }
 
@@ -423,7 +460,7 @@ export async function imageLabApplyShader(
       `Invalid shaderType "${shaderType}". Must be one of: ${[...VALID_SHADER_TYPES].join(', ')}`
     );
   const result = await applyShaderEffect(imageUrl, shaderType, settings, format);
-  const url = await uploadImage(result.base64, userId, `imagelab-shader-${shaderType}`);
+  const url = await uploadEphemeralImage(result.base64, userId, `imagelab-shader-${shaderType}`);
   return {
     imageUrl: url,
     format,

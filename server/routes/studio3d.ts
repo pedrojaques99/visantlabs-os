@@ -1,21 +1,65 @@
-import { Router } from 'express';
+import { Router, type NextFunction } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { tracePipeline, parseBase64Image } from './trace.js';
+import { recordToolUsage } from '../utils/toolUsageTracking.js';
 
 const router = Router();
 
+// Populate req.userId when a valid token is present, but never reject. Used on
+// GET /:id so owners can read their own *private* scenes (the route serves
+// public scenes anonymously). Without this the private-scene branch could never
+// see a userId and always 404'd, locking owners out of their own scenes.
+function optionalAuth(req: AuthRequest, _res: unknown, next: NextFunction) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string; sub?: string };
+      if (decoded.userId) req.userId = decoded.userId;
+      else if (decoded.sub) req.userId = decoded.sub;
+    } catch {
+      /* ignore invalid tokens — anonymous access still allowed for public scenes */
+    }
+  }
+  next();
+}
+
 // ─── Export GLB (no Prisma dependency) ──────────────────────────────────────
+
+const MAX_SVG_BYTES = 5 * 1024 * 1024; // 5MB
+const EXPORT_TIMEOUT_MS = 10_000;
+// Reject obviously dangerous SVG content (scripts / inline event handlers).
+const UNSAFE_SVG_RE = /<script\b|\son\w+\s*=|javascript:/i;
+
+class ExportTimeoutError extends Error {}
+
+function withTimeout<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new ExportTimeoutError(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([work, timeout]).finally(() => clearTimeout(timer)) as Promise<T>;
+}
+
+function validateSvgString(svg: string): string | null {
+  if (Buffer.byteLength(svg, 'utf8') > MAX_SVG_BYTES) return 'SVG too large (max 5MB)';
+  if (UNSAFE_SVG_RE.test(svg)) return 'SVG contains disallowed scripting content';
+  return null;
+}
 
 const exportLimiter = rateLimit({
   windowMs: 60_000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  // Throttle per authenticated user (falls back to IP for safety).
+  keyGenerator: (req) => (req as AuthRequest).userId || req.ip || 'anon',
 });
 
-router.post('/export-glb', exportLimiter, async (req, res) => {
+router.post('/export-glb', authenticate, exportLimiter, async (req: AuthRequest, res) => {
   try {
     const {
       svgData,
@@ -38,39 +82,62 @@ router.post('/export-glb', exportLimiter, async (req, res) => {
     let svg: string;
 
     if (svgData && typeof svgData === 'string' && svgData.includes('<svg')) {
+      const svgErr = validateSvgString(svgData);
+      if (svgErr) return res.status(422).json({ error: svgErr });
       svg = svgData;
     } else if (image && typeof image === 'string') {
       const buffer = parseBase64Image(image);
       if (!buffer) return res.status(400).json({ error: 'Invalid base64 image format' });
       if (buffer.length > 10 * 1024 * 1024)
         return res.status(413).json({ error: 'Image too large (max 10MB)' });
-      svg = await tracePipeline(buffer, {
-        preset: preset || 'logo',
-        threshold,
-        turdSize,
-        optTolerance,
-        alphaMax,
-      });
+      svg = await withTimeout(
+        tracePipeline(buffer, {
+          preset: preset || 'logo',
+          threshold,
+          turdSize,
+          optTolerance,
+          alphaMax,
+        }),
+        EXPORT_TIMEOUT_MS,
+        'trace'
+      );
+      const tracedErr = validateSvgString(svg);
+      if (tracedErr) return res.status(422).json({ error: tracedErr });
     } else {
       return res.status(400).json({ error: 'Provide svgData (SVG string) or image (base64 PNG)' });
     }
 
     const { svgToGlb } = await import('../services/studio3dExportService.js');
-    const glbBuffer = await svgToGlb(svg, {
-      depth,
-      smoothness,
-      bevelEnabled,
-      bevelThickness,
-      bevelSize,
-      color,
-      metalness,
-      roughness,
+    const glbBuffer = await withTimeout(
+      svgToGlb(svg, {
+        depth,
+        smoothness,
+        bevelEnabled,
+        bevelThickness,
+        bevelSize,
+        color,
+        metalness,
+        roughness,
+      }),
+      EXPORT_TIMEOUT_MS,
+      'svgToGlb'
+    );
+
+    recordToolUsage({
+      userId: req.userId!,
+      action: 'studio3d.export',
+      resourceId: undefined,
+      meta: { format: 'glb', bytes: glbBuffer.length },
     });
 
     res.setHeader('Content-Type', 'model/gltf-binary');
     res.setHeader('Content-Disposition', 'attachment; filename="scene.glb"');
     res.send(glbBuffer);
   } catch (error: any) {
+    if (error instanceof ExportTimeoutError) {
+      console.error('GLB export timeout:', error.message);
+      return res.status(422).json({ error: 'SVG too complex to process within time limit' });
+    }
     console.error('GLB export error:', error);
     res.status(500).json({ error: error.message || 'GLB export failed' });
   }
@@ -178,8 +245,45 @@ const VALID_EASINGS = ['linear', 'easeIn', 'easeOut', 'easeInOut'];
 
 const HEX_RE = /^#[0-9A-Fa-f]{3,8}$/;
 
+// Numeric bounds per config field. Out-of-range or non-finite values are rejected
+// (pathological numbers — e.g. huge depth/segments — can blow up server-side
+// geometry generation and the export pipeline).
+const NUMERIC_BOUNDS: Record<string, { min: number; max: number }> = {
+  depth: { min: 0, max: 50 },
+  smoothness: { min: 0, max: 1 },
+  bevelThickness: { min: 0, max: 10 },
+  bevelSize: { min: 0, max: 10 },
+  objectScale: { min: 0.01, max: 100 },
+  metalness: { min: 0, max: 1 },
+  roughness: { min: 0, max: 1 },
+  opacity: { min: 0, max: 1 },
+  textureRepeat: { min: 0, max: 1000 },
+  textureRotation: { min: -360, max: 360 },
+  textureOpacity: { min: 0, max: 1 },
+  lightIntensity: { min: 0, max: 100 },
+  ambientIntensity: { min: 0, max: 100 },
+  fillLightIntensity: { min: 0, max: 100 },
+  bounceLightIntensity: { min: 0, max: 100 },
+  pointLightIntensity: { min: 0, max: 100 },
+  groundReflection: { min: 0, max: 1 },
+  hdriBlur: { min: 0, max: 1 },
+  hdriIntensity: { min: 0, max: 100 },
+  hdriRotation: { min: -360, max: 360 },
+  fogNear: { min: 0, max: 10000 },
+  fogFar: { min: 0, max: 100000 },
+  bloomIntensity: { min: 0, max: 100 },
+  animateSpeed: { min: 0, max: 100 },
+};
+
 function validateConfig(config: any): string | null {
   if (!config || typeof config !== 'object') return 'config must be an object';
+  for (const [field, { min, max }] of Object.entries(NUMERIC_BOUNDS)) {
+    const v = config[field];
+    if (v === undefined || v === null) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v))
+      return `Invalid ${field}: must be a finite number`;
+    if (v < min || v > max) return `Invalid ${field}: must be between ${min} and ${max}`;
+  }
   if (config.material && !VALID_MATERIALS.includes(config.material))
     return `Invalid material: ${config.material}`;
   if (config.animate && !VALID_ANIMATIONS.includes(config.animate))
@@ -302,7 +406,7 @@ router.get('/public', apiRateLimiter, async (_req, res) => {
 
 // ─── Get scene ───────────────────────────────────────────────────────────────
 
-router.get('/:id', apiRateLimiter, async (req: AuthRequest, res) => {
+router.get('/:id', apiRateLimiter, optionalAuth, async (req: AuthRequest, res) => {
   try {
     const scene = await prisma.studio3DScene.findUnique({ where: { id: req.params.id } });
     if (!scene) return res.status(404).json({ error: 'Scene not found' });
@@ -370,6 +474,13 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
       },
     });
 
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.create',
+      resourceId: scene.id,
+      meta: { inputMode: scene.inputMode, isPublic: scene.isPublic },
+    });
+
     return res.status(201).json({ scene: mapId(scene) });
   } catch (err: any) {
     console.error('[studio3d] create error:', err.message);
@@ -429,6 +540,13 @@ router.patch('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res)
       },
     });
 
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.update',
+      resourceId: scene.id,
+      meta: { isPublic: scene.isPublic },
+    });
+
     return res.json({ scene: mapId(scene) });
   } catch (err: any) {
     console.error('[studio3d] update error:', err.message);
@@ -448,6 +566,13 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
     }
 
     await prisma.studio3DScene.delete({ where: { id: req.params.id } });
+
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.delete',
+      resourceId: req.params.id,
+    });
+
     return res.json({ deleted: true });
   } catch (err: any) {
     console.error('[studio3d] delete error:', err.message);
@@ -479,6 +604,13 @@ router.post('/:id/fork', apiRateLimiter, authenticate, async (req: AuthRequest, 
         tags: source.tags,
         isPublic: false,
       },
+    });
+
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.fork',
+      resourceId: scene.id,
+      meta: { sourceId: source.id },
     });
 
     return res.status(201).json({ scene: mapId(scene) });

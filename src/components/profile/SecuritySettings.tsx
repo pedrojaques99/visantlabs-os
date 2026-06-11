@@ -114,12 +114,12 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
         {totpEnabled && !backupCodes ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">
+              <Badge variant="outline" className="text-success border-success/30">
                 Ativo
               </Badge>
               <span className="text-xs text-neutral-500 font-mono">TOTP habilitado</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={disableCode}
                 onChange={(e) => setDisableCode(e.target.value)}
@@ -180,7 +180,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
             <p className="text-[10px] text-neutral-600 font-mono break-all">
               Chave manual: {setupData.secret}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={verifyCode}
                 onChange={(e) => setVerifyCode(e.target.value)}
@@ -236,13 +236,13 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between p-3 bg-neutral-900/50 rounded-lg border border-neutral-800/50"
+                className="flex items-center justify-between gap-3 p-3 bg-neutral-900/50 rounded-lg border border-neutral-800/50"
               >
-                <div className="space-y-0.5">
-                  <p className="text-xs font-mono text-neutral-300">
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-xs font-mono text-neutral-300 truncate">
                     {parseUserAgent(session.userAgent)}
                   </p>
-                  <p className="text-[10px] text-neutral-600 font-mono">
+                  <p className="text-[10px] text-neutral-600 font-mono truncate">
                     {session.ip || '—'} · {formatDateTime(session.lastUsed)}
                   </p>
                 </div>
@@ -250,7 +250,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRevokeSession(session.id)}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 size={12} />
                 </Button>

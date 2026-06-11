@@ -24,9 +24,11 @@ type TabId = (typeof TABS)[number]['id'];
 
 interface ControlsPanelProps {
   onExport: () => void;
+  /** Lazy capture of the current scene canvas as a PNG data URL (for "Send to →"). */
+  getCanvasPng?: () => string | undefined;
 }
 
-export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport }) => {
+export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExport, getCanvasPng }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabId>('scene');
@@ -71,7 +73,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(({ onExpor
           <Download size={12} className="mr-1.5" />
           {t('studio3d.export.title')}
         </Button>
-        <SendToButton source="3d-studio" outputMime="image/png" />
+        <SendToButton
+          source="3d-studio"
+          outputMime="image/png"
+          mimeType="image/png"
+          label="3D render"
+          getImageBase64={getCanvasPng}
+        />
       </div>
     </ToolPanel>
   );

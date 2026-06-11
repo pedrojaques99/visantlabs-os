@@ -11,7 +11,8 @@ import {
 } from '../utils/securityValidation.js';
 import { rateLimit } from 'express-rate-limit';
 import { LRUCache } from 'lru-cache';
-import { uploadImage, isR2Configured } from '../services/r2Service.js';
+import { uploadImage, isR2Configured, StorageLimitExceededError } from '../services/r2Service.js';
+import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { chargeCredits } from '../lib/credits.js';
 import { mediaSessionCache } from '../lib/mediaSessionCache.js';
@@ -1179,7 +1180,7 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
         .json({ error: `Unsupported content type. Allowed: ${allowedTypes.join(', ')}` });
     }
 
-    const base64Data = data.replace(/^data:image\/\w+;base64,/, '');
+    const base64Data = data.replace(/^data:[^;]+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
 
     const maxSize = 20 * 1024 * 1024; // 20MB
@@ -1192,8 +1193,19 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
     }
 
     const imageId = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const isAdmin = (req as any).isAdmin === true;
-    const url = await uploadImage(base64Data, userId, imageId, undefined, isAdmin);
+    // The MCP auth path (x-mcp-user-id) only sets req.userId, never req.isAdmin/tier,
+    // so we must resolve the user here or admins/premium users hit the free storage cap.
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionTier: true, isAdmin: true },
+    });
+    const url = await uploadImage(
+      base64Data,
+      userId,
+      imageId,
+      user?.subscriptionTier || undefined,
+      user?.isAdmin || undefined
+    );
 
     return res.json({
       success: true,
@@ -1204,6 +1216,12 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
       label: label || null,
     });
   } catch (error: any) {
+    if (error instanceof StorageLimitExceededError) {
+      return res.status(413).json({
+        error: 'storage_limit_exceeded',
+        message: `Storage limit exceeded: ${error.used} of ${error.limit} bytes used.`,
+      });
+    }
     console.error('Image upload error:', error);
     res.status(500).json({ error: 'Failed to upload image', message: getErrorMessage(error) });
   }

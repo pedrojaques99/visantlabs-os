@@ -28,10 +28,54 @@ describe('shouldRetry', () => {
     expect(shouldRetry(new Error('invalid prompt'))).toBe(false);
   });
 
+  it('does NOT retry safety / content-policy blocks (422)', () => {
+    expect(shouldRetry(new Error('422 Unprocessable'))).toBe(false);
+    expect(shouldRetry(new Error('The content was blocked by the AI safety filter'))).toBe(false);
+    expect(shouldRetry(new Error('SAFETY violation'))).toBe(false);
+    expect(shouldRetry(new Error('content policy violation'))).toBe(false);
+    expect(shouldRetry(new Error('flagged by moderation'))).toBe(false);
+  });
+
+  it('does NOT retry billing / insufficient-funds (402)', () => {
+    expect(shouldRetry(new Error('402 Payment Required'))).toBe(false);
+    expect(shouldRetry(new Error('Insufficient BytePlus credits'))).toBe(false);
+  });
+
+  it('does NOT retry exhausted overload errors (avoids double-retry of inner loop)', () => {
+    // geminiService throws ModelOverloadedError only AFTER burning its own 503
+    // retries — withResilience must not re-run that whole loop.
+    expect(shouldRetry(new ModelOverloadedError('The model is currently overloaded'))).toBe(false);
+    expect(shouldRetry(new Error('model is overloaded after 5 attempts'))).toBe(false);
+  });
+
+  it('does NOT retry terminal errors classified by name across module boundaries', () => {
+    const rateErr = Object.assign(new Error('busy'), { name: 'RateLimitError' });
+    const overloadErr = Object.assign(new Error('busy'), { name: 'ModelOverloadedError' });
+    const textErr = Object.assign(new Error('I cannot do that'), {
+      name: 'ModelResponseTextError',
+    });
+    expect(shouldRetry(rateErr)).toBe(false);
+    expect(shouldRetry(overloadErr)).toBe(false);
+    expect(shouldRetry(textErr)).toBe(false);
+  });
+
   it('retries everything else (network, 500, timeout)', () => {
     expect(shouldRetry(new Error('ECONNRESET'))).toBe(true);
     expect(shouldRetry(new Error('500 Internal Server Error'))).toBe(true);
     expect(shouldRetry(new Error('timeout'))).toBe(true);
+  });
+});
+
+describe('withResilience — non-retryable errors fail fast', () => {
+  it('does NOT retry a safety block (single attempt)', async () => {
+    const provider = `test-safety-${crypto.randomUUID()}`;
+    let calls = 0;
+    const err: Error = await withResilience(provider, async () => {
+      calls++;
+      throw new Error('The content was blocked by the AI safety filter');
+    }).catch((e: Error) => e);
+    expect(err).toBeInstanceOf(Error);
+    expect(calls).toBe(1);
   });
 });
 

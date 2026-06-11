@@ -9,6 +9,8 @@ import { Lock, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
 import { AuthModal } from '@/components/AuthModal';
+import { LandingHome } from '@/components/landing/LandingHome';
+import { GettingStartedChecklist } from '@/components/onboarding/GettingStartedChecklist';
 
 const playTick = () => {
   const a = new Audio('/sounds/hihat.wav');
@@ -269,6 +271,9 @@ const AppList: React.FC<AppListProps> = ({
 
   return (
     <div className="w-max">
+      <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-700 mb-3 select-none">
+        VISANT LABS®
+      </p>
       <div
         ref={listRef}
         role="listbox"
@@ -334,6 +339,12 @@ const AppList: React.FC<AppListProps> = ({
               contact
             </a>
           )}
+          <button
+            onClick={() => navigate('/docs')}
+            className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+          >
+            docs
+          </button>
         </div>
       </motion.div>
     </div>
@@ -352,6 +363,7 @@ export const HomePage: React.FC = () => {
   const isLoggedIn = isAuthenticated === true;
 
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authIsSignUp, setAuthIsSignUp] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
   const [apps, setApps] = useState<AppConfig[]>([]);
@@ -450,6 +462,37 @@ export const HomePage: React.FC = () => {
     navigate,
     isMobile,
   };
+
+  const openAuth = (signUp: boolean) => {
+    setAuthIsSignUp(signUp);
+    setShowAuthModal(true);
+  };
+
+  // Guest (confirmed not authenticated): scroll landing. While auth is still
+  // resolving (undefined) or logged in, fall through to the TUI hero below.
+  if (isAuthenticated === false) {
+    return (
+      <>
+        <SEO
+          title={t('homepage.seoTitle') || 'VISANT LABS'}
+          description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
+        />
+        <LandingHome onGetStarted={() => openAuth(true)} isMobile={isMobile} />
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          isSignUp={authIsSignUp}
+          setIsSignUp={setAuthIsSignUp}
+          onSuccess={() => {
+            setShowAuthModal(false);
+            // On sign-up the modal routes to the /welcome wizard itself — don't
+            // reload (it would cancel that). On sign-in, reload into the app hero.
+            if (!authIsSignUp) window.location.reload();
+          }}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -586,6 +629,8 @@ export const HomePage: React.FC = () => {
             ↑ ↓ navigate · enter select
           </motion.p>
         )}
+
+        {isLoggedIn && <GettingStartedChecklist />}
       </div>
 
       <AuthModal

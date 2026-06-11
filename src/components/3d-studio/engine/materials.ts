@@ -367,6 +367,80 @@ export const materialPresets: Record<string, MaterialPresetDef> = {
   },
 };
 
+// ── Single source for the material library ────────────────────────────────
+// The PBR values above (`materialPresets`) are the physical source of truth.
+// The UI layer (category grouping, ordering, swatch color, and the rare label
+// override) lives here so the Studio3D store no longer re-declares a parallel
+// material list. `MATERIAL_PRESETS` (consumed by the panels) is derived from
+// this — see `studio3dStore.ts`. Keep `id` values in sync with `materialPresets`
+// keys (the type system enforces it via `MaterialUiId`).
+
+export type MaterialUiId = keyof typeof materialPresets;
+export type MaterialCategory = 'basic' | 'metals' | 'surfaces' | 'glass' | 'special';
+
+export interface MaterialUiEntry {
+  id: MaterialUiId;
+  category: MaterialCategory;
+  /** Swatch / default color applied on selection. Optional. */
+  color?: string;
+  /** Display label override; defaults to `materialPresets[id].label`. */
+  label?: string;
+}
+
+/**
+ * Curated, ordered subset of materials surfaced in the Studio3D UI, grouped by
+ * category. Ordering and grouping are intentional and load-bearing for the UI.
+ */
+export const MATERIAL_UI: MaterialUiEntry[] = [
+  // Basic
+  { id: 'default', category: 'basic' },
+  { id: 'plastic', category: 'basic' },
+  { id: 'clay', category: 'basic', color: '#e8ddd3' },
+  { id: 'emissive', category: 'basic' },
+  // Metals
+  { id: 'chrome', category: 'metals', color: '#cccccc' },
+  { id: 'brushedSteel', category: 'metals', color: '#c0c0c0' },
+  { id: 'gold', category: 'metals', color: '#ffd891' },
+  { id: 'roseGold', category: 'metals', color: '#e8a090' },
+  { id: 'copper', category: 'metals', color: '#f7bc9e' },
+  // Surfaces
+  { id: 'marble', category: 'surfaces', color: '#e8e0d8' },
+  { id: 'wood', category: 'surfaces', color: '#8b6a4a' },
+  { id: 'leather', category: 'surfaces', color: '#6b4226' },
+  { id: 'carbonFiber', category: 'surfaces', color: '#222222' },
+  { id: 'carPaint', category: 'surfaces' },
+  // Glass & Gem
+  { id: 'glass', category: 'glass' },
+  { id: 'frostedGlass', category: 'glass', label: 'Frosted' },
+  { id: 'diamond', category: 'glass', color: '#ffffff' },
+  // Special
+  { id: 'pearl', category: 'special', color: '#fef0e0' },
+  { id: 'obsidian', category: 'special', color: '#1a1a1a' },
+  { id: 'holographic', category: 'special' },
+  { id: 'y2kGloss', category: 'special', label: 'Y2K Gloss' },
+  { id: 'liquidChrome', category: 'metals', color: '#e0e0e0' },
+  { id: 'titanium', category: 'metals', color: '#8a8a8a' },
+  { id: 'candyInflate', category: 'special', label: 'Candy' },
+  { id: 'soapBubble', category: 'glass' },
+  { id: 'opal', category: 'special', color: '#e8dff5' },
+  { id: 'neonTube', category: 'special' },
+  { id: 'resin', category: 'glass' },
+];
+
+export interface MaterialLibEntry extends MaterialUiEntry {
+  label: string;
+}
+
+/**
+ * Fully-resolved UI material list: every entry carries a concrete `label`
+ * (override or the PBR-derived default). This is the single list the Studio3D
+ * panels iterate over.
+ */
+export const MATERIAL_LIB: MaterialLibEntry[] = MATERIAL_UI.map((entry) => ({
+  ...entry,
+  label: entry.label ?? materialPresets[entry.id].label,
+}));
+
 export interface ResolvedMaterial {
   preset: string;
   metalness: number;
@@ -429,5 +503,53 @@ export function resolveMaterial(preset: string, overrides: MaterialOverrides): R
     iridescence: overrides.iridescence ?? base.iridescence,
     iridescenceIOR: overrides.iridescenceIOR ?? base.iridescenceIOR,
     reflectivity: overrides.reflectivity ?? base.reflectivity,
+  };
+}
+
+/**
+ * Flat prop bag for a `<meshPhysicalMaterial>` rendered from a preset + color,
+ * with no texture maps, shaders, blend modes, or shape-specific tweaks. This is
+ * the "light" material path used by simple consumers (e.g. the Playground 3D
+ * scene) that want preset-driven PBR without the full `ExtrudedSVG` pipeline
+ * (which is store-coupled and carries texture/fresnel/blend logic).
+ *
+ * Single source of truth for the preset→material-prop mapping so consumers stop
+ * re-deriving it inline. Pure: depends only on `materialPresets` data.
+ */
+export interface SimpleMaterialProps {
+  color: string;
+  metalness: number;
+  roughness: number;
+  opacity: number;
+  transparent: boolean;
+  emissiveIntensity: number;
+  emissive: string;
+  clearcoat: number;
+  clearcoatRoughness: number;
+  sheen: number;
+  sheenRoughness: number;
+  transmission: number;
+  ior: number;
+  iridescence: number;
+}
+
+export function getSimpleMaterialProps(preset: string, color: string): SimpleMaterialProps {
+  const base = materialPresets[preset] ?? materialPresets.default;
+  const emissiveIntensity = base.emissiveIntensity || 0;
+  return {
+    color,
+    metalness: base.metalness,
+    roughness: base.roughness,
+    opacity: base.opacity,
+    transparent: base.transparent,
+    emissiveIntensity,
+    emissive: emissiveIntensity ? color : '#000000',
+    clearcoat: base.clearcoat || 0,
+    clearcoatRoughness: base.clearcoatRoughness || 0,
+    sheen: base.sheen || 0,
+    sheenRoughness: base.sheenRoughness || 0,
+    transmission: base.transmission || 0,
+    ior: base.ior || 1.5,
+    iridescence: base.iridescence || 0,
   };
 }

@@ -10,6 +10,7 @@ import {
   ENVIRONMENT_PRESETS,
   LIGHTING_PRESETS,
 } from '@/stores/studio3dStore';
+import { useShallow } from 'zustand/react/shallow';
 import {
   ToolPanelDisclosure,
   ToolPanelGrid,
@@ -18,11 +19,88 @@ import {
   ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
 import { setCameraView, resetCamera } from '../CameraBridge';
-import { LightPositionSliders } from './_shared';
+import { LightPositionSliders, type StoreState } from './_shared';
+
+// Fine-grained subscription: the camera / lighting / environment / background /
+// scene-options slice this tab renders (was a full-store subscription). It does
+// read `_cameraInfo` for the active camera-view chip, so a camera-view click
+// still re-renders this panel — that is intended.
+const cameraPanelSelector = (s: StoreState) => ({
+  fov: s.fov,
+  orthographic: s.orthographic,
+  toneMapping: s.toneMapping,
+  toneMappingExposure: s.toneMappingExposure,
+  renderQuality: s.renderQuality,
+  _cameraInfo: s._cameraInfo,
+  lightIntensity: s.lightIntensity,
+  ambientIntensity: s.ambientIntensity,
+  fillLightIntensity: s.fillLightIntensity,
+  bounceLightIntensity: s.bounceLightIntensity,
+  pointLightIntensity: s.pointLightIntensity,
+  lightPosition: s.lightPosition,
+  fillLightPosition: s.fillLightPosition,
+  bounceLightPosition: s.bounceLightPosition,
+  pointLightPosition: s.pointLightPosition,
+  environment: s.environment,
+  customHdriUrl: s.customHdriUrl,
+  hdriBackground: s.hdriBackground,
+  hdriBlur: s.hdriBlur,
+  hdriIntensity: s.hdriIntensity,
+  hdriRotation: s.hdriRotation,
+  bgType: s.bgType,
+  background: s.background,
+  bgGradient: s.bgGradient,
+  backgroundImageUrl: s.backgroundImageUrl,
+  transparentBg: s.transparentBg,
+  fogEnabled: s.fogEnabled,
+  fogColor: s.fogColor,
+  fogNear: s.fogNear,
+  fogFar: s.fogFar,
+  shadow: s.shadow,
+  shadowQuality: s.shadowQuality,
+  groundPlane: s.groundPlane,
+  groundReflection: s.groundReflection,
+  showGrid: s.showGrid,
+  setFov: s.setFov,
+  setOrthographic: s.setOrthographic,
+  setToneMapping: s.setToneMapping,
+  setToneMappingExposure: s.setToneMappingExposure,
+  setRenderQuality: s.setRenderQuality,
+  applyLightingPreset: s.applyLightingPreset,
+  setLightIntensity: s.setLightIntensity,
+  setAmbientIntensity: s.setAmbientIntensity,
+  setFillLightIntensity: s.setFillLightIntensity,
+  setBounceLightIntensity: s.setBounceLightIntensity,
+  setPointLightIntensity: s.setPointLightIntensity,
+  setLightPosition: s.setLightPosition,
+  setFillLightPosition: s.setFillLightPosition,
+  setBounceLightPosition: s.setBounceLightPosition,
+  setPointLightPosition: s.setPointLightPosition,
+  setEnvironment: s.setEnvironment,
+  setCustomHdriUrl: s.setCustomHdriUrl,
+  setHdriBackground: s.setHdriBackground,
+  setHdriBlur: s.setHdriBlur,
+  setHdriIntensity: s.setHdriIntensity,
+  setHdriRotation: s.setHdriRotation,
+  setBgType: s.setBgType,
+  setBackground: s.setBackground,
+  setBgGradient: s.setBgGradient,
+  setBackgroundImageUrl: s.setBackgroundImageUrl,
+  setTransparentBg: s.setTransparentBg,
+  setFogEnabled: s.setFogEnabled,
+  setFogColor: s.setFogColor,
+  setFogNear: s.setFogNear,
+  setFogFar: s.setFogFar,
+  setShadow: s.setShadow,
+  setShadowQuality: s.setShadowQuality,
+  setGroundPlane: s.setGroundPlane,
+  setGroundReflection: s.setGroundReflection,
+  setShowGrid: s.setShowGrid,
+});
 
 export const CameraTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
-  const store = useStudio3DStore();
+  const store = useStudio3DStore(useShallow(cameraPanelSelector));
   const hdriInputRef = useRef<HTMLInputElement>(null);
 
   const [fov, setFov] = useDebouncedSlider(store.fov, store.setFov);

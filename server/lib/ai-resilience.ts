@@ -10,6 +10,7 @@ import {
   retry,
   wrap,
   handleAll,
+  handleWhen,
   ConsecutiveBreaker,
   ExponentialBackoff,
   CircuitState,
@@ -41,9 +42,12 @@ function emit(event: ResilienceEvent) {
   }
 }
 
-// Retry policy: exponential backoff, max 3 attempts
+// Retry policy: exponential backoff, max 3 attempts.
+// Only retry errors shouldRetry() classifies as transient — rate limits, auth,
+// validation (400) and safety/content blocks (422) fail fast so we don't burn
+// 3 attempts on a request that is deterministically going to be rejected again.
 const createRetryPolicy = (provider: string) => {
-  const policy = retry(handleAll, {
+  const policy = retry(handleWhen(shouldRetry), {
     maxAttempts: 3,
     backoff: new ExponentialBackoff({
       initialDelay: 1000,
@@ -148,6 +152,21 @@ export class ModelOverloadedError extends Error {
 export function shouldRetry(error: unknown): boolean {
   if (error instanceof RateLimitError) return false;
 
+  // Classify by error name too — services define their own terminal error
+  // classes (e.g. geminiService's RateLimitError / ModelOverloadedError /
+  // ModelResponseTextError) that can't be reached via instanceof across module
+  // boundaries. ModelResponseTextError means the model deterministically
+  // returned text instead of an image (refusal / clarifying question) — same
+  // prompt will do it again, so don't retry.
+  const name = error instanceof Error ? error.name : '';
+  if (
+    name === 'RateLimitError' ||
+    name === 'ModelOverloadedError' ||
+    name === 'ModelResponseTextError'
+  ) {
+    return false;
+  }
+
   const message = error instanceof Error ? error.message : String(error);
 
   // Don't retry rate limits
@@ -160,8 +179,36 @@ export function shouldRetry(error: unknown): boolean {
     return false;
   }
 
+  // Don't retry billing / insufficient-funds errors (402) — deterministic.
+  if (message.includes('402') || message.toLowerCase().includes('insufficient')) {
+    return false;
+  }
+
   // Don't retry validation errors
   if (message.includes('400') || message.toLowerCase().includes('invalid')) {
+    return false;
+  }
+
+  // Don't retry safety / content-policy blocks (422) — the same prompt will be
+  // blocked again, so retrying only wastes attempts and latency.
+  const lower = message.toLowerCase();
+  if (
+    message.includes('422') ||
+    lower.includes('safety') ||
+    lower.includes('blocked') ||
+    lower.includes('content policy') ||
+    lower.includes('content_policy') ||
+    lower.includes('moderation')
+  ) {
+    return false;
+  }
+
+  // Don't retry errors that already came from an exhausted inner retry loop
+  // (e.g. geminiService.withRetry throws ModelOverloadedError only after burning
+  // all its 503 attempts). Retrying here would re-run that whole loop — a
+  // double-retry. We still want the circuit breaker to count the failure, but
+  // not the retry policy to repeat it.
+  if (lower.includes('overloaded') || (lower.includes('after') && lower.includes('attempts'))) {
     return false;
   }
 

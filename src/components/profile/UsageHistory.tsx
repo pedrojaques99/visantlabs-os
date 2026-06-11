@@ -324,6 +324,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
             </CardHeader>
             <CardContent>
               <div className="rounded-md border border-neutral-800/50 overflow-hidden">
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-neutral-900/50">
                     <TableRow className="border-neutral-800/50 hover:bg-transparent">
@@ -356,10 +357,10 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         <TableCell className="px-4 py-4 text-sm font-mono">
                           <div className="flex items-center gap-2">
                             {record.feature === 'brandingmachine' && (
-                              <Palette className="w-3 h-3 text-purple-400" />
+                              <Palette className="w-3 h-3 text-neutral-300" />
                             )}
                             {record.feature === 'mockupmachine' && (
-                              <Image className="w-3 h-3 text-blue-400" />
+                              <Image className="w-3 h-3 text-neutral-300" />
                             )}
                             {record.feature === 'canvas' && (
                               <ImageIcon className="w-3 h-3 text-brand-cyan" />
@@ -410,6 +411,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
 
               {/* Pagination */}

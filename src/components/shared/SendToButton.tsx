@@ -17,6 +17,12 @@ interface SendToButtonProps {
   className?: string;
   /** Render as a NodeButton (canvas nodes) vs a plain icon button */
   variant?: 'node' | 'icon';
+  /**
+   * Lazy capture of the asset at click-time (e.g. snapshot a live canvas).
+   * Resolved when the user picks a target; result is sent as `imageBase64`
+   * (a full data URL). Takes precedence over the static `imageBase64`/`imageUrl`.
+   */
+  getImageBase64?: () => string | undefined | Promise<string | undefined>;
 }
 
 export const SendToButton: React.FC<SendToButtonProps> = ({
@@ -28,6 +34,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
   label,
   className,
   variant = 'icon',
+  getImageBase64,
 }) => {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -61,7 +68,19 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
     setSending(true);
     setOpen(false);
     try {
-      await pipelineApi.send({ source, imageUrl, imageBase64, mimeType, label });
+      const captured = getImageBase64 ? await getImageBase64() : undefined;
+      const payloadBase64 = captured ?? imageBase64;
+      if (!payloadBase64 && !imageUrl) {
+        toast.error('Nothing to send yet');
+        return;
+      }
+      await pipelineApi.send({
+        source,
+        imageUrl: captured ? undefined : imageUrl,
+        imageBase64: payloadBase64,
+        mimeType,
+        label,
+      });
       toast.success(`Opening ${target.name}…`);
       navigate(target.path);
     } catch {

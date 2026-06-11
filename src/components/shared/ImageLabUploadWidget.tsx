@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -11,13 +11,36 @@ interface ImageLabUploadWidgetProps {
 export const ImageLabUploadWidget: React.FC<ImageLabUploadWidgetProps> = React.memo(
   ({ imageUrl, onLoad, acceptVideo = true }) => {
     const inputRef = useRef<HTMLInputElement>(null);
+    const lastBlobUrlRef = useRef<string | null>(null);
+
+    useEffect(
+      () => () => {
+        if (lastBlobUrlRef.current) {
+          try {
+            URL.revokeObjectURL(lastBlobUrlRef.current);
+          } catch {
+            /* ignore */
+          }
+        }
+      },
+      []
+    );
 
     const handleFile = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
           const isVideo = file.type.startsWith('video/');
-          onLoad(URL.createObjectURL(file), file.name, isVideo ? 'video' : 'image');
+          if (lastBlobUrlRef.current) {
+            try {
+              URL.revokeObjectURL(lastBlobUrlRef.current);
+            } catch {
+              /* ignore */
+            }
+          }
+          const url = URL.createObjectURL(file);
+          lastBlobUrlRef.current = url;
+          onLoad(url, file.name, isVideo ? 'video' : 'image');
           toast.success(`Loaded ${file.name}`);
         }
         if (e.target) e.target.value = '';

@@ -376,13 +376,22 @@ export function SmoothControls({
       if (resetOnIdle) markActive();
     };
 
+    // Two-finger gesture: pinch = zoom, drag-both = pan. We track the pinch
+    // distance and the centroid; the centroid delta drives panning so a
+    // two-finger drag moves the camera, matching the desktop shift+drag pan.
     let lastPinchDist = 0;
+    let lastPinchCenter = { x: 0, y: 0 };
+    const pinchCenter = (e: TouchEvent) => ({
+      x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+      y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+    });
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+        lastPinchCenter = pinchCenter(e);
       }
     };
     const onTouchMove = (e: TouchEvent) => {
@@ -394,6 +403,16 @@ export function SmoothControls({
         const delta = lastPinchDist - dist;
         targetZoom.current = Math.max(2, Math.min(20, targetZoom.current + delta * 0.03));
         lastPinchDist = dist;
+
+        // Two-finger pan from centroid movement (mirrors shift+drag pan).
+        const center = pinchCenter(e);
+        const cdx = center.x - lastPinchCenter.x;
+        const cdy = center.y - lastPinchCenter.y;
+        const panSensitivity = Math.min(0.02, Math.max(0.004, 0.01 * (camera.position.z / 8)));
+        targetPan.current.x -= cdx * panSensitivity;
+        targetPan.current.y += cdy * panSensitivity;
+        lastPinchCenter = center;
+
         if (resetOnIdle) markActive();
       }
     };

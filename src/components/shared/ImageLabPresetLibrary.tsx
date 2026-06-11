@@ -4,10 +4,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';
 import { authService } from '@/services/authService';
-import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
-import { useHalftoneStore } from '@/stores/halftoneStore';
-import { useTextureFilterStore } from '@/stores/textureFilterStore';
-import { useRisoStore } from '@/stores/risoStore';
+import { type ImageLabMode } from '@/stores/imageLabStore';
+import { applyImageLabPreset } from '@/lib/imagelab/applyPreset';
 
 interface ImageLabPreset {
   _id: string;
@@ -141,21 +139,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
 
   const applyPreset = useCallback(
     (preset: ImageLabPreset) => {
-      if (!preset.data) return;
-      const { mode: presetMode, settings, layers } = preset.data;
-      useImageLabStore.getState().setMode(presetMode);
-
-      if (presetMode === 'halftone') {
-        const store = useHalftoneStore.getState();
-        Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-      } else if (presetMode === 'texture') {
-        const store = useTextureFilterStore.getState();
-        Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-      } else if (presetMode === 'riso') {
-        const store = useRisoStore.getState();
-        Object.entries(settings).forEach(([k, v]) => store.updateSetting(k as any, v));
-        if (layers) store.setLayers(layers);
-      }
+      if (!applyImageLabPreset(preset)) return;
       toast.success(`Applied "${preset.name}"`);
       onClose();
     },

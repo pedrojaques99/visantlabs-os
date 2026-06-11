@@ -21,7 +21,7 @@ const ScrubInput = React.memo<ScrubInputProps>(
     const inputRef = React.useRef<HTMLInputElement>(null);
     const scrubRef = React.useRef<{ startX: number; startValue: number } | null>(null);
     const activeListenersRef = React.useRef<{
-      onMove: (e: MouseEvent) => void;
+      onMove: (e: PointerEvent) => void;
       onUp: () => void;
     } | null>(null);
 
@@ -53,14 +53,18 @@ const ScrubInput = React.memo<ScrubInputProps>(
       if (!isNaN(parsed)) onChange(clamp(parsed));
     }, [draft, onChange, clamp]);
 
+    // Pointer events (not mouse) so drag-to-scrub also works on touch devices.
+    // Desktop behaviour is unchanged — pointer events fire for the mouse too.
     const onScrubDown = React.useCallback(
-      (e: React.MouseEvent) => {
+      (e: React.PointerEvent) => {
         if (editing) return;
+        // Only primary button / single touch should scrub.
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
         e.preventDefault();
         scrubRef.current = { startX: e.clientX, startValue: value };
         const sensitivity = (max - min) / 300;
 
-        const onMove = (me: MouseEvent) => {
+        const onMove = (me: PointerEvent) => {
           if (!scrubRef.current) return;
           const dx = me.clientX - scrubRef.current.startX;
           const mult = me.shiftKey ? 0.1 : 1;
@@ -69,16 +73,18 @@ const ScrubInput = React.memo<ScrubInputProps>(
 
         const onUp = () => {
           scrubRef.current = null;
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onUp);
           document.body.style.cursor = '';
           document.body.style.userSelect = '';
           activeListenersRef.current = null;
         };
 
         activeListenersRef.current = { onMove, onUp };
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
         document.body.style.cursor = 'ew-resize';
         document.body.style.userSelect = 'none';
       },
@@ -88,8 +94,9 @@ const ScrubInput = React.memo<ScrubInputProps>(
     React.useEffect(() => {
       return () => {
         if (activeListenersRef.current) {
-          document.removeEventListener('mousemove', activeListenersRef.current.onMove);
-          document.removeEventListener('mouseup', activeListenersRef.current.onUp);
+          document.removeEventListener('pointermove', activeListenersRef.current.onMove);
+          document.removeEventListener('pointerup', activeListenersRef.current.onUp);
+          document.removeEventListener('pointercancel', activeListenersRef.current.onUp);
         }
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
@@ -140,8 +147,8 @@ const ScrubInput = React.memo<ScrubInputProps>(
         title={hint}
       >
         <span
-          className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none"
-          onMouseDown={onScrubDown}
+          className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none touch-none"
+          onPointerDown={onScrubDown}
         >
           {icon && <span className="inline-flex mr-1 align-middle text-neutral-600">{icon}</span>}
           {label}
@@ -160,8 +167,8 @@ const ScrubInput = React.memo<ScrubInputProps>(
             />
           ) : (
             <span
-              className="text-[12px] font-mono text-neutral-200 cursor-ew-resize select-none tabular-nums leading-none"
-              onMouseDown={onScrubDown}
+              className="text-[12px] font-mono text-neutral-200 cursor-ew-resize select-none tabular-nums leading-none touch-none"
+              onPointerDown={onScrubDown}
               onDoubleClick={startEdit}
             >
               {display}

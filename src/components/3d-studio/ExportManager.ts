@@ -109,21 +109,30 @@ export async function exportVideo(
     captureSource = shaderCanvas;
   }
 
-  const stream = captureSource.captureStream(60);
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    ? 'video/webm;codecs=vp9'
-    : MediaRecorder.isTypeSupported('video/webm')
-    ? 'video/webm'
-    : null;
-  if (!mimeType) {
-    throw new Error(
-      'Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.'
-    );
+  // If stream/recorder setup throws (unsupported mime, captureStream failure),
+  // the shader rAF loop above is already running — cancel it before bubbling.
+  let stream: MediaStream;
+  let recorder: MediaRecorder;
+  try {
+    stream = captureSource.captureStream(60);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9'
+      : MediaRecorder.isTypeSupported('video/webm')
+      ? 'video/webm'
+      : null;
+    if (!mimeType) {
+      throw new Error(
+        'Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.'
+      );
+    }
+    recorder = new MediaRecorder(stream, {
+      mimeType,
+      videoBitsPerSecond: 8_000_000,
+    });
+  } catch (err) {
+    if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
+    throw err;
   }
-  const recorder = new MediaRecorder(stream, {
-    mimeType,
-    videoBitsPerSecond: 8_000_000,
-  });
 
   const chunks: Blob[] = [];
   recorder.ondataavailable = (e) => {
@@ -248,11 +257,20 @@ export async function exportTurntable(
     captureSource = shaderCanvas;
   }
 
-  const stream = captureSource.captureStream(60);
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    ? 'video/webm;codecs=vp9'
-    : 'video/webm';
-  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
+  // Cancel the shader rAF loop if stream/recorder setup throws before the
+  // recorder's onerror/onstop handlers are wired up.
+  let stream: MediaStream;
+  let recorder: MediaRecorder;
+  try {
+    stream = captureSource.captureStream(60);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9'
+      : 'video/webm';
+    recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
+  } catch (err) {
+    if (shaderAnimId) cancelAnimationFrame(shaderAnimId);
+    throw err;
+  }
   const chunks: Blob[] = [];
   recorder.ondataavailable = (e) => {
     if (e.data.size > 0) chunks.push(e.data);

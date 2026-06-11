@@ -4,12 +4,66 @@ import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore } from '@/stores/studio3dStore';
+import { useShallow } from 'zustand/react/shallow';
+import type { StoreState } from './_shared';
 import { ToolPanelDisclosure, ToolPanelRow } from '@/components/shared/ToolPanel';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 
+// Fine-grained subscription: only the post-processing / effects slice (was a
+// full-store subscription re-rendering on any mutation). Actions are stable
+// identities, so including them under useShallow is free.
+const effectsPanelSelector = (s: StoreState) => ({
+  effectsBypass: s.effectsBypass,
+  bloomEnabled: s.bloomEnabled,
+  bloomIntensity: s.bloomIntensity,
+  bloomThreshold: s.bloomThreshold,
+  dofEnabled: s.dofEnabled,
+  dofFocusDistance: s.dofFocusDistance,
+  dofBokehScale: s.dofBokehScale,
+  chromaticAberrationEnabled: s.chromaticAberrationEnabled,
+  chromaticAberrationOffset: s.chromaticAberrationOffset,
+  ssaoEnabled: s.ssaoEnabled,
+  ssaoIntensity: s.ssaoIntensity,
+  noiseEnabled: s.noiseEnabled,
+  noiseOpacity: s.noiseOpacity,
+  vignetteEnabled: s.vignetteEnabled,
+  vignetteIntensity: s.vignetteIntensity,
+  colorGradingEnabled: s.colorGradingEnabled,
+  cgBrightness: s.cgBrightness,
+  cgContrast: s.cgContrast,
+  cgHue: s.cgHue,
+  cgSaturation: s.cgSaturation,
+  shaderEnabled: s.shaderEnabled,
+  shaderType: s.shaderType,
+  shaderValues: s.shaderValues,
+  setEffectsBypass: s.setEffectsBypass,
+  setBloomEnabled: s.setBloomEnabled,
+  setBloomIntensity: s.setBloomIntensity,
+  setBloomThreshold: s.setBloomThreshold,
+  setDofEnabled: s.setDofEnabled,
+  setDofFocusDistance: s.setDofFocusDistance,
+  setDofBokehScale: s.setDofBokehScale,
+  setChromaticAberrationEnabled: s.setChromaticAberrationEnabled,
+  setChromaticAberrationOffset: s.setChromaticAberrationOffset,
+  setSsaoEnabled: s.setSsaoEnabled,
+  setSsaoIntensity: s.setSsaoIntensity,
+  setNoiseEnabled: s.setNoiseEnabled,
+  setNoiseOpacity: s.setNoiseOpacity,
+  setVignetteEnabled: s.setVignetteEnabled,
+  setVignetteIntensity: s.setVignetteIntensity,
+  setColorGradingEnabled: s.setColorGradingEnabled,
+  setCgBrightness: s.setCgBrightness,
+  setCgContrast: s.setCgContrast,
+  setCgHue: s.setCgHue,
+  setCgSaturation: s.setCgSaturation,
+  setShaderEnabled: s.setShaderEnabled,
+  setShaderType: s.setShaderType,
+  setShaderValue: s.setShaderValue,
+});
+
 export const EffectsTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
-  const store = useStudio3DStore();
+  const store = useStudio3DStore(useShallow(effectsPanelSelector));
 
   const [ssaoIntensity, setSsaoIntensity] = useDebouncedSlider(
     store.ssaoIntensity,

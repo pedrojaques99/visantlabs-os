@@ -15,6 +15,7 @@
  */
 import OpenAI from 'openai';
 import { uploadImage } from './r2Service.js';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
 import {
   OPENAI_IMAGE_MODELS,
@@ -169,7 +170,7 @@ export async function inpaint(req: InpaintRequest, userId: string): Promise<Inpa
   // Resolve mask
   let maskBase64: string;
   if (req.maskBase64) {
-    maskBase64 = req.maskBase64.replace(/^data:image\/\w+;base64,/, '');
+    maskBase64 = stripDataUriPrefix(req.maskBase64);
   } else {
     maskBase64 = await generateMaskFromRegion(imageBase64, req.maskRegion!);
   }
