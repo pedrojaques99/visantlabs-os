@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+// Raise the generative rate limit so the suite's many generative POSTs don't trip
+// the per-IP limiter (all tests share 127.0.0.1). Must be set before the router
+// module evaluates the limiter at import time.
+process.env.RATE_LIMIT_MAX_GENERATIVE = '1000';
 import { request } from '../../helpers/app.js';
 import { signTestToken, bearer } from '../../helpers/auth.js';
 import { createUser } from '../../factories/user.js';
@@ -43,6 +47,34 @@ vi.mock('../../../server/lib/credits.js', () => ({
   refundCreditsWithRetry: (...args: any[]) => mockRefund(...args),
 }));
 
+// ─── In-memory Redis so the real async job logic (persist, poll, refund,
+// orphan-reconcile in server/lib/imagelabJobs.ts) runs hermetically. The prod
+// redisClient is a no-op when disconnected, which would make jobs invisible. ─
+const redisStore = new Map<string, string>();
+vi.mock('../../../server/lib/redis.js', () => ({
+  redisClient: {
+    setex: async (key: string, _ttl: number, value: string) => {
+      redisStore.set(key, value);
+      return 'OK';
+    },
+    get: async (key: string) => redisStore.get(key) ?? null,
+    del: async (key: string) => (redisStore.delete(key) ? 1 : 0),
+  },
+}));
+
+/** Poll the async job endpoint until it leaves a non-terminal state. */
+async function pollUntilDone(agent: any, token: string, jobId: string) {
+  for (let i = 0; i < 50; i++) {
+    const res = await agent
+      .get(`/api/imagelab/jobs/${jobId}`)
+      .set('Authorization', bearer(token));
+    if (res.status !== 200) return res;
+    if (res.body.status === 'done' || res.body.status === 'error') return res;
+    await new Promise((r) => setTimeout(r, 10));
+  }
+  throw new Error('Job did not reach a terminal state in time');
+}
+
 const PUBLIC_IMG = 'https://cdn.example.com/photo.png';
 
 async function authedUser() {
@@ -54,6 +86,7 @@ async function authedUser() {
 describe('ImageLab Routes Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    redisStore.clear();
     // Default: a successful charge (1 credit from the monthly bucket).
     mockChargeCredits.mockResolvedValue({
       charged: true,
@@ -365,6 +398,89 @@ describe('ImageLab Routes Integration', () => {
       expect(res.status).toBe(200);
       expect(mockChargeCredits).toHaveBeenCalledWith(user.id, 1);
       expect(mockRefund).not.toHaveBeenCalled();
+    });
+  });
+
+  // ─── Async job queue (async: true) ─────────────────────────────────────────
+
+  describe('Async generative job queue', () => {
+    it('generative-expand async: creates a job (202 + jobId) and polls to done', async () => {
+      const { user, token } = await authedUser();
+      mockGenerativeExpand.mockResolvedValue({
+        imageUrl: 'https://cdn.test/expanded.png',
+        base64: 'AAAA',
+      });
+
+      const agent = await request();
+      const create = await agent
+        .post('/api/imagelab/generative-expand')
+        .set('Authorization', bearer(token))
+        .send({ imageUrl: PUBLIC_IMG, direction: 'right', async: true });
+
+      expect(create.status).toBe(202);
+      expect(create.body.jobId).toBeTruthy();
+      expect(create.body.status).toBe('pending');
+      expect(mockChargeCredits).toHaveBeenCalledWith(user.id, 2);
+
+      const done = await pollUntilDone(agent, token, create.body.jobId);
+      expect(done.status).toBe(200);
+      expect(done.body.status).toBe('done');
+      expect(done.body.kind).toBe('generative-expand');
+      expect(done.body.result.imageUrl).toBe('https://cdn.test/expanded.png');
+      expect(mockRefund).not.toHaveBeenCalled();
+    });
+
+    it('inpaint async: job ends as error and refunds credits on failure', async () => {
+      const { user, token } = await authedUser();
+      mockInpaint.mockRejectedValue(new Error('inpaint model exploded'));
+
+      const agent = await request();
+      const create = await agent
+        .post('/api/imagelab/inpaint')
+        .set('Authorization', bearer(token))
+        .send({ imageUrl: PUBLIC_IMG, mode: 'remove', maskRegion: { x: 0, y: 0, w: 1, h: 1 }, async: true });
+
+      expect(create.status).toBe(202);
+
+      const done = await pollUntilDone(agent, token, create.body.jobId);
+      expect(done.body.status).toBe('error');
+      expect(done.body.error).toMatch(/exploded/i);
+      // Failure path refunds the exact charged amount/buckets once.
+      expect(mockRefund).toHaveBeenCalledOnce();
+      expect(mockRefund).toHaveBeenCalledWith(user.id, 2, { fromEarned: 0, fromMonthly: 2 });
+    });
+
+    it('returns 404 for an unknown job id', async () => {
+      const { token } = await authedUser();
+      const agent = await request();
+      const res = await agent
+        .get('/api/imagelab/jobs/does-not-exist')
+        .set('Authorization', bearer(token));
+      expect(res.status).toBe(404);
+    });
+
+    it('returns 403 when polling a job owned by another user', async () => {
+      const owner = await authedUser();
+      mockGenerativeExpand.mockResolvedValue({ imageUrl: 'https://cdn.test/x.png', base64: 'AAAA' });
+
+      const agent = await request();
+      const create = await agent
+        .post('/api/imagelab/generative-expand')
+        .set('Authorization', bearer(owner.token))
+        .send({ imageUrl: PUBLIC_IMG, direction: 'right', async: true });
+      expect(create.status).toBe(202);
+
+      const intruder = await authedUser();
+      const res = await agent
+        .get(`/api/imagelab/jobs/${create.body.jobId}`)
+        .set('Authorization', bearer(intruder.token));
+      expect(res.status).toBe(403);
+    });
+
+    it('returns 401 when polling without a token', async () => {
+      const agent = await request();
+      const res = await agent.get('/api/imagelab/jobs/whatever');
+      expect(res.status).toBe(401);
     });
   });
 });
