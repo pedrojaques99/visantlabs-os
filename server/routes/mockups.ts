@@ -1499,7 +1499,8 @@ router.post(
         errorResponse = {
           error: 'rate_limit',
           message: 'Too many requests. Please wait a moment and try again.',
-          hint: 'Try a different model or wait 30 seconds.',
+          hint: 'Wait ~30 seconds, or switch to a different model (the rate limit is per provider).',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
         };
       } else if (
         error.name === 'ModelResponseTextError' ||
@@ -1554,7 +1555,11 @@ router.post(
         errorResponse = {
           error: 'content_blocked',
           message: 'The content was blocked by the AI safety filter.',
-          hint: 'Adjust your prompt and try again.',
+          hint:
+            'gpt-image has the most aggressive safety filter — besides rephrasing the ' +
+            'prompt, try switching to a different model (e.g. the suggested alternative), ' +
+            'which may not block the same content.',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
         };
       } else {
         errorResponse = {
