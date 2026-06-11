@@ -194,8 +194,53 @@ export const Studio3DPage: React.FC = () => {
       }
     };
 
-    // Wait for scene to stabilize (geometry build + first render)
-    setTimeout(runExport, 2000);
+    // Poll for real readiness instead of a fixed delay: canvas mounted with
+    // rendered pixels, scene not loading, and input still present. Requires a
+    // couple of consecutive ready ticks so geometry has built before the first
+    // frame is captured. Gives up after ~15s into an error state.
+    const POLL_MS = 150;
+    const GIVE_UP_MS = 15000;
+    const STABLE_TICKS = 3; // ~450ms of sustained readiness
+    const startedAt = Date.now();
+    let stableCount = 0;
+    let started = false;
+    let pollId: ReturnType<typeof setInterval> | undefined;
+
+    const isReady = () => {
+      const canvas = canvasRef.current;
+      const s = store.getState();
+      return (
+        !!canvas &&
+        canvas.width > 0 &&
+        canvas.height > 0 &&
+        !s.isLoading &&
+        !(s.inputMode === 'svg' ? !s.svgData : s.inputMode === 'text' ? !s.text : !s.modelUrl)
+      );
+    };
+
+    pollId = setInterval(() => {
+      if (started) return;
+      if (isReady()) {
+        stableCount += 1;
+        if (stableCount >= STABLE_TICKS) {
+          started = true;
+          if (pollId) clearInterval(pollId);
+          void runExport();
+        }
+      } else {
+        stableCount = 0;
+        if (Date.now() - startedAt > GIVE_UP_MS) {
+          started = true;
+          if (pollId) clearInterval(pollId);
+          console.error('Auto-render timed out waiting for scene to become ready');
+          setAutoRenderState('error');
+        }
+      }
+    }, POLL_MS);
+
+    return () => {
+      if (pollId) clearInterval(pollId);
+    };
   }, [autoRender, isEmpty]);
 
   // Revoke any outstanding GLB/GLTF blob URL when leaving the page so the
