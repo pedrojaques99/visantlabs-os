@@ -23,6 +23,7 @@ import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
 import { DEFAULT_IMAGE_MODEL_ID } from '../../src/constants/imageModelRegistry.js';
+import { flattenAlphaIfNeeded } from '../lib/imageFlatten.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -459,6 +460,19 @@ router.post(
           ? rawSeed
           : undefined;
 
+      // Flatten RGBA reference images to a white bg — providers (gpt-image, gemini,
+      // seedream) reject/degrade transparency. Applied here at the generation choke
+      // point so the original logo keeps its alpha everywhere else.
+      const flattenForProvider = async (base64: string, mimeType: string) => {
+        try {
+          const out = await flattenAlphaIfNeeded(Buffer.from(base64, 'base64'), mimeType);
+          return { base64: out.buffer.toString('base64'), mimeType: out.mimeType };
+        } catch (error: unknown) {
+          console.warn(`${logPrefix} [IMAGE PROCESSING] Alpha flatten skipped:`, error);
+          return { base64, mimeType };
+        }
+      };
+
       // Helper to download image from URL if base64 is not provided
       const processImageInput = async (img: any) => {
         if (!img) return null;
@@ -466,11 +480,11 @@ router.post(
         if (typeof img === 'string') {
           if (img.startsWith('data:') || (!img.startsWith('http') && img.length > 200)) {
             const base64Data = img.startsWith('data:') ? img.split(',')[1] || img : img;
-            return { base64: base64Data, mimeType: 'image/png' };
+            return flattenForProvider(base64Data, 'image/png');
           }
           img = { url: img };
         }
-        if (img.base64) return img;
+        if (img.base64) return flattenForProvider(img.base64, img.mimeType || 'image/png');
         if (img.url) {
           try {
             console.log(
@@ -481,10 +495,10 @@ router.post(
             if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
-            return {
-              base64: buffer.toString('base64'),
-              mimeType: img.mimeType || response.headers.get('content-type') || 'image/png',
-            };
+            return flattenForProvider(
+              buffer.toString('base64'),
+              img.mimeType || response.headers.get('content-type') || 'image/png'
+            );
           } catch (error: unknown) {
             console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
             throw new Error(`Failed to process image URL: ${getErrorMessage(error)}`);
@@ -621,7 +635,7 @@ router.post(
         ? hashQuery(
             finalBaseImage.base64
               ? `${finalBaseImage.base64.slice(0, 500)}:${finalBaseImage.base64.length}`
-              : finalBaseImage.url || '',
+              : '',
             finalBaseImage.mimeType || ''
           )
         : 'no-image';

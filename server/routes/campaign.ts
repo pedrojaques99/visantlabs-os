@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { redisClient } from '../lib/redis.js';
+import { flattenAlphaIfNeeded } from '../lib/imageFlatten.js';
 import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateMockup as generateGeminiImage } from '../services/geminiService.js';
@@ -186,8 +187,12 @@ async function generateOneImage(params: {
   const imgResp = await safeFetch(urlCheck.url!);
   if (!imgResp.ok) throw new Error(`Failed to fetch product image: ${imgResp.status}`);
   const imgBuf = Buffer.from(await imgResp.arrayBuffer());
-  const imgBase64 = imgBuf.toString('base64');
-  const imgMime = (imgResp.headers.get('content-type') || 'image/png').split(';')[0];
+  const rawMime = (imgResp.headers.get('content-type') || 'image/png').split(';')[0];
+  // Strip RGBA before handing the product image to gpt-image/gemini — providers
+  // reject or degrade transparency.
+  const flat = await flattenAlphaIfNeeded(imgBuf, rawMime);
+  const imgBase64 = flat.buffer.toString('base64');
+  const imgMime = flat.mimeType;
 
   // Enrich prompt with curated references
   const { prompt: enrichedPrompt } = await enrichWithCuratedReferences(prompt);
