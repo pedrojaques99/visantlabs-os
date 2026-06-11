@@ -290,7 +290,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${
                     theme === 'dark'
                       ? 'bg-destructive/10 border border-destructive/30 text-destructive'
-                      : 'bg-red-50 border border-red-200 text-destructive'
+                      : 'bg-destructive/10 border border-destructive/30 text-destructive'
                   }`}
                 >
                   <X size={16} />
@@ -301,8 +301,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 <div
                   className={`rounded-xl p-4 text-sm font-mono flex items-center gap-2 ${
                     theme === 'dark'
-                      ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-                      : 'bg-green-50 border border-green-200 text-green-600'
+                      ? 'bg-success/10 border border-success/30 text-success'
+                      : 'bg-success/10 border border-success/30 text-success'
                   }`}
                 >
                   <Check size={16} />
@@ -400,7 +400,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${
+                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
                     : 'bg-white border border-neutral-300 text-neutral-900'
@@ -420,7 +420,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${
+                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
                     : 'bg-white border border-neutral-300 text-neutral-900'

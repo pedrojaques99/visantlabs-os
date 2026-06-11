@@ -3237,7 +3237,24 @@
     "uploadPicture": "Clique para enviar foto",
     "viewAllTransactions": "Transações",
     "viewOutputs": "Ver resultados",
-    "viewPublicProfile": "Ver Perfil Público"
+    "viewPublicProfile": "Ver Perfil Público",
+    "apiKeys": "API Keys",
+    "danger": {
+      "title": "Zona de perigo",
+      "description": "Ao excluir sua conta, seus dados serão anonimizados e a assinatura cancelada. Esta ação não pode ser desfeita.",
+      "deleteAccount": "Excluir minha conta"
+    },
+    "deleteDialog": {
+      "title": "Excluir conta",
+      "description": "Esta ação é irreversível. Sua assinatura será cancelada e seus dados anonimizados. Digite",
+      "toConfirm": "para confirmar.",
+      "placeholder": "Digite {word}",
+      "confirm": "Excluir permanentemente",
+      "deleting": "Excluindo...",
+      "success": "Conta excluída com sucesso.",
+      "error": "Erro ao excluir conta.",
+      "confirmWord": "EXCLUIR"
+    }
   },
   "referral": {
     "copy": "Copiar",
@@ -4812,5 +4829,80 @@
   "premium": {
     "upgradeRequired": "Este recurso requer uma assinatura Pro.",
     "seePlans": "Ver Planos"
+  },
+  "landing": {
+    "nav": {
+      "apps": "Apps",
+      "community": "Comunidade",
+      "signin": "Entrar",
+      "cta": "Comecar gratis"
+    },
+    "hero": {
+      "eyebrow": "Design com IA nativa de marca",
+      "titleLine1": "A IA ignora a sua marca.",
+      "titleLine2": "A nossa foi feita pra obedecer.",
+      "subtitle": "Transforme suas brand guidelines em contexto vivo de IA. Mockups, pecas e campanhas que ja saem com a sua identidade — do designer iniciante a agencia.",
+      "ctaPrimary": "Comecar gratis",
+      "ctaSecondary": "Ver os apps",
+      "scroll": "Role para descobrir"
+    },
+    "problem": {
+      "eyebrow": "O problema",
+      "title": "Marca consistente nao deveria ser trabalho manual.",
+      "p1": "Hex copiado na mao, fonte por fonte, em cada nova peca.",
+      "p2": "Brand book em PDF que ninguem abre depois de pronto.",
+      "p3": "IA generica que inventa uma marca que nao e a sua."
+    },
+    "how": {
+      "eyebrow": "Como funciona",
+      "title": "Sua identidade vira input — nao so documentacao.",
+      "step1Title": "1. Capture sua marca",
+      "step1Desc": "Cores, tipografia, logos e tom de voz num lugar so. Estruturado, nao um PDF estatico.",
+      "step2Title": "2. A IA usa como contexto",
+      "step2Desc": "Cada geracao le sua marca automaticamente. Sem prompt gigante, sem copiar hex.",
+      "step3Title": "3. Gere com consistencia",
+      "step3Desc": "Mockups, posts, campanhas e mais — sempre na sua identidade, em segundos."
+    },
+    "segments": {
+      "eyebrow": "Pra quem e",
+      "title": "Do primeiro mockup a operacao da agencia.",
+      "designerTitle": "Designer iniciante",
+      "designerPain": "Comecando e sem repertorio?",
+      "designerGain": "Gere mockups e pecas profissionais por exemplo, sem partir do zero.",
+      "marketingTitle": "Marketing sem time de design",
+      "marketingPain": "Precisa de pecas e nao tem designer?",
+      "marketingGain": "Um brief vira conteudo pronto para todas as redes, na marca da empresa.",
+      "agencyTitle": "Designer senior & agencia",
+      "agencyPain": "Gerencia varias marcas de clientes?",
+      "agencyGain": "Uma fonte de verdade por cliente. Compartilhe, gere e mantenha a consistencia.",
+      "devTitle": "Developer",
+      "devPain": "Quer marca como codigo?",
+      "devGain": "Design tokens, API publica e MCP para levar o contexto de marca a qualquer agente."
+    },
+    "apps": {
+      "eyebrow": "A plataforma",
+      "title": "Um conjunto de ferramentas. Uma identidade.",
+      "subtitle": "Tudo conectado pela mesma marca.",
+      "mockupName": "Mockup Machine",
+      "mockupDesc": "Mockups realistas do seu produto e marca em segundos.",
+      "brandName": "Brand Guidelines",
+      "brandDesc": "Sua identidade estruturada — e viva como contexto de IA.",
+      "canvasName": "Canvas",
+      "canvasDesc": "Editor visual com pipelines de IA para compor pecas.",
+      "contentName": "Content Studio",
+      "contentDesc": "Um brief, varias pecas para todas as redes de uma vez.",
+      "studioName": "3D Studio",
+      "studioDesc": "Cenas e render 3D da sua marca sem sair do navegador.",
+      "imageName": "Image Lab",
+      "imageDesc": "Geracao e tratamento de imagem com varios modelos."
+    },
+    "finalCta": {
+      "title": "Sua marca, agora com IA.",
+      "subtitle": "Comece gratis. Sem cartao.",
+      "button": "Comecar gratis"
+    },
+    "footer": {
+      "tagline": "A unica IA que conhece a sua marca."
+    }
   }
 }

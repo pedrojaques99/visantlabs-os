@@ -7,13 +7,14 @@ import {
   ExternalLink,
   Share2,
   Copy,
-  Heart,
   Users,
   HardDrive,
   Plus,
   ArrowRight,
   UserCog,
   KeyRound,
+  Heart,
+  type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { type User as UserType } from '@/services/authService';
@@ -42,6 +43,63 @@ interface ProfileOverviewProps {
   avatarUrl: string;
 }
 
+// Shared surface for a card section.
+const cardClass =
+  'bg-neutral-900/60 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col gap-5';
+
+// One navigation row — used for the profile shortcuts. Renders a Link or a button.
+const NavRow: React.FC<{
+  icon: LucideIcon;
+  label: string;
+  to?: string;
+  onClick?: () => void;
+}> = ({ icon: Icon, label, to, onClick }) => {
+  const inner = (
+    <>
+      <span className="flex items-center gap-3">
+        <Icon size={16} strokeWidth={2} className="text-neutral-500" />
+        <span>{label}</span>
+      </span>
+      <ArrowRight
+        size={14}
+        className="text-neutral-600 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0"
+      />
+    </>
+  );
+  const cls =
+    'group flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-2.5 text-sm font-mono font-medium text-neutral-300 transition-colors hover:border-white/10 hover:bg-white/[0.04]';
+  return to ? (
+    <Link to={to} className={cls}>
+      {inner}
+    </Link>
+  ) : (
+    <button onClick={onClick} className={cls}>
+      {inner}
+    </button>
+  );
+};
+
+// Section header with an icon chip + title.
+const SectionHeader: React.FC<{ icon: LucideIcon; title: string }> = ({ icon: Icon, title }) => (
+  <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+      <Icon size={16} className="text-neutral-400" />
+    </div>
+    <MicroTitle as="h3" className="text-sm font-semibold text-neutral-100">
+      {title}
+    </MicroTitle>
+  </div>
+);
+
+const StatTile: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+  <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+    <MicroTitle as="p" className="mb-1">
+      {label}
+    </MicroTitle>
+    {children}
+  </div>
+);
+
 export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
   user,
   subscriptionStatus,
@@ -66,7 +124,6 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
   } | null>(null);
   const [isLoadingStorage, setIsLoadingStorage] = useState(false);
 
-  // Load storage usage
   useEffect(() => {
     const loadStorage = async () => {
       setIsLoadingStorage(true);
@@ -74,14 +131,10 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
         const token = localStorage.getItem('auth_token');
         if (token) {
           const response = await fetch('/api/storage/usage', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           });
-
           if (response.ok) {
-            const storageData = await response.json();
-            setStorageUsage(storageData);
+            setStorageUsage(await response.json());
           }
         }
       } catch (err) {
@@ -95,23 +148,16 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
   const handleCopyReferralLink = async () => {
     if (!referralStats?.referralCode) {
-      toast.error(t('referral.noCode') || 'Código de indicação não disponível');
+      toast.error(t('referral.noCode'));
       return;
     }
-
-    const referralLink = referralService.getReferralLink(referralStats.referralCode);
-
     try {
-      await copyToClipboard(referralLink);
-      toast.success(t('referral.linkCopied') || 'Link de indicação copiado!');
+      await copyToClipboard(referralService.getReferralLink(referralStats.referralCode));
+      toast.success(t('referral.linkCopied'));
     } catch (err) {
       console.error('Failed to copy link:', err);
-      toast.error(t('referral.copyFailed') || 'Falha ao copiar link');
+      toast.error(t('referral.copyFailed'));
     }
-  };
-
-  const handlePictureClick = () => {
-    fileInputRef.current?.click();
   };
 
   const referralLink = referralStats?.referralCode
@@ -126,16 +172,11 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
   const hasActiveSubscription = Boolean(subscriptionStatus?.hasActiveSubscription);
 
-  // Helper function to format dates
-  const formatFriendlyDate = (dateString: string | Date): string => {
-    return formatDate(dateString);
-  };
-
   return (
-    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-300">
-      {/* Container 1: Profile Info - Top Left */}
-      <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
-        <div className="flex flex-col items-center gap-4">
+    <div className="grid gap-5 grid-cols-1 lg:grid-cols-2 lg:auto-rows-min animate-in fade-in duration-300">
+      {/* ── Identity — tall left column on desktop ─────────────── */}
+      <section className={`${cardClass} lg:row-span-2`}>
+        <div className="flex flex-col items-center gap-4 pt-2">
           <Input
             ref={fileInputRef}
             type="file"
@@ -145,9 +186,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             className="hidden"
           />
           <div
-            className="relative w-28 h-28 rounded-md bg-neutral-950 border border-neutral-800 focus-within:ring-2 ring-brand-cyan/20 overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 group shadow-lg"
-            onClick={handlePictureClick}
-            title={t('profile.uploadPicture') || 'Clique para enviar foto'}
+            className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-neutral-950 border border-white/10 overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 group"
+            onClick={() => fileInputRef.current?.click()}
+            title={t('profile.uploadPicture')}
           >
             {isUploadingPicture ? (
               <GlitchLoader size={32} />
@@ -161,324 +202,203 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 }}
               />
             ) : (
-              <User size={48} className="text-neutral-700" />
+              <User size={44} className="text-neutral-700" />
             )}
-            <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-md p-1.5 shadow-lg shadow-brand-cyan/20 group-hover:bg-brand-cyan/90 transition-all hover:scale-110">
+            <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-lg p-1.5 shadow-lg transition-transform group-hover:scale-110">
               <Camera size={14} />
             </span>
           </div>
-          <div className="text-center space-y-1">
-            <h2 className="text-2xl font-bold text-white font-manrope tracking-tight">
-              {user.name || t('profile.name') || 'Seu nome'}
+          <div className="text-center space-y-1 min-w-0 max-w-full">
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
+              {user.name || t('profile.name')}
             </h2>
-            <p className="text-sm text-neutral-500 font-mono">{user.email}</p>
+            <p className="text-sm text-neutral-500 font-mono truncate">{user.email}</p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 mt-2">
-          <Button
-            variant="ghost"
-            onClick={onEditProfile}
-            className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
-          >
-            <div className="flex items-center gap-3">
-              <UserCog
-                size={16}
-                strokeWidth={2}
-                className="group-hover:text-brand-cyan transition-colors"
-              />
-              <span>{t('profile.edit') || 'Editar perfil'}</span>
-            </div>
-            <ArrowRight
-              size={14}
-              className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
-            />
-          </Button>
-
+        <div className="flex flex-col gap-2.5">
+          <NavRow icon={UserCog} label={t('profile.edit')} onClick={onEditProfile} />
           {user && (user.id || user.email) && (
-            <Link
+            <NavRow
+              icon={ExternalLink}
+              label={t('profile.viewPublicProfile')}
               to={`/profile/${user.username || user.id}`}
-              className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
-            >
-              <div className="flex items-center gap-3">
-                <ExternalLink
-                  size={16}
-                  strokeWidth={2}
-                  className="group-hover:text-brand-cyan transition-colors"
-                />
-                <span>{t('profile.viewPublicProfile') || 'Ver Perfil Público'}</span>
-              </div>
-              <ArrowRight
-                size={14}
-                className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
-              />
-            </Link>
+            />
           )}
-
-          <div className="flex flex-col gap-3 pt-2">
-            <Link
-              to="/my-outputs"
-              className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
-            >
-              <div className="flex items-center gap-3">
-                <Heart
-                  size={16}
-                  strokeWidth={2}
-                  className="group-hover:text-brand-cyan transition-colors"
-                />
-                <span>{t('profile.myMockups') || 'Meus Mockups'}</span>
-              </div>
-              <ArrowRight
-                size={14}
-                className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
-              />
-            </Link>
-            <Link
-              to="/community"
-              className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
-            >
-              <div className="flex items-center gap-3">
-                <Users
-                  size={16}
-                  strokeWidth={2}
-                  className="group-hover:text-brand-cyan transition-colors"
-                />
-                <span>{t('communityPresets.title') || 'Presets da Comunidade'}</span>
-              </div>
-              <ArrowRight
-                size={14}
-                className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
-              />
-            </Link>
-            <Link
-              to="/settings/api-keys"
-              className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
-            >
-              <div className="flex items-center gap-3">
-                <KeyRound
-                  size={16}
-                  strokeWidth={2}
-                  className="group-hover:text-brand-cyan transition-colors"
-                />
-                <span>API Keys</span>
-              </div>
-              <ArrowRight
-                size={14}
-                className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
-              />
-            </Link>
-          </div>
+          <NavRow icon={Heart} label={t('profile.myMockups')} to="/my-outputs" />
+          <NavRow icon={Users} label={t('communityPresets.title')} to="/community" />
+          <NavRow icon={KeyRound} label={t('profile.apiKeys')} to="/settings/api-keys" />
         </div>
       </section>
 
-      {/* Container 2: Credits & Stats - Top Right */}
-      <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
-        <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
-          <div className="p-2 bg-brand-cyan/10 rounded-md">
-            <CreditCard size={20} className="text-brand-cyan" />
-          </div>
-          <div>
-            <MicroTitle
-              as="h3"
-              className="text-base font-semibold text-neutral-100 font-redhatmono"
-            >
-              {t('credits.title') || 'CRÉDITOS'}
-            </MicroTitle>
-          </div>
-        </div>
+      {/* ── Credits ─────────────────────────────────────────────── */}
+      <section className={cardClass}>
+        <SectionHeader icon={CreditCard} title={t('credits.title')} />
 
         {subscriptionStatus ? (
           <>
-            <div className="space-y-4 flex-1">
-              <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-5 relative overflow-hidden group">
-                {/* Buy Credits Button in Top Right */}
-                <div className="absolute top-4 right-4 z-20">
-                  <Button
-                    variant="brand"
-                    onClick={onBuyCredits}
-                    className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-neutral-700 text-brand-cyan rounded-md transition-all flex items-center gap-2 group-hover:scale-105"
-                    title={t('credits.buyCredits') || 'Comprar Créditos'}
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
+            <div className="flex flex-col gap-4 flex-1">
+              <div className="relative bg-white/[0.02] border border-white/5 rounded-xl p-5">
+                <Button
+                  variant="brand"
+                  size="icon-sm"
+                  onClick={onBuyCredits}
+                  className="absolute top-4 right-4 rounded-lg"
+                  title={t('credits.buyCredits')}
+                  aria-label={t('credits.buyCredits')}
+                >
+                  <Plus size={16} />
+                </Button>
                 <MicroTitle as="p" className="mb-1">
-                  {t('credits.available') || 'DISPONÍVEIS'}
+                  {t('credits.available')}
                 </MicroTitle>
                 <div className="flex items-baseline gap-2">
                   <p className="text-4xl font-bold text-white font-mono tracking-tight">
                     {totalCreditsAvailable}
                   </p>
-                  <span className="text-xs text-brand-cyan font-mono bg-brand-cyan/10 px-2 py-0.5 rounded-full border border-brand-cyan/20">
-                    {t('credits.active') || 'Ativo'}
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full border border-brand-cyan/20">
+                    {t('credits.active')}
                   </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3">
-                  <MicroTitle as="p" className="mb-1">
-                    {t('profile.totalCreditsUsed') || 'USADOS'}
-                  </MicroTitle>
-                  <p className="text-lg font-bold text-neutral-300 font-mono">
+                <StatTile label={t('profile.totalCreditsUsed')}>
+                  <p className="text-lg font-bold text-neutral-200 font-mono">
                     {subscriptionStatus.creditsUsed ?? 0}
                   </p>
-                </div>
-                {/* Storage Usage - Compact */}
+                </StatTile>
                 {isLoadingStorage ? (
-                  <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3 flex items-center justify-center">
+                  <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-center">
                     <GlitchLoader size={16} />
                   </div>
                 ) : storageUsage ? (
-                  <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3">
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <div className="flex items-center gap-1.5">
+                  <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className="flex items-center gap-1.5">
                         <HardDrive size={10} className="text-neutral-500" />
-                        <MicroTitle as="p">{t('credits.storage') || 'STORAGE'}</MicroTitle>
-                      </div>
-                      <p className="text-[10px] text-brand-cyan font-mono">
+                        <MicroTitle as="p">{t('credits.storage')}</MicroTitle>
+                      </span>
+                      <p className="text-[10px] text-neutral-400 font-mono">
                         {storageUsage.percentage.toFixed(0)}%
                       </p>
                     </div>
-                    <div className="w-full bg-neutral-800 rounded-full h-1.5 mb-1">
+                    <div className="w-full bg-neutral-800 rounded-full h-1.5 mb-1.5">
                       <div
                         className="bg-brand-cyan h-1.5 rounded-full transition-all"
                         style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
-                      ></div>
+                      />
                     </div>
-                    <p className="text-[10px] text-neutral-400 font-mono">
+                    <p className="text-[10px] text-neutral-500 font-mono">
                       {storageUsage.formatted.used} / {storageUsage.formatted.limit}
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3"></div>
+                  <StatTile label={t('credits.storage')}>
+                    <p className="text-sm text-neutral-600 font-mono">—</p>
+                  </StatTile>
                 )}
               </div>
 
               {subscriptionStatus.creditsResetDate && (
-                <div className="text-center pt-2">
-                  <MicroTitle as="p" className="text-neutral-600 tracking-widest text-center">
-                    {subscriptionStatus.hasActiveSubscription
-                      ? t('credits.renews', {
-                          date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
-                        })
-                      : t('credits.resets', {
-                          date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
-                        })}
-                  </MicroTitle>
-                </div>
+                <MicroTitle as="p" className="text-neutral-600 tracking-widest text-center pt-1">
+                  {subscriptionStatus.hasActiveSubscription
+                    ? t('credits.renews', { date: formatDate(subscriptionStatus.creditsResetDate) })
+                    : t('credits.resets', { date: formatDate(subscriptionStatus.creditsResetDate) })}
+                </MicroTitle>
               )}
             </div>
 
-            <div className="flex flex-col gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <Button
-                variant="ghost"
+                variant="surface"
                 onClick={onViewTransactions}
-                className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center font-medium"
+                className="w-full font-mono text-sm"
               >
-                {t('profile.viewAllTransactions') || 'Transações'}
+                {t('profile.viewAllTransactions')}
               </Button>
               {hasActiveSubscription && subscriptionStatus?.subscriptionStatus !== 'free' && (
                 <Button
-                  variant="ghost"
+                  variant="surface"
                   onClick={onManageSubscription}
-                  className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center flex items-center justify-center gap-2 font-medium"
-                  title={t('profile.manageSubscription') || 'Gerenciar Assinatura'}
+                  className="w-full font-mono text-sm gap-2"
+                  title={t('profile.manageSubscription')}
                 >
                   <CreditCard size={14} />
-                  {t('profile.manageSubscription') || 'Gerenciar'}
+                  {t('profile.manageSubscription')}
                 </Button>
               )}
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-4 py-12 flex-1">
-            <p className="text-sm text-neutral-400 font-mono text-center max-w-[200px]">
-              {t('profile.noSubscriptionData') || 'Dados de assinatura indisponíveis.'}
+          <div className="flex items-center justify-center py-12 flex-1">
+            <p className="text-sm text-neutral-500 font-mono text-center max-w-[200px]">
+              {t('profile.noSubscriptionData')}
             </p>
           </div>
         )}
       </section>
 
-      {/* Container 3: Referral Program - Bottom Span */}
-      <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
-        <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
-          <div className="p-2 bg-brand-cyan/10 rounded-md">
-            <Share2 size={20} className="text-brand-cyan" />
-          </div>
-          <div>
-            <MicroTitle
-              as="h3"
-              className="text-base font-semibold text-neutral-100 font-redhatmono"
-            >
-              {t('referral.title') || 'INDICAÇÃO'}
-            </MicroTitle>
-          </div>
-        </div>
+      {/* ── Referral ────────────────────────────────────────────── */}
+      <section className={cardClass}>
+        <SectionHeader icon={Share2} title={t('referral.title')} />
 
         {referralStats ? (
-          <>
-            <div className="space-y-4 flex-1">
-              <div className="bg-transparent rounded-xl p-0">
-                <p className="text-sm text-neutral-400 font-mono mb-6 leading-relaxed">
-                  {t('referral.description') ||
-                    'Compartilhe seu link e ganhe créditos bônus quando amigos entrarem.'}
-                </p>
+          <div className="flex flex-col gap-5 flex-1">
+            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
+              {t('referral.description')}
+            </p>
 
-                <div className="space-y-2">
-                  <MicroTitle as="label" className="block text-neutral-600">
-                    {t('referral.yourLink') || 'SEU LINK DE INDICAÇÃO'}
-                  </MicroTitle>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1 group">
-                      <Input
-                        type="text"
-                        value={referralLink}
-                        readOnly
-                        className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-neutral-600 transition pr-10"
-                      />
-                      <Button
-                        variant="brand"
-                        onClick={handleCopyReferralLink}
-                        disabled={!referralStats.referralCode}
-                        className="absolute right-1 top-1 p-1 bg-neutral-800 hover:bg-brand-cyan/20 text-neutral-400 hover:text-brand-cyan rounded-md transition-colors"
-                      >
-                        {isLoadingReferral ? <GlitchLoader size={12} /> : <Copy size={12} />}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-4">
-                <div className="bg-neutral-900/20 border border-neutral-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                  <Users className="text-neutral-600 mb-2" size={20} />
-                  <p className="text-xl font-bold text-neutral-300 font-mono mb-1">
-                    {referralStats.referredUsersCount || 0}
-                  </p>
-                  <MicroTitle as="p" className="text-neutral-600 tracking-wide">
-                    {t('referral.friendsReferred') || 'AMIGOS INDICADOS'}
-                  </MicroTitle>
-                </div>
-                <div className="bg-neutral-900/20 border border-neutral-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                  <CreditCard className="text-brand-cyan/50 mb-2" size={20} />
-                  <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
-                    {referralStats.totalCreditsEarned || 0}
-                  </p>
-                  <MicroTitle as="p" className="text-neutral-600 tracking-wide">
-                    {t('referral.totalEarned') || 'TOTAL DE CRÉDITOS GANHOS'}
-                  </MicroTitle>
-                </div>
+            <div className="space-y-2">
+              <MicroTitle as="label" className="block text-neutral-600">
+                {t('referral.yourLink')}
+              </MicroTitle>
+              <div className="relative group">
+                <Input
+                  type="text"
+                  value={referralLink}
+                  readOnly
+                  className="w-full pr-11 bg-white/[0.02] border-white/10 text-neutral-400 group-hover:text-neutral-200 font-mono text-xs transition-colors"
+                />
+                <Button
+                  variant="surface"
+                  size="icon-sm"
+                  onClick={handleCopyReferralLink}
+                  disabled={!referralStats.referralCode}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md"
+                  aria-label={t('referral.linkCopied')}
+                >
+                  {isLoadingReferral ? <GlitchLoader size={12} /> : <Copy size={12} />}
+                </Button>
               </div>
             </div>
-          </>
+
+            <div className="grid grid-cols-2 gap-3 mt-auto">
+              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <Users className="text-neutral-500 mb-2" size={20} />
+                <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
+                  {referralStats.referredUsersCount || 0}
+                </p>
+                <MicroTitle as="p" className="text-neutral-600 tracking-wide">
+                  {t('referral.friendsReferred')}
+                </MicroTitle>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <CreditCard className="text-brand-cyan/60 mb-2" size={20} />
+                <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
+                  {referralStats.totalCreditsEarned || 0}
+                </p>
+                <MicroTitle as="p" className="text-neutral-600 tracking-wide">
+                  {t('referral.totalEarned')}
+                </MicroTitle>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-3 py-12 flex-1">
             <GlitchLoader size={20} />
             <p className="text-sm text-neutral-500 font-mono text-center">
-              {isLoadingReferral
-                ? t('common.loading') || 'Carregando...'
-                : t('referral.generating') || 'Gerando código...'}
+              {isLoadingReferral ? t('common.loading') : t('referral.generating')}
             </p>
           </div>
         )}

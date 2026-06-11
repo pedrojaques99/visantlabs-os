@@ -59,15 +59,15 @@ const KeyRow: React.FC<KeyRowProps> = ({
   placeholder,
 }) => (
   <div className="space-y-3">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <label htmlFor={id} className="text-sm font-semibold text-neutral-300 font-manrope">
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center gap-2 min-w-0">
+        <label htmlFor={id} className="text-sm font-semibold text-neutral-300 font-manrope truncate">
           {label}
         </label>
         {hasKey && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/10 border border-green-500/20 rounded-full">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-            <span className="text-[10px] font-mono text-green-400">active</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-success/10 border border-success/20 rounded-full">
+            <span className="w-1.5 h-1.5 bg-success rounded-full" />
+            <span className="text-[10px] font-mono text-success">active</span>
           </span>
         )}
       </div>
@@ -424,7 +424,7 @@ export const ApiSettings: React.FC = () => {
             {llmPrefs.llmProvider === 'ollama' && (
               <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <label
                       htmlFor="ollama-url"
                       className="text-sm font-semibold text-neutral-300 font-manrope"
