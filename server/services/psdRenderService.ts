@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import { randomUUID } from 'crypto';
 import { existsSync, writeFileSync, readFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import path from 'path';
@@ -234,7 +235,7 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
     for (const [i, art] of arts.entries()) {
       const artPath = path.join(jobDir, `art-${i}.png`);
       if (art.artBase64) {
-        writeFileSync(artPath, Buffer.from(art.artBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64'));
+        writeFileSync(artPath, Buffer.from(stripDataUriPrefix(art.artBase64), 'base64'));
       } else if (art.artUrl) {
         await downloadArt(art.artUrl, artPath);
       } else {

@@ -81,7 +81,11 @@ function clamp(value: number, min: number, max: number, fallback: number): numbe
 }
 
 function parseBase64Image(image: string): Buffer | null {
-  const match = image.match(/^data:image\/\w+;base64,(.+)$/);
+  // Validator (not a stripper): the trace endpoint contractually requires a
+  // base64 data URL, so a missing prefix must return null → 400. We keep the
+  // capture-group form but widen the MIME pattern to match image MIME types
+  // with non-word chars (e.g. image/svg+xml), consistent with stripDataUriPrefix.
+  const match = image.match(/^data:image\/[^;]+;base64,(.+)$/i);
   if (!match) return null;
   return Buffer.from(match[1], 'base64');
 }

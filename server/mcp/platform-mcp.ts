@@ -7,6 +7,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { prisma } from '../db/prisma.js';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { getUserStorageLimit } from '../services/r2Service.js';
 import { ObjectId } from 'mongodb';
@@ -4614,7 +4615,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       try {
         const { imagesToPdf } = await import('../services/ghostscriptService.js');
         const buffers = images.map((img) => {
-          const cleaned = img.replace(/^data:image\/\w+;base64,/, '');
+          const cleaned = stripDataUriPrefix(img);
           return Buffer.from(cleaned, 'base64');
         });
         const result = await imagesToPdf(buffers);

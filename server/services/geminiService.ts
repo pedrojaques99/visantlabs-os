@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality, Type, Schema } from '@google/genai';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -2020,7 +2021,7 @@ Only return the JSON array.`,
               {
                 inlineData: {
                   mimeType: 'image/jpeg',
-                  data: base64Image.replace(/^data:image\/\w+;base64,/, ''),
+                  data: stripDataUriPrefix(base64Image),
                 },
               },
             ],
@@ -2069,7 +2070,7 @@ export const upscaleImageMoodboard = async (
             {
               inlineData: {
                 mimeType: 'image/jpeg',
-                data: base64Image.replace(/^data:image\/\w+;base64,/, ''),
+                data: stripDataUriPrefix(base64Image),
               },
             },
             {
@@ -2117,7 +2118,7 @@ Only return the JSON array.`,
               ...images.slice(0, 10).map((img) => ({
                 inlineData: {
                   mimeType: 'image/jpeg',
-                  data: img.base64.replace(/^data:image\/\w+;base64,/, ''),
+                  data: stripDataUriPrefix(img.base64),
                 },
               })),
             ],

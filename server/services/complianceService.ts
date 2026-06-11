@@ -6,6 +6,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
@@ -334,7 +335,7 @@ Respond with JSON only:
       parts.push({
         inlineData: {
           mimeType: image.mimeType || 'image/png',
-          data: image.base64.replace(/^data:image\/\w+;base64,/, ''),
+          data: stripDataUriPrefix(image.base64),
         },
       });
     } else if (image.url) {

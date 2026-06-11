@@ -7,6 +7,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { prisma } from '../db/prisma.js';
+import { stripDataUriPrefix } from '../lib/dataUri.js';
 import { getErrorMessage } from '../utils/securityValidation.js';
 
 // R2 configuration using S3-compatible API
@@ -73,7 +74,7 @@ export async function uploadImage(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:[^;]+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -150,7 +151,7 @@ export async function uploadProfilePicture(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -191,7 +192,7 @@ export async function uploadAppThumbnail(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -232,7 +233,7 @@ export async function uploadBrandLogo(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -276,7 +277,7 @@ export async function uploadGiftImage(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -320,7 +321,7 @@ export async function uploadBudgetPdf(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+  const base64Data = stripDataUriPrefix(pdfBase64);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -363,7 +364,7 @@ export async function uploadCustomPdfPreset(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+  const base64Data = stripDataUriPrefix(pdfBase64);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -407,7 +408,7 @@ export async function uploadBrandMedia(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+  const cleanBase64 = stripDataUriPrefix(base64Data);
   const buffer = Buffer.from(cleanBase64, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -455,7 +456,7 @@ export async function uploadCanvasImage(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -499,7 +500,7 @@ export async function uploadCanvasPdf(
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
   // Remove data URL prefix if present
-  const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+  const base64Data = stripDataUriPrefix(pdfBase64);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -540,7 +541,7 @@ export async function uploadCoverImage(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(base64Image);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
@@ -582,7 +583,7 @@ export async function uploadCanvasVideo(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = videoBase64.replace(/^data:video\/\w+;base64,/, '');
+  const base64Data = stripDataUriPrefix(videoBase64);
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
