@@ -12,44 +12,67 @@ const renderLimiter = rateLimit({
   message: { error: 'Too many render requests. Max 5 per minute.' },
 });
 
+interface TierRequest extends AuthRequest {
+  psdTier?: 'all' | 'public';
+}
+
 /**
- * O render dá acesso indireto à biblioteca de PSDs licenciados (Maison/Hazard)
- * — DENY por padrão. Permitido apenas: admins e usuários listados em
- * PSD_RENDER_ALLOWED_USERS (CSV de IDs e/ou e-mails, case-insensitive).
+ * Tiers de acesso à biblioteca:
+ *  - 'all'    (admin, membro da equipe, allowlist): biblioteca inteira + psdUrl
+ *  - 'public' (qualquer user autenticado): só mockups BOXY
+ *    (GOOGLE_DRIVE_PUBLIC_FOLDER_IDS)
+ *
+ * Equipe = doc na collection Mongo `team_members` com { email } ou { userId }.
  */
-async function allowPsdRender(req: AuthRequest, res: express.Response, next: express.NextFunction) {
+async function isTeamMember(userId?: string, email?: string): Promise<boolean> {
   try {
-    if (req.isAdmin) return next();
+    const { getDb } = await import('../db/mongodb.js');
+    const db = await getDb();
+    const or: Record<string, string>[] = [];
+    if (userId) or.push({ userId });
+    if (email) or.push({ email: email.toLowerCase() });
+    if (!or.length) return false;
+    const member = await db.collection('team_members').findOne({ $or: or });
+    return !!member;
+  } catch (err) {
+    console.error('[psd-render] team check error:', err);
+    return false;
+  }
+}
+
+async function resolveTier(req: TierRequest, _res: express.Response, next: express.NextFunction) {
+  try {
+    let isAdmin = req.isAdmin;
+    let email = req.userEmail;
+
+    // Caminhos OAuth/MCP/API-key não populam isAdmin/userEmail — resolve no banco
+    if (req.userId && (isAdmin === undefined || !email)) {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { isAdmin: true, email: true },
+      });
+      isAdmin = isAdmin ?? !!user?.isAdmin;
+      email = email || user?.email || undefined;
+    }
 
     const allowlist = (process.env.PSD_RENDER_ALLOWED_USERS || '')
       .split(',')
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
+    const inAllowlist =
+      (req.userId && allowlist.includes(req.userId.toLowerCase())) ||
+      (email && allowlist.includes(email.toLowerCase()));
 
-    const idMatch = req.userId && allowlist.includes(req.userId.toLowerCase());
-    const emailMatch = req.userEmail && allowlist.includes(req.userEmail.toLowerCase());
-    if (idMatch || emailMatch) return next();
-
-    // Caminhos OAuth/MCP/API-key não populam isAdmin/userEmail — resolve no banco
-    if (req.userId && req.isAdmin === undefined) {
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-        select: { isAdmin: true, email: true },
-      });
-      if (user?.isAdmin) return next();
-      if (user?.email && allowlist.includes(user.email.toLowerCase())) return next();
-    }
-
-    return res.status(403).json({
-      error: 'PSD render restrito — peça acesso a um admin (PSD_RENDER_ALLOWED_USERS)',
-    });
+    req.psdTier =
+      isAdmin || inAllowlist || (await isTeamMember(req.userId, email)) ? 'all' : 'public';
   } catch (err) {
-    console.error('[psd-render] access check error:', err);
-    return res.status(403).json({ error: 'PSD render restrito' });
+    console.error('[psd-render] tier resolve error:', err);
+    req.psdTier = 'public'; // falha = menor privilégio
   }
+  next();
 }
 
-router.post('/render', authenticate, allowPsdRender, renderLimiter, async (req: AuthRequest, res) => {
+router.post('/render', authenticate, resolveTier, renderLimiter, async (req: TierRequest, res) => {
   const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview } = req.body;
 
   // PSD: URL http(s) OU nome de arquivo no Google Drive
@@ -111,6 +134,7 @@ router.post('/render', authenticate, allowPsdRender, renderLimiter, async (req: 
       hideLayers: Array.isArray(hideLayers) ? hideLayers : [],
       preview: preview === true || typeof preview === 'number' ? preview : undefined,
       userId: req.userId!,
+      accessTier: req.psdTier || 'public',
     });
 
     res.json({

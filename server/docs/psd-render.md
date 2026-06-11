@@ -21,15 +21,24 @@ POST /api/psd-render/render
 Watermarks/instruções (`[BOXY]`, "delete essa camada"…) são escondidos
 automaticamente e nunca tratados como face.
 
-## Controle de acesso (DENY por padrão)
+## Controle de acesso por tier
 
-O render dá acesso indireto à biblioteca de PSDs licenciados — a rota só
-permite **admins** (`user.isAdmin`) e usuários listados em
-**`PSD_RENDER_ALLOWED_USERS`** (CSV de IDs e/ou e-mails). Todo o resto recebe 403.
+| Tier | Quem | O que pode |
+|---|---|---|
+| `all` | admins, membros da equipe, `PSD_RENDER_ALLOWED_USERS` | biblioteca inteira (`GOOGLE_DRIVE_FOLDER_IDS`) + `psdUrl` arbitrária |
+| `public` | qualquer usuário autenticado | só mockups BOXY (`GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`); sem `psdUrl` |
 
-No Drive, **`GOOGLE_DRIVE_FOLDER_IDS`** restringe quais pastas o render enxerga
-(verificação de ancestralidade — subpastas valem). Com refresh token isso é
-importante: sem a restrição, o servidor enxerga a conta inteira (loga aviso no boot).
+**Equipe** = documento na collection Mongo **`team_members`** com `{ email }`
+ou `{ userId }` (e-mail em lowercase). Adicionar alguém:
+
+```js
+db.team_members.insertOne({ email: "designer@visantlabs.com" })
+```
+
+O escopo de pasta usa verificação de ancestralidade (subpastas valem). Com
+refresh token isso é importante: sem `GOOGLE_DRIVE_FOLDER_IDS`, o servidor
+enxergaria a conta inteira (loga aviso no boot). Sem
+`GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`, o tier público é negado por completo.
 
 ## Env (Coolify)
 

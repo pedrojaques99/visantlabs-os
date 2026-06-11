@@ -7,7 +7,7 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import JSZip from 'jszip';
 import { redisClient } from '../lib/redis.js';
 import { uploadSharedAsset } from './r2Service.js';
-import { getCachedOrDownload, isDriveConfigured } from './driveService.js';
+import { getCachedOrDownload, isDriveConfigured, allFolderIds, publicFolderIds } from './driveService.js';
 import { uploadPublicAsset, isSpacesConfigured } from './spacesService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +47,11 @@ interface RenderRequest {
   /** true = JPEG ~1400px (rápido); false/ausente = PNG full-res. */
   preview?: boolean | number;
   userId: string;
+  /**
+   * 'all' (admin/team) = biblioteca inteira + psdUrl arbitrária.
+   * 'public' (user normal) = só PSDs dentro de GOOGLE_DRIVE_PUBLIC_FOLDER_IDS (BOXY).
+   */
+  accessTier: 'all' | 'public';
 }
 
 interface RenderResult {
@@ -198,9 +203,22 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
       if (!isDriveConfigured()) {
         throw new Error('psdFileName requer GOOGLE_SERVICE_ACCOUNT_KEY configurada');
       }
-      console.log(`[psd-render] Job ${jobId}: resolvendo "${req.psdFileName}" via Drive...`);
-      psdLocal = await getCachedOrDownload(req.psdFileName);
+      // Tier público só enxerga as pastas BOXY; team/admin enxerga todas
+      let folderScope: string[];
+      if (req.accessTier === 'all') {
+        folderScope = allFolderIds();
+      } else {
+        folderScope = publicFolderIds();
+        if (!folderScope.length) {
+          throw new Error('Mockups públicos indisponíveis (GOOGLE_DRIVE_PUBLIC_FOLDER_IDS não configurada)');
+        }
+      }
+      console.log(`[psd-render] Job ${jobId}: resolvendo "${req.psdFileName}" via Drive (tier ${req.accessTier})...`);
+      psdLocal = await getCachedOrDownload(req.psdFileName, folderScope);
     } else if (req.psdUrl) {
+      if (req.accessTier !== 'all') {
+        throw new Error('psdUrl arbitrária é restrita à equipe — use psdFileName');
+      }
       psdLocal = path.join(jobDir, 'input.psd');
       console.log(`[psd-render] Job ${jobId}: baixando PSD...`);
       await downloadPsd(req.psdUrl, psdLocal);

@@ -67,14 +67,22 @@ async function getDrive(): Promise<any> {
   );
 }
 
-function allowedFolderIds(): string[] {
+export function allFolderIds(): string[] {
   return (process.env.GOOGLE_DRIVE_FOLDER_IDS || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
-// fileId → está dentro de uma pasta permitida? (cache do veredito)
+/** Pastas públicas (mockups BOXY) — o que users normais podem renderizar. */
+export function publicFolderIds(): string[] {
+  return (process.env.GOOGLE_DRIVE_PUBLIC_FOLDER_IDS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+// `${fileId}:${folderSet}` → está dentro de uma pasta permitida? (cache do veredito)
 const ancestryCache = new Map<string, boolean>();
 
 /**
@@ -82,11 +90,11 @@ const ancestryCache = new Map<string, boolean>();
  * Com refresh token o servidor enxerga a conta INTEIRA — sem esse escopo,
  * qualquer psdFileName do Drive seria renderizável.
  */
-async function isInsideAllowedFolder(fileId: string): Promise<boolean> {
-  const allowed = allowedFolderIds();
+async function isInsideAllowedFolder(fileId: string, allowed: string[]): Promise<boolean> {
   if (!allowed.length) return true; // sem restrição configurada
 
-  const cached = ancestryCache.get(fileId);
+  const cacheKey = `${fileId}:${allowed.join(',')}`;
+  const cached = ancestryCache.get(cacheKey);
   if (cached !== undefined) return cached;
 
   const drive = await getDrive();
@@ -95,7 +103,7 @@ async function isInsideAllowedFolder(fileId: string): Promise<boolean> {
     const next: string[] = [];
     for (const id of frontier) {
       if (allowed.includes(id)) {
-        ancestryCache.set(fileId, true);
+        ancestryCache.set(cacheKey, true);
         return true;
       }
       try {
@@ -109,14 +117,15 @@ async function isInsideAllowedFolder(fileId: string): Promise<boolean> {
     }
     frontier = next;
   }
-  ancestryCache.set(fileId, false);
+  ancestryCache.set(cacheKey, false);
   return false;
 }
 
-/** Acha um arquivo pelo nome exato, restrito às pastas permitidas (se configuradas). */
-export async function findFileByName(fileName: string): Promise<DriveFile | null> {
+/** Acha um arquivo pelo nome exato, restrito ao conjunto de pastas dado (default: todas as permitidas). */
+export async function findFileByName(fileName: string, folderScope?: string[]): Promise<DriveFile | null> {
   const drive = await getDrive();
   const escaped = fileName.replace(/['\\]/g, '\\$&');
+  const allowed = folderScope ?? allFolderIds();
 
   const res = await drive.files.list({
     q: `name = '${escaped}' and trashed = false`,
@@ -137,9 +146,9 @@ export async function findFileByName(fileName: string): Promise<DriveFile | null
   // ficando com o primeiro que passar no escopo de pasta
   const bySize = files.sort((a, b) => (b.size || 0) - (a.size || 0));
   for (const f of bySize) {
-    if (await isInsideAllowedFolder(f.id)) return f;
+    if (await isInsideAllowedFolder(f.id, allowed)) return f;
   }
-  console.warn(`[drive] "${fileName}" existe mas fora das pastas permitidas (GOOGLE_DRIVE_FOLDER_IDS)`);
+  console.warn(`[drive] "${fileName}" existe mas fora do escopo de pastas permitido`);
   return null;
 }
 
@@ -188,11 +197,17 @@ function evictLru(): void {
 
 /**
  * Caminho local do PSD: cache hit → retorna na hora; miss → busca no Drive,
- * baixa pro cache e retorna. Lança erro se o arquivo não existir no Drive.
+ * baixa pro cache e retorna. `folderScope` restringe a quais pastas o arquivo
+ * pode pertencer (tier do usuário). Lança erro se não existir/estiver fora do escopo.
  */
-export async function getCachedOrDownload(fileName: string): Promise<string> {
+export async function getCachedOrDownload(fileName: string, folderScope?: string[]): Promise<string> {
   mkdirSync(CACHE_DIR, { recursive: true });
   const cachePath = path.join(CACHE_DIR, safeCacheName(fileName));
+
+  // Mesmo com cache hit, o escopo precisa valer — o arquivo pode ter sido
+  // baixado antes por um user de tier maior.
+  const file = await findFileByName(fileName, folderScope);
+  if (!file) throw new Error(`PSD não encontrado (ou fora do seu acesso): ${fileName}`);
 
   if (existsSync(cachePath)) {
     // touch atime pro LRU
@@ -201,9 +216,6 @@ export async function getCachedOrDownload(fileName: string): Promise<string> {
     console.log(`[drive-cache] hit: ${fileName}`);
     return cachePath;
   }
-
-  const file = await findFileByName(fileName);
-  if (!file) throw new Error(`PSD não encontrado no Drive: ${fileName}`);
 
   console.log(`[drive-cache] miss: baixando ${fileName} (${((file.size || 0) / 1e6).toFixed(0)}MB)...`);
   await downloadToCache(file, cachePath);
