@@ -1,21 +1,18 @@
 import React from 'react';
 import { BrandSection } from '../brand/BrandSection';
 import { ExportSection } from './ExportSection';
-import { IntelligenceSection } from './IntelligenceSection';
 import { FontSwapSection } from './FontSwapSection';
-import { LintingSection } from './LintingSection';
 import { AutomationSection } from './AutomationSection';
-import { ConnectorsSection } from './ConnectorsSection';
-import { Cpu, Download, ShieldCheck, Type, Zap, Cable } from 'lucide-react';
+import { Download, Type, Zap, Users } from 'lucide-react';
+import { BulkCardsSection } from './BulkCardsSection';
 
 const SECTIONS = [
   {
-    id: 'intelligence',
-    title: 'Intelligence',
-    icon: Cpu,
-    description: 'Scan, analyze, and extract design context',
-    component: IntelligenceSection,
-    badge: 'AI',
+    id: 'bulkcards',
+    title: 'Bulk Cards',
+    icon: Users,
+    description: 'Gerar cards a partir de JSON',
+    component: BulkCardsSection,
     defaultOpen: true,
   },
   {
@@ -27,27 +24,11 @@ const SECTIONS = [
     defaultOpen: true,
   },
   {
-    id: 'connectors',
-    title: 'Connectors',
-    icon: Cable,
-    description: 'Linear, Figma templates, production pipelines',
-    component: ConnectorsSection,
-    defaultOpen: false,
-  },
-  {
     id: 'fontswap',
     title: 'Font Swap',
     icon: Type,
     description: 'Scan and batch-replace fonts',
     component: FontSwapSection,
-    defaultOpen: false,
-  },
-  {
-    id: 'audit',
-    title: 'Brand Audit',
-    icon: ShieldCheck,
-    description: 'Lint design against brand rules',
-    component: LintingSection,
     defaultOpen: false,
   },
   {

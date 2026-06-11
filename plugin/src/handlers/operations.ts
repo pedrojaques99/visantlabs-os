@@ -305,6 +305,58 @@ export async function applyOperations(ops: FigmaOperation[]) {
     return figma.currentPage;
   }
 
+  // Pre-scan: collect all unique image source names from imageOverrides across all ops
+  const imageHashCache = new Map<string, string>();
+  const neededNames = new Set<string>();
+  for (const op of ops) {
+    if ((op as any).imageOverrides) {
+      for (const ov of (op as any).imageOverrides) {
+        if (ov.sourceNodeName) neededNames.add(ov.sourceNodeName);
+      }
+    }
+  }
+  if (neededNames.size > 0) {
+    // Recursive helper to extract first IMAGE fill hash from a node tree
+    const extractHash = (node: any): string | null => {
+      if ('fills' in node && Array.isArray(node.fills)) {
+        const f = node.fills.find((f: any) => f.type === 'IMAGE' && f.imageHash);
+        if (f) return f.imageHash;
+      }
+      if ('children' in node) {
+        for (const child of node.children) {
+          const h = extractHash(child);
+          if (h) return h;
+        }
+      }
+      return null;
+    };
+    // Build lookup keys for a node name: exact, no-ext, no-trailing-number, no-ext-no-number
+    const nameVariants = (name: string): string[] => {
+      const noExt = name.replace(/\.[^.]+$/, '');
+      const noNum = name.replace(/\s+\d+$/, '');
+      const noExtNoNum = noExt.replace(/\s+\d+$/, '');
+      return [name, noExt, noNum, noExtNoNum];
+    };
+
+    // Pre-build a set of all search keys from neededNames (both with and without extension)
+    const neededKeys = new Set<string>();
+    for (const n of neededNames) {
+      for (const v of nameVariants(n)) neededKeys.add(v);
+    }
+
+    // Single pass over current page
+    figma.currentPage.findAll((n) => {
+      const variants = nameVariants(n.name);
+      if (variants.some((v) => neededKeys.has(v))) {
+        const hash = extractHash(n);
+        if (hash) {
+          for (const v of variants) imageHashCache.set(v, hash);
+        }
+      }
+      return false;
+    });
+  }
+
   const total = ops.length;
   for (let i = 0; i < ops.length; i++) {
     const op = ops[i];
@@ -328,6 +380,7 @@ export async function applyOperations(ops: FigmaOperation[]) {
         pushSummary,
         getParent,
         snapshotSelection,
+        imageHashCache,
       });
 
       // Notify UI of success
@@ -482,6 +535,7 @@ interface OperationContext {
   pushSummary: (text: string, node?: SceneNode | BaseNode | null) => void;
   getParent: (parentRef?: string, parentNodeId?: string) => Promise<BaseNode & ChildrenMixin>;
   snapshotSelection: readonly SceneNode[];
+  imageHashCache: Map<string, string>;
 }
 
 async function processOperation(op: FigmaOperation, ctx: OperationContext) {
@@ -1678,6 +1732,24 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
               `Texto "${override.name}" → "${override.content.slice(0, 30)}..."`,
               textNode
             );
+          }
+        }
+      }
+
+      // Image overrides — use pre-built cache (O(1) lookup, no repeated findAll)
+      if (op.imageOverrides && Array.isArray(op.imageOverrides)) {
+        for (const imgOv of op.imageOverrides) {
+          const targetLayer = ('children' in cloned)
+            ? (cloned as FrameNode).findOne((n) => n.name === imgOv.layerName) as any
+            : null;
+          if (!targetLayer || !('fills' in targetLayer)) continue;
+
+          const srcName: string = imgOv.sourceNodeName;
+          const srcNameNoExt = srcName.replace(/\.[^.]+$/, '');
+          const hash = ctx.imageHashCache.get(srcName) ?? ctx.imageHashCache.get(srcNameNoExt);
+          if (hash) {
+            targetLayer.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: hash }];
+            pushSummary(`Imagem "${imgOv.layerName}" ← "${srcName}"`, targetLayer);
           }
         }
       }

@@ -177,7 +177,7 @@ export interface PluginStore {
   brandHydrationAtMs: number;
 
   // UI State
-  activeView: 'main' | 'settings';
+  activeView: 'main' | 'settings' | 'profile';
   openPanel: string | null;
   devMode: boolean;
   toastMessage?: string;
@@ -194,7 +194,7 @@ export interface PluginStore {
   setThinkMode: (enabled: boolean) => void;
   setUseBrand: (enabled: boolean) => void;
   setScanPage: (enabled: boolean) => void;
-  setActiveView: (view: 'main' | 'settings') => void;
+  setActiveView: (view: 'main' | 'settings' | 'profile') => void;
   updateTypography: (slot: 'primary' | 'secondary', data: Partial<TypographySlot>) => void;
   addSelectedColor: (role: string, color: ColorEntry) => void;
   setAllComponents: (components: Component[]) => void;

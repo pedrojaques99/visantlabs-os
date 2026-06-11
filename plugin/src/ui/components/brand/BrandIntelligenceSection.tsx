@@ -27,8 +27,7 @@ export function BrandIntelligenceSection() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-neutral-900/40 p-3 rounded-lg border border-white/5 shadow-sm relative overflow-hidden group">
-        <div className="flex flex-col gap-2 relative z-10">
+      <div className="flex flex-col gap-2">
           <Button
             onClick={() => runImport({ overwrite: false })}
             disabled={isImporting || isGenerating}
@@ -85,7 +84,6 @@ export function BrandIntelligenceSection() {
             <Layers size={12} className="mr-2" />
             Scan Selection for Insights
           </OpButton>
-        </div>
       </div>
 
       {references.length > 0 && (

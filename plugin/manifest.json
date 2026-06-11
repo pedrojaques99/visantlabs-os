@@ -21,6 +21,7 @@
       "https://api.unisvg.com",
       "https://cdnjs.cloudflare.com",
       "https://assets.visantlabs.com",
+      "https://*.r2.dev",
       "https://img.logo.dev",
       "https://api.linear.app",
       "http://localhost:3000",

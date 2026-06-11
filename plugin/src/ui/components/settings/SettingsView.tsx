@@ -3,13 +3,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BrandTab } from '../brand/BrandTab';
 import { BrandOperationsSection } from '../brand/BrandOperationsSection';
 import { ToolsTab } from '../tools/ToolsTab';
-import { ProfileTab } from './ProfileTab';
 import { DevTab } from './DevTab';
 import { usePluginStore } from '../../store';
 
 export function SettingsView() {
   const devMode = usePluginStore((s) => s.devMode);
-  const cols = devMode ? 'grid-cols-5' : 'grid-cols-4';
+  const cols = devMode ? 'grid-cols-4' : 'grid-cols-3';
 
   return (
     <div className="h-full overflow-hidden flex flex-col bg-background">
@@ -24,9 +23,6 @@ export function SettingsView() {
             </TabsTrigger>
             <TabsTrigger value="tools" className="text-xs font-mono uppercase tracking-wide">
               Tools
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="text-xs font-mono uppercase tracking-wide">
-              Profile
             </TabsTrigger>
             {devMode && (
               <TabsTrigger value="dev" className="text-xs font-mono uppercase tracking-wide">
@@ -47,10 +43,6 @@ export function SettingsView() {
 
           <TabsContent value="tools" className="mt-0 p-4">
             <ToolsTab />
-          </TabsContent>
-
-          <TabsContent value="profile" className="mt-0 p-4">
-            <ProfileTab />
           </TabsContent>
 
           {devMode && (

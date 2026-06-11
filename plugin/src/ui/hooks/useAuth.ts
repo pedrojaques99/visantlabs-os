@@ -3,6 +3,19 @@ import { usePluginStore } from '../store';
 import { useFigmaMessages } from './useFigmaMessages';
 import { apiUrl } from '../config';
 
+function applyUserInfo(data: any) {
+  if (!data) return;
+  const { setUserInfo, setAuthEmail } = usePluginStore.getState();
+  if (data.email) setAuthEmail(data.email);
+  if (data.email || data.name || data.avatar || data.photoUrl) {
+    setUserInfo({
+      id: data.id ?? data.email ?? 'api',
+      name: data.name ?? data.email ?? '',
+      photoUrl: data.avatar ?? data.photoUrl ?? undefined,
+    });
+  }
+}
+
 export function useAuth() {
   const { authToken, authEmail, setAuthToken, setAuthEmail, updateCredits, showToast } =
     usePluginStore();
@@ -58,6 +71,7 @@ export function useAuth() {
             ) {
               updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
             }
+            applyUserInfo(status);
           })
           .catch(() => {});
 
@@ -114,9 +128,9 @@ export function useAuth() {
             })
               .then((r) => (r.ok ? r.json() : null))
               .then((status) => {
-                if (status?.email) setAuthEmail(status.email);
                 if (typeof status?.creditsUsed === 'number')
                   updateCredits({ used: status.creditsUsed, limit: status.monthlyCredits });
+                applyUserInfo(status);
               })
               .catch(() => {});
             showToast('Login realizado', 'success');
@@ -165,6 +179,7 @@ export function useAuth() {
           if (typeof data?.creditsUsed === 'number' && typeof data?.monthlyCredits === 'number') {
             updateCredits({ used: data.creditsUsed, limit: data.monthlyCredits });
           }
+          applyUserInfo(data);
           return !!data?.authenticated;
         }
         if (response.status === 401) {
