@@ -44,7 +44,25 @@ interface SceneCanvasProps {
   onSceneReady?: (handle: SceneHandle) => void;
 }
 
-const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
+type Studio3DState = ReturnType<typeof useStudio3DStore.getState>;
+
+// ---------------------------------------------------------------------------
+// Domain-scoped selectors.
+//
+// Previously a single ~116-prop selector drove the entire <SceneContent>: any
+// store change (a lighting slider, an effects toggle, a camera view click that
+// writes `_cameraInfo`) re-ran the whole component — recomputing the expensive
+// geometry memos (svgString/materialSettings) and reconciling the ExtrudedSVG
+// subtree even when nothing geometric changed.
+//
+// Splitting subscription by domain means a lighting tweak only re-renders
+// <LightingContent>, an effects tweak only <EffectsContent>, etc. The heavy
+// geometry subtree (svg trace → extrude) is now isolated behind
+// <GeometryContent> and only re-renders when geometry/material inputs change.
+// Behaviour is identical — only subscription granularity changed.
+// ---------------------------------------------------------------------------
+
+const geometrySelector = (s: Studio3DState) => ({
   svgData: s.svgData,
   text: s.text,
   font: s.font,
@@ -75,16 +93,6 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   shapeColor: s.shapeColor,
   reliefDepth: s.reliefDepth,
   blendMode: s.blendMode,
-  renderQuality: s.renderQuality,
-  fov: s.fov,
-  hdriBackground: s.hdriBackground,
-  hdriBlur: s.hdriBlur,
-  hdriIntensity: s.hdriIntensity,
-  hdriRotation: s.hdriRotation,
-  fogEnabled: s.fogEnabled,
-  fogColor: s.fogColor,
-  fogNear: s.fogNear,
-  fogFar: s.fogFar,
   color: s.color,
   material: s.material,
   metalness: s.metalness,
@@ -97,7 +105,27 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   textureOpacity: s.textureOpacity,
   rotationX: s.rotationX,
   rotationY: s.rotationY,
-  zoom: s.zoom,
+  envMapIntensity: s.envMapIntensity,
+  fresnelColor: s.fresnelColor,
+  fresnelStrength: s.fresnelStrength,
+  normalMapUrl: s.normalMapUrl,
+  roughnessMapUrl: s.roughnessMapUrl,
+  metalnessMapUrl: s.metalnessMapUrl,
+  animate: s.animate,
+  animateSpeed: s.animateSpeed,
+  animateReverse: s.animateReverse,
+  animateEasing: s.animateEasing,
+  physicsCount: s.physicsCount,
+  physicsGravity: s.physicsGravity,
+  physicsBounciness: s.physicsBounciness,
+  physicsFriction: s.physicsFriction,
+  physicsSize: s.physicsSize,
+  inputMode: s.inputMode,
+  modelUrl: s.modelUrl,
+  resetKey: s.resetKey,
+});
+
+const lightingSelector = (s: Studio3DState) => ({
   lightPosition: s.lightPosition,
   lightIntensity: s.lightIntensity,
   ambientIntensity: s.ambientIntensity,
@@ -107,13 +135,45 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   bounceLightPosition: s.bounceLightPosition,
   pointLightIntensity: s.pointLightIntensity,
   pointLightPosition: s.pointLightPosition,
-  shadow: s.shadow,
-  shadowQuality: s.shadowQuality,
-  showGrid: s.showGrid,
-  groundPlane: s.groundPlane,
-  groundReflection: s.groundReflection,
+});
+
+const environmentSelector = (s: Studio3DState) => ({
+  fogEnabled: s.fogEnabled,
+  fogColor: s.fogColor,
+  fogNear: s.fogNear,
+  fogFar: s.fogFar,
+  hdriBackground: s.hdriBackground,
+  hdriBlur: s.hdriBlur,
+  hdriIntensity: s.hdriIntensity,
+  hdriRotation: s.hdriRotation,
   environment: s.environment,
   customHdriUrl: s.customHdriUrl,
+  transparentBg: s.transparentBg,
+  background: s.background,
+  bgType: s.bgType,
+  bgGradient: s.bgGradient,
+});
+
+const stageSelector = (s: Studio3DState) => ({
+  fov: s.fov,
+  zoom: s.zoom,
+  rotationX: s.rotationX,
+  rotationY: s.rotationY,
+  resetKey: s.resetKey,
+  animate: s.animate,
+  animateSpeed: s.animateSpeed,
+  animateReverse: s.animateReverse,
+  animateEasing: s.animateEasing,
+  shadow: s.shadow,
+  renderQuality: s.renderQuality,
+  groundPlane: s.groundPlane,
+  groundReflection: s.groundReflection,
+  showGrid: s.showGrid,
+});
+
+const effectsSelector = (s: Studio3DState) => ({
+  renderQuality: s.renderQuality,
+  resetKey: s.resetKey,
   bloomEnabled: s.bloomEnabled,
   bloomIntensity: s.bloomIntensity,
   bloomThreshold: s.bloomThreshold,
@@ -133,29 +193,6 @@ const sceneSelector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   cgContrast: s.cgContrast,
   cgHue: s.cgHue,
   cgSaturation: s.cgSaturation,
-  envMapIntensity: s.envMapIntensity,
-  fresnelColor: s.fresnelColor,
-  fresnelStrength: s.fresnelStrength,
-  normalMapUrl: s.normalMapUrl,
-  roughnessMapUrl: s.roughnessMapUrl,
-  metalnessMapUrl: s.metalnessMapUrl,
-  orthographic: s.orthographic,
-  animate: s.animate,
-  animateSpeed: s.animateSpeed,
-  animateReverse: s.animateReverse,
-  animateEasing: s.animateEasing,
-  physicsCount: s.physicsCount,
-  physicsGravity: s.physicsGravity,
-  physicsBounciness: s.physicsBounciness,
-  physicsFriction: s.physicsFriction,
-  physicsSize: s.physicsSize,
-  transparentBg: s.transparentBg,
-  background: s.background,
-  bgType: s.bgType,
-  bgGradient: s.bgGradient,
-  inputMode: s.inputMode,
-  modelUrl: s.modelUrl,
-  resetKey: s.resetKey,
   shaderEnabled: s.shaderEnabled,
   shaderType: s.shaderType,
   shaderValues: s.shaderValues,
@@ -250,45 +287,16 @@ function HdriLoadingFallback() {
   );
 }
 
-function SceneContent() {
-  const s = useStudio3DStore(useShallow(sceneSelector));
+// Stage = camera sync, intro/loop animation, orbit controls, shadows, ground,
+// grid. Owns the animation group ref + mesh ref that GeometryContent renders
+// into. Subscribes only to camera/animation/ground state.
+function StageContent({ children }: { children: React.ReactNode }) {
+  const s = useStudio3DStore(useShallow(stageSelector));
   const meshGroupRef = useRef<THREE.Group>(null);
   const animGroupRef = useRef<THREE.Group>(null);
 
-  const shaderSettings = useMemo(() => {
-    if (!s.shaderEnabled) return null;
-    return s.getShaderSettings();
-  }, [s.shaderEnabled, s.shaderType, s.shaderValues, s.getShaderSettings]);
-
-  const halftoneVariant = s.shaderValues.halftoneVariant ?? 'ellipse';
-
-  const materialSettings = useMemo(
-    () =>
-      resolveMaterial(s.material, {
-        metalness: s.metalness,
-        roughness: s.roughness,
-        opacity: s.opacity,
-        wireframe: s.wireframe,
-      }),
-    [s.material, s.metalness, s.roughness, s.opacity, s.wireframe]
-  );
-
-  const loadedFont = useFont(s.font);
-  const svgString = useMemo(() => {
-    if (s.svgData) return s.svgData;
-    const text = s.text || '®';
-    if (!loadedFont) return '';
-    return textToSvg(text, loadedFont);
-  }, [s.svgData, s.text, loadedFont]);
-
-  const hdriRotationEuler = useMemo(
-    () => [0, (s.hdriRotation * Math.PI) / 180, 0] as [number, number, number],
-    [s.hdriRotation]
-  );
-
   return (
     <>
-      {s.fogEnabled && <SceneFog color={s.fogColor} near={s.fogNear} far={s.fogFar} />}
       <SyncCamera fov={s.fov} />
       <IntroAnimation
         type="zoom"
@@ -317,100 +325,8 @@ function SceneContent() {
         meshRef={animGroupRef}
       />
 
-      <ambientLight intensity={s.ambientIntensity} />
-      <directionalLight position={s.lightPosition} intensity={s.lightIntensity} castShadow />
-      <directionalLight position={s.fillLightPosition} intensity={s.fillLightIntensity} />
-      <directionalLight position={s.bounceLightPosition} intensity={s.bounceLightIntensity} />
-      <pointLight position={s.pointLightPosition} intensity={s.pointLightIntensity} />
-
-      <group ref={animGroupRef} scale={s.objectScale}>
-        {s.inputMode === 'model' && s.modelUrl ? (
-          <ImportedModel
-            url={s.modelUrl}
-            groupRef={meshGroupRef}
-            rotationX={s.rotationX}
-            rotationY={s.rotationY}
-            objectScale={1}
-            overrideColor={s.color}
-            overrideMetalness={s.metalness}
-            overrideRoughness={s.roughness}
-            overrideWireframe={s.wireframe}
-            overrideOpacity={s.opacity}
-          />
-        ) : (
-          svgString &&
-          (s.animate === 'physicsFall' ? (
-            <PhysicsFallSimulation
-              key="physics-fall-sim"
-              svgString={svgString}
-              depth={s.depth}
-              smoothness={s.smoothness}
-              bevelEnabled={s.bevelEnabled}
-              bevelThickness={s.bevelThickness}
-              bevelSize={s.bevelSize}
-              color={s.color}
-              materialSettings={materialSettings}
-              texture={s.texture || undefined}
-              textureRepeat={s.textureRepeat}
-              textureRotation={s.textureRotation}
-              textureOpacity={s.textureOpacity}
-              physicsCount={s.physicsCount}
-              physicsGravity={s.physicsGravity}
-              physicsBounciness={s.physicsBounciness}
-              physicsFriction={s.physicsFriction}
-              physicsSize={s.physicsSize}
-              resetKey={s.resetKey}
-              shapeType={s.shapeType}
-              coinRadius={s.coinRadius}
-            />
-          ) : (
-            <ExtrudedSVG
-              key="standard-extruded-svg"
-              svgString={svgString}
-              depth={s.depth}
-              smoothness={s.smoothness}
-              bevelEnabled={s.bevelEnabled}
-              bevelThickness={s.bevelThickness}
-              bevelSize={s.bevelSize}
-              color={s.color}
-              materialSettings={materialSettings}
-              rotationX={s.rotationX}
-              rotationY={s.rotationY}
-              groupRef={meshGroupRef}
-              texture={s.texture || undefined}
-              textureRepeat={s.textureRepeat}
-              textureRotation={s.textureRotation}
-              textureOpacity={s.textureOpacity}
-              envMapIntensity={s.envMapIntensity}
-              fresnelColor={s.fresnelColor || undefined}
-              fresnelStrength={s.fresnelStrength}
-              normalMapUrl={s.normalMapUrl || undefined}
-              roughnessMapUrl={s.roughnessMapUrl || undefined}
-              metalnessMapUrl={s.metalnessMapUrl || undefined}
-              shapeType={s.shapeType}
-              coinRadius={s.coinRadius}
-              badgeWidth={s.badgeWidth}
-              badgeHeight={s.badgeHeight}
-              badgeRadius={s.badgeRadius}
-              stampRadius={s.stampRadius}
-              stampTeeth={s.stampTeeth}
-              stampToothDepth={s.stampToothDepth}
-              shieldWidth={s.shieldWidth}
-              shieldHeight={s.shieldHeight}
-              hexRadius={s.hexRadius}
-              chainLinks={s.chainLinks}
-              chainScale={s.chainScale}
-              showChain={s.showChain}
-              bailSize={s.bailSize}
-              bailOffset={s.bailOffset}
-              chainOffset={s.chainOffset}
-              chainColor={s.chainColor}
-              shapeColor={s.shapeColor}
-              reliefDepth={s.reliefDepth}
-              blendMode={s.blendMode}
-            />
-          ))
-        )}
+      <group ref={animGroupRef}>
+        <GeometryContent meshGroupRef={meshGroupRef} animGroupRef={animGroupRef} />
       </group>
 
       {s.shadow && (
@@ -443,7 +359,167 @@ function SceneContent() {
         </mesh>
       )}
 
+      {s.showGrid && <gridHelper args={[10, 10, '#333333', '#1a1a1a']} position={[0, -1.5, 0]} />}
+
+      {children}
+    </>
+  );
+}
+
+// GeometryContent = the heavy subtree (svg trace → extrude / GLB). Isolated so
+// camera/lighting/effects changes never re-run the svgString/material memos or
+// reconcile ExtrudedSVG. Receives the scale via objectScale on its own group.
+function GeometryContent({
+  meshGroupRef,
+  animGroupRef: _animGroupRef,
+}: {
+  meshGroupRef: React.RefObject<THREE.Group>;
+  animGroupRef: React.RefObject<THREE.Group>;
+}) {
+  const s = useStudio3DStore(useShallow(geometrySelector));
+
+  const materialSettings = useMemo(
+    () =>
+      resolveMaterial(s.material, {
+        metalness: s.metalness,
+        roughness: s.roughness,
+        opacity: s.opacity,
+        wireframe: s.wireframe,
+      }),
+    [s.material, s.metalness, s.roughness, s.opacity, s.wireframe]
+  );
+
+  const loadedFont = useFont(s.font);
+  const svgString = useMemo(() => {
+    if (s.svgData) return s.svgData;
+    const text = s.text || '®';
+    if (!loadedFont) return '';
+    return textToSvg(text, loadedFont);
+  }, [s.svgData, s.text, loadedFont]);
+
+  return (
+    <group scale={s.objectScale}>
+      {s.inputMode === 'model' && s.modelUrl ? (
+        <ImportedModel
+          url={s.modelUrl}
+          groupRef={meshGroupRef}
+          rotationX={s.rotationX}
+          rotationY={s.rotationY}
+          objectScale={1}
+          overrideColor={s.color}
+          overrideMetalness={s.metalness}
+          overrideRoughness={s.roughness}
+          overrideWireframe={s.wireframe}
+          overrideOpacity={s.opacity}
+        />
+      ) : (
+        svgString &&
+        (s.animate === 'physicsFall' ? (
+          <PhysicsFallSimulation
+            key="physics-fall-sim"
+            svgString={svgString}
+            depth={s.depth}
+            smoothness={s.smoothness}
+            bevelEnabled={s.bevelEnabled}
+            bevelThickness={s.bevelThickness}
+            bevelSize={s.bevelSize}
+            color={s.color}
+            materialSettings={materialSettings}
+            texture={s.texture || undefined}
+            textureRepeat={s.textureRepeat}
+            textureRotation={s.textureRotation}
+            textureOpacity={s.textureOpacity}
+            physicsCount={s.physicsCount}
+            physicsGravity={s.physicsGravity}
+            physicsBounciness={s.physicsBounciness}
+            physicsFriction={s.physicsFriction}
+            physicsSize={s.physicsSize}
+            resetKey={s.resetKey}
+            shapeType={s.shapeType}
+            coinRadius={s.coinRadius}
+          />
+        ) : (
+          <ExtrudedSVG
+            key="standard-extruded-svg"
+            svgString={svgString}
+            depth={s.depth}
+            smoothness={s.smoothness}
+            bevelEnabled={s.bevelEnabled}
+            bevelThickness={s.bevelThickness}
+            bevelSize={s.bevelSize}
+            color={s.color}
+            materialSettings={materialSettings}
+            rotationX={s.rotationX}
+            rotationY={s.rotationY}
+            groupRef={meshGroupRef}
+            texture={s.texture || undefined}
+            textureRepeat={s.textureRepeat}
+            textureRotation={s.textureRotation}
+            textureOpacity={s.textureOpacity}
+            envMapIntensity={s.envMapIntensity}
+            fresnelColor={s.fresnelColor || undefined}
+            fresnelStrength={s.fresnelStrength}
+            normalMapUrl={s.normalMapUrl || undefined}
+            roughnessMapUrl={s.roughnessMapUrl || undefined}
+            metalnessMapUrl={s.metalnessMapUrl || undefined}
+            shapeType={s.shapeType}
+            coinRadius={s.coinRadius}
+            badgeWidth={s.badgeWidth}
+            badgeHeight={s.badgeHeight}
+            badgeRadius={s.badgeRadius}
+            stampRadius={s.stampRadius}
+            stampTeeth={s.stampTeeth}
+            stampToothDepth={s.stampToothDepth}
+            shieldWidth={s.shieldWidth}
+            shieldHeight={s.shieldHeight}
+            hexRadius={s.hexRadius}
+            chainLinks={s.chainLinks}
+            chainScale={s.chainScale}
+            showChain={s.showChain}
+            bailSize={s.bailSize}
+            bailOffset={s.bailOffset}
+            chainOffset={s.chainOffset}
+            chainColor={s.chainColor}
+            shapeColor={s.shapeColor}
+            reliefDepth={s.reliefDepth}
+            blendMode={s.blendMode}
+          />
+        ))
+      )}
+    </group>
+  );
+}
+
+// LightingContent = ambient + directional + point lights. Re-renders only on
+// lighting changes.
+function LightingContent() {
+  const s = useStudio3DStore(useShallow(lightingSelector));
+  return (
+    <>
+      <ambientLight intensity={s.ambientIntensity} />
+      <directionalLight position={s.lightPosition} intensity={s.lightIntensity} castShadow />
+      <directionalLight position={s.fillLightPosition} intensity={s.fillLightIntensity} />
+      <directionalLight position={s.bounceLightPosition} intensity={s.bounceLightIntensity} />
+      <pointLight position={s.pointLightPosition} intensity={s.pointLightIntensity} />
       <hemisphereLight args={['#b1e1ff', '#b97a20', 0.5]} />
+    </>
+  );
+}
+
+// EnvironmentContent = HDRI, fog, scene background. Re-renders only on
+// environment changes — importantly NOT on geometry/effects changes, so the
+// HDRI <Environment> (which re-fetches/re-bakes) stays stable.
+function EnvironmentContent() {
+  const s = useStudio3DStore(useShallow(environmentSelector));
+
+  const hdriRotationEuler = useMemo(
+    () => [0, (s.hdriRotation * Math.PI) / 180, 0] as [number, number, number],
+    [s.hdriRotation]
+  );
+
+  return (
+    <>
+      {s.fogEnabled && <SceneFog color={s.fogColor} near={s.fogNear} far={s.fogFar} />}
 
       {!s.transparentBg &&
         !s.hdriBackground &&
@@ -481,62 +557,90 @@ function SceneContent() {
           );
         })()}
       </Suspense>
+    </>
+  );
+}
 
-      <CameraBridge />
+// EffectsContent = postprocessing / shader pass. Re-renders only on FX changes.
+function EffectsContent() {
+  const s = useStudio3DStore(useShallow(effectsSelector));
 
-      {s.showGrid && <gridHelper args={[10, 10, '#333333', '#1a1a1a']} position={[0, -1.5, 0]} />}
+  const shaderSettings = useMemo(() => {
+    if (!s.shaderEnabled) return null;
+    return s.getShaderSettings();
+  }, [s.shaderEnabled, s.shaderType, s.shaderValues, s.getShaderSettings]);
 
-      {shaderSettings ? (
-        <ShaderPostProcess
-          shaderType={s.shaderType}
-          settings={shaderSettings}
-          halftoneVariant={halftoneVariant}
+  const halftoneVariant = s.shaderValues.halftoneVariant ?? 'ellipse';
+
+  if (shaderSettings) {
+    return (
+      <ShaderPostProcess
+        shaderType={s.shaderType}
+        settings={shaderSettings}
+        halftoneVariant={halftoneVariant}
+      />
+    );
+  }
+
+  const anyEffect =
+    !s.effectsBypass &&
+    (s.bloomEnabled ||
+      s.dofEnabled ||
+      s.vignetteEnabled ||
+      s.ssaoEnabled ||
+      s.chromaticAberrationEnabled ||
+      s.noiseEnabled ||
+      s.colorGradingEnabled);
+
+  if (!anyEffect) return null;
+
+  return (
+    <EffectComposer key={s.resetKey} multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
+      {s.ssaoEnabled && s.renderQuality !== 'performance' && (
+        <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />
+      )}
+      {s.bloomEnabled && (
+        <Bloom
+          intensity={s.bloomIntensity}
+          luminanceThreshold={s.bloomThreshold}
+          luminanceSmoothing={0.9}
         />
-      ) : !s.effectsBypass &&
-        (s.bloomEnabled ||
-          s.dofEnabled ||
-          s.vignetteEnabled ||
-          s.ssaoEnabled ||
-          s.chromaticAberrationEnabled ||
-          s.noiseEnabled ||
-          s.colorGradingEnabled) ? (
-        <EffectComposer
-          key={s.resetKey}
-          multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}
-        >
-          {s.ssaoEnabled && s.renderQuality !== 'performance' && (
-            <N8AO intensity={s.ssaoIntensity} aoRadius={0.5} distanceFalloff={1} />
-          )}
-          {s.bloomEnabled && (
-            <Bloom
-              intensity={s.bloomIntensity}
-              luminanceThreshold={s.bloomThreshold}
-              luminanceSmoothing={0.9}
-            />
-          )}
-          {s.dofEnabled && s.renderQuality !== 'performance' && (
-            <DepthOfField
-              focusDistance={s.dofFocusDistance}
-              focalLength={0.02}
-              bokehScale={s.dofBokehScale}
-              height={RENDER_QUALITY_CONFIG[s.renderQuality].msaa > 0 ? 480 : 240}
-            />
-          )}
-          {s.chromaticAberrationEnabled && s.renderQuality !== 'performance' && (
-            <ChromaticAberration
-              offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any}
-            />
-          )}
-          {s.noiseEnabled && (
-            <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />
-          )}
-          {s.colorGradingEnabled && (
-            <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />
-          )}
-          {s.colorGradingEnabled && <HueSaturation hue={s.cgHue} saturation={s.cgSaturation} />}
-          {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
-        </EffectComposer>
-      ) : null}
+      )}
+      {s.dofEnabled && s.renderQuality !== 'performance' && (
+        <DepthOfField
+          focusDistance={s.dofFocusDistance}
+          focalLength={0.02}
+          bokehScale={s.dofBokehScale}
+          height={RENDER_QUALITY_CONFIG[s.renderQuality].msaa > 0 ? 480 : 240}
+        />
+      )}
+      {s.chromaticAberrationEnabled && s.renderQuality !== 'performance' && (
+        <ChromaticAberration
+          offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any}
+        />
+      )}
+      {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
+      {s.colorGradingEnabled && (
+        <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />
+      )}
+      {s.colorGradingEnabled && <HueSaturation hue={s.cgHue} saturation={s.cgSaturation} />}
+      {s.vignetteEnabled && <Vignette darkness={s.vignetteIntensity} offset={0.3} />}
+    </EffectComposer>
+  );
+}
+
+// Composition root. Holds NO store subscription itself — each child subscribes
+// to its own domain slice, so a change in one domain re-renders only that
+// child. CameraBridge() returns null but is kept mounted for parity.
+function SceneContent() {
+  return (
+    <>
+      <LightingContent />
+      <StageContent>
+        <EnvironmentContent />
+        <CameraBridge />
+        <EffectsContent />
+      </StageContent>
     </>
   );
 }
