@@ -55,6 +55,7 @@ import { useImageLabStore, type ImageLabMode } from '@/stores/imageLabStore';
 import { useExportCanvas } from '@/hooks/useExportCanvas';
 import { useToolEditorHotkeys } from '@/hooks/useToolEditorHotkeys';
 import { useToolEditorDragDrop } from '@/hooks/useToolEditorDragDrop';
+import { useTranslation } from '@/hooks/useTranslation';
 import { loadImage } from '@/utils/imageUtils';
 import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
@@ -379,6 +380,7 @@ function usePresetCycling(mode: ImageLabMode) {
 /* ─── Main Page ─── */
 
 export const ImageLabPage: React.FC = () => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const labStore = useImageLabStore;
@@ -892,8 +894,8 @@ export const ImageLabPage: React.FC = () => {
   return (
     <>
       <ToolEditorShell
-        title="IMAGE LAB"
-        documentTitle="Image Lab — Visant"
+        title={t('imagelab.title')}
+        documentTitle={t('imagelab.documentTitle')}
         panelVisible={panelVisible}
         setPanelVisible={setPanelVisible}
         onReset={handleReset}
@@ -1158,7 +1160,7 @@ export const ImageLabPage: React.FC = () => {
                 />
               </div>
               <p className="text-[11px] uppercase tracking-widest">
-                Drop or paste an image or video to begin
+                {t('imagelab.dropPrompt')}
               </p>
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[10px] tracking-wide opacity-60">
@@ -1368,7 +1370,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `freq ${hFrequency}` },
           { label: `dot ${hDotSize.toFixed(2)}` },
           { label: ['subtractive', 'additive', 'normal'][hBlendMode] },
-          ...(hShaderEnabled ? [{ label: hShaderType, color: 'text-cyan-400' }] : []),
+          ...(hShaderEnabled ? [{ label: hShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
       case 'texture':
@@ -1378,7 +1380,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `${(tOpacity * 100).toFixed(0)}%` },
           { label: tTextureName },
           ...(tMaskMode ? [{ label: 'mask', color: 'text-purple-400' }] : []),
-          ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-cyan-400' }] : []),
+          ...(tShaderEnabled ? [{ label: tShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
       case 'riso':
@@ -1391,14 +1393,14 @@ function useStatusItems(mode: ImageLabMode) {
           ...(rSoloLayer >= 0
             ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-amber-400' }]
             : []),
-          ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-cyan-400' }] : []),
+          ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];
       case 'shaders':
         return [
           { label: `${Math.round(sZoom * 100)}%` },
           ...(sShaderEnabled
-            ? [{ label: sShaderType, color: 'text-cyan-400' }]
+            ? [{ label: sShaderType, color: 'text-neutral-400' }]
             : [{ label: 'off' }]),
           ...extras,
         ];

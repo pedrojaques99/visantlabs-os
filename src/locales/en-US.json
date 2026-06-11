@@ -4573,6 +4573,11 @@
     "dropGlb": "Drop GLB / GLTF",
     "dropHere": "Drop file here"
   },
+  "imagelab": {
+    "title": "IMAGE LAB",
+    "documentTitle": "Image Lab — Visant",
+    "dropPrompt": "Drop or paste an image or video to begin"
+  },
   "wind": {
     "tunnel": {
       "export_png": "Export PNG",
