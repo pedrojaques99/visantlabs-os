@@ -467,6 +467,36 @@ export const ImageLabPage: React.FC = () => {
 
   const shaderLabStore = useShaderLabStore;
 
+  // Track the latest blob URL this page created so we can revoke the previous
+  // one when a new file is loaded and clean up on unmount (avoids leaking
+  // object URLs across uploads / mode switches).
+  const lastBlobUrlRef = useRef<string | null>(null);
+  const createTrackedObjectUrl = useCallback((file: File) => {
+    const prev = lastBlobUrlRef.current;
+    if (prev) {
+      try {
+        URL.revokeObjectURL(prev);
+      } catch {
+        /* ignore */
+      }
+    }
+    const url = URL.createObjectURL(file);
+    lastBlobUrlRef.current = url;
+    return url;
+  }, []);
+  useEffect(
+    () => () => {
+      if (lastBlobUrlRef.current) {
+        try {
+          URL.revokeObjectURL(lastBlobUrlRef.current);
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    []
+  );
+
   const broadcastImage = useCallback(
     (url: string, name: string, mediaType: 'image' | 'video' = 'image') => {
       labStore.getState().setSource(url, name, mediaType);
@@ -596,11 +626,11 @@ export const ImageLabPage: React.FC = () => {
     onFile: useCallback(
       (file: File) => {
         const isVideo = file.type.startsWith('video/');
-        const url = URL.createObjectURL(file);
+        const url = createTrackedObjectUrl(file);
         broadcastImage(url, file.name || 'pasted', isVideo ? 'video' : 'image');
         toast.success(`Loaded ${file.name || 'pasted image'}`);
       },
-      [broadcastImage]
+      [broadcastImage, createTrackedObjectUrl]
     ),
     dropMessage: 'Drop image or video here',
   });
@@ -1104,7 +1134,7 @@ export const ImageLabPage: React.FC = () => {
                 const file = e.target.files?.[0];
                 if (file) {
                   const isVideo = file.type.startsWith('video/');
-                  const url = URL.createObjectURL(file);
+                  const url = createTrackedObjectUrl(file);
                   broadcastImage(url, file.name, isVideo ? 'video' : 'image');
                   toast.success(`Loaded ${file.name}`);
                 }
