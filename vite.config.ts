@@ -88,20 +88,6 @@ export default defineConfig(({ mode }) => {
               return 'reactflow-vendor';
             }
 
-            // Three.js + React Three Fiber/Drei + postprocessing stack.
-            // Only the lazy-loaded 3D Studio / Playground 3D pages pull these in,
-            // so isolating them keeps three out of the shared `vendor` chunk that
-            // every route otherwise downloads. (React/Radix stay in main per the
-            // note above — three has no such module-load-time React dependency.)
-            if (
-              id.includes('node_modules/three/') ||
-              id.includes('node_modules/three-stdlib/') ||
-              id.includes('node_modules/@react-three/') ||
-              id.includes('node_modules/postprocessing/')
-            ) {
-              return 'three-vendor';
-            }
-
             // PDF libraries
             if (
               id.includes('node_modules/react-pdf/') ||
