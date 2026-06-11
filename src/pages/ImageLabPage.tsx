@@ -672,62 +672,71 @@ export const ImageLabPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
-      if (e.key === '1' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('halftone');
-      if (e.key === '2' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('texture');
-      if (e.key === '3' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('riso');
-      if (e.key === '4' && !e.altKey && !e.shiftKey && !e.ctrlKey) handleModeChange('shaders');
-
-      if (e.altKey && e.key === 'z') {
+    // Declarative shortcut map keyed by `e.key`. Each handler keeps the exact
+    // modifier guards and preventDefault placement of the original if/else
+    // chain — no behavior change, just a flat table instead of 50 lines of ifs.
+    const noMods = (e: KeyboardEvent) => !e.altKey && !e.shiftKey && !e.ctrlKey;
+    const SHORTCUTS: Record<string, (e: KeyboardEvent) => void> = {
+      '1': (e) => noMods(e) && handleModeChange('halftone'),
+      '2': (e) => noMods(e) && handleModeChange('texture'),
+      '3': (e) => noMods(e) && handleModeChange('riso'),
+      '4': (e) => noMods(e) && handleModeChange('shaders'),
+      z: (e) => {
+        if (!e.altKey) return;
         e.preventDefault();
         const current = labStore.getState().compareMode;
         setCompareMode(current === 'toggle' ? 'off' : 'toggle');
-      }
-
-      if (e.altKey && e.key === 'x') {
+      },
+      x: (e) => {
+        if (!e.altKey) return;
         e.preventDefault();
         const current = labStore.getState().compareMode;
         setCompareMode(current === 'split' ? 'off' : 'split');
-      }
-
-      if (e.key === 'm' && !e.altKey && !e.shiftKey && !e.ctrlKey) {
+      },
+      m: (e) => {
+        if (!noMods(e)) return;
         e.preventDefault();
         setMagicHandActive(!labStore.getState().magicHandActive);
-      }
-
-      if (e.key === 'Escape') {
+      },
+      Escape: (e) => {
         const current = labStore.getState().compareMode;
         if (current !== 'off') {
           e.preventDefault();
           setCompareMode('off');
         }
-      }
-
-      if (e.key === '[') {
+      },
+      '[': (e) => {
         e.preventDefault();
         cyclePreset(-1);
-      }
-      if (e.key === ']') {
+      },
+      ']': (e) => {
         e.preventDefault();
         cyclePreset(1);
-      }
-
-      if (e.shiftKey && e.key === 'E') {
+      },
+      E: (e) => {
+        if (!e.shiftKey) return;
         e.preventDefault();
         setExportModalOpen(true);
-      }
-
-      if (e.shiftKey && e.key === 'P') {
+      },
+      P: (e) => {
+        if (!e.shiftKey) return;
         e.preventDefault();
         setPresetLibraryOpen(true);
-      }
-
-      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+      },
+      '?': (e) => {
         e.preventDefault();
         setShortcutsOpen((v) => !v);
-      }
+      },
+      '/': (e) => {
+        if (!e.shiftKey) return;
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
+      },
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      SHORTCUTS[e.key]?.(e);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
