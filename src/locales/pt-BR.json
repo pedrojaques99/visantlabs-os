@@ -517,6 +517,7 @@
     "donts": "Evitar",
     "dos": "Fazer",
     "emptyState": "Nenhuma brand guideline ainda. Crie uma para começar.",
+    "emptyStateDesc": "Crie e organize suas diretrizes de marca em um único lugar.",
     "fontFamily": "Família da fonte",
     "fontRole": "Função (heading...)",
     "fontStyle": "Estilo (Bold...)",
@@ -2526,6 +2527,15 @@
     "brandWizardImagesPlaceholderShort": "IMAGENS",
     "brandWizardPdfPlaceholderShort": "PDF",
     "brandWizardExtractionHint": "extração essencialista de estratégia, arquétipos e tokens.",
+    "brandWizardUrlHint": "Cores, tipografia e detalhes da marca serão extraídos automaticamente.",
+    "brandWizardFigmaPlaceholder": "figma.com/file/... ou figma.com/design/...",
+    "brandWizardFigmaHint": "Cores e tipografia serão extraídas via API do Figma.",
+    "brandWizardFigmaUrlDetected": "URL do Figma detectada",
+    "brandWizardFigExtractSuccess": "Arquivo Figma extraído com sucesso",
+    "brandWizardFigExtractError": "Erro ao extrair arquivo Figma",
+    "brandWizardFigmaTokensImported": "Tokens do Figma importados. Cores e tipografia extraídas.",
+    "brandWizardFigmaNoToken": "Token do Figma não configurado. Vá em Perfil, depois Configuração.",
+    "brandWizardFigmaLinkedTokensFailed": "Figma vinculado, mas a extração de tokens falhou.",
     "brandWizardImagesPasted": "Imagens coladas da área de transferência",
     "brandWizardPdfPasted": "PDF colado da área de transferência",
     "brandWizardErrorImage": "Erro ao extrair dados das imagens",
@@ -4739,7 +4749,12 @@
         "access_denied": "Access Denied",
         "decrypting_brand_assets": "Decrypting Brand Assets",
         "downloaded_as_css": "Downloaded as CSS",
-        "downloaded_as_json": "Downloaded as JSON"
+        "downloaded_as_json": "Downloaded as JSON",
+        "edit_mode": "EDITAR",
+        "viewing_mode": "VER",
+        "edit_section": "Editar seção",
+        "open_full_editor": "Abrir editor completo →",
+        "editing_section": "Editando"
       }
     }
   },
@@ -4844,78 +4859,33 @@
     "seePlans": "Ver Planos"
   },
   "landing": {
-    "nav": {
-      "apps": "Apps",
-      "community": "Comunidade",
-      "signin": "Entrar",
-      "cta": "Comecar gratis"
-    },
     "hero": {
-      "eyebrow": "Design com IA nativa de marca",
-      "titleLine1": "A IA ignora a sua marca.",
-      "titleLine2": "A nossa foi feita pra obedecer.",
-      "subtitle": "Transforme suas brand guidelines em contexto vivo de IA. Mockups, pecas e campanhas que ja saem com a sua identidade — do designer iniciante a agencia.",
-      "ctaPrimary": "Comecar gratis",
-      "ctaSecondary": "Ver os apps",
-      "scroll": "Role para descobrir"
+      "titleLine1": "A IA que entende",
+      "titleLine2": "a sua marca.",
+      "subtitle": "Suas brand guidelines viram contexto vivo de IA. Mockups, peças e campanhas sempre na sua identidade.",
+      "ctaPrimary": "Começar grátis",
+      "ctaSecondary": "Ver os apps"
     },
-    "problem": {
-      "eyebrow": "O problema",
-      "title": "Marca consistente nao deveria ser trabalho manual.",
-      "p1": "Hex copiado na mao, fonte por fonte, em cada nova peca.",
-      "p2": "Brand book em PDF que ninguem abre depois de pronto.",
-      "p3": "IA generica que inventa uma marca que nao e a sua."
-    },
-    "how": {
-      "eyebrow": "Como funciona",
-      "title": "Sua identidade vira input — nao so documentacao.",
-      "step1Title": "1. Capture sua marca",
-      "step1Desc": "Cores, tipografia, logos e tom de voz num lugar so. Estruturado, nao um PDF estatico.",
-      "step2Title": "2. A IA usa como contexto",
-      "step2Desc": "Cada geracao le sua marca automaticamente. Sem prompt gigante, sem copiar hex.",
-      "step3Title": "3. Gere com consistencia",
-      "step3Desc": "Mockups, posts, campanhas e mais — sempre na sua identidade, em segundos."
-    },
-    "segments": {
-      "eyebrow": "Pra quem e",
-      "title": "Do primeiro mockup a operacao da agencia.",
-      "designerTitle": "Designer iniciante",
-      "designerPain": "Comecando e sem repertorio?",
-      "designerGain": "Gere mockups e pecas profissionais por exemplo, sem partir do zero.",
-      "marketingTitle": "Marketing sem time de design",
-      "marketingPain": "Precisa de pecas e nao tem designer?",
-      "marketingGain": "Um brief vira conteudo pronto para todas as redes, na marca da empresa.",
-      "agencyTitle": "Designer senior & agencia",
-      "agencyPain": "Gerencia varias marcas de clientes?",
-      "agencyGain": "Uma fonte de verdade por cliente. Compartilhe, gere e mantenha a consistencia.",
-      "devTitle": "Developer",
-      "devPain": "Quer marca como codigo?",
-      "devGain": "Design tokens, API publica e MCP para levar o contexto de marca a qualquer agente."
-    },
-    "apps": {
+    "bento": {
       "eyebrow": "A plataforma",
-      "title": "Um conjunto de ferramentas. Uma identidade.",
-      "subtitle": "Tudo conectado pela mesma marca.",
+      "title": "Tudo conectado pela sua marca.",
       "mockupName": "Mockup Machine",
-      "mockupDesc": "Mockups realistas do seu produto e marca em segundos.",
+      "mockupDesc": "Mockups realistas do produto em segundos.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Sua identidade estruturada — e viva como contexto de IA.",
+      "brandDesc": "Sua identidade, viva como contexto de IA.",
       "canvasName": "Canvas",
-      "canvasDesc": "Editor visual com pipelines de IA para compor pecas.",
-      "contentName": "Content Studio",
-      "contentDesc": "Um brief, varias pecas para todas as redes de uma vez.",
+      "canvasDesc": "Editor visual com pipelines de IA.",
       "studioName": "3D Studio",
-      "studioDesc": "Cenas e render 3D da sua marca sem sair do navegador.",
-      "imageName": "Image Lab",
-      "imageDesc": "Geracao e tratamento de imagem com varios modelos."
+      "studioDesc": "Cenas e render 3D no navegador.",
+      "brandingName": "Branding",
+      "brandingDesc": "Identidades de marca geradas por IA."
     },
     "finalCta": {
       "title": "Sua marca, agora com IA.",
-      "subtitle": "Comece gratis. Sem cartao.",
-      "button": "Comecar gratis"
+      "button": "Começar grátis"
     },
     "footer": {
-      "tagline": "A unica IA que conhece a sua marca."
+      "tagline": "A única IA que conhece a sua marca."
     }
   }
 }

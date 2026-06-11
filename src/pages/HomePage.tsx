@@ -271,6 +271,9 @@ const AppList: React.FC<AppListProps> = ({
 
   return (
     <div className="w-max">
+      <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-700 mb-3 select-none">
+        VISANT LABS®
+      </p>
       <div
         ref={listRef}
         role="listbox"
@@ -336,6 +339,12 @@ const AppList: React.FC<AppListProps> = ({
               contact
             </a>
           )}
+          <button
+            onClick={() => navigate('/docs')}
+            className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+          >
+            docs
+          </button>
         </div>
       </motion.div>
     </div>
@@ -468,11 +477,7 @@ export const HomePage: React.FC = () => {
           title={t('homepage.seoTitle') || 'VISANT LABS'}
           description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
         />
-        <LandingHome
-          onGetStarted={() => openAuth(true)}
-          onSignIn={() => openAuth(false)}
-          isMobile={isMobile}
-        />
+        <LandingHome onGetStarted={() => openAuth(true)} isMobile={isMobile} />
         <AuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}

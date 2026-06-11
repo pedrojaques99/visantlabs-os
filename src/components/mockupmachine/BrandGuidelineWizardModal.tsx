@@ -9,7 +9,6 @@ import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus, Figma } from 'lucide-react';
-import { MicroTitle } from '../ui/MicroTitle';
 import { validatePdfFile } from '@/utils/pdfUtils';
 import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
 import { Button } from '@/components/ui/button';
@@ -141,7 +140,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           if (!isTypingInInput || (target as HTMLInputElement).id !== 'brand-wizard-figma') {
             e.preventDefault();
             setFigmaUrl(text);
-            toast.success('URL do Figma detectada');
+            toast.success(t('mockup.brandWizardFigmaUrlDetected'));
             return;
           }
         }
@@ -372,9 +371,9 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
               headers,
               body: form,
             });
-            toast.success('Arquivo Figma extraído com sucesso');
+            toast.success(t('mockup.brandWizardFigExtractSuccess'));
           } catch {
-            toast.warning('Erro ao extrair arquivo Figma');
+            toast.warning(t('mockup.brandWizardFigExtractError'));
           } finally {
             setIsIngesting(false);
           }
@@ -390,12 +389,12 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
               importColors: true,
               importTypography: true,
             });
-            toast.success('Tokens Figma importados — cores e tipografia extraídas');
+            toast.success(t('mockup.brandWizardFigmaTokensImported'));
           } catch (err: any) {
             if (err?.needsToken) {
-              toast.warning('Token Figma não configurado — vá em Perfil > Configuração');
+              toast.warning(t('mockup.brandWizardFigmaNoToken'));
             } else {
-              toast.warning('Figma linkado, mas extração de tokens falhou');
+              toast.warning(t('mockup.brandWizardFigmaLinkedTokensFailed'));
             }
           } finally {
             setIsIngesting(false);
@@ -453,7 +452,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
       description={
         isEditMode ? t('mockup.brandWizardEditDescription') : t('mockup.brandWizardDescription')
       }
-      size={isEditMode ? 'md' : 'sm'}
+      size={isEditMode ? 'lg' : 'md'}
       closeOnBackdropClick={!isSubmitting && !isIngesting}
       closeOnEscape={!isSubmitting && !isIngesting}
       footer={
@@ -491,12 +490,12 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         onSubmit={handleSubmit}
         onDrop={handleFormDrop}
         onDragOver={(e) => e.preventDefault()}
-        className="flex flex-col gap-5"
+        className="flex flex-col gap-6"
       >
-        <div className="flex flex-col gap-1.5">
-          <MicroTitle as="label" htmlFor="brand-wizard-name">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="brand-wizard-name" className="text-sm font-medium text-neutral-300">
             {t('mockup.brandWizardNameLabel')}
-          </MicroTitle>
+          </label>
           <Input
             id="brand-wizard-name"
             type="text"
@@ -505,14 +504,14 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             onChange={(e) => setName(e.target.value)}
             placeholder={t('mockup.brandNamePlaceholder')}
             disabled={isSubmitting || isIngesting}
-            className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+            className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <MicroTitle as="label" htmlFor="brand-wizard-url">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="brand-wizard-url" className="text-sm font-medium text-neutral-300">
             {t('mockup.brandWizardUrlLabel')}
-          </MicroTitle>
+          </label>
           <Input
             id="brand-wizard-url"
             type="url"
@@ -520,21 +519,19 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             onChange={(e) => setUrl(e.target.value)}
             placeholder={t('mockup.brandWizardUrlPlaceholder')}
             disabled={isSubmitting || isIngesting}
-            className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+            className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
           />
           {hasUrl && (
-            <MicroTitle as="p" className="text-neutral-600 mt-0.5 lowercase">
-              Colors, typography, and brand details will be auto-extracted.
-            </MicroTitle>
+            <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardUrlHint')}</p>
           )}
         </div>
 
         {/* PDF and Images selection (Combined or separate?) */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <MicroTitle as="label" htmlFor="brand-wizard-pdf">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="brand-wizard-pdf" className="text-xs text-neutral-400">
               {t('mockup.brandWizardPdfLabel')}
-            </MicroTitle>
+            </label>
             <input
               ref={pdfInputRef}
               id="brand-wizard-pdf"
@@ -550,29 +547,24 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 type="button"
                 onClick={() => pdfInputRef.current?.click()}
                 disabled={isSubmitting || isIngesting}
-                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px]"
+                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/10 hover:border-neutral-700 rounded-lg px-3 py-3 text-sm text-neutral-400 hover:text-white transition-all group h-[46px]"
               >
                 <div className="flex items-center gap-2">
                   <FileText
                     size={16}
-                    className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                    className="text-neutral-500 group-hover:text-neutral-300 transition-colors"
                   />
-                  <span className="text-[10px] uppercase tracking-wider">
+                  <span className="text-xs">
                     {t('mockup.brandWizardPdfPlaceholderShort') || 'PDF'}
                   </span>
                 </div>
-                <ShieldCheck
-                  size={12}
-                  className="text-neutral-800 group-hover:text-brand-cyan/40"
-                />
+                <ShieldCheck size={12} className="text-neutral-700" />
               </button>
             ) : (
-              <div className="flex items-center justify-between gap-2 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-2 py-1.5 overflow-hidden h-[42px]">
+              <div className="flex items-center justify-between gap-2 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 overflow-hidden h-[46px]">
                 <div className="flex items-center gap-2 min-w-0">
-                  <FileText size={16} className="text-brand-cyan shrink-0" />
-                  <span className="text-[10px] font-mono text-white truncate max-w-[80px]">
-                    {pdfFile.name}
-                  </span>
+                  <FileText size={16} className="text-neutral-300 shrink-0" />
+                  <span className="text-xs text-white truncate max-w-[80px]">{pdfFile.name}</span>
                 </div>
                 <button
                   type="button"
@@ -585,10 +577,10 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <MicroTitle as="label" htmlFor="brand-wizard-images">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="brand-wizard-images" className="text-xs text-neutral-400">
               {t('mockup.brandWizardImagesLabel') || 'Images'}
-            </MicroTitle>
+            </label>
             <input
               ref={imageInputRef}
               id="brand-wizard-images"
@@ -604,20 +596,20 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
               type="button"
               onClick={() => imageInputRef.current?.click()}
               disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
-              className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 rounded-md px-3 py-3 text-sm font-mono text-neutral-400 hover:text-white transition-all group h-[42px] disabled:opacity-30"
+              className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/10 hover:border-neutral-700 rounded-lg px-3 py-3 text-sm text-neutral-400 hover:text-white transition-all group h-[46px] disabled:opacity-30"
             >
               <div className="flex items-center gap-2">
                 <ImageIcon
                   size={16}
-                  className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                  className="text-neutral-500 group-hover:text-neutral-300 transition-colors"
                 />
-                <span className="text-[10px] uppercase tracking-wider">
+                <span className="text-xs">
                   {imageFiles.length > 0
                     ? `${imageFiles.length}/10`
-                    : t('mockup.brandWizardImagesPlaceholderShort') || 'IMAGES'}
+                    : t('mockup.brandWizardImagesPlaceholderShort') || 'Images'}
                 </span>
               </div>
-              <Plus size={12} className="text-neutral-800 group-hover:text-brand-cyan/40" />
+              <Plus size={14} className="text-neutral-600 group-hover:text-neutral-400" />
             </button>
           </div>
         </div>
@@ -650,10 +642,9 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         {/* Figma URL + .fig file upload */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <MicroTitle
-              as="label"
+            <label
               htmlFor="brand-wizard-figma"
-              className="flex items-center gap-1.5"
+              className="flex items-center gap-1.5 text-xs text-neutral-400"
             >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
                 <path
@@ -675,7 +666,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 />
               </svg>
               Figma
-            </MicroTitle>
+            </label>
             {/* .fig file upload button */}
             <div>
               <input
@@ -691,8 +682,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                 }}
               />
               {figFile ? (
-                <div className="flex items-center gap-1.5 bg-brand-cyan/5 border border-brand-cyan/20 rounded px-2 py-1">
-                  <Upload size={10} className="text-brand-cyan" />
+                <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1">
+                  <Upload size={10} className="text-neutral-300" />
                   <span className="text-[10px] font-mono text-white truncate max-w-[100px]">
                     {figFile.name}
                   </span>
@@ -722,21 +713,18 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             type="url"
             value={figmaUrl}
             onChange={(e) => setFigmaUrl(e.target.value)}
-            placeholder="figma.com/file/... ou figma.com/design/..."
+            placeholder={t('mockup.brandWizardFigmaPlaceholder')}
             disabled={isSubmitting || isIngesting}
-            className="w-full bg-neutral-900/60 border border-white/10 rounded-md px-3 py-2.5 text-sm font-mono text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+            className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
           />
           {hasFigma && (
-            <MicroTitle as="p" className="text-neutral-600 mt-0.5 lowercase">
-              cores e tipografia serão extraídas automaticamente via API Figma.
-            </MicroTitle>
+            <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardFigmaHint')}</p>
           )}
         </div>
 
-        <MicroTitle as="p" className="text-neutral-700 mt-1 lowercase">
-          {t('mockup.brandWizardExtractionHint') ||
-            'extração essencialista de estratégia, arquétipos e tokens.'}
-        </MicroTitle>
+        <p className="text-xs text-neutral-600 mt-1">
+          {t('mockup.brandWizardExtractionHint')}
+        </p>
       </form>
 
       {/* Media Kit — only in edit mode (guideline must exist for uploads) */}

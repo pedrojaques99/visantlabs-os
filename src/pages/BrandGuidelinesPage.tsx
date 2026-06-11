@@ -70,31 +70,19 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full flex flex-col items-center justify-center text-center py-24 gap-10 max-w-lg mx-auto"
+      className="w-full min-h-[70vh] flex flex-col items-center justify-center text-center gap-6 px-6"
     >
-      {/* Mock social-media-style card preview */}
-      <div className="w-full max-w-xs pointer-events-none select-none opacity-50">
-        <div className="rounded-xl border border-white/[0.06] bg-neutral-900 overflow-hidden">
-          <div className="w-full h-20 bg-gradient-to-br from-indigo-500/30 to-pink-500/20" />
-          <div className="px-4 -mt-5">
-            <div className="w-10 h-10 rounded-lg bg-neutral-800 ring-2 ring-neutral-900 flex items-center justify-center text-neutral-500 text-xs font-semibold">
-              AB
-            </div>
-          </div>
-          <div className="px-4 pt-2 pb-4">
-            <div className="h-3.5 w-28 rounded bg-neutral-800" />
-            <div className="h-2.5 w-40 rounded bg-neutral-800/50 mt-1.5" />
-          </div>
-        </div>
+      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+        <Layers size={26} strokeWidth={1.2} className="text-neutral-500" />
       </div>
-
-      <div className="space-y-2">
-        <h2 className="text-lg font-medium text-neutral-300">{t('brandGuidelines.emptyState')}</h2>
-        <p className="text-neutral-600 text-sm leading-relaxed max-w-xs mx-auto">
-          Crie e organize suas diretrizes de marca em um único lugar.
+      <div className="space-y-2 max-w-sm">
+        <h2 className="text-xl font-semibold text-neutral-200 tracking-tight">
+          {t('brandGuidelines.emptyState')}
+        </h2>
+        <p className="text-neutral-500 text-sm leading-relaxed">
+          {t('brandGuidelines.emptyStateDesc')}
         </p>
       </div>
-
       <Button onClick={onCreate} size="lg" className="h-11 px-6 gap-2 text-sm">
         <Plus size={15} />
         {t('brandGuidelines.createFirst')}

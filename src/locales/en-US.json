@@ -517,6 +517,7 @@
     "donts": "Don't",
     "dos": "Do",
     "emptyState": "No brand guidelines yet. Create one to get started.",
+    "emptyStateDesc": "Create and organize your brand guidelines in one place.",
     "fontFamily": "Font family",
     "fontRole": "Role (heading...)",
     "fontStyle": "Style (Bold...)",
@@ -2527,6 +2528,15 @@
     "brandWizardImagesPlaceholderShort": "IMAGES",
     "brandWizardPdfPlaceholderShort": "PDF",
     "brandWizardExtractionHint": "essentialist extraction of strategy, archetypes and tokens.",
+    "brandWizardUrlHint": "Colors, typography, and brand details will be auto-extracted.",
+    "brandWizardFigmaPlaceholder": "figma.com/file/... or figma.com/design/...",
+    "brandWizardFigmaHint": "Colors and typography will be extracted via the Figma API.",
+    "brandWizardFigmaUrlDetected": "Figma URL detected",
+    "brandWizardFigExtractSuccess": "Figma file extracted successfully",
+    "brandWizardFigExtractError": "Failed to extract Figma file",
+    "brandWizardFigmaTokensImported": "Figma tokens imported. Colors and typography extracted.",
+    "brandWizardFigmaNoToken": "Figma token not set. Go to Profile, then Configuration.",
+    "brandWizardFigmaLinkedTokensFailed": "Figma linked, but token extraction failed.",
     "brandWizardImagesPasted": "Images pasted from clipboard",
     "brandWizardPdfPasted": "PDF pasted from clipboard",
     "brandWizardErrorImage": "Failed to extract data from images",
@@ -4735,7 +4745,12 @@
         "access_denied": "Access Denied",
         "decrypting_brand_assets": "Decrypting Brand Assets",
         "downloaded_as_css": "Downloaded as CSS",
-        "downloaded_as_json": "Downloaded as JSON"
+        "downloaded_as_json": "Downloaded as JSON",
+        "edit_mode": "EDIT",
+        "viewing_mode": "VIEW",
+        "edit_section": "Edit section",
+        "open_full_editor": "Open full editor →",
+        "editing_section": "Editing"
       }
     }
   },
@@ -4840,74 +4855,29 @@
     "seePlans": "See Plans"
   },
   "landing": {
-    "nav": {
-      "apps": "Apps",
-      "community": "Community",
-      "signin": "Sign in",
-      "cta": "Start free"
-    },
     "hero": {
-      "eyebrow": "Brand-native AI design",
-      "titleLine1": "Most AI ignores your brand.",
-      "titleLine2": "Ours was built to obey it.",
-      "subtitle": "Turn your brand guidelines into living AI context. Mockups, assets and campaigns that ship in your identity — from first-time designer to full agency.",
+      "titleLine1": "AI that knows",
+      "titleLine2": "your brand.",
+      "subtitle": "Your brand guidelines become living AI context. Mockups, assets and campaigns, always on brand.",
       "ctaPrimary": "Start free",
-      "ctaSecondary": "See the apps",
-      "scroll": "Scroll to explore"
+      "ctaSecondary": "See the apps"
     },
-    "problem": {
-      "eyebrow": "The problem",
-      "title": "Consistent branding shouldn't be manual work.",
-      "p1": "Hex codes copied by hand, font by font, on every new asset.",
-      "p2": "A PDF brand book nobody opens once it's done.",
-      "p3": "Generic AI that invents a brand that isn't yours."
-    },
-    "how": {
-      "eyebrow": "How it works",
-      "title": "Your identity becomes input — not just documentation.",
-      "step1Title": "1. Capture your brand",
-      "step1Desc": "Colors, type, logos and tone of voice in one place. Structured, not a static PDF.",
-      "step2Title": "2. AI uses it as context",
-      "step2Desc": "Every generation reads your brand automatically. No giant prompt, no copy-pasting hex.",
-      "step3Title": "3. Generate with consistency",
-      "step3Desc": "Mockups, posts, campaigns and more — always on-brand, in seconds."
-    },
-    "segments": {
-      "eyebrow": "Who it's for",
-      "title": "From first mockup to full agency operation.",
-      "designerTitle": "Beginner designer",
-      "designerPain": "Just starting, short on references?",
-      "designerGain": "Generate professional mockups and assets by example, without starting from scratch.",
-      "marketingTitle": "Marketing without a design team",
-      "marketingPain": "Need assets and have no designer?",
-      "marketingGain": "One brief becomes ready-to-post content for every channel, in your company's brand.",
-      "agencyTitle": "Senior designer & agency",
-      "agencyPain": "Managing several client brands?",
-      "agencyGain": "One source of truth per client. Share, generate and keep everything consistent.",
-      "devTitle": "Developer",
-      "devPain": "Want brand as code?",
-      "devGain": "Design tokens, a public API and MCP to bring brand context to any agent."
-    },
-    "apps": {
+    "bento": {
       "eyebrow": "The platform",
-      "title": "One toolset. One identity.",
-      "subtitle": "All connected by the same brand.",
+      "title": "Everything connected by your brand.",
       "mockupName": "Mockup Machine",
-      "mockupDesc": "Realistic mockups of your product and brand in seconds.",
+      "mockupDesc": "Realistic product mockups in seconds.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Your identity structured — and alive as AI context.",
+      "brandDesc": "Your identity, alive as AI context.",
       "canvasName": "Canvas",
-      "canvasDesc": "Visual editor with AI pipelines to compose assets.",
-      "contentName": "Content Studio",
-      "contentDesc": "One brief, many assets for every channel at once.",
+      "canvasDesc": "Visual editor with AI pipelines.",
       "studioName": "3D Studio",
-      "studioDesc": "3D scenes and renders of your brand right in the browser.",
-      "imageName": "Image Lab",
-      "imageDesc": "Image generation and editing across multiple models."
+      "studioDesc": "3D scenes and renders in the browser.",
+      "brandingName": "Branding",
+      "brandingDesc": "Brand identities generated by AI."
     },
     "finalCta": {
       "title": "Your brand, now with AI.",
-      "subtitle": "Start free. No credit card.",
       "button": "Start free"
     },
     "footer": {
