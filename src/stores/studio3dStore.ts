@@ -2,7 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { createShaderSlice, type ShaderSlice } from './shaderSlice';
-import { materialPresets } from '@/components/3d-studio/engine/materials';
+import {
+  materialPresets,
+  MATERIAL_LIB,
+  type MaterialCategory,
+} from '@/components/3d-studio/engine/materials';
 import { authService } from '@/services/authService';
 
 type MaterialPreset =
@@ -348,45 +352,22 @@ export const ENVIRONMENT_PRESETS = [
 export interface MaterialPresetDef {
   id: MaterialPreset;
   label: string;
-  category: 'basic' | 'metals' | 'surfaces' | 'glass' | 'special';
+  category: MaterialCategory;
   color?: string;
 }
 
-export const MATERIAL_PRESETS: MaterialPresetDef[] = [
-  // Basic
-  { id: 'default', label: 'Default', category: 'basic' },
-  { id: 'plastic', label: 'Plastic', category: 'basic' },
-  { id: 'clay', label: 'Clay', category: 'basic', color: '#e8ddd3' },
-  { id: 'emissive', label: 'Emissive', category: 'basic' },
-  // Metals
-  { id: 'chrome', label: 'Chrome', category: 'metals', color: '#cccccc' },
-  { id: 'brushedSteel', label: 'Brushed Steel', category: 'metals', color: '#c0c0c0' },
-  { id: 'gold', label: 'Gold', category: 'metals', color: '#ffd891' },
-  { id: 'roseGold', label: 'Rose Gold', category: 'metals', color: '#e8a090' },
-  { id: 'copper', label: 'Copper', category: 'metals', color: '#f7bc9e' },
-  // Surfaces
-  { id: 'marble', label: 'Marble', category: 'surfaces', color: '#e8e0d8' },
-  { id: 'wood', label: 'Wood', category: 'surfaces', color: '#8b6a4a' },
-  { id: 'leather', label: 'Leather', category: 'surfaces', color: '#6b4226' },
-  { id: 'carbonFiber', label: 'Carbon Fiber', category: 'surfaces', color: '#222222' },
-  { id: 'carPaint', label: 'Car Paint', category: 'surfaces' },
-  // Glass & Gem
-  { id: 'glass', label: 'Glass', category: 'glass' },
-  { id: 'frostedGlass', label: 'Frosted', category: 'glass' },
-  { id: 'diamond', label: 'Diamond', category: 'glass', color: '#ffffff' },
-  // Special
-  { id: 'pearl', label: 'Pearl', category: 'special', color: '#fef0e0' },
-  { id: 'obsidian', label: 'Obsidian', category: 'special', color: '#1a1a1a' },
-  { id: 'holographic', label: 'Holo', category: 'special' },
-  { id: 'y2kGloss', label: 'Y2K Gloss', category: 'special' },
-  { id: 'liquidChrome', label: 'Liquid Chrome', category: 'metals', color: '#e0e0e0' },
-  { id: 'titanium', label: 'Titanium', category: 'metals', color: '#8a8a8a' },
-  { id: 'candyInflate', label: 'Candy', category: 'special' },
-  { id: 'soapBubble', label: 'Soap Bubble', category: 'glass' },
-  { id: 'opal', label: 'Opal', category: 'special', color: '#e8dff5' },
-  { id: 'neonTube', label: 'Neon Tube', category: 'special' },
-  { id: 'resin', label: 'Resin', category: 'glass' },
-];
+/**
+ * Studio3D material picker list. Derived from the single material library in
+ * `engine/materials.ts` (`MATERIAL_LIB`) — labels come from the PBR presets,
+ * ordering/category/swatch-color from the UI metadata there. No values are
+ * declared twice.
+ */
+export const MATERIAL_PRESETS: MaterialPresetDef[] = MATERIAL_LIB.map((m) => ({
+  id: m.id as MaterialPreset,
+  label: m.label,
+  category: m.category,
+  ...(m.color ? { color: m.color } : {}),
+}));
 
 export const ANIMATION_PRESETS: { id: AnimationType; label: string }[] = [
   { id: 'none', label: 'None' },
