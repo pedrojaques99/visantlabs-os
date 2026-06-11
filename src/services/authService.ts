@@ -75,6 +75,22 @@ class AuthService {
     this.lastVerifyTime = 0;
   }
 
+  /**
+   * Public auth UI config resolved at runtime from the server (e.g. the hCaptcha
+   * site key), so it reflects deploy env without a frontend rebuild. Returns null
+   * fields on failure — callers fall back to build-time values.
+   */
+  async getAuthConfig(): Promise<{ hcaptchaSiteKey: string | null }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/config`);
+      if (!response.ok) return { hcaptchaSiteKey: null };
+      const data = await response.json();
+      return { hcaptchaSiteKey: data?.hcaptchaSiteKey ?? null };
+    } catch {
+      return { hcaptchaSiteKey: null };
+    }
+  }
+
   async getAuthUrl(referralCode?: string): Promise<string> {
     try {
       console.log('Fetching auth URL from:', API_BASE_URL);
