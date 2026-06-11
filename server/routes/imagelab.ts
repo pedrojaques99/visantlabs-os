@@ -110,7 +110,9 @@ router.post(
   }
 );
 
-router.get('/presets', async (req, res, next) => {
+// Intentionally public (no auth): presets are static metadata used to populate
+// the UI before login. Still throttled with apiRateLimiter to prevent abuse.
+router.get('/presets', apiRateLimiter, async (req, res, next) => {
   try {
     const mode = req.query.mode as string;
     if (!mode) {
