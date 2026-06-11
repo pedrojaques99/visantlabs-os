@@ -9,7 +9,11 @@
 
 import { SpecGenerationError, ValidationError } from './docs-errors.js';
 import { FIGMA_TOOLS, FigmaTool } from './tools/registry.js';
-import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
+import {
+  IMAGE_MODEL_IDS,
+  IMAGE_PROVIDERS,
+  DEFAULT_IMAGE_MODEL_ID,
+} from '../../src/constants/imageModelRegistry.js';
 
 type ToolCost = 'free' | 'credits';
 type ToolCategory =
@@ -212,7 +216,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       model: {
         type: 'string',
         enum: IMAGE_MODEL_IDS,
-        default: IMAGE_MODEL_IDS[0],
+        default: DEFAULT_IMAGE_MODEL_ID,
       },
       provider: { type: 'string', enum: IMAGE_PROVIDERS as string[] },
       aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'] },
@@ -287,7 +291,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       model: {
         type: 'string',
         enum: IMAGE_MODEL_IDS,
-        default: IMAGE_MODEL_IDS[0],
+        default: DEFAULT_IMAGE_MODEL_ID,
       },
       aspectRatio: { type: 'string', enum: ['1:1', '9:16', '16:9', '4:5'], default: '1:1' },
       resolution: { type: 'string', enum: ['1K', '2K', '4K'], default: '1K' },
@@ -800,7 +804,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       prompt: { type: 'string' },
       brandGuidelineId: { type: 'string' },
       format: { type: 'string', enum: ['1:1', '16:9', '9:16', '4:5'], default: '1:1' },
-      model: { type: 'string', default: IMAGE_MODEL_IDS[0] },
+      model: { type: 'string', default: DEFAULT_IMAGE_MODEL_ID },
       resolution: { type: 'string', enum: ['1K', '2K', '4K'], default: '1K' },
       autoSave: { type: 'boolean', default: true },
     },

@@ -20,7 +20,11 @@ import {
   type BrandContextSection,
 } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
-import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
+import {
+  IMAGE_MODEL_IDS,
+  IMAGE_PROVIDERS,
+  DEFAULT_IMAGE_MODEL_ID,
+} from '../../src/constants/imageModelRegistry.js';
 
 // ─── Structured error codes ───────────────────────────────────────────────────
 function mcpError(code: string, message: string, extra?: Record<string, any>) {
@@ -1020,7 +1024,7 @@ Content-Type: application/json
         .describe('Full image description — style, composition, colors, lighting, mood.'),
       model: z
         .enum(IMAGE_MODEL_IDS)
-        .default(IMAGE_MODEL_IDS[0])
+        .default(DEFAULT_IMAGE_MODEL_ID)
         .describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
       aspectRatio: z
         .enum(['1:1', '9:16', '16:9', '4:5'])
@@ -1098,7 +1102,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         ),
       model: z
         .enum(IMAGE_MODEL_IDS)
-        .default(IMAGE_MODEL_IDS[0])
+        .default(DEFAULT_IMAGE_MODEL_ID)
         .describe(
           'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'
         ),
@@ -3681,7 +3685,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .describe('Output aspect ratio.'),
       model: z
         .enum(IMAGE_MODEL_IDS)
-        .default(IMAGE_MODEL_IDS[0])
+        .default(DEFAULT_IMAGE_MODEL_ID)
         .describe('Model for background image generation.'),
       resolution: z
         .enum(['1K', '2K', '4K'])

@@ -9,7 +9,10 @@
  */
 import { CHAT_TOOLS, executeToolCall } from '../chatToolExecutor.js';
 import { ADMIN_CHAT_TOOLS, executeAdminChatTool } from '../adminChatTools.js';
-import { IMAGE_MODEL_IDS } from '../../../src/constants/imageModelRegistry.js';
+import {
+  IMAGE_MODEL_IDS,
+  DEFAULT_IMAGE_MODEL_ID,
+} from '../../../src/constants/imageModelRegistry.js';
 import { prisma } from '../../db/prisma.js';
 import { describeImage } from '../geminiService.js';
 import {
@@ -212,7 +215,7 @@ REGISTRY['generate_mockup'] = {
       body: JSON.stringify({
         promptText: args.prompt,
         brandGuidelineId: args.brandGuidelineId || ctx.brandGuidelineId,
-        model: args.model || IMAGE_MODEL_IDS[0],
+        model: args.model || DEFAULT_IMAGE_MODEL_ID,
         aspectRatio: args.aspectRatio || '1:1',
         resolution: args.resolution || '1K',
         designType: args.designType || 'blank',
@@ -227,7 +230,7 @@ REGISTRY['generate_mockup'] = {
     return JSON.stringify({
       imageUrl: result.imageUrl || null,
       mockupId: result.id || result.mockup?.id || null,
-      model: args.model || IMAGE_MODEL_IDS[0],
+      model: args.model || DEFAULT_IMAGE_MODEL_ID,
       provider: result.provider || null,
       aspectRatio: args.aspectRatio || '1:1',
       resolution: args.resolution || '1K',

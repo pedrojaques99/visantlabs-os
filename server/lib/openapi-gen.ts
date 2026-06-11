@@ -8,7 +8,11 @@
  */
 
 import { SpecGenerationError, ValidationError } from './docs-errors.js';
-import { IMAGE_MODEL_IDS, IMAGE_PROVIDERS } from '../../src/constants/imageModelRegistry.js';
+import {
+  IMAGE_MODEL_IDS,
+  IMAGE_PROVIDERS,
+  DEFAULT_IMAGE_MODEL_ID,
+} from '../../src/constants/imageModelRegistry.js';
 
 interface Parameter {
   name: string;
@@ -875,7 +879,7 @@ Step values:
                     enum: IMAGE_PROVIDERS as string[],
                     default: 'openai',
                   },
-                  model: { type: 'string', default: IMAGE_MODEL_IDS[0] },
+                  model: { type: 'string', default: DEFAULT_IMAGE_MODEL_ID },
                   aspectRatio: {
                     type: 'string',
                     enum: ['1:1', '9:16', '16:9', '4:5'],
