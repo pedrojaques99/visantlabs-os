@@ -3,6 +3,14 @@
 Adds server-side PSD smart object replacement to the Visant Labs API.
 Users send a PSD URL + art URL, get back a rendered PNG with full PSD effects.
 
+> **Engine:** o compositor padrão é o pacote
+> [`@visantlabs/psd-engine`](../packages/psd-engine/README.md) (ag-psd + node-canvas,
+> sem Chromium) — ver [`server/docs/psd-render.md`](../server/docs/psd-render.md)
+> para a arquitetura atual, Scene Packages (render no browser) e os endpoints.
+> A seção HeadlessPhotopea/Chromium abaixo descreve o worker **legado**
+> (`PSD_RENDER_ENGINE=photopea`), mantido só como fallback. O runbook de
+> go-live do parceiro Boxy mais abaixo continua válido.
+
 ## Architecture
 
 ```
