@@ -119,6 +119,20 @@ function getMcpUserId(): string | null {
 }
 
 async function getQuotaMeta(userId: string) {
+  try {
+    return await computeQuotaMeta(userId);
+  } catch (err) {
+    // _meta is advisory: a Mongo/Prisma hiccup must never turn an already-
+    // successful tool result into INTERNAL_ERROR. Degrade to no quota meta.
+    console.warn(
+      '[getQuotaMeta] failed to compute quota meta, returning null:',
+      err instanceof Error ? err.message : err
+    );
+    return null;
+  }
+}
+
+async function computeQuotaMeta(userId: string) {
   await connectToMongoDB();
   const db = getDb();
   const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
