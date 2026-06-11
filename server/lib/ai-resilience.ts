@@ -152,6 +152,21 @@ export class ModelOverloadedError extends Error {
 export function shouldRetry(error: unknown): boolean {
   if (error instanceof RateLimitError) return false;
 
+  // Classify by error name too — services define their own terminal error
+  // classes (e.g. geminiService's RateLimitError / ModelOverloadedError /
+  // ModelResponseTextError) that can't be reached via instanceof across module
+  // boundaries. ModelResponseTextError means the model deterministically
+  // returned text instead of an image (refusal / clarifying question) — same
+  // prompt will do it again, so don't retry.
+  const name = error instanceof Error ? error.name : '';
+  if (
+    name === 'RateLimitError' ||
+    name === 'ModelOverloadedError' ||
+    name === 'ModelResponseTextError'
+  ) {
+    return false;
+  }
+
   const message = error instanceof Error ? error.message : String(error);
 
   // Don't retry rate limits
@@ -185,6 +200,15 @@ export function shouldRetry(error: unknown): boolean {
     lower.includes('content_policy') ||
     lower.includes('moderation')
   ) {
+    return false;
+  }
+
+  // Don't retry errors that already came from an exhausted inner retry loop
+  // (e.g. geminiService.withRetry throws ModelOverloadedError only after burning
+  // all its 503 attempts). Retrying here would re-run that whole loop — a
+  // double-retry. We still want the circuit breaker to count the failure, but
+  // not the retry policy to repeat it.
+  if (lower.includes('overloaded') || (lower.includes('after') && lower.includes('attempts'))) {
     return false;
   }
 

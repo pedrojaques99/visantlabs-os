@@ -12,6 +12,7 @@ import {
   ModelResponseTextError,
 } from '../../src/services/geminiService.js';
 import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
+import { withResilience } from '../lib/ai-resilience.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
@@ -1168,16 +1169,28 @@ router.post(
         imageBase64 = openaiResult.base64;
         // OpenAI doesn't support seed — leave usedSeed undefined
       } else {
-        // Use Gemini (default)
-        imageBase64 = await generateMockup(
-          finalPromptText,
-          finalBaseImage as any,
-          model as any,
-          resolution as any,
-          aspectRatio as any,
-          finalReferenceImages as any,
-          undefined,
-          userApiKey
+        // Use Gemini (default). Wrap with withResilience for parity with the
+        // other providers (ideogram/reve/openai/seedream wrap their HTTP calls).
+        // generateMockup lives in src/services (frontend-shared) and already has
+        // its own inner withRetry (503 backoff + 429 fail-fast); we deliberately
+        // do NOT touch it to avoid pulling the server-only resilience lib into
+        // the frontend bundle. Wrapping here at the server call site gives gemini
+        // the circuit breaker without a double-retry loop: shouldRetry()
+        // classifies the terminal errors that escape generateMockup's withRetry
+        // (RateLimitError "rate limit", ModelOverloadedError "overloaded",
+        // safety/blocked) as non-retryable, so withResilience only counts the
+        // failure toward the breaker. (Decision: G4, 0-gaps round.)
+        imageBase64 = await withResilience('gemini', () =>
+          generateMockup(
+            finalPromptText,
+            finalBaseImage as any,
+            model as any,
+            resolution as any,
+            aspectRatio as any,
+            finalReferenceImages as any,
+            undefined,
+            userApiKey
+          )
         );
       }
 
