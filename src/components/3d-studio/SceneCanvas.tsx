@@ -696,7 +696,10 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
               : { position: [0, 0, s.zoom], fov: s.fov }
           }
           dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
-          style={{ ...bgStyle, width: '100%', height: '100%' }}
+          // touchAction: 'none' lets the canvas own all touch gestures (1-finger
+          // orbit, 2-finger pinch/pan) instead of the browser hijacking them for
+          // page scroll/zoom. Without it, dragging on mobile scrolls the page.
+          style={{ ...bgStyle, width: '100%', height: '100%', touchAction: 'none' }}
           gl={{
             antialias: s.renderQuality !== 'performance',
             alpha: true,
