@@ -4360,6 +4360,14 @@
     "hidePanel": "Hide panel (⌘\\)",
     "showPanel": "Show panel (⌘\\)",
     "controls": "Controls",
+    "status": {
+      "depth": "depth {value}"
+    },
+    "autosave": {
+      "saving": "saving…",
+      "saved": "saved",
+      "failed": "save failed"
+    },
     "tabs": {
       "shape": "Shape",
       "material": "Material",

@@ -258,6 +258,68 @@ export const Studio3DPage: React.FC = () => {
     };
   }, [store]);
 
+  // ─── Autosave (5.1) ─────────────────────────────────────────────────────────
+  // Debounced background save every ~30s, but only for scenes that already have
+  // a server id (i.e. the user saved once via Ctrl+S / Share). This avoids
+  // creating phantom records for scenes that were never explicitly saved.
+  // Skips while exporting/auto-rendering so we never capture a thumbnail of a
+  // mid-export frame or fight the export's transient state mutations. Failures
+  // are silent and simply retried on the next tick; only repeated failures
+  // surface a single toast.
+  const [autosaveState, setAutosaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const dirtyRef = useRef(false);
+  const autosaveFailuresRef = useRef(0);
+  const autosaveInFlightRef = useRef(false);
+
+  useEffect(() => {
+    // Any tracked store change marks the scene dirty. The temporal/persist
+    // partialize already strips transient fields, so this only fires on real
+    // design edits.
+    const unsub = store.subscribe(() => {
+      dirtyRef.current = true;
+    });
+    return () => unsub();
+  }, [store]);
+
+  useEffect(() => {
+    const AUTOSAVE_INTERVAL_MS = 30_000;
+    const id = setInterval(async () => {
+      const s = store.getState();
+      // Gate: only saved scenes, only when something changed, never mid-export.
+      if (!s._sceneId) return;
+      if (!dirtyRef.current) return;
+      if (s.isExporting || autoRenderState) return;
+      if (autosaveInFlightRef.current) return;
+
+      autosaveInFlightRef.current = true;
+      dirtyRef.current = false;
+      setAutosaveState('saving');
+      try {
+        const name = s._sceneName || s.fileName || 'Untitled';
+        const scene = await saveScene(name, captureThumb());
+        if (scene) {
+          autosaveFailuresRef.current = 0;
+          setAutosaveState('saved');
+        } else {
+          throw new Error('autosave returned null');
+        }
+      } catch {
+        // Mark dirty again so the next tick retries.
+        dirtyRef.current = true;
+        autosaveFailuresRef.current += 1;
+        setAutosaveState('error');
+        // Only nag after repeated failures, not on a single transient blip.
+        if (autosaveFailuresRef.current === 3) {
+          toast.error('Autosave is failing — your changes may not be saved');
+        }
+      } finally {
+        autosaveInFlightRef.current = false;
+      }
+    }, AUTOSAVE_INTERVAL_MS);
+    return () => clearInterval(id);
+    // captureThumb is stable (useCallback []); autoRenderState read fresh via closure recreation.
+  }, [store, autoRenderState]);
+
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
@@ -553,16 +615,33 @@ export const Studio3DPage: React.FC = () => {
     }
   }, []);
 
+  const autosaveLabel =
+    autosaveState === 'saving'
+      ? t('studio3d.autosave.saving')
+      : autosaveState === 'saved'
+        ? t('studio3d.autosave.saved')
+        : autosaveState === 'error'
+          ? t('studio3d.autosave.failed')
+          : null;
+
   const statusItems = [
     { label: material },
-    { label: `depth ${depth}` },
+    { label: t('studio3d.status.depth', { value: depth }) },
     { label: animate !== 'none' ? animate : 'static' },
-    ...(shaderEnabled ? [{ label: shaderType, color: 'text-cyan-400' }] : []),
+    ...(shaderEnabled ? [{ label: shaderType, color: 'text-neutral-400' }] : []),
     ...(cameraInfo?.view ? [{ label: cameraInfo.view, color: 'text-cyan-400' }] : []),
     ...(cameraInfo
       ? [
           { label: `${cameraInfo.polar}° / ${cameraInfo.azimuth}°` },
           { label: `d:${cameraInfo.distance}` },
+        ]
+      : []),
+    ...(autosaveLabel
+      ? [
+          {
+            label: autosaveLabel,
+            color: autosaveState === 'error' ? 'text-destructive' : 'text-neutral-500',
+          },
         ]
       : []),
   ];

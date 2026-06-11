@@ -4364,6 +4364,14 @@
     "hidePanel": "Ocultar painel (⌘\\)",
     "showPanel": "Mostrar painel (⌘\\)",
     "controls": "Controles",
+    "status": {
+      "depth": "prof {value}"
+    },
+    "autosave": {
+      "saving": "salvando…",
+      "saved": "salvo",
+      "failed": "falha ao salvar"
+    },
     "tabs": {
       "shape": "Forma",
       "material": "Material",

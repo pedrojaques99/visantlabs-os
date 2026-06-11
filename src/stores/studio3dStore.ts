@@ -574,6 +574,7 @@ interface Studio3DState {
   resetKey: number;
 
   // Scene persistence metadata (excluded from undo history)
+  _sceneId: string | null;
   _sceneName: string;
   _lastSavedAt: number;
 
@@ -710,6 +711,7 @@ interface Studio3DState {
   setActiveTab: (t: Studio3DState['activeTab']) => void;
   setShowStats: (v: boolean) => void;
   setIsLoading: (v: boolean) => void;
+  setSceneId: (v: string | null) => void;
   setSceneName: (v: string) => void;
   setLastSavedAt: (v: number) => void;
   applyScenePreset: (name: string) => void;
@@ -861,6 +863,7 @@ const INITIAL_STATE = {
   showStats: false,
   isLoading: false,
   resetKey: 0,
+  _sceneId: null,
   _sceneName: '',
   _lastSavedAt: 0,
 };
@@ -1087,6 +1090,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         setActiveTab: (activeTab) => set({ activeTab }),
         setShowStats: (showStats) => set({ showStats }),
         setIsLoading: (isLoading) => set({ isLoading }),
+        setSceneId: (_sceneId) => set({ _sceneId }),
         setSceneName: (_sceneName) => set({ _sceneName }),
         setLastSavedAt: (_lastSavedAt) => set({ _lastSavedAt }),
 
@@ -1209,6 +1213,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           const {
             _cameraControlsRef,
             _cameraInfo,
+            _sceneId,
             _sceneName,
             _lastSavedAt,
             panelVisible,
@@ -1328,49 +1333,70 @@ export async function saveScene(name: string, thumbnail?: string): Promise<Saved
   config.shaderType = state.shaderType;
   config.shaderValues = state.shaderValues;
 
+  // If this scene already has a server id, UPDATE it in place (PATCH) instead of
+  // creating a new record — autosave reuses this path so it never spawns phantom
+  // scenes on every tick.
+  const existingId = state._sceneId;
+
   try {
-    const res = await fetch(`${API_BASE}/studio3d`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-      body: JSON.stringify({
-        name,
-        config,
-        svgData: state.svgData || undefined,
-        inputMode: state.inputMode,
-        text: state.text || undefined,
-        font: state.font || undefined,
-        thumbnailUrl: thumbnail || undefined,
-      }),
+    const body = JSON.stringify({
+      name,
+      config,
+      svgData: state.svgData || undefined,
+      inputMode: state.inputMode,
+      text: state.text || undefined,
+      font: state.font || undefined,
+      thumbnailUrl: thumbnail || undefined,
     });
+    const res = existingId
+      ? await fetch(`${API_BASE}/studio3d/${existingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body,
+        })
+      : await fetch(`${API_BASE}/studio3d`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body,
+        });
     if (!res.ok) throw new Error('save failed');
     const data = await res.json();
     const scene: SavedScene = {
       id: data.scene.id,
       name: data.scene.name,
-      savedAt: new Date(data.scene.createdAt).getTime(),
+      savedAt: new Date(data.scene.updatedAt || data.scene.createdAt).getTime(),
       config,
       thumbnail,
     };
-    const scenes = getCachedScenes();
+    const scenes = getCachedScenes().filter((s) => s.id !== scene.id);
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;
     localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
-    useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
+    useStudio3DStore.setState({
+      _sceneId: scene.id,
+      _sceneName: name,
+      _lastSavedAt: Date.now(),
+    });
     return scene;
   } catch {
-    // Fallback to localStorage only
+    // Fallback to localStorage only — reuse the existing id when present so the
+    // local cache is also updated in place rather than duplicated.
     const scene: SavedScene = {
-      id: crypto.randomUUID(),
+      id: existingId || crypto.randomUUID(),
       name,
       savedAt: Date.now(),
       config,
       thumbnail,
     };
-    const scenes = getCachedScenes();
+    const scenes = getCachedScenes().filter((s) => s.id !== scene.id);
     scenes.unshift(scene);
     if (scenes.length > 50) scenes.length = 50;
     localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
-    useStudio3DStore.setState({ _sceneName: name, _lastSavedAt: Date.now() });
+    useStudio3DStore.setState({
+      _sceneId: scene.id,
+      _sceneName: name,
+      _lastSavedAt: Date.now(),
+    });
     return scene;
   }
 }
@@ -1434,7 +1460,11 @@ export async function forkScene(id: string): Promise<boolean> {
       if (data.scene.svgData) {
         useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
       }
-      useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
+      useStudio3DStore.setState({
+        _sceneId: data.scene.id || null,
+        _sceneName: data.scene.name || '',
+        _lastSavedAt: Date.now(),
+      });
     }
     return true;
   } catch {
@@ -1459,7 +1489,11 @@ export async function loadScene(id: string): Promise<boolean> {
         if (data.scene.svgData) {
           useStudio3DStore.getState().setSvgData(data.scene.svgData, data.scene.name || '');
         }
-        useStudio3DStore.setState({ _sceneName: data.scene.name || '', _lastSavedAt: Date.now() });
+        useStudio3DStore.setState({
+          _sceneId: data.scene.id || id,
+          _sceneName: data.scene.name || '',
+          _lastSavedAt: Date.now(),
+        });
         return true;
       }
     }
@@ -1475,6 +1509,11 @@ export async function loadScene(id: string): Promise<boolean> {
       shaderValues: scene.config.shaderValues || {},
     });
   }
+  useStudio3DStore.setState({
+    _sceneId: scene.id,
+    _sceneName: scene.name || '',
+    _lastSavedAt: scene.savedAt || Date.now(),
+  });
   return true;
 }
 
@@ -1485,4 +1524,9 @@ export async function deleteScene(id: string): Promise<void> {
   // Always clean local cache too
   const scenes = getCachedScenes().filter((s) => s.id !== id);
   localStorage.setItem(SCENES_KEY, JSON.stringify(scenes));
+  // If the deleted scene was the one currently bound to autosave, detach it so
+  // the next save creates a fresh record instead of PATCHing a missing id.
+  if (useStudio3DStore.getState()._sceneId === id) {
+    useStudio3DStore.setState({ _sceneId: null });
+  }
 }
