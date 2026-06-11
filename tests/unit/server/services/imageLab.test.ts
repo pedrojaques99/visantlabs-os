@@ -32,6 +32,7 @@ vi.mock('@napi-rs/canvas', () => ({
 
 vi.mock('../../../../server/services/r2Service.js', () => ({
   uploadImage: vi.fn().mockResolvedValue('https://cdn.test/uploaded.png'),
+  uploadEphemeralImage: vi.fn().mockResolvedValue('https://cdn.test/imagelab/outputs/uploaded.png'),
 }));
 
 const { imageLabApplyEffect } = await import('../../../../server/services/imageLab/index.js');

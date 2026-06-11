@@ -101,6 +101,61 @@ export async function uploadImage(
   }
 }
 
+// Dedicated prefix for ephemeral ImageLab filter outputs (halftone / texture /
+// riso / shader / chain). These are regenerable on demand and the user downloads
+// them immediately, so they carry a server-side lifecycle rule (see
+// IMAGELAB_EPHEMERAL_PREFIX below + server/scripts/setupR2Lifecycle.ts) that
+// expires them after a few days. Paid AI outputs (generative-expand, inpaint,
+// remove-background) deliberately stay under the permanent `${userId}/` prefix.
+export const IMAGELAB_EPHEMERAL_PREFIX = 'imagelab/outputs';
+
+/**
+ * Upload an ephemeral ImageLab filter output to R2.
+ *
+ * Identical to {@link uploadImage} except the object lands under
+ * `imagelab/outputs/${userId}/...`, a prefix covered by a bucket lifecycle rule
+ * that auto-expires objects (default 7 days). Use ONLY for outputs the user can
+ * regenerate (filters/shaders) — never for paid/persisted assets.
+ */
+export async function uploadEphemeralImage(
+  base64Image: string,
+  userId: string,
+  label?: string,
+  subscriptionTier?: string,
+  isAdmin?: boolean
+): Promise<string> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
+
+  const base64Data = stripDataUriPrefix(base64Image);
+  const buffer = Buffer.from(base64Data, 'base64');
+
+  await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
+
+  const timestamp = Date.now();
+  const safeLabel = (label || 'output').replace(/[^a-zA-Z0-9_-]/g, '');
+  const key = `${IMAGELAB_EPHEMERAL_PREFIX}/${userId}/${safeLabel}-${timestamp}.png`;
+
+  const client = getR2Client();
+
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/png',
+      })
+    );
+
+    await incrementUserStorage(userId, buffer.length);
+    return `${publicUrl}/${key}`;
+  } catch (error: unknown) {
+    throw new Error(`Failed to upload ephemeral image to R2: ${getErrorMessage(error)}`);
+  }
+}
+
 /**
  * Delete image from R2 storage
  */
@@ -130,6 +185,10 @@ export async function deleteImage(imageUrl: string): Promise<void> {
       const prefixes = ['canvas', 'profiles', 'budgets', 'brands', 'gifts', 'users', 'pdf-presets'];
       if (prefixes.includes(keyParts[0]) && keyParts.length > 1) {
         userId = keyParts[1];
+      }
+      // imagelab/outputs/<userId>/... — userId is the 3rd segment.
+      if (keyParts[0] === 'imagelab' && keyParts[1] === 'outputs' && keyParts.length > 2) {
+        userId = keyParts[2];
       }
       await decrementUserStorage(userId, fileSize);
     }
@@ -897,6 +956,7 @@ export async function calculateUserStorage(userId: string): Promise<number> {
     `users/${userId}/`, // Cover images
     `pdf-presets/${userId}/`, // PDF presets
     `mockups/inputs/${userId}/`, // Mockup inputs
+    `${IMAGELAB_EPHEMERAL_PREFIX}/${userId}/`, // Ephemeral ImageLab filter outputs (lifecycle-expired)
   ];
 
   try {

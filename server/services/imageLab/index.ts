@@ -13,7 +13,7 @@ async function getNapiCanvas() {
   if (!_napiCanvas) _napiCanvas = await import('@napi-rs/canvas');
   return _napiCanvas;
 }
-import { uploadImage } from '../r2Service.js';
+import { uploadEphemeralImage } from '../r2Service.js';
 import { generateHalftoneSvg } from './halftoneRenderer.js';
 import { renderRiso } from './risoRenderer.js';
 import { renderShader } from './shaderRenderer.js';
@@ -443,7 +443,9 @@ export async function imageLabApplyEffect(
       throw new Error(`Unknown mode: ${mode}`);
   }
 
-  const url = await uploadImage(result.base64, userId, `imagelab-${mode}`);
+  // Ephemeral: filter outputs are regenerable and downloaded immediately, so
+  // they go under the lifecycle-expired imagelab/outputs prefix (see r2Service).
+  const url = await uploadEphemeralImage(result.base64, userId, `imagelab-${mode}`);
   return { imageUrl: url, format, width: result.width, height: result.height, mode, preset };
 }
 
@@ -458,7 +460,7 @@ export async function imageLabApplyShader(
       `Invalid shaderType "${shaderType}". Must be one of: ${[...VALID_SHADER_TYPES].join(', ')}`
     );
   const result = await applyShaderEffect(imageUrl, shaderType, settings, format);
-  const url = await uploadImage(result.base64, userId, `imagelab-shader-${shaderType}`);
+  const url = await uploadEphemeralImage(result.base64, userId, `imagelab-shader-${shaderType}`);
   return {
     imageUrl: url,
     format,
