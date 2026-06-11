@@ -22,6 +22,7 @@ import { isOpenAIImageModel, OPENAI_IMAGE_MODELS } from '../../src/constants/ope
 import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { isIdeogramModel, IDEOGRAM_MODELS } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
+import { DEFAULT_IMAGE_MODEL_ID } from '../../src/constants/imageModelRegistry.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { getUserPlanMetadata, isGenerationUnlimited } from '../utils/unlimitedChecker.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
@@ -877,6 +878,22 @@ router.post(
         }
       } catch (apiKeyError: any) {
         console.warn(`${logPrefix} [API KEY] Error checking for user API key:`, apiKeyError);
+      }
+
+      // Seedream is BYOK-only: fail fast with an actionable error BEFORE deducting
+      // credits when neither a user key nor the system BYTEPLUS_API_KEY is available,
+      // otherwise the agent burns credits on a generation that can only fail deep
+      // inside seedreamService.
+      if (provider === 'seedream' && !usingUserKey && !process.env.BYTEPLUS_API_KEY) {
+        if (lockKey) {
+          await db.collection('credit_locks').deleteOne({ lockKey, requestId });
+        }
+        return res.status(400).json({
+          error: 'byok_required',
+          message:
+            'Seedream requires your own BytePlus API key. Configure it in Settings → BYOK (or check status via the settings-byok-status tool).',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
+        });
       }
 
       if (isAdmin) {

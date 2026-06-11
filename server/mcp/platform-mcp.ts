@@ -1025,7 +1025,9 @@ Content-Type: application/json
       model: z
         .enum(IMAGE_MODEL_IDS)
         .default(DEFAULT_IMAGE_MODEL_ID)
-        .describe('gpt-image-2=best, gemini=fast, seedream=photorealistic.'),
+        .describe(
+          'gpt-image-2=best, gemini=fast, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).'
+        ),
       aspectRatio: z
         .enum(['1:1', '9:16', '16:9', '4:5'])
         .default('1:1')
@@ -1104,7 +1106,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .enum(IMAGE_MODEL_IDS)
         .default(DEFAULT_IMAGE_MODEL_ID)
         .describe(
-          'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic.'
+          'gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).'
         ),
       provider: z
         .enum(IMAGE_PROVIDERS)

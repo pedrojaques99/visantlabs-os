@@ -19,6 +19,8 @@ export interface ImageModelEntry {
   description: string;
   envVar?: string;
   supportsLogoRef: boolean;
+  /** Provider has no system-wide key; the user must supply their own (BYOK) for it to work. */
+  requiresByok?: boolean;
 }
 
 const GEMINI_IMAGE_IDS = [GEMINI_MODELS.IMAGE_NB2, GEMINI_MODELS.IMAGE_PRO] as const;
@@ -73,6 +75,9 @@ export const IMAGE_MODEL_REGISTRY: ImageModelEntry[] = [
       description: c.description,
       envVar: 'BYTEPLUS_API_KEY',
       supportsLogoRef: !c.requiresImage,
+      // Seedream has no system fallback key in production — flag it so agents/UIs
+      // can warn before selecting it (E2E audit 2026-06-11).
+      requiresByok: true,
     };
   }),
 
