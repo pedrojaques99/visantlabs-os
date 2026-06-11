@@ -297,6 +297,10 @@ function useCanvasThumbnails(
     if (sImg) capture('shaders');
   }, [sHi, sImg, capture]);
 
+  // Cancel any pending thumbnail-capture frame on unmount so it can't fire a
+  // setState on an unmounted component (e.g. after a fast mode switch).
+  useEffect(() => () => cancelAnimationFrame(frameId.current), []);
+
   return thumbs;
 }
 
@@ -418,6 +422,10 @@ export const ImageLabPage: React.FC = () => {
     const t = setTimeout(() => setFxBarVisible(false), FX_INITIAL_DELAY);
     return () => clearTimeout(t);
   }, [canAutoHide]);
+
+  // Clear the proximity-driven auto-hide timer on unmount (it's scheduled from
+  // pointer handlers, outside the effect above).
+  useEffect(() => () => clearTimeout(fxHideTimer.current), []);
 
   const handleCanvasPointerMove = useCallback(
     (e: RPointerEvent<HTMLDivElement>) => {
