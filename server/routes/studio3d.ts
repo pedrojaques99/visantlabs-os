@@ -217,8 +217,45 @@ const VALID_EASINGS = ['linear', 'easeIn', 'easeOut', 'easeInOut'];
 
 const HEX_RE = /^#[0-9A-Fa-f]{3,8}$/;
 
+// Numeric bounds per config field. Out-of-range or non-finite values are rejected
+// (pathological numbers — e.g. huge depth/segments — can blow up server-side
+// geometry generation and the export pipeline).
+const NUMERIC_BOUNDS: Record<string, { min: number; max: number }> = {
+  depth: { min: 0, max: 50 },
+  smoothness: { min: 0, max: 1 },
+  bevelThickness: { min: 0, max: 10 },
+  bevelSize: { min: 0, max: 10 },
+  objectScale: { min: 0.01, max: 100 },
+  metalness: { min: 0, max: 1 },
+  roughness: { min: 0, max: 1 },
+  opacity: { min: 0, max: 1 },
+  textureRepeat: { min: 0, max: 1000 },
+  textureRotation: { min: -360, max: 360 },
+  textureOpacity: { min: 0, max: 1 },
+  lightIntensity: { min: 0, max: 100 },
+  ambientIntensity: { min: 0, max: 100 },
+  fillLightIntensity: { min: 0, max: 100 },
+  bounceLightIntensity: { min: 0, max: 100 },
+  pointLightIntensity: { min: 0, max: 100 },
+  groundReflection: { min: 0, max: 1 },
+  hdriBlur: { min: 0, max: 1 },
+  hdriIntensity: { min: 0, max: 100 },
+  hdriRotation: { min: -360, max: 360 },
+  fogNear: { min: 0, max: 10000 },
+  fogFar: { min: 0, max: 100000 },
+  bloomIntensity: { min: 0, max: 100 },
+  animateSpeed: { min: 0, max: 100 },
+};
+
 function validateConfig(config: any): string | null {
   if (!config || typeof config !== 'object') return 'config must be an object';
+  for (const [field, { min, max }] of Object.entries(NUMERIC_BOUNDS)) {
+    const v = config[field];
+    if (v === undefined || v === null) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v))
+      return `Invalid ${field}: must be a finite number`;
+    if (v < min || v > max) return `Invalid ${field}: must be between ${min} and ${max}`;
+  }
   if (config.material && !VALID_MATERIALS.includes(config.material))
     return `Invalid material: ${config.material}`;
   if (config.animate && !VALID_ANIMATIONS.includes(config.animate))
