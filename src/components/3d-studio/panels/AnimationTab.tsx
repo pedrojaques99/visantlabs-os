@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore, ANIMATION_PRESETS } from '@/stores/studio3dStore';
+import { useShallow } from 'zustand/react/shallow';
+import type { StoreState } from './_shared';
 import {
   ToolPanelDisclosure,
   ToolPanelGrid,
@@ -12,9 +14,34 @@ import {
   ToolPanelRow,
 } from '@/components/shared/ToolPanel';
 
+// Fine-grained subscription: only the animation/physics slice. Replaces the
+// full-store `useStudio3DStore()` which re-rendered this panel on every store
+// mutation (camera orbit, _cameraInfo writes, other-tab edits). Actions have
+// stable identities so including them is free under useShallow.
+const animationPanelSelector = (s: StoreState) => ({
+  animate: s.animate,
+  animateSpeed: s.animateSpeed,
+  animateEasing: s.animateEasing,
+  animateReverse: s.animateReverse,
+  physicsCount: s.physicsCount,
+  physicsGravity: s.physicsGravity,
+  physicsBounciness: s.physicsBounciness,
+  physicsFriction: s.physicsFriction,
+  physicsSize: s.physicsSize,
+  setAnimate: s.setAnimate,
+  setAnimateSpeed: s.setAnimateSpeed,
+  setAnimateEasing: s.setAnimateEasing,
+  setAnimateReverse: s.setAnimateReverse,
+  setPhysicsCount: s.setPhysicsCount,
+  setPhysicsGravity: s.setPhysicsGravity,
+  setPhysicsBounciness: s.setPhysicsBounciness,
+  setPhysicsFriction: s.setPhysicsFriction,
+  setPhysicsSize: s.setPhysicsSize,
+});
+
 export const AnimationTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
-  const store = useStudio3DStore();
+  const store = useStudio3DStore(useShallow(animationPanelSelector));
 
   const [animateSpeed, setAnimateSpeed] = useDebouncedSlider(
     store.animateSpeed,

@@ -122,7 +122,10 @@ export const LightPositionSliders: React.FC<{
 
 /* ── Material Category Tabs ─────────────────────────────── */
 
-export const MaterialCategoryTabs: React.FC<{ activeCat: string; store: StoreState }> = React.memo(
+export const MaterialCategoryTabs: React.FC<{
+  activeCat: string;
+  store: Pick<StoreState, 'material' | 'setMaterial'>;
+}> = React.memo(
   ({ activeCat, store }) => {
     const { t } = useTranslation();
     const [openCat, setOpenCat] = useState(activeCat);
@@ -290,7 +293,7 @@ export const PROCEDURAL_TEXTURES = [
 /* ── Texture Controls ─────────────────────────────────── */
 
 export const TextureControls: React.FC<{
-  store: StoreState;
+  store: Pick<StoreState, 'texture' | 'setTexture' | 'textureRepeat' | 'setTextureRepeat'>;
   textureOpacity: number;
   setTextureOpacity: (v: number) => void;
   textureRotation: number;

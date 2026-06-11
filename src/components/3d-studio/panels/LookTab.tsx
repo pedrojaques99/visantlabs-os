@@ -4,16 +4,57 @@ import { Switch } from '@/components/ui/switch';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore, MATERIAL_PRESETS, BLEND_MODE_OPTIONS } from '@/stores/studio3dStore';
+import { useShallow } from 'zustand/react/shallow';
 import {
   ToolPanelDisclosure,
   ToolPanelRow,
   ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
-import { MaterialCategoryTabs, TextureControls, PbrMapUpload } from './_shared';
+import { MaterialCategoryTabs, TextureControls, PbrMapUpload, type StoreState } from './_shared';
+
+// Fine-grained subscription: only the material / surface / texture / PBR slice
+// (was a full-store subscription). Includes the fields the shared
+// MaterialCategoryTabs and TextureControls children read off `store`.
+const lookPanelSelector = (s: StoreState) => ({
+  material: s.material,
+  color: s.color,
+  metalness: s.metalness,
+  roughness: s.roughness,
+  opacity: s.opacity,
+  blendMode: s.blendMode,
+  envMapIntensity: s.envMapIntensity,
+  wireframe: s.wireframe,
+  fresnelColor: s.fresnelColor,
+  fresnelStrength: s.fresnelStrength,
+  texture: s.texture,
+  textureRepeat: s.textureRepeat,
+  textureOpacity: s.textureOpacity,
+  textureRotation: s.textureRotation,
+  normalMapUrl: s.normalMapUrl,
+  roughnessMapUrl: s.roughnessMapUrl,
+  metalnessMapUrl: s.metalnessMapUrl,
+  setMaterial: s.setMaterial,
+  setColor: s.setColor,
+  setMetalness: s.setMetalness,
+  setRoughness: s.setRoughness,
+  setOpacity: s.setOpacity,
+  setBlendMode: s.setBlendMode,
+  setEnvMapIntensity: s.setEnvMapIntensity,
+  setWireframe: s.setWireframe,
+  setFresnelColor: s.setFresnelColor,
+  setFresnelStrength: s.setFresnelStrength,
+  setTexture: s.setTexture,
+  setTextureRepeat: s.setTextureRepeat,
+  setTextureOpacity: s.setTextureOpacity,
+  setTextureRotation: s.setTextureRotation,
+  setNormalMapUrl: s.setNormalMapUrl,
+  setRoughnessMapUrl: s.setRoughnessMapUrl,
+  setMetalnessMapUrl: s.setMetalnessMapUrl,
+});
 
 export const LookTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
-  const store = useStudio3DStore();
+  const store = useStudio3DStore(useShallow(lookPanelSelector));
 
   const [metalness, setMetalness] = useDebouncedSlider(store.metalness, store.setMetalness);
   const [roughness, setRoughness] = useDebouncedSlider(store.roughness, store.setRoughness);
