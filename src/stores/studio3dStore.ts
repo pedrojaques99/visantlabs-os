@@ -297,6 +297,23 @@ export const LIGHTING_PRESETS: Record<string, { label: string; values: Record<st
 
 const R2_HDRI_BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/hdri';
 
+// Only allow custom HDRI URLs served over https from our own R2 buckets
+// (same whitelist used by FullScreenViewer / shaderRenderer). Blocks SSRF /
+// arbitrary remote env maps.
+const ALLOWED_HDRI_HOSTS = ['r2.dev', 'r2.cloudflarestorage.com'];
+function isAllowedHdriUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    const hostname = parsed.hostname.toLowerCase();
+    return ALLOWED_HDRI_HOSTS.some(
+      (host) => hostname === host || hostname.endsWith('.' + host)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export type { ToneMappingType, BlendMode };
 
 export const BLEND_MODE_OPTIONS: { id: BlendMode; label: string }[] = [
@@ -998,7 +1015,14 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           set(preset.values);
         },
         setEnvironment: (environment) => set({ environment, customHdriUrl: '' }),
-        setCustomHdriUrl: (customHdriUrl) => set({ customHdriUrl, environment: '' }),
+        setCustomHdriUrl: (customHdriUrl) => {
+          // Empty string clears the custom HDRI; otherwise enforce R2/https whitelist.
+          if (customHdriUrl && !isAllowedHdriUrl(customHdriUrl)) {
+            console.warn('[studio3d] Rejected custom HDRI URL (not an allowed R2/https host)');
+            return;
+          }
+          set({ customHdriUrl, environment: '' });
+        },
         setBackground: (background) => set({ background }),
         setBgType: (bgType) => set({ bgType }),
         setBgGradient: (g) => set((s) => ({ bgGradient: { ...s.bgGradient, ...g } })),
