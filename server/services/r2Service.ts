@@ -73,7 +73,7 @@ export async function uploadImage(
   const publicUrl = process.env.R2_PUBLIC_URL;
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
-  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const base64Data = base64Image.replace(/^data:[^;]+;base64,/, '');
   const buffer = Buffer.from(base64Data, 'base64');
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
