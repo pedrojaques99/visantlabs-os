@@ -114,6 +114,59 @@ export interface ApplyShaderParams {
   format?: 'png' | 'jpeg';
 }
 
+// ── Async job types (mirror server/lib/imagelabJobs.ts) ──
+
+export type ImageLabJobKind = 'generative-expand' | 'inpaint';
+export type ImageLabJobStatus = 'pending' | 'processing' | 'done' | 'error';
+
+export interface ImageLabJob<TResult = unknown> {
+  jobId: string;
+  kind?: ImageLabJobKind;
+  status: ImageLabJobStatus;
+  createdAt?: number;
+  updatedAt?: number;
+  result?: TResult;
+  error?: string;
+}
+
+async function get<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}/imagelab${path}`, { headers: getAuthHeaders() });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `ImageLab request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+const POLL_INTERVAL_MS = 1500;
+const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 min — matches the server orphan window
+
+/**
+ * Poll an ImageLab job until it reaches a terminal status. Resolves with the
+ * provider result on `done`; throws on `error` or timeout. `onTick` lets callers
+ * surface progress without a new UI component (reuse existing spinner/toast).
+ */
+export async function pollImageLabJob<TResult>(
+  jobId: string,
+  opts: { onTick?: (job: ImageLabJob<TResult>) => void; signal?: AbortSignal } = {}
+): Promise<TResult> {
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  for (;;) {
+    if (opts.signal?.aborted) throw new Error('Polling aborted');
+    const job = await get<ImageLabJob<TResult>>(`/jobs/${jobId}`);
+    opts.onTick?.(job);
+    if (job.status === 'done') {
+      if (job.result === undefined) throw new Error('Job finished without a result');
+      return job.result;
+    }
+    if (job.status === 'error') {
+      throw new Error(job.error || 'Generation failed');
+    }
+    if (Date.now() > deadline) throw new Error('Generation timed out');
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+  }
+}
+
 // ── API ──
 
 export const imagelabApi = {
@@ -123,6 +176,23 @@ export const imagelabApi = {
 
   inpaint(params: InpaintParams): Promise<InpaintResult> {
     return post('/inpaint', params as unknown as Record<string, unknown>);
+  },
+
+  /** Async variant: returns a jobId immediately; poll with `pollImageLabJob`. */
+  generativeExpandAsync(params: GenerativeExpandParams): Promise<{ jobId: string }> {
+    return post('/generative-expand', { ...params, async: true } as unknown as Record<
+      string,
+      unknown
+    >);
+  },
+
+  /** Async variant: returns a jobId immediately; poll with `pollImageLabJob`. */
+  inpaintAsync(params: InpaintParams): Promise<{ jobId: string }> {
+    return post('/inpaint', { ...params, async: true } as unknown as Record<string, unknown>);
+  },
+
+  getJob<TResult = unknown>(jobId: string): Promise<ImageLabJob<TResult>> {
+    return get(`/jobs/${jobId}`);
   },
 
   removeBackground(params: RemoveBackgroundParams): Promise<RemoveBackgroundResult> {
