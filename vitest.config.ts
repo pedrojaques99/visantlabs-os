@@ -12,6 +12,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@server': path.resolve(__dirname, './server'),
+      '@visantlabs/psd-engine/scene': path.resolve(__dirname, './packages/psd-engine/src/scene/index.ts'),
+      '@visantlabs/psd-engine/adapters/node': path.resolve(__dirname, './packages/psd-engine/src/adapters/node.ts'),
+      '@visantlabs/psd-engine/adapters/browser': path.resolve(__dirname, './packages/psd-engine/src/adapters/browser.ts'),
+      '@visantlabs/psd-engine': path.resolve(__dirname, './packages/psd-engine/src/index.ts'),
     },
   },
   test: {
