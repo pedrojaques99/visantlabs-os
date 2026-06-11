@@ -7,21 +7,45 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import JSZip from 'jszip';
 import { redisClient } from '../lib/redis.js';
 import { uploadSharedAsset } from './r2Service.js';
+import { getCachedOrDownload, isDriveConfigured } from './driveService.js';
+import { uploadPublicAsset, isSpacesConfigured } from './spacesService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const WORKER_SCRIPT = path.resolve(__dirname, '../scripts/psd-render-worker.ts');
+const WORKER_SCRIPT_AGPSD = path.resolve(__dirname, '../scripts/psd-render-worker-agpsd.ts');
 const TMP_DIR = '/tmp/psd-renders';
 const ACTIVE_KEY = 'psd-render:active';
-const MAX_CONCURRENT = 1;
+// Engine: 'agpsd' (ag-psd + canvas, rápido, sem Chromium — default) ou 'photopea' (legado)
+const RENDER_ENGINE = process.env.PSD_RENDER_ENGINE || 'agpsd';
+// ag-psd é leve (sem Chromium) — aguenta mais concorrência que o Photopea
+const MAX_CONCURRENT = parseInt(
+  process.env.PSD_RENDER_MAX_CONCURRENT || (RENDER_ENGINE === 'agpsd' ? '2' : '1'),
+  10
+);
 const RENDER_TIMEOUT_MS = 120_000;
 
+export interface RenderArt {
+  /** Nome do smart object alvo. Ausente ou "*" = aplica em todas as faces editáveis. */
+  smartObject?: string;
+  artUrl?: string;
+  artBase64?: string;
+}
+
 interface RenderRequest {
-  psdUrl: string;
-  artUrl: string;
-  smartObject: string;
+  /** URL http(s) do PSD (DO Spaces, zip suportado) — OU psdFileName via Google Drive. */
+  psdUrl?: string;
+  /** Nome do arquivo no Google Drive (ex.: "HM_BANNER_002.psd") — usa cache LRU em /tmp. */
+  psdFileName?: string;
+  /** Multi-face: uma arte por smart object. */
+  arts?: RenderArt[];
+  /** Legado: arte única. */
+  artUrl?: string;
+  smartObject?: string;
   hideLayers?: string[];
+  /** true = JPEG ~1400px (rápido); false/ausente = PNG full-res. */
+  preview?: boolean | number;
   userId: string;
 }
 
@@ -29,6 +53,8 @@ interface RenderResult {
   url: string;
   sizeBytes: number;
   durationMs: number;
+  engine: string;
+  replaced?: string[];
 }
 
 function getDoSpacesClient(): S3Client | null {
@@ -116,9 +142,9 @@ async function downloadArt(url: string, destPath: string): Promise<void> {
   writeFileSync(destPath, buffer);
 }
 
-function runBunWorker(args: string[]): Promise<{ stdout: string; stderr: string; code: number }> {
+function runBunWorker(script: string, args: string[]): Promise<{ stdout: string; stderr: string; code: number }> {
   return new Promise((resolve, reject) => {
-    const proc = spawn('bun', [WORKER_SCRIPT, ...args], {
+    const proc = spawn('bun', [script, ...args], {
       timeout: RENDER_TIMEOUT_MS,
       env: {
         ...process.env,
@@ -141,6 +167,14 @@ function runBunWorker(args: string[]): Promise<{ stdout: string; stderr: string;
   });
 }
 
+/** Upload do resultado: DO Spaces (BOXY, sem custo novo) com fallback pro R2. */
+async function uploadRenderOutput(buffer: Buffer, key: string, contentType: string): Promise<string> {
+  if (isSpacesConfigured()) {
+    return uploadPublicAsset(buffer, key, contentType);
+  }
+  return uploadSharedAsset(buffer, key, contentType);
+}
+
 export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult> {
   const activeCount = await redisClient.get(ACTIVE_KEY);
   if (activeCount && parseInt(activeCount, 10) >= MAX_CONCURRENT) {
@@ -154,55 +188,102 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
   const jobDir = path.join(TMP_DIR, jobId);
   mkdirSync(jobDir, { recursive: true });
 
-  const psdLocal = path.join(jobDir, 'input.psd');
-  const artLocal = path.join(jobDir, 'art.png');
   const outputLocal = path.join(jobDir, 'output.png');
-
   const start = Date.now();
 
   try {
-    console.log(`[psd-render] Job ${jobId}: downloading PSD + art...`);
-    await Promise.all([downloadPsd(req.psdUrl, psdLocal), downloadArt(req.artUrl, artLocal)]);
-    console.log(`[psd-render] Job ${jobId}: downloads complete, starting render...`);
-
-    const args = [
-      '--psd',
-      psdLocal,
-      '--art',
-      artLocal,
-      '--smart-object',
-      req.smartObject,
-      '--output',
-      outputLocal,
-    ];
-    if (req.hideLayers?.length) {
-      args.push('--hide', req.hideLayers.join(','));
+    // ── 1. PSD: Drive (cache LRU, fica fora do jobDir) ou URL ─────────────
+    let psdLocal: string;
+    if (req.psdFileName) {
+      if (!isDriveConfigured()) {
+        throw new Error('psdFileName requer GOOGLE_SERVICE_ACCOUNT_KEY configurada');
+      }
+      console.log(`[psd-render] Job ${jobId}: resolvendo "${req.psdFileName}" via Drive...`);
+      psdLocal = await getCachedOrDownload(req.psdFileName);
+    } else if (req.psdUrl) {
+      psdLocal = path.join(jobDir, 'input.psd');
+      console.log(`[psd-render] Job ${jobId}: baixando PSD...`);
+      await downloadPsd(req.psdUrl, psdLocal);
+    } else {
+      throw new Error('Informe psdUrl ou psdFileName');
     }
 
-    const result = await runBunWorker(args);
-    console.log(`[psd-render] Job ${jobId}: worker done (exit ${result.code})`);
+    // ── 2. Artes (multi-face ou legado) ────────────────────────────────────
+    const arts: RenderArt[] =
+      req.arts?.length ? req.arts : [{ smartObject: req.smartObject, artUrl: req.artUrl }];
 
-    if (result.code !== 0) {
-      const errMsg = result.stderr || result.stdout || 'Unknown render error';
-      throw new Error(`Render failed (exit ${result.code}): ${errMsg}`);
+    const replacements: Array<{ smartObject?: string; artPath: string }> = [];
+    for (const [i, art] of arts.entries()) {
+      const artPath = path.join(jobDir, `art-${i}.png`);
+      if (art.artBase64) {
+        writeFileSync(artPath, Buffer.from(art.artBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64'));
+      } else if (art.artUrl) {
+        await downloadArt(art.artUrl, artPath);
+      } else {
+        throw new Error(`arts[${i}] precisa de artUrl ou artBase64`);
+      }
+      replacements.push({ smartObject: art.smartObject, artPath });
+    }
+
+    // ── 3. Render (engine selecionável) ────────────────────────────────────
+    console.log(`[psd-render] Job ${jobId}: render via ${RENDER_ENGINE}...`);
+    let replaced: string[] | undefined;
+
+    if (RENDER_ENGINE === 'photopea') {
+      // Engine legado (Chromium) — só arte única
+      const first = replacements[0];
+      const args = [
+        '--psd', psdLocal,
+        '--art', first.artPath,
+        '--smart-object', first.smartObject || 'Your design',
+        '--output', outputLocal,
+      ];
+      if (req.hideLayers?.length) args.push('--hide', req.hideLayers.join(','));
+      const result = await runBunWorker(WORKER_SCRIPT, args);
+      if (result.code !== 0) {
+        throw new Error(`Render failed (exit ${result.code}): ${result.stderr || result.stdout || 'Unknown error'}`);
+      }
+    } else {
+      // ag-psd (default): compositor portado do mockup-store, multi-face
+      const previewMaxPx = req.preview ? (typeof req.preview === 'number' ? req.preview : 1400) : 0;
+      const jobFile = path.join(jobDir, 'job.json');
+      writeFileSync(jobFile, JSON.stringify({
+        psdPath: psdLocal,
+        outputPath: outputLocal,
+        replacements,
+        hideLayers: req.hideLayers || [],
+        previewMaxPx,
+      }));
+      const result = await runBunWorker(WORKER_SCRIPT_AGPSD, ['--job', jobFile]);
+      if (result.code !== 0) {
+        throw new Error(`Render failed (exit ${result.code}): ${result.stderr || result.stdout || 'Unknown error'}`);
+      }
+      try {
+        const lines = result.stdout.trim().split('\n');
+        replaced = JSON.parse(lines[lines.length - 1]).replaced;
+      } catch {}
     }
 
     if (!existsSync(outputLocal)) {
       throw new Error('Render completed but output file not found');
     }
 
-    const pngBuffer = readFileSync(outputLocal);
-    const r2Key = `psd-renders/${req.userId}/${jobId}.png`;
-    const url = await uploadSharedAsset(pngBuffer, r2Key, 'image/png');
+    // ── 4. Upload (Spaces da BOXY → fallback R2) ───────────────────────────
+    const outBuffer = readFileSync(outputLocal);
+    const isJpeg = outBuffer[0] === 0xff && outBuffer[1] === 0xd8;
+    const key = `psd-renders/${req.userId}/${jobId}.${isJpeg ? 'jpg' : 'png'}`;
+    const url = await uploadRenderOutput(outBuffer, key, isJpeg ? 'image/jpeg' : 'image/png');
 
     return {
       url,
-      sizeBytes: pngBuffer.length,
+      sizeBytes: outBuffer.length,
       durationMs: Date.now() - start,
+      engine: RENDER_ENGINE,
+      replaced,
     };
   } finally {
     await redisClient.decr(ACTIVE_KEY);
-    cleanup(jobDir);
+    cleanup(jobDir); // não toca no cache do Drive (fora do jobDir)
   }
 }
 
