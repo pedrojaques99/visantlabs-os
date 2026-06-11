@@ -10,6 +10,7 @@ import {
   resolveSeedreamSize,
 } from '../../src/constants/seedreamModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
+import { withResilience } from '../lib/ai-resilience.js';
 
 // BytePlus official endpoint (synchronous API — no polling)
 const BYTEPLUS_ENDPOINT = 'https://ark.ap-southeast.bytepluses.com/api/v3/images/generations';
@@ -165,38 +166,43 @@ export async function generateSeedreamImage(
     }`
   );
 
-  const response = await safeFetch(BYTEPLUS_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+  // Wrap the HTTP call in the resilience layer: transient 5xx / network errors get
+  // retried with backoff + circuit breaker; status carried in the thrown message
+  // lets shouldRetry() fail fast on auth (401), validation (400) and safety (422).
+  const data = await withResilience('seedream', async () => {
+    const response = await safeFetch(BYTEPLUS_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Seedream] API error status:', response.status);
+      console.error('[Seedream] API error text:', errorText);
+
+      try {
+        const errorJson = JSON.parse(errorText);
+        console.error('[Seedream] Full error details:', JSON.stringify(errorJson, null, 2));
+      } catch (_) {
+        // Ignore parse error
+      }
+
+      if (response.status === 401) {
+        throw new Error('Invalid BytePlus API key. Please check your BYTEPLUS_API_KEY.');
+      }
+      if (response.status === 402) {
+        throw new Error('Insufficient BytePlus credits. Please top up your account.');
+      }
+
+      throw new Error(`Seedream API failed: ${response.status} - ${errorText}`);
+    }
+
+    return response.json();
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[Seedream] API error status:', response.status);
-    console.error('[Seedream] API error text:', errorText);
-
-    try {
-      const errorJson = JSON.parse(errorText);
-      console.error('[Seedream] Full error details:', JSON.stringify(errorJson, null, 2));
-    } catch (_) {
-      // Ignore parse error
-    }
-
-    if (response.status === 401) {
-      throw new Error('Invalid BytePlus API key. Please check your BYTEPLUS_API_KEY.');
-    }
-    if (response.status === 402) {
-      throw new Error('Insufficient BytePlus credits. Please top up your account.');
-    }
-
-    throw new Error(`Seedream API failed: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
 
   if (!data.data || data.data.length === 0) {
     console.error('[Seedream] No images in response:', JSON.stringify(data, null, 2));

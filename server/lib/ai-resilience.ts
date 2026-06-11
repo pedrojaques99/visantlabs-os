@@ -10,6 +10,7 @@ import {
   retry,
   wrap,
   handleAll,
+  handleWhen,
   ConsecutiveBreaker,
   ExponentialBackoff,
   CircuitState,
@@ -41,9 +42,12 @@ function emit(event: ResilienceEvent) {
   }
 }
 
-// Retry policy: exponential backoff, max 3 attempts
+// Retry policy: exponential backoff, max 3 attempts.
+// Only retry errors shouldRetry() classifies as transient — rate limits, auth,
+// validation (400) and safety/content blocks (422) fail fast so we don't burn
+// 3 attempts on a request that is deterministically going to be rejected again.
 const createRetryPolicy = (provider: string) => {
-  const policy = retry(handleAll, {
+  const policy = retry(handleWhen(shouldRetry), {
     maxAttempts: 3,
     backoff: new ExponentialBackoff({
       initialDelay: 1000,
@@ -160,8 +164,27 @@ export function shouldRetry(error: unknown): boolean {
     return false;
   }
 
+  // Don't retry billing / insufficient-funds errors (402) — deterministic.
+  if (message.includes('402') || message.toLowerCase().includes('insufficient')) {
+    return false;
+  }
+
   // Don't retry validation errors
   if (message.includes('400') || message.toLowerCase().includes('invalid')) {
+    return false;
+  }
+
+  // Don't retry safety / content-policy blocks (422) — the same prompt will be
+  // blocked again, so retrying only wastes attempts and latency.
+  const lower = message.toLowerCase();
+  if (
+    message.includes('422') ||
+    lower.includes('safety') ||
+    lower.includes('blocked') ||
+    lower.includes('content policy') ||
+    lower.includes('content_policy') ||
+    lower.includes('moderation')
+  ) {
     return false;
   }
 
