@@ -69,6 +69,9 @@ const AdminPresetsPage = lazyWithRetry(() =>
 const AdminProductsPage = lazyWithRetry(() =>
   import('./pages/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage }))
 );
+const PsdSceneRenderPage = lazyWithRetry(() =>
+  import('./pages/PsdSceneRenderPage').then((m) => ({ default: m.PsdSceneRenderPage }))
+);
 const SmartAnalyzerPage = lazyWithRetry(() =>
   import('./pages/SmartAnalyzerPage').then((m) => ({ default: m.SmartAnalyzerPage }))
 );
@@ -363,6 +366,7 @@ const App: React.FC = () => {
                   <Route path="/admin/chat" element={<AdminChatPage />} />
                   <Route path="/admin/presets" element={<AdminPresetsPage />} />
                   <Route path="/admin/products" element={<AdminProductsPage />} />
+                  <Route path="/admin/psd-scene" element={<PsdSceneRenderPage />} />
                   <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
 
                   <Route path="/create" element={<CreatePage />} />
