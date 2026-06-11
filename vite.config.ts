@@ -88,19 +88,12 @@ export default defineConfig(({ mode }) => {
               return 'reactflow-vendor';
             }
 
-            // Three.js + React Three Fiber/Drei + postprocessing stack.
-            // Only the lazy-loaded 3D Studio / Playground 3D pages pull these in,
-            // so isolating them keeps three out of the shared `vendor` chunk that
-            // every route otherwise downloads. (React/Radix stay in main per the
-            // note above — three has no such module-load-time React dependency.)
-            if (
-              id.includes('node_modules/three/') ||
-              id.includes('node_modules/three-stdlib/') ||
-              id.includes('node_modules/@react-three/') ||
-              id.includes('node_modules/postprocessing/')
-            ) {
-              return 'three-vendor';
-            }
+            // NOTE: do NOT split three.js / @react-three / postprocessing into a
+            // dedicated chunk. Their internal circular deps make Rollup emit a
+            // cross-chunk access that runs before the chunk initializes, crashing
+            // the whole app with "Cannot access 'X' before initialization" (blank
+            // screen). This was shipped and reverted before — leave three in the
+            // generic `vendor` chunk below. See commit c91d4a7.
 
             // PDF libraries
             if (
