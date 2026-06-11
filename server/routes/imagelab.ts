@@ -18,6 +18,14 @@ import { removeBackgroundFromImage } from '../services/backgroundRemovalService.
 import { generativeExpand } from '../services/generativeExpandService.js';
 import { inpaint } from '../services/inpaintingService.js';
 import { recordToolUsage } from '../utils/toolUsageTracking.js';
+import {
+  createJob,
+  saveJob,
+  loadJob,
+  runImageLabJob,
+  reconcileIfOrphaned,
+  IMAGELAB_JOB_TTL_SECONDS,
+} from '../lib/imagelabJobs.js';
 
 const imagelabBodyParser = json({ limit: '10mb' });
 
@@ -31,7 +39,7 @@ const apiRateLimiter = rateLimit({
 
 const generativeRateLimiter = rateLimit({
   windowMs: 60000,
-  max: 10,
+  max: parseInt(process.env.RATE_LIMIT_MAX_GENERATIVE || '10', 10),
   message: { error: 'Too many generative requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -159,26 +167,55 @@ router.post(
         prompt,
         resolution,
         apiKey,
+        async: asyncMode,
       } = req.body;
       if (!imageUrl) {
         return res.status(400).json({ error: 'imageUrl is required.' });
       }
+      const params = {
+        imageUrl,
+        direction,
+        anchor,
+        targetAspectRatio,
+        expandFactor,
+        prompt,
+        resolution,
+        apiKey,
+      };
       // Charge BEFORE the operation; refund if it fails AFTER a successful charge.
       const charge = await chargeCredits(req.userId!, 2);
+
+      // ── Async mode (opt-in via `async: true`) ──────────────────────────────
+      // Returns { jobId } immediately; the operation runs in the background and
+      // is polled via GET /jobs/:jobId. Default stays synchronous so the MCP
+      // server and other existing callers are unaffected.
+      if (asyncMode) {
+        const job = createJob({
+          kind: 'generative-expand',
+          userId: req.userId!,
+          creditsCharged: charge.charged ? charge.creditsDeducted : 0,
+          deductionSource: charge.deductionSource,
+        });
+        await saveJob(job);
+        res.status(202).json({ jobId: job.jobId, status: job.status });
+
+        runImageLabJob(job, async () => {
+          const result = await generativeExpand(params, req.userId!);
+          recordToolUsage({
+            userId: req.userId!,
+            action: 'imagelab.generative-expand',
+            creditsDeducted: charge.creditsDeducted,
+            meta: { direction, targetAspectRatio, resolution, async: true },
+            emitWebhook: true,
+          });
+          return result;
+        }).catch((err) => console.error('[imagelab] generative-expand job error:', err));
+        return;
+      }
+
+      // ── Synchronous mode (default) ─────────────────────────────────────────
       try {
-        const result = await generativeExpand(
-          {
-            imageUrl,
-            direction,
-            anchor,
-            targetAspectRatio,
-            expandFactor,
-            prompt,
-            resolution,
-            apiKey,
-          },
-          req.userId!
-        );
+        const result = await generativeExpand(params, req.userId!);
         recordToolUsage({
           userId: req.userId!,
           action: 'imagelab.generative-expand',
@@ -210,8 +247,17 @@ router.post(
   authenticate,
   async (req: AuthRequest, res, next) => {
     try {
-      const { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey } =
-        req.body;
+      const {
+        imageUrl,
+        mode,
+        prompt,
+        maskBase64,
+        maskRegion,
+        resolution,
+        aspectRatio,
+        apiKey,
+        async: asyncMode,
+      } = req.body;
       if (!imageUrl) {
         return res.status(400).json({ error: 'imageUrl is required.' });
       }
@@ -221,13 +267,38 @@ router.post(
       if (!maskBase64 && !maskRegion) {
         return res.status(400).json({ error: 'Either maskBase64 or maskRegion is required.' });
       }
+      const params = { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey };
       // Charge BEFORE the operation; refund if it fails AFTER a successful charge.
       const charge = await chargeCredits(req.userId!, 2);
+
+      // ── Async mode (opt-in via `async: true`) ──────────────────────────────
+      if (asyncMode) {
+        const job = createJob({
+          kind: 'inpaint',
+          userId: req.userId!,
+          creditsCharged: charge.charged ? charge.creditsDeducted : 0,
+          deductionSource: charge.deductionSource,
+        });
+        await saveJob(job);
+        res.status(202).json({ jobId: job.jobId, status: job.status });
+
+        runImageLabJob(job, async () => {
+          const result = await inpaint(params, req.userId!);
+          recordToolUsage({
+            userId: req.userId!,
+            action: 'imagelab.inpaint',
+            creditsDeducted: charge.creditsDeducted,
+            meta: { mode, resolution, aspectRatio, async: true },
+            emitWebhook: true,
+          });
+          return result;
+        }).catch((err) => console.error('[imagelab] inpaint job error:', err));
+        return;
+      }
+
+      // ── Synchronous mode (default) ─────────────────────────────────────────
       try {
-        const result = await inpaint(
-          { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
-          req.userId!
-        );
+        const result = await inpaint(params, req.userId!);
         recordToolUsage({
           userId: req.userId!,
           action: 'imagelab.inpaint',
@@ -290,5 +361,34 @@ router.post(
     }
   }
 );
+
+// ─── GET /api/imagelab/jobs/:jobId ─────────────────────────────────────────
+// Polling endpoint for async generative jobs. Only the job owner can read it.
+router.get('/jobs/:jobId', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const job = await loadJob(req.params.jobId);
+    if (!job) {
+      return res
+        .status(404)
+        .json({ error: `Job not found or expired (TTL: ${IMAGELAB_JOB_TTL_SECONDS / 3600}h).` });
+    }
+    if (job.userId !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden.' });
+    }
+    // Detect server-restart orphans: mark failed + refund once if stale.
+    const reconciled = await reconcileIfOrphaned(job);
+    res.json({
+      jobId: reconciled.jobId,
+      kind: reconciled.kind,
+      status: reconciled.status,
+      createdAt: reconciled.createdAt,
+      updatedAt: reconciled.updatedAt,
+      result: reconciled.result,
+      error: reconciled.error,
+    });
+  } catch (err: any) {
+    next(err);
+  }
+});
 
 export default router;
