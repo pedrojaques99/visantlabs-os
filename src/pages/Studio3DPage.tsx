@@ -502,6 +502,18 @@ export const Studio3DPage: React.FC = () => {
     return t.toDataURL('image/jpeg', 0.6);
   }, []);
 
+  // Full-resolution PNG snapshot of the current render — used by "Send to →"
+  // to push the result into another tool's pipeline.
+  const captureCanvasPng = useCallback(() => {
+    const c = canvasRef.current;
+    if (!c) return undefined;
+    try {
+      return c.toDataURL('image/png');
+    } catch {
+      return undefined;
+    }
+  }, []);
+
   useHotkeys(
     'mod+s',
     async (e) => {
@@ -659,7 +671,12 @@ export const Studio3DPage: React.FC = () => {
         resetConfirmText={t('studio3d.resetConfirmButton')}
         undo={{ handler: () => undo(), disabled: !canUndo }}
         redo={{ handler: () => redo(), disabled: !canRedo }}
-        controlsPanel={<ControlsPanel onExport={() => setExportModalOpen(true)} />}
+        controlsPanel={
+          <ControlsPanel
+            onExport={() => setExportModalOpen(true)}
+            getCanvasPng={captureCanvasPng}
+          />
+        }
         controlsPanelWidth={300}
         mobileSheetLabel={t('studio3d.controls')}
         statusItems={statusItems}

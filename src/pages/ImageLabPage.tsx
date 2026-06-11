@@ -43,6 +43,7 @@ import {
 } from '@/components/shader-lab/ShaderLabCanvas';
 import { ShaderLabControls } from '@/components/shader-lab/ShaderLabControls';
 import { BeforeAfterOverlay } from '@/components/shared/BeforeAfterOverlay';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { ExportModal } from '@/components/shared/ExportModal';
 import { ImageLabPresetLibrary } from '@/components/shared/ImageLabPresetLibrary';
 import { useHalftoneStore, HALFTONE_PRESETS } from '@/stores/halftoneStore';
@@ -819,6 +820,17 @@ export const ImageLabPage: React.FC = () => {
     }
   }, [canvasRef]);
 
+  // Snapshot the processed result canvas as a PNG data URL for "Send to →".
+  const captureResultPng = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    try {
+      return canvas.toDataURL('image/png');
+    } catch {
+      return undefined;
+    }
+  }, [canvasRef]);
+
   const handleReset = useCallback(() => {
     resetSettings();
     if (mode === 'riso') {
@@ -1072,6 +1084,17 @@ export const ImageLabPage: React.FC = () => {
 
             {/* Help + Pin + Panel toggle */}
             <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
+              {hasImage && (
+                <SendToButton
+                  source="image-lab"
+                  outputMime="image/png"
+                  mimeType="image/png"
+                  label={`Image Lab — ${mode}`}
+                  variant="node"
+                  getImageBase64={captureResultPng}
+                  className="mr-0.5"
+                />
+              )}
               <button
                 onClick={() => setShortcutsOpen(true)}
                 title="Shortcuts (?)"
