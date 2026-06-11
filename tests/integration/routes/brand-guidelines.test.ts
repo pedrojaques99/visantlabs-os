@@ -324,6 +324,68 @@ describe('POST /api/brand-guidelines/:id/share + GET /public/:slug', () => {
     const pub = await (await request()).get(`${BASE}/public/${slug}`);
     expect(pub.status).toBe(404);
   });
+
+  // ── canEdit flag ─────────────────────────────────────────────────────────────
+
+  it('anonymous visitor gets canEdit: false', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Anon Brand' });
+    const share = await (await request())
+      .post(`${BASE}/${guideline._id}/share`)
+      .set('Authorization', bearer(token));
+    const slug = share.body.publicSlug;
+
+    const pub = await (await request()).get(`${BASE}/public/${slug}`);
+    expect(pub.status).toBe(200);
+    expect(pub.body.canEdit).toBe(false);
+  });
+
+  it('owner with valid token gets canEdit: true', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Owner Brand' });
+    const share = await (await request())
+      .post(`${BASE}/${guideline._id}/share`)
+      .set('Authorization', bearer(token));
+    const slug = share.body.publicSlug;
+
+    const pub = await (await request())
+      .get(`${BASE}/public/${slug}`)
+      .set('Authorization', bearer(token));
+    expect(pub.status).toBe(200);
+    expect(pub.body.canEdit).toBe(true);
+    expect(pub.body.guideline.userId).toBeUndefined(); // privacy — userId still stripped
+  });
+
+  it('different user gets canEdit: false', async () => {
+    const { user, token } = await seedUser();
+    const { token: otherToken } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Other Brand' });
+    const share = await (await request())
+      .post(`${BASE}/${guideline._id}/share`)
+      .set('Authorization', bearer(token));
+    const slug = share.body.publicSlug;
+
+    const pub = await (await request())
+      .get(`${BASE}/public/${slug}`)
+      .set('Authorization', bearer(otherToken));
+    expect(pub.status).toBe(200);
+    expect(pub.body.canEdit).toBe(false);
+  });
+
+  it('invalid token is ignored — returns 200 with canEdit: false', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Bad Token Brand' });
+    const share = await (await request())
+      .post(`${BASE}/${guideline._id}/share`)
+      .set('Authorization', bearer(token));
+    const slug = share.body.publicSlug;
+
+    const pub = await (await request())
+      .get(`${BASE}/public/${slug}`)
+      .set('Authorization', 'Bearer this-is-not-a-valid-jwt');
+    expect(pub.status).toBe(200);
+    expect(pub.body.canEdit).toBe(false);
+  });
 });
 
 // ─── POST /:id/figma-sync ──────────────────────────────────────────────────────

@@ -40,6 +40,8 @@ export interface BrandReadOnlyViewProps {
   onAssetClick?: (url: string, type: AssetType, item: any) => void;
   /** Enable dragging assets out of the view (drag-to-chat, drag-to-canvas, etc.). */
   onAssetDragStart?: (e: React.DragEvent, url: string, type: AssetType) => void;
+  /** Render an action node (e.g. edit button) anchored to each section header. */
+  renderSectionActions?: (section: BrandViewSection) => React.ReactNode;
   className?: string;
 }
 
@@ -1276,6 +1278,7 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   onColorClick,
   onAssetClick,
   onAssetDragStart,
+  renderSectionActions,
   className,
 }) => {
   if (!guideline) return null;
@@ -1283,47 +1286,69 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   const enabled = new Set(sections);
   const wrapperCls = compact ? 'flex flex-col' : 'flex flex-col gap-24';
 
+  const wrap = (id: BrandViewSection, node: React.ReactNode) => {
+    const actions = renderSectionActions?.(id);
+    if (!actions) return node;
+    return (
+      <div key={id} className="relative group">
+        {node}
+        <div className="absolute top-0 right-0">{actions}</div>
+      </div>
+    );
+  };
+
   return (
     <div className={cn(wrapperCls, className)}>
-      {enabled.has('identity') && <BrandIdentityView guideline={guideline} compact={compact} />}
-      {enabled.has('coreMessage') && (
-        <BrandCoreMessageView guideline={guideline} compact={compact} />
-      )}
-      {enabled.has('pillars') && <BrandPillarsView guideline={guideline} compact={compact} />}
-      {enabled.has('manifesto') && <BrandManifestoView guideline={guideline} compact={compact} />}
-      {enabled.has('archetypes') && <BrandArchetypesView guideline={guideline} compact={compact} />}
-      {enabled.has('personas') && <BrandPersonasView guideline={guideline} compact={compact} />}
-      {enabled.has('voiceValues') && (
-        <BrandVoiceValuesView guideline={guideline} compact={compact} />
-      )}
-      {enabled.has('colors') && (
-        <BrandColorsView
-          guideline={guideline}
-          compact={compact}
-          searchTerm={searchTerm}
-          onColorClick={onColorClick}
-        />
-      )}
-      {enabled.has('typography') && <BrandTypographyView guideline={guideline} compact={compact} />}
-      {enabled.has('logos') && (
-        <BrandLogosView
-          guideline={guideline}
-          compact={compact}
-          searchTerm={searchTerm}
-          onAssetClick={onAssetClick}
-          onAssetDragStart={onAssetDragStart}
-        />
-      )}
-      {enabled.has('media') && (
-        <BrandMediaView
-          guideline={guideline}
-          compact={compact}
-          searchTerm={searchTerm}
-          onAssetClick={onAssetClick}
-          onAssetDragStart={onAssetDragStart}
-        />
-      )}
-      {enabled.has('guidelines') && <BrandGuidelinesView guideline={guideline} compact={compact} />}
+      {enabled.has('identity') &&
+        wrap('identity', <BrandIdentityView guideline={guideline} compact={compact} />)}
+      {enabled.has('coreMessage') &&
+        wrap('coreMessage', <BrandCoreMessageView guideline={guideline} compact={compact} />)}
+      {enabled.has('pillars') &&
+        wrap('pillars', <BrandPillarsView guideline={guideline} compact={compact} />)}
+      {enabled.has('manifesto') &&
+        wrap('manifesto', <BrandManifestoView guideline={guideline} compact={compact} />)}
+      {enabled.has('archetypes') &&
+        wrap('archetypes', <BrandArchetypesView guideline={guideline} compact={compact} />)}
+      {enabled.has('personas') &&
+        wrap('personas', <BrandPersonasView guideline={guideline} compact={compact} />)}
+      {enabled.has('voiceValues') &&
+        wrap('voiceValues', <BrandVoiceValuesView guideline={guideline} compact={compact} />)}
+      {enabled.has('colors') &&
+        wrap(
+          'colors',
+          <BrandColorsView
+            guideline={guideline}
+            compact={compact}
+            searchTerm={searchTerm}
+            onColorClick={onColorClick}
+          />
+        )}
+      {enabled.has('typography') &&
+        wrap('typography', <BrandTypographyView guideline={guideline} compact={compact} />)}
+      {enabled.has('logos') &&
+        wrap(
+          'logos',
+          <BrandLogosView
+            guideline={guideline}
+            compact={compact}
+            searchTerm={searchTerm}
+            onAssetClick={onAssetClick}
+            onAssetDragStart={onAssetDragStart}
+          />
+        )}
+      {enabled.has('media') &&
+        wrap(
+          'media',
+          <BrandMediaView
+            guideline={guideline}
+            compact={compact}
+            searchTerm={searchTerm}
+            onAssetClick={onAssetClick}
+            onAssetDragStart={onAssetDragStart}
+          />
+        )}
+      {enabled.has('guidelines') &&
+        wrap('guidelines', <BrandGuidelinesView guideline={guideline} compact={compact} />)}
     </div>
   );
 };

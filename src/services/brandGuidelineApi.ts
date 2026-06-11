@@ -366,12 +366,14 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  async getPublic(slug: string): Promise<BrandGuideline> {
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/public/${slug}`);
+  async getPublic(slug: string): Promise<{ guideline: BrandGuideline; canEdit: boolean }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/public/${slug}`, {
+      headers: getAuthHeaders(),
+    });
 
     if (!response.ok) throw new Error('Brand guideline not found or not public');
     const data = await response.json();
-    return data.guideline;
+    return { guideline: data.guideline, canEdit: data.canEdit ?? false };
   },
 
   // ── Figma Integration ──

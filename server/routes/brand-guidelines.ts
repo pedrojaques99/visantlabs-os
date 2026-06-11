@@ -1184,9 +1184,23 @@ router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthReques
   }
 });
 
-// GET /api/brand-guidelines/public/:slug — public read-only access (NO AUTH)
-router.get('/public/:slug', publicRateLimiter, async (req, res) => {
+// GET /api/brand-guidelines/public/:slug — public read-only; owners/editors get canEdit:true
+router.get('/public/:slug', publicRateLimiter, async (req: AuthRequest, res) => {
   try {
+    // Optional auth — never block unauthenticated visitors
+    let requestUserId: string | null = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const jwt = await import('jsonwebtoken');
+        const { JWT_SECRET } = await import('../utils/jwtSecret.js');
+        const decoded = jwt.default.verify(authHeader.replace('Bearer ', ''), JWT_SECRET) as any;
+        requestUserId = decoded.userId || decoded.sub || null;
+      } catch {
+        // Invalid token → treat as anonymous
+      }
+    }
+
     const guideline = await prisma.brandGuideline.findFirst({
       where: { publicSlug: req.params.slug, isPublic: true },
     });
@@ -1202,10 +1216,17 @@ router.get('/public/:slug', publicRateLimiter, async (req, res) => {
       })
       .catch(() => {});
 
-    // Return guideline data (strip userId for privacy)
+    // Resolve edit permission — owner or in canEdit[] array
+    const canEditList: string[] = (guideline as any).canEdit || [];
+    const canEdit =
+      requestUserId !== null &&
+      (guideline.userId === requestUserId || canEditList.includes(requestUserId));
+
+    // Strip userId for privacy; surface canEdit so the client can mount the editor room
     const { userId, ...publicData } = guideline as any;
     res.json({
       guideline: { ...publicData, _id: guideline.id },
+      canEdit,
     });
   } catch (error: any) {
     console.error('[Brand Public] Error:', error);

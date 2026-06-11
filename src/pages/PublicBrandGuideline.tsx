@@ -17,6 +17,9 @@ import {
   Sun,
   Moon,
   Home,
+  Pencil,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -27,6 +30,7 @@ import {
   extractBrandTheme,
   getRelativeLuminance,
   toCSSVariables,
+  type BrandViewSection,
 } from '@/components/brand/BrandReadOnlyView';
 import {
   PUBLIC_TABS,
@@ -51,6 +55,42 @@ import {
   type ExportFormat,
 } from '@/components/brand/guidelines/preview/exportMock';
 import { useTranslation } from '@/hooks/useTranslation';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  BrandRoomProvider,
+  BrandCollaboratorAvatars,
+  SectionPresenceDot,
+} from '@/components/brand/guidelines/BrandCollaborators';
+
+// Lazy — section editors are only needed by authenticated owners in edit mode.
+// Anonymous visitors never download this chunk.
+const PublicSectionEditSheet = React.lazy(
+  () => import('@/components/brand/guidelines/PublicSectionEditSheet')
+);
+
+// ─── Section label map ────────────────────────────────────────────────────────
+
+const SECTION_LABELS: Record<BrandViewSection, string> = {
+  identity: 'Identity',
+  coreMessage: 'Core Message',
+  pillars: 'Pillars',
+  manifesto: 'Manifesto',
+  archetypes: 'Archetypes',
+  personas: 'Personas',
+  voiceValues: 'Voice & Values',
+  colors: 'Colors',
+  typography: 'Typography',
+  logos: 'Logos',
+  media: 'Media',
+  guidelines: 'Guidelines',
+};
+
+// ─── Preview mocks ────────────────────────────────────────────────────────────
 
 const PREVIEW_MOCKS = [
   { id: 'instagram', label: 'Instagram', Component: InstagramFeedMock },
@@ -62,11 +102,14 @@ const PREVIEW_MOCKS = [
   { id: 'stories', label: 'Stories', Component: StoriesMock },
 ] as const;
 
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export const PublicBrandGuideline: React.FC = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
+  const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,6 +118,8 @@ export const PublicBrandGuideline: React.FC = () => {
   const [activePreview, setActivePreview] = useState('instagram');
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const publicMockRef = useRef<HTMLDivElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
@@ -123,8 +168,9 @@ export const PublicBrandGuideline: React.FC = () => {
 
     const fetchGuideline = async () => {
       try {
-        const data = await brandGuidelineApi.getPublic(slug);
-        setGuideline(data);
+        const result = await brandGuidelineApi.getPublic(slug);
+        setGuideline(result.guideline);
+        setCanEdit(result.canEdit);
       } catch (err: any) {
         setError(err.message || 'Failed to load brand guidelines');
       } finally {
@@ -134,6 +180,20 @@ export const PublicBrandGuideline: React.FC = () => {
 
     fetchGuideline();
   }, [slug]);
+
+  // onSave: called by LiveblocksEditorProvider on every patch — persist to DB + update local state
+  const handleSave = useCallback(
+    async (patch: Partial<BrandGuideline>) => {
+      if (!guideline?.id) return;
+      try {
+        const updated = await brandGuidelineApi.update(guideline.id, patch);
+        setGuideline(updated);
+      } catch {
+        toast.error('Failed to save changes');
+      }
+    },
+    [guideline?.id]
+  );
 
   const handleDownloadJSON = () => {
     if (!guideline) return;
@@ -210,7 +270,10 @@ export const PublicBrandGuideline: React.FC = () => {
     ? 'bg-black/5 border-black/10 text-black hover:bg-black/10'
     : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
 
-  return (
+  // The Sheet and edit pencil buttons are placed inside the room so they can
+  // access useBrandGuidelineEditor(). The room is only mounted when editMode=true
+  // to avoid Liveblocks connections for anonymous visitors.
+  const pageContent = (
     <div
       className="min-h-screen transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden"
       style={
@@ -295,7 +358,48 @@ export const PublicBrandGuideline: React.FC = () => {
       </div>
 
       {/* Top-right controls */}
-      <div className="flex gap-2 fixed top-5 right-5 z-[1000]">
+      <div className="flex gap-2 fixed top-5 right-5 z-[1000] items-center">
+        {/* Collaborator avatars — only visible in edit mode (inside room) */}
+        {editMode && (
+          <div className="mr-1">
+            <BrandCollaboratorAvatars />
+          </div>
+        )}
+
+        {/* Edit / View toggle — only for owners/editors */}
+        {canEdit && (
+          <>
+            {editMode && (
+              <Button
+                onClick={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
+                variant="ghost"
+                className={cn(
+                  'h-10 px-3 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
+                  'bg-neutral-900/80 border-neutral-700 text-neutral-400 hover:text-white'
+                )}
+              >
+                <ExternalLink size={13} />
+                {t('public.brand.guideline.open_full_editor')}
+              </Button>
+            )}
+            <Button
+              onClick={() => setEditMode((v) => !v)}
+              variant="ghost"
+              className={cn(
+                'h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
+                editMode
+                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30'
+                  : 'bg-neutral-900/60 border-neutral-700 text-neutral-300 hover:text-white'
+              )}
+            >
+              {editMode ? <Eye size={13} /> : <Pencil size={13} />}
+              {editMode
+                ? t('public.brand.guideline.viewing_mode')
+                : t('public.brand.guideline.edit_mode')}
+            </Button>
+          </>
+        )}
+
         <Button
           onClick={() =>
             setTheme((prev) => (prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand'))
@@ -535,6 +639,24 @@ export const PublicBrandGuideline: React.FC = () => {
               const name = safeFileName(item.label || item.variant);
               triggerAssetDownload(url, `${name}.${extFromUrl(url)}`);
             }}
+            renderSectionActions={
+              editMode
+                ? (section) => (
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <SectionPresenceDot section={section} />
+                      <button
+                        type="button"
+                        aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
+                        onClick={() => setActiveEditSection(section)}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-mono uppercase tracking-widest hover:bg-amber-500/30 transition-colors"
+                      >
+                        <Pencil size={10} />
+                        {SECTION_LABELS[section]}
+                      </button>
+                    </div>
+                  )
+                : undefined
+            }
           />
         )}
 
@@ -552,6 +674,47 @@ export const PublicBrandGuideline: React.FC = () => {
           </div>
         </footer>
       </div>
+
+      {/* Section edit Sheet — renders via portal (outside brand theme vars) */}
+      {editMode && (
+        <Sheet open={activeEditSection !== null} onOpenChange={(open) => { if (!open) setActiveEditSection(null); }}>
+          <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400">
+                {t('public.brand.guideline.editing_section')}
+                {activeEditSection && (
+                  <span className="text-white ml-2">— {SECTION_LABELS[activeEditSection]}</span>
+                )}
+              </SheetTitle>
+            </SheetHeader>
+            {activeEditSection && guideline.id && (
+              <React.Suspense fallback={<div className="p-6 text-neutral-500 text-sm font-mono">Loading editor...</div>}>
+                <PublicSectionEditSheet
+                  section={activeEditSection}
+                  guidelineId={guideline.id}
+                  initialLogos={guideline.logos}
+                  initialMedia={guideline.media}
+                />
+              </React.Suspense>
+            )}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
+
+  // Wrap in BrandRoomProvider only for owners in edit mode — anonymous visitors never connect
+  if (editMode && canEdit && guideline.id) {
+    return (
+      <BrandRoomProvider
+        guidelineId={guideline.id}
+        guideline={guideline}
+        onSave={handleSave}
+      >
+        {pageContent}
+      </BrandRoomProvider>
+    );
+  }
+
+  return pageContent;
 };
