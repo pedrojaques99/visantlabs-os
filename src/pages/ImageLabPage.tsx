@@ -59,6 +59,7 @@ import { loadImage } from '@/utils/imageUtils';
 import { useMagicHand } from '@/hooks/useMagicHand';
 import { exportVideoServerSide, type VideoFormat } from '@/utils/videoExport';
 import { ImageLabUploadWidget } from '@/components/shared/ImageLabUploadWidget';
+import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
 import { useToolInput } from '@/hooks/useToolInput';
@@ -1079,18 +1080,20 @@ export const ImageLabPage: React.FC = () => {
           </div>
         </div>
 
-        <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
-          <HalftoneCanvas ref={halftoneRef} onCanvasReady={onHalftoneCanvasReady} />
-        </div>
-        <div className={mode !== 'texture' ? 'hidden' : 'contents'}>
-          <TextureFilterCanvas ref={textureRef} onCanvasReady={onTextureCanvasReady} />
-        </div>
-        <div className={mode !== 'riso' ? 'hidden' : 'contents'}>
-          <RisoCanvas ref={risoRef} onCanvasReady={onRisoCanvasReady} />
-        </div>
-        <div className={mode !== 'shaders' ? 'hidden' : 'contents'}>
-          <ShaderLabCanvas ref={shaderRef} onCanvasReady={onShaderCanvasReady} />
-        </div>
+        <CanvasErrorBoundary fallbackMessage="Image engine crashed">
+          <div className={mode !== 'halftone' ? 'hidden' : 'contents'}>
+            <HalftoneCanvas ref={halftoneRef} onCanvasReady={onHalftoneCanvasReady} />
+          </div>
+          <div className={mode !== 'texture' ? 'hidden' : 'contents'}>
+            <TextureFilterCanvas ref={textureRef} onCanvasReady={onTextureCanvasReady} />
+          </div>
+          <div className={mode !== 'riso' ? 'hidden' : 'contents'}>
+            <RisoCanvas ref={risoRef} onCanvasReady={onRisoCanvasReady} />
+          </div>
+          <div className={mode !== 'shaders' ? 'hidden' : 'contents'}>
+            <ShaderLabCanvas ref={shaderRef} onCanvasReady={onShaderCanvasReady} />
+          </div>
+        </CanvasErrorBoundary>
 
         <div
           ref={magicHandAreaRef}
