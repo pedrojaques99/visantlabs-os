@@ -7,12 +7,12 @@
 import type { RisoSettings } from './types.js';
 import { RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER } from '../../../shared/riso/shaders.js';
 import {
-  createGLContext,
+  acquireSharedContext,
   getOrCreateProgram,
   setupFullscreenQuad,
   uploadTexture,
   readPixels,
-  destroyContext,
+  deleteRenderResources,
 } from './glContext.js';
 
 const DITHER_MODE_MAP: Record<string, number> = {
@@ -43,16 +43,19 @@ export async function renderRiso(
   height: number,
   settings: RisoSettings
 ): Promise<Uint8Array | null> {
-  const gl = await createGLContext(width, height);
-  if (!gl) return null;
+  const ctx = await acquireSharedContext(width, height);
+  if (!ctx) return null;
+  const { gl, release, markBroken } = ctx;
 
+  let texture: WebGLTexture | null = null;
+  let buffers: WebGLBuffer[] = [];
   try {
     // Riso always uses the same shader pair → constant cache key.
     const program = getOrCreateProgram(gl, 'riso', RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER);
     gl.useProgram(program);
-    setupFullscreenQuad(gl, program);
+    buffers = setupFullscreenQuad(gl, program);
 
-    const texture = uploadTexture(gl, pixels, width, height);
+    texture = uploadTexture(gl, pixels, width, height);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(gl.getUniformLocation(program, 'u_texture'), 0);
@@ -104,8 +107,18 @@ export async function renderRiso(
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    return readPixels(gl, width, height);
+    const out = readPixels(gl, width, height);
+    // Detect a lost/corrupted context so the singleton is rebuilt next time.
+    if (gl.getError() === gl.CONTEXT_LOST_WEBGL) markBroken();
+    return out;
+  } catch (err) {
+    markBroken();
+    throw err;
   } finally {
-    destroyContext(gl);
+    // Free per-render resources (texture + quad buffers). The cached program is
+    // intentionally kept on the shared context. Skipped if the context is being
+    // torn down anyway.
+    deleteRenderResources(gl, { textures: [texture], buffers });
+    release();
   }
 }

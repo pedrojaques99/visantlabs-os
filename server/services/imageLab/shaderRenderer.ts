@@ -8,12 +8,12 @@
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
 import {
-  createGLContext,
+  acquireSharedContext,
   getOrCreateProgram,
   setupFullscreenQuad,
   uploadTexture,
   readPixels,
-  destroyContext,
+  deleteRenderResources,
 } from './glContext.js';
 import type { ShaderType } from './types.js';
 
@@ -228,16 +228,19 @@ export async function renderShader(
   const fragmentSrc = shaderSources.get(key);
   if (!fragmentSrc) return null;
 
-  const gl = await createGLContext(width, height);
-  if (!gl) return null;
+  const ctx = await acquireSharedContext(width, height);
+  if (!ctx) return null;
+  const { gl, release, markBroken } = ctx;
 
+  let texture: WebGLTexture | null = null;
+  let buffers: WebGLBuffer[] = [];
   try {
     // Cache key = the resolved shader source key (e.g. 'vhs', 'halftone:lines').
     const program = getOrCreateProgram(gl, key, VERTEX_SHADER, fragmentSrc);
     gl.useProgram(program);
-    setupFullscreenQuad(gl, program);
+    buffers = setupFullscreenQuad(gl, program);
 
-    const texture = uploadTexture(gl, pixels, width, height);
+    texture = uploadTexture(gl, pixels, width, height);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     const texLoc = gl.getUniformLocation(program, 'iChannel0');
@@ -250,8 +253,14 @@ export async function renderShader(
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    return readPixels(gl, width, height);
+    const out = readPixels(gl, width, height);
+    if (gl.getError() === gl.CONTEXT_LOST_WEBGL) markBroken();
+    return out;
+  } catch (err) {
+    markBroken();
+    throw err;
   } finally {
-    destroyContext(gl);
+    deleteRenderResources(gl, { textures: [texture], buffers });
+    release();
   }
 }
