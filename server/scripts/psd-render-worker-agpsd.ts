@@ -27,7 +27,7 @@ import {
   SO_TARGET,
   BRAND_HIDE,
   type FaceSo,
-} from '@visantlabs/psd-engine';
+} from '@visant/psd-engine';
 
 function getArg(name: string, fallback = ''): string {
   const idx = process.argv.indexOf(`--${name}`);

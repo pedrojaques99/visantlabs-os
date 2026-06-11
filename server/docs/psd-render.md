@@ -1,7 +1,7 @@
 # PSD Render — engine ag-psd + PSDs do Google Drive
 
 Render de mockups PSD no VPS sem Chromium. O compositor é o pacote
-**[`@visantlabs/psd-engine`](../../packages/psd-engine/README.md)** (SSoT
+**[`@visant/psd-engine`](../../packages/psd-engine/README.md)** (SSoT
 isomórfico: server node-canvas, browser DOM canvas, CLI local) — consumido
 também pela boxy-app e pelo mockup-store. Suporta máscaras raster, clipping,
 blend modes, smart objects vinculados (mesmo `placedLayer.id`) e multi-face
@@ -9,7 +9,7 @@ blend modes, smart objects vinculados (mesmo `placedLayer.id`) e multi-face
 
 `server/lib/psd-compose.ts`, `psd-faces.ts` e `psd-render-constants.ts` são
 re-exports finos do pacote (compat de import paths) — toda a lógica vive em
-`@visantlabs/psd-engine`. Não há mais código duplicado entre repos.
+`@visant/psd-engine`. Não há mais código duplicado entre repos.
 
 ## Arquitetura
 
@@ -123,7 +123,7 @@ render quente pro browser do usuário (Boxy / Visant web) ou pro node local
 bun server/scripts/psd-scene-extract.ts <psdFileName|path>
 ```
 
-Usa `@visantlabs/psd-engine/scene` (`extractScene`) + adapter node → sobe
+Usa `@visant/psd-engine/scene` (`extractScene`) + adapter node → sobe
 `scene.json` + camadas pro Spaces privado sob `scenes/<psdHash>/` e registra na
 collection Mongo `psd_scenes` (`psdFileName, hash, sceneUrl, faces, warnings,
 bytes`). É a única operação pesada e roda **uma vez** por PSD (semáforo Redis).
@@ -143,7 +143,7 @@ bytes`). É a única operação pesada e roda **uma vez** por PSD (semáforo Red
 `?forcePsd=true` força o caminho completo.
 
 O cliente browser compartilhado é `src/lib/mockup/sceneClient.ts`
-(`@visantlabs/psd-engine/scene` + adapter browser): fetch `SceneDoc` → carrega
+(`@visant/psd-engine/scene` + adapter browser): fetch `SceneDoc` → carrega
 imagens → render em canvas → `toBlob`. Mesmo módulo importado pela boxy-app via
 npm — zero duplicação. Página interna de prova: `/admin/psd-scene`.
 

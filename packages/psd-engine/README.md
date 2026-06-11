@@ -1,4 +1,4 @@
-# @visantlabs/psd-engine
+# @visant/psd-engine
 
 Isomorphic PSD mockup compositor. Takes an [`ag-psd`](https://github.com/Agamnentzar/ag-psd) layer tree and composites it to a canvas — perspective warp, blend modes, raster masks, and linked smart objects — running identically on the server (node-canvas), in the browser (DOM canvas), or in a local CLI.
 
@@ -9,7 +9,7 @@ It powers the Visant Labs mockup render pipeline and the **Scene Package** forma
 ## Install
 
 ```bash
-npm i @visantlabs/psd-engine
+npm i @visant/psd-engine
 # server-side rendering also needs the optional peers:
 npm i ag-psd canvas
 ```
@@ -28,8 +28,8 @@ npm i ag-psd canvas
 ## Server render (full PSD)
 
 ```ts
-import { flattenLayers, replaceLinkedSmartObjects, composePsd } from '@visantlabs/psd-engine';
-import { createNodeAdapter, initializeAgPsdCanvas } from '@visantlabs/psd-engine/adapters/node';
+import { flattenLayers, replaceLinkedSmartObjects, composePsd } from '@visant/psd-engine';
+import { createNodeAdapter, initializeAgPsdCanvas } from '@visant/psd-engine/adapters/node';
 import * as agPsd from 'ag-psd';
 
 const { createCanvas, loadImage, toBuffer } = await createNodeAdapter();
@@ -45,7 +45,7 @@ const out = toBuffer(composePsd(psd, createCanvas), 'image/png');
 ## Scene Package
 
 ```ts
-import { extractScene, renderScene } from '@visantlabs/psd-engine/scene';
+import { extractScene, renderScene } from '@visant/psd-engine/scene';
 
 // Once per PSD (server, node adapter):
 const { doc, assets } = extractScene(psd, createCanvas);

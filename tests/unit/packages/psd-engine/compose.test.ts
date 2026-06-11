@@ -5,7 +5,7 @@ import {
   perspectiveWarp,
   coverArtCanvas,
   BLEND_MAP,
-} from '@visantlabs/psd-engine';
+} from '@visant/psd-engine';
 import { cc, solid, artCanvas, pixel } from './helpers.js';
 
 describe('BLEND_MAP', () => {

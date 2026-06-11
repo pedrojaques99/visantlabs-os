@@ -358,8 +358,8 @@ async function tryRenderFromScene(
 
   console.log(`[psd-render] Job ${jobId}: scene hit pra "${req.psdFileName}" — render via engine.`);
 
-  const { createNodeAdapter } = await import('@visantlabs/psd-engine/adapters/node');
-  const { renderScene } = await import('@visantlabs/psd-engine/scene');
+  const { createNodeAdapter } = await import('@visant/psd-engine/adapters/node');
+  const { renderScene } = await import('@visant/psd-engine/scene');
   const adapter = await createNodeAdapter();
 
   // 1. Carrega as imagens das camadas (cache local em /tmp por hash da scene).

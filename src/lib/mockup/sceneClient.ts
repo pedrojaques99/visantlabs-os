@@ -3,16 +3,16 @@
 // (GET /api/psd-render/scenes/:psdFileName), loads each layer image, then
 // composes the final mockup in the user's browser via the isomorphic engine.
 //
-// IMPORTANT (bundle): only `@visantlabs/psd-engine/scene` + `/adapters/browser`
+// IMPORTANT (bundle): only `@visant/psd-engine/scene` + `/adapters/browser`
 // are imported here. ag-psd is NEVER pulled in — the raw PSD stays on the server;
 // the browser only ever touches pre-extracted flatten images + JSON geometry.
 //
 // The same module is consumed by boxy-app (via the npm/file package), so this is
 // the single client implementation shared by Visant web and Boxy. Zero dup.
 
-import { renderScene } from '@visantlabs/psd-engine/scene';
-import type { SceneDoc } from '@visantlabs/psd-engine/scene';
-import { createCanvas, loadImage, toBlob } from '@visantlabs/psd-engine/adapters/browser';
+import { renderScene } from '@visant/psd-engine/scene';
+import type { SceneDoc } from '@visant/psd-engine/scene';
+import { createCanvas, loadImage, toBlob } from '@visant/psd-engine/adapters/browser';
 import { API_BASE } from '@/config/api';
 import { authService } from '@/services/authService';
 

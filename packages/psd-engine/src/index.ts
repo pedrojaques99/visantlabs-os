@@ -1,4 +1,4 @@
-// @visantlabs/psd-engine — public surface.
+// @visant/psd-engine — public surface.
 // Isomorphic PSD mockup compositor: ag-psd tree → canvas.
 
 export {

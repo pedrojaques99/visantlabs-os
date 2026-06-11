@@ -18,10 +18,10 @@
       "@/*": ["./src/*"],
       "@server/*": ["./server/*"],
       "@shared/*": ["./shared/*"],
-      "@visantlabs/psd-engine": ["./packages/psd-engine/src/index.ts"],
-      "@visantlabs/psd-engine/scene": ["./packages/psd-engine/src/scene/index.ts"],
-      "@visantlabs/psd-engine/adapters/node": ["./packages/psd-engine/src/adapters/node.ts"],
-      "@visantlabs/psd-engine/adapters/browser": ["./packages/psd-engine/src/adapters/browser.ts"]
+      "@visant/psd-engine": ["./packages/psd-engine/src/index.ts"],
+      "@visant/psd-engine/scene": ["./packages/psd-engine/src/scene/index.ts"],
+      "@visant/psd-engine/adapters/node": ["./packages/psd-engine/src/adapters/node.ts"],
+      "@visant/psd-engine/adapters/browser": ["./packages/psd-engine/src/adapters/browser.ts"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true

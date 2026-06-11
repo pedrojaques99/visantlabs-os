@@ -1,4 +1,4 @@
-// Re-export fino de @visantlabs/psd-engine — single source of truth.
+// Re-export fino de @visant/psd-engine — single source of truth.
 // Mantido por compat de import path; novos consumidores importam do pacote.
 export {
   flattenLayers,
@@ -7,5 +7,5 @@ export {
   composePsd,
   coverArtCanvas,
   BLEND_MAP,
-} from '@visantlabs/psd-engine';
-export type { CreateCanvas, ReplacedLayer } from '@visantlabs/psd-engine';
+} from '@visant/psd-engine';
+export type { CreateCanvas, ReplacedLayer } from '@visant/psd-engine';

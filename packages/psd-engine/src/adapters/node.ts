@@ -17,7 +17,7 @@ async function loadCanvasModule(): Promise<any> {
     _mod = await import('canvas');
   } catch (err) {
     throw new Error(
-      '@visantlabs/psd-engine node adapter requires the optional peer dependency "canvas". ' +
+      '@visant/psd-engine node adapter requires the optional peer dependency "canvas". ' +
         'Install it with `npm i canvas`.'
     );
   }

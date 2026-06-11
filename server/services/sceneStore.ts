@@ -14,15 +14,15 @@
  *   { psdFileName, hash, basePath, files[], faces, warnings, width, height, bytes, createdAt, updatedAt }
  *
  * Este módulo NÃO duplica download/upload — reusa driveService, spacesService e o
- * engine `@visantlabs/psd-engine/scene`. É importado pelo script de extração, pelas
+ * engine `@visant/psd-engine/scene`. É importado pelo script de extração, pelas
  * rotas e pelo fast path do /render.
  */
 import { statSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { createHash } from 'crypto';
-import { extractScene } from '@visantlabs/psd-engine/scene';
-import type { SceneDoc, AssetMap } from '@visantlabs/psd-engine/scene';
-import { createNodeAdapter, initializeAgPsdCanvas } from '@visantlabs/psd-engine/adapters/node';
+import { extractScene } from '@visant/psd-engine/scene';
+import type { SceneDoc, AssetMap } from '@visant/psd-engine/scene';
+import { createNodeAdapter, initializeAgPsdCanvas } from '@visant/psd-engine/adapters/node';
 import {
   getCachedOrDownload,
   isDriveConfigured,

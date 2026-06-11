@@ -1,4 +1,4 @@
-// Shared types for @visantlabs/psd-engine.
+// Shared types for @visant/psd-engine.
 // The engine is canvas-implementation agnostic: callers inject a `CreateCanvas`
 // factory (node-canvas, browser HTMLCanvasElement, @napi-rs/canvas, etc.) so the
 // same compositor runs server-side, in the browser, or in a local CLI.

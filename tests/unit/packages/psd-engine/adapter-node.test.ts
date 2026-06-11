@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createNodeAdapter } from '@visantlabs/psd-engine/adapters/node';
+import { createNodeAdapter } from '@visant/psd-engine/adapters/node';
 
 describe('node adapter', () => {
   it('createNodeAdapter exposes createCanvas / loadImage / toBuffer', async () => {

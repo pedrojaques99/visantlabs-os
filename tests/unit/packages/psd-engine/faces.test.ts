@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeFaces, type FaceSo } from '@visantlabs/psd-engine';
+import { computeFaces, type FaceSo } from '@visant/psd-engine';
 
 const so = (p: Partial<FaceSo> & { name: string }): FaceSo => ({
   path: p.name,

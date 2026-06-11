@@ -1,9 +1,9 @@
-// Shared fixtures/helpers for @visantlabs/psd-engine unit tests.
+// Shared fixtures/helpers for @visant/psd-engine unit tests.
 // Uses node-canvas directly (a project dependency) as the CreateCanvas backend —
 // no real .psd file is needed; the engine operates on a plain layer tree.
 
 import { createCanvas } from 'canvas';
-import type { CreateCanvas } from '@visantlabs/psd-engine';
+import type { CreateCanvas } from '@visant/psd-engine';
 
 export const cc: CreateCanvas = (w: number, h: number) => createCanvas(w, h);
 

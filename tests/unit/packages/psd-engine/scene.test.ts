@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { composePsd, flattenLayers, replaceLinkedSmartObjects } from '@visantlabs/psd-engine';
-import { extractScene, renderScene } from '@visantlabs/psd-engine/scene';
+import { composePsd, flattenLayers, replaceLinkedSmartObjects } from '@visant/psd-engine';
+import { extractScene, renderScene } from '@visant/psd-engine/scene';
 import { cc, solid, artCanvas, meanPixelDiff, pixel } from './helpers.js';
 
 /**

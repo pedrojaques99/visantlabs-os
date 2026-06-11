@@ -3,7 +3,7 @@
  * PSD UMA vez, pra que o render por uso vire um compose trivial (warp + blend) em
  * qualquer canvas (browser do user, CLI local, ou server fallback).
  *
- * Engine: @visantlabs/psd-engine/scene (SSoT — zero reimplementação).
+ * Engine: @visant/psd-engine/scene (SSoT — zero reimplementação).
  *
  * Uso:
  *   # Local, escreve scene.json + WebPs num diretório:

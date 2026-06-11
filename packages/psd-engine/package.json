@@ -1,5 +1,5 @@
 {
-  "name": "@visantlabs/psd-engine",
+  "name": "@visant/psd-engine",
   "version": "0.1.0",
   "description": "Isomorphic PSD mockup compositor — ag-psd tree → canvas (perspective warp, blend modes, raster masks, linked smart objects) + Scene Packages for client-side render.",
   "type": "module",
