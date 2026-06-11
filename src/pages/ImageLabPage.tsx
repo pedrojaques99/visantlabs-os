@@ -257,30 +257,38 @@ function useCanvasThumbnails(
   });
 
   const frameId = useRef<number>(0);
+  const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 3.6: debounce thumbnail capture ~500ms. History changes can fire rapidly
+  // (slider drags commit several entries); without this we toDataURL+JPEG-encode
+  // on every one. The trailing rAF (added in Phase 2.2) is preserved and still
+  // cancelled on unmount so a queued capture can't setState after unmount.
   const capture = useCallback(
     (modeKey: ImageLabMode) => {
-      const canvas = canvasRefsMap.current[modeKey];
-      if (!canvas || canvas.width === 0 || canvas.height === 0) return;
-      cancelAnimationFrame(frameId.current);
-      frameId.current = requestAnimationFrame(() => {
-        try {
-          const tmp = document.createElement('canvas');
-          const size = 72;
-          tmp.width = size;
-          tmp.height = size;
-          const ctx = tmp.getContext('2d');
-          if (!ctx) return;
-          const scale = Math.max(size / canvas.width, size / canvas.height);
-          const w = canvas.width * scale;
-          const h = canvas.height * scale;
-          ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
-          const url = tmp.toDataURL('image/jpeg', 0.6);
-          setThumbs((prev) => ({ ...prev, [modeKey]: url }));
-        } catch {
-          /* tainted canvas, ignore */
-        }
-      });
+      if (debounceId.current) clearTimeout(debounceId.current);
+      debounceId.current = setTimeout(() => {
+        const canvas = canvasRefsMap.current[modeKey];
+        if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+        cancelAnimationFrame(frameId.current);
+        frameId.current = requestAnimationFrame(() => {
+          try {
+            const tmp = document.createElement('canvas');
+            const size = 72;
+            tmp.width = size;
+            tmp.height = size;
+            const ctx = tmp.getContext('2d');
+            if (!ctx) return;
+            const scale = Math.max(size / canvas.width, size / canvas.height);
+            const w = canvas.width * scale;
+            const h = canvas.height * scale;
+            ctx.drawImage(canvas, (size - w) / 2, (size - h) / 2, w, h);
+            const url = tmp.toDataURL('image/jpeg', 0.6);
+            setThumbs((prev) => ({ ...prev, [modeKey]: url }));
+          } catch {
+            /* tainted canvas, ignore */
+          }
+        });
+      }, 500);
     },
     [canvasRefsMap]
   );
@@ -298,9 +306,15 @@ function useCanvasThumbnails(
     if (sImg) capture('shaders');
   }, [sHi, sImg, capture]);
 
-  // Cancel any pending thumbnail-capture frame on unmount so it can't fire a
-  // setState on an unmounted component (e.g. after a fast mode switch).
-  useEffect(() => () => cancelAnimationFrame(frameId.current), []);
+  // Cancel any pending debounce timer + capture frame on unmount so neither can
+  // fire a setState on an unmounted component (e.g. after a fast mode switch).
+  useEffect(
+    () => () => {
+      if (debounceId.current) clearTimeout(debounceId.current);
+      cancelAnimationFrame(frameId.current);
+    },
+    []
+  );
 
   return thumbs;
 }
