@@ -5,6 +5,7 @@ import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
 import { tracePipeline, parseBase64Image } from './trace.js';
+import { recordToolUsage } from '../utils/toolUsageTracking.js';
 
 const router = Router();
 
@@ -121,6 +122,13 @@ router.post('/export-glb', authenticate, exportLimiter, async (req: AuthRequest,
       EXPORT_TIMEOUT_MS,
       'svgToGlb'
     );
+
+    recordToolUsage({
+      userId: req.userId!,
+      action: 'studio3d.export',
+      resourceId: undefined,
+      meta: { format: 'glb', bytes: glbBuffer.length },
+    });
 
     res.setHeader('Content-Type', 'model/gltf-binary');
     res.setHeader('Content-Disposition', 'attachment; filename="scene.glb"');
@@ -466,6 +474,13 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
       },
     });
 
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.create',
+      resourceId: scene.id,
+      meta: { inputMode: scene.inputMode, isPublic: scene.isPublic },
+    });
+
     return res.status(201).json({ scene: mapId(scene) });
   } catch (err: any) {
     console.error('[studio3d] create error:', err.message);
@@ -525,6 +540,13 @@ router.patch('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res)
       },
     });
 
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.update',
+      resourceId: scene.id,
+      meta: { isPublic: scene.isPublic },
+    });
+
     return res.json({ scene: mapId(scene) });
   } catch (err: any) {
     console.error('[studio3d] update error:', err.message);
@@ -544,6 +566,13 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
     }
 
     await prisma.studio3DScene.delete({ where: { id: req.params.id } });
+
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.delete',
+      resourceId: req.params.id,
+    });
+
     return res.json({ deleted: true });
   } catch (err: any) {
     console.error('[studio3d] delete error:', err.message);
@@ -575,6 +604,13 @@ router.post('/:id/fork', apiRateLimiter, authenticate, async (req: AuthRequest, 
         tags: source.tags,
         isPublic: false,
       },
+    });
+
+    recordToolUsage({
+      userId: req.userId,
+      action: 'studio3d.fork',
+      resourceId: scene.id,
+      meta: { sourceId: source.id },
     });
 
     return res.status(201).json({ scene: mapId(scene) });

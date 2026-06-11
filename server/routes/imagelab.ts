@@ -17,6 +17,7 @@ import {
 import { removeBackgroundFromImage } from '../services/backgroundRemovalService.js';
 import { generativeExpand } from '../services/generativeExpandService.js';
 import { inpaint } from '../services/inpaintingService.js';
+import { recordToolUsage } from '../utils/toolUsageTracking.js';
 
 const imagelabBodyParser = json({ limit: '10mb' });
 
@@ -53,6 +54,11 @@ router.post(
         { imageUrl, mode, preset, settings, format, quality },
         req.userId!
       );
+      recordToolUsage({
+        userId: req.userId!,
+        action: 'imagelab.apply-effect',
+        meta: { mode, preset, format },
+      });
       res.json(result);
     } catch (err: any) {
       if (err.message?.includes('headless-gl')) {
@@ -78,6 +84,11 @@ router.post(
         { imageUrl, shaderType, settings, format },
         req.userId!
       );
+      recordToolUsage({
+        userId: req.userId!,
+        action: 'imagelab.apply-shader',
+        meta: { shaderType, format },
+      });
       res.json(result);
     } catch (err: any) {
       if (err.message?.includes('headless-gl')) {
@@ -103,6 +114,11 @@ router.post(
         { imageUrl, effect, shader, effectOpacity, format },
         req.userId!
       );
+      recordToolUsage({
+        userId: req.userId!,
+        action: 'imagelab.chain',
+        meta: { effect, shader, format },
+      });
       res.json(result);
     } catch (err: any) {
       next(err);
@@ -163,6 +179,13 @@ router.post(
           },
           req.userId!
         );
+        recordToolUsage({
+          userId: req.userId!,
+          action: 'imagelab.generative-expand',
+          creditsDeducted: charge.creditsDeducted,
+          meta: { direction, targetAspectRatio, resolution },
+          emitWebhook: true,
+        });
         res.json(result);
       } catch (opErr: any) {
         if (charge.charged && charge.creditsDeducted > 0) {
@@ -205,6 +228,13 @@ router.post(
           { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey },
           req.userId!
         );
+        recordToolUsage({
+          userId: req.userId!,
+          action: 'imagelab.inpaint',
+          creditsDeducted: charge.creditsDeducted,
+          meta: { mode, resolution, aspectRatio },
+          emitWebhook: true,
+        });
         res.json(result);
       } catch (opErr: any) {
         if (charge.charged && charge.creditsDeducted > 0) {
@@ -237,6 +267,13 @@ router.post(
       const charge = await chargeCredits(req.userId!, 1);
       try {
         const result = await removeBackgroundFromImage({ imageUrl, outputFormat }, req.userId!);
+        recordToolUsage({
+          userId: req.userId!,
+          action: 'imagelab.remove-background',
+          creditsDeducted: charge.creditsDeducted,
+          meta: { outputFormat },
+          emitWebhook: true,
+        });
         res.json(result);
       } catch (opErr: any) {
         if (charge.charged && charge.creditsDeducted > 0) {
