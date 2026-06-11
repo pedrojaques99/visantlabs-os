@@ -1241,14 +1241,14 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
           } = state;
           return tracked;
         },
+        // No time-based debounce on history recording: a trailing 300ms debounce
+        // dropped intermediate states (fast drags vanished from history) and let
+        // an undo fired inside the window restore a stale state. High-frequency
+        // sliders already debounce at the source (useDebouncedSlider, ~60ms), so
+        // they don't flood history. The one un-source-debounced rapid action
+        // (react-colorful drag in ExpandableColorPicker) is bounded by `limit`
+        // below, which caps total history entries and memory.
         limit: 50,
-        handleSet: (handleSet) => {
-          let timer: ReturnType<typeof setTimeout> | undefined;
-          return (state) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => handleSet(state), 300);
-          };
-        },
       }
     ),
     {
