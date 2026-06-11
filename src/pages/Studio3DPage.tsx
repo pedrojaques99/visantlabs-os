@@ -110,6 +110,7 @@ export const Studio3DPage: React.FC = () => {
       setAutoRenderState('loading');
     }
     if (!sceneId) return;
+    const autoplay = searchParams.get('autoplay') === 'true';
     const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
     fetch(`${API_BASE}/studio3d/${sceneId}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -121,6 +122,13 @@ export const Studio3DPage: React.FC = () => {
         if (inputMode) store.getState().applyConfig({ inputMode });
         if (text) store.getState().applyConfig({ text });
         if (font) store.getState().applyConfig({ font });
+        // Shared link requested autoplay: ensure the animation runs on load.
+        // The saved config already drives the loop when `animate !== 'none'`;
+        // if it happens to be 'none', fall back to a gentle spin so the share
+        // opens moving instead of frozen.
+        if (autoplay && store.getState().animate === 'none') {
+          store.getState().setAnimate('spin');
+        }
         toast.success(`Scene "${data.scene.name}" loaded`);
       })
       .catch(() => toast.error('Failed to load scene'));

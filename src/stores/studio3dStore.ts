@@ -1410,7 +1410,13 @@ export async function shareScene(name: string, thumbnail?: string): Promise<stri
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ isPublic: true }),
     });
-    return `${window.location.origin}/3d-studio?sceneId=${scene.id}`;
+    // If the scene has an active animation, append ?autoplay=true so the
+    // shared link opens playing instead of frozen on the first frame.
+    const hasAnimation = useStudio3DStore.getState().animate !== 'none';
+    const url = new URL(`${window.location.origin}/3d-studio`);
+    url.searchParams.set('sceneId', scene.id);
+    if (hasAnimation) url.searchParams.set('autoplay', 'true');
+    return url.toString();
   } catch {
     return null;
   }
