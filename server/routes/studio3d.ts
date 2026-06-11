@@ -8,6 +8,27 @@ const router = Router();
 
 // ─── Export GLB (no Prisma dependency) ──────────────────────────────────────
 
+const MAX_SVG_BYTES = 5 * 1024 * 1024; // 5MB
+const EXPORT_TIMEOUT_MS = 10_000;
+// Reject obviously dangerous SVG content (scripts / inline event handlers).
+const UNSAFE_SVG_RE = /<script\b|\son\w+\s*=|javascript:/i;
+
+class ExportTimeoutError extends Error {}
+
+function withTimeout<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new ExportTimeoutError(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([work, timeout]).finally(() => clearTimeout(timer)) as Promise<T>;
+}
+
+function validateSvgString(svg: string): string | null {
+  if (Buffer.byteLength(svg, 'utf8') > MAX_SVG_BYTES) return 'SVG too large (max 5MB)';
+  if (UNSAFE_SVG_RE.test(svg)) return 'SVG contains disallowed scripting content';
+  return null;
+}
+
 const exportLimiter = rateLimit({
   windowMs: 60_000,
   max: 10,
@@ -40,39 +61,55 @@ router.post('/export-glb', authenticate, exportLimiter, async (req: AuthRequest,
     let svg: string;
 
     if (svgData && typeof svgData === 'string' && svgData.includes('<svg')) {
+      const svgErr = validateSvgString(svgData);
+      if (svgErr) return res.status(422).json({ error: svgErr });
       svg = svgData;
     } else if (image && typeof image === 'string') {
       const buffer = parseBase64Image(image);
       if (!buffer) return res.status(400).json({ error: 'Invalid base64 image format' });
       if (buffer.length > 10 * 1024 * 1024)
         return res.status(413).json({ error: 'Image too large (max 10MB)' });
-      svg = await tracePipeline(buffer, {
-        preset: preset || 'logo',
-        threshold,
-        turdSize,
-        optTolerance,
-        alphaMax,
-      });
+      svg = await withTimeout(
+        tracePipeline(buffer, {
+          preset: preset || 'logo',
+          threshold,
+          turdSize,
+          optTolerance,
+          alphaMax,
+        }),
+        EXPORT_TIMEOUT_MS,
+        'trace'
+      );
+      const tracedErr = validateSvgString(svg);
+      if (tracedErr) return res.status(422).json({ error: tracedErr });
     } else {
       return res.status(400).json({ error: 'Provide svgData (SVG string) or image (base64 PNG)' });
     }
 
     const { svgToGlb } = await import('../services/studio3dExportService.js');
-    const glbBuffer = await svgToGlb(svg, {
-      depth,
-      smoothness,
-      bevelEnabled,
-      bevelThickness,
-      bevelSize,
-      color,
-      metalness,
-      roughness,
-    });
+    const glbBuffer = await withTimeout(
+      svgToGlb(svg, {
+        depth,
+        smoothness,
+        bevelEnabled,
+        bevelThickness,
+        bevelSize,
+        color,
+        metalness,
+        roughness,
+      }),
+      EXPORT_TIMEOUT_MS,
+      'svgToGlb'
+    );
 
     res.setHeader('Content-Type', 'model/gltf-binary');
     res.setHeader('Content-Disposition', 'attachment; filename="scene.glb"');
     res.send(glbBuffer);
   } catch (error: any) {
+    if (error instanceof ExportTimeoutError) {
+      console.error('GLB export timeout:', error.message);
+      return res.status(422).json({ error: 'SVG too complex to process within time limit' });
+    }
     console.error('GLB export error:', error);
     res.status(500).json({ error: error.message || 'GLB export failed' });
   }
