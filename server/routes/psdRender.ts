@@ -1,15 +1,26 @@
 import express from 'express';
-import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { authenticate, requireScope, AuthRequest } from '../middleware/auth.js';
 import { renderPsdMockup } from '../services/psdRenderService.js';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 
 const router = express.Router();
 
+// Interactive browser sessions get a tight per-account cap; trusted partner
+// integrations (server-to-server via API key) proxy many end-users behind one
+// account, so they get a configurable, larger budget.
+const PARTNER_RENDER_MAX = parseInt(process.env.PSD_RENDER_PARTNER_MAX || '120', 10);
+const INTERACTIVE_RENDER_MAX = 5;
+
 const renderLimiter = rateLimit({
   windowMs: 60_000,
-  max: 5,
-  message: { error: 'Too many render requests. Max 5 per minute.' },
+  max: (req: AuthRequest) =>
+    req.authMethod === 'apikey' ? PARTNER_RENDER_MAX : INTERACTIVE_RENDER_MAX,
+  // Key by account, not IP — a single partner proxy IP must not share a bucket
+  // across unrelated users, and distinct API keys get distinct buckets.
+  keyGenerator: (req: AuthRequest) => req.userId || req.ip!,
+  validate: { keyGeneratorIpFallback: false },
+  message: { error: 'Too many render requests. Please slow down.' },
 });
 
 interface TierRequest extends AuthRequest {
@@ -72,7 +83,7 @@ async function resolveTier(req: TierRequest, _res: express.Response, next: expre
   next();
 }
 
-router.post('/render', authenticate, renderLimiter, resolveTier, async (req: TierRequest, res) => {
+router.post('/render', authenticate, requireScope('generate'), renderLimiter, resolveTier, async (req: TierRequest, res) => {
   const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview } = req.body;
 
   // PSD: URL http(s) OU nome de arquivo no Google Drive

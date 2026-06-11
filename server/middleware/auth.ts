@@ -7,10 +7,16 @@ import { MCP_ENDPOINT } from '../lib/mcp-constants.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+export type AuthMethod = 'apikey' | 'oauth' | 'jwt' | 'mcp';
+
 export interface AuthRequest extends Request {
   userId?: string;
   userEmail?: string;
   isAdmin?: boolean;
+  /** How this request was authenticated. */
+  authMethod?: AuthMethod;
+  /** Scopes carried by a scoped credential (API key / OAuth token). */
+  authScopes?: string[];
 }
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -32,6 +38,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
         process.env.TRUST_INTERNAL_CALLS === 'true';
       if (isLocal) {
         req.userId = mcpUserId;
+        req.authMethod = 'mcp';
         return next();
       }
     }
@@ -62,6 +69,8 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
 
     if (isOAuthToken && decoded.sub) {
       req.userId = decoded.sub;
+      req.authMethod = 'oauth';
+      req.authScopes = decoded.scope ? decoded.scope.split(/\s+/).filter(Boolean) : [];
       return next();
     }
 
@@ -88,6 +97,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     req.userId = userId;
     req.userEmail = decoded.email;
     req.isAdmin = !!user.isAdmin;
+    req.authMethod = 'jwt';
 
     next();
   } catch (error: any) {
@@ -113,3 +123,21 @@ export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction
   }
   next();
 };
+
+/**
+ * Require a specific scope on the credential. Must run after `authenticate`.
+ *
+ * Full interactive sessions (legacy JWT) and trusted internal MCP calls are
+ * full-access by design and bypass the check. Scoped credentials — API keys and
+ * OAuth access tokens — must carry the required scope explicitly. This mirrors
+ * the per-tool scope enforcement in the MCP server (read | write | generate).
+ */
+export const requireScope =
+  (required: 'read' | 'write' | 'generate') =>
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (req.authMethod === 'jwt' || req.authMethod === 'mcp') return next();
+    if (req.authScopes?.includes(required)) return next();
+    return res.status(403).json({
+      error: `Insufficient scope: this credential requires the "${required}" scope`,
+    });
+  };

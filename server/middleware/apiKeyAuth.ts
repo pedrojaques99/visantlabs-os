@@ -38,6 +38,8 @@ export async function authenticateApiKey(req: AuthRequest): Promise<boolean> {
 
   req.userId = user.id;
   req.userEmail = user.email;
+  req.authMethod = 'apikey';
+  req.authScopes = apiKey.scopes;
 
   return true;
 }
