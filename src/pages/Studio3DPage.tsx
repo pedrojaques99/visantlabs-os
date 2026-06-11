@@ -198,6 +198,21 @@ export const Studio3DPage: React.FC = () => {
     setTimeout(runExport, 2000);
   }, [autoRender, isEmpty]);
 
+  // Revoke any outstanding GLB/GLTF blob URL when leaving the page so the
+  // loaded model isn't leaked after navigation.
+  useEffect(() => {
+    return () => {
+      const url = store.getState().modelUrl;
+      if (url && url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+  }, [store]);
+
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});

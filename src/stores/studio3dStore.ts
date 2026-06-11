@@ -896,8 +896,19 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         setText: (text) => set({ text }),
         setFont: (font) => set({ font }),
         setInputMode: (mode) => set({ inputMode: mode as 'svg' | 'text' | 'model' }),
-        setModelUrl: (url, fileName) =>
-          set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const }),
+        setModelUrl: (url, fileName) => {
+          // Revoke the previous blob URL before replacing it to avoid leaking
+          // object URLs when the user loads multiple GLB/GLTF files.
+          const prev = get().modelUrl;
+          if (prev && prev.startsWith('blob:') && prev !== url) {
+            try {
+              URL.revokeObjectURL(prev);
+            } catch {
+              /* ignore */
+            }
+          }
+          set({ modelUrl: url, fileName: fileName || '', inputMode: 'model' as const });
+        },
         setTracePreset: (preset: import('@/services/svgPipeline').TracePreset) => {
           if (preset !== 'custom') {
             import('@/services/svgPipeline').then(({ TRACE_PRESETS }) => {
