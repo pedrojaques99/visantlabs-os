@@ -19,6 +19,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 COPY scripts ./scripts/
+# Workspace packages (@visant/*) must exist BEFORE npm install: the install is
+# what creates the node_modules symlinks and runs each package's prepare (tsc →
+# dist). Without this, the server crashes at boot importing @visant/psd-engine.
+COPY packages ./packages/
 
 RUN NODE_ENV=development npm install --no-package-lock && \
     npm install @printmadehq/mockup-generator --legacy-peer-deps --no-package-lock && \
