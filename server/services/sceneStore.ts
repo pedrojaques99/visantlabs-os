@@ -104,17 +104,18 @@ async function readPsdTree(psdPath: string): Promise<any> {
   });
 }
 
-/** Serializa um canvas das camadas pra WebP (cai pra PNG se o backend não suportar WebP). */
+/**
+ * Serializa um canvas das camadas pra PNG.
+ *
+ * PNG (e não WebP) de propósito: o consumidor do fallback server é o node-canvas,
+ * que não decodifica WebP — e converter com sharp NO MESMO processo do node-canvas
+ * dispara o clash de símbolos libvips×Cairo/GLib no Debian (o "out of memory"
+ * espúrio em Image.setSource que derrubou o fast path em produção). Browsers
+ * decodificam PNG nativamente; o custo é só uns KB a mais por asset.
+ */
 async function encodeAsset(canvas: any): Promise<{ buffer: Buffer; ext: string; contentType: string }> {
-  // node-canvas suporta WebP só com libwebp; sharp é dep do projeto e sempre serializa.
-  const sharp = (await import('sharp')).default;
   const png: Buffer = canvas.toBuffer('image/png');
-  try {
-    const webp = await sharp(png).webp({ quality: 90 }).toBuffer();
-    return { buffer: webp, ext: 'webp', contentType: 'image/webp' };
-  } catch {
-    return { buffer: png, ext: 'png', contentType: 'image/png' };
-  }
+  return { buffer: png, ext: 'png', contentType: 'image/png' };
 }
 
 export interface ExtractAndStoreResult {
