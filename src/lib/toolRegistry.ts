@@ -20,6 +20,7 @@ import {
   Search,
   Grid3X3,
   FileDown,
+  Library,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -215,6 +216,18 @@ export const TOOL_REGISTRY: ToolDef[] = [
     accepts: ['image/*'],
     outputs: [],
     supportsBatch: false,
+    supportsBrandContext: false,
+    isPipelineTarget: false,
+  },
+  {
+    id: 'references',
+    name: 'Reference Library',
+    path: '/references',
+    icon: Library,
+    category: 'image',
+    accepts: ['image/*'],
+    outputs: [],
+    supportsBatch: true,
     supportsBrandContext: false,
     isPipelineTarget: false,
   },

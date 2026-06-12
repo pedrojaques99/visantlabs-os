@@ -168,6 +168,9 @@ const OnboardPage = lazyWithRetry(() =>
 const MoodboardStudioPage = lazyWithRetry(() =>
   import('./pages/MoodboardStudioPage').then((m) => ({ default: m.MoodboardStudioPage }))
 );
+const ReferencesPage = lazyWithRetry(() =>
+  import('./pages/ReferencesPage').then((m) => ({ default: m.ReferencesPage }))
+);
 const GridPaintPage = lazyWithRetry(() =>
   import('./pages/GridPaintPage').then((m) => ({ default: m.GridPaintPage }))
 );
@@ -306,6 +309,7 @@ const App: React.FC = () => {
                     }
                   />
                   <Route path="/visual-search" element={<VisualSearchPage />} />
+                  <Route path="/references" element={<ReferencesPage />} />
                   <Route path="/upscale" element={<UpscalePage />} />
                   <Route path="/favicon" element={<FaviconPage />} />
                   <Route path="/color-converter" element={<ColorConverterPage />} />

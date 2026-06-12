@@ -3423,10 +3423,18 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .string()
         .optional()
         .describe('Filter by mockup type (e.g. "packaging", "stationery").'),
+      country: z
+        .string()
+        .optional()
+        .describe('Filter by country of origin (e.g. "Japan", "Switzerland", "Russia").'),
+      region: z
+        .string()
+        .optional()
+        .describe('Filter by region slug (e.g. "east-asia", "nordic", "eastern-europe").'),
       limit: z.number().int().min(1).max(50).default(20).describe('Max results.'),
     },
     { title: 'Search References', readOnlyHint: true },
-    async ({ search, niche, aesthetic, vibe, lighting, texture, mockup_type, limit }) => {
+    async ({ search, niche, aesthetic, vibe, lighting, texture, mockup_type, country, region, limit }) => {
       try {
         await connectToMongoDB();
         const db = getDb();
@@ -3442,6 +3450,8 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (lighting) filter['dimensions.lighting'] = { $in: [lighting] };
         if (texture) filter['dimensions.texture'] = { $in: [texture] };
         if (mockup_type) filter['dimensions.mockup_type'] = { $in: [mockup_type] };
+        if (country) filter.country = country;
+        if (region) filter.region = region;
 
         const refs = await db
           .collection('community_presets')
@@ -3456,6 +3466,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             description: 1,
             referenceImageUrl: 1,
             dimensions: 1,
+            provenance: 1,
+            country: 1,
+            region: 1,
+            sourceUrl: 1,
             tags: 1,
             prompt: 1,
           })
@@ -3479,9 +3493,24 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .describe('Studio or creator name (e.g. "Hazard Mockups", "Visant Labs").'),
       tags: z.array(z.string()).optional().describe('Manual tags to add.'),
       prompt: z.string().optional().describe('The prompt that generated this mockup (if known).'),
+      country: z
+        .string()
+        .optional()
+        .describe('Country where the design was made (e.g. "Japan", "Switzerland", "Russia").'),
+      region: z
+        .string()
+        .optional()
+        .describe('Region slug override (e.g. "east-asia"). Auto-derived from country if omitted.'),
+      designer: z.string().optional().describe('Designer or agency credited for the work.'),
+      sourceUrl: z.string().url().optional().describe('Original source URL for attribution.'),
+      awardSource: z
+        .string()
+        .optional()
+        .describe('Award or archive the reference came from (e.g. "D&AD 2024", "Pentawards").'),
+      year: z.number().int().optional().describe('Year the work was produced/awarded.'),
     },
     { title: 'Ingest Reference Material', destructiveHint: false },
-    async ({ imageUrl, name, studio, tags, prompt }) => {
+    async ({ imageUrl, name, studio, tags, prompt, country, region, designer, sourceUrl, awardSource, year }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -3501,6 +3530,12 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           userId: currentUserId,
           tags,
           prompt,
+          country,
+          region,
+          designer,
+          sourceUrl,
+          awardSource,
+          year,
         });
         return jsonResponse(result);
       } catch (err: any) {

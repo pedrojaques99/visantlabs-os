@@ -13,6 +13,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { describeImage, getMultimodalEmbedding } from '../../services/geminiService.js';
 import { vectorService } from '../../services/vectorService.js';
 import { connectToMongoDB, getDb } from '../../db/mongodb.js';
+import { normalizeCountry, regionForCountry } from '../../../src/lib/references/taxonomy.js';
 
 export const REFERENCE_NAMESPACE = 'reference-examples';
 
@@ -28,6 +29,21 @@ export interface ReferenceDimensions {
   mockup_type?: string[];
 }
 
+/**
+ * Geographic provenance + source attribution for a reference.
+ * Caller-provided values are authoritative (e.g. award metadata); when absent,
+ * the AI may infer `country` as a soft tag (flagged via `countryInferred`).
+ */
+export interface ReferenceProvenance {
+  country?: string;
+  region?: string;
+  countryInferred?: boolean;
+  designer?: string;
+  sourceUrl?: string;
+  awardSource?: string;
+  year?: number;
+}
+
 export interface IngestReferenceParams {
   imageBase64: string;
   imageUrl: string;
@@ -37,6 +53,17 @@ export interface IngestReferenceParams {
   overrideDimensions?: Partial<ReferenceDimensions>;
   tags?: string[];
   prompt?: string;
+  /** Authoritative provenance — caller wins over AI inference. */
+  country?: string;
+  region?: string;
+  designer?: string;
+  sourceUrl?: string;
+  awardSource?: string;
+  year?: number;
+  /** When true, the reference is browsable in the public library. */
+  isPublic?: boolean;
+  /** When false, the reference enters a moderation queue (user uploads). */
+  isAdminCurated?: boolean;
 }
 
 export interface IngestCostMetrics {
@@ -54,6 +81,7 @@ export interface IngestReferenceResult {
   title: string;
   studio?: string;
   dimensions: ReferenceDimensions;
+  provenance: ReferenceProvenance;
   cost: IngestCostMetrics;
 }
 
@@ -73,16 +101,26 @@ Return JSON with:
     "angle": ["camera angle, e.g. top-down, isometric, hero, close-up, eye-level, 45-degree"],
     "color_mood": ["color feeling, e.g. warm, cold, monochrome, vibrant, pastel, earth-tones"],
     "mockup_type": ["what is being mocked up, e.g. packaging, stationery, apparel, signage, device, bottle"]
+  },
+  "geoHint": {
+    "country": "Best guess of the country/design-culture of origin based on visual cues (script, language on artwork, typographic tradition, e.g. Japan, Switzerland, Russia). Empty string if no confident signal.",
+    "confidence": "low | medium | high"
   }
 }
 
-Each dimension array should have 1-3 values. Be precise and specific.`;
+Each dimension array should have 1-3 values. Be precise and specific. Only fill geoHint.country when there is a real visual signal (visible script, language, culturally distinctive style); otherwise leave it empty.`;
+
+interface GeoHint {
+  country?: string;
+  confidence?: 'low' | 'medium' | 'high';
+}
 
 export async function ingestReference(
   params: IngestReferenceParams
 ): Promise<IngestReferenceResult> {
   const { imageBase64, imageUrl, name, studio, userId, overrideDimensions, tags, prompt } = params;
   const id = randomUUID();
+  let geoHint: GeoHint = {};
   const cost: IngestCostMetrics = {
     r2Bytes: 0,
     inputTokens: 0,
@@ -142,12 +180,20 @@ export async function ingestReference(
                 mockup_type: { type: Type.ARRAY, items: { type: Type.STRING } },
               },
             },
+            geoHint: {
+              type: Type.OBJECT,
+              properties: {
+                country: { type: Type.STRING },
+                confidence: { type: Type.STRING },
+              },
+            },
           },
         },
       },
     });
     const parsed = JSON.parse((dimResponse.text || '').trim());
     dimensions = parsed.dimensions || {};
+    geoHint = parsed.geoHint || {};
     const dimUsage = (dimResponse as any).usageMetadata;
     cost.inputTokens += dimUsage?.promptTokenCount || 0;
     cost.outputTokens += dimUsage?.candidatesTokenCount || 0;
@@ -160,6 +206,24 @@ export async function ingestReference(
   if (overrideDimensions) {
     dimensions = { ...dimensions, ...overrideDimensions };
   }
+
+  // 2b. Resolve provenance — caller-provided wins; AI geoHint is a soft fallback
+  let resolvedCountry = normalizeCountry(params.country);
+  let countryInferred = false;
+  if (!resolvedCountry && geoHint.country && geoHint.confidence !== 'low') {
+    resolvedCountry = normalizeCountry(geoHint.country);
+    countryInferred = !!resolvedCountry;
+  }
+  const resolvedRegion = params.region || regionForCountry(resolvedCountry);
+  const provenance: ReferenceProvenance = {
+    ...(resolvedCountry ? { country: resolvedCountry } : {}),
+    ...(resolvedRegion ? { region: resolvedRegion } : {}),
+    ...(countryInferred ? { countryInferred: true } : {}),
+    ...(params.designer ? { designer: params.designer } : {}),
+    ...(params.sourceUrl ? { sourceUrl: params.sourceUrl } : {}),
+    ...(params.awardSource ? { awardSource: params.awardSource } : {}),
+    ...(params.year ? { year: params.year } : {}),
+  };
 
   // 3. Multimodal embedding of the image + R2 size tracking
   const rawBase64 = imageBase64.replace(/^data:[^;]+;base64,/, '');
@@ -189,6 +253,11 @@ export async function ingestReference(
     ...(studio ? { studio } : {}),
     ...flatDimensions,
     ...(tags?.length ? { tags } : {}),
+    ...(provenance.country ? { country: provenance.country } : {}),
+    ...(provenance.region ? { region: provenance.region } : {}),
+    ...(provenance.designer ? { designer: provenance.designer } : {}),
+    ...(provenance.awardSource ? { awardSource: provenance.awardSource } : {}),
+    ...(provenance.year ? { year: provenance.year } : {}),
   });
 
   // 5. MongoDB — reuse community_presets with category "reference"
@@ -202,9 +271,14 @@ export async function ingestReference(
     referenceImageUrl: imageUrl,
     category: 'reference',
     ...(studio ? { studio } : {}),
-    isAdminCurated: true,
-    isApproved: true,
+    isAdminCurated: params.isAdminCurated !== false,
+    isApproved: params.isAdminCurated !== false,
+    isPublic: params.isPublic ?? params.isAdminCurated !== false,
     dimensions,
+    provenance,
+    ...(provenance.country ? { country: provenance.country } : {}),
+    ...(provenance.region ? { region: provenance.region } : {}),
+    ...(provenance.sourceUrl ? { sourceUrl: provenance.sourceUrl } : {}),
     tags: tags || Object.values(dimensions).flat(),
     userId,
     createdAt: new Date(),
@@ -236,6 +310,7 @@ export async function ingestReference(
     title: analysis.title || '',
     studio,
     dimensions,
+    provenance,
     cost,
   };
 }
