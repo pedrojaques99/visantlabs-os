@@ -21,6 +21,7 @@ const __dirname = path.dirname(__filename);
 
 const WORKER_SCRIPT = path.resolve(__dirname, '../scripts/psd-render-worker.ts');
 const WORKER_SCRIPT_AGPSD = path.resolve(__dirname, '../scripts/psd-render-worker-agpsd.ts');
+const WORKER_SCRIPT_SCENE = path.resolve(__dirname, '../scripts/psd-scene-render-worker.ts');
 const TMP_DIR = '/tmp/psd-renders';
 const ACTIVE_KEY = 'psd-render:active';
 // Engine: 'agpsd' (ag-psd + canvas, rápido, sem Chromium — default) ou 'photopea' (legado)
@@ -361,56 +362,52 @@ async function tryRenderFromScene(
   const record: SceneRecord | null = await getSceneRecord(db, req.psdFileName!);
   if (!record) return null;
 
-  console.log(`[psd-render] Job ${jobId}: scene hit pra "${req.psdFileName}" — render via engine.`);
+  console.log(`[psd-render] Job ${jobId}: scene hit pra "${req.psdFileName}" — render via worker.`);
 
-  const { createNodeAdapter } = await import('@visant/psd-engine/adapters/node');
-  const { renderScene } = await import('@visant/psd-engine/scene');
-  const adapter = await createNodeAdapter();
+  // ⚠️ NUNCA carregue node-canvas (adapters/node, renderScene) NESTE processo:
+  // sharp (libvips) está carregado por outros módulos (imageLab etc.) e o clash
+  // de símbolos libvips×Cairo/GLib no Debian corrompe alocações do canvas
+  // ("out of memory" espúrio em Image.setSource). O render roda num worker
+  // filho limpo (psd-scene-render-worker) — leve (~100MB), mesmo padrão do
+  // worker agpsd. Aqui o serviço só faz: Mongo, download/cache e mapeamento.
 
-  // 1. Carrega as imagens das camadas (cache local em /tmp por hash da scene).
+  // 1. Baixa/cacheia as camadas (cache local em /tmp por hash da scene).
+  //    Nome do arquivo de cache preserva a extensão da key — busta cache stale
+  //    de antes da migração webp→png automaticamente.
   mkdirSync(SCENE_CACHE_DIR, { recursive: true });
   const cacheDir = path.join(SCENE_CACHE_DIR, record.hash);
   mkdirSync(cacheDir, { recursive: true });
 
-  const assetBuffers: Record<string, Buffer> = {};
+  const assetPaths: Record<string, string> = {};
   let needDownload = false;
   for (const f of record.files) {
-    const local = path.join(cacheDir, `${f.ref}.bin`);
+    const local = path.join(cacheDir, `${f.ref}${path.extname(f.key) || '.bin'}`);
     if (existsSync(local)) {
-      assetBuffers[f.ref] = readFileSync(local);
+      assetPaths[f.ref] = local;
     } else {
       needDownload = true;
     }
   }
   if (needDownload) {
     const fresh = await downloadSceneAssets(record);
+    const extByRef = new Map(record.files.map((f) => [f.ref, path.extname(f.key) || '.bin']));
     for (const [ref, buf] of Object.entries(fresh)) {
-      writeFileSync(path.join(cacheDir, `${ref}.bin`), buf);
-      assetBuffers[ref] = buf;
+      const local = path.join(cacheDir, `${ref}${extByRef.get(ref) || '.bin'}`);
+      writeFileSync(local, buf);
+      assetPaths[ref] = local;
     }
   }
 
-  const assets: Record<string, any> = {};
-  for (const [ref, buf] of Object.entries(assetBuffers)) {
-    // Scenes são serializadas em PNG (ver encodeAsset no sceneStore). WebP aqui
-    // significa scene antiga pré-migração — erro claro em vez do "out of memory"
-    // espúrio do node-canvas. NUNCA converta com sharp neste processo: o clash
-    // libvips×Cairo no Debian corrompe alocações do canvas.
-    if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') {
-      throw new Error(
-        `scene asset "${ref}" em WebP (pré-migração) — rode server/scripts/migrate-scene-assets-png.ts`
-      );
-    }
-    assets[ref] = await adapter.loadImage(buf);
-  }
-
-  // 2. Resolve as artes (mesmo tratamento do pipeline: artBase64 | artUrl).
+  // 2. Resolve as artes pra arquivos (mesmo tratamento do pipeline: artBase64 | artUrl).
   const artInputs: RenderArt[] =
     req.arts?.length ? req.arts : [{ smartObject: req.smartObject, artUrl: req.artUrl }];
 
-  // Carrega cada arte uma vez.
-  const loadedArts: Array<{ smartObject?: string; img: any }> = [];
-  for (const a of artInputs) {
+  const sceneJobDir = path.join(TMP_DIR, jobId, 'scene');
+  mkdirSync(sceneJobDir, { recursive: true });
+
+  const artFiles: Array<{ smartObject?: string; path: string }> = [];
+  for (let i = 0; i < artInputs.length; i++) {
+    const a = artInputs[i];
     let buf: Buffer;
     if (a.artBase64) {
       buf = Buffer.from(stripDataUriPrefix(a.artBase64), 'base64');
@@ -419,16 +416,19 @@ async function tryRenderFromScene(
     } else {
       throw new Error('arte sem artUrl/artBase64 no fast path');
     }
-    loadedArts.push({ smartObject: a.smartObject, img: await adapter.loadImage(buf) });
+    const p = path.join(sceneJobDir, `art-${i}`);
+    writeFileSync(p, buf);
+    artFiles.push({ smartObject: a.smartObject, path: p });
   }
 
-  // Mapeia arte → face.key. smartObject ausente/"*" = defaultArt (todas as faces).
-  const artMap: Record<string, any> = {};
-  let defaultArt: any;
+  // Mapeia arte → face.key (string-puro — sem imagens neste processo).
+  // smartObject ausente/"*" = defaultArt (todas as faces).
+  const artByFace: Record<string, string> = {};
+  let defaultArtPath: string | undefined;
   const replaced: string[] = [];
-  for (const { smartObject, img } of loadedArts) {
+  for (const { smartObject, path: artPath } of artFiles) {
     if (!smartObject || smartObject === '*') {
-      defaultArt = img;
+      defaultArtPath = artPath;
       for (const face of record.doc.faces) replaced.push(face.name);
       continue;
     }
@@ -438,35 +438,40 @@ async function tryRenderFromScene(
       record.doc.faces.find((f) => f.name.toLowerCase() === target) ||
       record.doc.faces.find((f) => f.name.toLowerCase().includes(target));
     if (face) {
-      artMap[face.key] = img;
+      artByFace[face.key] = artPath;
       replaced.push(face.name);
     }
   }
-  if (!defaultArt && Object.keys(artMap).length === 0) {
+  if (!defaultArtPath && Object.keys(artByFace).length === 0) {
     throw new Error('nenhuma face da scene casou com a(s) arte(s) fornecida(s)');
   }
 
-  // 3. Render isomórfico.
-  const canvas = renderScene(record.doc, assets, artMap, adapter.createCanvas, { defaultArt });
-
-  // 4. Encode (preview → JPEG; senão PNG) + upload pelo MESMO caminho atual.
+  // 3. Render no worker filho (processo limpo, só node-canvas).
   const previewMaxPx = req.preview ? (typeof req.preview === 'number' ? req.preview : 1400) : 0;
-  let outCanvas = canvas;
-  if (previewMaxPx > 0) {
-    const scale = previewMaxPx / Math.max(record.doc.width, record.doc.height);
-    if (scale < 1) {
-      outCanvas = adapter.createCanvas(
-        Math.round(record.doc.width * scale),
-        Math.round(record.doc.height * scale)
-      );
-      outCanvas.getContext('2d').drawImage(canvas, 0, 0, outCanvas.width, outCanvas.height);
-    }
-  }
   const isJpeg = previewMaxPx > 0;
-  const outBuffer: Buffer = isJpeg
-    ? adapter.toBuffer(outCanvas, 'image/jpeg', { quality: 0.8 })
-    : adapter.toBuffer(outCanvas, 'image/png');
+  const docPath = path.join(sceneJobDir, 'doc.json');
+  writeFileSync(docPath, JSON.stringify(record.doc));
+  const outputPath = path.join(sceneJobDir, `output.${isJpeg ? 'jpg' : 'png'}`);
+  const jobPath = path.join(sceneJobDir, 'job.json');
+  writeFileSync(
+    jobPath,
+    JSON.stringify({ docPath, assets: assetPaths, artByFace, defaultArtPath, previewMaxPx, outputPath })
+  );
 
+  const result = await runBunWorker(WORKER_SCRIPT_SCENE, [jobPath]);
+  const lastLine = result.stdout.trim().split('\n').pop() || '{}';
+  let parsed: { success?: boolean; sizeBytes?: number; error?: string };
+  try {
+    parsed = JSON.parse(lastLine);
+  } catch {
+    throw new Error(`scene worker output inválido (exit ${result.code}): ${result.stderr.slice(0, 300)}`);
+  }
+  if (!parsed.success) {
+    throw new Error(`scene worker: ${parsed.error || `exit ${result.code}`}`);
+  }
+
+  // 4. Upload pelo MESMO caminho do pipeline atual.
+  const outBuffer = readFileSync(outputPath);
   const key = `psd-renders/${req.userId}/${jobId}.${isJpeg ? 'jpg' : 'png'}`;
   const url = await uploadRenderOutput(outBuffer, key, isJpeg ? 'image/jpeg' : 'image/png');
 
