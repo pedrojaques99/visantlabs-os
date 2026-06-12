@@ -392,15 +392,16 @@ async function tryRenderFromScene(
 
   const assets: Record<string, any> = {};
   for (const [ref, buf] of Object.entries(assetBuffers)) {
-    // node-canvas não decodifica WebP (o formato em que o extract serializa as
-    // camadas via sharp) — converte pra PNG antes do loadImage. Sniff por magic
-    // bytes (RIFF....WEBP) pra não depender da extensão da key.
-    let decodable = buf;
+    // Scenes são serializadas em PNG (ver encodeAsset no sceneStore). WebP aqui
+    // significa scene antiga pré-migração — erro claro em vez do "out of memory"
+    // espúrio do node-canvas. NUNCA converta com sharp neste processo: o clash
+    // libvips×Cairo no Debian corrompe alocações do canvas.
     if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') {
-      const sharp = (await import('sharp')).default;
-      decodable = await sharp(buf).png().toBuffer();
+      throw new Error(
+        `scene asset "${ref}" em WebP (pré-migração) — rode server/scripts/migrate-scene-assets-png.ts`
+      );
     }
-    assets[ref] = await adapter.loadImage(decodable);
+    assets[ref] = await adapter.loadImage(buf);
   }
 
   // 2. Resolve as artes (mesmo tratamento do pipeline: artBase64 | artUrl).
