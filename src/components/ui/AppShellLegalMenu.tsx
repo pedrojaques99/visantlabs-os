@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export const AppShellLegalMenu: React.FC<{ className?: string }> = ({ className }) => {
   const [open, setOpen] = useState(false);
@@ -12,14 +13,7 @@ export const AppShellLegalMenu: React.FC<{ className?: string }> = ({ className 
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  useClickOutside(ref, () => setOpen(false), { enabled: open });
 
   const items = [
     { label: t('footer.privacyPolicy'), path: '/privacy' },
