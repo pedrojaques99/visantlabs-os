@@ -370,4 +370,45 @@ describe('OperationValidator', () => {
     const result = operationValidator.validate(op);
     expect(result.valid).toBe(false);
   });
+
+  describe('EXPORT_FRAMES_DATA', () => {
+    it('accepts a bare export op (all fields optional)', () => {
+      const result = operationValidator.validate({ type: 'EXPORT_FRAMES_DATA' } as any);
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts valid format, scope and fields', () => {
+      const result = operationValidator.validate({
+        type: 'EXPORT_FRAMES_DATA',
+        format: 'csv',
+        scope: 'page',
+        fields: ['cliente', 'valor'],
+      } as any);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects an invalid format', () => {
+      const result = operationValidator.validate({
+        type: 'EXPORT_FRAMES_DATA',
+        format: 'xlsx',
+      } as any);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects an invalid scope', () => {
+      const result = operationValidator.validate({
+        type: 'EXPORT_FRAMES_DATA',
+        scope: 'everything',
+      } as any);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects non-array fields', () => {
+      const result = operationValidator.validate({
+        type: 'EXPORT_FRAMES_DATA',
+        fields: 'cliente',
+      } as any);
+      expect(result.valid).toBe(false);
+    });
+  });
 });

@@ -32,6 +32,10 @@ export interface ClassifiedIntent {
   isTemplate: boolean;
   isChart: boolean;
   isColorSpec: boolean;
+  /** User wants to export/download frame data as a file (json/csv/md/html). */
+  isExport: boolean;
+  /** Detected target format for an export request. */
+  exportFormat: 'json' | 'markdown' | 'html' | 'csv';
   keywords: string[];
 }
 

@@ -23,6 +23,7 @@ import {
   type AssembledPrompt,
 } from '../lib/figmaAgentPrompt.js';
 import { quickTextCall } from '../services/geminiService.js';
+import { extractExportFields } from '../lib/prompt/classifier.js';
 import { chargeCredits, FREE_GENERATIONS_LIMIT } from '../lib/credits.js';
 
 // ── Session error feedback (in-memory, auto-expires) ──
@@ -1185,32 +1186,65 @@ ${
     let operations: any[] = [];
     let usage: any;
 
-    try {
-      const result = await provider.generateOperations(systemPrompt, userPrompt, {
-        temperature: 0.2,
-        maxTokens: 8192,
-        apiKey: userAnthropicKey || undefined,
-        attachments: attachments || [],
-        onStatus: fileId
-          ? (message: string) => {
-              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
-            }
-          : undefined,
-      });
-      operations = result.operations;
-      usage = result.usage;
-    } catch (aiError) {
-      console.error(`[Plugin:Stream] ${provider.name} error:`, aiError);
+    if (assembled.intent.isExport) {
+      // ── Deterministic export fast-path (no LLM) ──
+      // The user clearly wants a data file. The plugin sandbox extracts ALL
+      // frames itself, so the model isn't needed and is unreliable here (it
+      // would dump 100+ rows into a MESSAGE or return 0 ops). Emit the op directly.
+      const fields = extractExportFields(command);
+      const wantsPage =
+        selectedElements.length === 0 ||
+        /\b(todos|todas|tudo|toda a|a p[áa]gina|p[áa]gina inteir|page|inteir)\b/i.test(command);
+      operations = [
+        {
+          type: 'EXPORT_FRAMES_DATA',
+          format: assembled.intent.exportFormat,
+          scope: wantsPage ? 'page' : 'selection',
+          ...(fields.length ? { fields } : {}),
+        },
+        {
+          type: 'MESSAGE',
+          content: `Gerando arquivo ${assembled.intent.exportFormat.toUpperCase()}${
+            fields.length ? ` com os campos: ${fields.join(', ')}` : ''
+          } e baixando…`,
+        },
+      ];
+      console.log(
+        `[Plugin] Export fast-path → ${assembled.intent.exportFormat}, scope=${
+          wantsPage ? 'page' : 'selection'
+        }, fields=[${fields.join(', ')}]`
+      );
+    } else {
+      try {
+        const result = await provider.generateOperations(systemPrompt, userPrompt, {
+          temperature: 0.2,
+          maxTokens: 8192,
+          apiKey: userAnthropicKey || undefined,
+          attachments: attachments || [],
+          onStatus: fileId
+            ? (message: string) => {
+                pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+              }
+            : undefined,
+        });
+        operations = result.operations;
+        usage = result.usage;
+      } catch (aiError) {
+        console.error(`[Plugin:Stream] ${provider.name} error:`, aiError);
+      }
     }
 
     const durationMs = Date.now() - generationStart;
 
     // Validate operations
+    // Ops that legitimately carry no node/props payload (data-only / control ops)
+    const PAYLOADLESS_OPS = new Set(['EXPORT_FRAMES_DATA', 'REQUEST_SCAN', 'UNDO_LAST_BATCH']);
     operations = operations.filter(
       (op) =>
         op &&
         op.type &&
-        (op.nodeId ||
+        (PAYLOADLESS_OPS.has(op.type) ||
+          op.nodeId ||
           op.props ||
           op.componentKey ||
           op.nodeIds ||
@@ -1599,7 +1633,35 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const toolCallStartedAt = new Date().toISOString();
     const maxRetries = 1;
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // Deterministic export fast-path (no LLM) — see stream handler for rationale.
+    const isExportFastPath = assembled.intent.isExport;
+    if (isExportFastPath) {
+      const fields = extractExportFields(command);
+      const wantsPage =
+        selectedElements.length === 0 ||
+        /\b(todos|todas|tudo|toda a|a p[áa]gina|p[áa]gina inteir|page|inteir)\b/i.test(command);
+      operations = [
+        {
+          type: 'EXPORT_FRAMES_DATA',
+          format: assembled.intent.exportFormat,
+          scope: wantsPage ? 'page' : 'selection',
+          ...(fields.length ? { fields } : {}),
+        },
+        {
+          type: 'MESSAGE',
+          content: `Gerando arquivo ${assembled.intent.exportFormat.toUpperCase()}${
+            fields.length ? ` com os campos: ${fields.join(', ')}` : ''
+          } e baixando…`,
+        },
+      ];
+      console.log(
+        `[Plugin] Export fast-path → ${assembled.intent.exportFormat}, scope=${
+          wantsPage ? 'page' : 'selection'
+        }, fields=[${fields.join(', ')}]`
+      );
+    }
+
+    for (let attempt = 0; attempt <= maxRetries && !isExportFastPath; attempt++) {
       const isRetry = attempt > 0;
       const currentPrompt = isRetry
         ? systemPrompt +
@@ -1668,11 +1730,14 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const durationMs = Date.now() - generationStart;
 
     // Validate operations have required fields
+    // Ops that legitimately carry no node/props payload (data-only / control ops)
+    const PAYLOADLESS_OPS = new Set(['EXPORT_FRAMES_DATA', 'REQUEST_SCAN', 'UNDO_LAST_BATCH']);
     operations = operations.filter(
       (op) =>
         op &&
         op.type &&
-        (op.nodeId ||
+        (PAYLOADLESS_OPS.has(op.type) ||
+          op.nodeId ||
           op.props ||
           op.componentKey ||
           op.nodeIds ||

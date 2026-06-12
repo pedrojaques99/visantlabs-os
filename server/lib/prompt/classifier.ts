@@ -74,6 +74,67 @@ const CHART_PATTERNS = [
 // Dimension requirement indicators (when format is unknown)
 const NEEDS_DIMENSIONS_PATTERNS = [/\b(banner|flyer|poster|cartaz|outdoor|card|modal|popup)\b/i];
 
+// ── Data export detection (deterministic, no LLM) ──
+const EXPORT_VERB =
+  /\b(exporta|exportar|exporte|baixa|baixar|baixe|download|extrai|extrair|gera(r|e)?\s+(um\s+|uma\s+)?(arquivo|json|csv|planilha|tabela|lista))\b/i;
+const EXPORT_GIVE =
+  /\b(me\s+(d[áa]|retorn[ae]|manda|envia|gera|d[êe])\s+(um|uma)?\s*(json|csv|arquivo|planilha|tabela|lista|markdown|html)|consegue\s+me\s+(voltar|retornar|dar|gerar))\b/i;
+const DATA_CONTEXT = /\b(dados|frames?|camadas?|orçament|orcament|todos|todas|cada|conte[úu]do)\b/i;
+const FILE_FORMAT = /\b(json|csv|markdown|\.md\b|planilha|spreadsheet|html)\b/i;
+
+/** True when the user wants to export/download structured frame data as a file. */
+export function detectExport(prompt: string): boolean {
+  const p = prompt.toLowerCase();
+  if (EXPORT_VERB.test(p) || EXPORT_GIVE.test(p)) return true;
+  // A bare file-format word only counts as export when paired with data context
+  // (avoids hijacking "cria um card com um viewer json").
+  return FILE_FORMAT.test(p) && DATA_CONTEXT.test(p);
+}
+
+/** Pick the export file format from the prompt (defaults to json). */
+export function detectExportFormat(prompt: string): 'json' | 'markdown' | 'html' | 'csv' {
+  const p = prompt.toLowerCase();
+  if (/\bcsv\b|planilha|spreadsheet|excel/.test(p)) return 'csv';
+  if (/\bmarkdown\b|\.md\b/.test(p)) return 'markdown';
+  if (/\bhtml\b/.test(p)) return 'html';
+  return 'json';
+}
+
+/**
+ * Extract requested column/field names from an export prompt.
+ * Handles quoted lists ("cliente" "valor"), and comma/"e"-separated lists after
+ * a cue word (dados/campos/colunas/com).
+ */
+export function extractExportFields(prompt: string): string[] {
+  const quoted = [...prompt.matchAll(/["'“”']([^"'“”']{1,40})["'“”']/g)].map((m) => m[1].trim());
+  if (quoted.length) return dedupeFields(quoted);
+
+  const cue = prompt.match(
+    /\b(?:dados|campos|colunas|informa[çc][õo]es|com)\s+(?:(?:os|as|de|do|dos|um|uma|seguintes?|campos?|colunas?|dados)\s+)*([\p{L}\s,;e/]+?)(?:\?|\.|$)/iu
+  );
+  if (cue) {
+    const parts = cue[1]
+      .split(/\s*,\s*|\s+e\s+|\s*;\s*|\s*\/\s*/i)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1 && s.length < 30);
+    if (parts.length >= 2) return dedupeFields(parts);
+  }
+  return [];
+}
+
+function dedupeFields(fields: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const f of fields) {
+    const k = f.toLowerCase();
+    if (!seen.has(k)) {
+      seen.add(k);
+      out.push(f);
+    }
+  }
+  return out.slice(0, 12);
+}
+
 /**
  * Classify user intent from prompt
  */
@@ -134,6 +195,10 @@ export function classifyIntent(prompt: string, hasSelection: boolean = false): C
   // Check if color specification request
   const isColorSpec = COLOR_SPEC_PATTERNS.some((p) => p.test(normalized));
 
+  // Check if data export request
+  const isExport = detectExport(prompt);
+  const exportFormat = detectExportFormat(prompt);
+
   // Check if needs dimensions (unknown format + dimension-needing keywords)
   const needsDimensions =
     format === 'unknown' &&
@@ -154,6 +219,8 @@ export function classifyIntent(prompt: string, hasSelection: boolean = false): C
     isTemplate,
     isChart,
     isColorSpec,
+    isExport,
+    exportFormat,
     keywords,
   };
 }

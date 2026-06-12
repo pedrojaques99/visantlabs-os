@@ -77,6 +77,7 @@ export const registry: Registry = {
 
   // Export
   'export.textToMarkdown': async (p) => H.exportTextToMarkdown(p),
+  'export.framesData': async (p) => H.exportFramesData(p),
 
   // Colors
   'colors.scanForRename': async () => H.scanColorsForRename() as any,

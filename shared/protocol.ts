@@ -98,6 +98,22 @@ export interface OpMap {
     payload: { includeHidden?: boolean; nodeIds?: string[] };
     result: { markdown: string; filename: string; scope: 'selection' | 'page' };
   };
+  'export.framesData': {
+    payload: {
+      format?: 'json' | 'markdown' | 'html' | 'csv';
+      scope?: 'selection' | 'page';
+      nodeIds?: string[];
+      fields?: string[];
+      title?: string;
+    };
+    result: {
+      content: string;
+      filename: string;
+      mimeType: string;
+      frameCount: number;
+      format: 'json' | 'markdown' | 'html' | 'csv';
+    };
+  };
 
   // ── Colors ──
   'colors.scanForRename': {
