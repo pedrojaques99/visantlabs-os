@@ -43,6 +43,7 @@ const PUBLIC_PROJECTION = {
   studio: 1,
   description: 1,
   referenceImageUrl: 1,
+  thumbnailUrl: 1,
   dimensions: 1,
   provenance: 1,
   country: 1,
@@ -312,6 +313,49 @@ router.post(
     }
   }
 );
+
+// ── GET /:id/similar — "more like this" (the exploration loop) ───────────────
+router.get('/:id/similar', apiRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    if (!/^[a-zA-Z0-9_-]{6,64}$/.test(id)) {
+      return res.status(400).json({ error: 'Invalid reference id' });
+    }
+    const limit = Math.min(40, Math.max(1, parseInt(req.query.limit as string) || 24));
+
+    const { vectorService } = await import('../services/vectorService.js');
+    // +1 because the record itself comes back as the top match
+    const matches = await vectorService.queryById(id, limit + 1, { feature: 'reference' });
+    const ids = matches.map((m: any) => m.id).filter((mid: string) => mid && mid !== id);
+    if (ids.length === 0) return res.json({ references: [], total: 0 });
+
+    await connectToMongoDB();
+    const db = getDb();
+    const docs = await db
+      .collection('community_presets')
+      .find({
+        id: { $in: ids },
+        category: 'reference',
+        $or: [{ isAdminCurated: true }, { isPublic: true, isApproved: true }],
+      })
+      .project(PUBLIC_PROJECTION)
+      .toArray();
+
+    const scoreById = new Map(matches.map((m: any) => [m.id, m.score]));
+    const ordered = ids
+      .map((mid: string) => {
+        const doc = docs.find((d: any) => d.id === mid);
+        return doc ? { ...doc, score: scoreById.get(mid) ?? 0 } : null;
+      })
+      .filter(Boolean)
+      .slice(0, limit);
+
+    return res.json({ references: ordered, total: ordered.length });
+  } catch (error: any) {
+    console.error('[references] similar error:', error);
+    return res.status(500).json({ error: 'Failed to find similar references' });
+  }
+});
 
 // ── GET /mine — the authenticated user's uploads ─────────────────────────────
 router.get('/mine', apiRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {

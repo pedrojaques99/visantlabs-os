@@ -175,6 +175,26 @@ export const vectorService = {
   },
 
   /**
+   * "More like this" — query by an existing vector's id (Pinecone fetches the
+   * stored vector and returns its nearest neighbours). The record itself comes
+   * back as the top match; callers should filter it out.
+   */
+  async queryById(id: string, topK: number = 24, filter?: any) {
+    try {
+      const queryResponse = await getIndex().query({
+        id: String(id),
+        topK,
+        includeMetadata: true,
+        filter,
+      });
+      return queryResponse.matches || [];
+    } catch (error) {
+      console.error('Pinecone queryById error:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Delete a vector by ID
    */
   async delete(id: string) {

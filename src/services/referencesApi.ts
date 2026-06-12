@@ -20,6 +20,7 @@ export interface ReferenceItem {
   studio?: string;
   description: string;
   referenceImageUrl: string;
+  thumbnailUrl?: string;
   dimensions: Record<string, string[]>;
   provenance?: ReferenceProvenance;
   country?: string;
@@ -126,6 +127,17 @@ export const referencesApi = {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error || 'Visual search failed');
     }
+    return resp.json();
+  },
+
+  async similarTo(
+    id: string,
+    limit = 24
+  ): Promise<{ references: ReferenceItem[]; total: number }> {
+    const resp = await fetch(`${BASE}/${encodeURIComponent(id)}/similar?limit=${limit}`, {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Failed to load similar references');
     return resp.json();
   },
 

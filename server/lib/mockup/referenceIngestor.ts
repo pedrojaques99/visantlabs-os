@@ -77,6 +77,7 @@ export interface IngestCostMetrics {
 export interface IngestReferenceResult {
   id: string;
   imageUrl: string;
+  thumbnailUrl: string;
   description: string;
   title: string;
   studio?: string;
@@ -234,6 +235,15 @@ export async function ingestReference(
     { text: `${analysis.description} ${Object.values(dimensions).flat().join(' ')}` },
   ]);
 
+  // 3b. Generate a small grid thumbnail (non-fatal — falls back to full image)
+  let thumbnailUrl = imageUrl;
+  try {
+    const { uploadReferenceThumb } = await import('../../../src/services/r2Service.js');
+    thumbnailUrl = await uploadReferenceThumb(rawBase64, id);
+  } catch (err) {
+    console.warn('[referenceIngestor] thumbnail generation failed, using full image:', err);
+  }
+
   // 4. Pinecone upsert — flat metadata for Pinecone compatibility
   const flatDimensions: Record<string, string[]> = {};
   for (const [key, val] of Object.entries(dimensions)) {
@@ -269,6 +279,7 @@ export async function ingestReference(
     description: analysis.description,
     prompt: prompt || '',
     referenceImageUrl: imageUrl,
+    thumbnailUrl,
     category: 'reference',
     ...(studio ? { studio } : {}),
     isAdminCurated: params.isAdminCurated !== false,
@@ -306,6 +317,7 @@ export async function ingestReference(
   return {
     id,
     imageUrl,
+    thumbnailUrl,
     description: analysis.description,
     title: analysis.title || '',
     studio,

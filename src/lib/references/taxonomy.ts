@@ -139,3 +139,27 @@ export const REGION_LABELS: Record<string, string> = REGIONS.reduce(
   },
   {} as Record<string, string>
 );
+
+/** Curated country → ISO 3166-1 alpha-2 (for flag emoji + future i18n). */
+const COUNTRY_ISO: Record<string, string> = {
+  'united states': 'US', canada: 'CA', mexico: 'MX', brazil: 'BR', argentina: 'AR',
+  chile: 'CL', colombia: 'CO', peru: 'PE', uruguay: 'UY', 'united kingdom': 'GB',
+  france: 'FR', germany: 'DE', switzerland: 'CH', netherlands: 'NL', belgium: 'BE',
+  austria: 'AT', ireland: 'IE', italy: 'IT', spain: 'ES', portugal: 'PT', greece: 'GR',
+  sweden: 'SE', norway: 'NO', denmark: 'DK', finland: 'FI', iceland: 'IS', russia: 'RU',
+  poland: 'PL', ukraine: 'UA', czechia: 'CZ', hungary: 'HU', romania: 'RO', japan: 'JP',
+  china: 'CN', 'south korea': 'KR', taiwan: 'TW', 'hong kong': 'HK', india: 'IN',
+  pakistan: 'PK', bangladesh: 'BD', 'sri lanka': 'LK', singapore: 'SG', thailand: 'TH',
+  indonesia: 'ID', vietnam: 'VN', philippines: 'PH', malaysia: 'MY',
+  'united arab emirates': 'AE', 'saudi arabia': 'SA', israel: 'IL', turkey: 'TR',
+  lebanon: 'LB', qatar: 'QA', egypt: 'EG', 'south africa': 'ZA', nigeria: 'NG',
+  kenya: 'KE', morocco: 'MA', ghana: 'GH', australia: 'AU', 'new zealand': 'NZ',
+};
+
+/** Country display name → flag emoji (regional indicator pair). '' if unknown. */
+export function countryFlag(country?: string | null): string {
+  if (!country) return '';
+  const iso = COUNTRY_ISO[country.trim().toLowerCase()];
+  if (!iso) return '';
+  return String.fromCodePoint(...[...iso].map((c) => 0x1f1e6 + (c.charCodeAt(0) - 65)));
+}
