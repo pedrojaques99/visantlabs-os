@@ -470,4 +470,40 @@ export const FIGMA_TOOLS: FigmaTool[] = [
     },
     example: { type: 'SET_TEXT_STYLE', nodeId: '1:234', textAutoResize: 'HEIGHT', fontSize: 24 },
   },
+  {
+    name: 'EXPORT_FRAMES_DATA',
+    operationType: 'EXPORT_FRAMES_DATA',
+    category: 'ADVANCED',
+    description:
+      'Exporta os DADOS/TEXTOS dos frames como ARQUIVO para download (json, markdown, html ou csv). Use SEMPRE que o usuário pedir para baixar/exportar/gerar um arquivo ou planilha com o conteúdo dos frames (ex: "me dá um json com todos os orçamentos"). É determinístico: lê TODOS os frames do escopo (sem limite), por isso é melhor que escrever o conteúdo num MESSAGE. Passe `scope:"page"` para exportar a página inteira, ou `scope:"selection"` para os frames selecionados. Use `fields` para montar colunas estruturadas (ex: ["cliente","valor","categoria"]) — o sistema casa cada label:valor por heurística e sempre inclui o texto bruto.',
+    schema: {
+      type: 'object',
+      properties: {
+        format: {
+          type: 'string',
+          enum: ['json', 'markdown', 'html', 'csv'],
+          description: 'Formato do arquivo (padrão: json)',
+        },
+        scope: {
+          type: 'string',
+          enum: ['selection', 'page'],
+          description: 'selection = frames selecionados; page = página inteira (padrão: selection)',
+        },
+        fields: {
+          type: 'array',
+          items: { type: 'string', description: 'Nome da coluna/campo' },
+          description: 'Campos para extração estruturada (ex: cliente, valor, categoria)',
+        },
+        title: { type: 'string', description: 'Título/base do nome do arquivo' },
+      },
+      required: [],
+    },
+    example: {
+      type: 'EXPORT_FRAMES_DATA',
+      format: 'json',
+      scope: 'page',
+      fields: ['cliente', 'valor', 'categoria'],
+      title: 'Orçamentos',
+    },
+  },
 ];

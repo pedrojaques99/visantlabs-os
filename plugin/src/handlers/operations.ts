@@ -5,6 +5,7 @@ import { postToUI } from '../utils/postMessage';
 import { ensurePagesLoaded, setPagesLoaded, setCanUndo, DEFAULT_FONT } from '../state';
 import { serializeNode, serializeSelection } from '../utils/serialize';
 import { colorDistance } from '../utils/colors';
+import { exportFramesData } from './exportFramesData';
 
 const AXIS_ALIGN_MAP: Record<string, string> = {
   START: 'MIN',
@@ -580,6 +581,21 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       if (p.width > 0 && p.height > 0) anyNode.resize(p.width, p.height);
     }
   };
+
+  // ═══ EXPORT_FRAMES_DATA (deterministic data export → UI downloads file) ═══
+  if (op.type === 'EXPORT_FRAMES_DATA') {
+    const result = await exportFramesData(op as any, snapshotSelection);
+    postToUI({
+      type: 'FILE_DOWNLOAD',
+      filename: result.filename,
+      content: result.content,
+      mimeType: result.mimeType,
+    });
+    pushSummary(
+      `Exportado ${result.frameCount} frames → ${result.filename} (${result.format})`
+    );
+    return;
+  }
 
   // ═══ CREATE_PAGE ═══
   if (op.type === 'CREATE_PAGE') {

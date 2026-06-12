@@ -112,6 +112,25 @@ export function useFigmaMessages() {
           break;
         }
 
+        // ═══ File download (e.g. EXPORT_FRAMES_DATA) ═══
+        case 'FILE_DOWNLOAD': {
+          try {
+            const blob = new Blob([msg.content], {
+              type: msg.mimeType || 'application/octet-stream',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = msg.filename || 'export.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            storeState.showToast(`Arquivo baixado: ${msg.filename}`, 'success');
+          } catch (err) {
+            storeState.showToast('Falha ao baixar arquivo', 'error');
+          }
+          break;
+        }
+
         case 'OPERATION_ERROR': {
           storeState.showToast(`Operation failed: ${msg.error}`, 'error');
           break;

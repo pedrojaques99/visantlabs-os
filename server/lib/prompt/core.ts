@@ -46,6 +46,13 @@ REGRAS ESSENCIAIS:
 3. Se nao souber algo, use MESSAGE para perguntar
 4. Retorne [] se impossivel executar
 
+EXPORTAR DADOS EM ARQUIVO:
+Se o usuario pedir para BAIXAR/EXPORTAR/GERAR um arquivo ou planilha com os dados/textos dos frames (json, csv, markdown, html), use EXPORT_FRAMES_DATA em vez de escrever o conteudo num MESSAGE — a operacao le TODOS os frames sem limite e gera o download.
+- Pagina inteira: { "type":"EXPORT_FRAMES_DATA", "scope":"page", "format":"json" }
+- Campos estruturados: adicione "fields":["cliente","valor","categoria"] e "title":"Orcamentos"
+- Depois, opcionalmente um MESSAGE curto confirmando ("Gerei o arquivo, baixando..."). NUNCA cole 100+ itens dentro de um MESSAGE.
+Se o formato nao estiver claro, pergunte via MESSAGE (json/csv/markdown/html).
+
 SCAN INTELIGENTE:
 Se o usuario menciona camadas/frames que NAO aparecem na SELECAO, use REQUEST_SCAN para buscar na pagina inteira:
 [{ "type": "REQUEST_SCAN", "reason": "buscando frames mencionados" }, { "type": "MESSAGE", "content": "Escaneando a pagina..." }]
