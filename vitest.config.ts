@@ -24,6 +24,9 @@ export default defineConfig({
       '@visant/print-fx/adapters/node': path.resolve(__dirname, './packages/print-fx/src/adapters/node.ts'),
       '@visant/print-fx/adapters/browser': path.resolve(__dirname, './packages/print-fx/src/adapters/browser.ts'),
       '@visant/print-fx': path.resolve(__dirname, './packages/print-fx/src/index.ts'),
+      '@visant/logo-trace/presets': path.resolve(__dirname, './packages/logo-trace/src/presets.ts'),
+      '@visant/logo-trace/sanitize': path.resolve(__dirname, './packages/logo-trace/src/sanitize.ts'),
+      '@visant/logo-trace': path.resolve(__dirname, './packages/logo-trace/src/index.ts'),
     },
   },
   test: {

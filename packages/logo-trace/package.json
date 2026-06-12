@@ -1,0 +1,67 @@
+{
+  "name": "@visant/logo-trace",
+  "version": "0.1.0",
+  "description": "Raster → SVG vectorization tuned for logos. Potrace under the hood, with Otsu auto-threshold (+ auto-invert for light-on-light art), logo/lettering/lineArt/stamp presets, and a sanitize + optimize pass that yields a clean, minified SVG string.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Visant Labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedrojaques99/visantlabs-os",
+    "directory": "packages/logo-trace"
+  },
+  "keywords": [
+    "potrace",
+    "trace",
+    "vectorize",
+    "raster-to-svg",
+    "png-to-svg",
+    "logo",
+    "svg",
+    "otsu",
+    "threshold"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./presets": {
+      "types": "./dist/presets.d.ts",
+      "import": "./dist/presets.js"
+    },
+    "./sanitize": {
+      "types": "./dist/sanitize.d.ts",
+      "import": "./dist/sanitize.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "potrace": "^2.1.8"
+  },
+  "peerDependencies": {
+    "sharp": ">=0.32",
+    "jsdom": ">=22",
+    "dompurify": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true
+    },
+    "jsdom": {
+      "optional": true
+    },
+    "dompurify": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}

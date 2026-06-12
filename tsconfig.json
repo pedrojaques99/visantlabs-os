@@ -29,7 +29,10 @@
       "@visant/print-fx/presets": ["./packages/print-fx/src/presets.ts"],
       "@visant/print-fx/gl": ["./packages/print-fx/src/gl/index.ts"],
       "@visant/print-fx/adapters/node": ["./packages/print-fx/src/adapters/node.ts"],
-      "@visant/print-fx/adapters/browser": ["./packages/print-fx/src/adapters/browser.ts"]
+      "@visant/print-fx/adapters/browser": ["./packages/print-fx/src/adapters/browser.ts"],
+      "@visant/logo-trace": ["./packages/logo-trace/src/index.ts"],
+      "@visant/logo-trace/presets": ["./packages/logo-trace/src/presets.ts"],
+      "@visant/logo-trace/sanitize": ["./packages/logo-trace/src/sanitize.ts"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
