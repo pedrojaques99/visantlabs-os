@@ -46,6 +46,7 @@ export { generateSocialFrames } from './socialFrames';
 export { importLogoCandidates } from './brandImport';
 export { exportWithBleed } from './exportBleed';
 export { exportTextToMarkdown } from './exportText';
+export { exportFramesData } from './exportFramesData';
 export { scanFontsInSelection, scanFontsInPage, swapFonts, getStylesForFamily } from './text';
 export { generateVariants, DEFAULT_PRESETS } from './variantGenerator';
 export { convertToPreset } from './convertToPreset';

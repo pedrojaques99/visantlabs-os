@@ -3,10 +3,10 @@ import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { useClient } from '../../lib/ClientProvider';
 import { OpButton } from '../common/OpButton';
-import { Download, Copy, LayoutGrid, Smartphone, FileText } from 'lucide-react';
+import { Download, Copy, LayoutGrid, Smartphone, FileText, Braces, Table } from 'lucide-react';
 
-function downloadFile(content: string, filename: string) {
-  const blob = new Blob([content], { type: 'text/markdown' });
+function downloadFile(content: string, filename: string, mimeType = 'text/markdown') {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -20,9 +20,20 @@ export function ExportSection() {
   const runner = useOpRunner({ globalBusy: isGenerating });
   const client = useClient();
 
+  const scanPage = usePluginStore((s) => s.scanPage);
+
   async function handleExportTexts() {
     const result = await client.request('export.textToMarkdown', { includeHidden: false });
     downloadFile(result.markdown, result.filename);
+  }
+
+  async function handleExportData(format: 'json' | 'csv') {
+    // scope follows the Page-scan toggle: ON = whole page, OFF = current selection
+    const result = await client.request('export.framesData', {
+      format,
+      scope: scanPage ? 'page' : 'selection',
+    });
+    downloadFile(result.content, result.filename, result.mimeType);
   }
 
   return (
@@ -99,6 +110,36 @@ export function ExportSection() {
         >
           <FileText size={11} className="mr-1.5 text-neutral-500" />
           Texts
+        </OpButton>
+      </div>
+
+      {/* Structured data export — deterministic, no AI. Scope follows Page-scan toggle. */}
+      <div className="grid grid-cols-2 gap-2">
+        <OpButton
+          opId="exportJson"
+          runner={runner}
+          task={() => handleExportData('json')}
+          busyLabel="…"
+          variant="outline"
+          size="sm"
+          title={`Export frame data as JSON (${scanPage ? 'whole page' : 'selection'})`}
+          className="h-8 text-[10px]"
+        >
+          <Braces size={11} className="mr-1.5 text-neutral-500" />
+          Data JSON
+        </OpButton>
+        <OpButton
+          opId="exportCsv"
+          runner={runner}
+          task={() => handleExportData('csv')}
+          busyLabel="…"
+          variant="outline"
+          size="sm"
+          title={`Export frame data as CSV (${scanPage ? 'whole page' : 'selection'})`}
+          className="h-8 text-[10px]"
+        >
+          <Table size={11} className="mr-1.5 text-neutral-500" />
+          Data CSV
         </OpButton>
       </div>
     </div>
