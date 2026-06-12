@@ -223,7 +223,12 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
           };
         }
       } catch (err: any) {
-        console.warn(`[psd-render] Job ${jobId}: scene fast path falhou, fallback PSD:`, err.message || err);
+        console.warn(
+          `[psd-render] Job ${jobId}: scene fast path falhou, fallback PSD:`,
+          err.message || err,
+          '\n  stack:',
+          (err.stack || '').split('\n').slice(0, 4).join(' | ')
+        );
       }
     }
 
