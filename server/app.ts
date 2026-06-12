@@ -70,6 +70,7 @@ import sessionsRoutes from './routes/sessions.js';
 import totpRoutes from './routes/totp.js';
 import internalRoutes from './routes/internal.js';
 import visualSearchRoutes from './routes/visual-search.js';
+import referencesRoutes from './routes/references.js';
 import psdRenderRoutes from './routes/psdRender.js';
 import benchmarkRoutes from './routes/benchmark.js';
 
@@ -352,6 +353,7 @@ export function createApp() {
     ['/totp', totpRoutes],
     ['/internal', internalRoutes],
     ['/visual-search', visualSearchRoutes],
+    ['/references', referencesRoutes],
     ['/psd-render', psdRenderRoutes],
     ['/benchmark', benchmarkRoutes],
   ];

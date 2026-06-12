@@ -630,6 +630,15 @@ export type FigmaOperation =
         fontFamily: string;
         fontStyle?: string;
       };
+    }
+  // ═══ DATA EXPORT (deterministic, no LLM) ═══
+  | {
+      type: 'EXPORT_FRAMES_DATA';
+      format?: 'json' | 'markdown' | 'html' | 'csv';
+      scope?: 'selection' | 'page';
+      nodeIds?: string[];
+      fields?: string[];
+      title?: string;
     };
 
 // ── Serialized context ──
@@ -1095,6 +1104,8 @@ export type UIMessage =
   | { type: 'LINK_GUIDELINE'; guidelineId: string; autoLoad?: boolean }
   // Undo
   | { type: 'UNDO_LAST_BATCH' }
+  // Window resize (from UI resize handle)
+  | { type: 'RESIZE_WINDOW'; width: number; height: number }
   // Template Scanning
   | { type: 'GET_TEMPLATES'; requestId?: string }
   // Agent Components
@@ -1150,6 +1161,7 @@ export type PluginMessage =
   | { type: 'CONTEXT'; payload: SerializedContext }
   | { type: 'ENRICHED_CONTEXT'; payload: EnrichedContext }
   | { type: 'OPERATIONS_DONE'; count?: number; summary?: string }
+  | { type: 'FILE_DOWNLOAD'; filename: string; content: string; mimeType: string }
   | {
       type: 'OP_PROGRESS';
       current: number;

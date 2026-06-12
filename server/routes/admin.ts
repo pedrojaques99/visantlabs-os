@@ -2950,6 +2950,14 @@ router.get('/references', validateAdmin, async (req: Request, res: Response) => 
       }
     }
 
+    // Geographic provenance filters
+    if (req.query.country && typeof req.query.country === 'string') {
+      filter.country = { $in: req.query.country.split(',').map((v) => v.trim()) };
+    }
+    if (req.query.region && typeof req.query.region === 'string') {
+      filter.region = { $in: req.query.region.split(',').map((v) => v.trim()) };
+    }
+
     if (req.query.search && typeof req.query.search === 'string') {
       filter.$or = [
         { name: { $regex: req.query.search, $options: 'i' } },
@@ -3025,6 +3033,37 @@ router.put('/references/:id', validateAdmin, async (req: Request, res: Response)
     if (req.body.prompt != null) updates.prompt = ensureString(req.body.prompt, 50000);
     if (req.body.dimensions != null) updates.dimensions = req.body.dimensions;
     if (req.body.tags != null) updates.tags = normalizeTags(req.body.tags);
+
+    // Provenance edits — keep top-level fields and the provenance object in sync
+    const prevProvenance = (existing as any).provenance || {};
+    const nextProvenance = { ...prevProvenance };
+    if (req.body.country != null) {
+      updates.country = ensureString(req.body.country, 100);
+      nextProvenance.country = updates.country;
+    }
+    if (req.body.region != null) {
+      updates.region = ensureString(req.body.region, 100);
+      nextProvenance.region = updates.region;
+    }
+    if (req.body.designer != null) nextProvenance.designer = ensureString(req.body.designer, 200);
+    if (req.body.sourceUrl != null) {
+      updates.sourceUrl = ensureString(req.body.sourceUrl, 2000);
+      nextProvenance.sourceUrl = updates.sourceUrl;
+    }
+    if (req.body.awardSource != null)
+      nextProvenance.awardSource = ensureString(req.body.awardSource, 200);
+    if (typeof req.body.year === 'number') nextProvenance.year = req.body.year;
+    if (typeof req.body.isPublic === 'boolean') updates.isPublic = req.body.isPublic;
+    if (
+      req.body.country != null ||
+      req.body.region != null ||
+      req.body.designer != null ||
+      req.body.sourceUrl != null ||
+      req.body.awardSource != null ||
+      typeof req.body.year === 'number'
+    ) {
+      updates.provenance = nextProvenance;
+    }
 
     await db
       .collection('community_presets')

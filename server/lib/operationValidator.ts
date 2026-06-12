@@ -362,6 +362,21 @@ class OperationValidator {
         break;
       }
 
+      case 'EXPORT_FRAMES_DATA': {
+        const fmt = (op as any).format;
+        if (fmt && !['json', 'markdown', 'html', 'csv'].includes(fmt)) {
+          errors.push(`EXPORT_FRAMES_DATA invalid format: ${fmt}`);
+        }
+        const scope = (op as any).scope;
+        if (scope && !['selection', 'page'].includes(scope)) {
+          errors.push(`EXPORT_FRAMES_DATA invalid scope: ${scope}`);
+        }
+        if ((op as any).fields && !Array.isArray((op as any).fields)) {
+          errors.push('EXPORT_FRAMES_DATA fields must be an array');
+        }
+        break;
+      }
+
       default:
         errors.push(`Unknown operation type: ${op.type}`);
     }

@@ -73,6 +73,16 @@ import { isEnvelope } from '@shared/protocol';
 // ═══ Initialize UI ═══
 figma.showUI(__html__, { width: 420, height: 680, themeColors: true, title: 'Visant Copilot' });
 
+// Restore last window size (set by the UI resize handle)
+figma.clientStorage
+  .getAsync('windowSize')
+  .then((size: any) => {
+    if (size && size.width && size.height) {
+      figma.ui.resize(size.width, size.height);
+    }
+  })
+  .catch(() => {});
+
 // Send current user info to UI
 const currentUser = figma.currentUser;
 if (currentUser) {
@@ -121,6 +131,15 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       });
       console.error(`[Agent] Operation failed (opId=${opId}):`, err);
     }
+    return;
+  }
+
+  // ── Window resize (from UI resize handle) ──
+  if (msg.type === 'RESIZE_WINDOW') {
+    const width = Math.max(320, Math.round((msg as any).width));
+    const height = Math.max(400, Math.round((msg as any).height));
+    figma.ui.resize(width, height);
+    figma.clientStorage.setAsync('windowSize', { width, height }).catch(() => {});
     return;
   }
 

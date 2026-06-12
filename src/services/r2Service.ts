@@ -996,6 +996,38 @@ export async function uploadMockupPresetReference(
 }
 
 /**
+ * Upload a small (~480px) WebP thumbnail for a reference, used by the library
+ * grid so it never has to download the full-size image. Returns the public URL.
+ */
+export async function uploadReferenceThumb(base64Image: string, presetId: string): Promise<string> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!bucketName || !publicUrl) {
+    throw new Error('R2_BUCKET_NAME / R2_PUBLIC_URL not set.');
+  }
+
+  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+  const rawBuffer = Buffer.from(base64Data, 'base64');
+  const sharp = (await import('sharp')).default;
+  const buffer = await sharp(rawBuffer)
+    .resize({ width: 480, height: 480, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 72 })
+    .toBuffer();
+
+  const key = `mockup-presets/${presetId}/thumb.webp`;
+  const client = getR2Client();
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      Body: buffer,
+      ContentType: 'image/webp',
+    })
+  );
+  return `${publicUrl}/${key}`;
+}
+
+/**
  * Upload canvas PDF to R2 storage
  * @param pdfBase64 - Base64 encoded PDF string (with or without data URL prefix)
  * @param userId - User ID

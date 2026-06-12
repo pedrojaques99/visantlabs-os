@@ -4,7 +4,7 @@ import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
-import { Layers, Trash2, MessageSquare, Brain } from 'lucide-react';
+import { Layers, Trash2, MessageSquare, Brain, ChevronDown } from 'lucide-react';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { getGuidelineLabel } from '../../lib/brandHydration';
 
@@ -14,6 +14,20 @@ export function ChatView() {
   const { sendMessage } = useChatSend();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const scrollAnchorRef = useAutoScrollToBottom([chatHistory, isGenerating]);
+
+  // Frame pills: show ~2 rows by default, collapse the rest behind a toggle
+  const COLLAPSED_FRAMES_MAX = 46; // ≈ 2 rows of pills
+  const EXPANDED_FRAMES_MAX = 132; // scrollable when expanded
+  const [framesExpanded, setFramesExpanded] = React.useState(false);
+  const framesRef = React.useRef<HTMLDivElement>(null);
+  const [framesOverflow, setFramesOverflow] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    const el = framesRef.current;
+    if (!el) return;
+    // scrollHeight reflects full content regardless of the maxHeight clamp
+    setFramesOverflow(el.scrollHeight > COLLAPSED_FRAMES_MAX + 2);
+  }, [selectionDetails]);
 
   const brandLogo = brandGuideline
     ? (
@@ -140,20 +154,43 @@ export function ChatView() {
         })()}
       <ChatInput onSend={sendMessage} />
       {selectionDetails.length > 0 && (
-        <div className="px-3 py-1.5 border-t border-border/50 bg-muted/30 flex items-center gap-1.5 flex-wrap">
-          <Layers size={10} className="text-muted-foreground shrink-0" />
-          <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-            {selectionDetails.length} frame{selectionDetails.length > 1 ? 's' : ''}:
-          </span>
-          {selectionDetails.map((f) => (
-            <span
-              key={f.id}
-              className="text-[10px] font-mono bg-background border border-border/60 rounded px-1 py-0.5 text-foreground/70 truncate max-w-[90px]"
-              title={`${f.id} · ${f.name}`}
-            >
-              {f.name}
+        <div className="border-t border-border/50 bg-muted/30">
+          <div className="flex items-center gap-1.5 px-3 pt-1.5 pb-1">
+            <Layers size={10} className="text-muted-foreground shrink-0" />
+            <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+              {selectionDetails.length} frame{selectionDetails.length > 1 ? 's' : ''}
             </span>
-          ))}
+            {framesOverflow && (
+              <button
+                type="button"
+                onClick={() => setFramesExpanded((v) => !v)}
+                className="ml-auto flex items-center gap-0.5 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                {framesExpanded ? 'recolher' : 'ver todos'}
+                <ChevronDown
+                  size={10}
+                  className={`transition-transform ${framesExpanded ? 'rotate-180' : ''}`}
+                />
+              </button>
+            )}
+          </div>
+          <div
+            ref={framesRef}
+            className={`px-3 pb-1.5 flex flex-wrap gap-1.5 ${
+              framesExpanded ? 'overflow-y-auto' : 'overflow-hidden'
+            }`}
+            style={{ maxHeight: framesExpanded ? EXPANDED_FRAMES_MAX : COLLAPSED_FRAMES_MAX }}
+          >
+            {selectionDetails.map((f) => (
+              <span
+                key={f.id}
+                className="text-[10px] font-mono bg-background border border-border/60 rounded px-1 py-0.5 text-foreground/70 truncate max-w-[90px]"
+                title={`${f.id} · ${f.name}`}
+              >
+                {f.name}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
