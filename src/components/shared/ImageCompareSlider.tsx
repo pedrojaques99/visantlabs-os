@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { OverlayLabel } from '@/components/shared/OverlayLabel';
 
 interface ImageCompareSliderProps {
   before: string;
@@ -84,12 +85,8 @@ export const ImageCompareSlider: React.FC<ImageCompareSliderProps> = React.memo(
         </div>
 
         {/* Labels */}
-        <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 rounded text-[10px] font-mono uppercase tracking-widest text-neutral-400 pointer-events-none">
-          Before
-        </div>
-        <div className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 rounded text-[10px] font-mono uppercase tracking-widest text-neutral-400 pointer-events-none">
-          After
-        </div>
+        <OverlayLabel position="tl">Before</OverlayLabel>
+        <OverlayLabel position="tr">After</OverlayLabel>
       </div>
     );
   }

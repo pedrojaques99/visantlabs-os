@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Menu, X, ChevronRight, ChevronDown, LucideIcon, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export interface NavigationItem {
   id: string;
@@ -56,21 +57,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
 
   const sidebarWidth = controlledWidth ?? internalWidth;
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
-        onToggleOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onToggleOpen]);
+  useClickOutside(sidebarRef, () => onToggleOpen(false), { enabled: isOpen, escape: false });
 
   // Auto-expand active item when it changes
   useEffect(() => {

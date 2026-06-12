@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SectionBlock } from '../SectionBlock';
 import {
@@ -113,14 +114,7 @@ const BentoCard = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const Icon = format.icon;
 
-  useEffect(() => {
-    if (!showExport) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowExport(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [showExport]);
+  useClickOutside(menuRef, () => setShowExport(false), { enabled: showExport });
 
   const handleExport = async (f: ExportFormat) => {
     if (!ref.current) return;
