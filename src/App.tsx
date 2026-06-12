@@ -405,22 +405,8 @@ const App: React.FC = () => {
                       </PremiumGate>
                     }
                   />
-                  <Route
-                    path="/community"
-                    element={
-                      <PremiumGate toolName="Community">
-                        <CommunityPage />
-                      </PremiumGate>
-                    }
-                  />
-                  <Route
-                    path="/community/presets"
-                    element={
-                      <PremiumGate toolName="Community">
-                        <CommunityPresetsPage />
-                      </PremiumGate>
-                    }
-                  />
+                  <Route path="/community" element={<CommunityPage />} />
+                  <Route path="/community/presets" element={<CommunityPresetsPage />} />
                   <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
