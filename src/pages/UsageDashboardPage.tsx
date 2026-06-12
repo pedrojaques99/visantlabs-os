@@ -197,7 +197,7 @@ export const UsageDashboardPage: React.FC = () => {
     {
       label: 'Total Credits Used',
       value: stats?.totalCredits ?? 0,
-      icon: <Zap size={18} className="text-amber-400" />,
+      icon: <Zap size={18} className="text-warning" />,
     },
     {
       label: 'Last 7 Days',
@@ -208,7 +208,7 @@ export const UsageDashboardPage: React.FC = () => {
     {
       label: 'Last 30 Days',
       value: stats?.last30Days.count ?? 0,
-      icon: <TrendingUp size={18} className="text-green-400" />,
+      icon: <TrendingUp size={18} className="text-success" />,
       sub: `${stats?.last30Days.credits ?? 0} credits`,
     },
   ];
@@ -224,7 +224,7 @@ export const UsageDashboardPage: React.FC = () => {
       label: 'Branding Machine',
       color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
     },
-    { key: 'canvas', label: 'Canvas', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+    { key: 'canvas', label: 'Canvas', color: 'bg-success/20 text-success border-success/30' },
   ] as const;
 
   return (
@@ -334,7 +334,7 @@ export const UsageDashboardPage: React.FC = () => {
                       onClick={() => setChartMetric('credits')}
                       className={`px-3 py-1.5 rounded-none transition-colors ${
                         chartMetric === 'credits'
-                          ? 'bg-amber-400/10 text-amber-400'
+                          ? 'bg-warning/10 text-warning'
                           : 'text-neutral-500 hover:text-neutral-300'
                       }`}
                     >

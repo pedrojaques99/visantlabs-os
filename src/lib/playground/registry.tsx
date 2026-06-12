@@ -265,9 +265,9 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
               className={cn(
                 'text-xs font-mono',
                 props.trend === 'up'
-                  ? 'text-green-400'
+                  ? 'text-success'
                   : props.trend === 'down'
-                  ? 'text-red-400'
+                  ? 'text-destructive'
                   : 'text-neutral-400'
               )}
             >
@@ -446,7 +446,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
           )}
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 z-10">
-              <span className="text-[11px] text-red-400 font-mono">{error}</span>
+              <span className="text-[11px] text-destructive font-mono">{error}</span>
             </div>
           )}
           <canvas ref={canvasRef} className="w-full h-auto" style={{ maxWidth: w, maxHeight: h }} />
@@ -907,7 +907,7 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
         default: '',
         muted: 'text-neutral-500',
         brand: 'text-brand-cyan',
-        danger: 'text-red-400',
+        danger: 'text-destructive',
       };
       return (
         <span

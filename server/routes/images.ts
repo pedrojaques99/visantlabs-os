@@ -1234,7 +1234,7 @@ router.post('/png-to-svg', apiRateLimiter, async (req: Request, res: ExpressResp
     if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: 'Missing image (base64 data URL)' });
     }
-    const { parseBase64Image, tracePipeline } = await import('./trace.js');
+    const { parseBase64Image, trace: tracePipeline } = await import('@visant/logo-trace');
     const buffer = parseBase64Image(image);
     if (!buffer) {
       return res.status(400).json({ error: 'Invalid base64 image format' });

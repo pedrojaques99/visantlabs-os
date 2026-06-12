@@ -210,7 +210,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
       ) : (
         <>
           {/* Statistics Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
             {/* Total Records */}
             <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
               <CardContent className="p-6">
@@ -260,6 +260,26 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                   <p className="text-sm text-neutral-500 font-mono">Mockup Machine</p>
                   <p className="text-xs text-neutral-400 font-mono mt-1">
                     {usageStats.byFeature.mockupmachine.credits} créditos
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Branding Machine Stats */}
+            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="p-3 bg-brand-cyan/10 rounded-md">
+                    <Palette className="h-6 w-6 text-brand-cyan" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                    {usageStats.byFeature.brandingmachine.count}
+                  </p>
+                  <p className="text-sm text-neutral-500 font-mono">Branding Machine</p>
+                  <p className="text-xs text-neutral-400 font-mono mt-1">
+                    {usageStats.byFeature.brandingmachine.credits} créditos
                   </p>
                 </div>
               </CardContent>

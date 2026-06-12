@@ -3,12 +3,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '../ui/Modal';
 import { GlitchLoader } from '../ui/GlitchLoader';
+import { FlyingPaperLoader } from '../ui/FlyingPaperLoader';
 import { MediaKitGallery } from '../brand/MediaKitGallery';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { FileText, X, ShieldCheck, Image as ImageIcon, Upload, Plus, Figma } from 'lucide-react';
+import { FileText, X, Image as ImageIcon, Figma } from 'lucide-react';
 import { validatePdfFile } from '@/utils/pdfUtils';
 import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,15 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
 
+  // Wizard step (new mode only): 1 = identity, 2 = materials
+  const [step, setStep] = useState<1 | 2>(1);
+  // Unified dropzone state
+  const [isDragging, setIsDragging] = useState(false);
+  const dragDepth = useRef(0);
+  const allFilesInputRef = useRef<HTMLInputElement>(null);
+  // Live label shown by the FlyingPaperLoader while processing
+  const [ingestPhase, setIngestPhase] = useState('');
+
   // PDF selection state
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -84,12 +94,17 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
   }, [name, url, figmaUrl, isOpen, isEditMode]);
 
   useEffect(() => {
-    if (isOpen && editGuideline) {
+    if (!isOpen) return;
+    setStep(1);
+    setIngestPhase('');
+    dragDepth.current = 0;
+    setIsDragging(false);
+    if (editGuideline) {
       setName(editGuideline.identity?.name || '');
       setUrl(editGuideline.identity?.website || '');
       setMedia(editGuideline.media || []);
       setLogos(editGuideline.logos || []);
-    } else if (isOpen) {
+    } else {
       // Restore draft if available
       try {
         const saved = localStorage.getItem(DRAFT_KEY);
@@ -209,45 +224,6 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     return () => window.removeEventListener('paste', handlePaste);
   }, [isOpen, isSubmitting, isIngesting, t]);
 
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const validation = validatePdfFile(file);
-    if (!validation.isValid) {
-      toast.error(validation.error);
-      if (pdfInputRef.current) pdfInputRef.current.value = '';
-      return;
-    }
-
-    setPdfFile(file);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    const newFiles = [...imageFiles];
-    const newPreviews = [...imagePreviews];
-
-    for (const file of files) {
-      if (newFiles.length >= 10) break;
-
-      const error = validateFile(file, 'image');
-      if (error) {
-        toast.error(`${file.name}: ${error}`);
-        continue;
-      }
-
-      newFiles.push(file);
-      newPreviews.push(URL.createObjectURL(file));
-    }
-
-    setImageFiles(newFiles);
-    setImagePreviews(newPreviews);
-    if (imageInputRef.current) imageInputRef.current.value = '';
-  };
-
   const removeImage = (index: number) => {
     const newFiles = [...imageFiles];
     const newPreviews = [...imagePreviews];
@@ -267,20 +243,102 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     if (pdfInputRef.current) pdfInputRef.current.value = '';
   };
 
+  const removeFig = () => setFigFile(null);
+
+  // Unified file router — filters dropped/selected files by type and gives feedback
+  const routeFiles = useCallback(
+    (files: File[]) => {
+      if (files.length === 0) return;
+
+      const images = files.filter((f) => f.type.startsWith('image/'));
+      const pdfs = files.filter((f) => f.type === 'application/pdf');
+      const figs = files.filter((f) => f.name.toLowerCase().endsWith('.fig'));
+      const rejected = files.filter(
+        (f) => !images.includes(f) && !pdfs.includes(f) && !figs.includes(f)
+      );
+
+      // PDF — keep the first valid one
+      if (pdfs.length > 0) {
+        const validation = validatePdfFile(pdfs[0]);
+        if (!validation.isValid) toast.error(validation.error);
+        else {
+          setPdfFile(pdfs[0]);
+          toast.success(t('mockup.brandWizardPdfSelected') || 'PDF adicionado');
+        }
+      }
+
+      // .fig — keep the first one
+      if (figs.length > 0) setFigFile(figs[0]);
+
+      // Images — append up to 10, validate each
+      if (images.length > 0) {
+        setImageFiles((prev) => {
+          const nextFiles = [...prev];
+          const nextPreviews: string[] = [];
+          let added = 0;
+          for (const file of images) {
+            if (nextFiles.length >= 10) {
+              toast.warning('Máximo de 10 imagens');
+              break;
+            }
+            const error = validateFile(file, 'image');
+            if (error) {
+              toast.error(`${file.name}: ${error}`);
+              continue;
+            }
+            nextFiles.push(file);
+            nextPreviews.push(URL.createObjectURL(file));
+            added++;
+          }
+          if (added > 0) setImagePreviews((p) => [...p, ...nextPreviews]);
+          return nextFiles;
+        });
+      }
+
+      rejected.forEach((f) =>
+        toast.error(`${f.name}: ${t('mockup.brandWizardUnsupportedFile') || 'formato não suportado'}`)
+      );
+    },
+    [t]
+  );
+
+  // Dropzone drag handlers (depth-counted so nested children don't flicker)
+  const handleZoneDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current += 1;
+    if (e.dataTransfer.types.includes('Files')) setIsDragging(true);
+  };
+  const handleZoneDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setIsDragging(false);
+  };
+  const handleZoneDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepth.current = 0;
+    setIsDragging(false);
+    const dropped = Array.from(e.dataTransfer.files || []);
+    if (dropped.length > 0) {
+      routeFiles(dropped);
+      return;
+    }
+    // No files — maybe a Figma URL was dragged in
+    const text = e.dataTransfer.getData('text/plain').trim();
+    if (isFigmaUrl(text)) {
+      setFigmaUrl(text);
+      toast.success(t('mockup.brandWizardFigmaUrlDetected'));
+    }
+  };
+
   const trimmedName = name.trim();
   const trimmedUrl = url.trim();
   const hasUrl = trimmedUrl.length > 0;
   const hasFigma = isFigmaUrl(figmaUrl.trim());
   const canSubmit = trimmedName.length > 0 && !isSubmitting && !isIngesting;
-
-  const handleFormDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const text = e.dataTransfer.getData('text/plain').trim();
-    if (isFigmaUrl(text)) {
-      setFigmaUrl(text);
-      toast.success('URL do Figma detectada');
-    }
-  };
+  const isProcessing = isSubmitting || isIngesting;
+  const materialsCount = (pdfFile ? 1 : 0) + imageFiles.length + (figFile ? 1 : 0) + (hasFigma ? 1 : 0);
+  const hasStagedFiles = !!pdfFile || imageFiles.length > 0 || !!figFile;
 
   const handleClose = useCallback(() => {
     if (isSubmitting || isIngesting) return;
@@ -300,6 +358,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
       if (!canSubmit) return;
 
       setIsSubmitting(true);
+      setIngestPhase(t('mockup.brandWizardCreating') || 'Criando guideline…');
       try {
         let workingId: string;
 
@@ -322,6 +381,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
           if (!isEditMode || (isEditMode && trimmedUrl !== oldUrl)) {
             setIsSubmitting(false);
             setIsIngesting(true);
+            setIngestPhase(t('mockup.brandWizardExtracting') || 'Extraindo do site…');
             try {
               await brandGuidelineApi.ingest(workingId, { source: 'url', url: trimmedUrl });
               toast.success(t('mockup.brandWizardSuccessWithExtraction'));
@@ -341,6 +401,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         if (pdfFile || imageFiles.length > 0) {
           setIsSubmitting(false);
           setIsIngesting(true);
+          setIngestPhase(t('mockup.brandWizardReadingFiles') || 'Lendo materiais…');
           try {
             const inputFiles: File[] = [];
             if (pdfFile) inputFiles.push(pdfFile);
@@ -360,6 +421,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         // Handle .fig file upload
         if (figFile) {
           setIsIngesting(true);
+          setIngestPhase(t('mockup.brandWizardReadingFig') || 'Lendo arquivo .fig…');
           try {
             const form = new FormData();
             form.append('file', figFile);
@@ -383,6 +445,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         const trimmedFigma = figmaUrl.trim();
         if (trimmedFigma && isFigmaUrl(trimmedFigma)) {
           setIsIngesting(true);
+          setIngestPhase(t('mockup.brandWizardImportingFigma') || 'Importando tokens do Figma…');
           try {
             await brandGuidelineApi.linkFigmaFile(workingId, trimmedFigma);
             await brandGuidelineApi.importFromFigma(workingId, {
@@ -434,15 +497,263 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     ]
   );
 
-  const submitLabel = isIngesting
-    ? t('mockup.brandWizardExtracting')
-    : isSubmitting
-    ? null
-    : isEditMode
-    ? t('common.save')
-    : hasUrl || pdfFile || imageFiles.length > 0
-    ? t('mockup.brandWizardSubmit')
-    : t('mockup.brandWizardSubmitNoUrl');
+  const isWizard = !isEditMode;
+
+  // Enter / submit dispatcher: in wizard step 1, advance instead of creating
+  const onFormSubmit = (e: React.FormEvent) => {
+    if (isWizard && step === 1) {
+      e.preventDefault();
+      if (trimmedName) setStep(2);
+      return;
+    }
+    handleSubmit(e);
+  };
+
+  // ── Reusable field blocks ─────────────────────────────────────────────────
+  const identityFields = (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="brand-wizard-name" className="text-sm font-medium text-neutral-300">
+          {t('mockup.brandWizardNameLabel')}
+        </label>
+        <Input
+          id="brand-wizard-name"
+          type="text"
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t('mockup.brandNamePlaceholder')}
+          disabled={isProcessing}
+          className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label htmlFor="brand-wizard-url" className="text-sm font-medium text-neutral-300">
+          {t('mockup.brandWizardUrlLabel')}
+        </label>
+        <Input
+          id="brand-wizard-url"
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder={t('mockup.brandWizardUrlPlaceholder')}
+          disabled={isProcessing}
+          className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+        />
+        {hasUrl && (
+          <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardUrlHint')}</p>
+        )}
+      </div>
+    </div>
+  );
+
+  const materialsFields = (
+    <div className="flex flex-col gap-4">
+      {/* Unified drop zone — filters by type, animates while dragging */}
+      <input
+        ref={allFilesInputRef}
+        type="file"
+        accept=".pdf,image/*,.fig"
+        multiple
+        className="hidden"
+        disabled={isProcessing}
+        onChange={(e) => {
+          routeFiles(Array.from(e.target.files || []));
+          e.target.value = '';
+        }}
+      />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => !isProcessing && allFilesInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && !isProcessing) {
+            e.preventDefault();
+            allFilesInputRef.current?.click();
+          }
+        }}
+        onDragEnter={handleZoneDragEnter}
+        onDragOver={(e) => e.preventDefault()}
+        onDragLeave={handleZoneDragLeave}
+        onDrop={handleZoneDrop}
+        className={cn(
+          'relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 px-6 flex flex-col items-center justify-center text-center select-none focus:outline-none',
+          isDragging
+            ? 'border-brand-cyan/60 bg-brand-cyan/[0.06] py-6'
+            : 'border-white/10 hover:border-neutral-600 bg-neutral-900/40 py-8'
+        )}
+      >
+        {isDragging ? (
+          <FlyingPaperLoader label={t('mockup.brandWizardDropActive') || 'Solte para adicionar'} />
+        ) : (
+          <>
+            <div className="flex items-center gap-3 mb-3 text-neutral-500">
+              <FileText size={20} />
+              <ImageIcon size={20} />
+              <Figma size={20} />
+            </div>
+            <p className="text-sm text-neutral-300">
+              {t('mockup.brandWizardDropTitle') || 'Arraste seus arquivos aqui'}
+            </p>
+            <p className="text-xs text-neutral-600 mt-1">
+              {t('mockup.brandWizardDropHint') ||
+                'PDF, imagens ou .fig — ou clique para selecionar'}
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Staged files — visual feedback per type */}
+      {hasStagedFiles && (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-2">
+            {pdfFile && (
+              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
+                <FileText size={14} className="text-neutral-300 shrink-0" />
+                <span className="text-xs text-white truncate max-w-[140px]">{pdfFile.name}</span>
+                <button
+                  type="button"
+                  onClick={removePdf}
+                  className="p-0.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
+            {figFile && (
+              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
+                <Figma size={14} className="text-neutral-300 shrink-0" />
+                <span className="text-xs text-white truncate max-w-[140px]">{figFile.name}</span>
+                <button
+                  type="button"
+                  onClick={removeFig}
+                  className="p-0.5 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {imagePreviews.length > 0 && (
+            <div className="grid grid-cols-5 gap-2">
+              {imagePreviews.map((preview, index) => (
+                <div
+                  key={index}
+                  className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden"
+                >
+                  <img
+                    src={sanitizePreviewUrl(preview)}
+                    alt=""
+                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Figma URL */}
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor="brand-wizard-figma"
+          className="flex items-center gap-1.5 text-xs text-neutral-400"
+        >
+          <Figma size={12} className="shrink-0" />
+          {t('mockup.brandWizardFigmaLabel') || 'Figma (opcional)'}
+        </label>
+        <Input
+          id="brand-wizard-figma"
+          type="url"
+          value={figmaUrl}
+          onChange={(e) => setFigmaUrl(e.target.value)}
+          placeholder={t('mockup.brandWizardFigmaPlaceholder')}
+          disabled={isProcessing}
+          className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
+        />
+        {hasFigma && (
+          <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardFigmaHint')}</p>
+        )}
+      </div>
+
+      <p className="text-xs text-neutral-600">{t('mockup.brandWizardExtractionHint')}</p>
+    </div>
+  );
+
+  // ── Footer (depends on mode / step / processing) ──────────────────────────
+  const ghostBtn =
+    'px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50';
+  const brandBtn = (enabled: boolean) =>
+    cn(
+      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-mono text-sm font-bold transition-all',
+      enabled
+        ? 'bg-brand-cyan text-black hover:bg-brand-cyan/80'
+        : 'bg-neutral-800/60 text-neutral-600 cursor-not-allowed'
+    );
+
+  let footer: React.ReactNode;
+  if (isProcessing) {
+    footer = (
+      <div className="flex items-center justify-center gap-2 w-full text-sm font-mono text-brand-cyan/80">
+        <GlitchLoader size={14} color="var(--brand-cyan)" />
+        <span>{ingestPhase || t('mockup.brandWizardExtracting')}</span>
+      </div>
+    );
+  } else if (isWizard && step === 1) {
+    footer = (
+      <div className="flex items-center gap-3 w-full">
+        <Button variant="ghost" type="button" onClick={handleClose} className={ghostBtn}>
+          {t('common.cancel')}
+        </Button>
+        <Button
+          variant="brand"
+          type="submit"
+          form="brand-wizard-form"
+          disabled={!trimmedName}
+          className={brandBtn(!!trimmedName)}
+        >
+          <span>{t('mockup.brandWizardNext') || 'Próximo'}</span>
+        </Button>
+      </div>
+    );
+  } else {
+    // Wizard step 2, or edit mode
+    const primaryLabel = isEditMode
+      ? t('common.save')
+      : materialsCount > 0
+      ? t('mockup.brandWizardSubmit')
+      : t('mockup.brandWizardSubmitNoUrl');
+    footer = (
+      <div className="flex items-center gap-3 w-full">
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={isWizard ? () => setStep(1) : handleClose}
+          className={ghostBtn}
+        >
+          {isWizard ? t('mockup.brandWizardBack') || 'Voltar' : t('common.cancel')}
+        </Button>
+        <Button
+          variant="brand"
+          type="submit"
+          form="brand-wizard-form"
+          disabled={!canSubmit}
+          className={brandBtn(canSubmit)}
+        >
+          <span>{primaryLabel}</span>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <Modal
@@ -453,292 +764,91 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         isEditMode ? t('mockup.brandWizardEditDescription') : t('mockup.brandWizardDescription')
       }
       size={isEditMode ? 'lg' : 'md'}
-      closeOnBackdropClick={!isSubmitting && !isIngesting}
-      closeOnEscape={!isSubmitting && !isIngesting}
-      footer={
-        <div className="flex items-center gap-3 w-full">
-          <Button
-            variant="ghost"
-            type="button"
-            onClick={handleClose}
-            disabled={isSubmitting || isIngesting}
-            className="px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50"
-          >
-            {t('common.cancel')}
-          </Button>
-          <Button
-            variant="brand"
-            type="submit"
-            form="brand-wizard-form"
-            disabled={!canSubmit}
-            className={cn(
-              'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-mono text-sm font-bold transition-all',
-              canSubmit
-                ? 'bg-brand-cyan text-black hover:bg-brand-cyan/80'
-                : 'bg-neutral-800/60 text-neutral-600 cursor-not-allowed'
-            )}
-          >
-            {isSubmitting && <GlitchLoader size={14} />}
-            {isIngesting && <GlitchLoader size={14} color="black" />}
-            {submitLabel && <span>{submitLabel}</span>}
-          </Button>
-        </div>
-      }
+      closeOnBackdropClick={!isProcessing}
+      closeOnEscape={!isProcessing}
+      footer={footer}
     >
-      <form
-        id="brand-wizard-form"
-        onSubmit={handleSubmit}
-        onDrop={handleFormDrop}
-        onDragOver={(e) => e.preventDefault()}
-        className="flex flex-col gap-6"
-      >
-        <div className="flex flex-col gap-2">
-          <label htmlFor="brand-wizard-name" className="text-sm font-medium text-neutral-300">
-            {t('mockup.brandWizardNameLabel')}
-          </label>
-          <Input
-            id="brand-wizard-name"
-            type="text"
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('mockup.brandNamePlaceholder')}
-            disabled={isSubmitting || isIngesting}
-            className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
-          />
+      {/* Processing overlay — FlyingPaper animation with live phase label */}
+      {isProcessing ? (
+        <div className="py-12 flex flex-col items-center justify-center">
+          <FlyingPaperLoader label={ingestPhase || t('mockup.brandWizardExtracting')} />
         </div>
-
-        <div className="flex flex-col gap-2">
-          <label htmlFor="brand-wizard-url" className="text-sm font-medium text-neutral-300">
-            {t('mockup.brandWizardUrlLabel')}
-          </label>
-          <Input
-            id="brand-wizard-url"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder={t('mockup.brandWizardUrlPlaceholder')}
-            disabled={isSubmitting || isIngesting}
-            className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
-          />
-          {hasUrl && (
-            <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardUrlHint')}</p>
-          )}
-        </div>
-
-        {/* PDF and Images selection (Combined or separate?) */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="brand-wizard-pdf" className="text-xs text-neutral-400">
-              {t('mockup.brandWizardPdfLabel')}
-            </label>
-            <input
-              ref={pdfInputRef}
-              id="brand-wizard-pdf"
-              type="file"
-              accept=".pdf"
-              onChange={handlePdfChange}
-              className="hidden"
-              disabled={isSubmitting || isIngesting}
-            />
-
-            {!pdfFile ? (
-              <button
-                type="button"
-                onClick={() => pdfInputRef.current?.click()}
-                disabled={isSubmitting || isIngesting}
-                className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/10 hover:border-neutral-700 rounded-lg px-3 py-3 text-sm text-neutral-400 hover:text-white transition-all group h-[46px]"
-              >
-                <div className="flex items-center gap-2">
-                  <FileText
-                    size={16}
-                    className="text-neutral-500 group-hover:text-neutral-300 transition-colors"
-                  />
-                  <span className="text-xs">
-                    {t('mockup.brandWizardPdfPlaceholderShort') || 'PDF'}
-                  </span>
-                </div>
-                <ShieldCheck size={12} className="text-neutral-700" />
-              </button>
-            ) : (
-              <div className="flex items-center justify-between gap-2 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 overflow-hidden h-[46px]">
-                <div className="flex items-center gap-2 min-w-0">
-                  <FileText size={16} className="text-neutral-300 shrink-0" />
-                  <span className="text-xs text-white truncate max-w-[80px]">{pdfFile.name}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={removePdf}
-                  className="p-1 rounded-full hover:bg-white/5 text-neutral-600 hover:text-white transition-colors"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="brand-wizard-images" className="text-xs text-neutral-400">
-              {t('mockup.brandWizardImagesLabel') || 'Images'}
-            </label>
-            <input
-              ref={imageInputRef}
-              id="brand-wizard-images"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="hidden"
-              disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
-            />
-
-            <button
-              type="button"
-              onClick={() => imageInputRef.current?.click()}
-              disabled={isSubmitting || isIngesting || imageFiles.length >= 10}
-              className="w-full flex items-center justify-between gap-3 bg-neutral-900/40 border border-white/10 hover:border-neutral-700 rounded-lg px-3 py-3 text-sm text-neutral-400 hover:text-white transition-all group h-[46px] disabled:opacity-30"
-            >
-              <div className="flex items-center gap-2">
-                <ImageIcon
-                  size={16}
-                  className="text-neutral-500 group-hover:text-neutral-300 transition-colors"
-                />
-                <span className="text-xs">
-                  {imageFiles.length > 0
-                    ? `${imageFiles.length}/10`
-                    : t('mockup.brandWizardImagesPlaceholderShort') || 'Images'}
-                </span>
-              </div>
-              <Plus size={14} className="text-neutral-600 group-hover:text-neutral-400" />
-            </button>
-          </div>
-        </div>
-
-        {/* Image Previews Grid */}
-        {imagePreviews.length > 0 && (
-          <div className="grid grid-cols-5 gap-2 mt-1">
-            {imagePreviews.map((preview, index) => (
-              <div
-                key={index}
-                className="relative group aspect-square rounded bg-neutral-900 border border-neutral-800 overflow-hidden"
-              >
-                <img
-                  src={sanitizePreviewUrl(preview)}
-                  alt=""
-                  className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <X size={10} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Figma URL + .fig file upload */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="brand-wizard-figma"
-              className="flex items-center gap-1.5 text-xs text-neutral-400"
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                <path
-                  d="M8 24C10.208 24 12 22.208 12 20V16H8C5.792 16 4 17.792 4 20C4 22.208 5.792 24 8 24Z"
-                  fill="#0ACF83"
-                />
-                <path
-                  d="M4 12C4 9.792 5.792 8 8 8H12V16H8C5.792 16 4 14.208 4 12Z"
-                  fill="#A259FF"
-                />
-                <path d="M4 4C4 1.792 5.792 0 8 0H12V8H8C5.792 8 4 6.208 4 4Z" fill="#F24E1E" />
-                <path
-                  d="M12 0H16C18.208 0 20 1.792 20 4C20 6.208 18.208 8 16 8H12V0Z"
-                  fill="#FF7262"
-                />
-                <path
-                  d="M20 12C20 14.208 18.208 16 16 16C13.792 16 12 14.208 12 12C12 9.792 13.792 8 16 8C18.208 8 20 9.792 20 12Z"
-                  fill="#1ABCFE"
-                />
-              </svg>
-              Figma
-            </label>
-            {/* .fig file upload button */}
-            <div>
-              <input
-                ref={figFileInputRef}
-                type="file"
-                accept=".fig"
-                className="hidden"
-                disabled={isSubmitting || isIngesting}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) setFigFile(f);
-                  e.target.value = '';
-                }}
-              />
-              {figFile ? (
-                <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/10 rounded-lg px-2 py-1">
-                  <Upload size={10} className="text-neutral-300" />
-                  <span className="text-[10px] font-mono text-white truncate max-w-[100px]">
-                    {figFile.name}
-                  </span>
+      ) : (
+        <>
+          {/* Step indicator (new mode only) */}
+          {isWizard && (
+            <div className="flex items-center gap-2 mb-5">
+              {[
+                { n: 1, label: t('mockup.brandWizardStepIdentity') || 'Identidade' },
+                { n: 2, label: t('mockup.brandWizardStepMaterials') || 'Materiais' },
+              ].map((s, i) => (
+                <React.Fragment key={s.n}>
                   <button
                     type="button"
-                    onClick={() => setFigFile(null)}
-                    className="text-neutral-600 hover:text-white transition-colors"
+                    onClick={() => s.n === 1 && setStep(1)}
+                    disabled={s.n === 2 && !trimmedName}
+                    className={cn(
+                      'flex items-center gap-2 text-xs font-mono transition-colors',
+                      step === s.n
+                        ? 'text-brand-cyan'
+                        : 'text-neutral-600 hover:text-neutral-400 disabled:hover:text-neutral-600'
+                    )}
                   >
-                    <X size={10} />
+                    <span
+                      className={cn(
+                        'flex items-center justify-center w-5 h-5 rounded-full border text-[10px] transition-colors',
+                        step === s.n
+                          ? 'border-brand-cyan text-brand-cyan'
+                          : 'border-neutral-700 text-neutral-600'
+                      )}
+                    >
+                      {s.n}
+                    </span>
+                    {s.label}
                   </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => figFileInputRef.current?.click()}
-                  disabled={isSubmitting || isIngesting}
-                  className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 border border-neutral-800 hover:border-white/15 rounded transition-all disabled:opacity-40"
-                >
-                  <Upload size={10} />
-                  .fig file
-                </button>
-              )}
+                  {i === 0 && (
+                    <span className="flex-1 h-px bg-neutral-800" aria-hidden />
+                  )}
+                </React.Fragment>
+              ))}
             </div>
-          </div>
-          <Input
-            id="brand-wizard-figma"
-            type="url"
-            value={figmaUrl}
-            onChange={(e) => setFigmaUrl(e.target.value)}
-            placeholder={t('mockup.brandWizardFigmaPlaceholder')}
-            disabled={isSubmitting || isIngesting}
-            className="w-full bg-neutral-900/60 border border-white/10 rounded-lg px-3.5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors disabled:opacity-50"
-          />
-          {hasFigma && (
-            <p className="text-xs text-neutral-500 mt-0.5">{t('mockup.brandWizardFigmaHint')}</p>
           )}
-        </div>
 
-        <p className="text-xs text-neutral-600 mt-1">
-          {t('mockup.brandWizardExtractionHint')}
-        </p>
-      </form>
+          <form
+            id="brand-wizard-form"
+            onSubmit={onFormSubmit}
+            onDrop={handleZoneDrop}
+            onDragOver={(e) => e.preventDefault()}
+            className="flex flex-col gap-6"
+          >
+            {isWizard ? (
+              step === 1 ? (
+                identityFields
+              ) : (
+                materialsFields
+              )
+            ) : (
+              <>
+                {identityFields}
+                {materialsFields}
+              </>
+            )}
+          </form>
 
-      {/* Media Kit — only in edit mode (guideline must exist for uploads) */}
-      {isEditMode && editGuideline?.id && (
-        <div className="mt-6 pt-5 border-t border-neutral-800">
-          <MediaKitGallery
-            guidelineId={editGuideline.id}
-            media={media || []}
-            logos={logos || []}
-            onMediaChange={setMedia}
-            onLogosChange={setLogos}
-            compact
-          />
-        </div>
+          {/* Media Kit — only in edit mode (guideline must exist for uploads) */}
+          {isEditMode && editGuideline?.id && (
+            <div className="mt-6 pt-5 border-t border-neutral-800">
+              <MediaKitGallery
+                guidelineId={editGuideline.id}
+                media={media || []}
+                logos={logos || []}
+                onMediaChange={setMedia}
+                onLogosChange={setLogos}
+                compact
+              />
+            </div>
+          )}
+        </>
       )}
     </Modal>
   );

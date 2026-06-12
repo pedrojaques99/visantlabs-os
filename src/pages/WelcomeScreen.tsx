@@ -478,7 +478,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           {brandGuidelines.length > 0 && (
             <Link
               to="/brand-guidelines"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-neutral-800/50 bg-neutral-900/30 hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200 group"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 bg-neutral-900/30 hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200 group"
             >
               <Gem
                 size={14}

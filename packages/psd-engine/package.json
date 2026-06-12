@@ -1,0 +1,54 @@
+{
+  "name": "@visant/psd-engine",
+  "version": "0.1.0",
+  "description": "Isomorphic PSD mockup compositor — ag-psd tree → canvas (perspective warp, blend modes, raster masks, linked smart objects) + Scene Packages for client-side render.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Visant Labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedrojaques99/visantlabs-os",
+    "directory": "packages/psd-engine"
+  },
+  "keywords": ["psd", "ag-psd", "mockup", "canvas", "compositor", "smart-object", "perspective-warp"],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./scene": {
+      "types": "./dist/scene/index.d.ts",
+      "import": "./dist/scene/index.js"
+    },
+    "./adapters/node": {
+      "types": "./dist/adapters/node.d.ts",
+      "import": "./dist/adapters/node.js"
+    },
+    "./adapters/browser": {
+      "types": "./dist/adapters/browser.d.ts",
+      "import": "./dist/adapters/browser.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "ag-psd": ">=23",
+    "canvas": ">=2"
+  },
+  "peerDependenciesMeta": {
+    "ag-psd": {
+      "optional": true
+    },
+    "canvas": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}

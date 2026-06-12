@@ -147,6 +147,8 @@ export const ApiSettings: React.FC = () => {
   const [isChecking, setIsChecking] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
+  // BYOK keys are hidden by default — revealed only when the user opts in
+  const [showByokKeys, setShowByokKeys] = useState(false);
 
   // Gemini
   const [geminiKey, setGeminiKey] = useState('');
@@ -315,6 +317,8 @@ export const ApiSettings: React.FC = () => {
     }
   };
 
+  const byokActiveCount = (hasGemini ? 1 : 0) + (hasSeedream ? 1 : 0) + (hasOpenai ? 1 : 0);
+
   if (isChecking) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -350,58 +354,95 @@ export const ApiSettings: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-6 pt-4">
-          {/* Gemini */}
-          <KeyRow
-            id="gemini-key"
-            label="Google Gemini"
-            getKeyUrl="https://aistudio.google.com/app/apikey"
-            getKeyLabel="Get key"
-            value={geminiKey}
-            onChange={setGeminiKey}
-            show={showGemini}
-            onToggleShow={() => setShowGemini((v) => !v)}
-            hasKey={hasGemini}
-            isLoading={isLoading}
-            onSave={saveGemini}
-            onDelete={() => setConfirmDeleteGemini(true)}
-            placeholder="AIza…"
-          />
+          {/* BYOK keys — hidden by default, revealed on demand */}
+          {!showByokKeys ? (
+            <button
+              type="button"
+              onClick={() => setShowByokKeys(true)}
+              className="w-full flex items-center justify-between gap-3 rounded-md border border-neutral-800/60 bg-neutral-950/40 px-4 py-3 text-left hover:border-neutral-700 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Eye size={16} className="text-neutral-500 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-neutral-300 font-manrope">
+                    Bring your own keys (BYOK)
+                  </p>
+                  <p className="text-xs text-neutral-500 font-mono truncate">
+                    {byokActiveCount > 0
+                      ? `${byokActiveCount} key${byokActiveCount > 1 ? 's' : ''} active · click to manage`
+                      : 'Use your own Gemini, Seedream or OpenAI key'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-mono text-brand-cyan shrink-0">Configure</span>
+            </button>
+          ) : (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-1 duration-200">
+              {/* Gemini */}
+              <KeyRow
+                id="gemini-key"
+                label="Google Gemini"
+                getKeyUrl="https://aistudio.google.com/app/apikey"
+                getKeyLabel="Get key"
+                value={geminiKey}
+                onChange={setGeminiKey}
+                show={showGemini}
+                onToggleShow={() => setShowGemini((v) => !v)}
+                hasKey={hasGemini}
+                isLoading={isLoading}
+                onSave={saveGemini}
+                onDelete={() => setConfirmDeleteGemini(true)}
+                placeholder="AIza…"
+              />
 
-          {/* Seedream */}
-          <SectionDivider icon={<Diamond size={14} />} title="Seedream (BytePlus)" />
-          <KeyRow
-            id="seedream-key"
-            label="Seedream"
-            getKeyUrl="https://console.byteplus.com/ark/region:ark+ap-southeast-1/apiKey"
-            getKeyLabel="Get key"
-            value={seedreamKey}
-            onChange={setSeedreamKey}
-            show={showSeedream}
-            onToggleShow={() => setShowSeedream((v) => !v)}
-            hasKey={hasSeedream}
-            isLoading={isLoading}
-            onSave={saveSeedream}
-            onDelete={() => setConfirmDeleteSeedream(true)}
-            placeholder="Seedream API key"
-          />
+              {/* Seedream */}
+              <SectionDivider icon={<Diamond size={14} />} title="Seedream (BytePlus)" />
+              <KeyRow
+                id="seedream-key"
+                label="Seedream"
+                getKeyUrl="https://console.byteplus.com/ark/region:ark+ap-southeast-1/apiKey"
+                getKeyLabel="Get key"
+                value={seedreamKey}
+                onChange={setSeedreamKey}
+                show={showSeedream}
+                onToggleShow={() => setShowSeedream((v) => !v)}
+                hasKey={hasSeedream}
+                isLoading={isLoading}
+                onSave={saveSeedream}
+                onDelete={() => setConfirmDeleteSeedream(true)}
+                placeholder="Seedream API key"
+              />
 
-          {/* OpenAI */}
-          <SectionDivider icon={<Diamond size={14} />} title="OpenAI" />
-          <KeyRow
-            id="openai-key"
-            label="OpenAI (GPT-Image)"
-            getKeyUrl="https://platform.openai.com/api-keys"
-            getKeyLabel="Get key"
-            value={openaiKey}
-            onChange={setOpenaiKey}
-            show={showOpenai}
-            onToggleShow={() => setShowOpenai((v) => !v)}
-            hasKey={hasOpenai}
-            isLoading={isLoading}
-            onSave={saveOpenai}
-            onDelete={() => setConfirmDeleteOpenai(true)}
-            placeholder="sk-…"
-          />
+              {/* OpenAI */}
+              <SectionDivider icon={<Diamond size={14} />} title="OpenAI" />
+              <KeyRow
+                id="openai-key"
+                label="OpenAI (GPT-Image)"
+                getKeyUrl="https://platform.openai.com/api-keys"
+                getKeyLabel="Get key"
+                value={openaiKey}
+                onChange={setOpenaiKey}
+                show={showOpenai}
+                onToggleShow={() => setShowOpenai((v) => !v)}
+                hasKey={hasOpenai}
+                isLoading={isLoading}
+                onSave={saveOpenai}
+                onDelete={() => setConfirmDeleteOpenai(true)}
+                placeholder="sk-…"
+              />
+
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setShowByokKeys(false)}
+                  className="text-xs text-neutral-500 hover:text-neutral-300 font-mono"
+                >
+                  Hide keys
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* LLM Preferences */}
           <SectionDivider icon={<Cpu size={14} />} title="Language Model" />

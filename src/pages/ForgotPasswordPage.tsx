@@ -91,8 +91,8 @@ export const ForgotPasswordPage: React.FC = () => {
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
         <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 rounded-md bg-green-500/20 mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+            <div className="flex items-center justify-center w-16 h-16 rounded-md bg-success/20 mb-4">
+              <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
             <h1 className="text-2xl font-semibold font-mono text-neutral-200">
               {t('auth.passwordResetSuccess') || 'Password Reset Successful!'}

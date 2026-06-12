@@ -346,7 +346,7 @@ export const CompressPage: React.FC = () => {
                             {formatBytes(previewItem.compressedSize)}
                           </span>
                           {previewItem.originalSize > 0 && (
-                            <span className="text-[10px] font-mono uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded tabular-nums">
+                            <span className="text-[10px] font-mono uppercase tracking-wider bg-success/20 text-success px-2 py-0.5 rounded tabular-nums">
                               -
                               {Math.round(
                                 ((previewItem.originalSize - previewItem.compressedSize) /
@@ -414,7 +414,7 @@ export const CompressPage: React.FC = () => {
                           <AnimatePresence>
                             {item.status === 'done' && item.originalSize > 0 && (
                               <motion.span
-                                className="text-[9px] font-mono text-emerald-500 tabular-nums"
+                                className="text-[10px] font-mono text-success tabular-nums"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}

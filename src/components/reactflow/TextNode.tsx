@@ -215,7 +215,7 @@ export const TextNode = memo(
                 'absolute bottom-2 right-2 text-[10px] font-mono transition-all duration-200',
                 'px-2 py-0.5 rounded-full backdrop-blur-sm',
                 isVeryLongText
-                  ? 'text-amber-400 bg-amber-400/10 border-node border-amber-400/20'
+                  ? 'text-warning bg-warning/10 border-node border-warning/20'
                   : isLongText
                   ? 'text-neutral-400 bg-neutral-800/50'
                   : 'text-neutral-500 bg-neutral-800/30'

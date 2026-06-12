@@ -1,12 +1,10 @@
 /**
  * Server-side Post-FX Shader Renderer
  *
- * Runs the 14 GLSL post-processing shaders via headless-gl.
- * Shader sources are loaded dynamically from the client-side shader registry
- * at first use — zero duplication of GLSL code.
+ * Runs the 14 GLSL post-processing shaders via headless-gl. Shader sources come
+ * straight from @visant/print-fx (the package's `shaders` entry self-registers
+ * every shader on import) — zero duplication, no runtime file resolution.
  */
-import { resolve } from 'path';
-import { pathToFileURL } from 'url';
 import {
   acquireSharedContext,
   getOrCreateProgram,
@@ -15,6 +13,11 @@ import {
   readPixels,
   deleteRenderResources,
 } from './glContext.js';
+import {
+  getShaderDefinition,
+  isShaderRegistered,
+  getHalftoneShaderSource,
+} from '@visant/print-fx/shaders';
 import type { ShaderType } from './types.js';
 
 const VERTEX_SHADER = `
@@ -32,35 +35,6 @@ let initState: 'pending' | 'ok' | 'failed' = 'pending';
 async function ensureInitialized(): Promise<void> {
   if (initState !== 'pending') return;
   try {
-    const root = process.cwd();
-    const shadersDir = resolve(root, 'src', 'utils', 'shaders');
-
-    // Import the registry and all shader modules. They self-register fragment sources.
-    const registryUrl = pathToFileURL(resolve(shadersDir, 'shaderRegistry.ts')).href;
-    const registry = await import(registryUrl);
-
-    const shaderNames = [
-      'vhs',
-      'ascii',
-      'matrixDither',
-      'upscale',
-      'dither',
-      'duotone',
-      'filmGrain',
-      'pixelate',
-      'posterize',
-      'chromaticAberration',
-      'crtScanlines',
-      'edgeDetect',
-      'glitch',
-    ];
-    for (const name of shaderNames) {
-      const url = pathToFileURL(resolve(shadersDir, 'shaders', `${name}.ts`)).href;
-      await import(url);
-    }
-    const halftoneUrl = pathToFileURL(resolve(shadersDir, 'shaders', 'halftone.ts')).href;
-    const halftoneModule = await import(halftoneUrl);
-
     const types: ShaderType[] = [
       'vhs',
       'ascii',
@@ -77,16 +51,16 @@ async function ensureInitialized(): Promise<void> {
       'glitch',
     ];
     for (const t of types) {
-      if (registry.isShaderRegistered(t)) {
-        shaderSources.set(t, registry.getShaderDefinition(t).fragmentShaderSource);
+      if (isShaderRegistered(t)) {
+        shaderSources.set(t, getShaderDefinition(t).fragmentShaderSource);
       }
     }
     for (const variant of ['ellipse', 'square', 'lines'] as const) {
-      shaderSources.set(`halftone:${variant}`, halftoneModule.getHalftoneShaderSource(variant));
+      shaderSources.set(`halftone:${variant}`, getHalftoneShaderSource(variant));
     }
 
     initState = 'ok';
-    console.log(`[ImageLab] Loaded ${shaderSources.size} shader sources from client modules.`);
+    console.log(`[ImageLab] Loaded ${shaderSources.size} shader sources from @visant/print-fx.`);
   } catch (err) {
     initState = 'failed';
     console.warn(

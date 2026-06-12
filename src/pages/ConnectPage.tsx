@@ -341,12 +341,12 @@ export default function ConnectPage() {
             >
               <motion.div
                 variants={itemVariants}
-                className="w-12 h-12 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20 flex items-center justify-center"
+                className="w-12 h-12 rounded-full bg-success/10 ring-1 ring-success/20 flex items-center justify-center"
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                <Check className="w-5 h-5 text-emerald-500" strokeWidth={2.5} />
+                <Check className="w-5 h-5 text-success" strokeWidth={2.5} />
               </motion.div>
               <motion.h1
                 variants={itemVariants}
@@ -426,7 +426,7 @@ export default function ConnectPage() {
 function Spinner() {
   return (
     <div className="relative w-5 h-5">
-      <div className="absolute inset-0 rounded-full border-2 border-foreground/10" />
+      <div className="absolute inset-0 rounded-full border-2 border-neutral-800" />
       <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-foreground animate-spin" />
     </div>
   );
@@ -480,7 +480,7 @@ function CopyBtn({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.15 }}
-            className="flex items-center gap-1 text-emerald-500"
+            className="flex items-center gap-1 text-success"
           >
             <Check className="w-3 h-3" /> Copied
           </motion.span>

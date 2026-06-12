@@ -1,18 +1,16 @@
 /**
  * ImageLab Presets — server-side view.
  *
- * The preset data now has a single source of truth in `shared/imagelab/presets.ts`
- * (same pattern as the shared Riso shaders). This module re-exports it cast to
- * the server-side settings interfaces. Client and server can no longer drift —
- * both import the same shared module — so the old "kept in sync via the type
- * system" caveat is gone.
+ * The preset data has a single source of truth in @visant/print-fx (`./presets`).
+ * This module re-exports it cast to the server-side settings interfaces. Client
+ * and server can no longer drift — both consume the same package module.
  */
 import type { HalftoneSettings, RisoFullPreset, TextureBlendMode } from './types.js';
 import {
   HALFTONE_PRESETS_DATA,
   RISO_FULL_PRESETS_DATA,
   TEXTURE_PRESETS_DATA,
-} from '../../../shared/imagelab/presets.js';
+} from '@visant/print-fx/presets';
 
 export const HALFTONE_PRESETS = HALFTONE_PRESETS_DATA as Record<
   string,

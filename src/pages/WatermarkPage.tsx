@@ -694,7 +694,7 @@ export const WatermarkPage: React.FC = () => {
                       }}
                       disabled={isProcessing}
                       className={cn(
-                        'w-full px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider transition-all duration-200',
+                        'w-full px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
                         position === 'tile'
                           ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
                           : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'

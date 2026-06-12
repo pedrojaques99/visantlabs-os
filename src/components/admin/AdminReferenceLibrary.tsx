@@ -257,7 +257,7 @@ export const AdminReferenceLibrary: React.FC = () => {
       <div
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
-        className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-brand-cyan/50 transition-colors cursor-pointer"
+        className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-neutral-700 transition-colors cursor-pointer"
         onClick={() => {
           const input = document.createElement('input');
           input.type = 'file';
@@ -396,7 +396,7 @@ export const AdminReferenceLibrary: React.FC = () => {
                     <Badge
                       key={item._id}
                       variant="outline"
-                      className="text-[8px] px-1 py-0 border-neutral-700 text-neutral-400 cursor-pointer hover:border-brand-cyan/50"
+                      className="text-[10px] px-1 py-0 border-neutral-700 text-neutral-400 cursor-pointer hover:border-neutral-700"
                       onClick={() => {
                         setActiveFilters((prev) => ({ ...prev, [key]: item._id }));
                         setRefs([]);
@@ -448,7 +448,7 @@ export const AdminReferenceLibrary: React.FC = () => {
             <CardContent className="p-2 space-y-1">
               <p className="text-xs font-medium text-neutral-200 truncate">{ref.name}</p>
               {ref.studio && (
-                <p className="text-[9px] font-mono text-neutral-500 truncate">{ref.studio}</p>
+                <p className="text-[10px] font-mono text-neutral-500 truncate">{ref.studio}</p>
               )}
               <div className="flex flex-wrap gap-0.5">
                 {ref.dimensions &&
@@ -461,7 +461,7 @@ export const AdminReferenceLibrary: React.FC = () => {
                           <Badge
                             key={`${key}-${v}`}
                             variant="outline"
-                            className="text-[8px] px-1 py-0 border-neutral-700 text-neutral-400"
+                            className="text-[10px] px-1 py-0 border-neutral-700 text-neutral-400"
                           >
                             {v}
                           </Badge>
@@ -679,8 +679,8 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
                       key={val}
                       variant="outline"
                       className={cn(
-                        'text-[9px] px-1.5 py-0 border-neutral-700 text-neutral-300',
-                        editing && 'cursor-pointer hover:border-red-500/50 hover:text-red-400'
+                        'text-[10px] px-1.5 py-0 border-neutral-700 text-neutral-300',
+                        editing && 'cursor-pointer hover:border-destructive/50 hover:text-destructive'
                       )}
                       onClick={editing ? () => removeDimensionTag(key, val) : undefined}
                     >
@@ -689,7 +689,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
                     </Badge>
                   ))}
                   {(dimensions[key] || []).length === 0 && !editing && (
-                    <span className="text-[9px] text-neutral-600 italic">—</span>
+                    <span className="text-[10px] text-neutral-600 italic">—</span>
                   )}
                 </div>
                 {editing && (
@@ -721,7 +721,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
           <Button
             size="sm"
             variant="ghost"
-            className="text-red-400 hover:text-red-300 text-xs"
+            className="text-destructive hover:text-destructive text-xs"
             onClick={() => onDelete(ref_.id)}
           >
             <Trash2 className="h-3 w-3 mr-1" />

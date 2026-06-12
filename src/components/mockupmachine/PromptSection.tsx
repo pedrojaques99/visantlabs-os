@@ -264,9 +264,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         {!isCollapsed && promptPreview.trim() && (
           <div className="flex items-center gap-2 animate-fade-in">
             {isPromptReady ? (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
-                <div className="w-1 h-1 rounded-full bg-green-500" />
-                <span className="text-[10px] font-mono text-green-400 uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 border border-success/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
+                <div className="w-1 h-1 rounded-full bg-success" />
+                <span className="text-[10px] font-mono text-success uppercase tracking-wider">
                   {t('mockup.promptSynced')}
                 </span>
               </div>
@@ -274,13 +274,13 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               <Tooltip content={t('mockup.outOfSyncTooltip')} position="top">
                 <button
                   onClick={onGenerateSmartPrompt}
-                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-all cursor-pointer group/sync"
+                  className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-warning/10 border border-warning/30 hover:bg-warning/20 transition-all cursor-pointer group/sync"
                 >
                   <ArrowLeftRight
                     size={8}
-                    className="text-amber-400 group-hover/sync:rotate-180 transition-transform duration-500"
+                    className="text-warning group-hover/sync:rotate-180 transition-transform duration-500"
                   />
-                  <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
+                  <span className="text-[10px] font-mono text-warning uppercase tracking-wider">
                     {t('mockup.promptOutOfSync')}
                   </span>
                 </button>
@@ -328,7 +328,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             </>
           ) : promptPreview ? (
             <>
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500/80 shrink-0"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-success/80 shrink-0"></div>
               <span className="truncate flex-1">
                 Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}
               </span>

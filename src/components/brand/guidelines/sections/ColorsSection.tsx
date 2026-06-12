@@ -271,11 +271,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                   <span
                     className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                       pair.wcagAAA
-                        ? 'bg-green-500/20 text-green-400'
+                        ? 'bg-success/20 text-success'
                         : pair.wcagAA
                         ? 'bg-white/10 text-neutral-300'
                         : pair.largeAA
-                        ? 'bg-amber-500/20 text-amber-400'
+                        ? 'bg-warning/20 text-warning'
                         : 'bg-destructive/20 text-destructive'
                     }`}
                   >

@@ -105,10 +105,10 @@ export const getSectionInfo = (title: string): { icon: React.ReactNode; color: s
     return { icon: <Users className="h-5 w-5" />, color: 'text-purple-400' };
   }
   if (lowerTitle.includes('posicionamento') || lowerTitle.includes('positioning')) {
-    return { icon: <Target className="h-5 w-5" />, color: 'text-green-400' };
+    return { icon: <Target className="h-5 w-5" />, color: 'text-success' };
   }
   if (lowerTitle.includes('oportunidade') || lowerTitle.includes('opportunity')) {
-    return { icon: <Lightbulb className="h-5 w-5" />, color: 'text-yellow-400' };
+    return { icon: <Lightbulb className="h-5 w-5" />, color: 'text-warning' };
   }
   if (lowerTitle.includes('tendência') || lowerTitle.includes('trend')) {
     return { icon: <TrendingUp className="h-5 w-5" />, color: 'text-cyan-400' };

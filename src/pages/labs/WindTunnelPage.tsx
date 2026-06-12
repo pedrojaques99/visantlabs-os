@@ -1313,7 +1313,7 @@ export function WindTunnelPage() {
           {config.paused && (
             <>
               <span className="text-neutral-800">|</span>
-              <span className="text-amber-500">PAUSED</span>
+              <span className="text-warning">PAUSED</span>
             </>
           )}
         </AppShellStatusBar>

@@ -38,8 +38,8 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
           </div>
         )}
         {job.status === 'downloaded' && (
-          <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
-            <CheckCircle2 size={16} className="text-green-400" />
+          <div className="absolute inset-0 bg-success/20 flex items-center justify-center">
+            <CheckCircle2 size={16} className="text-success" />
           </div>
         )}
       </div>
@@ -82,8 +82,8 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
             className="flex items-center justify-between"
           >
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 size={12} className="text-green-400" />
-              <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">
+              <CheckCircle2 size={12} className="text-success" />
+              <span className="text-[10px] font-bold text-success uppercase tracking-widest">
                 Saved!
               </span>
             </div>

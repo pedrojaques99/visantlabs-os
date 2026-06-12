@@ -193,7 +193,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           onClick={handleCopy}
           className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900/50 hover:bg-neutral-800"
         >
-          {isCopied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+          {isCopied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
         </Button>
 
         <div className="select-text whitespace-pre-wrap">
@@ -215,7 +215,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     />
                   ) : (
                     <div className="bg-white/5 rounded-lg p-3 flex items-center gap-2 text-xs hover:bg-white/10 transition-colors">
-                      <FileText size={14} className="text-amber-400" />
+                      <FileText size={14} className="text-warning" />
                       <span className="truncate">{attachment.name}</span>
                     </div>
                   )}
@@ -272,7 +272,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     ) : isError ? (
                       <AlertCircle size={12} className="shrink-0" />
                     ) : (
-                      <Wrench size={12} className="shrink-0 text-green-400/70" />
+                      <Wrench size={12} className="shrink-0 text-success/70" />
                     )}
                     <span className="uppercase tracking-wider truncate flex-1 text-left">
                       {label}
@@ -400,8 +400,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               className={cn(
                 'p-1.5 rounded transition-colors',
                 feedback.rating === 'up'
-                  ? 'bg-green-400/20 text-green-400'
-                  : 'text-neutral-500 hover:text-green-400 hover:bg-green-400/10'
+                  ? 'bg-success/20 text-success'
+                  : 'text-neutral-500 hover:text-success hover:bg-success/10'
               )}
               title={feedback.rating === 'up' ? 'Undo feedback' : 'Helpful'}
             >

@@ -2,7 +2,7 @@ import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Environment, ContactShadows, OrbitControls, Text3D, Center } from '@react-three/drei';
 import * as THREE from 'three';
-import { getSimpleMaterialProps } from '@/components/3d-studio/engine/materials';
+import { getSimpleMaterialProps } from '@visant/extrude3d/materials';
 
 interface PlaygroundScene3DProps {
   mode: 'text' | 'shape';

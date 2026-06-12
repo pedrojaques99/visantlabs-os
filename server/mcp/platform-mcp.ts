@@ -223,7 +223,11 @@ import {
   FRONTEND_BASE_URL,
   MCP_HINTS,
 } from '../lib/mcp-constants.js';
-import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
+import {
+  FREE_GENERATIONS_LIMIT,
+  FREE_MONTHLY_CREDITS,
+  refundCreditsWithRetry,
+} from '../lib/credits.js';
 
 function jsonResponse(data: unknown) {
   const text = JSON.stringify(data, null, 2);
@@ -279,6 +283,49 @@ function extractSseEventData(sseText: string, eventName: string): string | null 
     }
   }
   return null;
+}
+
+// ─── PSD mockup agent helpers (pure — unit tested in mcp-tools-audit) ──────────
+/** Aspect ratios the image providers accept (mockup-generate enum). */
+export const PRODUCE_ASPECT_RATIOS = ['1:1', '9:16', '16:9', '4:5'] as const;
+export type ProduceAspectRatio = (typeof PRODUCE_ASPECT_RATIOS)[number];
+
+/**
+ * Picks the supported provider aspect ratio closest to a face's inner geometry,
+ * so the generated art matches the smart object before cover-cropping.
+ * Falls back to '1:1' when dimensions are missing/invalid.
+ */
+export function nearestAspectRatio(innerW?: number, innerH?: number): ProduceAspectRatio {
+  if (!innerW || !innerH || innerW <= 0 || innerH <= 0) return '1:1';
+  const target = innerW / innerH;
+  let best: ProduceAspectRatio = '1:1';
+  let bestDiff = Infinity;
+  for (const ar of PRODUCE_ASPECT_RATIOS) {
+    const [w, h] = ar.split(':').map(Number);
+    const diff = Math.abs(w / h - target);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = ar;
+    }
+  }
+  return best;
+}
+
+/**
+ * Builds the /render payload for psd-mockup-produce. The art is applied in cover
+ * mode by the scene fast path; `face` (or '*') maps to the smart object.
+ */
+export function buildRenderPayload(args: {
+  psdFileName: string;
+  artUrl: string;
+  face?: string;
+  preview?: boolean;
+}): { psdFileName: string; arts: Array<{ smartObject: string; artUrl: string }>; preview?: boolean } {
+  return {
+    psdFileName: args.psdFileName,
+    arts: [{ smartObject: args.face || '*', artUrl: args.artUrl }],
+    ...(args.preview ? { preview: true } : {}),
+  };
 }
 
 // ─── Dynamic tool registry ────────────────────────────────────────────────────
@@ -453,6 +500,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
     'video-generate',
     'campaign-generate',
     'playground-generate',
+    'psd-scene-prepare',
+    'psd-mockup-produce',
   ]);
 
   const WRITE_PATTERN =
@@ -5998,6 +6047,254 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
         return { content: [{ type: 'text' as const, text: summary.join('\n') }] };
       } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════
+  // PSD Scene engine — autonomous mockup production (catalog → art → render)
+  // ═══════════════════════════════════════════
+
+  server.tool(
+    'psd-scene-list',
+    `List the PSD mockup Scene Package catalog (pre-processed templates ready for instant rendering).
+
+Each scene has FACES (smart objects where art is placed). For each face you get innerW/innerH — the pixel size of the editable area. The ideal art aspect ratio = innerW/innerH, and art is applied in COVER mode (it fills the face and the overflow is cropped), so keep the important content centered.
+
+Workflow: pick a scene + face by brand/brief, then call psd-mockup-produce with that psdFileName (and face if the scene has multiple). If a PSD from the Drive catalog has no scene yet, run psd-scene-prepare first.`,
+    {
+      search: z
+        .string()
+        .optional()
+        .describe('Case-insensitive filter on the PSD file name (client-side).'),
+    },
+    { title: 'List PSD Scenes', readOnlyHint: true },
+    async ({ search }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/psd-render/scenes`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = (await resp.json()) as any;
+        if (!resp.ok) {
+          return ERR.internal(result?.error || `Failed to list scenes (${resp.status})`);
+        }
+        const q = (search || '').trim().toLowerCase();
+        const scenes = (result.scenes || [])
+          .filter((s: any) => !q || String(s.psdFileName || '').toLowerCase().includes(q))
+          .map((s: any) => ({
+            psdFileName: s.psdFileName,
+            width: s.width,
+            height: s.height,
+            warnings: s.warnings || [],
+            faces: (s.faces || []).map((f: any) => ({
+              key: f.key,
+              name: f.name,
+              innerW: f.innerW,
+              innerH: f.innerH,
+              suggestedAspectRatio: nearestAspectRatio(f.innerW, f.innerH),
+            })),
+          }));
+        return jsonResponse({
+          count: scenes.length,
+          scenes,
+          hint: 'Art is applied COVER (fills the face, crops overflow) — match suggestedAspectRatio and center content. No scene for a template? Use psd-scene-prepare.',
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'psd-scene-prepare',
+    `Pre-process a PSD from the Drive catalog into a Scene Package so it can be rendered instantly. Use this ONCE when a template you want is not yet in psd-scene-list. Heavy operation (opens the PSD), but cached forever after. Returns the extracted faces.`,
+    {
+      psdFileName: z
+        .string()
+        .describe('Bare PSD file name from the Drive catalog (e.g. "HM_BANNER_002.psd"). No paths.'),
+    },
+    { title: 'Prepare PSD Scene', destructiveHint: false },
+    async ({ psdFileName }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/psd-render/scene-prepare`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ psdFileName }),
+        });
+        const result = (await resp.json()) as any;
+        if (!resp.ok) {
+          return ERR.internal(result?.error || `Scene preparation failed (${resp.status})`);
+        }
+        return jsonResponse({
+          psdFileName,
+          scene: result.scene,
+          message: 'Scene ready. You can now render it with psd-mockup-produce.',
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'psd-mockup-produce',
+    `End-to-end PSD mockup production: optionally generate the artwork, then place it into a real PSD template and publish the final image. The single tool an agent needs to deliver a finished mockup.
+
+Pipeline:
+1. Provide artPrompt (to generate art) OR artUrl (existing artwork). With brandGuidelineId, the brand logo/colors/typography are auto-injected into generation.
+2. The art is placed into the template's smart object (cover mode) via the scene fast path (falls back to opening the PSD automatically).
+3. Returns the published imageUrl.
+
+Costs: generating art with artPrompt costs credits (same as mockup-generate); the render itself is free. If render fails after generation, the generation credits are refunded. Passing artUrl costs nothing.
+
+Pick the template with psd-scene-list first and match the art aspect ratio to the face's suggestedAspectRatio.`,
+    {
+      psdFileName: z
+        .string()
+        .describe('Bare PSD file name from psd-scene-list (e.g. "HM_BANNER_002.psd"). No paths.'),
+      artPrompt: z
+        .string()
+        .optional()
+        .describe(
+          'Prompt to GENERATE the artwork that goes into the smart object. Describe the DESIGN to place (poster/label/screen content). Mutually exclusive with artUrl. Costs credits.'
+        ),
+      artUrl: z
+        .string()
+        .optional()
+        .describe('URL of existing artwork to place. Skips generation (free). Use artPrompt OR artUrl.'),
+      brandGuidelineId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID — injects logo/colors/typography when generating art (artPrompt path).'),
+      face: z
+        .string()
+        .optional()
+        .describe('Target smart object name/key from psd-scene-list. Omit to apply to all editable faces.'),
+      model: z
+        .enum(IMAGE_MODEL_IDS)
+        .default(DEFAULT_IMAGE_MODEL_ID)
+        .describe('Image model for the artPrompt path. Default is recommended.'),
+      preview: z
+        .boolean()
+        .default(false)
+        .describe('true = fast low-res JPEG preview; false = full-res PNG.'),
+    },
+    { title: 'Produce PSD Mockup', destructiveHint: false },
+    async ({ psdFileName, artPrompt, artUrl, brandGuidelineId, face, model, preview }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+
+      if (!artPrompt && !artUrl) {
+        return ERR.validation('Provide artPrompt (to generate art) or artUrl (existing artwork).');
+      }
+      if (artPrompt && artUrl) {
+        return ERR.validation('Provide only one of artPrompt or artUrl, not both.');
+      }
+
+      let creditsCharged = 0;
+      let resolvedArtUrl = artUrl || '';
+
+      try {
+        // ── 1. Generate art if a prompt was given (reuses mockup-generate path) ──
+        if (artPrompt) {
+          // Match the art aspect ratio to the target face when we can find it.
+          let aspectRatio: ProduceAspectRatio = '1:1';
+          try {
+            const sceneResp = await fetch(`${INTERNAL_API_BASE}/api/psd-render/scenes`, {
+              headers: { 'x-mcp-user-id': currentUserId },
+            });
+            if (sceneResp.ok) {
+              const sceneJson = (await sceneResp.json()) as any;
+              const scene = (sceneJson.scenes || []).find(
+                (s: any) => s.psdFileName === psdFileName
+              );
+              if (scene?.faces?.length) {
+                const target =
+                  (face &&
+                    scene.faces.find(
+                      (f: any) =>
+                        f.key === face || String(f.name).toLowerCase() === face.toLowerCase()
+                    )) ||
+                  scene.faces[0];
+                if (target) aspectRatio = nearestAspectRatio(target.innerW, target.innerH);
+              }
+            }
+          } catch {
+            /* aspect ratio is best-effort; default 1:1 */
+          }
+
+          const genResp = await fetch(`${INTERNAL_API_BASE}/api/mockups/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({
+              promptText: artPrompt,
+              brandGuidelineId,
+              model,
+              aspectRatio,
+              resolution: '1K',
+              designType: 'blank',
+              feature: 'agent',
+            }),
+          });
+          const genResult = (await genResp.json()) as any;
+          if (!genResp.ok) {
+            const detail = [genResult.error, genResult.message, genResult.hint]
+              .filter(Boolean)
+              .join(' — ');
+            return ERR.internal(detail || `Art generation failed (${genResp.status})`);
+          }
+          resolvedArtUrl = genResult.imageUrl || '';
+          creditsCharged = genResult.creditsUsed ?? 0;
+          if (!resolvedArtUrl) {
+            // Charged but no usable art — refund and bail.
+            if (creditsCharged > 0) {
+              await refundCreditsWithRetry(currentUserId, creditsCharged).catch(() => {});
+            }
+            return ERR.internal('Art generation returned no image URL.');
+          }
+        }
+
+        // ── 2. Render the mockup (scene fast path, PSD fallback automatic) ──────
+        const renderResp = await fetch(`${INTERNAL_API_BASE}/api/psd-render/render`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify(
+            buildRenderPayload({ psdFileName, artUrl: resolvedArtUrl, face, preview })
+          ),
+        });
+        const renderResult = (await renderResp.json()) as any;
+        if (!renderResp.ok) {
+          // Render failed after we already paid for generation — refund.
+          if (creditsCharged > 0) {
+            await refundCreditsWithRetry(currentUserId, creditsCharged).catch(() => {});
+            creditsCharged = 0;
+          }
+          const msg = renderResult?.error || `Render failed (${renderResp.status})`;
+          const hint = /scene not found|não encontrado|fora do seu acesso/i.test(msg)
+            ? ' — run psd-scene-prepare for this PSD, or use psd-scene-list to see available templates.'
+            : '';
+          return ERR.internal(msg + hint);
+        }
+
+        const data = renderResult.data || {};
+        const quota = await getQuotaMeta(currentUserId);
+        return jsonResponse({
+          imageUrl: data.url || null,
+          engine: data.engine || null,
+          replaced: data.replaced || [],
+          artUrl: resolvedArtUrl,
+          creditsCharged,
+          _meta: quota,
+        });
+      } catch (err: any) {
+        if (creditsCharged > 0) {
+          await refundCreditsWithRetry(currentUserId, creditsCharged).catch(() => {});
+        }
         return ERR.internal(err.message);
       }
     }

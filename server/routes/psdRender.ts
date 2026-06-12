@@ -1,8 +1,19 @@
 import express from 'express';
-import { authenticate, requireScope, AuthRequest } from '../middleware/auth.js';
+import { authenticate, requireScope, requireAdmin, AuthRequest } from '../middleware/auth.js';
 import { renderPsdMockup } from '../services/psdRenderService.js';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
+import { redisClient } from '../lib/redis.js';
+import {
+  resolvePsdPath,
+  extractSceneFromPsd,
+  uploadSceneAssets,
+  saveSceneRecord,
+  getSceneRecord,
+  listScenes,
+  deleteSceneRecord,
+  signedSceneResponse,
+} from '../services/sceneStore.js';
 
 const router = express.Router();
 
@@ -84,7 +95,7 @@ async function resolveTier(req: TierRequest, _res: express.Response, next: expre
 }
 
 router.post('/render', authenticate, requireScope('generate'), renderLimiter, resolveTier, async (req: TierRequest, res) => {
-  const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview } = req.body;
+  const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview, forcePsd } = req.body;
 
   // PSD: URL http(s) OU nome de arquivo no Google Drive
   if (psdUrl !== undefined && typeof psdUrl !== 'string') {
@@ -146,6 +157,7 @@ router.post('/render', authenticate, requireScope('generate'), renderLimiter, re
       preview: preview === true || typeof preview === 'number' ? preview : undefined,
       userId: req.userId!,
       accessTier: req.psdTier || 'public',
+      forcePsd: forcePsd === true,
     });
 
     res.json({
@@ -162,6 +174,132 @@ router.post('/render', authenticate, requireScope('generate'), renderLimiter, re
     console.error('[psd-render] Error:', err.message || err, err.stack);
     const status = err.message?.includes('queue is full') ? 429 : 500;
     res.status(status).json({ error: err.message || 'Render failed' });
+  }
+});
+
+// ── Scene Packages ───────────────────────────────────────────────────────────
+// Pré-processamento (1x por PSD) + catálogo + entrega por signed URL.
+const SCENE_PREPARE_ACTIVE_KEY = 'psd-scene-prepare:active';
+const SCENE_PREPARE_MAX = parseInt(process.env.PSD_SCENE_PREPARE_MAX_CONCURRENT || '1', 10);
+
+function validBareFileName(name: unknown): name is string {
+  return (
+    typeof name === 'string' &&
+    name.length > 0 &&
+    !name.includes('/') &&
+    !name.includes('\\') &&
+    !name.includes('..')
+  );
+}
+
+async function getMongo() {
+  const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+  await connectToMongoDB();
+  return getDb();
+}
+
+/**
+ * POST /scene-prepare — extrai e publica o Scene Package de um PSD.
+ * Pesado, mas 1x por PSD; roda sob semáforo Redis. O acesso ao arquivo é validado
+ * pela resolução via driveService (tier 'public' só enxerga as pastas BOXY).
+ */
+router.post(
+  '/scene-prepare',
+  authenticate,
+  requireScope('generate'),
+  renderLimiter,
+  resolveTier,
+  async (req: TierRequest, res) => {
+    const { psdFileName } = req.body;
+    if (!validBareFileName(psdFileName)) {
+      return res.status(400).json({ error: 'psdFileName must be a bare file name' });
+    }
+
+    const active = await redisClient.get(SCENE_PREPARE_ACTIVE_KEY);
+    if (active && parseInt(active, 10) >= SCENE_PREPARE_MAX) {
+      return res.status(429).json({ error: 'Scene preparation queue is full. Try again in a moment.' });
+    }
+    await redisClient.incr(SCENE_PREPARE_ACTIVE_KEY);
+    await redisClient.expire(SCENE_PREPARE_ACTIVE_KEY, 600);
+
+    try {
+      // resolvePsdPath aplica o escopo de pastas do tier — 403-equivalente vira erro.
+      const psdPath = await resolvePsdPath(psdFileName, req.psdTier || 'public');
+      const { record, uploads } = await extractSceneFromPsd(psdPath, psdFileName);
+      await uploadSceneAssets(uploads);
+      const db = await getMongo();
+      await saveSceneRecord(db, record);
+
+      res.json({
+        success: true,
+        scene: { hash: record.hash, faces: record.faces, warnings: record.warnings },
+      });
+    } catch (err: any) {
+      console.error('[psd-render] scene-prepare error:', err.message || err);
+      const msg = err.message || 'Scene preparation failed';
+      const status = /não encontrado|fora do seu acesso|indisponíveis/i.test(msg) ? 403 : 500;
+      res.status(status).json({ error: msg });
+    } finally {
+      await redisClient.decr(SCENE_PREPARE_ACTIVE_KEY);
+    }
+  }
+);
+
+/** GET /scenes — catálogo (resumo) das scenes disponíveis. */
+router.get('/scenes', authenticate, async (_req: AuthRequest, res) => {
+  try {
+    const db = await getMongo();
+    const scenes = await listScenes(db);
+    res.json({ success: true, scenes });
+  } catch (err: any) {
+    console.error('[psd-render] list scenes error:', err.message || err);
+    res.status(500).json({ error: err.message || 'Failed to list scenes' });
+  }
+});
+
+/**
+ * GET /scenes/:psdFileName — SceneDoc + signed URLs (TTL ~10min) das imagens.
+ * Mesma validação de acesso ao arquivo que o /render: um user 'public' não pode
+ * pegar a scene de um PSD que não está nas pastas públicas.
+ */
+router.get('/scenes/:psdFileName', authenticate, resolveTier, async (req: TierRequest, res) => {
+  const psdFileName = req.params.psdFileName;
+  if (!validBareFileName(psdFileName)) {
+    return res.status(400).json({ error: 'psdFileName must be a bare file name' });
+  }
+  try {
+    const db = await getMongo();
+    const record = await getSceneRecord(db, psdFileName);
+    if (!record) {
+      return res.status(404).json({ error: 'Scene not found' });
+    }
+    // Revalida o acesso ao PSD de origem (tier). resolvePsdPath lança se fora do escopo.
+    try {
+      await resolvePsdPath(psdFileName, req.psdTier || 'public');
+    } catch {
+      return res.status(403).json({ error: 'PSD fora do seu acesso' });
+    }
+    const payload = await signedSceneResponse(record, 600);
+    res.json({ success: true, ...payload });
+  } catch (err: any) {
+    console.error('[psd-render] get scene error:', err.message || err);
+    res.status(500).json({ error: err.message || 'Failed to get scene' });
+  }
+});
+
+/** DELETE /scenes/:psdFileName — limpeza/regeneração (admin). */
+router.delete('/scenes/:psdFileName', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  const psdFileName = req.params.psdFileName;
+  if (!validBareFileName(psdFileName)) {
+    return res.status(400).json({ error: 'psdFileName must be a bare file name' });
+  }
+  try {
+    const db = await getMongo();
+    const deleted = await deleteSceneRecord(db, psdFileName);
+    res.json({ success: true, deleted });
+  } catch (err: any) {
+    console.error('[psd-render] delete scene error:', err.message || err);
+    res.status(500).json({ error: err.message || 'Failed to delete scene' });
   }
 });
 

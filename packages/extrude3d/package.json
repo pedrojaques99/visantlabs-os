@@ -1,0 +1,64 @@
+{
+  "name": "@visant/extrude3d",
+  "version": "0.1.0",
+  "description": "SVG / text → extruded 3D geometry. Pure three.js: parse an SVG (or opentype glyphs) into shapes, extrude with bevel/curve/smoothness controls, smooth crease normals, triplanar UVs, center + scale — plus a PBR material-preset library and a dependency-free GLB serializer. No React, no R3F.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Visant Labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedrojaques99/visantlabs-os",
+    "directory": "packages/extrude3d"
+  },
+  "keywords": [
+    "three",
+    "threejs",
+    "svg",
+    "extrude",
+    "geometry",
+    "3d",
+    "glb",
+    "gltf",
+    "text-to-3d",
+    "opentype",
+    "pbr",
+    "materials"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./materials": {
+      "types": "./dist/materials.d.ts",
+      "import": "./dist/materials.js"
+    },
+    "./fonts": {
+      "types": "./dist/fonts.d.ts",
+      "import": "./dist/fonts.js"
+    },
+    "./glb": {
+      "types": "./dist/glb.d.ts",
+      "import": "./dist/glb.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "three": ">=0.160",
+    "opentype.js": ">=1"
+  },
+  "peerDependenciesMeta": {
+    "opentype.js": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}

@@ -63,7 +63,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
         className={`relative rounded-2xl border-2 border-dashed cursor-pointer transition-colors overflow-hidden ${
           isDragOver
             ? 'border-brand-cyan/50 bg-brand-cyan/5'
-            : 'border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04]'
+            : 'border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/5'
         } ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
         onClick={handleClick}
         onDragEnter={handleDragEnter}
@@ -153,7 +153,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
             {FILE_TYPES.map(({ icon: Icon, label, color }, i) => (
               <motion.div
                 key={label}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/5"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-neutral-800"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}

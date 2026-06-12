@@ -771,7 +771,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         className="p-1 hover:bg-neutral-800 rounded"
                       >
                         {copiedPrompt === 'mockup' ? (
-                          <Check size={12} className="text-green-400" />
+                          <Check size={12} className="text-success" />
                         ) : (
                           <Copy size={12} className="text-neutral-400" />
                         )}
@@ -796,7 +796,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         className="p-1 hover:bg-neutral-800 rounded"
                       >
                         {copiedPrompt === 'composition' ? (
-                          <Check size={12} className="text-green-400" />
+                          <Check size={12} className="text-success" />
                         ) : (
                           <Copy size={12} className="text-neutral-400" />
                         )}
@@ -819,7 +819,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                         className="p-1 hover:bg-neutral-800 rounded"
                       >
                         {copiedPrompt === 'style' ? (
-                          <Check size={12} className="text-green-400" />
+                          <Check size={12} className="text-success" />
                         ) : (
                           <Copy size={12} className="text-neutral-400" />
                         )}
@@ -863,7 +863,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     className="p-1 hover:bg-neutral-800 rounded"
                   >
                     {copiedPrompt === 'strategic' ? (
-                      <Check size={12} className="text-green-400" />
+                      <Check size={12} className="text-success" />
                     ) : (
                       <Copy size={12} className="text-neutral-400" />
                     )}

@@ -37,7 +37,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; description: string }> = {
   flagship: {
     label: 'Flagship',
-    color: 'text-yellow-400 border-yellow-400/20',
+    color: 'text-warning border-warning/20',
     description: 'Best quality per provider',
   },
   balanced: {
@@ -47,7 +47,7 @@ const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; descrip
   },
   fast: {
     label: 'Fast',
-    color: 'text-emerald-400 border-emerald-400/20',
+    color: 'text-success border-success/20',
     description: 'Speed optimized',
   },
   legacy: {
@@ -58,7 +58,7 @@ const TIER_CONFIG: Record<BenchmarkTier, { label: string; color: string; descrip
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
-  openai: 'bg-green-500/10 text-green-400',
+  openai: 'bg-success/10 text-success',
   gemini: 'bg-blue-500/10 text-blue-400',
   imagen: 'bg-purple-500/10 text-purple-400',
   seedream: 'bg-orange-500/10 text-orange-400',
@@ -288,7 +288,7 @@ const RunBenchmark: React.FC = () => {
               className={cn(
                 'px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-wider transition-all',
                 cfg.color,
-                'hover:bg-white/[0.04] disabled:opacity-40'
+                'hover:bg-white/5 disabled:opacity-40'
               )}
             >
               {cfg.label} ({count})
@@ -324,7 +324,7 @@ const RunBenchmark: React.FC = () => {
                   >
                     {cfg.label}
                   </span>
-                  <span className="text-[9px] text-white/20">{cfg.description}</span>
+                  <span className="text-[10px] text-white/20">{cfg.description}</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {tierModels.map((model) => {
@@ -338,14 +338,14 @@ const RunBenchmark: React.FC = () => {
                           'relative flex flex-col items-start p-3 rounded-lg border text-left transition-all',
                           !model.available && 'opacity-30 cursor-not-allowed',
                           isSelected
-                            ? 'border-white/30 bg-white/[0.06]'
-                            : 'border-white/[0.06] bg-white/[0.02] hover:border-white/15',
+                            ? 'border-white/30 bg-white/5'
+                            : 'border-neutral-800 bg-white/[0.03] hover:border-white/15',
                           isStreaming && 'pointer-events-none'
                         )}
                       >
                         {isSelected && (
                           <div className="absolute top-2 right-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <Check className="w-3.5 h-3.5 text-success" />
                           </div>
                         )}
                         <div className="flex items-center gap-1.5 mb-0.5">
@@ -354,7 +354,7 @@ const RunBenchmark: React.FC = () => {
                           </span>
                           <span
                             className={cn(
-                              'text-[8px] px-1.5 py-0.5 rounded-full',
+                              'text-[10px] px-1.5 py-0.5 rounded-full',
                               PROVIDER_COLORS[model.provider] || 'bg-white/5 text-white/40'
                             )}
                           >
@@ -365,11 +365,11 @@ const RunBenchmark: React.FC = () => {
                           {model.description}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] text-white/20">{model.creditsCost1K} cr</span>
+                          <span className="text-[10px] text-white/20">{model.creditsCost1K} cr</span>
                           {!model.available && (
-                            <span className="text-[9px] text-red-400/50">no key</span>
+                            <span className="text-[10px] text-destructive/50">no key</span>
                           )}
-                          <span className="text-[9px] text-white/15">{model.released}</span>
+                          <span className="text-[10px] text-white/15">{model.released}</span>
                         </div>
                       </button>
                     );
@@ -473,7 +473,7 @@ const RunBenchmark: React.FC = () => {
                   })}
                 </div>
               </div>
-              <div className="w-full bg-white/[0.05] rounded-full h-1">
+              <div className="w-full bg-white/5 rounded-full h-1">
                 <motion.div
                   className="bg-cyan-400 h-1 rounded-full"
                   initial={{ width: 0 }}
@@ -511,7 +511,7 @@ const RunBenchmark: React.FC = () => {
                     <GlassPanel
                       className={cn(
                         'overflow-hidden transition-all',
-                        isWinner && 'ring-1 ring-yellow-400/30',
+                        isWinner && 'ring-1 ring-warning/30',
                         result.isNew && 'ring-1 ring-cyan-400/40'
                       )}
                     >
@@ -530,7 +530,7 @@ const RunBenchmark: React.FC = () => {
                           />
                           {isWinner && (
                             <div className="absolute top-2 left-2">
-                              <Badge className="bg-yellow-400/90 text-black text-[10px] gap-1">
+                              <Badge className="bg-warning/90 text-black text-[10px] gap-1">
                                 <Crown className="w-3 h-3" /> Winner
                               </Badge>
                             </div>
@@ -541,8 +541,8 @@ const RunBenchmark: React.FC = () => {
                           className={cn(
                             'aspect-square flex items-center justify-center',
                             result.generationSucceeded
-                              ? 'bg-yellow-500/[0.03]'
-                              : 'bg-red-500/[0.03]'
+                              ? 'bg-warning/[0.03]'
+                              : 'bg-destructive/[0.03]'
                           )}
                         >
                           <div className="text-center px-4">
@@ -550,16 +550,16 @@ const RunBenchmark: React.FC = () => {
                               className={cn(
                                 'w-6 h-6 mx-auto mb-2',
                                 result.generationSucceeded
-                                  ? 'text-yellow-400/40'
-                                  : 'text-red-400/40'
+                                  ? 'text-warning/40'
+                                  : 'text-destructive/40'
                               )}
                             />
                             <p
                               className={cn(
                                 'text-[10px] line-clamp-3',
                                 result.generationSucceeded
-                                  ? 'text-yellow-400/60'
-                                  : 'text-red-400/60'
+                                  ? 'text-warning/60'
+                                  : 'text-destructive/60'
                               )}
                             >
                               {result.error}
@@ -573,7 +573,7 @@ const RunBenchmark: React.FC = () => {
                           <span className="text-xs font-medium text-white/80">{result.label}</span>
                           <span
                             className={cn(
-                              'text-[8px] px-1.5 py-0.5 rounded-full',
+                              'text-[10px] px-1.5 py-0.5 rounded-full',
                               PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
                             )}
                           >
@@ -620,7 +620,7 @@ const RunBenchmark: React.FC = () => {
             <div className="text-center">
               <Badge
                 variant="outline"
-                className="text-emerald-400 border-emerald-400/20 text-[10px]"
+                className="text-success border-success/20 text-[10px]"
               >
                 {creditsRefunded} credits refunded
               </Badge>
@@ -767,7 +767,7 @@ const BenchmarkGallery: React.FC = () => {
                     />
                     {item.winnerModel === t.model && (
                       <div className="absolute top-1 left-1">
-                        <Crown className="w-3 h-3 text-yellow-400" />
+                        <Crown className="w-3 h-3 text-warning" />
                       </div>
                     )}
                   </div>
@@ -781,7 +781,7 @@ const BenchmarkGallery: React.FC = () => {
                     {item.voted && (
                       <Badge
                         variant="outline"
-                        className="text-[9px] text-emerald-400/60 border-emerald-400/20"
+                        className="text-[10px] text-success/60 border-success/20"
                       >
                         voted
                       </Badge>
@@ -858,7 +858,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
             {benchmark.creditsRefunded > 0 && (
               <Badge
                 variant="outline"
-                className="text-emerald-400 border-emerald-400/20 text-[10px]"
+                className="text-success border-success/20 text-[10px]"
               >
                 -{benchmark.creditsRefunded} refunded
               </Badge>
@@ -882,7 +882,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
           return (
             <GlassPanel
               key={result.model}
-              className={cn('overflow-hidden', isWinner && 'ring-1 ring-yellow-400/30')}
+              className={cn('overflow-hidden', isWinner && 'ring-1 ring-warning/30')}
             >
               <div className="relative aspect-square bg-black/20">
                 <img
@@ -893,7 +893,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
                 />
                 {isWinner && (
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-yellow-400/90 text-black text-[10px] gap-1">
+                    <Badge className="bg-warning/90 text-black text-[10px] gap-1">
                       <Crown className="w-3 h-3" /> Winner
                     </Badge>
                   </div>
@@ -906,7 +906,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
                   </span>
                   <span
                     className={cn(
-                      'text-[8px] px-1.5 py-0.5 rounded-full',
+                      'text-[10px] px-1.5 py-0.5 rounded-full',
                       PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
                     )}
                   >

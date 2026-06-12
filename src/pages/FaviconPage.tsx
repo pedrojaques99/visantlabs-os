@@ -506,7 +506,7 @@ export const FaviconPage: React.FC = () => {
                         <span className="text-[10px] font-mono text-neutral-300">
                           {icon.size}x{icon.size}
                         </span>
-                        <span className="text-[9px] font-mono text-neutral-600 uppercase">
+                        <span className="text-[10px] font-mono text-neutral-600 uppercase">
                           {SIZE_LABELS[icon.size] || ''}
                         </span>
                       </motion.div>

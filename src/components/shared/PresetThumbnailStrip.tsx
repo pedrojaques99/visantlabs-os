@@ -62,7 +62,7 @@ export const PresetThumbnailStrip: React.FC<PresetThumbnailStripProps> = React.m
                     </div>
                   )}
                 </div>
-                <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
                   {preset.name}
                 </span>
               </button>

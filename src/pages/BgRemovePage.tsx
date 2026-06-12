@@ -585,7 +585,7 @@ export const BgRemovePage: React.FC = () => {
                     <AnimatePresence>
                       {previewItem.status === 'error' && (
                         <motion.div
-                          className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] font-mono text-red-400"
+                          className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-[11px] font-mono text-destructive"
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 8 }}
@@ -662,7 +662,7 @@ export const BgRemovePage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <StatusBadge status={item.status} />
                           {item.status === 'processing' && item.progressValue != null && (
-                            <span className="text-[9px] font-mono text-brand-cyan tabular-nums">
+                            <span className="text-[10px] font-mono text-brand-cyan tabular-nums">
                               {Math.round(item.progressValue * 100)}%
                             </span>
                           )}

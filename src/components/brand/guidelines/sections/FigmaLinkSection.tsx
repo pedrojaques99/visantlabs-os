@@ -222,7 +222,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
           {/* Sync status */}
           {guideline.figmaSyncedAt && (
             <div className="flex items-center gap-2 text-[10px] text-neutral-500">
-              <RefreshCw size={10} className="text-green-500" />
+              <RefreshCw size={10} className="text-success" />
               <span>Sync: {formatSyncTime(guideline.figmaSyncedAt)}</span>
             </div>
           )}

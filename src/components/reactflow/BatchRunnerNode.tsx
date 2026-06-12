@@ -9,7 +9,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 const STATUS_ICON: Record<BatchResult['status'], React.ReactNode> = {
   pending: <Clock size={9} className="text-white/30" />,
   running: <GlitchLoader size={9} />,
-  done: <CheckCircle2 size={9} className="text-green-400" />,
+  done: <CheckCircle2 size={9} className="text-success" />,
   error: <XCircle size={9} className="text-destructive" />,
 };
 
@@ -80,7 +80,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
             'ml-auto text-[10px] px-1.5 py-0.5 rounded font-medium',
             status === 'idle' && 'text-white/30 bg-white/5',
             status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
-            status === 'done' && 'text-green-400 bg-green-400/10',
+            status === 'done' && 'text-success bg-success/10',
             status === 'cancelled' && 'text-orange-400 bg-orange-400/10'
           )}
         >

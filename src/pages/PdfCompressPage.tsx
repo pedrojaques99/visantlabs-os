@@ -254,9 +254,9 @@ export const PdfCompressPage: React.FC = () => {
                   key={item.id}
                   layout
                   {...fadeScale}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-900/60 border border-neutral-800/50"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-900/60 border border-white/10"
                 >
-                  <FileDown size={14} className="text-red-400 shrink-0" />
+                  <FileDown size={14} className="text-destructive shrink-0" />
                   <span className="text-xs text-neutral-300 truncate flex-1 font-mono">
                     {item.fileName}
                   </span>
@@ -267,7 +267,7 @@ export const PdfCompressPage: React.FC = () => {
                   )}
                   <StatusBadge status={item.status} />
                   {item.status === 'done' && item.compressedSize > 0 && (
-                    <span className="text-[10px] font-mono text-emerald-500">
+                    <span className="text-[10px] font-mono text-success">
                       -{Math.round((1 - item.compressedSize / item.originalSize) * 100)}%
                     </span>
                   )}

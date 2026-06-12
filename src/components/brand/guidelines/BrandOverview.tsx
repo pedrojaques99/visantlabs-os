@@ -69,7 +69,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
       {/* ── Hero ── */}
       <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">
         {primaryLogo && (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-white/[0.06] bg-white/[0.02] shrink-0 flex items-center justify-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-neutral-800 bg-white/[0.03] shrink-0 flex items-center justify-center">
             <img src={primaryLogo.url} alt="" className="w-full h-full object-contain p-2" />
           </div>
         )}
@@ -211,7 +211,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                 {voiceValues.slice(0, 4).map((v, i) => (
                   <span
                     key={i}
-                    className="text-xs text-neutral-400 px-2.5 py-1 rounded-md border border-white/[0.06] bg-white/[0.02]"
+                    className="text-xs text-neutral-400 px-2.5 py-1 rounded-md border border-neutral-800 bg-white/[0.03]"
                   >
                     {v.title}
                   </span>
@@ -232,7 +232,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                 {colors.slice(0, 8).map((c, i) => (
                   <div key={i} className="flex items-center gap-2.5">
                     <div
-                      className="w-8 h-8 rounded-lg border border-white/[0.06] shrink-0"
+                      className="w-8 h-8 rounded-lg border border-neutral-800 shrink-0"
                       style={{ backgroundColor: c.hex }}
                     />
                     <div className="hidden sm:block">

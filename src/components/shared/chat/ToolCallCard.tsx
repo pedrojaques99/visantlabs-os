@@ -44,7 +44,7 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
     tc.status === 'running'
       ? 'text-brand-cyan'
       : tc.status === 'done'
-      ? 'text-green-500'
+      ? 'text-success'
       : 'text-destructive';
   const friendlyName = tc.name.replace(/_/g, ' ');
   const statusLabel =
@@ -65,7 +65,7 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
         {tc.status === 'running' && (
           <Loader2 size={10} className="animate-spin shrink-0 text-brand-cyan" />
         )}
-        {tc.status === 'done' && <CircleCheck size={10} className="text-green-500 shrink-0" />}
+        {tc.status === 'done' && <CircleCheck size={10} className="text-success shrink-0" />}
         {tc.status === 'error' && <CircleX size={10} className="text-destructive shrink-0" />}
         <span className={`font-mono ${statusColor}`}>{friendlyName}</span>
         <span className="text-muted-foreground/50 ml-auto font-mono">

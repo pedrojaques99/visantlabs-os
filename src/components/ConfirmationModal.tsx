@@ -52,9 +52,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   const variantStyles = {
     warning: {
-      icon: 'text-yellow-400',
+      icon: 'text-warning',
       button:
-        'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border-yellow-500/30 hover:border-yellow-500/50',
+        'bg-warning/20 hover:bg-warning/30 text-warning border-warning/30 hover:border-warning/50',
     },
     danger: {
       icon: 'text-destructive',

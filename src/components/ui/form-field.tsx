@@ -32,7 +32,7 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           </div>
         )}
         {success && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-md p-3 text-sm text-green-400 font-mono flex items-center gap-2">
+          <div className="bg-success/10 border border-success/30 rounded-md p-3 text-sm text-success font-mono flex items-center gap-2">
             <Check size={14} />
             {success}
           </div>

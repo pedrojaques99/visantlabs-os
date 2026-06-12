@@ -79,7 +79,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-mono text-neutral-300">{summary}</span>
         {savedBytes != null && savedBytes > 0 && (
-          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded tabular-nums">
+          <span className="text-[10px] font-mono text-success bg-success/10 px-1.5 py-0.5 rounded tabular-nums">
             saved {formatBytes(savedBytes)}
             {savedPercent != null && ` (${savedPercent}%)`}
           </span>

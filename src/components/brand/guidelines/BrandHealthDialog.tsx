@@ -27,10 +27,10 @@ const LEVEL_STYLES: Record<
   BrandHealthInsight['level'],
   { icon: React.ComponentType<{ size?: number; className?: string }>; cls: string }
 > = {
-  pass: { icon: CheckCircle2, cls: 'text-green-400 bg-green-500/[0.08] border-green-500/20' },
+  pass: { icon: CheckCircle2, cls: 'text-success bg-success/[0.08] border-success/20' },
   warn: {
     icon: AlertTriangle,
-    cls: 'text-amber-200    bg-amber-500/[0.08]    border-amber-500/20',
+    cls: 'text-warning    bg-warning/[0.08]    border-warning/20',
   },
   fail: {
     icon: XOctagon,

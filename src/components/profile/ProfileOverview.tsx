@@ -67,7 +67,7 @@ const NavRow: React.FC<{
     </>
   );
   const cls =
-    'group flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-2.5 text-sm font-mono font-medium text-neutral-300 transition-colors hover:border-white/10 hover:bg-white/[0.04]';
+    'group flex w-full items-center justify-between rounded-xl border border-neutral-800 bg-white/[0.03] px-4 py-2.5 text-sm font-mono font-medium text-neutral-300 transition-colors hover:border-white/10 hover:bg-white/5';
   return to ? (
     <Link to={to} className={cls}>
       {inner}
@@ -81,7 +81,7 @@ const NavRow: React.FC<{
 
 // Section header with an icon chip + title.
 const SectionHeader: React.FC<{ icon: LucideIcon; title: string }> = ({ icon: Icon, title }) => (
-  <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+  <div className="flex items-center gap-3 border-b border-neutral-800 pb-4">
     <div className="p-2 rounded-lg bg-white/5 border border-white/10">
       <Icon size={16} className="text-neutral-400" />
     </div>
@@ -92,7 +92,7 @@ const SectionHeader: React.FC<{ icon: LucideIcon; title: string }> = ({ icon: Ic
 );
 
 const StatTile: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+  <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-3">
     <MicroTitle as="p" className="mb-1">
       {label}
     </MicroTitle>
@@ -238,7 +238,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
         {subscriptionStatus ? (
           <>
             <div className="flex flex-col gap-4 flex-1">
-              <div className="relative bg-white/[0.02] border border-white/5 rounded-xl p-5">
+              <div className="relative bg-white/[0.03] border border-neutral-800 rounded-xl p-5">
                 <Button
                   variant="brand"
                   size="icon-sm"
@@ -269,11 +269,11 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   </p>
                 </StatTile>
                 {isLoadingStorage ? (
-                  <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex items-center justify-center">
+                  <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-3 flex items-center justify-center">
                     <GlitchLoader size={16} />
                   </div>
                 ) : storageUsage ? (
-                  <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+                  <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-3">
                     <div className="flex items-center justify-between gap-1 mb-1.5">
                       <span className="flex items-center gap-1.5">
                         <HardDrive size={10} className="text-neutral-500" />
@@ -358,7 +358,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   type="text"
                   value={referralLink}
                   readOnly
-                  className="w-full pr-11 bg-white/[0.02] border-white/10 text-neutral-400 group-hover:text-neutral-200 font-mono text-xs transition-colors"
+                  className="w-full pr-11 bg-white/[0.03] border-white/10 text-neutral-400 group-hover:text-neutral-200 font-mono text-xs transition-colors"
                 />
                 <Button
                   variant="surface"
@@ -374,7 +374,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-auto">
-              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+              <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                 <Users className="text-neutral-500 mb-2" size={20} />
                 <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
                   {referralStats.referredUsersCount || 0}
@@ -383,7 +383,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   {t('referral.friendsReferred')}
                 </MicroTitle>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+              <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                 <CreditCard className="text-brand-cyan/60 mb-2" size={20} />
                 <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}

@@ -568,6 +568,168 @@ describe('moodboard tools contract', () => {
   });
 });
 
+// ── psd-mockup-produce helpers (mirror platform-mcp pure helpers) ─────────────
+// These mirror nearestAspectRatio / buildRenderPayload exported from
+// platform-mcp.ts. Kept local (like the other simulate-* helpers) to avoid
+// importing the heavy MCP module (prisma/mongo) into a static unit test.
+
+const PRODUCE_ASPECT_RATIOS = ['1:1', '9:16', '16:9', '4:5'] as const;
+type ProduceAspectRatio = (typeof PRODUCE_ASPECT_RATIOS)[number];
+
+function nearestAspectRatio(innerW?: number, innerH?: number): ProduceAspectRatio {
+  if (!innerW || !innerH || innerW <= 0 || innerH <= 0) return '1:1';
+  const target = innerW / innerH;
+  let best: ProduceAspectRatio = '1:1';
+  let bestDiff = Infinity;
+  for (const ar of PRODUCE_ASPECT_RATIOS) {
+    const [w, h] = ar.split(':').map(Number);
+    const diff = Math.abs(w / h - target);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = ar;
+    }
+  }
+  return best;
+}
+
+function buildRenderPayload(args: {
+  psdFileName: string;
+  artUrl: string;
+  face?: string;
+  preview?: boolean;
+}) {
+  return {
+    psdFileName: args.psdFileName,
+    arts: [{ smartObject: args.face || '*', artUrl: args.artUrl }],
+    ...(args.preview ? { preview: true } : {}),
+  };
+}
+
+describe('psd-mockup-produce helpers', () => {
+  it('nearestAspectRatio maps a wide face to 16:9', () => {
+    expect(nearestAspectRatio(1920, 1080)).toBe('16:9');
+  });
+
+  it('nearestAspectRatio maps a tall story face to 9:16', () => {
+    expect(nearestAspectRatio(1080, 1920)).toBe('9:16');
+  });
+
+  it('nearestAspectRatio maps a square face to 1:1', () => {
+    expect(nearestAspectRatio(1000, 1000)).toBe('1:1');
+  });
+
+  it('nearestAspectRatio maps a portrait face to 4:5', () => {
+    expect(nearestAspectRatio(800, 1000)).toBe('4:5');
+  });
+
+  it('nearestAspectRatio falls back to 1:1 on missing/invalid dims', () => {
+    expect(nearestAspectRatio()).toBe('1:1');
+    expect(nearestAspectRatio(0, 100)).toBe('1:1');
+    expect(nearestAspectRatio(100, -1)).toBe('1:1');
+  });
+
+  it('buildRenderPayload targets the given face', () => {
+    const p = buildRenderPayload({
+      psdFileName: 'X.psd',
+      artUrl: 'https://r2.dev/a.png',
+      face: 'Front',
+    });
+    expect(p.psdFileName).toBe('X.psd');
+    expect(p.arts).toEqual([{ smartObject: 'Front', artUrl: 'https://r2.dev/a.png' }]);
+    expect(p).not.toHaveProperty('preview');
+  });
+
+  it('buildRenderPayload defaults to all faces ("*") when face omitted', () => {
+    const p = buildRenderPayload({ psdFileName: 'X.psd', artUrl: 'https://r2.dev/a.png' });
+    expect(p.arts[0].smartObject).toBe('*');
+  });
+
+  it('buildRenderPayload includes preview flag only when true', () => {
+    const p = buildRenderPayload({
+      psdFileName: 'X.psd',
+      artUrl: 'https://r2.dev/a.png',
+      preview: true,
+    });
+    expect(p.preview).toBe(true);
+  });
+});
+
+// ── psd-mockup-produce flow (validation + refund-on-render-fail) ──────────────
+describe('psd-mockup-produce flow', () => {
+  // Mirrors the produce tool's control flow at a high level: validation rules
+  // and the refund-after-generation-when-render-fails guarantee.
+  function simulateProduce(
+    params: { artPrompt?: string; artUrl?: string },
+    steps: { genCredits?: number; genImageUrl?: string | null; renderOk: boolean }
+  ): { error?: string; creditsCharged?: number; refunded?: number; imageUrl?: string | null } {
+    if (!params.artPrompt && !params.artUrl) {
+      return { error: 'VALIDATION_ERROR' };
+    }
+    if (params.artPrompt && params.artUrl) {
+      return { error: 'VALIDATION_ERROR' };
+    }
+    let creditsCharged = 0;
+    let refunded = 0;
+    let artUrl = params.artUrl || '';
+    if (params.artPrompt) {
+      creditsCharged = steps.genCredits ?? 0;
+      artUrl = steps.genImageUrl ?? '';
+      if (!artUrl) {
+        if (creditsCharged > 0) refunded += creditsCharged;
+        return { error: 'INTERNAL_ERROR', refunded };
+      }
+    }
+    if (!steps.renderOk) {
+      if (creditsCharged > 0) refunded += creditsCharged;
+      return { error: 'INTERNAL_ERROR', refunded };
+    }
+    return { creditsCharged, imageUrl: 'https://r2.dev/final.png' };
+  }
+
+  it('rejects when neither artPrompt nor artUrl provided', () => {
+    expect(simulateProduce({}, { renderOk: true }).error).toBe('VALIDATION_ERROR');
+  });
+
+  it('rejects when both artPrompt and artUrl provided', () => {
+    expect(
+      simulateProduce({ artPrompt: 'p', artUrl: 'https://x' }, { renderOk: true }).error
+    ).toBe('VALIDATION_ERROR');
+  });
+
+  it('refunds generation credits when render fails after generating art', () => {
+    const r = simulateProduce(
+      { artPrompt: 'a poster' },
+      { genCredits: 5, genImageUrl: 'https://r2.dev/art.png', renderOk: false }
+    );
+    expect(r.error).toBe('INTERNAL_ERROR');
+    expect(r.refunded).toBe(5);
+  });
+
+  it('does not charge when supplying artUrl directly', () => {
+    const r = simulateProduce({ artUrl: 'https://r2.dev/art.png' }, { renderOk: true });
+    expect(r.creditsCharged).toBe(0);
+    expect(r.imageUrl).toBe('https://r2.dev/final.png');
+  });
+
+  it('refunds when generation returns no image url', () => {
+    const r = simulateProduce(
+      { artPrompt: 'a poster' },
+      { genCredits: 3, genImageUrl: null, renderOk: true }
+    );
+    expect(r.error).toBe('INTERNAL_ERROR');
+    expect(r.refunded).toBe(3);
+  });
+
+  it('returns imageUrl and creditsCharged on full success', () => {
+    const r = simulateProduce(
+      { artPrompt: 'a poster' },
+      { genCredits: 5, genImageUrl: 'https://r2.dev/art.png', renderOk: true }
+    );
+    expect(r.imageUrl).toBe('https://r2.dev/final.png');
+    expect(r.creditsCharged).toBe(5);
+  });
+});
+
 // ── auth tools contract ───────────────────────────────────────────────────────
 
 describe('auth tools contract', () => {

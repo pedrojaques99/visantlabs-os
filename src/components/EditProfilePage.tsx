@@ -400,7 +400,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition ${
+                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-neutral-600 transition ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
                     : 'bg-white border border-neutral-300 text-neutral-900'
@@ -420,7 +420,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition ${
+                className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-neutral-600 transition ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
                     : 'bg-white border border-neutral-300 text-neutral-900'

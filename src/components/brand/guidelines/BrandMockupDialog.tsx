@@ -526,7 +526,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                   </div>
                   <button
                     onClick={handleCancelBatch}
-                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors"
+                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-destructive hover:text-destructive transition-colors"
                   >
                     <Square size={8} />
                     Parar
@@ -637,7 +637,7 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           {view === 'result' && batchResults.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-500">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-success">
                   {batchResults.filter(Boolean).length} mockup
                   {batchResults.filter(Boolean).length !== 1 ? 's' : ''} gerado
                   {batchResults.filter(Boolean).length !== 1 ? 's' : ''}

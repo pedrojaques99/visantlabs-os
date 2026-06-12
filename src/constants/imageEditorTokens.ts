@@ -7,13 +7,13 @@ export const IMAGE_EDITOR = {
   selection: {
     stroke: 'rgba(82, 221, 235, 0.7)',
     strokeDash: [6, 4],
-    fill: 'rgba(82, 221, 235, 0.1)',
+    fill: 'oklch(from var(--brand-cyan) l c h / 10%)',
     handleSize: 8,
     handleFill: 'rgba(82, 221, 235, 0.9)',
   },
   expand: {
     zoneFill: 'rgba(82, 221, 235, 0.08)',
-    zoneBorder: 'rgba(82, 221, 235, 0.4)',
+    zoneBorder: 'oklch(from var(--brand-cyan) l c h / 40%)',
     handleThickness: 6,
     checkerSize: 12,
     checkerLight: 'rgba(255, 255, 255, 0.06)',

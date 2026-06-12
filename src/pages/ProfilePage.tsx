@@ -260,8 +260,15 @@ export const ProfilePage: React.FC = () => {
       <div className="space-y-6">
         {error && (
           <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
-            <X size={16} />
-            {error}
+            <span className="flex-1">{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              aria-label={t('common.dismiss') || 'Dismiss'}
+              className="text-destructive/70 hover:text-destructive transition-colors"
+            >
+              <X size={16} />
+            </button>
           </div>
         )}
 

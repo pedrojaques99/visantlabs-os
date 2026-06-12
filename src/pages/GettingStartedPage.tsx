@@ -64,7 +64,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
           className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors py-0.5 px-2 rounded hover:bg-neutral-800/60"
           aria-label="Copy code"
         >
-          {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+          {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
           <span>{copied ? 'Copied!' : 'Copy'}</span>
         </button>
       </div>
@@ -443,7 +443,7 @@ export const GettingStartedPage: React.FC = () => {
                           {
                             scope: 'write',
                             desc: 'Create and modify resources',
-                            color: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+                            color: 'text-warning bg-warning/10 border-warning/30',
                           },
                           {
                             scope: 'generate',
@@ -517,15 +517,15 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-amber-500/10 rounded-lg">
-                        <Image size={18} className="text-amber-400" />
+                      <div className="p-2 bg-warning/10 rounded-lg">
+                        <Image size={18} className="text-warning" />
                       </div>
                       <div>
                         <h2 className="text-xl font-semibold font-manrope text-neutral-200">
                           Mockup Generation
                         </h2>
                         <p className="text-xs font-mono text-neutral-600 mt-0.5">
-                          Scope required: <span className="text-amber-400">generate</span>
+                          Scope required: <span className="text-warning">generate</span>
                         </p>
                       </div>
                     </div>
@@ -541,7 +541,7 @@ export const GettingStartedPage: React.FC = () => {
                     </div>
                     <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
                       <p className="text-neutral-400 font-semibold mb-2">
-                        Tool: <span className="text-amber-400">mockup-generate</span>
+                        Tool: <span className="text-warning">mockup-generate</span>
                       </p>
                       <p>
                         <span className="text-neutral-300">templateId</span> — string, required
@@ -564,15 +564,15 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-green-500/10 rounded-lg">
-                        <Zap size={18} className="text-green-400" />
+                      <div className="p-2 bg-success/10 rounded-lg">
+                        <Zap size={18} className="text-success" />
                       </div>
                       <div>
                         <h2 className="text-xl font-semibold font-manrope text-neutral-200">
                           Creative Studio
                         </h2>
                         <p className="text-xs font-mono text-neutral-600 mt-0.5">
-                          Scope required: <span className="text-green-400">generate</span>
+                          Scope required: <span className="text-success">generate</span>
                         </p>
                       </div>
                     </div>
@@ -589,7 +589,7 @@ export const GettingStartedPage: React.FC = () => {
                     </div>
                     <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
                       <p className="text-neutral-400 font-semibold mb-2">
-                        Tool: <span className="text-green-400">creative-generate</span>
+                        Tool: <span className="text-success">creative-generate</span>
                       </p>
                       <p>
                         <span className="text-neutral-300">prompt</span> — string, required

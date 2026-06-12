@@ -512,7 +512,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
           return shouldShowAlert ? (
             <div className="mt-4 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3">
               <Lock size={16} className="text-destructive mt-0.5" />
-              <p className="text-xs font-mono text-red-200">{authenticationRequiredMessage}</p>
+              <p className="text-xs font-mono text-destructive">{authenticationRequiredMessage}</p>
             </div>
           ) : null;
         })()}

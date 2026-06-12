@@ -218,7 +218,7 @@ export const ApiKeysPage: React.FC = () => {
       case 'read':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
       case 'write':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        return 'bg-warning/20 text-warning border-warning/30';
       case 'generate':
         return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       default:
@@ -323,15 +323,15 @@ export const ApiKeysPage: React.FC = () => {
 
           {/* Newly Created Key Banner */}
           {createdKeyRaw && (
-            <Card className="bg-amber-500/5 border border-amber-500/30 rounded-xl">
+            <Card className="bg-warning/5 border border-warning/30 rounded-xl">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-start gap-3 mb-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                  <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-amber-400 font-semibold text-sm">
+                    <p className="text-warning font-semibold text-sm">
                       {t('api.keys.save_your_api_key_now')}
                     </p>
-                    <p className="text-amber-400/70 text-xs mt-1">
+                    <p className="text-warning/70 text-xs mt-1">
                       {t('api.keys.this_key_will_not_be_shown_again_copy_it')}
                     </p>
                   </div>
@@ -354,7 +354,7 @@ export const ApiKeysPage: React.FC = () => {
                     className="p-1.5 hover:bg-neutral-700/50 rounded transition-colors text-neutral-400 hover:text-neutral-200"
                     title={t('api.keys.copy_to_clipboard')}
                   >
-                    {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+                    {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
                   </Button>
                 </div>
                 <Button
@@ -538,7 +538,7 @@ export const ApiKeysPage: React.FC = () => {
                           </td>
                           <td className="p-4">
                             {key.status === 'active' ? (
-                              <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs">
+                              <Badge className="bg-success/20 text-success border border-success/30 text-xs">
                                 Active
                               </Badge>
                             ) : key.status === 'expired' ? (

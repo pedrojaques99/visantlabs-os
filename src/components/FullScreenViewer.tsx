@@ -432,7 +432,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     className={cn(
                       'w-8 h-8 rounded-md transition-all',
                       feedback.rating === 'up'
-                        ? 'text-green-400 bg-green-400/10 hover:bg-green-400/20'
+                        ? 'text-success bg-success/10 hover:bg-success/20'
                         : 'text-neutral-400 hover:text-white hover:bg-white/10'
                     )}
                     disabled={feedback.isLoading}

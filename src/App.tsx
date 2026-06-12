@@ -69,6 +69,9 @@ const AdminPresetsPage = lazyWithRetry(() =>
 const AdminProductsPage = lazyWithRetry(() =>
   import('./pages/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage }))
 );
+const PsdSceneRenderPage = lazyWithRetry(() =>
+  import('./pages/PsdSceneRenderPage').then((m) => ({ default: m.PsdSceneRenderPage }))
+);
 const SmartAnalyzerPage = lazyWithRetry(() =>
   import('./pages/SmartAnalyzerPage').then((m) => ({ default: m.SmartAnalyzerPage }))
 );
@@ -183,6 +186,9 @@ const GridMachinePage = lazyWithRetry(() =>
 );
 const ImageLabPage = lazyWithRetry(() =>
   import('./pages/ImageLabPage').then((m) => ({ default: m.ImageLabPage }))
+);
+const EditorPage = lazyWithRetry(() =>
+  import('./pages/EditorPage').then((m) => ({ default: m.EditorPage }))
 );
 const PlaygroundPage = lazyWithRetry(() =>
   import('./pages/PlaygroundPage').then((m) => ({ default: m.PlaygroundPage }))
@@ -319,6 +325,7 @@ const App: React.FC = () => {
                   <Route path="/grid-paint" element={<GridPaintPage />} />
                   <Route path="/3d-studio" element={<Studio3DPage />} />
                   <Route path="/image-lab" element={<ImageLabPage />} />
+                  <Route path="/editor" element={<EditorPage />} />
                   <Route path="/cmyk-halftone" element={<Navigate to="/image-lab" replace />} />
                   <Route path="/texture-filter" element={<Navigate to="/image-lab" replace />} />
                   <Route
@@ -363,6 +370,7 @@ const App: React.FC = () => {
                   <Route path="/admin/chat" element={<AdminChatPage />} />
                   <Route path="/admin/presets" element={<AdminPresetsPage />} />
                   <Route path="/admin/products" element={<AdminProductsPage />} />
+                  <Route path="/admin/psd-scene" element={<PsdSceneRenderPage />} />
                   <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
 
                   <Route path="/create" element={<CreatePage />} />

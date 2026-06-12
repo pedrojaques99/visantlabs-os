@@ -29,8 +29,8 @@ export const MINIAPP_CATEGORY_CONFIG: Record<
   brand: { icon: Palette, color: 'text-purple-400', label: 'Brand' },
   mockup: { icon: Image, color: 'text-blue-400', label: 'Mockup' },
   creative: { icon: Zap, color: 'text-pink-400', label: 'Creative' },
-  utility: { icon: Wrench, color: 'text-amber-400', label: 'Utility' },
-  data: { icon: BarChart3, color: 'text-green-400', label: 'Data' },
+  utility: { icon: Wrench, color: 'text-warning', label: 'Utility' },
+  data: { icon: BarChart3, color: 'text-success', label: 'Data' },
 };
 
 interface MiniAppCardProps {
@@ -140,7 +140,7 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
               onClick={handleLike}
               className={cn(
                 'p-1.5 rounded-lg bg-neutral-900/80 backdrop-blur-sm transition-colors',
-                liked ? 'text-red-400' : 'text-neutral-400 hover:text-red-400'
+                liked ? 'text-destructive' : 'text-neutral-400 hover:text-destructive'
               )}
               title="Like"
             >
@@ -159,7 +159,7 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
               title="Copy link"
             >
               {copied ? (
-                <Check className="w-3.5 h-3.5 text-green-400" />
+                <Check className="w-3.5 h-3.5 text-success" />
               ) : (
                 <Link2 className="w-3.5 h-3.5" />
               )}
@@ -192,7 +192,7 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
           <span
             className={cn(
               'inline-flex items-center gap-1 text-[10px]',
-              liked ? 'text-red-400' : 'text-neutral-500'
+              liked ? 'text-destructive' : 'text-neutral-500'
             )}
           >
             <Heart className="w-3 h-3" fill={liked ? 'currentColor' : 'none'} /> {likeCount}

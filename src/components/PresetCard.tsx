@@ -25,12 +25,12 @@ export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string;
     '3d': { icon: Box, color: 'text-purple-400', label: '3D' },
     presets: { icon: Settings, color: 'text-blue-400', label: 'Presets' },
     aesthetics: { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
-    themes: { icon: Diamond, color: 'text-amber-400', label: 'Themes' },
+    themes: { icon: Diamond, color: 'text-warning', label: 'Themes' },
     mockup: { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
     angle: { icon: Camera, color: 'text-cyan-400', label: 'Angle' },
-    texture: { icon: Layers, color: 'text-green-400', label: 'Texture' },
+    texture: { icon: Layers, color: 'text-success', label: 'Texture' },
     ambience: { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
-    luminance: { icon: Sun, color: 'text-yellow-400', label: 'Luminance' },
+    luminance: { icon: Sun, color: 'text-warning', label: 'Luminance' },
     'ui-prompts': { icon: ImageIcon, color: 'text-purple-400', label: 'UI Prompts' },
     'figma-prompts': { icon: ClipboardIcon, color: 'text-pink-400', label: 'Figma Prompts' },
   };
@@ -218,9 +218,9 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               className={cn(
                 'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
                 migrated.difficulty === 'beginner'
-                  ? 'text-green-500'
+                  ? 'text-success'
                   : migrated.difficulty === 'intermediate'
-                  ? 'text-yellow-500'
+                  ? 'text-warning'
                   : 'text-destructive'
               )}
             >

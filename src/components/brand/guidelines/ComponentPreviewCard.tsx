@@ -32,8 +32,8 @@ const STATE_CONFIG = {
   needs_work: {
     icon: Wrench,
     label: 'Needs work',
-    color: 'text-amber-400',
-    bg: 'bg-amber-400/5 border-amber-400/20',
+    color: 'text-warning',
+    bg: 'bg-warning/5 border-warning/20',
   },
 };
 
@@ -93,7 +93,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
             'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-all',
             state === 'approved'
               ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan cursor-default'
-              : 'border-green-500/20 bg-green-500/5 text-green-400 hover:bg-green-500/15 hover:border-green-500/40'
+              : 'border-success/20 bg-success/5 text-success hover:bg-success/15 hover:border-success/40'
           )}
         >
           <ThumbsUp size={10} />

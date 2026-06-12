@@ -260,11 +260,11 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
         'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
-        app.isHidden && 'border-amber-500/20 opacity-60'
+        app.isHidden && 'border-warning/20 opacity-60'
       )}
     >
       {app.isHidden && (
-        <div className="absolute top-0 right-0 z-50 bg-amber-500/90 text-black px-2.5 py-0.5 text-[10px] font-semibold rounded-bl-xl">
+        <div className="absolute top-0 right-0 z-50 bg-warning/90 text-black px-2.5 py-0.5 text-[10px] font-semibold rounded-bl-xl">
           Hidden
         </div>
       )}
@@ -338,7 +338,7 @@ function AppCard({ app, isAdmin, hasAccess, onOpen, onEdit }: AppCardProps) {
               Soon
             </span>
           ) : app.badgeVariant === 'free' || (app as any).free ? (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-success/10 text-success/80 shrink-0">
               Free
             </span>
           ) : isPremium ? (
@@ -395,12 +395,12 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
       }}
       className={cn(
         'group flex items-center gap-3 px-4 py-3 rounded-xl',
-        'bg-white/[0.02] border border-neutral-800/60',
+        'bg-white/[0.03] border border-neutral-800/60',
         'transition-all duration-200 outline-none cursor-pointer',
-        'hover:border-white/10 hover:bg-white/[0.04]',
+        'hover:border-white/10 hover:bg-white/5',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
-        app.isHidden && 'border-amber-500/20 opacity-60'
+        app.isHidden && 'border-warning/20 opacity-60'
       )}
     >
       <div className="flex-1 min-w-0 flex items-center gap-3">
@@ -412,7 +412,7 @@ function AppRow({ app, isAdmin, hasAccess, onOpen, onEdit }: AppRowProps) {
             Soon
           </span>
         ) : app.badgeVariant === 'free' || (app as any).free ? (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400/80 shrink-0">
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-success/10 text-success/80 shrink-0">
             Free
           </span>
         ) : isPremium ? (
@@ -1147,7 +1147,7 @@ export const AppsPage: React.FC = () => {
               className={cn(
                 'px-3 py-2 rounded-xl text-sm whitespace-nowrap transition-all hidden sm:block',
                 accessFilter === 'free'
-                  ? 'bg-green-500/10 text-green-400 font-medium'
+                  ? 'bg-success/10 text-success font-medium'
                   : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
               )}
             >

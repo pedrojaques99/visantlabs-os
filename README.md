@@ -157,7 +157,7 @@ AI-powered interactive miniapps and experimentation space:
 
 Model Context Protocol server for AI agent integration:
 
-- 116 tools for brand, mockup, creative, image, 3D, playground, and analytics operations — all with `readOnlyHint`/`destructiveHint` annotations
+- 119 tools for brand, mockup, creative, image, 3D, playground, PSD scene rendering, and analytics operations — all with `readOnlyHint`/`destructiveHint` annotations
 - OAuth 2.1 + PKCE + Dynamic Client Registration (Claude Connector Directory compatible)
 - Streamable HTTP transport (`POST /api/mcp`)
 - Persistent refresh tokens with automatic cleanup

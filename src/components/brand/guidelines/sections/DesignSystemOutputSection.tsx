@@ -218,7 +218,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               onClick={handleCopy}
               className="h-7 px-2 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 bg-neutral-900/80 backdrop-blur-sm"
             >
-              {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+              {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
               {copied ? 'Copied' : 'Copy'}
             </Button>
             <Button

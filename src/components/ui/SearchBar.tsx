@@ -28,7 +28,7 @@ const SIZE_STYLES = {
     iconSize: 16,
   },
   lg: {
-    input: 'pl-12 pr-12 py-4 text-lg rounded-xl',
+    input: 'pl-12 pr-12 py-4 text-lg rounded-md',
     iconLeft: 'left-4',
     iconRight: 'right-4',
     iconSize: 20,

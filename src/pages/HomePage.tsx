@@ -180,10 +180,10 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
         onFocus(app.appId);
       }}
       disabled={locked}
-      className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-all duration-100 disabled:cursor-not-allowed focus:outline-none"
+      className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-all duration-100 disabled:cursor-not-allowed focus:outline-none overflow-hidden"
     >
-      {/* Main row */}
-      <div className="flex items-center font-mono text-[11px] tracking-wider">
+      {/* Main row — single line, clips when narrower than 1/3 viewport */}
+      <div className="flex items-center font-mono text-[11px] tracking-wider whitespace-nowrap overflow-hidden">
         {/* Number */}
         <span
           className={`w-6 shrink-0 text-[10px] transition-colors duration-100 ${
@@ -233,9 +233,9 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
         {locked && <Lock size={9} className="ml-2 text-neutral-800 shrink-0" aria-hidden />}
       </div>
 
-      {/* Description */}
+      {/* Description — single line, never wraps (keeps rows compact) */}
       <div
-        className={`pl-9 font-mono text-[10px] tracking-wide transition-colors duration-100 ${
+        className={`pl-9 pr-2 font-mono text-[10px] tracking-wide truncate max-w-[340px] transition-colors duration-100 ${
           locked ? 'text-neutral-800' : focused ? 'text-neutral-500' : 'text-neutral-700'
         }`}
         aria-hidden
@@ -267,7 +267,6 @@ const AppList: React.FC<AppListProps> = ({
   isMobile,
 }) => {
   const { t } = useTranslation();
-  const [listHovered, setListHovered] = useState(false);
 
   return (
     <div className="w-max">
@@ -278,12 +277,7 @@ const AppList: React.FC<AppListProps> = ({
         ref={listRef}
         role="listbox"
         aria-label={t('home.selecione_um_app')}
-        onMouseEnter={() => setListHovered(true)}
-        onMouseLeave={() => setListHovered(false)}
-        className={`flex flex-col gap-[2px] max-h-[55vh] transition-all duration-200 ${
-          listHovered ? 'overflow-y-auto' : 'overflow-y-hidden'
-        }`}
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#262626 transparent' }}
+        className="flex flex-col gap-[2px] max-h-[55vh] overflow-y-auto scrollbar-none"
       >
         {apps.map((app, i) => (
           <motion.div
@@ -567,7 +561,7 @@ export const HomePage: React.FC = () => {
           ) : (
             /* ── Desktop: TUI floats over 3D background, intrinsic width ── */
             <div className="absolute inset-0 flex items-center pointer-events-none">
-              <div className="ml-16 pointer-events-auto inline-flex flex-col">
+              <div className="ml-16 pointer-events-auto inline-flex flex-col max-w-[33vw] overflow-hidden">
                 <AnimatePresence mode="wait">
                   {isLoggedIn ? (
                     <motion.div

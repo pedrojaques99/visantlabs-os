@@ -443,7 +443,7 @@ export const ColorPalettePage: React.FC = () => {
                               return (
                                 <td
                                   key={ci}
-                                  className="w-14 h-8 text-center text-[9px] font-mono text-neutral-700"
+                                  className="w-14 h-8 text-center text-[10px] font-mono text-neutral-700"
                                 >
                                   -
                                 </td>
@@ -460,7 +460,7 @@ export const ColorPalettePage: React.FC = () => {
                               <td
                                 key={ci}
                                 className={cn(
-                                  'w-14 h-8 text-center text-[9px] font-mono rounded',
+                                  'w-14 h-8 text-center text-[10px] font-mono rounded',
                                   bg
                                 )}
                                 title={
@@ -474,10 +474,10 @@ export const ColorPalettePage: React.FC = () => {
                                 <span
                                   className={cn(
                                     wcag.normalAA
-                                      ? 'text-emerald-400'
+                                      ? 'text-success'
                                       : wcag.largeAA
-                                      ? 'text-yellow-400'
-                                      : 'text-red-400'
+                                      ? 'text-warning'
+                                      : 'text-destructive'
                                   )}
                                 >
                                   {ratio.toFixed(1)}

@@ -22,7 +22,7 @@ export const WORKFLOW_CATEGORY_CONFIG: Record<
   },
   'image-editing': {
     icon: Layers,
-    color: 'text-green-400',
+    color: 'text-success',
     label: 'Image Editing',
   },
   video: {
@@ -32,7 +32,7 @@ export const WORKFLOW_CATEGORY_CONFIG: Record<
   },
   general: {
     icon: Workflow,
-    color: 'text-amber-400',
+    color: 'text-warning',
     label: 'General',
   },
 };

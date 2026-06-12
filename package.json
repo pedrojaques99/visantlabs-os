@@ -20,6 +20,9 @@
   "engines": {
     "node": ">=20"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "author": "Visant Labs",
   "license": "MIT",
   "repository": {

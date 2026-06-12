@@ -157,7 +157,7 @@ export const AboutPage: React.FC = () => {
                   </span>
                   <span
                     className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                      m.status ? 'bg-green-600' : 'bg-neutral-700'
+                      m.status ? 'bg-success' : 'bg-neutral-700'
                     }`}
                     aria-label={m.status ? 'online' : 'offline'}
                   />
@@ -253,23 +253,15 @@ export const AboutPage: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Background VISANT text */}
+        {/* Background VISANT wordmark — crisp, subtle, sits behind content */}
         <div
-          className="fixed bottom-0 left-0 right-0 overflow-hidden select-none flex justify-center group/visant"
+          className="fixed bottom-[-2vw] left-0 right-0 overflow-hidden select-none flex justify-center"
           style={{ pointerEvents: 'none' }}
+          aria-hidden
         >
           <RepellantText
-            className="text-[22vw] font-bold leading-none tracking-tighter text-white whitespace-nowrap opacity-[0.06] transition-[filter] duration-700 ease-out"
-            style={{
-              filter: 'blur(12px)',
-              pointerEvents: 'auto',
-            }}
-            onMouseEnter={(e: React.MouseEvent<HTMLElement>) => {
-              (e.currentTarget as HTMLElement).style.filter = 'blur(2px)';
-            }}
-            onMouseLeave={(e: React.MouseEvent<HTMLElement>) => {
-              (e.currentTarget as HTMLElement).style.filter = 'blur(12px)';
-            }}
+            className="text-[20vw] font-bold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-white/5 to-white/[0.03]"
+            style={{ pointerEvents: 'auto' }}
           >
             VISANT
           </RepellantText>

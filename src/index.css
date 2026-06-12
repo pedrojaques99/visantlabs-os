@@ -1654,6 +1654,21 @@
     overflow: hidden;
     transition: max-height 350ms cubic-bezier(0.25, 0.1, 0.25, 1) 150ms;
   }
+
+  /**
+   * scrollbar-none — keep scrolling fully functional but hide the scrollbar
+   * across all engines. Tailwind v4 core does not ship this; define once here.
+   * Alias scrollbar-hide for compatibility with existing usages.
+   */
+  .scrollbar-none,
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/old Edge */
+  }
+  .scrollbar-none::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* WebKit/Chromium/Safari */
+  }
 }
 
 /* Node text color utilities - use CSS variables for automatic contrast */

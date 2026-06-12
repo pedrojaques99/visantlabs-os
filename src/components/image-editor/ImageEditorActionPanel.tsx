@@ -98,7 +98,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
           className={cn(
             'flex-1 px-3 py-2 rounded-lg text-sm bg-neutral-800/50 border border-white/10',
             'text-white placeholder-neutral-500 outline-none',
-            'focus:border-brand-cyan/40 transition-colors',
+            'focus:border-neutral-600 transition-colors',
             'disabled:opacity-50'
           )}
         />
@@ -118,7 +118,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
         className={cn(
           'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
           'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30',
-          'hover:bg-brand-cyan/30 hover:border-brand-cyan/50',
+          'hover:bg-brand-cyan/30 hover:border-neutral-700',
           'disabled:opacity-30 disabled:cursor-not-allowed',
           isGenerating && 'animate-pulse'
         )}

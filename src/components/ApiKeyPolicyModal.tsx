@@ -272,7 +272,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
             {/* Support */}
             <div className="border-t border-neutral-800/50 pt-6">
               <div className="flex items-center gap-2 mb-3">
-                <AlertCircle className="text-amber-500" size={18} />
+                <AlertCircle className="text-warning" size={18} />
                 <h2 className="text-lg font-semibold font-mono text-neutral-200  uppercase">
                   Support
                 </h2>

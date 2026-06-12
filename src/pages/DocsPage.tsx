@@ -267,8 +267,8 @@ export const DocsPage: React.FC = () => {
 
   const renderMethodBadge = (method: string) => {
     let className = 'bg-neutral-800 text-neutral-300';
-    if (method === 'GET') className = 'bg-green-500/10 text-green-500 border-green-500/20';
-    if (method === 'POST') className = 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+    if (method === 'GET') className = 'bg-success/10 text-success border-success/20';
+    if (method === 'POST') className = 'bg-warning/10 text-warning border-warning/20';
     if (method === 'PUT') className = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
     if (method === 'DELETE') className = 'bg-destructive/10 text-destructive border-destructive/20';
 
@@ -416,7 +416,7 @@ export const DocsPage: React.FC = () => {
                       className={cn(
                         'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0',
                         copied
-                          ? 'bg-green-500/10 border-green-500/40 text-green-500'
+                          ? 'bg-success/10 border-success/40 text-success'
                           : 'bg-secondary/60 border-border text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5'
                       )}
                     >
@@ -984,7 +984,7 @@ const result = await client.callTool({
                             <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">
                               read
                             </Badge>{' '}
-                            <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs mx-1">
+                            <Badge className="bg-warning/20 text-warning border border-warning/30 text-xs mx-1">
                               write
                             </Badge>{' '}
                             <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">
@@ -1231,7 +1231,7 @@ const result = await client.callTool({
                         {[
                           {
                             label: 'Creation',
-                            color: 'text-green-400',
+                            color: 'text-success',
                             ops: [
                               'CREATE_FRAME',
                               'CREATE_RECTANGLE',
@@ -1243,7 +1243,7 @@ const result = await client.callTool({
                           },
                           {
                             label: 'Edit',
-                            color: 'text-amber-400',
+                            color: 'text-warning',
                             ops: [
                               'SET_FILL',
                               'SET_STROKE',
@@ -1906,8 +1906,8 @@ figma.ui.onmessage = async (msg) => {
                           </div>
                         ))}
 
-                        <div className="bg-card border border-amber-500/20 rounded-md p-4 mt-4">
-                          <p className="text-amber-500 text-sm font-medium mb-1">Related files</p>
+                        <div className="bg-card border border-warning/20 rounded-md p-4 mt-4">
+                          <p className="text-warning text-sm font-medium mb-1">Related files</p>
                           <div className="space-y-1">
                             {[
                               ['plugin/src/render.ts', 'NodeSpec renderer — createFromSpec()'],
@@ -2102,9 +2102,9 @@ Content-Type: application/json`}</pre>
                               <Badge
                                 variant="outline"
                                 className={cn('font-redhatmono uppercase', {
-                                  'bg-green-500/10 text-green-500 border-green-500/20':
+                                  'bg-success/10 text-success border-success/20':
                                     method === 'GET',
-                                  'bg-amber-500/10 text-amber-500 border-amber-500/20':
+                                  'bg-warning/10 text-warning border-warning/20':
                                     method === 'POST',
                                   'bg-blue-500/10 text-blue-500 border-blue-500/20':
                                     method === 'PUT',
@@ -2561,9 +2561,9 @@ Content-Type: application/json`}</pre>
                               <Badge
                                 variant="outline"
                                 className={cn('font-redhatmono uppercase', {
-                                  'bg-green-500/10 text-green-500 border-green-500/20':
+                                  'bg-success/10 text-success border-success/20':
                                     method === 'GET',
-                                  'bg-amber-500/10 text-amber-500 border-amber-500/20':
+                                  'bg-warning/10 text-warning border-warning/20':
                                     method === 'POST',
                                   'bg-destructive/10 text-destructive border-destructive/20':
                                     method === 'DELETE',
@@ -2650,9 +2650,9 @@ Content-Type: application/json`}</pre>
                               <Badge
                                 variant="outline"
                                 className={cn('font-redhatmono uppercase', {
-                                  'bg-green-500/10 text-green-500 border-green-500/20':
+                                  'bg-success/10 text-success border-success/20':
                                     method === 'GET',
-                                  'bg-amber-500/10 text-amber-500 border-amber-500/20':
+                                  'bg-warning/10 text-warning border-warning/20':
                                     method === 'POST',
                                   'bg-blue-500/10 text-blue-500 border-blue-500/20':
                                     method === 'PUT',
@@ -2824,8 +2824,8 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                           </div>
                         </div>
 
-                        <div className="bg-card border border-amber-500/20 rounded-md p-4">
-                          <p className="text-amber-500 text-sm font-medium mb-2">
+                        <div className="bg-card border border-warning/20 rounded-md p-4">
+                          <p className="text-warning text-sm font-medium mb-2">
                             Key Patterns for Agents
                           </p>
                           <ul className="space-y-1.5 text-sm text-muted-foreground">
@@ -3085,14 +3085,14 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                           <div className="bg-secondary/40 border border-border rounded-md p-4">
                             <div className="font-redhatmono text-xs space-y-2">
                               <p className="flex justify-between border-b border-border/30 pb-1.5">
-                                <span className="text-green-400">GET</span>{' '}
+                                <span className="text-success">GET</span>{' '}
                                 <span className="text-foreground">/api/brand-guidelines</span>{' '}
                                 <span className="text-muted-foreground">
                                   List all user's guidelines
                                 </span>
                               </p>
                               <p className="flex justify-between border-b border-border/30 pb-1.5">
-                                <span className="text-green-400">GET</span>{' '}
+                                <span className="text-success">GET</span>{' '}
                                 <span className="text-foreground">/api/brand-guidelines/:id</span>{' '}
                                 <span className="text-muted-foreground">
                                   Fetch detailed guideline
@@ -3106,7 +3106,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                                 </span>
                               </p>
                               <p className="flex justify-between border-b border-border/30 pb-1.5">
-                                <span className="text-amber-400">PUT</span>{' '}
+                                <span className="text-warning">PUT</span>{' '}
                                 <span className="text-foreground">/api/brand-guidelines/:id</span>{' '}
                                 <span className="text-muted-foreground">
                                   Update guideline fields
@@ -3165,7 +3165,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                                 <span className="text-muted-foreground">— Enable sharing</span>
                               </p>
                               <p>
-                                <span className="text-green-400">GET</span>{' '}
+                                <span className="text-success">GET</span>{' '}
                                 <span className="text-foreground">
                                   /api/brand-guidelines/public/:slug
                                 </span>{' '}
@@ -3369,7 +3369,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                               <Badge
                                                 className={
                                                   tool['x-cost'] === 'free'
-                                                    ? 'bg-green-500/20 text-green-400 text-xs'
+                                                    ? 'bg-success/20 text-success text-xs'
                                                     : 'bg-purple-500/20 text-purple-400 text-xs'
                                                 }
                                               >
@@ -3413,7 +3413,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                           <div className="bg-secondary/40 border border-border rounded-md p-4 mb-4">
                             <div className="font-redhatmono text-xs space-y-2">
                               <p className="flex justify-between border-b border-border/30 pb-1.5">
-                                <span className="text-green-400">GET</span>{' '}
+                                <span className="text-success">GET</span>{' '}
                                 <span className="text-foreground">
                                   /api/brand-guidelines/:id/context
                                 </span>
@@ -3708,7 +3708,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                   </span>
                                   <Badge
                                     variant="outline"
-                                    className="text-green-500 border-green-500/30"
+                                    className="text-success border-success/30"
                                   >
                                     Free
                                   </Badge>

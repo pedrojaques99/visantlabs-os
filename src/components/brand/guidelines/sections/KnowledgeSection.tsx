@@ -24,7 +24,7 @@ const SOURCE_COLORS: Record<string, { bg: string; text: string; border: string }
   pdf: { bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
   image: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
   url: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-  text: { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' },
+  text: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20' },
 };
 
 const sourceIcon = (source: BrandKnowledgeFile['source'], size = 14) => {

@@ -242,7 +242,7 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
               {isChunkError && (
                 <div className="space-y-2">
-                  <p className="text-sm font-mono text-yellow-400">
+                  <p className="text-sm font-mono text-warning">
                     {translations.chunkErrorMessage ||
                       'A problem occurred while loading the page files. This is usually caused by network or cache issues.'}
                   </p>
@@ -265,8 +265,8 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {isLayoutError && (
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-md p-4">
-                <p className="text-sm text-yellow-400 font-mono">
+              <div className="bg-warning/10 border border-warning/20 rounded-md p-4">
+                <p className="text-sm text-warning font-mono">
                   {translations.layoutError ||
                     'This error suggests a component is trying to use layout context outside of the Layout component. Please refresh the page or contact support if the issue persists.'}
                 </p>
@@ -282,7 +282,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 >
                   {this.state.isCopied ? (
                     <>
-                      <Check className="h-4 w-4 text-green-400" />
+                      <Check className="h-4 w-4 text-success" />
                       Copied
                     </>
                   ) : (

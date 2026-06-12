@@ -72,7 +72,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
       animate={{ opacity: 1, y: 0 }}
       className="w-full min-h-[70vh] flex flex-col items-center justify-center text-center gap-6 px-6"
     >
-      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10">
+      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
         <Layers size={26} strokeWidth={1.2} className="text-neutral-500" />
       </div>
       <div className="space-y-2 max-w-sm">
@@ -122,9 +122,9 @@ const CoverFallback = ({ colors }: { colors?: BrandGuideline['colors'] }) => {
 };
 
 const SCORE_COLORS = {
-  low: 'bg-red-500',
-  medium: 'bg-amber-400',
-  high: 'bg-green-500',
+  low: 'bg-destructive',
+  medium: 'bg-warning',
+  high: 'bg-success',
 } as const;
 
 const BrandCard = ({
@@ -155,7 +155,7 @@ const BrandCard = ({
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
       onClick={() => onSelect(guideline)}
-      className="group relative flex flex-col sm:flex-col rounded-xl border border-white/[0.06] bg-neutral-900 hover:border-white/[0.14] hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer"
+      className="group relative flex flex-col sm:flex-col rounded-xl border border-neutral-800 bg-neutral-900 hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer"
     >
       {/* Cover */}
       <div className="relative w-full sm:w-full h-20 sm:h-24 shrink-0 overflow-hidden bg-neutral-800">
@@ -222,7 +222,7 @@ const BrandCard = ({
         </div>
 
         {/* Footer: completeness + font hint */}
-        <div className="flex items-center justify-between gap-2 mt-auto pt-1 border-t border-white/[0.04]">
+        <div className="flex items-center justify-between gap-2 mt-auto pt-1 border-t border-neutral-800">
           <Tooltip
             content={`${report.score}% complete — ${report.missing.length} items missing`}
             position="bottom"
@@ -304,7 +304,7 @@ const BrandGrid = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search brands..."
-            className="h-8 pl-8 text-xs bg-white/[0.03] border-white/[0.06]"
+            className="h-8 pl-8 text-xs bg-white/[0.03] border-neutral-800"
           />
         </div>
 
@@ -315,7 +315,7 @@ const BrandGrid = ({
               className={cn(
                 'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors',
                 !folderFilter
-                  ? 'bg-white/[0.08] border-white/[0.12] text-neutral-300'
+                  ? 'bg-white/10 border-white/10 text-neutral-300'
                   : 'border-transparent text-neutral-600 hover:text-neutral-400'
               )}
             >
@@ -328,7 +328,7 @@ const BrandGrid = ({
                 className={cn(
                   'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1',
                   folderFilter === f
-                    ? 'bg-white/[0.08] border-white/[0.12] text-neutral-300'
+                    ? 'bg-white/10 border-white/10 text-neutral-300'
                     : 'border-transparent text-neutral-600 hover:text-neutral-400'
                 )}
               >
@@ -342,7 +342,7 @@ const BrandGrid = ({
         <div className="sm:ml-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-400 border border-transparent hover:border-white/[0.06] transition-colors">
+              <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-400 border border-transparent hover:border-neutral-800 transition-colors">
                 <ArrowUpDown size={11} />
                 {sort === 'recent' ? 'Recent' : sort === 'name' ? 'Name' : 'Completeness'}
               </button>
@@ -617,7 +617,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                         }}
                       >
                         {figmaCopied ? (
-                          <Check size={13} className="text-green-400" />
+                          <Check size={13} className="text-success" />
                         ) : (
                           <Figma size={13} />
                         )}
@@ -638,7 +638,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
             {/* Tab bar */}
             {selected && (
-              <div className="flex items-center border-b border-white/5 mb-8 overflow-x-auto scrollbar-none">
+              <div className="flex items-center border-b border-neutral-800 mb-8 overflow-x-auto scrollbar-none">
                 {SECTION_TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -740,7 +740,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 <GlassPanel intensity="subtle" asChild>
                                   <button
                                     onClick={() => setReviewGuidelineId(selected.id!)}
-                                    className="mb-8 w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] transition-all group"
+                                    className="mb-8 w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group"
                                   >
                                     <ClipboardCheck
                                       size={15}

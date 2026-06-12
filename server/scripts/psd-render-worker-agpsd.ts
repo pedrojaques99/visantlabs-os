@@ -23,9 +23,11 @@ import {
   flattenLayers,
   replaceLinkedSmartObjects,
   composePsd,
-} from '../lib/psd-compose.js';
-import { computeFaces, type FaceSo } from '../lib/psd-faces.js';
-import { SO_TARGET, BRAND_HIDE } from '../lib/psd-render-constants.js';
+  computeFaces,
+  SO_TARGET,
+  BRAND_HIDE,
+  type FaceSo,
+} from '@visant/psd-engine';
 
 function getArg(name: string, fallback = ''): string {
   const idx = process.argv.indexOf(`--${name}`);
@@ -66,6 +68,9 @@ try {
   const psdBuffer = readFileSync(resolve(job.psdPath));
   const psd = agPsd.readPsd(new Uint8Array(psdBuffer).buffer as ArrayBuffer, {
     skipThumbnail: true,
+    // Não desserializa a imagem composta full-res do PSD — economiza um canvas
+    // do tamanho do documento no pico de RAM (compomos do zero pelas camadas).
+    skipCompositeImageData: true,
   });
 
   const allLayers = flattenLayers(psd.children || []);

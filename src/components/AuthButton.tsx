@@ -335,7 +335,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
               onClick={onCreditsClick}
               className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${
                 isLowCredits
-                  ? 'text-amber-400 border-amber-500/30'
+                  ? 'text-warning border-warning/30'
                   : 'text-brand-cyan border-brand-cyan/20'
               }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
@@ -347,7 +347,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             >
               <Pickaxe
                 size={12}
-                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-amber-400' : 'text-brand-cyan'}`}
+                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-warning' : 'text-brand-cyan'}`}
                 aria-hidden="true"
               />
               <span>{availableCredits}</span>
@@ -391,17 +391,17 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 }}
                 onClick={() => setIsDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[160px] dropdown-menu">
+              <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[150px] py-1 dropdown-menu">
                 <Button
                   variant="ghost"
                   onClick={handleProfileClick}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
                 >
                   <span className="flex items-center gap-2">
                     <UserIcon size={14} />
                     {t('common.profile')}
                   </span>
-                  <span className="text-[9px] text-neutral-600 uppercase tracking-wider">
+                  <span className="text-[10px] text-neutral-600 uppercase tracking-wider">
                     {tierLabel}
                   </span>
                 </Button>
@@ -412,7 +412,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/community');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
                 >
                   <Globe size={14} />
                   {t('common.community') || 'Community'}
@@ -424,7 +424,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/docs');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
                 >
                   <BookOpen size={14} />
                   Docs
@@ -439,7 +439,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                         window.history.pushState({}, '', '/admin');
                         window.dispatchEvent(new PopStateEvent('popstate'));
                       }}
-                      className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center justify-start gap-2"
                     >
                       <ShieldCheck size={14} />
                       {t('auth.adminPanel') || 'Admin'}
@@ -451,7 +451,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
                 >
                   <LogOut size={14} />
                   {t('auth.logout')}

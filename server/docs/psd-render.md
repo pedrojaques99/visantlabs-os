@@ -1,9 +1,15 @@
 # PSD Render — engine ag-psd + PSDs do Google Drive
 
-Render de mockups PSD no VPS sem Chromium: compositor ag-psd + node-canvas
-portado do mockup-store (Z:\BOXY\mockup-store, `src/lib/psd-compose.ts`).
-Suporta máscaras raster, clipping, blend modes, smart objects vinculados
-(mesmo `placedLayer.id`) e multi-face (caixas, vitrines).
+Render de mockups PSD no VPS sem Chromium. O compositor é o pacote
+**[`@visant/psd-engine`](../../packages/psd-engine/README.md)** (SSoT
+isomórfico: server node-canvas, browser DOM canvas, CLI local) — consumido
+também pela boxy-app e pelo mockup-store. Suporta máscaras raster, clipping,
+blend modes, smart objects vinculados (mesmo `placedLayer.id`) e multi-face
+(caixas, vitrines).
+
+`server/lib/psd-compose.ts`, `psd-faces.ts` e `psd-render-constants.ts` são
+re-exports finos do pacote (compat de import paths) — toda a lógica vive em
+`@visant/psd-engine`. Não há mais código duplicado entre repos.
 
 ## Arquitetura
 
@@ -95,7 +101,64 @@ ag-psd vs Photopea legado: ~3-8s vs ~25s por render, sem Chromium (RAM ~10x meno
 o que permitiu `MAX_CONCURRENT=2`. Testado com BOX_ISOLATED.psd (3 faces, 70MB)
 nos dois modos (explícito e all-faces).
 
-## Manter em sincronia
+## Scene Packages — render no browser, RAM mínima
 
-`server/lib/psd-compose.ts`, `psd-faces.ts` e `psd-render-constants.ts` são
-portados do mockup-store — se corrigir bug num lado, replicar no outro.
+Um **Scene Package** é o PSD pré-processado uma única vez em geometria compacta
++ camadas flatten, para que o render por arte vire um warp + blend trivial em
+qualquer canvas (sem mandar o PSD pro cliente, sem abrir o PSD a cada render).
+Resolve o OOM do compose server-side (camadas full-res simultâneas) movendo o
+render quente pro browser do usuário (Boxy / Visant web) ou pro node local
+(mockup-store).
+
+- **O que é:** `scene.json` (`SceneDoc`: dimensões + faces `{key, name, quad,
+  innerW/H, maskRef?}` + camadas `base`/`over` com `blendMode`/`opacity`) +
+  imagens flatten (WebP/PNG) das camadas. **O PSD nunca vai pro browser** — só
+  flattens não-editáveis + JSON, servidos por signed URL com TTL atrás do gate
+  de quota. `doc.warnings[]` sinaliza blend modes que o mapeamento Canvas-2D não
+  reproduz 1:1 (dica pra cair no fallback server).
+
+### Preprocessador (1x por PSD)
+
+```bash
+bun server/scripts/psd-scene-extract.ts <psdFileName|path>
+```
+
+Usa `@visant/psd-engine/scene` (`extractScene`) + adapter node → sobe
+`scene.json` + camadas pro Spaces privado sob `scenes/<psdHash>/` e registra na
+collection Mongo `psd_scenes` (`psdFileName, hash, sceneUrl, faces, warnings,
+bytes`). É a única operação pesada e roda **uma vez** por PSD (semáforo Redis).
+
+### Endpoints de scene
+
+| Rota | Auth | Função |
+|---|---|---|
+| `POST /api/psd-render/scene-prepare` | `generate` (+ tier `all` ou partner key p/ pasta pública) | Dispara o extract de um PSD sem scene |
+| `GET /api/psd-render/scenes` | `authenticate` (tier) | Lista scenes disponíveis pro tier (catálogo) |
+| `GET /api/psd-render/scenes/:psdFileName` | `authenticate` (tier) | Retorna `SceneDoc` + **signed URLs (TTL ~10min)** das camadas — é o que o proxy da Boxy chama após o check de quota |
+
+### Fast path no /render
+
+`POST /render` checa se existe scene pro PSD: se sim, renderiza **do scene**
+(RAM mínima, sem abrir o PSD); senão cai no pipeline ag-psd atual.
+`?forcePsd=true` força o caminho completo.
+
+O cliente browser compartilhado é `src/lib/mockup/sceneClient.ts`
+(`@visant/psd-engine/scene` + adapter browser): fetch `SceneDoc` → carrega
+imagens → render em canvas → `toBlob`. Mesmo módulo importado pela boxy-app via
+npm — zero duplicação. Página interna de prova: `/admin/psd-scene`.
+
+## Agente autônomo — MCP tools
+
+O agente produz mockups fim-a-fim (escolhe template → gera arte → renderiza →
+publica) via tools no `server/mcp/platform-mcp.ts`. `psd_scenes` é a porta única
+do catálogo (sem acesso direto ao banco):
+
+| Tool | Scope | Função |
+|---|---|---|
+| `psd-scene-list` | read | Catálogo de scenes/PSDs com faces, dimensões, warnings |
+| `psd-scene-prepare` | generate | Dispara o preprocessamento de um PSD sem scene |
+| `psd-mockup-produce` | generate | Fim-a-fim: gera arte (`artPrompt`/`brandGuidelineId`) ou usa `artUrl` → render via scene fast path (fallback `/render`) → publica no Spaces → `{ imageUrl, sceneUsed, face, artUrl }`. Cobra 1 geração de imagem (render grátis), refund em falha |
+
+Os tools `mockup-store-*` (bridge local pro `Z:\BOXY\mockup-store`) continuam
+para o fluxo de render local em lote. Workflow completo documentado na skill
+`.claude/skills/psd-mockup-engine/SKILL.md`.

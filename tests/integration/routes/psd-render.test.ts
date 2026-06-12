@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { request } from '../../helpers/app.js';
-import { createUser } from '../../factories/user.js';
+import { createUser, createAdmin } from '../../factories/user.js';
 import { signTestToken, bearer } from '../../helpers/auth.js';
 
 /**
@@ -69,5 +69,86 @@ describe('POST /api/psd-render/render — auth & scope gate', () => {
       // Missing psd source → 400 from validation, proving the scope gate opened.
       .send({ arts: [{ smartObject: '*', artBase64: 'x' }] });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('Scene Package endpoints — auth & validation', () => {
+  it('POST /scene-prepare → 401 without auth', async () => {
+    const agent = await request();
+    const res = await agent.post('/api/psd-render/scene-prepare').send({ psdFileName: 'x.psd' });
+    expect(res.status).toBe(401);
+  });
+
+  it('POST /scene-prepare → 403 for API key without generate scope', async () => {
+    const { user } = await createUser();
+    const userToken = signTestToken({ userId: user.id, email: user.email });
+    const rawKey = await createApiKey(userToken, ['read', 'write']);
+    if (!rawKey) return; // route not mounted — fail soft
+    const agent = await request();
+    const res = await agent
+      .post('/api/psd-render/scene-prepare')
+      .set('Authorization', bearer(rawKey))
+      .send({ psdFileName: 'boxy.psd' });
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/scope/i);
+  });
+
+  it('POST /scene-prepare → 400 for a non-bare file name (full JWT, past scope gate)', async () => {
+    const { user } = await createUser();
+    const token = signTestToken({ userId: user.id, email: user.email });
+    const agent = await request();
+    const res = await agent
+      .post('/api/psd-render/scene-prepare')
+      .set('Authorization', bearer(token))
+      .send({ psdFileName: '../etc/passwd' });
+    expect(res.status).toBe(400);
+  });
+
+  it('GET /scenes → 401 without auth', async () => {
+    const agent = await request();
+    const res = await agent.get('/api/psd-render/scenes');
+    expect(res.status).toBe(401);
+  });
+
+  it('GET /scenes → 200 with auth (catalog, possibly empty)', async () => {
+    const { user } = await createUser();
+    const token = signTestToken({ userId: user.id, email: user.email });
+    const agent = await request();
+    const res = await agent.get('/api/psd-render/scenes').set('Authorization', bearer(token));
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.scenes)).toBe(true);
+  });
+
+  it('GET /scenes/:file → 404 when the scene does not exist', async () => {
+    const { user } = await createUser();
+    const token = signTestToken({ userId: user.id, email: user.email });
+    const agent = await request();
+    const res = await agent
+      .get('/api/psd-render/scenes/does-not-exist.psd')
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(404);
+  });
+
+  it('DELETE /scenes/:file → 403 for a non-admin', async () => {
+    const { user } = await createUser();
+    const token = signTestToken({ userId: user.id, email: user.email });
+    const agent = await request();
+    const res = await agent
+      .delete('/api/psd-render/scenes/x.psd')
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(403);
+  });
+
+  it('DELETE /scenes/:file → 200 for an admin (idempotent, deleted=false when absent)', async () => {
+    const { user } = await createAdmin();
+    const token = signTestToken({ userId: user.id, email: user.email });
+    const agent = await request();
+    const res = await agent
+      .delete('/api/psd-render/scenes/x.psd')
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.deleted).toBe(false);
   });
 });

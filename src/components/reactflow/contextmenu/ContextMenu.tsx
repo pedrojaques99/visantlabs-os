@@ -375,10 +375,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         'w-full px-2 py-1 rounded',
         'flex items-center gap-2 cursor-pointer',
         'transition-colors duration-100',
-        'aria-selected:bg-white/[0.06] aria-selected:text-white',
+        'aria-selected:bg-white/5 aria-selected:text-white',
         item.highlight
           ? 'text-brand-cyan'
-          : 'text-neutral-400 hover:bg-white/[0.04] hover:text-neutral-200'
+          : 'text-neutral-400 hover:bg-white/5 hover:text-neutral-200'
       )}
     >
       <span className="flex-shrink-0">{item.icon}</span>
@@ -435,7 +435,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           {grouped.map(({ group, items }, gi) => (
             <Command.Group key={group}>
               <div className="px-2 pt-1.5 pb-0.5">
-                <span className="text-[9px] font-semibold text-neutral-500 uppercase tracking-widest">
+                <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest">
                   {group}
                 </span>
               </div>

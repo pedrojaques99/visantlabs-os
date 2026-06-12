@@ -258,7 +258,7 @@ export const VisualSearchPage: React.FC = () => {
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-all',
               isActive
                 ? 'bg-white/5 border-white/10 text-neutral-200'
-                : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.02]'
+                : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
             )}
           >
             <Icon size={12} className="shrink-0" />
@@ -295,7 +295,7 @@ export const VisualSearchPage: React.FC = () => {
             size="lg"
             placeholder="Search..."
             containerClassName="max-w-xl w-full"
-            className="bg-white/[0.03] border-white/5 focus:border-white/10"
+            className="bg-white/[0.03] border-neutral-800 focus:border-white/10"
             autoFocus
           />
           <div className="mt-4">{tabBar}</div>
@@ -303,7 +303,7 @@ export const VisualSearchPage: React.FC = () => {
       ) : (
         <>
           {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
-          <div className="sticky top-10 md:top-14 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-white/5">
+          <div className="sticky top-10 md:top-14 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800">
             <SearchBar
               ref={searchBarRef}
               value={query}
@@ -311,7 +311,7 @@ export const VisualSearchPage: React.FC = () => {
               size="md"
               placeholder="Search..."
               containerClassName="max-w-2xl"
-              className="bg-white/[0.03] border-white/5 focus:border-white/10"
+              className="bg-white/[0.03] border-neutral-800 focus:border-white/10"
             />
             {tabBar}
           </div>
@@ -441,7 +441,7 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
       href={crop.cropUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative overflow-hidden rounded-lg border border-white/[0.04] hover:border-white/10 transition-all"
+      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 transition-all"
     >
       <div
         className={cn(
@@ -458,7 +458,7 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
       </div>
       {crop.style && (
         <div className="absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-[9px] font-mono text-neutral-400 uppercase">{crop.style}</span>
+          <span className="text-[10px] font-mono text-neutral-400 uppercase">{crop.style}</span>
         </div>
       )}
     </a>
@@ -476,7 +476,7 @@ const ResultCard: React.FC<{
 
   return (
     <div
-      className="group relative overflow-hidden rounded-lg border border-white/[0.04] hover:border-white/10 cursor-pointer transition-all"
+      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 cursor-pointer transition-all"
       onClick={onClick}
     >
       <div

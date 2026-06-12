@@ -17,7 +17,26 @@
     "paths": {
       "@/*": ["./src/*"],
       "@server/*": ["./server/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@visant/psd-engine": ["./packages/psd-engine/src/index.ts"],
+      "@visant/psd-engine/scene": ["./packages/psd-engine/src/scene/index.ts"],
+      "@visant/psd-engine/adapters/node": ["./packages/psd-engine/src/adapters/node.ts"],
+      "@visant/psd-engine/adapters/browser": ["./packages/psd-engine/src/adapters/browser.ts"],
+      "@visant/print-fx": ["./packages/print-fx/src/index.ts"],
+      "@visant/print-fx/halftone": ["./packages/print-fx/src/halftone/index.ts"],
+      "@visant/print-fx/riso": ["./packages/print-fx/src/riso/index.ts"],
+      "@visant/print-fx/shaders": ["./packages/print-fx/src/shaders/index.ts"],
+      "@visant/print-fx/presets": ["./packages/print-fx/src/presets.ts"],
+      "@visant/print-fx/gl": ["./packages/print-fx/src/gl/index.ts"],
+      "@visant/print-fx/adapters/node": ["./packages/print-fx/src/adapters/node.ts"],
+      "@visant/print-fx/adapters/browser": ["./packages/print-fx/src/adapters/browser.ts"],
+      "@visant/logo-trace": ["./packages/logo-trace/src/index.ts"],
+      "@visant/logo-trace/presets": ["./packages/logo-trace/src/presets.ts"],
+      "@visant/logo-trace/sanitize": ["./packages/logo-trace/src/sanitize.ts"],
+      "@visant/extrude3d": ["./packages/extrude3d/src/index.ts"],
+      "@visant/extrude3d/materials": ["./packages/extrude3d/src/materials.ts"],
+      "@visant/extrude3d/fonts": ["./packages/extrude3d/src/fonts.ts"],
+      "@visant/extrude3d/glb": ["./packages/extrude3d/src/glb.ts"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
