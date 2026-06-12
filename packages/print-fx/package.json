@@ -1,0 +1,81 @@
+{
+  "name": "@visant/print-fx",
+  "version": "0.1.0",
+  "description": "Isomorphic print-effects engine — CMYK halftone (SVG/raster), risograph emulation (ink layers, dither, misregistration, paper/ink grain) and 14 GLSL post-fx shaders. Runs in the browser (WebGLRenderingContext) or on the server (headless-gl).",
+  "type": "module",
+  "license": "MIT",
+  "author": "Visant Labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedrojaques99/visantlabs-os",
+    "directory": "packages/print-fx"
+  },
+  "keywords": [
+    "halftone",
+    "cmyk",
+    "risograph",
+    "riso",
+    "dither",
+    "glsl",
+    "shader",
+    "post-fx",
+    "webgl",
+    "print"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./halftone": {
+      "types": "./dist/halftone/index.d.ts",
+      "import": "./dist/halftone/index.js"
+    },
+    "./riso": {
+      "types": "./dist/riso/index.d.ts",
+      "import": "./dist/riso/index.js"
+    },
+    "./shaders": {
+      "types": "./dist/shaders/index.d.ts",
+      "import": "./dist/shaders/index.js"
+    },
+    "./presets": {
+      "types": "./dist/presets.d.ts",
+      "import": "./dist/presets.js"
+    },
+    "./gl": {
+      "types": "./dist/gl/index.d.ts",
+      "import": "./dist/gl/index.js"
+    },
+    "./adapters/node": {
+      "types": "./dist/adapters/node.d.ts",
+      "import": "./dist/adapters/node.js"
+    },
+    "./adapters/browser": {
+      "types": "./dist/adapters/browser.d.ts",
+      "import": "./dist/adapters/browser.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "canvas": ">=2",
+    "gl": ">=6"
+  },
+  "peerDependenciesMeta": {
+    "canvas": {
+      "optional": true
+    },
+    "gl": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}
