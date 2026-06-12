@@ -387,7 +387,15 @@ async function tryRenderFromScene(
 
   const assets: Record<string, any> = {};
   for (const [ref, buf] of Object.entries(assetBuffers)) {
-    assets[ref] = await adapter.loadImage(buf);
+    // node-canvas não decodifica WebP (o formato em que o extract serializa as
+    // camadas via sharp) — converte pra PNG antes do loadImage. Sniff por magic
+    // bytes (RIFF....WEBP) pra não depender da extensão da key.
+    let decodable = buf;
+    if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') {
+      const sharp = (await import('sharp')).default;
+      decodable = await sharp(buf).png().toBuffer();
+    }
+    assets[ref] = await adapter.loadImage(decodable);
   }
 
   // 2. Resolve as artes (mesmo tratamento do pipeline: artBase64 | artUrl).
