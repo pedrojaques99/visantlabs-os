@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { MapPin, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 interface BackgroundSelectorProps {
   availableBackgrounds: string[];
@@ -26,22 +27,8 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsExpanded(false);
-      }
-    };
-
-    if (isExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isExpanded]);
+  // Close menu when clicking outside or pressing Escape
+  useClickOutside(containerRef, () => setIsExpanded(false), { enabled: isExpanded });
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();

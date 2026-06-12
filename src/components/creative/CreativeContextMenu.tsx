@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import {
   Copy,
   ClipboardPaste,
@@ -71,20 +72,7 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
   const setSelectedLayerIds = useCreativeStore((s) => s.setSelectedLayerIds);
 
   // Dismiss on outside click / Escape
-  useEffect(() => {
-    const onDocDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('mousedown', onDocDown);
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('mousedown', onDocDown);
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [onClose]);
+  useClickOutside(ref, onClose);
 
   // If right-click hit a layer that isn't in the current selection, replace selection.
   // If it hit one already selected, keep multi-selection so actions apply to all.

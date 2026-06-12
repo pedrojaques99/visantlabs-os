@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useMockup } from './MockupContext';
@@ -94,16 +95,9 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // Close dropdown on outside-click; escape: false because handleKeyDown already handles
+  // Escape on the input (it also clears searchQuery, so it does more than just close)
+  useClickOutside(dropdownRef, () => { setIsOpen(false); setSearchQuery(''); }, { enabled: isOpen, escape: false });
 
   useEffect(() => {
     if (isOpen && inputRef.current) {

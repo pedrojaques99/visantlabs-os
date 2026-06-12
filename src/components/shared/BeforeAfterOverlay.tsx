@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
 import { useImageLabStore, type CompareMode } from '@/stores/imageLabStore';
+import { OverlayLabel } from '@/components/shared/OverlayLabel';
 
 interface BeforeAfterOverlayProps {
   sourceUrl: string;
@@ -27,9 +27,7 @@ export const BeforeAfterOverlay: React.FC<BeforeAfterOverlayProps> = React.memo(
     return (
       <div className="absolute inset-0 z-20 pointer-events-none">
         <img src={sourceUrl} alt="Original" className="w-full h-full object-contain" />
-        <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 rounded text-[10px] font-mono uppercase tracking-widest text-neutral-300">
-          Original
-        </div>
+        <OverlayLabel position="tl">Original</OverlayLabel>
       </div>
     );
   }
@@ -61,12 +59,8 @@ export const BeforeAfterOverlay: React.FC<BeforeAfterOverlayProps> = React.memo(
             </div>
           </div>
         </div>
-        <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 rounded text-[10px] font-mono uppercase tracking-widest text-neutral-300">
-          Original
-        </div>
-        <div className="absolute top-3 right-3 px-2 py-1 bg-black/70 rounded text-[10px] font-mono uppercase tracking-widest text-neutral-300">
-          Processed
-        </div>
+        <OverlayLabel position="tl">Original</OverlayLabel>
+        <OverlayLabel position="tr">Processed</OverlayLabel>
       </div>
     );
   }

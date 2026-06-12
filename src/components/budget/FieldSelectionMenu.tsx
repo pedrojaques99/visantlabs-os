@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,19 +48,10 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
     }
   }, []);
 
+  useClickOutside(menuRef, onClose, { enabled: true });
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
-
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setSelectedIndex((prev) => Math.min(prev + 1, filteredFields.length - 1));
@@ -82,13 +74,8 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose, filteredFields, selectedIndex, onSelect]);
 
   if (fields.length === 0) {

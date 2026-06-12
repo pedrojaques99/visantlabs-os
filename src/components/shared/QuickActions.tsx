@@ -1,11 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Download, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { pipelineApi, type AssetSource } from '@/services/pipelineApi';
-import { getCompatibleTargets } from '@/lib/toolRegistry';
-import { toast } from 'sonner';
+import { type AssetSource } from '@/services/pipelineApi';
+import { SendToButton } from '@/components/shared/SendToButton';
 import { formatBytes } from '@/utils/formatUtils';
 
 interface QuickActionsProps {
@@ -38,33 +36,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   assetData,
   className,
 }) => {
-  const navigate = useNavigate();
-
-  const targets = useMemo(
-    () => getCompatibleTargets(outputMime, toolId).slice(0, 4),
-    [outputMime, toolId]
-  );
-
-  const handleSendTo = async (targetId: string, targetPath: string, targetName: string) => {
-    if (!assetData?.imageBase64 && !assetData?.imageUrl) {
-      toast.error('No asset data available');
-      return;
-    }
-    try {
-      await pipelineApi.send({
-        source: toolId,
-        imageBase64: assetData.imageBase64,
-        imageUrl: assetData.imageUrl,
-        mimeType: assetData.mimeType,
-        label: assetData.label,
-      });
-      toast.success(`Opening ${targetName}…`);
-      navigate(targetPath);
-    } catch {
-      toast.error('Failed to send');
-    }
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -108,21 +79,18 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           </button>
         )}
 
-        {/* Separator */}
-        {targets.length > 0 && assetData && <div className="w-px h-4 bg-neutral-700/40 mx-0.5" />}
-
-        {/* Send to targets */}
-        {assetData &&
-          targets.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => handleSendTo(t.id, t.path, t.name)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-800/40 hover:bg-neutral-800/80 text-neutral-400 hover:text-neutral-200 border border-neutral-700/20 text-[11px] font-mono transition-all duration-200"
-            >
-              <t.icon size={11} className="opacity-60" />
-              {t.name}
-            </button>
-          ))}
+        {/* Send to — collapsed into a single button with dropdown */}
+        {assetData && (
+          <SendToButton
+            source={toolId}
+            outputMime={outputMime}
+            imageBase64={assetData.imageBase64}
+            imageUrl={assetData.imageUrl}
+            mimeType={assetData.mimeType}
+            label={assetData.label}
+            variant="icon"
+          />
+        )}
       </div>
     </motion.div>
   );

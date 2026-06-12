@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { usePdfCompressStore, type PdfItem } from '@/stores/pdfCompressStore';
-import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { downloadBlob } from '@/utils/clipboard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -198,15 +198,127 @@ export const PdfCompressPage: React.FC = () => {
   }, [items]);
 
   const hasItems = items.length > 0;
+  const queuedOrErrorCount = items.filter(
+    (i) => i.status === 'queued' || i.status === 'error'
+  ).length;
+
+  /* ── Panel ─────────────────────────────────────────────── */
+  const panelContent = hasItems ? (
+    <div className="space-y-5">
+      {/* Preset selector */}
+      <div className="space-y-1.5">
+        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+          Preset
+        </span>
+        <div className="flex gap-1 flex-wrap">
+          {PRESET_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setPreset(opt.value)}
+              className={cn(
+                'px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
+                preset === opt.value
+                  ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
+                  : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
+              )}
+              title={opt.desc}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="h-px bg-neutral-800" />
+
+      {/* Add more */}
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+        <Upload size={12} />
+        Add more PDFs
+        <input
+          ref={inputRef}
+          type="file"
+          accept="application/pdf"
+          multiple
+          className="hidden"
+          onChange={handleInputChange}
+        />
+      </label>
+
+      <div className="h-px bg-neutral-800" />
+
+      {/* Actions */}
+      <div className="space-y-2">
+        <AnimatePresence>
+          {queuedOrErrorCount > 0 && (
+            <motion.div {...fadeScale}>
+              <Button
+                onClick={handleProcessAll}
+                disabled={isProcessing}
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+              >
+                {isProcessing ? (
+                  <>
+                    <GlitchLoader size={14} color="currentColor" />
+                    <span className="ml-2">{convertProgress}%</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown size={14} />
+                    <span className="ml-2">
+                      Compress{queuedOrErrorCount > 1 ? ` (${queuedOrErrorCount})` : ' All'}
+                    </span>
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {doneCount > 0 && !isProcessing && (
+            <motion.div {...fadeScale}>
+              <QuickActions
+                toolId="pdf-compress"
+                outputMime="application/pdf"
+                summary={`${doneCount} PDF${
+                  doneCount > 1 ? 's' : ''
+                } compressed — saved ${formatBytes(
+                  totalOriginal - totalCompressed
+                )} (${totalSavings}%)`}
+                onDownloadAll={handleDownloadAll}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  ) : undefined;
+
+  /* ── Status bar ─────────────────────────────────────────── */
+  const statusBarContent = hasItems ? (
+    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+      <span className="text-neutral-400">
+        {doneCount}/{items.length}
+      </span>
+      {doneCount > 0 && totalSavings > 0 && (
+        <>
+          <span className="text-neutral-700">·</span>
+          <span className="text-success">-{totalSavings}% saved</span>
+        </>
+      )}
+    </div>
+  ) : undefined;
 
   return (
-    <MiniToolShell
+    <MiniAppShell
       icon={FileDown}
       title="PDF Compress"
-      countLabel={hasItems ? `${doneCount}/${items.length}` : undefined}
-      onReset={reset}
-      showReset={hasItems}
-      centered={!hasItems}
+      documentTitle="PDF Compress"
+      onReset={hasItems ? reset : undefined}
+      panel={panelContent}
+      panelLabel="Settings & actions"
+      statusBar={statusBarContent}
+      centerContent={!hasItems}
       dragDrop={{
         onDrop: handleDrop,
         onDragOver: handleDragOver,
@@ -216,6 +328,7 @@ export const PdfCompressPage: React.FC = () => {
     >
       <AnimatePresence mode="wait">
         {!hasItems ? (
+          /* ── Empty state (centered drop zone) ─────────── */
           <motion.div key="empty" {...fadeUp} className="flex flex-col items-center gap-6 py-16">
             <motion.div
               className={cn(
@@ -246,9 +359,9 @@ export const PdfCompressPage: React.FC = () => {
             />
           </motion.div>
         ) : (
-          <motion.div key="workspace" {...fadeUp} className="space-y-6">
-            {/* File list */}
-            <div className="space-y-2">
+          /* ── Working state (file list, left-aligned) ───── */
+          <div className="max-w-2xl mx-auto w-full py-8 px-4">
+            <motion.div key="workspace" {...fadeUp} className="space-y-2">
               {items.map((item) => (
                 <motion.div
                   key={item.id}
@@ -271,6 +384,22 @@ export const PdfCompressPage: React.FC = () => {
                       -{Math.round((1 - item.compressedSize / item.originalSize) * 100)}%
                     </span>
                   )}
+                  {item.status === 'done' && item.resultBase64 && (
+                    <button
+                      onClick={() => {
+                        const buf = Uint8Array.from(atob(item.resultBase64), (c) =>
+                          c.charCodeAt(0)
+                        );
+                        const blob = new Blob([buf], { type: 'application/pdf' });
+                        const ext = item.fileName.replace(/\.pdf$/i, '');
+                        downloadBlob(blob, `${ext}-compressed.pdf`);
+                      }}
+                      className="text-neutral-600 hover:text-brand-cyan transition-colors"
+                      title="Download"
+                    >
+                      <FileDown size={12} />
+                    </button>
+                  )}
                   <button
                     onClick={() => removeItem(item.id)}
                     className="text-neutral-600 hover:text-neutral-300 transition-colors"
@@ -279,102 +408,12 @@ export const PdfCompressPage: React.FC = () => {
                   </button>
                 </motion.div>
               ))}
-            </div>
-
-            {/* Controls */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1, ease }}
-              className="space-y-4"
-            >
-              {/* Preset selector */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-                  Preset
-                </span>
-                <div className="flex gap-1">
-                  {PRESET_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setPreset(opt.value)}
-                      className={cn(
-                        'px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
-                        preset === opt.value
-                          ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                          : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
-                      )}
-                      title={opt.desc}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Add more + Process */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => inputRef.current?.click()}
-                  variant="outline"
-                  className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-                >
-                  <Upload size={14} />
-                  <span className="ml-2">Add more</span>
-                </Button>
-                <Button
-                  onClick={handleProcessAll}
-                  disabled={isProcessing || items.every((i) => i.status === 'done')}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                >
-                  {isProcessing ? (
-                    <>
-                      <GlitchLoader size={14} />
-                      <span className="ml-2">{convertProgress}%</span>
-                    </>
-                  ) : (
-                    `Compress${
-                      items.filter((i) => i.status === 'queued' || i.status === 'error').length > 0
-                        ? ` (${
-                            items.filter((i) => i.status === 'queued' || i.status === 'error')
-                              .length
-                          })`
-                        : ''
-                    }`
-                  )}
-                </Button>
-              </div>
-
-              {/* QuickActions */}
-              {doneCount > 0 && !isProcessing && (
-                <motion.div {...fadeScale}>
-                  <QuickActions
-                    toolId="pdf-compress"
-                    outputMime="application/pdf"
-                    summary={`${doneCount} PDF${
-                      doneCount > 1 ? 's' : ''
-                    } compressed — saved ${formatBytes(
-                      totalOriginal - totalCompressed
-                    )} (${totalSavings}%)`}
-                    onDownloadAll={handleDownloadAll}
-                  />
-                </motion.div>
-              )}
             </motion.div>
-
-            <input
-              ref={inputRef}
-              type="file"
-              accept="application/pdf"
-              multiple
-              onChange={handleInputChange}
-              className="hidden"
-            />
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* Processing overlay */}
+      {/* Processing overlay — keeps full-screen as before */}
       <AnimatePresence>
         {isProcessing && (
           <motion.div
@@ -387,6 +426,6 @@ export const PdfCompressPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </MiniToolShell>
+    </MiniAppShell>
   );
 };
