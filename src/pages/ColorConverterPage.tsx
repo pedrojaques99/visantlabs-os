@@ -91,7 +91,7 @@ function CopyBtn({ value }: { value: string }) {
       className="ml-1 text-neutral-600 hover:text-neutral-300 transition-colors"
       title="Copy"
     >
-      {copied ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+      {copied ? <Check size={10} className="text-success" /> : <Copy size={10} />}
     </motion.button>
   );
 }
@@ -180,8 +180,8 @@ function Badge({ pass, label }: { pass: boolean; label: string }) {
   return (
     <span
       className={cn(
-        'px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold',
-        pass ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+        'px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold',
+        pass ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
       )}
     >
       {label}: {pass ? 'Pass' : 'Fail'}
@@ -286,7 +286,7 @@ export const ColorConverterPage: React.FC = () => {
           placeholder="Enter color: #FF5500, rgb(255,85,0), cmyk(0,67,100,0), hsl(32,100,50)"
           className="flex-1 font-mono text-sm bg-neutral-950/40 border-neutral-800 placeholder:text-neutral-600"
         />
-        <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-600 w-10 text-center">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-10 text-center">
           {inputColor.trim() ? inputFormat : ''}
         </span>
         <Button
@@ -439,7 +439,7 @@ function ColorRow({
 function ValueCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1 min-w-0">
-      <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-600 w-8 flex-shrink-0">
+      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-8 flex-shrink-0">
         {label}
       </span>
       <span className="text-[11px] font-mono text-neutral-300 truncate">{value}</span>

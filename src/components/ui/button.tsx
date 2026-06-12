@@ -46,7 +46,7 @@ const buttonVariants = cva(
         subtle: 'bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200',
         // ── Info / variant states ────────────────────────────────────────────
         info: 'bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400',
-        warning: 'bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400',
+        warning: 'bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning',
       },
       size: {
         default: 'h-10 px-4 py-2',

@@ -238,7 +238,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
           </DialogHeader>
           <DialogBody>
             <div className="flex flex-col items-center gap-3 py-8">
-              <Check size={24} className="text-green-400" />
+              <Check size={24} className="text-success" />
               <p className="text-xs text-neutral-400">Todos os campos já estão preenchidos.</p>
             </div>
           </DialogBody>
@@ -252,7 +252,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <Zap size={14} className="text-amber-400" />
+            <Zap size={14} className="text-warning" />
             <DialogTitle className="text-sm font-bold uppercase tracking-[0.15em]">
               AI Generate
             </DialogTitle>
@@ -294,7 +294,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                             className={cn(
                               'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left transition-all',
                               selected.has(key)
-                                ? 'border-amber-500/30 bg-amber-500/[0.06] text-neutral-200'
+                                ? 'border-warning/30 bg-warning/[0.06] text-neutral-200'
                                 : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
                             )}
                           >
@@ -302,7 +302,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                               className={cn(
                                 'w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0',
                                 selected.has(key)
-                                  ? 'border-amber-500 bg-amber-500'
+                                  ? 'border-warning bg-warning'
                                   : 'border-neutral-600'
                               )}
                             >
@@ -321,7 +321,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                 <Button
                   onClick={handleGenerate}
                   disabled={selected.size === 0}
-                  className="h-8 px-4 gap-2 text-xs bg-amber-500/20 border border-amber-500/30 text-amber-200 hover:bg-amber-500/30"
+                  className="h-8 px-4 gap-2 text-xs bg-warning/20 border border-warning/30 text-warning hover:bg-warning/30"
                 >
                   <Zap size={12} />
                   Gerar {selected.size} campo{selected.size !== 1 ? 's' : ''}
@@ -355,7 +355,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                         'rounded-lg border p-3 transition-all',
                         isExcluded
                           ? 'border-neutral-800 bg-white/[0.03] opacity-40'
-                          : 'border-green-500/20 bg-green-500/[0.04]'
+                          : 'border-success/20 bg-success/[0.04]'
                       )}
                     >
                       <div className="flex items-center justify-between">
@@ -371,7 +371,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                           className={cn(
                             'text-[10px] font-mono uppercase tracking-widest transition-colors',
                             isExcluded
-                              ? 'text-neutral-600 hover:text-green-400'
+                              ? 'text-neutral-600 hover:text-success'
                               : 'text-neutral-500 hover:text-destructive'
                           )}
                         >
@@ -405,7 +405,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                   <Button
                     onClick={handleApply}
                     disabled={updateMutation.isPending || patchKeys.length === excluded.size}
-                    className="h-8 px-4 gap-2 text-xs bg-green-500/20 border border-green-500/30 text-green-400 hover:bg-green-500/30"
+                    className="h-8 px-4 gap-2 text-xs bg-success/20 border border-success/30 text-success hover:bg-success/30"
                   >
                     <Check size={12} />
                     Aplicar {patchKeys.length - excluded.size} campo

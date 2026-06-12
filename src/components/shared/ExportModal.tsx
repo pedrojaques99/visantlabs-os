@@ -435,7 +435,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 className="block max-h-[160px] max-w-full object-contain"
               />
               {/* Loop counter badge */}
-              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-neutral-400">
+              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-[10px] font-mono text-neutral-400">
                 {loopCount}x loop
               </div>
               <button
@@ -506,7 +506,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     if (p.duration) onVideoDurationChange?.(p.duration);
                     if (p.fps) onVideoFpsChange?.(p.fps);
                   }}
-                  className="px-2.5 py-1 rounded-full text-[9px] font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
+                  className="px-2.5 py-1 rounded-full text-[10px] font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
                 >
                   {p.label}
                 </button>
@@ -569,7 +569,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   hint="Video duration in seconds"
                 />
                 <div className="space-y-1">
-                  <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">
+                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
                     FPS
                   </span>
                   <div className="flex gap-1">
@@ -633,7 +633,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               className="h-10 px-3 border-neutral-800 bg-transparent hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200"
               title="Copy to clipboard"
             >
-              {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+              {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
             </Button>
           )}
 
@@ -652,7 +652,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <>
                 <Download size={14} />
                 Export {FORMAT_OPTIONS.find((f) => f.id === format)?.label}
-                <kbd className="ml-1 text-[9px] opacity-40">⏎</kbd>
+                <kbd className="ml-1 text-[10px] opacity-40">⏎</kbd>
               </>
             )}
           </Button>

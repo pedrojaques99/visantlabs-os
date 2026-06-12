@@ -257,7 +257,7 @@ const PresetDetailModal: React.FC<{
                 >
                   {copied ? (
                     <>
-                      <span className="text-green-500">{t('community.presets.copied')}</span>
+                      <span className="text-success">{t('community.presets.copied')}</span>
                     </>
                   ) : (
                     'Copy'

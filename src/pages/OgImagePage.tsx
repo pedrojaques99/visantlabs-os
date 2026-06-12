@@ -373,7 +373,7 @@ export const OgImagePage: React.FC = () => {
                   <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
                   <span
                     className={cn(
-                      'text-[9px] font-mono uppercase tracking-wider',
+                      'text-[10px] font-mono uppercase tracking-wider',
                       template === tpl.id
                         ? 'text-brand-cyan'
                         : 'text-neutral-600 group-hover:text-neutral-400'
@@ -396,7 +396,7 @@ export const OgImagePage: React.FC = () => {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Your blog post title"
               rows={2}
-              className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/40 resize-none"
+              className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
             />
           </div>
 
@@ -409,7 +409,7 @@ export const OgImagePage: React.FC = () => {
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               placeholder="A brief description"
-              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-brand-cyan/40"
+              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
             />
           </div>
 
@@ -422,7 +422,7 @@ export const OgImagePage: React.FC = () => {
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Author name"
-              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-brand-cyan/40"
+              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
             />
           </div>
 
@@ -553,7 +553,7 @@ function ColorInput({
         className="w-6 h-6 rounded border border-neutral-700 bg-transparent cursor-pointer p-0"
       />
       <div className="flex flex-col">
-        <span className="text-[9px] font-mono text-neutral-600 uppercase">{label}</span>
+        <span className="text-[10px] font-mono text-neutral-600 uppercase">{label}</span>
         <input
           type="text"
           value={value}

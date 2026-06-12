@@ -81,9 +81,9 @@ export const FigmaTokenSetup: React.FC = () => {
           <h3 className="text-lg font-bold font-manrope text-neutral-200">Figma Integration</h3>
         </div>
         {isConnected && (
-          <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full flex items-center gap-1.5">
-            <CheckCircle2 size={12} className="text-green-500" />
-            <span className="text-xs font-mono text-green-400 font-medium">Conectado</span>
+          <div className="px-3 py-1 bg-success/10 border border-success/20 rounded-full flex items-center gap-1.5">
+            <CheckCircle2 size={12} className="text-success" />
+            <span className="text-xs font-mono text-success font-medium">Conectado</span>
           </div>
         )}
       </div>

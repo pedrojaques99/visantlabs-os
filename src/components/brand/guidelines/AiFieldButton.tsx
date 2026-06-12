@@ -52,14 +52,14 @@ export const AiFieldButton: React.FC<AiFieldButtonProps> = ({
       title="Gerar com IA"
       className={cn(
         'inline-flex items-center justify-center w-5 h-5 rounded-full transition-all',
-        'border border-amber-500/30 bg-amber-500/10 text-amber-400',
-        'hover:bg-amber-500/20 hover:border-amber-500/50',
+        'border border-warning/30 bg-warning/10 text-warning',
+        'hover:bg-warning/20 hover:border-warning/50',
         'disabled:opacity-30 disabled:cursor-not-allowed',
         className
       )}
     >
       {loading ? (
-        <span className="w-2.5 h-2.5 border border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <span className="w-2.5 h-2.5 border border-warning border-t-transparent rounded-full animate-spin" />
       ) : (
         <Zap size={10} />
       )}

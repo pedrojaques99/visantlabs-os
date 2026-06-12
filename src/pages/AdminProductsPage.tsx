@@ -528,7 +528,7 @@ export const AdminProductsPage: React.FC = () => {
                       variant={product.isActive ? 'default' : 'secondary'}
                       className={cn(
                         product.isActive
-                          ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                          ? 'bg-success/10 text-success border-success/20'
                           : 'bg-neutral-800 text-neutral-500 border-neutral-700'
                       )}
                     >
@@ -576,7 +576,7 @@ export const AdminProductsPage: React.FC = () => {
                           <CheckCircle2
                             className={cn(
                               'h-3 w-3',
-                              product.stripeProductId ? 'text-green-500' : 'text-neutral-700'
+                              product.stripeProductId ? 'text-success' : 'text-neutral-700'
                             )}
                           />
                           <span className="text-[10px] truncate max-w-full font-mono">
@@ -1185,7 +1185,7 @@ export const AdminProductsPage: React.FC = () => {
 
                     {/* Commercial Settings */}
                     <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
-                      <h4 className="text-sm font-bold text-green-400 flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-success flex items-center gap-2">
                         <span className="text-lg">💰</span> Configurações Comerciais
                       </h4>
                       <p className="text-xs text-neutral-500">
@@ -1395,7 +1395,7 @@ export const AdminProductsPage: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, priceBRL: parseFloat(e.target.value) || 0 })
                       }
-                      className="bg-neutral-900 border-neutral-800 pl-9 font-bold text-green-500"
+                      className="bg-neutral-900 border-neutral-800 pl-9 font-bold text-success"
                     />
                   </div>
                 </div>

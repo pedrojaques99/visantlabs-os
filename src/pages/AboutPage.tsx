@@ -157,7 +157,7 @@ export const AboutPage: React.FC = () => {
                   </span>
                   <span
                     className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                      m.status ? 'bg-green-600' : 'bg-neutral-700'
+                      m.status ? 'bg-success' : 'bg-neutral-700'
                     }`}
                     aria-label={m.status ? 'online' : 'offline'}
                   />
@@ -260,7 +260,7 @@ export const AboutPage: React.FC = () => {
           aria-hidden
         >
           <RepellantText
-            className="text-[20vw] font-bold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-white/[0.05] to-white/[0.01]"
+            className="text-[20vw] font-bold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-white/5 to-white/[0.03]"
             style={{ pointerEvents: 'auto' }}
           >
             VISANT

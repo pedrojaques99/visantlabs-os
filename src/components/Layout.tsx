@@ -598,7 +598,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               success:
                 theme === 'dark'
                   ? 'bg-neutral-950/70 border-brand-cyan/15 text-brand-cyan/70'
-                  : 'bg-white/40 border-green-500/15 text-green-600/70',
+                  : 'bg-white/40 border-success/15 text-success/70',
               error:
                 theme === 'dark'
                   ? 'bg-neutral-950/70 border-destructive/15 text-destructive/70'
@@ -694,8 +694,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {currentUser &&
           currentUser.emailVerified === false &&
           !location.pathname.startsWith('/verify-email') && (
-            <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between">
-              <span className="text-amber-300 text-xs font-mono">
+            <div className="bg-warning/10 border-b border-warning/20 px-4 py-2 flex items-center justify-between">
+              <span className="text-warning text-xs font-mono">
                 Verifique seu email para desbloquear todas as funcionalidades.
               </span>
               <button
@@ -707,7 +707,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     toast.error('Erro ao reenviar email.');
                   }
                 }}
-                className="text-amber-400 hover:text-amber-200 text-xs font-mono underline underline-offset-2 transition-colors"
+                className="text-warning hover:text-warning text-xs font-mono underline underline-offset-2 transition-colors"
               >
                 Reenviar email
               </button>

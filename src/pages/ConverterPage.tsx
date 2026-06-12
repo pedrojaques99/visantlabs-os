@@ -429,7 +429,7 @@ export const ConverterPage: React.FC = () => {
                         </p>
                         <div className="flex items-center gap-1">
                           <FormatBadge from={item.inputFormat} to={outputFormat} />
-                          <span className="text-[9px] font-mono text-neutral-600 tabular-nums">
+                          <span className="text-[10px] font-mono text-neutral-600 tabular-nums">
                             {formatBytes(item.originalSize)}
                           </span>
                           {item.status === 'done' && item.resultBlob && (
@@ -440,7 +440,7 @@ export const ConverterPage: React.FC = () => {
                                 className="flex items-center gap-1"
                               >
                                 <ArrowRight size={7} className="text-neutral-600" />
-                                <span className="text-[9px] font-mono text-neutral-500 tabular-nums">
+                                <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
                                   {formatBytes(item.resultBlob.size)}
                                 </span>
                               </motion.span>
@@ -575,7 +575,7 @@ export const ConverterPage: React.FC = () => {
 function FormatBadge({ from, to }: { from: string; to: string }) {
   if (from === to) return null;
   return (
-    <span className="text-[9px] font-mono uppercase bg-neutral-800 text-neutral-400 px-1 py-px rounded">
+    <span className="text-[10px] font-mono uppercase bg-neutral-800 text-neutral-400 px-1 py-px rounded">
       {from} <ArrowRight size={7} className="inline text-brand-cyan" /> {to}
     </span>
   );

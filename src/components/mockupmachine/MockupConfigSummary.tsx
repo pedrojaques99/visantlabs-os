@@ -7,7 +7,7 @@ export const MockupConfigSummary: React.FC = () => {
   const { selectedModel, resolution, aspectRatio, imageProvider } = useMockup();
 
   if (!selectedModel) {
-    return <span className="text-[9px] font-mono text-neutral-700 tracking-wider">—</span>;
+    return <span className="text-[10px] font-mono text-neutral-700 tracking-wider">—</span>;
   }
 
   const credits = getCreditsRequired(selectedModel, resolution, imageProvider);
@@ -19,8 +19,8 @@ export const MockupConfigSummary: React.FC = () => {
     <div className="flex items-center gap-1 flex-wrap">
       {items.map((item, i) => (
         <React.Fragment key={i}>
-          {i > 0 && <span className="text-[8px] text-neutral-700">·</span>}
-          <span className="text-[9px] font-mono text-neutral-500 tracking-wider">{item}</span>
+          {i > 0 && <span className="text-[10px] text-neutral-700">·</span>}
+          <span className="text-[10px] font-mono text-neutral-500 tracking-wider">{item}</span>
         </React.Fragment>
       ))}
     </div>

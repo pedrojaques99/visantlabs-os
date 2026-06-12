@@ -58,7 +58,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
                   {selectedCount < totalCount && (
                     <button
                       onClick={onSelectAll}
-                      className="text-[10px] font-bold uppercase tracking-widest text-green-500 hover:text-green-400 transition-colors"
+                      className="text-[10px] font-bold uppercase tracking-widest text-success hover:text-success transition-colors"
                     >
                       All
                     </button>

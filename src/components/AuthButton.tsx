@@ -335,7 +335,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
               onClick={onCreditsClick}
               className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${
                 isLowCredits
-                  ? 'text-amber-400 border-amber-500/30'
+                  ? 'text-warning border-warning/30'
                   : 'text-brand-cyan border-brand-cyan/20'
               }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
@@ -347,7 +347,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             >
               <Pickaxe
                 size={12}
-                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-amber-400' : 'text-brand-cyan'}`}
+                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-warning' : 'text-brand-cyan'}`}
                 aria-hidden="true"
               />
               <span>{availableCredits}</span>
@@ -401,7 +401,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     <UserIcon size={14} />
                     {t('common.profile')}
                   </span>
-                  <span className="text-[9px] text-neutral-600 uppercase tracking-wider">
+                  <span className="text-[10px] text-neutral-600 uppercase tracking-wider">
                     {tierLabel}
                   </span>
                 </Button>

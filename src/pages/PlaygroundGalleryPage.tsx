@@ -95,7 +95,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search miniapps..."
-              className="w-full pl-9 pr-8 py-2 text-xs bg-neutral-900/50 border border-neutral-800 rounded-lg text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/30"
+              className="w-full pl-9 pr-8 py-2 text-xs bg-neutral-900/50 border border-neutral-800 rounded-lg text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600"
             />
             {search && (
               <button
@@ -151,7 +151,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
         {featured.length > 0 && !search && category === 'all' && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400" />
+              <Zap className="w-4 h-4 text-warning" />
               <h2 className="text-sm font-semibold text-neutral-300">Top MiniApps</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

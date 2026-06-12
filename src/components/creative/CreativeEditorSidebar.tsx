@@ -436,7 +436,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         {isPersistedId(creativeId) && (
           <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-500">
             {autoSaveStatus === 'saving' && <GlitchLoader size={10} />}
-            {autoSaveStatus === 'saved' && <Check size={10} className="text-green-400" />}
+            {autoSaveStatus === 'saved' && <Check size={10} className="text-success" />}
             {autoSaveStatus === 'error' && <AlertTriangle size={10} className="text-destructive" />}
             {autoSaveStatus === 'idle' && <Circle size={10} className="text-neutral-600" />}
             <span>{AUTO_SAVE_LABEL[autoSaveStatus]}</span>

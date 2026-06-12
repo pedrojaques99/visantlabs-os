@@ -20,7 +20,7 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
       className={cn(
         'text-xs gap-1 font-mono',
         active
-          ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
+          ? 'bg-success/20 text-success border-success/30 hover:bg-success/30'
           : 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30 hover:bg-neutral-500/30',
         className
       )}
@@ -49,7 +49,7 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
       content={
         active ? (
           <div className="space-y-1">
-            <p className="font-medium text-green-400">BYOK Mode Active</p>
+            <p className="font-medium text-success">BYOK Mode Active</p>
             <p className="text-xs text-neutral-400">
               Using your own API key. Charges go directly to Google. No credits deducted from
               Visant.
@@ -90,7 +90,7 @@ export function ByokCostIndicator({
 }: ByokCostIndicatorProps) {
   if (isByok) {
     return (
-      <div className={cn('flex items-center gap-1.5 text-xs text-green-400', className)}>
+      <div className={cn('flex items-center gap-1.5 text-xs text-success', className)}>
         <Key size={12} />
         <span>BYOK Active - Charges go to your Google account</span>
       </div>

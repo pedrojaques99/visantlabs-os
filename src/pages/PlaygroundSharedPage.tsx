@@ -121,7 +121,7 @@ export const PlaygroundSharedPage: React.FC = () => {
   return (
     <div className="h-[100dvh] w-full flex flex-col bg-neutral-950 pt-10 md:pt-14">
       {/* Top bar */}
-      <div className="shrink-0 flex items-center h-12 px-4 border-b border-neutral-800/30 gap-3">
+      <div className="shrink-0 flex items-center h-12 px-4 border-b border-white/10 gap-3">
         <button
           onClick={() => navigate('/playground/explore')}
           className="p-1.5 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
@@ -144,8 +144,8 @@ export const PlaygroundSharedPage: React.FC = () => {
           className={cn(
             'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors',
             liked
-              ? 'text-red-400 bg-red-400/10'
-              : 'text-neutral-400 hover:text-red-400 hover:bg-white/5'
+              ? 'text-destructive bg-destructive/10'
+              : 'text-neutral-400 hover:text-destructive hover:bg-white/5'
           )}
         >
           <Heart className="w-3.5 h-3.5" fill={liked ? 'currentColor' : 'none'} />

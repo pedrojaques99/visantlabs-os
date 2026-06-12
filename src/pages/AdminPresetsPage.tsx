@@ -1699,7 +1699,7 @@ export const AdminPresetsPage: React.FC = () => {
                 <div
                   className={`mb-4 border rounded-xl p-4 text-sm font-mono ${
                     batchResult.created > 0
-                      ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                      ? 'bg-success/10 border-success/30 text-success'
                       : 'bg-destructive/10 border-destructive/30 text-destructive'
                   }`}
                 >
@@ -1792,7 +1792,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <div
                           className={`border rounded-md p-4 text-sm font-mono ${
                             batchResult.created > 0
-                              ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                              ? 'bg-success/10 border-success/30 text-success'
                               : 'bg-destructive/10 border-destructive/30 text-destructive'
                           }`}
                         >

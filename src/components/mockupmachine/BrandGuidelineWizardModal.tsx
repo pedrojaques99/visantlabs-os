@@ -609,7 +609,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {pdfFile && (
-              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
+              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
                 <FileText size={14} className="text-neutral-300 shrink-0" />
                 <span className="text-xs text-white truncate max-w-[140px]">{pdfFile.name}</span>
                 <button
@@ -622,7 +622,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
               </div>
             )}
             {figFile && (
-              <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
+              <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 max-w-full">
                 <Figma size={14} className="text-neutral-300 shrink-0" />
                 <span className="text-xs text-white truncate max-w-[140px]">{figFile.name}</span>
                 <button

@@ -19,6 +19,7 @@ import { isVisantV2 } from '../types/branding';
 import { SEO } from '../components/SEO';
 import { SoftwareApplicationSchema } from '../components/StructuredData';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
+import { GlitchLoader } from '@/components/ui/GlitchLoader';
 
 const API_BASE_URL = '/api';
 
@@ -896,18 +897,10 @@ export const BrandingMachinePage: React.FC = () => {
     return (
       <div
         className={`h-screen w-full flex items-center justify-center ${
-          theme === 'dark' ? 'bg-neutral-950 text-neutral-300' : 'bg-neutral-50 text-neutral-800'
+          theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50'
         }`}
       >
-        <div className="text-center">
-          <p
-            className={`text-sm font-mono ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}
-          >
-            {t('branding.loadingProject')}
-          </p>
-        </div>
+        <GlitchLoader size={28} />
       </div>
     );
   }

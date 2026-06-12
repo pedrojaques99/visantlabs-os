@@ -185,7 +185,7 @@ export const RisoMachinePage: React.FC = () => {
     { label: ditherMode !== 'stochastic' ? ditherMode : '', color: 'text-neutral-400' },
     { label: `misreg ${misregistration}px` },
     { label: `${layers.filter((l) => l.visible).length} layers` },
-    ...(soloLayer >= 0 ? [{ label: `solo L${soloLayer + 1}`, color: 'text-amber-400' }] : []),
+    ...(soloLayer >= 0 ? [{ label: `solo L${soloLayer + 1}`, color: 'text-warning' }] : []),
     ...(shaderEnabled ? [{ label: shaderType, color: 'text-cyan-400' }] : []),
   ].filter((s) => s.label);
 

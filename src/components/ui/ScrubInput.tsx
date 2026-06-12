@@ -147,7 +147,7 @@ const ScrubInput = React.memo<ScrubInputProps>(
         title={hint}
       >
         <span
-          className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none touch-none"
+          className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none touch-none"
           onPointerDown={onScrubDown}
         >
           {icon && <span className="inline-flex mr-1 align-middle text-neutral-600">{icon}</span>}

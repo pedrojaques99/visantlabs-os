@@ -196,7 +196,7 @@ export const ContentStudioPage: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-neutral-950 text-white">
       {/* Header */}
-      <header className="flex items-center gap-3 px-6 py-4 border-b border-neutral-800/50">
+      <header className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
         <button
           onClick={() => navigate(-1)}
           className="p-1.5 rounded-md hover:bg-neutral-800/50 transition-colors"
@@ -216,7 +216,7 @@ export const ContentStudioPage: React.FC = () => {
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar — Brief + Config */}
-        <aside className="w-full md:w-[380px] flex-shrink-0 border-r border-neutral-800/50 overflow-y-auto custom-scrollbar p-5 space-y-5 md:max-h-full max-h-[50vh]">
+        <aside className="w-full md:w-[380px] flex-shrink-0 border-r border-white/10 overflow-y-auto custom-scrollbar p-5 space-y-5 md:max-h-full max-h-[50vh]">
           {/* Brief */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
@@ -226,7 +226,7 @@ export const ContentStudioPage: React.FC = () => {
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
               placeholder={t('contentStudio.briefPlaceholder')}
-              className="w-full h-28 px-3 py-2.5 rounded-lg bg-neutral-900/80 border border-neutral-800/50 text-sm text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/20 transition-colors"
+              className="w-full h-28 px-3 py-2.5 rounded-lg bg-neutral-900/80 border border-white/10 text-sm text-neutral-200 placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/20 transition-colors"
             />
           </div>
 
@@ -247,7 +247,7 @@ export const ContentStudioPage: React.FC = () => {
                     'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-all',
                     tone === opt.value
                       ? 'border-white/20 bg-white/10 text-neutral-200'
-                      : 'border-neutral-800/50 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
+                      : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
                   )}
                 >
                   {opt.label}
@@ -285,7 +285,7 @@ export const ContentStudioPage: React.FC = () => {
                       'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-all',
                       isSelected
                         ? 'border-white/20 bg-white/10 text-neutral-200'
-                        : 'border-neutral-800/50 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
+                        : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
                     )}
                   >
                     {fmt.label}
@@ -370,12 +370,12 @@ function BrandSelect({
         {t('contentStudio.brandGuideline')}
       </label>
       {isLoading ? (
-        <div className="w-full h-[38px] rounded-lg bg-neutral-900/80 border border-neutral-800/50 animate-pulse" />
+        <div className="w-full h-[38px] rounded-lg bg-neutral-900/80 border border-white/10 animate-pulse" />
       ) : (
         <select
           value={value || ''}
           onChange={(e) => onChange(e.target.value || null)}
-          className="w-full px-3 py-2 rounded-lg bg-neutral-900/80 border border-neutral-800/50 text-sm text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
+          className="w-full px-3 py-2 rounded-lg bg-neutral-900/80 border border-white/10 text-sm text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
         >
           <option value="">{t('contentStudio.noBrand')}</option>
           {guidelines.map((g: any) => (
@@ -406,7 +406,7 @@ function ContentAssetCard({
   const isDone = asset.status === 'done';
 
   return (
-    <div className="rounded-xl border border-neutral-800/50 bg-neutral-900/30 overflow-hidden">
+    <div className="rounded-xl border border-white/10 bg-neutral-900/30 overflow-hidden">
       {/* Image area */}
       <div
         className="relative bg-neutral-900 flex items-center justify-center"
@@ -420,8 +420,8 @@ function ContentAssetCard({
         </div>
 
         {/* Ratio badge */}
-        <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-black/50 border border-white/5">
-          <span className="text-[9px] font-mono text-neutral-500">{asset.ratio}</span>
+        <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-black/50 border border-neutral-800">
+          <span className="text-[10px] font-mono text-neutral-500">{asset.ratio}</span>
         </div>
 
         {isLoading && (
@@ -437,8 +437,8 @@ function ContentAssetCard({
 
         {hasError && (
           <div className="flex flex-col items-center gap-2 px-4 text-center">
-            <AlertCircle size={20} className="text-red-500/60" />
-            <span className="text-[10px] font-mono text-red-400">{asset.error}</span>
+            <AlertCircle size={20} className="text-destructive/60" />
+            <span className="text-[10px] font-mono text-destructive">{asset.error}</span>
           </div>
         )}
 
@@ -453,7 +453,7 @@ function ContentAssetCard({
       </div>
 
       {/* Copy area */}
-      <div className="p-3 space-y-2 border-t border-neutral-800/30">
+      <div className="p-3 space-y-2 border-t border-white/10">
         {asset.caption ? (
           <>
             <div className="flex items-start gap-2">
@@ -483,7 +483,7 @@ function ContentAssetCard({
                     index
                   )
                 }
-                className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 transition-all"
+                className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-all"
               >
                 {copiedIndex === index ? <Check size={10} /> : <Copy size={10} />}
                 {copiedIndex === index ? t('contentStudio.copied') : t('contentStudio.copy')}
@@ -494,7 +494,7 @@ function ContentAssetCard({
                   download={`${asset.formatId}.png`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 transition-all"
+                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-all"
                 >
                   <Download size={10} />
                   {t('contentStudio.image')}

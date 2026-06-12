@@ -15,7 +15,7 @@ const nodeButtonVariants = cva(
         purple:
           'bg-neutral-800/40 hover:bg-purple-500/20 border border-neutral-700/30 hover:border-purple-500/50 text-neutral-400 hover:text-purple-400',
         success:
-          'bg-neutral-800/40 hover:bg-green-500/20 border border-neutral-700/30 hover:border-green-500/50 text-neutral-400 hover:text-green-400',
+          'bg-neutral-800/40 hover:bg-success/20 border border-neutral-700/30 hover:border-success/50 text-neutral-400 hover:text-success',
         ghost:
           'bg-transparent hover:bg-neutral-900/40 border-none text-neutral-400 hover:text-neutral-200 shadow-none hover:shadow-none',
       },

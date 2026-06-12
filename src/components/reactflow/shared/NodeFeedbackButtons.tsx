@@ -60,7 +60,7 @@ export const NodeFeedbackButtons: React.FC<NodeFeedbackButtonsProps> = ({
         }
         className={cn(
           'transition-colors',
-          feedback.rating === 'up' && '!text-green-400 !bg-green-400/10'
+          feedback.rating === 'up' && '!text-success !bg-success/10'
         )}
       >
         <ThumbsUp size={12} className={cn(feedback.rating === 'up' && 'fill-current')} />

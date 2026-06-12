@@ -154,7 +154,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
 
       {/* Empty state hint */}
       {presets.length === 0 && !loading && (
-        <p className="text-[9px] text-neutral-600 text-center py-0.5">
+        <p className="text-[10px] text-neutral-600 text-center py-0.5">
           Name your settings and save for quick recall
         </p>
       )}
@@ -190,11 +190,11 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                     <span className="truncate">{p.name}</span>
                     <span
                       className={cn(
-                        'text-[7px] font-mono uppercase shrink-0',
+                        'text-[10px] font-mono uppercase shrink-0',
                         p.data?.mode === 'halftone' && 'text-cyan-600',
                         p.data?.mode === 'texture' && 'text-purple-600',
-                        p.data?.mode === 'riso' && 'text-amber-600',
-                        p.data?.mode === 'shaders' && 'text-emerald-600'
+                        p.data?.mode === 'riso' && 'text-warning',
+                        p.data?.mode === 'shaders' && 'text-success'
                       )}
                     >
                       {p.data?.mode}
@@ -203,7 +203,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                   <button
                     onClick={() => handleDelete(p.id)}
                     aria-label={`Delete ${p.name}`}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-neutral-600 hover:text-red-400 transition-all shrink-0"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-neutral-600 hover:text-destructive transition-all shrink-0"
                   >
                     <Trash2 size={9} />
                   </button>

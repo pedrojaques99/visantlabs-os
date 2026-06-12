@@ -334,7 +334,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
 
             {crop.upscaledUrl && (
               <div className="flex items-center gap-2 pt-3 border-t border-border">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />
                 <span className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
                   4K Ready
                 </span>

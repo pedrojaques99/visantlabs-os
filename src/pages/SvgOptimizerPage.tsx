@@ -319,7 +319,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider text-center px-4">
                 Drop PNG or SVG files — batch supported
               </span>
-              <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-wider">
+              <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider">
                 PNG will be traced to vector automatically
               </span>
               <input
@@ -348,7 +348,7 @@ export const SvgOptimizerPage: React.FC = () => {
                     value={pasteValue}
                     onChange={(e) => setPasteValue(e.target.value)}
                     placeholder="<svg ...>...</svg>"
-                    className="w-full h-32 bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-mono text-neutral-300 resize-none focus:outline-none focus:border-brand-cyan/50"
+                    className="w-full h-32 bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs font-mono text-neutral-300 resize-none focus:outline-none focus:border-neutral-600"
                   />
                   <div className="flex gap-2">
                     <Button
@@ -406,7 +406,7 @@ export const SvgOptimizerPage: React.FC = () => {
                     className={cn(
                       'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
                       viewMode === 'edit'
-                        ? 'bg-amber-500/20 text-amber-400'
+                        ? 'bg-warning/20 text-warning'
                         : 'text-neutral-500 hover:text-neutral-300'
                     )}
                   >
@@ -449,8 +449,8 @@ export const SvgOptimizerPage: React.FC = () => {
                       transition={{ duration: 0.2, ease }}
                       className="flex-1 flex flex-col items-center justify-center gap-3 p-4"
                     >
-                      <AlertCircle size={24} className="text-red-400" />
-                      <span className="text-[10px] font-mono text-red-400 uppercase tracking-wider text-center">
+                      <AlertCircle size={24} className="text-destructive" />
+                      <span className="text-[10px] font-mono text-destructive uppercase tracking-wider text-center">
                         {selectedItem.error || 'Trace failed'}
                       </span>
                       {selectedItem.source === 'png' && (
@@ -526,7 +526,7 @@ export const SvgOptimizerPage: React.FC = () => {
                 {selectedItem && selectedItem.status === 'done' && (
                   <div className="absolute top-2 right-2 flex items-center gap-1">
                     {selectedItem.source === 'png' && (
-                      <span className="text-[10px] font-mono uppercase tracking-wider bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-mono uppercase tracking-wider bg-warning/10 text-warning px-2 py-0.5 rounded">
                         traced
                       </span>
                     )}
@@ -575,7 +575,7 @@ export const SvgOptimizerPage: React.FC = () => {
                       )}
                     >
                       {item.source === 'png' ? (
-                        <Image size={14} className="text-amber-500/60 flex-shrink-0" />
+                        <Image size={14} className="text-warning/60 flex-shrink-0" />
                       ) : (
                         <FileCode size={14} className="text-neutral-600 flex-shrink-0" />
                       )}
@@ -584,7 +584,7 @@ export const SvgOptimizerPage: React.FC = () => {
                           {item.fileName}
                         </p>
                         {item.status === 'done' && (
-                          <span className="text-[9px] font-mono text-neutral-500">
+                          <span className="text-[10px] font-mono text-neutral-500">
                             {item.source === 'png'
                               ? formatBytes(item.originalSize) + ' png'
                               : formatBytes(item.originalSize)}{' '}
@@ -592,17 +592,17 @@ export const SvgOptimizerPage: React.FC = () => {
                           </span>
                         )}
                         {item.status === 'tracing' && (
-                          <span className="text-[9px] font-mono text-amber-400">tracing...</span>
+                          <span className="text-[10px] font-mono text-warning">tracing...</span>
                         )}
                         {item.status === 'error' && (
-                          <span className="text-[9px] font-mono text-red-400">error</span>
+                          <span className="text-[10px] font-mono text-destructive">error</span>
                         )}
                       </div>
                       {item.status === 'done' && (
                         <span
                           className={cn(
-                            'text-[9px] font-mono flex-shrink-0',
-                            item.savings > 0 ? 'text-emerald-500' : 'text-neutral-600'
+                            'text-[10px] font-mono flex-shrink-0',
+                            item.savings > 0 ? 'text-success' : 'text-neutral-600'
                           )}
                         >
                           {item.savings > 0 ? `-${item.savings}%` : '0%'}
@@ -631,7 +631,7 @@ export const SvgOptimizerPage: React.FC = () => {
                       className="space-y-2 p-3 rounded-lg border border-neutral-800 bg-neutral-950/60"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">
+                        <span className="text-[10px] font-mono text-warning uppercase tracking-wider">
                           Trace preset
                         </span>
                       </div>
@@ -643,7 +643,7 @@ export const SvgOptimizerPage: React.FC = () => {
                             whileTap={{ scale: 0.96 }}
                             onClick={() => handlePresetChange(p)}
                             className={cn(
-                              'px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider transition-all duration-200',
+                              'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
                               localPreset === p
                                 ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
                                 : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'

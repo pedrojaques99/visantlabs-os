@@ -736,7 +736,7 @@ export const Studio3DPage: React.FC = () => {
           >
             <Undo2 size={isMobile ? 18 : 15} />
             {undoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[10px] font-mono text-neutral-400 px-0.5">
                 {undoCount}
               </span>
             )}
@@ -752,7 +752,7 @@ export const Studio3DPage: React.FC = () => {
           >
             <Redo2 size={isMobile ? 18 : 15} />
             {redoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[8px] font-mono text-neutral-400 px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[10px] font-mono text-neutral-400 px-0.5">
                 {redoCount}
               </span>
             )}
@@ -877,7 +877,7 @@ export const Studio3DPage: React.FC = () => {
                       <div
                         className={cn(
                           'w-1.5 h-1.5 rounded-full',
-                          item.active ? 'bg-emerald-400' : 'bg-neutral-700'
+                          item.active ? 'bg-success' : 'bg-neutral-700'
                         )}
                       />
                     </button>
@@ -1011,9 +1011,9 @@ export const Studio3DPage: React.FC = () => {
           <div className="flex flex-col items-center gap-6 p-8 rounded-2xl bg-neutral-900/90 border border-neutral-800 max-w-sm w-full mx-4">
             <div className="relative w-20 h-20">
               {autoRenderState === 'done' ? (
-                <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center">
                   <svg
-                    className="w-10 h-10 text-emerald-400"
+                    className="w-10 h-10 text-success"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -1023,8 +1023,8 @@ export const Studio3DPage: React.FC = () => {
                   </svg>
                 </div>
               ) : autoRenderState === 'error' ? (
-                <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center">
-                  <span className="text-red-400 text-2xl font-bold">!</span>
+                <div className="w-20 h-20 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <span className="text-destructive text-2xl font-bold">!</span>
                 </div>
               ) : (
                 <>

@@ -63,7 +63,7 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
           ))}
         </div>
       ) : (
-        <span className="text-[9px] font-mono text-neutral-600 uppercase">{mode[0]}</span>
+        <span className="text-[10px] font-mono text-neutral-600 uppercase">{mode[0]}</span>
       )}
     </div>
   );
@@ -94,7 +94,7 @@ const PresetDetails: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
       {filtered.map((t, i) => (
         <span
           key={i}
-          className="text-[8px] font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded"
+          className="text-[10px] font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded"
         >
           {t}
         </span>
@@ -252,10 +252,10 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                       <span className="text-[11px] text-neutral-300 truncate">{preset.name}</span>
                       <span
                         className={cn(
-                          'text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
+                          'text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
                           preset.data?.mode === 'halftone' && 'bg-cyan-400/10 text-cyan-400',
                           preset.data?.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
-                          preset.data?.mode === 'riso' && 'bg-amber-400/10 text-amber-400'
+                          preset.data?.mode === 'riso' && 'bg-warning/10 text-warning'
                         )}
                       >
                         {preset.data?.mode}
@@ -263,7 +263,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                     </div>
                     <PresetDetails preset={preset} />
                     {preset.author && (
-                      <span className="text-[9px] text-neutral-600 font-mono">
+                      <span className="text-[10px] text-neutral-600 font-mono">
                         by {preset.author.name}
                       </span>
                     )}
@@ -275,7 +275,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                     }}
                     className={cn(
                       'flex items-center gap-1 text-[10px] transition-colors p-1 shrink-0',
-                      preset.liked ? 'text-red-400' : 'text-neutral-600 hover:text-red-400'
+                      preset.liked ? 'text-destructive' : 'text-neutral-600 hover:text-destructive'
                     )}
                   >
                     <Heart size={12} fill={preset.liked ? 'currentColor' : 'none'} />

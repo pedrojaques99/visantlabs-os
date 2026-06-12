@@ -525,7 +525,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       >
                         {copied ? (
                           <>
-                            <Check size={18} className="text-green-400" />
+                            <Check size={18} className="text-success" />
                             <span className="text-sm text-neutral-300 font-mono">
                               {t('pix.copied') || 'Copiado!'}
                             </span>

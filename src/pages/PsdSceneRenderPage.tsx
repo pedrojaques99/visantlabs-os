@@ -209,7 +209,7 @@ export const PsdSceneRenderPage: React.FC = () => {
           </div>
 
           {scene?.doc?.warnings?.length ? (
-            <p className="text-xs text-amber-600">
+            <p className="text-xs text-warning">
               Avisos da scene: {scene.doc.warnings.join(', ')} (pode divergir do render server)
             </p>
           ) : null}

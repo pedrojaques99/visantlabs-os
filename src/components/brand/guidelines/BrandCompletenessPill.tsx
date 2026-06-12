@@ -27,8 +27,8 @@ const STATUS_STYLES = {
     ring: 'border-destructive/20    bg-destructive/[0.06]    text-destructive',
     dot: 'bg-destructive',
   },
-  medium: { ring: 'border-amber-500/20  bg-amber-500/[0.06]  text-amber-200', dot: 'bg-amber-400' },
-  high: { ring: 'border-green-500/20 bg-green-500/[0.06] text-green-400', dot: 'bg-green-500' },
+  medium: { ring: 'border-warning/20  bg-warning/[0.06]  text-warning', dot: 'bg-warning' },
+  high: { ring: 'border-success/20 bg-success/[0.06] text-success', dot: 'bg-success' },
 } as const;
 
 const GROUP_LABELS: Record<CompletenessRule['group'], string> = {
@@ -120,9 +120,9 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                         className={cn(
                           'h-full transition-all',
                           pct >= 75
-                            ? 'bg-green-500/60'
+                            ? 'bg-success/60'
                             : pct >= 40
-                            ? 'bg-amber-500/60'
+                            ? 'bg-warning/60'
                             : 'bg-destructive/40'
                         )}
                         style={{ width: `${pct}%` }}
@@ -136,7 +136,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
 
           <div className="max-h-[260px] overflow-y-auto p-2">
             {missingCount === 0 ? (
-              <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-green-400">
+              <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-success">
                 <CheckCircle2 size={14} />
                 Tudo preenchido. Brand pronta pra IA.
               </div>
@@ -147,7 +147,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                     key={rule.id}
                     className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors"
                   >
-                    <AlertCircle size={12} className="text-amber-400/70 shrink-0" />
+                    <AlertCircle size={12} className="text-warning/70 shrink-0" />
                     <span className="text-[11px] text-neutral-300 flex-1 truncate">
                       {rule.label}
                     </span>

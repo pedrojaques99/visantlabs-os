@@ -37,11 +37,11 @@ const getStatusColor = (status: string) => {
   switch (status) {
     case 'paid':
     case 'completed':
-      return 'text-green-400 bg-green-500/10 border-green-500/30';
+      return 'text-success bg-success/10 border-success/30';
     case 'pending':
     case 'requires_payment_method':
     case 'unpaid':
-      return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
+      return 'text-warning bg-warning/10 border-warning/30';
     case 'failed':
     case 'canceled':
     case 'past_due':

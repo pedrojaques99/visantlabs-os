@@ -444,8 +444,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
                   presetSource === 'official'
-                    ? 'bg-amber-500/10 text-amber-500 shadow-sm'
-                    : 'text-neutral-500 hover:text-amber-500/70'
+                    ? 'bg-warning/10 text-warning shadow-sm'
+                    : 'text-neutral-500 hover:text-warning/70'
                 )}
                 title={t('communityPresets.filters.official') || 'Official'}
               >
@@ -496,7 +496,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               {filteredPresets.map((preset) => (
                 <div key={`${preset.presetType || 'default'}-${preset.id}`} className="relative">
                   {preset.isOfficial && (
-                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] font-mono text-amber-400 uppercase backdrop-blur-sm">
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-warning/20 border border-warning/40 rounded text-[10px] font-mono text-warning uppercase backdrop-blur-sm">
                       <Crown size={8} />
                       <span>{t('canvasNodes.promptNode.presetModal.official') || 'Official'}</span>
                     </div>

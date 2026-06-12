@@ -860,12 +860,12 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                       .filter((p) => p.status === 'pending')
                       .map((pending) => (
                         <div key={pending.id} className="flex gap-4">
-                          <div className="w-8 h-8 rounded-full bg-neutral-900 border border-amber-400/30 flex items-center justify-center shadow-lg shrink-0">
-                            <BookOpen size={16} className="text-amber-400" />
+                          <div className="w-8 h-8 rounded-full bg-neutral-900 border border-warning/30 flex items-center justify-center shadow-lg shrink-0">
+                            <BookOpen size={16} className="text-warning" />
                           </div>
-                          <div className="flex-1 max-w-[85%] rounded-2xl border border-amber-400/30 bg-amber-400/[0.04] p-4 space-y-3">
+                          <div className="flex-1 max-w-[85%] rounded-2xl border border-warning/30 bg-warning/[0.04] p-4 space-y-3">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-amber-400/80">
+                              <span className="text-xs font-semibold text-warning/80">
                                 Salvar na memória da marca?
                               </span>
                             </div>
@@ -888,7 +888,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                 type="button"
                                 onClick={() => approvePending(pending.id)}
                                 disabled={resolvingPendingId === pending.id}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-md transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 text-success text-xs rounded-md transition-colors"
                               >
                                 <Check size={12} />
                                 Aprovar
@@ -976,7 +976,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                               type="button"
                               onClick={approvePlan}
                               disabled={approvingPlan || isLoading}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-md transition-colors"
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 text-success text-xs rounded-md transition-colors"
                             >
                               {approvingPlan ? <GlitchLoader size={12} /> : <Check size={12} />}
                               Aprovar e gerar
@@ -1049,7 +1049,7 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                   ) : tc.status === 'error' ? (
                                     <Trash2 size={12} className="shrink-0" />
                                   ) : (
-                                    <FileText size={12} className="shrink-0 text-green-400/70" />
+                                    <FileText size={12} className="shrink-0 text-success/70" />
                                   )}
                                   <span className="truncate flex-1">{tc.name}</span>
                                   <span className="text-xs opacity-60">
@@ -1109,14 +1109,14 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                         className={cn(
                           'flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors',
                           planModeActive
-                            ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                            ? 'bg-success/10 border-success/30 text-success'
                             : 'bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
                         )}
                         title="Modo Plano: o agente propõe variações e faz perguntas antes de gerar"
                       >
                         <Diamond
                           size={11}
-                          className={planModeActive ? 'text-green-400' : 'opacity-50'}
+                          className={planModeActive ? 'text-success' : 'opacity-50'}
                         />
                         Modo Plano
                       </button>

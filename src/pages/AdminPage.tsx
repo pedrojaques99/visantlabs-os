@@ -997,7 +997,7 @@ export const AdminPage: React.FC = () => {
           <span
             className={cn(
               'text-xs font-mono',
-              row.original.totalSpentBRL > 0 ? 'text-green-500' : 'text-neutral-500'
+              row.original.totalSpentBRL > 0 ? 'text-success' : 'text-neutral-500'
             )}
           >
             {row.original.totalSpentBRL > 0
@@ -1015,7 +1015,7 @@ export const AdminPage: React.FC = () => {
           <span
             className={cn(
               'text-xs font-mono',
-              row.original.totalSpentUSD > 0 ? 'text-green-400' : 'text-neutral-500'
+              row.original.totalSpentUSD > 0 ? 'text-success' : 'text-neutral-500'
             )}
           >
             {row.original.totalSpentUSD > 0
@@ -1109,7 +1109,7 @@ export const AdminPage: React.FC = () => {
                 </span>
               )}
               {b.openai && (
-                <span className="px-1 py-px rounded text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30">
+                <span className="px-1 py-px rounded text-[10px] font-bold bg-success/15 text-success border border-success/30">
                   OAI
                 </span>
               )}
@@ -1871,7 +1871,7 @@ export const AdminPage: React.FC = () => {
                               <p className="text-xs text-neutral-500 font-mono mb-2">
                                 {t('admin.analysisCost')}
                               </p>
-                              <p className="text-2xl font-bold text-green-400 font-mono">
+                              <p className="text-2xl font-bold text-success font-mono">
                                 ${(data.generationStats.textTokens.totalCost || 0).toFixed(4)}
                               </p>
                             </CardContent>
@@ -1943,7 +1943,7 @@ export const AdminPage: React.FC = () => {
                                         e.event === 'generation_failed'
                                           ? 'text-destructive'
                                           : e.event === 'generation_completed'
-                                          ? 'text-green-400'
+                                          ? 'text-success'
                                           : 'text-brand-cyan'
                                       }`}
                                     >
@@ -2237,18 +2237,18 @@ export const AdminPage: React.FC = () => {
                     {/* Financial Overview - Revenue, Cost, Profit */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                       {/* Revenue Total Card */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-success/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-success/20">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-green-500/10 rounded-md">
-                              <DollarSign className="h-6 w-6 text-green-500" />
+                            <div className="p-3 bg-success/10 rounded-md">
+                              <DollarSign className="h-6 w-6 text-success" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-green-500 mb-1 font-mono">
+                            <p className="text-3xl font-bold text-success mb-1 font-mono">
                               {formatCurrency(data.totalRevenueBRL, 'BRL')}
                             </p>
-                            <p className="text-sm font-semibold text-green-400 mb-2 font-mono">
+                            <p className="text-sm font-semibold text-success mb-2 font-mono">
                               {formatCurrency(data.totalRevenueUSD, 'USD')}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
@@ -2365,10 +2365,10 @@ export const AdminPage: React.FC = () => {
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
                       {/* Revenue Chart */}
                       {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
-                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-green-500/30 transition-all duration-300">
+                        <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-success/30 transition-all duration-300">
                           <CardHeader>
                             <CardTitle className="text-neutral-300 flex items-center gap-2">
-                              <DollarSign className="h-5 w-5 text-green-500" />
+                              <DollarSign className="h-5 w-5 text-success" />
                               {t('admin.revenueOverTime') || 'Receita ao Longo do Tempo'}
                             </CardTitle>
                             <CardDescription className="text-neutral-500">
@@ -2787,7 +2787,7 @@ export const AdminPage: React.FC = () => {
                               <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
                                 Thumbs Up
                               </p>
-                              <p className="text-4xl font-bold text-green-400">
+                              <p className="text-4xl font-bold text-success">
                                 {feedbackStats.overall.up}
                               </p>
                               <p className="text-xs text-neutral-500 mt-1">
@@ -2930,7 +2930,7 @@ export const AdminPage: React.FC = () => {
                                       <TableCell className="font-mono text-xs text-neutral-200">
                                         {row.feature}
                                       </TableCell>
-                                      <TableCell className="text-green-400 text-xs font-mono">
+                                      <TableCell className="text-success text-xs font-mono">
                                         {row.up}
                                       </TableCell>
                                       <TableCell className="text-destructive text-xs font-mono">
@@ -2943,9 +2943,9 @@ export const AdminPage: React.FC = () => {
                                         <Badge
                                           className={`text-xs font-mono ${
                                             row.approvalRate >= 70
-                                              ? 'bg-emerald-900/40 text-green-400 border-emerald-800'
+                                              ? 'bg-emerald-900/40 text-success border-emerald-800'
                                               : row.approvalRate >= 40
-                                              ? 'bg-yellow-900/40 text-yellow-400 border-yellow-800'
+                                              ? 'bg-yellow-900/40 text-warning border-yellow-800'
                                               : 'bg-red-900/40 text-destructive border-red-800'
                                           }`}
                                         >
@@ -3009,7 +3009,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
                                           {r.model}
                                         </TableCell>
-                                        <TableCell className="text-green-400 text-xs font-mono">
+                                        <TableCell className="text-success text-xs font-mono">
                                           {r.up}
                                         </TableCell>
                                         <TableCell className="text-destructive text-xs font-mono">
@@ -3073,7 +3073,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="font-mono text-xs text-neutral-300">
                                           {r.designType}
                                         </TableCell>
-                                        <TableCell className="text-green-400 text-xs font-mono">
+                                        <TableCell className="text-success text-xs font-mono">
                                           {r.up}
                                         </TableCell>
                                         <TableCell className="text-destructive text-xs font-mono">
@@ -3137,7 +3137,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
                                           {r.vibeId}
                                         </TableCell>
-                                        <TableCell className="text-green-400 text-xs font-mono">
+                                        <TableCell className="text-success text-xs font-mono">
                                           {r.up}
                                         </TableCell>
                                         <TableCell className="text-destructive text-xs font-mono">
@@ -3201,7 +3201,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="font-mono text-xs text-neutral-300 max-w-[120px] truncate">
                                           {r.brandGuidelineId}
                                         </TableCell>
-                                        <TableCell className="text-green-400 text-xs font-mono">
+                                        <TableCell className="text-success text-xs font-mono">
                                           {r.up}
                                         </TableCell>
                                         <TableCell className="text-destructive text-xs font-mono">
@@ -3246,7 +3246,7 @@ export const AdminPage: React.FC = () => {
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                                             : t.category === 'category'
                                             ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                            : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
+                                            : 'bg-amber-900/30 text-warning border-amber-800/50'
                                         }`}
                                       >
                                         {t.tag}
@@ -3284,7 +3284,7 @@ export const AdminPage: React.FC = () => {
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                                             : t.category === 'category'
                                             ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                            : 'bg-amber-900/30 text-amber-300 border-amber-800/50'
+                                            : 'bg-amber-900/30 text-warning border-amber-800/50'
                                         }`}
                                       >
                                         {t.tag}
@@ -3506,7 +3506,7 @@ export const AdminPage: React.FC = () => {
                                     </span>
                                     <Badge
                                       variant="outline"
-                                      className="text-[9px] border-neutral-700 text-neutral-500"
+                                      className="text-[10px] border-neutral-700 text-neutral-500"
                                     >
                                       {s.avgDuration}ms avg
                                     </Badge>
@@ -3579,7 +3579,7 @@ export const AdminPage: React.FC = () => {
                               <CardContent className="p-0">
                                 <Table>
                                   <TableHeader>
-                                    <TableRow className="border-white/5 hover:bg-transparent">
+                                    <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead className="text-neutral-500 text-[10px] font-mono">
                                         Tool
                                       </TableHead>
@@ -3596,7 +3596,7 @@ export const AdminPage: React.FC = () => {
                                   </TableHeader>
                                   <TableBody>
                                     {mcpStats.byTool.map((tool: any) => (
-                                      <TableRow key={tool.toolName} className="border-white/5">
+                                      <TableRow key={tool.toolName} className="border-neutral-800">
                                         <TableCell className="text-xs text-neutral-300 font-mono">
                                           {tool.toolName}
                                         </TableCell>
@@ -3609,7 +3609,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="text-right">
                                           <Badge
                                             variant="outline"
-                                            className="text-[9px] border-neutral-700 text-neutral-500"
+                                            className="text-[10px] border-neutral-700 text-neutral-500"
                                           >
                                             {tool.scope}
                                           </Badge>
@@ -3633,7 +3633,7 @@ export const AdminPage: React.FC = () => {
                               <CardContent className="p-0">
                                 <Table>
                                   <TableHeader>
-                                    <TableRow className="border-white/5 hover:bg-transparent">
+                                    <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead className="text-neutral-500 text-[10px] font-mono">
                                         User
                                       </TableHead>
@@ -3647,7 +3647,7 @@ export const AdminPage: React.FC = () => {
                                   </TableHeader>
                                   <TableBody>
                                     {mcpStats.byUser.map((u: any) => (
-                                      <TableRow key={u.userId} className="border-white/5">
+                                      <TableRow key={u.userId} className="border-neutral-800">
                                         <TableCell className="text-xs text-neutral-300">
                                           {u.email}
                                         </TableCell>

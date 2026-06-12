@@ -144,7 +144,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
             'flex items-center gap-2 px-2 py-1.5 rounded text-[10px] transition-colors',
             hasBrand
               ? 'bg-white/5 text-white/60'
-              : 'bg-white/[0.02] text-white/30 border border-dashed border-white/10'
+              : 'bg-white/[0.03] text-white/30 border border-dashed border-white/10'
           )}
         >
           <span
@@ -214,7 +214,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
               ))}
             </div>
           ) : (
-            <p className="text-[9px] text-white/20 text-center py-1">No references available</p>
+            <p className="text-[10px] text-white/20 text-center py-1">No references available</p>
           )}
         </div>
       )}

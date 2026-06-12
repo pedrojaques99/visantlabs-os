@@ -147,7 +147,7 @@ export const WaitlistPage: React.FC = () => {
                 </form>
               ) : (
                 <div className="text-center py-4">
-                  <div className="text-green-400 text-sm font-mono mb-4">
+                  <div className="text-success text-sm font-mono mb-4">
                     {t('waitlist.addedToWaitlist') || "✓ You've been added to the waitlist!"}
                   </div>
                   <Button

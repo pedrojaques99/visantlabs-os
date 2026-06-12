@@ -47,8 +47,8 @@ export const SegmentedControl: React.FC<{
     className={cn(
       'flex rounded-lg p-0.5 border',
       variant === 'brand'
-        ? 'bg-neutral-900/50 border-white/5'
-        : 'bg-white/[0.03] border-white/[0.06]',
+        ? 'bg-neutral-900/50 border-neutral-800'
+        : 'bg-white/[0.03] border-neutral-800',
       className
     )}
   >
@@ -58,11 +58,11 @@ export const SegmentedControl: React.FC<{
         onClick={() => onChange(opt.value)}
         className={cn(
           'font-medium rounded-md transition-all flex-1 text-center',
-          size === 'sm' ? 'px-2 py-1 text-[9px] tracking-wider' : 'px-3 py-1 text-[11px]',
+          size === 'sm' ? 'px-2 py-1 text-[10px] tracking-wider' : 'px-3 py-1 text-[11px]',
           value === opt.value
             ? variant === 'brand'
               ? 'bg-brand-cyan text-black font-bold'
-              : 'bg-white/[0.08] text-neutral-100 shadow-sm'
+              : 'bg-white/10 text-neutral-100 shadow-sm'
             : 'text-neutral-500 hover:text-neutral-300'
         )}
       >
@@ -369,7 +369,7 @@ export const ExpandableColorPicker: React.FC<{
                     'w-5 h-5 rounded-full border transition-all hover:scale-110',
                     color.toLowerCase() === p.toLowerCase()
                       ? 'border-white/40 ring-1 ring-white/20 ring-offset-1 ring-offset-neutral-950'
-                      : 'border-white/[0.08] hover:border-white/20'
+                      : 'border-white/10 hover:border-white/20'
                   )}
                   style={{ backgroundColor: p }}
                   aria-label={`Preset ${p}`}

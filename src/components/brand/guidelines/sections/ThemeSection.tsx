@@ -28,7 +28,7 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
   return (
     <span
       className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${
-        normalAA ? 'bg-green-500/10 text-green-400' : 'bg-destructive/10 text-destructive'
+        normalAA ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
       }`}
       title={`${label}: ${ratio.toFixed(1)}:1 — ${normalAA ? 'WCAG AA ✓' : 'Low contrast'}`}
     >

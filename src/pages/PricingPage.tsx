@@ -461,7 +461,7 @@ export const PricingPage: React.FC = () => {
                             {currencyInfo?.currency === 'BRL' && (
                               <PremiumButton
                                 onClick={handleBuyWithPix}
-                                className="w-full h-12 uppercase  bg-transparent border-green-500/30 text-green-400 hover:bg-green-500/10 shadow-none"
+                                className="w-full h-12 uppercase  bg-transparent border-success/30 text-success hover:bg-success/10 shadow-none"
                                 icon={QrCode}
                               >
                                 {t('pix.payWithPix')}
@@ -577,7 +577,7 @@ export const PricingPage: React.FC = () => {
                                 key={i}
                                 className="flex items-center gap-2 text-sm text-neutral-400"
                               >
-                                <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                                <CheckCircle2 size={14} className="text-success shrink-0" />
                                 <span>{feature}</span>
                               </li>
                             ))}
@@ -675,7 +675,7 @@ export const PricingPage: React.FC = () => {
                         <table className="w-full text-sm">
                           <tbody>
                             {CREDIT_COSTS.map((row, i) => (
-                              <tr key={i} className="border-b border-white/5 last:border-0">
+                              <tr key={i} className="border-b border-neutral-800 last:border-0">
                                 <td className="py-2 text-neutral-300">{row.operation}</td>
                                 <td className="py-2 text-right font-mono text-brand-cyan">
                                   {row.credits}

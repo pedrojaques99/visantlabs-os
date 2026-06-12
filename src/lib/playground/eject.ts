@@ -79,9 +79,9 @@ ${pad}    ${
       props.change
         ? `<span className="text-xs font-mono ${
             props.trend === 'up'
-              ? 'text-green-400'
+              ? 'text-success'
               : props.trend === 'down'
-              ? 'text-red-400'
+              ? 'text-destructive'
               : 'text-neutral-400'
           }">${props.change}</span>`
         : ''

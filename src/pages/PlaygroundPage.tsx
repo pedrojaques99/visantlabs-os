@@ -171,7 +171,7 @@ class RendererErrorBoundary extends React.Component<
     if (this.state.error) {
       return (
         <div className="h-full flex flex-col items-center justify-center gap-3 text-neutral-500">
-          <AlertTriangle className="w-6 h-6 text-amber-500/60" />
+          <AlertTriangle className="w-6 h-6 text-warning/60" />
           <p className="text-[11px] font-mono">Render error — try regenerating</p>
           <p className="text-[10px] text-neutral-600 max-w-sm text-center">
             {this.state.error.message}
@@ -241,7 +241,7 @@ const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spe
   return (
     <div className="h-full flex flex-col">
       {error && (
-        <div className="shrink-0 px-3 py-1.5 text-[10px] font-mono text-amber-400 bg-amber-500/5 border-b border-amber-500/10">
+        <div className="shrink-0 px-3 py-1.5 text-[10px] font-mono text-warning bg-warning/5 border-b border-warning/10">
           {error}
         </div>
       )}
@@ -288,7 +288,7 @@ const SuggestionPills: React.FC<{
   const cls =
     size === 'sm'
       ? 'px-2 py-1 text-[10px] border-neutral-800/60 text-neutral-600 hover:border-neutral-700 hover:text-neutral-300'
-      : 'px-3 py-1.5 text-[12px] border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.02]';
+      : 'px-3 py-1.5 text-[12px] border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.03]';
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {items.map((s) => (
@@ -381,17 +381,17 @@ const SidebarDisclosure: React.FC<{
 }> = ({ label, badge, defaultOpen = false, className, children }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={cn('border-b border-neutral-800/30', className)}>
+    <div className={cn('border-b border-white/10', className)}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.03] transition-colors"
       >
         <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
           {label}
         </span>
         <div className="flex items-center gap-1.5">
           {badge && (
-            <span className="text-[9px] font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
               {badge}
             </span>
           )}
@@ -906,7 +906,7 @@ export const PlaygroundPage: React.FC = () => {
           <span className="truncate max-w-[100px]">{file.name}</span>
           <button
             onClick={() => removeAttachedFile(i)}
-            className="opacity-0 group-hover/chip:opacity-100 transition-opacity text-neutral-500 hover:text-red-400"
+            className="opacity-0 group-hover/chip:opacity-100 transition-opacity text-neutral-500 hover:text-destructive"
           >
             <X size={10} />
           </button>
@@ -964,7 +964,7 @@ export const PlaygroundPage: React.FC = () => {
         <Tooltip
           content={
             <span>
-              New miniapp <kbd className="ml-1 text-[9px] opacity-60">⌘N</kbd>
+              New miniapp <kbd className="ml-1 text-[10px] opacity-60">⌘N</kbd>
             </span>
           }
           position="right"
@@ -1044,7 +1044,7 @@ export const PlaygroundPage: React.FC = () => {
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded shrink-0"
                         aria-label="Delete"
                       >
-                        <Trash2 size={11} className="text-neutral-600 hover:text-red-400" />
+                        <Trash2 size={11} className="text-neutral-600 hover:text-destructive" />
                       </button>
                     </div>
                     {app.updatedAt && (
@@ -1082,7 +1082,7 @@ export const PlaygroundPage: React.FC = () => {
       </div>
 
       {/* Input always at bottom */}
-      <div className="shrink-0 border-t border-neutral-800/30 p-2 pb-3">{inputBar}</div>
+      <div className="shrink-0 border-t border-white/10 p-2 pb-3">{inputBar}</div>
     </div>
   );
 
@@ -1099,7 +1099,7 @@ export const PlaygroundPage: React.FC = () => {
   ) : sidebarOpen ? (
     <>
       <aside
-        className="shrink-0 border-r border-neutral-800/50 overflow-hidden"
+        className="shrink-0 border-r border-white/10 overflow-hidden"
         style={{ width: sidebarWidth }}
       >
         {sidebarContent}
@@ -1124,7 +1124,7 @@ export const PlaygroundPage: React.FC = () => {
           <Tooltip
             content={
               <span>
-                Exit fullscreen <kbd className="ml-1 text-[9px] opacity-60">Esc</kbd>
+                Exit fullscreen <kbd className="ml-1 text-[10px] opacity-60">Esc</kbd>
               </span>
             }
             position="bottom"
@@ -1150,7 +1150,7 @@ export const PlaygroundPage: React.FC = () => {
   // =====================================================================
   if (!expertMode) {
     const topBar = (
-      <div className="shrink-0 flex items-center h-12 px-4 border-b border-neutral-800/30">
+      <div className="shrink-0 flex items-center h-12 px-4 border-b border-white/10">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-1.5 -ml-1.5 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
@@ -1188,7 +1188,7 @@ export const PlaygroundPage: React.FC = () => {
             <Tooltip
               content={
                 <span>
-                  Save <kbd className="ml-1 text-[9px] opacity-60">⌘S</kbd>
+                  Save <kbd className="ml-1 text-[10px] opacity-60">⌘S</kbd>
                 </span>
               }
               position="bottom"
@@ -1212,7 +1212,7 @@ export const PlaygroundPage: React.FC = () => {
                     className="text-neutral-500 hover:text-neutral-300"
                   >
                     {copiedShare ? (
-                      <Check className="w-3 h-3 text-green-400" />
+                      <Check className="w-3 h-3 text-success" />
                     ) : (
                       <Link2 className="w-3 h-3" />
                     )}
@@ -1231,14 +1231,14 @@ export const PlaygroundPage: React.FC = () => {
                   </Tooltip>
                 )}
                 {isPublished && (
-                  <span className="text-[9px] font-mono text-green-500/60 px-1">Published</span>
+                  <span className="text-[10px] font-mono text-success/60 px-1">Published</span>
                 )}
               </>
             )}
             <Tooltip
               content={
                 <span>
-                  Fullscreen <kbd className="ml-1 text-[9px] opacity-60">F</kbd>
+                  Fullscreen <kbd className="ml-1 text-[10px] opacity-60">F</kbd>
                 </span>
               }
               position="bottom"
@@ -1382,7 +1382,7 @@ export const PlaygroundPage: React.FC = () => {
   // =====================================================================
   // Expert mode top bar
   const expertTopBar = (
-    <div className="shrink-0 flex items-center h-10 px-3 border-b border-neutral-800/30 gap-2">
+    <div className="shrink-0 flex items-center h-10 px-3 border-b border-white/10 gap-2">
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="p-1 rounded-md text-neutral-500 hover:text-neutral-300 transition-colors"
@@ -1421,7 +1421,7 @@ export const PlaygroundPage: React.FC = () => {
                   className="text-neutral-500"
                 >
                   {copiedShare ? (
-                    <Check className="w-3 h-3 mr-1 text-green-400" />
+                    <Check className="w-3 h-3 mr-1 text-success" />
                   ) : (
                     <Link2 className="w-3 h-3 mr-1" />
                   )}
@@ -1458,7 +1458,7 @@ export const PlaygroundPage: React.FC = () => {
   const expertPreview = (
     <div className="flex-1 min-h-0 flex flex-col">
       {spec && (
-        <div className="shrink-0 flex items-center border-b border-neutral-800/30 px-2 h-9">
+        <div className="shrink-0 flex items-center border-b border-white/10 px-2 h-9">
           {(['preview', 'spec', 'code'] as ViewTab[]).map((tab) => (
             <button
               key={tab}
@@ -1477,7 +1477,7 @@ export const PlaygroundPage: React.FC = () => {
             </button>
           ))}
           <div className="flex-1" />
-          <span className="text-[9px] font-mono text-neutral-700">
+          <span className="text-[10px] font-mono text-neutral-700">
             {Object.keys(spec.elements || {}).length} elements
           </span>
         </div>

@@ -129,7 +129,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({
       <div className="flex items-center justify-between h-12 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-xl">
         {/* Left: saved status */}
         <div className="flex items-center gap-2">
-          <Check size={12} className="text-green-500/60" />
+          <Check size={12} className="text-success/60" />
           <span className="text-[11px] text-neutral-600">Saved</span>
         </div>
 

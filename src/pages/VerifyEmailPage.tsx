@@ -45,7 +45,7 @@ export const VerifyEmailPage: React.FC = () => {
 
           {status === 'success' && (
             <>
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+              <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-4" />
               <h2 className="text-lg font-semibold text-white font-mono mb-2">Email verificado!</h2>
               <p className="text-neutral-400 text-sm font-mono mb-6">
                 Sua conta foi verificada com sucesso.
@@ -58,7 +58,7 @@ export const VerifyEmailPage: React.FC = () => {
 
           {status === 'error' && (
             <>
-              <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
               <h2 className="text-lg font-semibold text-white font-mono mb-2">
                 Erro na verificacao
               </h2>

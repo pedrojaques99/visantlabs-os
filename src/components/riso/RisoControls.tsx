@@ -412,7 +412,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                           <button
                             onClick={() => setInkCategory(null)}
                             className={cn(
-                              'px-1.5 h-4 rounded text-[8px] font-mono border transition-colors',
+                              'px-1.5 h-4 rounded text-[10px] font-mono border transition-colors',
                               !inkCategory
                                 ? 'bg-white/10 text-white border-white/20'
                                 : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
@@ -425,7 +425,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                               key={cat}
                               onClick={() => setInkCategory(inkCategory === cat ? null : cat)}
                               className={cn(
-                                'px-1.5 h-4 rounded text-[8px] font-mono border transition-colors',
+                                'px-1.5 h-4 rounded text-[10px] font-mono border transition-colors',
                                 inkCategory === cat
                                   ? 'bg-white/10 text-white border-white/20'
                                   : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
@@ -454,7 +454,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                             />
                           ))}
                           {filteredInks.length === 0 && (
-                            <span className="col-span-8 text-[9px] text-neutral-600 font-mono py-2 text-center">
+                            <span className="col-span-8 text-[10px] text-neutral-600 font-mono py-2 text-center">
                               No inks found
                             </span>
                           )}

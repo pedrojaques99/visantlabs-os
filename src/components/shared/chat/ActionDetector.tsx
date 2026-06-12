@@ -41,9 +41,9 @@ const getActionColor = (type: DetectedAction['type']) => {
     case 'mockup':
       return 'text-brand-cyan border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy':
-      return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
+      return 'text-warning border-warning/30 bg-warning/10 hover:bg-warning/20';
     case 'text':
-      return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
+      return 'text-success border-success/30 bg-success/10 hover:bg-success/20';
     default:
       return 'text-neutral-400 border-neutral-400/30 bg-neutral-400/10 hover:bg-neutral-400/20';
   }

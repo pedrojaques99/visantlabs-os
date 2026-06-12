@@ -32,9 +32,9 @@ const PORTAL_CARDS = [
     icon: Unplug,
     href: '/settings/connected-apps',
     external: false,
-    accent: 'text-emerald-400',
-    bg: 'bg-emerald-500/5 hover:bg-emerald-500/10',
-    border: 'border-emerald-500/20 hover:border-emerald-500/40',
+    accent: 'text-success',
+    bg: 'bg-success/5 hover:bg-success/10',
+    border: 'border-success/20 hover:border-success/40',
   },
   {
     title: 'Usage Analytics',
@@ -52,9 +52,9 @@ const PORTAL_CARDS = [
     icon: BookOpen,
     href: '/developer/getting-started',
     external: false,
-    accent: 'text-amber-400',
-    bg: 'bg-amber-500/5 hover:bg-amber-500/10',
-    border: 'border-amber-500/20 hover:border-amber-500/40',
+    accent: 'text-warning',
+    bg: 'bg-warning/5 hover:bg-warning/10',
+    border: 'border-warning/20 hover:border-warning/40',
   },
   {
     title: 'API Reference',
@@ -62,9 +62,9 @@ const PORTAL_CARDS = [
     icon: FileText,
     href: '/api/docs',
     external: true,
-    accent: 'text-green-400',
-    bg: 'bg-green-500/5 hover:bg-green-500/10',
-    border: 'border-green-500/20 hover:border-green-500/40',
+    accent: 'text-success',
+    bg: 'bg-success/5 hover:bg-success/10',
+    border: 'border-success/20 hover:border-success/40',
   },
 ];
 

@@ -235,12 +235,12 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 />
                 FREE TOOL
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-amber-500">
+              <label className="flex items-center gap-2 cursor-pointer text-warning">
                 <input
                   type="checkbox"
                   checked={formData.isHidden}
                   onChange={(e) => setFormData({ ...formData, isHidden: e.target.checked })}
-                  className="rounded border-white/10 bg-white/5 text-amber-500"
+                  className="rounded border-white/10 bg-white/5 text-warning"
                 />
                 HIDE APP (ADMIN ONLY)
               </label>

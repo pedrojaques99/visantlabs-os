@@ -879,7 +879,7 @@ export const ImageLabPage: React.FC = () => {
     () => (
       <div className="h-full flex flex-col">
         <div className="flex-1 overflow-hidden">{modeControls}</div>
-        <div className="shrink-0 border-t border-neutral-800/50 px-4 py-3">
+        <div className="shrink-0 border-t border-white/10 px-4 py-3">
           <ImageLabSavePreset />
         </div>
       </div>
@@ -994,7 +994,7 @@ export const ImageLabPage: React.FC = () => {
                       width: '12px',
                     }}
                   />
-                  <span className="text-[7px] font-mono text-neutral-600">
+                  <span className="text-[10px] font-mono text-neutral-600">
                     {videoCurrentTime.toFixed(1)}s
                   </span>
                 </div>
@@ -1062,7 +1062,7 @@ export const ImageLabPage: React.FC = () => {
                   <span>{m.label}</span>
                   <span
                     className={cn(
-                      'text-[9px] font-mono tabular-nums transition-colors',
+                      'text-[10px] font-mono tabular-nums transition-colors',
                       isActive ? 'text-neutral-500' : 'text-neutral-700'
                     )}
                   >
@@ -1072,7 +1072,7 @@ export const ImageLabPage: React.FC = () => {
                     <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
                       <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
                         <img src={thumb} alt={m.label} className="w-28 h-28 object-cover" />
-                        <div className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
+                        <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
                           {m.label} preview
                         </div>
                       </div>
@@ -1218,7 +1218,7 @@ export const ImageLabPage: React.FC = () => {
             onClick={() => setShortcutsOpen(false)}
           >
             <div
-              className="bg-neutral-950 border border-neutral-800/50 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
+              className="bg-neutral-950 border border-white/10 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
@@ -1267,7 +1267,7 @@ export const ImageLabPage: React.FC = () => {
                   ] as [string, [string, string][]][]
                 ).map(([section, items]) => (
                   <div key={section}>
-                    <div className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">
                       {section}
                     </div>
                     {items.map(([key, desc]) => (
@@ -1379,11 +1379,11 @@ function useStatusItems(mode: ImageLabMode) {
 
   return useMemo(() => {
     const extras: { label: string; color?: string }[] = [];
-    if (sourceMediaType === 'video') extras.push({ label: 'video', color: 'text-green-400' });
+    if (sourceMediaType === 'video') extras.push({ label: 'video', color: 'text-success' });
     if (compareMode !== 'off')
       extras.push({
         label: compareMode === 'toggle' ? 'before/after' : 'split view',
-        color: 'text-amber-400',
+        color: 'text-warning',
       });
 
     switch (mode) {
@@ -1414,7 +1414,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `misreg ${rMisregistration}px` },
           { label: `${rLayers.filter((l) => l.visible).length} layers` },
           ...(rSoloLayer >= 0
-            ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-amber-400' }]
+            ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-warning' }]
             : []),
           ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
@@ -1497,7 +1497,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
               width: '12px',
             }}
           />
-          <span className="text-[8px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
+          <span className="text-[10px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
         </div>
       )}
     </div>

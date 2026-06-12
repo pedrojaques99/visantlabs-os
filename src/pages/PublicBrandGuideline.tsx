@@ -388,7 +388,7 @@ export const PublicBrandGuideline: React.FC = () => {
               className={cn(
                 'h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
                 editMode
-                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30'
+                  ? 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
                   : 'bg-neutral-900/60 border-neutral-700 text-neutral-300 hover:text-white'
               )}
             >
@@ -648,7 +648,7 @@ export const PublicBrandGuideline: React.FC = () => {
                         type="button"
                         aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
                         onClick={() => setActiveEditSection(section)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-mono uppercase tracking-widest hover:bg-amber-500/30 transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/20 border border-warning/30 text-warning text-[10px] font-mono uppercase tracking-widest hover:bg-warning/30 transition-colors"
                       >
                         <Pencil size={10} />
                         {SECTION_LABELS[section]}

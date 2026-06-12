@@ -675,9 +675,9 @@ export const SmartAnalyzerPage: React.FC = () => {
       'ui-screenshot': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
       'figma-design': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
       mockup: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      texture: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-      ambience: 'bg-green-500/20 text-green-400 border-green-500/30',
-      luminance: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      texture: 'bg-warning/20 text-warning border-warning/30',
+      ambience: 'bg-success/20 text-success border-success/30',
+      luminance: 'bg-warning/20 text-warning border-warning/30',
       '3d': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
       aesthetics: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
       themes: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
@@ -984,7 +984,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                           className={cn(
                             'h-12 px-6 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]',
                             copied
-                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              ? 'bg-success/20 text-success border border-success/30'
                               : 'bg-white hover:bg-neutral-200 text-black'
                           )}
                         >
@@ -1003,7 +1003,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               disabled={isGenerating || isGeneratingVariations}
                               variant="outline"
                               className={cn(
-                                'h-12 px-5 border-white/10 hover:border-brand-cyan/30 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all text-xs font-semibold',
+                                'h-12 px-5 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all text-xs font-semibold',
                                 isGenerating && 'opacity-80'
                               )}
                             >

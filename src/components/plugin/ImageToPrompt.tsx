@@ -199,7 +199,7 @@ export function ImageToPrompt() {
               <span className="text-sm font-medium">Prompt gerado ({result.componentType})</span>
               <Button variant="ghost" size="sm" onClick={copyPrompt}>
                 {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
