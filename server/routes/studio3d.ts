@@ -55,8 +55,12 @@ const exportLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  // Throttle per authenticated user (falls back to IP for safety).
+  // Throttle per authenticated user (falls back to IP for safety). The route
+  // runs after `authenticate`, so userId is always set for real traffic — the
+  // raw-IP fallback never buckets actual users, hence the disabled IPv6 check
+  // (same pattern as contentStudio.ts).
   keyGenerator: (req) => (req as AuthRequest).userId || req.ip || 'anon',
+  validate: { keyGeneratorIpFallback: false },
 });
 
 router.post('/export-glb', authenticate, exportLimiter, async (req: AuthRequest, res) => {
