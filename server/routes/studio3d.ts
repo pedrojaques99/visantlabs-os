@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
-import { tracePipeline, parseBase64Image } from './trace.js';
+import { trace as tracePipeline, parseBase64Image } from '@visant/logo-trace';
 import { recordToolUsage } from '../utils/toolUsageTracking.js';
 
 const router = Router();
