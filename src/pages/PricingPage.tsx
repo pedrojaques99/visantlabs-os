@@ -26,7 +26,6 @@ import {
 } from '../components/ui/BreadcrumbWithBack';
 import { PixPaymentModal } from '../components/PixPaymentModal';
 import { SEO } from '../components/SEO';
-import { subscriptionService } from '../services/subscriptionService';
 import { productService, type Product } from '../services/productService';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
@@ -132,22 +131,9 @@ const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
   return displayValue;
 };
 
-interface PlanInfo {
-  priceId: string;
-  tier: string;
-  monthlyCredits: number;
-  amount: number;
-  currency: string;
-  interval: string;
-  productName: string;
-  description: string;
-}
-
 export const PricingPage: React.FC = () => {
   const { t } = useTranslation();
-  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creditPackages, setCreditPackages] = useState<Product[]>([]);
   const [selectedCreditIndex, setSelectedCreditIndex] = useState(0);
@@ -180,23 +166,6 @@ export const PricingPage: React.FC = () => {
       }
     });
   }, []);
-
-  useEffect(() => {
-    if (currencyInfo) {
-      setIsLoading(true);
-      subscriptionService
-        .getPlans(currencyInfo.currency)
-        .then((plan) => {
-          setPlanInfo(plan);
-          setError(null);
-        })
-        .catch((err) => {
-          console.error('Final fallback failed:', err);
-          setError('Failed to load pricing information');
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [currencyInfo]);
 
   const handleBuyCredits = async () => {
     if (!currencyInfo || creditPackages.length === 0) return;
@@ -648,142 +617,86 @@ export const PricingPage: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* API Tier Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {API_TIERS.map((tier, index) => (
-                      <Card
-                        key={tier.id}
-                        className={cn(
-                          'relative overflow-hidden transition-all duration-300 hover:border-neutral-700',
-                          tier.highlighted
-                            ? 'bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30'
-                            : 'bg-neutral-900/50 border-neutral-800'
-                        )}
-                      >
-                        {tier.highlighted && (
-                          <div className="absolute top-0 right-0 px-3 py-1 bg-brand-cyan text-black text-xs font-bold rounded-bl-lg">
-                            Popular
-                          </div>
-                        )}
-                        <CardHeader className="pb-2">
-                          <CardTitle
-                            className={cn(
-                              'text-lg font-bold',
-                              tier.highlighted ? 'text-brand-cyan' : 'text-neutral-200'
-                            )}
-                          >
-                            {tier.name}
-                          </CardTitle>
-                          <div className="flex items-baseline gap-1 mt-1">
-                            <span className="text-3xl font-bold text-neutral-100 font-mono">
-                              {tier.credits}
-                            </span>
-                            <span className="text-sm text-neutral-500">credits/mo</span>
-                          </div>
-                          <p className="text-xs text-neutral-500 font-mono mt-1">
-                            {tier.rateLimit} req/15min
+                  {/* Single unified API panel — the API runs on your existing plan,
+                      it is not a separate subscription. One card, no duplication. */}
+                  <div className="max-w-2xl mx-auto">
+                    <GlassPanel
+                      padding="none"
+                      className="overflow-hidden rounded-2xl divide-y divide-white/10"
+                    >
+                      {/* Included-with-plan note */}
+                      <div className="p-5 flex items-start gap-3">
+                        <div className="p-2 bg-brand-cyan/10 rounded-lg shrink-0">
+                          <Key size={18} className="text-brand-cyan" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-neutral-200">
+                            {t('pricing.api.includedTitle') || 'Included with your plan'}
+                          </h3>
+                          <p className="text-sm text-neutral-500 mt-0.5">
+                            {t('pricing.api.includedDesc') ||
+                              'The API draws from the same credit balance and scopes as your account — there is no separate subscription. Your plan sets the rate limit.'}
                           </p>
-                        </CardHeader>
-                        <CardContent className="pt-4 border-t border-white/10">
-                          <ul className="space-y-2 mb-6">
-                            {tier.features.map((feature, i) => (
-                              <li
-                                key={i}
-                                className="flex items-center gap-2 text-sm text-neutral-400"
-                              >
-                                <CheckCircle2 size={14} className="text-green-500 shrink-0" />
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <Button
-                            variant={tier.highlighted ? 'brand' : 'outline'}
-                            className="w-full"
-                            asChild
-                          >
-                            <Link to="/developer">Get Started</Link>
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                        </div>
+                      </div>
 
-                  {/* Per-call credit costs table */}
-                  <div className="max-w-2xl mx-auto">
-                    <h3 className="text-base font-semibold text-neutral-200 mb-4 text-center">
-                      Per-call Credit Costs
-                    </h3>
-                    <GlassPanel padding="sm" className="overflow-hidden rounded-xl">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-neutral-800">
-                            <th className="text-left py-2 px-3 text-neutral-400 font-mono text-xs uppercase">
-                              Operation
-                            </th>
-                            <th className="text-right py-2 px-3 text-neutral-400 font-mono text-xs uppercase">
-                              Credits
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {CREDIT_COSTS.map((row, i) => (
-                            <tr key={i} className="border-b border-white/10 last:border-0">
-                              <td className="py-2 px-3 text-neutral-300">{row.operation}</td>
-                              <td className="py-2 px-3 text-right font-mono text-brand-cyan">
-                                {row.credits}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </GlassPanel>
-                  </div>
-
-                  {/* Rate limits table */}
-                  <div className="max-w-2xl mx-auto">
-                    <h3 className="text-base font-semibold text-neutral-200 mb-4 text-center">
-                      Rate Limits by Tier
-                    </h3>
-                    <GlassPanel padding="sm" className="overflow-hidden rounded-xl">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-neutral-800">
-                            <th className="text-left py-2 px-3 text-neutral-400 font-mono text-xs uppercase">
-                              Tier
-                            </th>
-                            <th className="text-right py-2 px-3 text-neutral-400 font-mono text-xs uppercase">
-                              Requests / 15 min
-                            </th>
-                            <th className="text-right py-2 px-3 text-neutral-400 font-mono text-xs uppercase">
-                              Credits / month
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
+                      {/* Rate limit by plan */}
+                      <div className="p-5">
+                        <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">
+                          {t('pricing.api.rateLimitLabel') || 'Rate limit by plan'}
+                        </h4>
+                        <div className="space-y-1.5">
                           {API_TIERS.map((tier) => (
-                            <tr key={tier.id} className="border-b border-white/10 last:border-0">
-                              <td
+                            <div
+                              key={tier.id}
+                              className="flex items-center justify-between text-sm"
+                            >
+                              <span
                                 className={cn(
-                                  'py-2 px-3',
-                                  tier.highlighted
-                                    ? 'text-brand-cyan font-semibold'
-                                    : 'text-neutral-300'
+                                  'font-medium',
+                                  tier.highlighted ? 'text-brand-cyan' : 'text-neutral-300'
                                 )}
                               >
                                 {tier.name}
-                              </td>
-                              <td className="py-2 px-3 text-right font-mono text-neutral-300">
-                                {tier.rateLimit.toLocaleString()}
-                              </td>
-                              <td className="py-2 px-3 text-right font-mono text-neutral-300">
-                                {tier.credits.toLocaleString()}
-                              </td>
-                            </tr>
+                              </span>
+                              <span className="font-mono text-neutral-400">
+                                {tier.rateLimit.toLocaleString()} req / 15 min
+                              </span>
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
+                        </div>
+                      </div>
+
+                      {/* Per-call credit cost */}
+                      <div className="p-5">
+                        <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">
+                          {t('pricing.api.perCallLabel') || 'Per-call credit cost'}
+                        </h4>
+                        <table className="w-full text-sm">
+                          <tbody>
+                            {CREDIT_COSTS.map((row, i) => (
+                              <tr key={i} className="border-b border-white/5 last:border-0">
+                                <td className="py-2 text-neutral-300">{row.operation}</td>
+                                <td className="py-2 text-right font-mono text-brand-cyan">
+                                  {row.credits}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* CTA */}
+                      <div className="p-5">
+                        <Button variant="brand" className="w-full" asChild>
+                          <Link to="/developer">
+                            {t('pricing.api.cta') || 'Get API key & docs'}
+                          </Link>
+                        </Button>
+                      </div>
                     </GlassPanel>
                   </div>
+
                 </div>
               </TabsContent>
             </Tabs>

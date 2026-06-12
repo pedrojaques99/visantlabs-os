@@ -561,80 +561,95 @@ router.get(
   }
 );
 
-// Get available plans from Stripe
-router.get('/plans', apiRateLimiter, async (req, res, next) => {
-  try {
-    if (!stripe) {
-      console.error('❌ Stripe is not configured');
-      return res.status(500).json({ error: 'Stripe is not configured' });
-    }
+// Get the headline subscription plan. Resilient by design: prefers a live Stripe
+// price when correctly configured, otherwise falls back to the admin-managed DB
+// product (the real source of truth via /admin/products), then to sane defaults.
+// Always returns 200 so the pricing page and the `payments-plans` tool never break.
+router.get('/plans', apiRateLimiter, async (req, res) => {
+  const { currency } = req.query;
+  const currencyCode = String(currency || '').toUpperCase() === 'BRL' ? 'BRL' : 'USD';
 
-    const { currency } = req.query;
+  const defaults = () => ({
+    priceId: '',
+    tier: 'premium',
+    monthlyCredits: 100,
+    amount: currencyCode === 'BRL' ? 19.9 : 9,
+    currency: currencyCode,
+    interval: 'month',
+    productName: 'Premium',
+    description: '',
+  });
+
+  // Admin-managed DB product (source of truth used by SubscriptionPlansGrid).
+  const fromDbProduct = async () => {
+    try {
+      const product = await prisma.product.findFirst({
+        where: { isActive: true, type: 'subscription_plan' },
+        orderBy: { displayOrder: 'asc' },
+      });
+      if (!product) return null;
+      const meta = (product.metadata as Record<string, any>) || {};
+      const amount = currencyCode === 'BRL' ? product.priceBRL ?? 0 : product.priceUSD ?? 0;
+      return {
+        priceId: '',
+        tier: meta.tier || 'premium',
+        monthlyCredits:
+          product.credits || (meta.monthlyCredits ? parseInt(meta.monthlyCredits, 10) : 100),
+        amount,
+        currency: currencyCode,
+        interval: meta.interval || 'month',
+        productName: product.name || 'Premium',
+        description: product.description || '',
+      };
+    } catch (e: any) {
+      console.warn('⚠️ DB plan fallback failed:', e.message);
+      return null;
+    }
+  };
+
+  try {
     const priceId = getPriceId(currency as string);
 
-    if (!priceId) {
-      console.error('❌ Price ID not configured for currency:', currency);
-      return res.status(500).json({ error: 'Price ID not configured' });
-    }
-
-    console.log('🔍 Fetching plan info for price ID:', priceId);
-
-    // Get price details
-    let price;
-    try {
-      price = await stripe.prices.retrieve(priceId);
-    } catch (priceError: any) {
-      console.error('❌ Error retrieving price from Stripe:', priceError.message);
-      if (priceError.code === 'resource_missing') {
-        return res.status(404).json({
-          error: `Price ID not found in Stripe: ${priceId}. Please check your STRIPE_PRICE_ID configuration.`,
+    // Preferred path: live Stripe price (only when stripe + a valid price are configured).
+    if (stripe && priceId) {
+      try {
+        const price = await stripe.prices.retrieve(priceId);
+        const productId =
+          typeof price.product === 'string' ? price.product : price.product?.id;
+        const product = productId ? await stripe.products.retrieve(productId) : null;
+        const metadata = product?.metadata || {};
+        const tier = metadata.tier || 'premium';
+        const monthlyCredits = metadata.monthlyCredits
+          ? parseInt(metadata.monthlyCredits, 10)
+          : tier === 'premium'
+          ? 100
+          : tier === 'pro'
+          ? 500
+          : 3;
+        return res.json({
+          priceId,
+          tier,
+          monthlyCredits,
+          amount: price.unit_amount ? price.unit_amount / 100 : 0,
+          currency: price.currency.toUpperCase(),
+          interval: price.recurring?.interval || 'month',
+          productName: product?.name || 'Premium',
+          description: product?.description || '',
         });
+      } catch (priceError: any) {
+        console.warn(
+          '⚠️ Stripe price unavailable, falling back to DB products:',
+          priceError.message
+        );
       }
-      throw priceError;
-    }
-    const productId = typeof price.product === 'string' ? price.product : price.product?.id;
-
-    if (!productId) {
-      console.error('❌ Product ID not found in price');
-      return res.status(404).json({ error: 'Product not found' });
     }
 
-    console.log('🔍 Fetching product info for product ID:', productId);
-
-    // Get product with metadata
-    const product = await stripe.products.retrieve(productId);
-    const metadata = product.metadata || {};
-
-    // Extract plan information
-    const tier = metadata.tier || 'premium';
-    const monthlyCredits = metadata.monthlyCredits
-      ? parseInt(metadata.monthlyCredits, 10)
-      : tier === 'premium'
-      ? 100
-      : tier === 'pro'
-      ? 500
-      : 3;
-
-    // Format price
-    const amount = price.unit_amount ? price.unit_amount / 100 : 0;
-    const currencyCode = price.currency.toUpperCase();
-
-    console.log('✅ Plan info retrieved:', { tier, monthlyCredits, amount, currencyCode });
-
-    res.json({
-      priceId,
-      tier,
-      monthlyCredits,
-      amount,
-      currency: currencyCode,
-      interval: price.recurring?.interval || 'month',
-      productName: product.name || 'Premium',
-      description: product.description || '',
-    });
+    // Fallback: admin-managed DB product, then defaults.
+    const dbPlan = await fromDbProduct();
+    return res.json(dbPlan || defaults());
   } catch (error: any) {
-    console.error('❌ Error fetching plans:', error);
-    const errorMessage = error.message || 'Failed to fetch plans';
-    res.status(500).json({ error: errorMessage });
+    console.error('❌ Error fetching plans, returning defaults:', error.message);
+    return res.json(defaults());
   }
 });
 

@@ -631,8 +631,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
 
         {!location.pathname.startsWith('/canvas/') &&
-          !location.pathname.startsWith('/brand/') &&
-          (location.pathname !== '/' || isAuthenticated === false) && (
+          !location.pathname.startsWith('/brand/') && (
             <Header
               subscriptionStatus={subscriptionStatus}
               onPricingClick={() => navigate('/pricing')}

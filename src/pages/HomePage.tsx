@@ -180,10 +180,10 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
         onFocus(app.appId);
       }}
       disabled={locked}
-      className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-all duration-100 disabled:cursor-not-allowed focus:outline-none"
+      className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-all duration-100 disabled:cursor-not-allowed focus:outline-none overflow-hidden"
     >
-      {/* Main row */}
-      <div className="flex items-center font-mono text-[11px] tracking-wider">
+      {/* Main row — single line, clips when narrower than 1/3 viewport */}
+      <div className="flex items-center font-mono text-[11px] tracking-wider whitespace-nowrap overflow-hidden">
         {/* Number */}
         <span
           className={`w-6 shrink-0 text-[10px] transition-colors duration-100 ${
@@ -561,7 +561,7 @@ export const HomePage: React.FC = () => {
           ) : (
             /* ── Desktop: TUI floats over 3D background, intrinsic width ── */
             <div className="absolute inset-0 flex items-center pointer-events-none">
-              <div className="ml-16 pointer-events-auto inline-flex flex-col">
+              <div className="ml-16 pointer-events-auto inline-flex flex-col max-w-[33vw] overflow-hidden">
                 <AnimatePresence mode="wait">
                   {isLoggedIn ? (
                     <motion.div
