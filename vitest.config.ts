@@ -27,6 +27,10 @@ export default defineConfig({
       '@visant/logo-trace/presets': path.resolve(__dirname, './packages/logo-trace/src/presets.ts'),
       '@visant/logo-trace/sanitize': path.resolve(__dirname, './packages/logo-trace/src/sanitize.ts'),
       '@visant/logo-trace': path.resolve(__dirname, './packages/logo-trace/src/index.ts'),
+      '@visant/extrude3d/materials': path.resolve(__dirname, './packages/extrude3d/src/materials.ts'),
+      '@visant/extrude3d/fonts': path.resolve(__dirname, './packages/extrude3d/src/fonts.ts'),
+      '@visant/extrude3d/glb': path.resolve(__dirname, './packages/extrude3d/src/glb.ts'),
+      '@visant/extrude3d': path.resolve(__dirname, './packages/extrude3d/src/index.ts'),
     },
   },
   test: {
