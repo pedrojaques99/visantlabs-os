@@ -1750,7 +1750,8 @@
     "show": "Show",
     "yes": "Yes",
     "no": "No",
-    "presetSelected": "Preset Selected"
+    "presetSelected": "Preset Selected",
+    "dismiss": "Dispensar"
   },
   "community": {
     "failedToDuplicateWorkflow": "Falha ao duplicar workflow",
@@ -2941,7 +2942,14 @@
     "visant_processingcdn": "Visant Processing/CDN",
     "google_api_gemini_31": "Google API (Gemini 3.1)",
     "planos_e_pacotes_de_crditos_para_gerar_m": "Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design.",
-    "preos_e_planos": "Preços e Planos"
+    "preos_e_planos": "Preços e Planos",
+    "api": {
+      "includedTitle": "Incluído no seu plano",
+      "includedDesc": "A API usa o mesmo saldo de créditos e escopos da sua conta — não há assinatura separada. Seu plano define o limite de requisições.",
+      "rateLimitLabel": "Limite de requisições por plano",
+      "perCallLabel": "Custo em créditos por chamada",
+      "cta": "Obter chave de API & docs"
+    }
   },
   "privacy": {
     "backToHome": "Voltar para Início",

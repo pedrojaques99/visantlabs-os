@@ -1750,7 +1750,8 @@
     "show": "Show",
     "yes": "Yes",
     "no": "No",
-    "presetSelected": "Preset Selected"
+    "presetSelected": "Preset Selected",
+    "dismiss": "Dismiss"
   },
   "community": {
     "failedToDuplicateWorkflow": "Failed to duplicate workflow",
@@ -2937,7 +2938,14 @@
     "visant_processingcdn": "Visant Processing/CDN",
     "google_api_gemini_31": "Google API (Gemini 3.1)",
     "planos_e_pacotes_de_crditos_para_gerar_m": "[EN] Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design.",
-    "preos_e_planos": "[EN] Preços e Planos"
+    "preos_e_planos": "[EN] Preços e Planos",
+    "api": {
+      "includedTitle": "Included with your plan",
+      "includedDesc": "The API draws from the same credit balance and scopes as your account — there is no separate subscription. Your plan sets the rate limit.",
+      "rateLimitLabel": "Rate limit by plan",
+      "perCallLabel": "Per-call credit cost",
+      "cta": "Get API key & docs"
+    }
   },
   "privacy": {
     "backToHome": "Back to Home",
