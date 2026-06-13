@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pipette, Copy, Trash2, Check, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Pipette, Copy, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useColorConverterStore, type ConvertedColor } from '@/stores/colorConverterStore';
-import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { hexToRgb, getContrastRatioPublic, checkWCAGCompliance } from '@/utils/colorUtils';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
@@ -200,6 +200,11 @@ export const ColorConverterPage: React.FC = () => {
   const removeColor = useColorConverterStore((s) => s.removeColor);
   const reset = useColorConverterStore((s) => s.reset);
 
+  const handleReset = useCallback(() => {
+    reset();
+    setInputColor('');
+  }, [reset, setInputColor]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' && inputColor.trim()) {
@@ -261,84 +266,142 @@ export const ColorConverterPage: React.FC = () => {
     return null;
   }, [inputColor]);
 
-  return (
-    <MiniToolShell
-      icon={Pipette}
-      title="Color Converter"
-      countLabel={
-        colors.length > 0 ? `${colors.length} color${colors.length > 1 ? 's' : ''}` : undefined
-      }
-      onReset={reset}
-      showReset={colors.length > 0}
-    >
-      {/* Input */}
-      <motion.div {...fadeUp} className="flex gap-2 items-center">
-        {livePreview && (
-          <div
-            className="w-9 h-9 rounded-lg border border-neutral-700 flex-shrink-0"
-            style={{ backgroundColor: livePreview }}
+  /* Panel: input + batch actions + WCAG contrast */
+  const panel = (
+    <div className="space-y-6">
+      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Color Input</h2>
+
+      <div>
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Enter Color</label>
+        <div className="flex gap-2 items-center">
+          {livePreview && (
+            <div
+              className="w-9 h-9 rounded-lg border border-neutral-700 flex-shrink-0"
+              style={{ backgroundColor: livePreview }}
+            />
+          )}
+          <Input
+            value={inputColor}
+            onChange={(e) => setInputColor(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="#FF5500, rgb(255,85,0)…"
+            className="flex-1 font-mono text-sm bg-neutral-950/40 border-neutral-800 placeholder:text-neutral-600"
           />
-        )}
-        <Input
-          value={inputColor}
-          onChange={(e) => setInputColor(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Enter color: #FF5500, rgb(255,85,0), cmyk(0,67,100,0), hsl(32,100,50)"
-          className="flex-1 font-mono text-sm bg-neutral-950/40 border-neutral-800 placeholder:text-neutral-600"
-        />
-        <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-10 text-center">
-          {inputColor.trim() ? inputFormat : ''}
-        </span>
-        <Button
-          onClick={() => inputColor.trim() && addColor(inputColor)}
-          disabled={!inputColor.trim()}
-          className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-        >
-          Add
-        </Button>
-      </motion.div>
-
-      {/* Color rows */}
-      {colors.length > 0 && (
-        <div className="space-y-2">
-          {colors.map((c, i) => (
-            <motion.div
-              key={`${c.hex}-${i}`}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.05, ease }}
-            >
-              <ColorRow color={c} index={i} onRemove={removeColor} />
-            </motion.div>
-          ))}
         </div>
-      )}
+        {inputColor.trim() && (
+          <p className="mt-1 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+            {inputFormat}
+          </p>
+        )}
+      </div>
 
-      {/* Batch actions */}
+      <Button
+        onClick={() => inputColor.trim() && addColor(inputColor)}
+        disabled={!inputColor.trim()}
+        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+      >
+        Add Color
+      </Button>
+
       <AnimatePresence>
         {colors.length > 0 && (
-          <motion.div {...fadeUp} exit={{ opacity: 0, y: 8 }} className="flex gap-2 flex-wrap">
-            <Button
-              onClick={() => handleCopyAll('json')}
-              variant="outline"
-              className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-            >
-              <Copy size={12} className="mr-1" /> Copy JSON
-            </Button>
-            <Button
-              onClick={() => handleCopyAll('csv')}
-              variant="outline"
-              className="font-mono text-xs uppercase tracking-widest border-neutral-700"
-            >
-              <Copy size={12} className="mr-1" /> Copy CSV
-            </Button>
+          <motion.div {...fadeUp} exit={{ opacity: 0, y: 8 }} className="space-y-3">
+            <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Export
+            </h2>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => handleCopyAll('json')}
+                variant="outline"
+                className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+              >
+                <Copy size={12} className="mr-1" /> Copy JSON
+              </Button>
+              <Button
+                onClick={() => handleCopyAll('csv')}
+                variant="outline"
+                className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+              >
+                <Copy size={12} className="mr-1" /> Copy CSV
+              </Button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* WCAG contrast check */}
-      <AnimatePresence>{colors.length >= 2 && <ContrastPanel colors={colors} />}</AnimatePresence>
-    </MiniToolShell>
+      <AnimatePresence>
+        {colors.length >= 2 && (
+          <motion.div {...fadeUp} exit={{ opacity: 0, y: 8 }}>
+            <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
+              Contrast
+            </h2>
+            <ContrastPanel colors={colors} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  /* Status bar: color count summary */
+  const statusBar =
+    colors.length > 0 ? (
+      <span className="text-[10px] uppercase tracking-widest text-neutral-400">
+        {colors.length} color{colors.length > 1 ? 's' : ''}
+      </span>
+    ) : (
+      <span className="text-[10px] uppercase tracking-widest text-neutral-600">
+        Enter a color to get started
+      </span>
+    );
+
+  return (
+    <MiniAppShell
+      icon={Pipette}
+      title="Color Converter"
+      documentTitle="Color Converter"
+      onReset={handleReset}
+      panel={panel}
+      panelLabel="Color Input"
+      statusBar={statusBar}
+      centerContent={false}
+    >
+      <div className="max-w-2xl mx-auto w-full py-8 px-4">
+        <AnimatePresence mode="wait">
+          {colors.length > 0 ? (
+            <motion.div
+              key="color-list"
+              {...fadeScale}
+              className="space-y-2"
+            >
+              {colors.map((c, i) => (
+                <motion.div
+                  key={`${c.hex}-${i}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.05, ease }}
+                >
+                  <ColorRow color={c} index={i} onRemove={removeColor} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty-state"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3, ease }}
+              className="flex flex-col items-center justify-center py-24 text-center text-neutral-600"
+            >
+              <Pipette className="w-16 h-16 mx-auto mb-4 opacity-30" />
+              <p className="font-mono text-xs uppercase tracking-widest">
+                Enter a color in the panel to begin
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </MiniAppShell>
   );
 };
 

@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, Copy, Image as ImageIcon, Check } from 'lucide-react';
+import { Upload, Copy, Image as ImageIcon, Check, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useFaviconStore, FAVICON_SIZES, type GeneratedIcon } from '@/stores/faviconStore';
-import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { loadImage } from '@/utils/imageUtils';
 import { downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
@@ -284,13 +284,139 @@ export const FaviconPage: React.FC = () => {
 
   const isTransparentBg = backgroundColor === 'transparent';
 
+  /* ── Panel: controls (only shown when source is loaded) ── */
+  const panel = sourceUrl ? (
+    <div className="space-y-5">
+      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Settings</h2>
+
+      <BrandToolSelect value={brandId} onChange={setBrandId} />
+
+      {/* Background color */}
+      <div className="space-y-1.5">
+        <span className="text-[10px] font-mono text-neutral-500 uppercase">BG Color</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
+            className={cn(
+              'px-2 py-0.5 rounded text-[10px] font-mono transition-all duration-200 border',
+              isTransparentBg
+                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
+                : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600'
+            )}
+          >
+            None
+          </button>
+          {!isTransparentBg && (
+            <Input
+              type="text"
+              value={backgroundColor}
+              onChange={(e) => setBackgroundColor(e.target.value)}
+              className="h-6 w-24 text-[10px] font-mono bg-neutral-900 border-neutral-800"
+              placeholder="#ffffff"
+            />
+          )}
+          {!isTransparentBg && (
+            <input
+              type="color"
+              value={backgroundColor.startsWith('#') ? backgroundColor : '#ffffff'}
+              onChange={(e) => setBackgroundColor(e.target.value)}
+              className="w-6 h-6 rounded cursor-pointer border border-neutral-700 bg-transparent"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Border radius */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-mono text-neutral-500 uppercase">Radius</span>
+          <span className="text-[10px] font-mono text-neutral-500">{borderRadius}%</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="50"
+          step="1"
+          value={borderRadius}
+          onChange={(e) => setBorderRadius(parseInt(e.target.value))}
+          className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+        />
+      </div>
+
+      {/* Padding */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-mono text-neutral-500 uppercase">Padding</span>
+          <span className="text-[10px] font-mono text-neutral-500">{padding}%</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="20"
+          step="1"
+          value={padding}
+          onChange={(e) => setPadding(parseInt(e.target.value))}
+          className="w-full h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
+        />
+      </div>
+
+      <div className="h-px bg-neutral-800" />
+
+      {/* Generate button in panel */}
+      <Button
+        onClick={handleGenerate}
+        disabled={isGenerating}
+        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+        asChild
+      >
+        <motion.button whileTap={{ scale: 0.98 }} disabled={isGenerating}>
+          {isGenerating ? (
+            <GlitchLoader size={14} color="currentColor" />
+          ) : (
+            <ImageIcon size={14} />
+          )}
+          <span className="ml-2">{isGenerating ? 'Generating...' : 'Generate Icons'}</span>
+        </motion.button>
+      </Button>
+    </div>
+  ) : undefined;
+
+  /* ── Status bar: Generate + Download actions ── */
+  const statusBar = sourceUrl ? (
+    <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-widest">
+      <button
+        onClick={handleGenerate}
+        disabled={isGenerating}
+        className="text-brand-cyan hover:text-brand-cyan/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+      >
+        <ImageIcon className="w-3.5 h-3.5" />
+        {isGenerating ? 'Generating...' : 'Generate'}
+      </button>
+      {generatedIcons.length > 0 && (
+        <>
+          <span className="text-neutral-700">·</span>
+          <button
+            onClick={handleDownloadZip}
+            className="text-brand-cyan hover:text-brand-cyan/80 transition-colors flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download ZIP
+          </button>
+        </>
+      )}
+    </div>
+  ) : undefined;
+
   return (
-    <MiniToolShell
+    <MiniAppShell
       icon={ImageIcon}
       title="Favicon Generator"
+      documentTitle="Favicon Generator"
       onReset={handleReset}
-      showReset={!!sourceUrl}
-      centered={!sourceUrl}
+      panel={panel}
+      panelLabel="Settings"
+      statusBar={statusBar}
+      centerContent={!sourceUrl}
       dragDrop={{
         onDrop: handleDrop,
         onDragOver: handleDragOver,
@@ -341,14 +467,13 @@ export const FaviconPage: React.FC = () => {
             </motion.label>
           </motion.div>
         ) : (
-          /* Working state */
-          <motion.div key="workspace" {...fadeScale} className="space-y-6">
-            {/* Source preview + controls */}
-            <motion.div {...fadeUp} className="flex flex-wrap items-start gap-4">
+          /* Working state — centered max-width scrollable column */
+          <div className="max-w-3xl mx-auto w-full py-8 px-4">
+            <motion.div key="workspace" {...fadeScale} className="space-y-6">
               {/* Source preview */}
-              <div className="flex flex-col items-center gap-1.5">
+              <motion.div {...fadeUp} className="flex items-center gap-3">
                 <div
-                  className="w-20 h-20 rounded-2xl border border-neutral-800 overflow-hidden flex items-center justify-center duration-200"
+                  className="w-20 h-20 rounded-2xl border border-neutral-800 overflow-hidden flex items-center justify-center flex-shrink-0"
                   style={{
                     background:
                       'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 10px 10px',
@@ -356,226 +481,133 @@ export const FaviconPage: React.FC = () => {
                 >
                   <img src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
                 </div>
-                <span className="text-[10px] font-mono text-neutral-500 truncate max-w-[80px]">
+                <span className="text-[10px] font-mono text-neutral-500 truncate max-w-[200px]">
                   {fileName}
                 </span>
-              </div>
+              </motion.div>
 
-              {/* Controls */}
-              <div className="flex-1 min-w-[240px] space-y-3">
-                <BrandToolSelect value={brandId} onChange={setBrandId} />
-
-                {/* Background color */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
-                    BG Color
-                  </span>
-                  <button
-                    onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
-                    className={cn(
-                      'px-2 py-0.5 rounded text-[10px] font-mono transition-all duration-200 border',
-                      isTransparentBg
-                        ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
-                        : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600'
-                    )}
-                  >
-                    None
-                  </button>
-                  {!isTransparentBg && (
-                    <Input
-                      type="text"
-                      value={backgroundColor}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="h-6 w-24 text-[10px] font-mono bg-neutral-900 border-neutral-800"
-                      placeholder="#ffffff"
-                    />
-                  )}
-                  {!isTransparentBg && (
-                    <input
-                      type="color"
-                      value={backgroundColor.startsWith('#') ? backgroundColor : '#ffffff'}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="w-6 h-6 rounded cursor-pointer border border-neutral-700 bg-transparent"
-                    />
-                  )}
-                </div>
-
-                {/* Border radius */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
-                    Radius
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="1"
-                    value={borderRadius}
-                    onChange={(e) => setBorderRadius(parseInt(e.target.value))}
-                    className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                  />
-                  <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
-                    {borderRadius}%
-                  </span>
-                </div>
-
-                {/* Padding */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase w-16 flex-shrink-0">
-                    Padding
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="20"
-                    step="1"
-                    value={padding}
-                    onChange={(e) => setPadding(parseInt(e.target.value))}
-                    className="flex-1 h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
-                  />
-                  <span className="text-[10px] font-mono text-neutral-500 w-8 text-right">
-                    {padding}%
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Generate button */}
-            <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.05 }}>
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
-                asChild
-              >
-                <motion.button whileTap={{ scale: 0.98 }} disabled={isGenerating}>
-                  {isGenerating ? (
-                    <GlitchLoader size={14} color="currentColor" />
-                  ) : (
-                    <ImageIcon size={14} />
-                  )}
-                  <span className="ml-2">{isGenerating ? 'Generating...' : 'Generate Icons'}</span>
-                </motion.button>
-              </Button>
-            </motion.div>
-
-            {/* Generation animation */}
-            <AnimatePresence>
-              {isGenerating && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.25 }}
-                  className="py-6"
-                >
-                  <FlyingPaperLoader label="Generating icons..." />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Generated icons grid */}
-            <AnimatePresence>
-              {generatedIcons.length > 0 && (
-                <motion.div {...fadeScale} className="space-y-6">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {generatedIcons.map((icon, i) => (
-                      <motion.div
-                        key={icon.size}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, ease, delay: i * 0.05 }}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-neutral-800 bg-neutral-950/40 duration-200"
-                      >
-                        <div
-                          className="w-16 h-16 rounded flex items-center justify-center overflow-hidden"
-                          style={{
-                            background:
-                              'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 8px 8px',
-                          }}
-                        >
-                          <img
-                            src={icon.url}
-                            alt={`${icon.size}x${icon.size}`}
-                            className="max-w-full max-h-full object-contain"
-                            style={{
-                              imageRendering: icon.size <= 32 ? 'pixelated' : 'auto',
-                            }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-mono text-neutral-300">
-                          {icon.size}x{icon.size}
-                        </span>
-                        <span className="text-[10px] font-mono text-neutral-600 uppercase">
-                          {SIZE_LABELS[icon.size] || ''}
-                        </span>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Code snippets */}
+              {/* Generation animation */}
+              <AnimatePresence>
+                {isGenerating && (
                   <motion.div
-                    {...fadeUp}
-                    transition={{ ...fadeUp.transition, delay: 0.15 }}
-                    className="space-y-3"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25 }}
+                    className="py-6"
                   >
-                    <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                      HTML Tags
-                    </h2>
-                    <div className="relative">
-                      <pre className="p-3 rounded-2xl border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200">
-                        {buildHtmlSnippet()}
-                      </pre>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleCopySnippet('html', buildHtmlSnippet())}
-                        className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
-                        title="Copy"
-                      >
-                        {copiedSnippet === 'html' ? <Check size={12} /> : <Copy size={12} />}
-                      </motion.button>
-                    </div>
-
-                    <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                      Web Manifest
-                    </h2>
-                    <div className="relative">
-                      <pre className="p-3 rounded-2xl border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200">
-                        {buildManifestSnippet()}
-                      </pre>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleCopySnippet('manifest', buildManifestSnippet())}
-                        className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
-                        title="Copy"
-                      >
-                        {copiedSnippet === 'manifest' ? <Check size={12} /> : <Copy size={12} />}
-                      </motion.button>
-                    </div>
+                    <FlyingPaperLoader label="Generating icons..." />
                   </motion.div>
+                )}
+              </AnimatePresence>
 
-                  {/* Quick Actions — download, copy, send to other tools */}
-                  <QuickActions
-                    toolId="favicon"
-                    outputMime="image/png"
-                    summary={`${generatedIcons.length} favicon sizes generated`}
-                    onDownloadAll={handleDownloadZip}
-                    assetData={
-                      generatedIcons.find((i) => i.size === 512)?.url
-                        ? {
-                            imageUrl: generatedIcons.find((i) => i.size === 512)!.url,
-                            mimeType: 'image/png',
-                            label: 'favicon-512x512.png',
-                          }
-                        : undefined
-                    }
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+              {/* Generated icons grid */}
+              <AnimatePresence>
+                {generatedIcons.length > 0 && (
+                  <motion.div {...fadeScale} className="space-y-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {generatedIcons.map((icon, i) => (
+                        <motion.div
+                          key={icon.size}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, ease, delay: i * 0.05 }}
+                          className="flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-neutral-800 bg-neutral-950/40 duration-200"
+                        >
+                          <div
+                            className="w-16 h-16 rounded flex items-center justify-center overflow-hidden"
+                            style={{
+                              background:
+                                'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 8px 8px',
+                            }}
+                          >
+                            <img
+                              src={icon.url}
+                              alt={`${icon.size}x${icon.size}`}
+                              className="max-w-full max-h-full object-contain"
+                              style={{
+                                imageRendering: icon.size <= 32 ? 'pixelated' : 'auto',
+                              }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-mono text-neutral-300">
+                            {icon.size}x{icon.size}
+                          </span>
+                          <span className="text-[10px] font-mono text-neutral-600 uppercase">
+                            {SIZE_LABELS[icon.size] || ''}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Code snippets */}
+                    <motion.div
+                      {...fadeUp}
+                      transition={{ ...fadeUp.transition, delay: 0.15 }}
+                      className="space-y-3"
+                    >
+                      <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                        HTML Tags
+                      </h2>
+                      <div className="relative">
+                        <pre className="p-3 rounded-2xl border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200">
+                          {buildHtmlSnippet()}
+                        </pre>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleCopySnippet('html', buildHtmlSnippet())}
+                          className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
+                          title="Copy"
+                        >
+                          {copiedSnippet === 'html' ? <Check size={12} /> : <Copy size={12} />}
+                        </motion.button>
+                      </div>
+
+                      <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                        Web Manifest
+                      </h2>
+                      <div className="relative">
+                        <pre className="p-3 rounded-2xl border border-neutral-800 bg-neutral-950/60 text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200">
+                          {buildManifestSnippet()}
+                        </pre>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleCopySnippet('manifest', buildManifestSnippet())}
+                          className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
+                          title="Copy"
+                        >
+                          {copiedSnippet === 'manifest' ? (
+                            <Check size={12} />
+                          ) : (
+                            <Copy size={12} />
+                          )}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+
+                    {/* Quick Actions — download, copy, send to other tools */}
+                    <QuickActions
+                      toolId="favicon"
+                      outputMime="image/png"
+                      summary={`${generatedIcons.length} favicon sizes generated`}
+                      onDownloadAll={handleDownloadZip}
+                      assetData={
+                        generatedIcons.find((i) => i.size === 512)?.url
+                          ? {
+                              imageUrl: generatedIcons.find((i) => i.size === 512)!.url,
+                              mimeType: 'image/png',
+                              label: 'favicon-512x512.png',
+                            }
+                          : undefined
+                      }
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </MiniToolShell>
+    </MiniAppShell>
   );
 };

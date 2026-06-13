@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { pipelineApi, type AssetSource } from '@/services/pipelineApi';
 import { getCompatibleTargets, type ToolDef } from '@/lib/toolRegistry';
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { toast } from 'sonner';
 
 interface SendToButtonProps {
@@ -43,25 +44,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
 
   const targets = useMemo(() => getCompatibleTargets(outputMime, source), [outputMime, source]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
+  useClickOutside(containerRef, () => setOpen(false), { enabled: open });
 
   const handleSend = async (e: React.MouseEvent, target: ToolDef) => {
     e.stopPropagation();

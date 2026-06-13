@@ -4,7 +4,7 @@
 // Placeholders editáveis ("Design Here", "(!) Edite Aqui", "[DOUBLE CLICK TO EDIT]"…).
 // Pontos sem escape casam "." e " " — design.here casa "Design Here".
 export const SO_TARGET =
-  /double.click|your.design|place.here|smart.object|\bartwork\b|\bdesign.here\b|\bedit(e|ar)?\b|\barte\b|\baqui\b|\bhere\b/i;
+  /double.click|your.(design|image|art|logo)|place.here|smart.object|\bartwork\b|\bdesign.here\b|\bedit(e|ar)?\b|\barte\b|\baqui\b|\bhere\b|\bchange\b|\breplace\b|\btroc\w*|\bcoloqu\w*|\binsir\w*|\bsubstitu\w*|sua\s*(arte|imagem|logo)/i;
 
 // Só padrões INEQUIVOCAMENTE watermark/instrução — nunca camadas de conteúdo real.
 export const BRAND_HIDE =

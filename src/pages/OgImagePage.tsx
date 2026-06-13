@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image, Code, Upload, X } from 'lucide-react';
+import { Image, Code, Upload, X, Download, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
-import { MiniToolShell } from '@/components/shared/MiniToolShell';
+import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { QuickActions } from '@/components/shared/QuickActions';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
@@ -12,7 +12,6 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { loadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 const OG_WIDTH = 1200;
@@ -314,220 +313,242 @@ export const OgImagePage: React.FC = () => {
     else toast.error('Copy failed');
   }, []);
 
-  return (
-    <MiniToolShell icon={Image} title="OG Image Generator" maxWidth="5xl" onReset={reset}>
-      {/* Two-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        {/* Preview */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease }}
-          className="relative rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950/40"
-        >
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="OG Image Preview"
-              className="w-full h-auto"
-              style={{ aspectRatio: `${width}/${height}` }}
-            />
-          ) : (
-            <div
-              className="w-full flex items-center justify-center text-neutral-600 text-xs font-mono"
-              style={{ aspectRatio: `${width}/${height}` }}
+  const handleReset = useCallback(() => {
+    reset();
+    setPreviewUrl('');
+  }, [reset]);
+
+  /* ---------------------------------------------------------------- */
+  /*  Panel                                                            */
+  /* ---------------------------------------------------------------- */
+
+  const panel = (
+    <div className="space-y-5">
+      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Settings</h2>
+
+      {/* Brand select */}
+      <BrandToolSelect value={brandId} onChange={setBrandId} />
+
+      {/* Template selector */}
+      <div className="space-y-2">
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Template</label>
+        <div className="flex gap-2 flex-wrap">
+          {TEMPLATES.map((tpl) => (
+            <motion.button
+              key={tpl.id}
+              onClick={() => setTemplate(tpl.id)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex flex-col items-center gap-1 group"
+              title={tpl.label}
             >
-              Preview
-            </div>
-          )}
-          <span className="absolute bottom-2 right-2 text-[10px] font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
-            {width} x {height}
-          </span>
-        </motion.div>
-
-        {/* Controls */}
-        <motion.div
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.35, delay: 0.1, ease }}
-          className="space-y-4"
-        >
-          {/* Brand select */}
-          <BrandToolSelect value={brandId} onChange={setBrandId} />
-
-          {/* Template selector */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-              Template
-            </span>
-            <div className="flex gap-2">
-              {TEMPLATES.map((tpl) => (
-                <motion.button
-                  key={tpl.id}
-                  onClick={() => setTemplate(tpl.id)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center gap-1 group"
-                  title={tpl.label}
-                >
-                  <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
-                  <span
-                    className={cn(
-                      'text-[10px] font-mono uppercase tracking-wider',
-                      template === tpl.id
-                        ? 'text-brand-cyan'
-                        : 'text-neutral-600 group-hover:text-neutral-400'
-                    )}
-                  >
-                    {tpl.label}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
-          {/* Title */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-              Title
-            </span>
-            <textarea
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Your blog post title"
-              rows={2}
-              className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
-            />
-          </div>
-
-          {/* Subtitle */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-              Subtitle
-            </span>
-            <Input
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="A brief description"
-              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
-            />
-          </div>
-
-          {/* Author */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-              Author
-            </span>
-            <Input
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="Author name"
-              className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
-            />
-          </div>
-
-          {/* Logo upload */}
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-              Logo
-            </span>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
-                <Upload size={10} />
-                Upload
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleLogoUpload}
-                />
-              </label>
-              {logoUrl && (
-                <button
-                  onClick={() => setLogoUrl('')}
-                  className="text-neutral-600 hover:text-neutral-300 transition-colors"
-                >
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Background image upload (photo template only) */}
-          {template === 'photo' && (
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-                Background Image
-              </span>
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
-                  <Upload size={10} />
-                  Upload
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleBgUpload}
-                  />
-                </label>
-                {backgroundImageUrl && (
-                  <button
-                    onClick={() => setBackgroundImageUrl('')}
-                    className="text-neutral-600 hover:text-neutral-300 transition-colors"
-                  >
-                    <X size={12} />
-                  </button>
+              <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
+              <span
+                className={cn(
+                  'text-[10px] font-mono uppercase tracking-wider',
+                  template === tpl.id
+                    ? 'text-brand-cyan'
+                    : 'text-neutral-600 group-hover:text-neutral-400'
                 )}
-              </div>
-            </div>
-          )}
-
-          {/* Colors */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-              Colors
-            </span>
-            <div className="flex gap-3">
-              <ColorInput label="BG" value={backgroundColor} onChange={setBackgroundColor} />
-              <ColorInput label="Accent" value={accentColor} onChange={setAccentColor} />
-              <ColorInput label="Text" value={textColor} onChange={setTextColor} />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col gap-2 pt-2">
-            {previewUrl && (
-              <QuickActions
-                toolId="og-image"
-                outputMime="image/png"
-                summary="OG image generated"
-                onDownloadAll={handleDownload}
-                onCopy={handleCopy}
-                assetData={
-                  previewUrl
-                    ? {
-                        imageBase64: previewUrl,
-                        mimeType: 'image/png',
-                        label: 'og-image.png',
-                      }
-                    : undefined
-                }
-              />
-            )}
-            <motion.div whileTap={{ scale: 0.98 }}>
-              <Button
-                onClick={handleCopyMeta}
-                variant="outline"
-                className="w-full font-mono text-xs uppercase tracking-widest border-neutral-700"
               >
-                <Code size={14} />
-                <span className="ml-2">Copy Meta Tags</span>
-              </Button>
-            </motion.div>
-          </div>
-        </motion.div>
+                {tpl.label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
       </div>
-    </MiniToolShell>
+
+      {/* Title */}
+      <div>
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Title</label>
+        <textarea
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Your blog post title"
+          rows={2}
+          className="w-full bg-neutral-950/60 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 resize-none"
+        />
+      </div>
+
+      {/* Subtitle */}
+      <div>
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Subtitle</label>
+        <Input
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          placeholder="A brief description"
+          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
+        />
+      </div>
+
+      {/* Author */}
+      <div>
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Author</label>
+        <Input
+          value={authorName}
+          onChange={(e) => setAuthorName(e.target.value)}
+          placeholder="Author name"
+          className="bg-neutral-950/60 border-neutral-800 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 focus:border-neutral-600"
+        />
+      </div>
+
+      {/* Logo upload */}
+      <div>
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Logo</label>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
+            <Upload size={10} />
+            Upload
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleLogoUpload}
+            />
+          </label>
+          {logoUrl && (
+            <button
+              onClick={() => setLogoUrl('')}
+              className="text-neutral-600 hover:text-neutral-300 transition-colors"
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Background image upload (photo template only) */}
+      {template === 'photo' && (
+        <div>
+          <label className="block text-xs font-medium text-neutral-300 mb-2">
+            Background Image
+          </label>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
+              <Upload size={10} />
+              Upload
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleBgUpload}
+              />
+            </label>
+            {backgroundImageUrl && (
+              <button
+                onClick={() => setBackgroundImageUrl('')}
+                className="text-neutral-600 hover:text-neutral-300 transition-colors"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Colors */}
+      <div>
+        <label className="block text-xs font-medium text-neutral-300 mb-2">Colors</label>
+        <div className="flex gap-3">
+          <ColorInput label="BG" value={backgroundColor} onChange={setBackgroundColor} />
+          <ColorInput label="Accent" value={accentColor} onChange={setAccentColor} />
+          <ColorInput label="Text" value={textColor} onChange={setTextColor} />
+        </div>
+      </div>
+
+      {/* QuickActions inside panel */}
+      {previewUrl && (
+        <QuickActions
+          toolId="og-image"
+          outputMime="image/png"
+          summary="OG image generated"
+          onDownloadAll={handleDownload}
+          onCopy={handleCopy}
+          assetData={{
+            imageBase64: previewUrl,
+            mimeType: 'image/png',
+            label: 'og-image.png',
+          }}
+        />
+      )}
+    </div>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /*  Status bar                                                       */
+  /* ---------------------------------------------------------------- */
+
+  const statusBar = previewUrl ? (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={handleDownload}
+        className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+      >
+        <Download className="w-3.5 h-3.5" />
+        Download PNG
+      </button>
+      <span className="text-neutral-700 select-none">·</span>
+      <button
+        onClick={handleCopy}
+        className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+      >
+        <Copy className="w-3.5 h-3.5" />
+        Copy Image
+      </button>
+      <span className="text-neutral-700 select-none">·</span>
+      <button
+        onClick={handleCopyMeta}
+        className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+      >
+        <Code className="w-3.5 h-3.5" />
+        Copy Meta Tags
+      </button>
+    </div>
+  ) : (
+    <span className="text-[10px] uppercase tracking-widest text-neutral-600">
+      Configure your OG image
+    </span>
+  );
+
+  /* ---------------------------------------------------------------- */
+  /*  Render                                                           */
+  /* ---------------------------------------------------------------- */
+
+  return (
+    <MiniAppShell
+      icon={Image}
+      title="OG Image Generator"
+      documentTitle="OG Image Generator"
+      onReset={handleReset}
+      panel={panel}
+      statusBar={statusBar}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease }}
+        className="relative rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-950/40 shadow-2xl shadow-black/40 w-full max-w-2xl"
+      >
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            alt="OG Image Preview"
+            className="w-full h-auto"
+            style={{ aspectRatio: `${width}/${height}` }}
+          />
+        ) : (
+          <div
+            className="w-full flex items-center justify-center text-neutral-600 text-xs font-mono"
+            style={{ aspectRatio: `${width}/${height}` }}
+          >
+            Preview
+          </div>
+        )}
+        <span className="absolute bottom-2 right-2 text-[10px] font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
+          {width} x {height}
+        </span>
+      </motion.div>
+    </MiniAppShell>
   );
 };
 
