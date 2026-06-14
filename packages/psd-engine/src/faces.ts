@@ -39,6 +39,15 @@ export function computeFaces(smartObjects: FaceSo[]): Face[] {
     else groups.set(key, [so]);
   }
 
+  // Quando o template MARCA explicitamente onde vai a arte (design/arte/edite/
+  // aqui/your design…), só essas SOs são faces editáveis — os demais smart objects
+  // (bg, ambient, glass, iphone isolated…) são CENA e devem ser baked como camada,
+  // não viram face vazia (que sumiria no render). Sem nenhum marcador no PSD,
+  // mantém a heurística antiga (SO visível não-decorativa).
+  const anyTarget = smartObjects.some(
+    (so) => SO_TARGET.test(so.name || '') || SO_TARGET.test(so.path || '')
+  );
+
   const faces: Face[] = [];
   for (const [key, members] of groups) {
     const nameTarget = (so: FaceSo) => SO_TARGET.test(so.name || '');
@@ -46,7 +55,11 @@ export function computeFaces(smartObjects: FaceSo[]): Face[] {
     const hasTarget = members.some((so) => nameTarget(so) || pathTarget(so));
     const visibleNonDecor = members.filter((so) => !so.hidden && !SO_DECOR.test(so.name || ''));
 
-    if (!hasTarget && visibleNonDecor.length === 0) continue;
+    if (anyTarget) {
+      if (!hasTarget) continue; // template marcou as faces → ignora o resto (cena)
+    } else if (visibleNonDecor.length === 0) {
+      continue;
+    }
 
     // Representante: o que bate SO_TARGET no NOME (é o que o template manda
     // editar), senão no path, senão o visível não-decorativo, senão o primeiro.

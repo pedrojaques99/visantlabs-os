@@ -57,6 +57,31 @@ describe('computeFaces', () => {
     expect(faces[0].innerWidth).toBe(300);
   });
 
+  it('quando há marcador de arte, NÃO trata SOs de cena (bg/ambient) como face', () => {
+    // Padrão BR Outdoor/Sign: a foto de fundo é um smart object ("BG") + a face "Arte Aqui".
+    const faces = computeFaces([
+      so({ name: 'BG', linkId: 'bg', innerWidth: 4000, innerHeight: 2000 }),
+      so({ name: 'Ambient', linkId: 'amb', innerWidth: 4000, innerHeight: 2000 }),
+      so({ name: 'Arte Aqui', linkId: 'art', innerWidth: 3000, innerHeight: 1200 }),
+    ]);
+    expect(faces).toHaveLength(1);
+    expect(faces[0].name.toLowerCase()).not.toMatch(/\bbg\b|ambient/);
+    expect(faces[0].smartObject).toBe('Arte Aqui');
+  });
+
+  it('sem nenhum marcador, mantém faces de conteúdo nomeadas (ex.: caixa "Face Frente/Lado")', () => {
+    const faces = computeFaces([
+      so({ name: '- Face Frente 01', linkId: 'f1' }),
+      so({ name: '- Face Lado 02', linkId: 'f2' }),
+      so({ name: 'box 5', linkId: 'b5', innerWidth: 4000, innerHeight: 2000 }),
+    ]);
+    // Nenhum bate SO_TARGET → heurística antiga (visível não-decorativo) mantém as faces de conteúdo.
+    expect(faces.length).toBeGreaterThanOrEqual(2);
+    expect(faces.map((f) => f.smartObject)).toEqual(
+      expect.arrayContaining(['- Face Frente 01', '- Face Lado 02'])
+    );
+  });
+
   it('suffixes duplicate face names for the UI', () => {
     const faces = computeFaces([
       so({ name: 'Arte', linkId: 'A' }),
