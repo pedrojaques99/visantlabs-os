@@ -8,7 +8,7 @@ export const SO_TARGET =
 
 // Só padrões INEQUIVOCAMENTE watermark/instrução — nunca camadas de conteúdo real.
 export const BRAND_HIDE =
-  /\[boxy\]|remove\s*paper|\byour\s+artwork\b|\bimage\s+here\b|\btext\s+here\b|\blogo\s+here\b|delete\s+(essa\s+camada|this)\b/i;
+  /\[boxy\]|remove\s*paper|\byour\s+artwork\b|\bimage\s+here\b|\btext\s+here\b|\blogo\s+here\b|\bdelete\b|essa\s+camada|ctrl\s*\+\s*s/i;
 
 // Smart objects decorativos (sombra/luz/textura) — nunca são faces editáveis.
 export const SO_DECOR =
