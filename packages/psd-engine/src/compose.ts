@@ -8,6 +8,7 @@
 //   - placedLayer.transform/nonAffineTransform são 8 números (quad de cantos)
 
 import type { CreateCanvas, ReplacedLayer } from './types.js';
+import { buildAdjustmentLut } from './adjustments.js';
 
 export type { CreateCanvas, ReplacedLayer } from './types.js';
 
@@ -280,6 +281,15 @@ function contentCanvas(layer: any, W: number, H: number, cc: CreateCanvas) {
 function drawOne(ctx: any, layer: any, clipped: any[], W: number, H: number, cc: CreateCanvas) {
   const alpha = layerAlpha(layer);
   if (alpha <= 0) return;
+
+  // Adjustment layer (Levels/Curves/Brightness): sem pixels próprios — aplica um
+  // LUT nos pixels já compostos ABAIXO (no container atual). Sem isto o contraste
+  // do PS some e o render fica "chapado/cinza".
+  if (layer.adjustment && !layer.canvas) {
+    applyAdjustment(ctx, layer, alpha, W, H);
+    return;
+  }
+
   const blend = BLEND_MAP[layer.blendMode ?? 'normal'] ?? 'source-over';
 
   // Atalho: grupo passthrough sem máscara/clip/opacity renderiza direto no pai
@@ -319,6 +329,62 @@ function drawOne(ctx: any, layer: any, clipped: any[], W: number, H: number, cc:
   ctx.globalCompositeOperation = passthrough && layer.children ? 'source-over' : blend;
   ctx.drawImage(content, 0, 0);
   ctx.restore();
+}
+
+/** Alpha (0..255) da máscara raster por pixel, full-size; default = defaultColor. */
+function readMaskAlpha(layer: any, W: number, H: number): Uint8Array {
+  const out = new Uint8Array(W * H);
+  const mask = layer.mask;
+  out.fill(mask.defaultColor ?? 255);
+  const mc = mask.canvas;
+  const mdata = mc.getContext('2d').getImageData(0, 0, mc.width, mc.height).data;
+  const ml = Math.floor(mask.left ?? 0);
+  const mt = Math.floor(mask.top ?? 0);
+  const mw = mc.width;
+  const mh = mc.height;
+  for (let y = 0; y < H; y++) {
+    const my = y - mt;
+    if (my < 0 || my >= mh) continue;
+    for (let x = 0; x < W; x++) {
+      const mx = x - ml;
+      if (mx < 0 || mx >= mw) continue;
+      out[y * W + x] = mdata[(my * mw + mx) * 4];
+    }
+  }
+  return out;
+}
+
+/**
+ * Aplica um adjustment layer (LUT) sobre os pixels já compostos em `ctx`,
+ * respeitando opacity da camada e máscara raster (se houver).
+ */
+function applyAdjustment(ctx: any, layer: any, alpha: number, W: number, H: number) {
+  const lut = buildAdjustmentLut(layer.adjustment);
+  if (!lut) return; // tipo não suportado → no-op (como antes)
+
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  const maskA = hasUsableMask(layer) ? readMaskAlpha(layer, W, H) : null;
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    if (d[i + 3] === 0) continue; // pixel transparente → nada abaixo pra ajustar
+    let a = alpha;
+    if (maskA) a *= maskA[p] / 255;
+    if (a <= 0) continue;
+    const nr = lut.r[d[i]];
+    const ng = lut.g[d[i + 1]];
+    const nb = lut.b[d[i + 2]];
+    if (a >= 1) {
+      d[i] = nr;
+      d[i + 1] = ng;
+      d[i + 2] = nb;
+    } else {
+      d[i] += (nr - d[i]) * a;
+      d[i + 1] += (ng - d[i + 1]) * a;
+      d[i + 2] += (nb - d[i + 2]) * a;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
 function hasUsableMask(layer: any): boolean {

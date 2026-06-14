@@ -12,6 +12,9 @@ export {
 
 export { computeFaces } from './faces.js';
 
+export { buildAdjustmentLut } from './adjustments.js';
+export type { RgbLut } from './adjustments.js';
+
 export { SO_TARGET, BRAND_HIDE, SO_DECOR } from './constants.js';
 
 export type {
