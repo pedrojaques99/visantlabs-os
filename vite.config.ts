@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => {
         '@': aliasPath,
         // Resolve local workspace packages directly from source so Vercel
         // doesn't need a pre-built dist/ (dist is gitignored).
+        // IMPORTANT: subpath aliases must come before the root alias so Vite's
+        // prefix-replacement logic picks the most specific match first.
         '@visant/psd-engine/adapters/browser': path.resolve(
           __dirname,
           'packages/psd-engine/src/adapters/browser.ts'
@@ -65,6 +67,16 @@ export default defineConfig(({ mode }) => {
         '@visant/print-fx/halftone': path.resolve(
           __dirname,
           'packages/print-fx/src/halftone/index.ts'
+        ),
+        '@visant/print-fx/presets': path.resolve(__dirname, 'packages/print-fx/src/presets.ts'),
+        '@visant/print-fx/riso': path.resolve(
+          __dirname,
+          'packages/print-fx/src/riso/index.ts'
+        ),
+        '@visant/print-fx/gl': path.resolve(__dirname, 'packages/print-fx/src/gl/index.ts'),
+        '@visant/print-fx/shaders': path.resolve(
+          __dirname,
+          'packages/print-fx/src/shaders/index.ts'
         ),
         '@visant/print-fx': path.resolve(__dirname, 'packages/print-fx/src/index.ts'),
         'onnxruntime-web/webgpu': path.resolve(
