@@ -270,8 +270,8 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                           ? 'bg-neutral-200/30'
                           : 'bg-neutral-800/5'
                         : isLight
-                        ? 'hover:bg-neutral-200/50'
-                        : 'hover:bg-neutral-800/50'
+                          ? 'hover:bg-neutral-200/50'
+                          : 'hover:bg-neutral-800/50'
                     )}
                     style={{
                       color: isActive ? textColors.primary : textColors.muted,

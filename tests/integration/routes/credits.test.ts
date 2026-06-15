@@ -32,7 +32,7 @@ describe('GET /api/usage/history', () => {
     // Array or { history: [], records: [] } — don't over-specify
     const history = Array.isArray(res.body)
       ? res.body
-      : res.body?.history ?? res.body?.items ?? res.body?.records;
+      : (res.body?.history ?? res.body?.items ?? res.body?.records);
     expect(history).toBeDefined();
   });
 });

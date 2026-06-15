@@ -931,7 +931,10 @@ export const TOOLS = [
     inputSchema: {
       type: 'object' as const,
       properties: {
-        brandId: { type: 'string', description: 'Brand guideline ID (from list_brand_guidelines).' },
+        brandId: {
+          type: 'string',
+          description: 'Brand guideline ID (from list_brand_guidelines).',
+        },
         limit: { type: 'number', default: 12, maximum: 60 },
         hasPsd: {
           type: 'boolean',
@@ -949,7 +952,10 @@ export const TOOLS = [
     inputSchema: {
       type: 'object' as const,
       properties: {
-        brandId: { type: 'string', description: 'Brand whose logo will be applied (omit if artUrl given).' },
+        brandId: {
+          type: 'string',
+          description: 'Brand whose logo will be applied (omit if artUrl given).',
+        },
         refId: { type: 'string', description: 'Library reference ID (from mockup_store_suggest).' },
         psdPath: { type: 'string', description: 'Direct PSD path on disk (alternative to refId).' },
         artUrl: { type: 'string', description: 'Custom artwork URL instead of the brand logo.' },
@@ -958,13 +964,19 @@ export const TOOLS = [
           enum: ['primary', 'dark', 'light', 'icon', 'accent', 'custom'],
           description: 'Which logo variant to use. Default: primary.',
         },
-        smartObject: { type: 'string', description: 'Smart object name (auto-detected if omitted).' },
+        smartObject: {
+          type: 'string',
+          description: 'Smart object name (auto-detected if omitted).',
+        },
         mode: {
           type: 'string',
           enum: ['contain', 'cover', 'stretch'],
           description: 'Art framing. Default: contain for logos, cover for artUrl.',
         },
-        bg: { type: 'string', description: 'Hex background for contain letterbox (default transparent).' },
+        bg: {
+          type: 'string',
+          description: 'Hex background for contain letterbox (default transparent).',
+        },
         preview: { type: 'boolean', default: false, description: 'Fast low-res JPEG preview.' },
         wait: { type: 'boolean', default: true, description: 'Block until the render finishes.' },
       },

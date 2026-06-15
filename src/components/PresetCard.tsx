@@ -220,8 +220,8 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 migrated.difficulty === 'beginner'
                   ? 'text-success'
                   : migrated.difficulty === 'intermediate'
-                  ? 'text-warning'
-                  : 'text-destructive'
+                    ? 'text-warning'
+                    : 'text-destructive'
               )}
             >
               {migrated.difficulty.slice(0, 3)}

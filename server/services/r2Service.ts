@@ -844,7 +844,11 @@ const STORAGE_LIMIT_PREMIUM = 1024 * 1024 * 1024; // 1 GB
 const STORAGE_LIMIT_ADMIN = Number.MAX_SAFE_INTEGER;
 
 export class StorageLimitExceededError extends Error {
-  constructor(public used: number, public limit: number, public fileSize: number) {
+  constructor(
+    public used: number,
+    public limit: number,
+    public fileSize: number
+  ) {
     super(`Storage limit exceeded.`);
     this.name = 'StorageLimitExceededError';
   }

@@ -1040,8 +1040,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                                     tc.status === 'error'
                                       ? 'bg-destructive/5 border-destructive/20 text-destructive'
                                       : tc.status === 'running'
-                                      ? 'bg-white/5 border-white/10 text-neutral-200'
-                                      : 'bg-white/[0.03] border-neutral-800 text-neutral-400'
+                                        ? 'bg-white/5 border-white/10 text-neutral-200'
+                                        : 'bg-white/[0.03] border-neutral-800 text-neutral-400'
                                   )}
                                 >
                                   {tc.status === 'running' ? (
@@ -1137,8 +1137,8 @@ export const AdminChat: React.FC<AdminChatProps> = ({
                               mode === 'layers'
                                 ? 'Texto via layers editáveis (sem texto na imagem)'
                                 : mode === 'image'
-                                ? 'Texto baked na imagem Gemini (sem layers de texto)'
-                                : 'Texto na imagem + layers (pode conflitar)'
+                                  ? 'Texto baked na imagem Gemini (sem layers de texto)'
+                                  : 'Texto na imagem + layers (pode conflitar)'
                             }
                           >
                             {mode === 'layers' ? 'Layers' : mode === 'image' ? 'Img' : 'Ambos'}

@@ -41,9 +41,8 @@ const glFactory = vi.fn((_w: number, _h: number, _opts?: any) => makeFakeGL());
 
 vi.mock('gl', () => ({ default: glFactory }));
 
-const { acquireSharedContext, invalidateSharedContext } = await import(
-  '../../../../server/services/imageLab/glContext.js'
-);
+const { acquireSharedContext, invalidateSharedContext } =
+  await import('../../../../server/services/imageLab/glContext.js');
 
 describe('glContext — shared singleton + serialization', () => {
   beforeEach(() => {
@@ -108,11 +107,7 @@ describe('glContext — shared singleton + serialization', () => {
     secondCtx.release();
 
     expect(secondResolved).toBe(true);
-    expect(order).toEqual([
-      'first-acquired',
-      'first-released',
-      'second-acquired',
-    ]);
+    expect(order).toEqual(['first-acquired', 'first-released', 'second-acquired']);
     // Still the same single context — never two live at once.
     expect(glFactory).toHaveBeenCalledTimes(1);
   });

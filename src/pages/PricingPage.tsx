@@ -696,7 +696,6 @@ export const PricingPage: React.FC = () => {
                       </div>
                     </GlassPanel>
                   </div>
-
                 </div>
               </TabsContent>
             </Tabs>

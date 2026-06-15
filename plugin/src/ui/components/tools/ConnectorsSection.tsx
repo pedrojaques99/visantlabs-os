@@ -287,8 +287,8 @@ export function ConnectorsSection() {
             dotState === 'err'
               ? 'text-red-400/80'
               : dotState === 'on'
-              ? 'text-emerald-400/70'
-              : 'text-white/35'
+                ? 'text-emerald-400/70'
+                : 'text-white/35'
           }`}
         >
           {status}

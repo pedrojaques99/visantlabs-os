@@ -334,9 +334,9 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                   {searchQuery
                     ? t('workflows.library.noResults') || 'No workflows found'
                     : activeTab === 'my'
-                    ? t('workflows.library.noWorkflows') || 'No workflows yet'
-                    : t('workflows.library.noCommunityWorkflows') ||
-                      'No community workflows available'}
+                      ? t('workflows.library.noWorkflows') || 'No workflows yet'
+                      : t('workflows.library.noCommunityWorkflows') ||
+                        'No community workflows available'}
                 </p>
               </div>
             ) : (

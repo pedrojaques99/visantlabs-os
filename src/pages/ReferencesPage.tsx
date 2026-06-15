@@ -165,7 +165,10 @@ export const ReferencesPage: React.FC = () => {
 
   // facets once
   useEffect(() => {
-    referencesApi.facets().then(setFacets).catch(() => {});
+    referencesApi
+      .facets()
+      .then(setFacets)
+      .catch(() => {});
   }, []);
 
   // debounce the search box (instant search)
@@ -231,7 +234,8 @@ export const ReferencesPage: React.FC = () => {
     try {
       const data = await referencesApi.similarTo(ref.id, 40);
       setSimilar({ label: `parecidas com "${ref.name}"`, items: data.references });
-      if (data.references.length === 0) toast.info('Sem parecidas ainda — popule mais a biblioteca');
+      if (data.references.length === 0)
+        toast.info('Sem parecidas ainda — popule mais a biblioteca');
     } catch (e: any) {
       toast.error(e.message || 'Erro ao buscar parecidas');
       setSimilar(null);
@@ -245,7 +249,9 @@ export const ReferencesPage: React.FC = () => {
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
-      const item = Array.from(e.clipboardData?.items || []).find((i) => i.type.startsWith('image/'));
+      const item = Array.from(e.clipboardData?.items || []).find((i) =>
+        i.type.startsWith('image/')
+      );
       const file = item?.getAsFile();
       if (file) {
         e.preventDefault();
@@ -268,8 +274,10 @@ export const ReferencesPage: React.FC = () => {
     if (lightboxIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxIndex(null);
-      else if (e.key === 'ArrowRight') setLightboxIndex((i) => (i === null ? i : Math.min(grid.length - 1, i + 1)));
-      else if (e.key === 'ArrowLeft') setLightboxIndex((i) => (i === null ? i : Math.max(0, i - 1)));
+      else if (e.key === 'ArrowRight')
+        setLightboxIndex((i) => (i === null ? i : Math.min(grid.length - 1, i + 1)));
+      else if (e.key === 'ArrowLeft')
+        setLightboxIndex((i) => (i === null ? i : Math.max(0, i - 1)));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -355,7 +363,9 @@ export const ReferencesPage: React.FC = () => {
             >
               <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
                 <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                {similarLoading ? 'Buscando parecidas...' : `${similar.items.length} · ${similar.label}`}
+                {similarLoading
+                  ? 'Buscando parecidas...'
+                  : `${similar.items.length} · ${similar.label}`}
               </span>
               <Button
                 variant="ghost"
@@ -387,7 +397,9 @@ export const ReferencesPage: React.FC = () => {
                     }}
                     className={cn(
                       'px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                      scope === s ? 'bg-neutral-800 text-neutral-100' : 'text-neutral-500 hover:text-neutral-300'
+                      scope === s
+                        ? 'bg-neutral-800 text-neutral-100'
+                        : 'text-neutral-500 hover:text-neutral-300'
                     )}
                   >
                     {s === 'library' ? 'Biblioteca' : 'Minhas refs'}
@@ -498,7 +510,10 @@ export const ReferencesPage: React.FC = () => {
             onClose={() => setUploadOpen(false)}
             onDone={(madePublic) => {
               setUploadOpen(false);
-              referencesApi.facets().then(setFacets).catch(() => {});
+              referencesApi
+                .facets()
+                .then(setFacets)
+                .catch(() => {});
               setSimilar(null);
               setScope(madePublic ? 'library' : 'mine');
               setReloadNonce((n) => n + 1);
@@ -623,7 +638,10 @@ const MasonryCard: React.FC<{
               )}
             </div>
             {flag && (
-              <span className="absolute top-2 left-2 text-base leading-none drop-shadow" title={item.country}>
+              <span
+                className="absolute top-2 left-2 text-base leading-none drop-shadow"
+                title={item.country}
+              >
                 {flag}
               </span>
             )}
@@ -724,30 +742,45 @@ const Lightbox: React.FC<{
             <div className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-neutral-950/60 p-5 sm:p-6 overflow-y-auto space-y-4">
               <div>
                 <h3 className="text-base font-semibold text-white leading-snug">{item.name}</h3>
-                {item.studio && <p className="text-xs font-mono text-neutral-400 mt-0.5">{item.studio}</p>}
+                {item.studio && (
+                  <p className="text-xs font-mono text-neutral-400 mt-0.5">{item.studio}</p>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-1.5">
                 {item.country && (
                   <Badge className="bg-neutral-800 text-neutral-200 border-neutral-700 text-[11px]">
-                    {flag ? <span className="mr-1">{flag}</span> : <MapPin className="h-3 w-3 mr-1" />}
+                    {flag ? (
+                      <span className="mr-1">{flag}</span>
+                    ) : (
+                      <MapPin className="h-3 w-3 mr-1" />
+                    )}
                     {item.country}
                     {prov.countryInferred && <span className="ml-1 text-neutral-500">(IA)</span>}
                   </Badge>
                 )}
                 {item.region && (
-                  <Badge variant="outline" className="border-neutral-700 text-neutral-400 text-[11px]">
+                  <Badge
+                    variant="outline"
+                    className="border-neutral-700 text-neutral-400 text-[11px]"
+                  >
                     <Globe className="h-3 w-3 mr-1" />
                     {REGION_LABELS[item.region] || item.region}
                   </Badge>
                 )}
                 {prov.year && (
-                  <Badge variant="outline" className="border-neutral-700 text-neutral-400 text-[11px]">
+                  <Badge
+                    variant="outline"
+                    className="border-neutral-700 text-neutral-400 text-[11px]"
+                  >
                     {prov.year}
                   </Badge>
                 )}
                 {prov.awardSource && (
-                  <Badge variant="outline" className="border-neutral-700 text-neutral-400 text-[11px]">
+                  <Badge
+                    variant="outline"
+                    className="border-neutral-700 text-neutral-400 text-[11px]"
+                  >
                     {prov.awardSource}
                   </Badge>
                 )}
@@ -762,7 +795,9 @@ const Lightbox: React.FC<{
 
               {item.description && (
                 <div>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase">Descrição</span>
+                  <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                    Descrição
+                  </span>
                   <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed line-clamp-6">
                     {item.description}
                   </p>
@@ -819,13 +854,19 @@ const Lightbox: React.FC<{
 
 const MasonrySkeleton: React.FC<{ cols: number }> = ({ cols }) => {
   const heights = useMemo(() => [220, 300, 180, 260, 340, 200, 280, 240, 320, 210, 290, 250], []);
-  const columns = Array.from({ length: cols }, (_, ci) => heights.filter((_, i) => i % cols === ci));
+  const columns = Array.from({ length: cols }, (_, ci) =>
+    heights.filter((_, i) => i % cols === ci)
+  );
   return (
     <div className="flex gap-3 items-start">
       {columns.map((col, ci) => (
         <div key={ci} className="flex-1 min-w-0 flex flex-col gap-3">
           {col.map((h, i) => (
-            <div key={i} className="rounded-xl bg-neutral-900/60 animate-pulse" style={{ height: h }} />
+            <div
+              key={i}
+              className="rounded-xl bg-neutral-900/60 animate-pulse"
+              style={{ height: h }}
+            />
           ))}
         </div>
       ))}
@@ -843,7 +884,11 @@ const FirstRun: React.FC<{ onUpload: () => void }> = ({ onUpload }) => (
       Design world-class do mundo inteiro, taggeado por conteúdo e por país. Suba, arraste ou cole
       uma imagem — o pipeline analisa, taggeia e popula. Depois mergulhe de uma ref pra outra.
     </p>
-    <Button size="sm" className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs mt-1" onClick={onUpload}>
+    <Button
+      size="sm"
+      className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs mt-1"
+      onClick={onUpload}
+    >
       <Upload className="h-3.5 w-3.5 mr-1.5" />
       Subir primeira referência
     </Button>
@@ -854,7 +899,12 @@ const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
     <Search className="h-8 w-8 text-neutral-700" />
     <p className="text-sm text-neutral-400">Nenhuma referência para esse filtro</p>
-    <Button variant="outline" size="sm" className="bg-neutral-900 border-neutral-700 text-xs" onClick={onClear}>
+    <Button
+      variant="outline"
+      size="sm"
+      className="bg-neutral-900 border-neutral-700 text-xs"
+      onClick={onClear}
+    >
       <X className="h-3.5 w-3.5 mr-1.5" />
       Limpar filtros
     </Button>
@@ -865,7 +915,12 @@ const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
     <AlertTriangle className="h-8 w-8 text-amber-500/80" />
     <p className="text-sm text-neutral-400">Não foi possível carregar as referências</p>
-    <Button variant="outline" size="sm" className="bg-neutral-900 border-neutral-700 text-xs" onClick={onRetry}>
+    <Button
+      variant="outline"
+      size="sm"
+      className="bg-neutral-900 border-neutral-700 text-xs"
+      onClick={onRetry}
+    >
       Tentar de novo
     </Button>
   </div>
@@ -932,7 +987,9 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
     <Dialog open onOpenChange={() => !uploading && onClose()}>
       <DialogContent className="max-w-lg bg-neutral-950 border-neutral-800">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">Subir referências</DialogTitle>
+          <DialogTitle className="text-sm font-mono text-neutral-300">
+            Subir referências
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -953,11 +1010,20 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">País (opcional)</label>
-              <Select options={COUNTRY_OPTIONS} value={country} onChange={setCountry} placeholder="Auto (IA)" />
+              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+                País (opcional)
+              </label>
+              <Select
+                options={COUNTRY_OPTIONS}
+                value={country}
+                onChange={setCountry}
+                placeholder="Auto (IA)"
+              />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">Designer / Estúdio</label>
+              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+                Designer / Estúdio
+              </label>
               <Input
                 value={designer}
                 onChange={(e) => setDesigner(e.target.value)}
@@ -968,7 +1034,9 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">Fonte (URL)</label>
+              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+                Fonte (URL)
+              </label>
               <Input
                 value={sourceUrl}
                 onChange={(e) => setSourceUrl(e.target.value)}
@@ -977,7 +1045,9 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">Award / Arquivo</label>
+              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+                Award / Arquivo
+              </label>
               <Input
                 value={awardSource}
                 onChange={(e) => setAwardSource(e.target.value)}
@@ -994,7 +1064,9 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               onChange={(e) => setIsPublic(e.target.checked)}
               className="accent-brand-cyan"
             />
-            <span className="text-xs text-neutral-400">Tornar pública na biblioteca compartilhada</span>
+            <span className="text-xs text-neutral-400">
+              Tornar pública na biblioteca compartilhada
+            </span>
           </label>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800">

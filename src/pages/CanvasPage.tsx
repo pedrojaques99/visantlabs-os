@@ -2414,64 +2414,69 @@ export const CanvasPage: React.FC = () => {
       }
 
       // Wait for edges to be created and nodes to be updated, then trigger generation
-      setTimeout(async () => {
-        if (isLocalDevelopment()) {
-          console.log('[handleBrandKit] Starting generation for', mockupNodeIds.length, 'nodes');
-        }
+      setTimeout(
+        async () => {
+          if (isLocalDevelopment()) {
+            console.log('[handleBrandKit] Starting generation for', mockupNodeIds.length, 'nodes');
+          }
 
-        // Use functional update to get latest nodes state
-        setNodes((currentNodes: Node<FlowNodeData>[]) => {
-          for (const { id: mockupNodeId, presetId } of mockupNodeIds) {
-            const mockupNode = currentNodes.find((n) => n.id === mockupNodeId);
+          // Use functional update to get latest nodes state
+          setNodes((currentNodes: Node<FlowNodeData>[]) => {
+            for (const { id: mockupNodeId, presetId } of mockupNodeIds) {
+              const mockupNode = currentNodes.find((n) => n.id === mockupNodeId);
 
-            if (
-              mockupNode &&
-              mockupNode.type === 'mockup' &&
-              handlersRef.current?.handleMockupGenerate
-            ) {
-              if (isLocalDevelopment()) {
-                console.log(
-                  `[handleBrandKit] Triggering generation for node ${mockupNodeId} with preset ${presetId}`
-                );
-              }
-
-              // Trigger generation asynchronously
-              Promise.resolve().then(async () => {
-                try {
-                  await handlersRef.current.handleMockupGenerate(
-                    mockupNodeId,
-                    imageInput,
-                    presetId,
-                    undefined, // selectedColors
-                    false, // withHuman
-                    undefined // customPrompt
+              if (
+                mockupNode &&
+                mockupNode.type === 'mockup' &&
+                handlersRef.current?.handleMockupGenerate
+              ) {
+                if (isLocalDevelopment()) {
+                  console.log(
+                    `[handleBrandKit] Triggering generation for node ${mockupNodeId} with preset ${presetId}`
                   );
-                  if (isLocalDevelopment()) {
-                    console.log(`[handleBrandKit] Generation completed for node ${mockupNodeId}`);
-                  }
-                } catch (error: any) {
-                  if (isLocalDevelopment()) {
-                    console.error(
-                      `[handleBrandKit] Failed to generate mockup for node ${mockupNodeId}:`,
-                      error
-                    );
-                  }
-                  toast.error(t('canvas.failedToGenerateMockup', { presetId }), { duration: 3000 });
                 }
-              });
-            } else {
-              if (isLocalDevelopment()) {
-                console.warn(`[handleBrandKit] Cannot generate for node ${mockupNodeId}:`, {
-                  nodeExists: !!mockupNode,
-                  nodeType: mockupNode?.type,
-                  hasHandler: !!handlersRef.current?.handleMockupGenerate,
+
+                // Trigger generation asynchronously
+                Promise.resolve().then(async () => {
+                  try {
+                    await handlersRef.current.handleMockupGenerate(
+                      mockupNodeId,
+                      imageInput,
+                      presetId,
+                      undefined, // selectedColors
+                      false, // withHuman
+                      undefined // customPrompt
+                    );
+                    if (isLocalDevelopment()) {
+                      console.log(`[handleBrandKit] Generation completed for node ${mockupNodeId}`);
+                    }
+                  } catch (error: any) {
+                    if (isLocalDevelopment()) {
+                      console.error(
+                        `[handleBrandKit] Failed to generate mockup for node ${mockupNodeId}:`,
+                        error
+                      );
+                    }
+                    toast.error(t('canvas.failedToGenerateMockup', { presetId }), {
+                      duration: 3000,
+                    });
+                  }
                 });
+              } else {
+                if (isLocalDevelopment()) {
+                  console.warn(`[handleBrandKit] Cannot generate for node ${mockupNodeId}:`, {
+                    nodeExists: !!mockupNode,
+                    nodeType: mockupNode?.type,
+                    hasHandler: !!handlersRef.current?.handleMockupGenerate,
+                  });
+                }
               }
             }
-          }
-          return currentNodes; // Return unchanged nodes (we're just using this to access latest state)
-        });
-      }, 600 + presetIds.length * 100); // Wait longer for all nodes and edges to be created
+            return currentNodes; // Return unchanged nodes (we're just using this to access latest state)
+          });
+        },
+        600 + presetIds.length * 100
+      ); // Wait longer for all nodes and edges to be created
 
       toast.success(
         t('canvas.creatingMockups', {

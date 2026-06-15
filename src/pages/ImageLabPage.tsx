@@ -1182,9 +1182,7 @@ export const ImageLabPage: React.FC = () => {
                   className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
                 />
               </div>
-              <p className="text-[11px] uppercase tracking-widest">
-                {t('imagelab.dropPrompt')}
-              </p>
+              <p className="text-[11px] uppercase tracking-widest">{t('imagelab.dropPrompt')}</p>
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[10px] tracking-wide opacity-60">
                   Ctrl+V — paste · Tab — toggle panel · 1/2/3/4 — switch mode
@@ -1413,9 +1411,7 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `dot ${rDotSize.toFixed(2)}` },
           { label: `misreg ${rMisregistration}px` },
           { label: `${rLayers.filter((l) => l.visible).length} layers` },
-          ...(rSoloLayer >= 0
-            ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-warning' }]
-            : []),
+          ...(rSoloLayer >= 0 ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-warning' }] : []),
           ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-neutral-400' }] : []),
           ...extras,
         ];

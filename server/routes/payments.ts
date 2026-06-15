@@ -165,8 +165,8 @@ const mapTransactionDocument = (transaction: any) => {
     transaction.createdAt instanceof Date
       ? transaction.createdAt
       : transaction.createdAt
-      ? new Date(transaction.createdAt)
-      : new Date();
+        ? new Date(transaction.createdAt)
+        : new Date();
 
   return {
     id: transaction._id?.toString() ?? `${transaction.userId}-${createdAt.getTime()}`,
@@ -259,8 +259,8 @@ const fetchStripeTransactionsForCustomer = async (customerId: string) => {
         metadataCredits && metadataCredits > 0
           ? metadataCredits
           : creditsByAmount > 0
-          ? creditsByAmount
-          : undefined;
+            ? creditsByAmount
+            : undefined;
 
       transactions.push(formatStripeSessionTransaction(session, 'purchase', credits));
     } else if (session.mode === 'subscription') {
@@ -313,10 +313,10 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
     const monthlyCredits = metadata.monthlyCredits
       ? parseInt(metadata.monthlyCredits, 10)
       : tier === 'premium'
-      ? 100
-      : tier === 'pro'
-      ? 500
-      : 3;
+        ? 100
+        : tier === 'pro'
+          ? 500
+          : 3;
 
     return { tier, monthlyCredits };
   } catch (error) {
@@ -589,7 +589,7 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
       });
       if (!product) return null;
       const meta = (product.metadata as Record<string, any>) || {};
-      const amount = currencyCode === 'BRL' ? product.priceBRL ?? 0 : product.priceUSD ?? 0;
+      const amount = currencyCode === 'BRL' ? (product.priceBRL ?? 0) : (product.priceUSD ?? 0);
       return {
         priceId: '',
         tier: meta.tier || 'premium',
@@ -614,18 +614,17 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
     if (stripe && priceId) {
       try {
         const price = await stripe.prices.retrieve(priceId);
-        const productId =
-          typeof price.product === 'string' ? price.product : price.product?.id;
+        const productId = typeof price.product === 'string' ? price.product : price.product?.id;
         const product = productId ? await stripe.products.retrieve(productId) : null;
         const metadata = product?.metadata || {};
         const tier = metadata.tier || 'premium';
         const monthlyCredits = metadata.monthlyCredits
           ? parseInt(metadata.monthlyCredits, 10)
           : tier === 'premium'
-          ? 100
-          : tier === 'pro'
-          ? 500
-          : 3;
+            ? 100
+            : tier === 'pro'
+              ? 500
+              : 3;
         return res.json({
           priceId,
           tier,
@@ -1496,8 +1495,8 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
           typeof abacateSecret === 'string'
             ? abacateSecret
             : Array.isArray(abacateSecret)
-            ? abacateSecret[0]
-            : String(abacateSecret);
+              ? abacateSecret[0]
+              : String(abacateSecret);
 
         if (secretValue !== abacateWebhookSecret) {
           console.error('❌ AbacatePay webhook secret validation failed');
@@ -1695,8 +1694,8 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
               source: pixQrCodeMetadata.credits
                 ? 'metadata'
                 : payment?.credits
-                ? 'payment_record'
-                : 'calculated',
+                  ? 'payment_record'
+                  : 'calculated',
             });
             // Keep payment record in sync so the reconciliation job skips it
             await db
@@ -1790,9 +1789,8 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
 
           try {
             console.log('📡 Retrieving subscription from Stripe:', subscriptionId);
-            const subscription: Stripe.Subscription = await stripe!.subscriptions.retrieve(
-              subscriptionId
-            );
+            const subscription: Stripe.Subscription =
+              await stripe!.subscriptions.retrieve(subscriptionId);
             const periodEnd = (subscription as any).current_period_end as number | undefined;
             console.log('✅ Subscription retrieved:', {
               status: subscription.status,
@@ -2252,9 +2250,8 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
 
                 // Send credits purchased email
                 try {
-                  const { sendCreditsPurchasedEmail, isEmailConfigured } = await import(
-                    '../services/emailService.js'
-                  );
+                  const { sendCreditsPurchasedEmail, isEmailConfigured } =
+                    await import('../services/emailService.js');
 
                   if (isEmailConfigured() && updatedUser) {
                     const totalCredits =

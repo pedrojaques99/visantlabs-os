@@ -63,7 +63,7 @@ export function useGenerationFeedback(
   const [isLoading, setIsLoading] = useState(false);
 
   // Controlled mode: parent owns the state. Uncontrolled: local state.
-  const rating = isControlled ? params.controlledRating ?? null : internalRating;
+  const rating = isControlled ? (params.controlledRating ?? null) : internalRating;
 
   const updateRating = useCallback(
     (next: FeedbackRating | null) => {

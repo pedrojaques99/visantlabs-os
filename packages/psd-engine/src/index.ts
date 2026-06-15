@@ -26,10 +26,4 @@ export { createBrowserAdapter } from './adapters/browser.js';
 export { preloadDisplacementMaps, createBrowserFsCallbacks } from './displacement.js';
 export type { DisplacementCanvas, FsCallbacks } from './displacement.js';
 
-export type {
-  CreateCanvas,
-  CanvasLike,
-  ReplacedLayer,
-  Face,
-  FaceSo,
-} from './types.js';
+export type { CreateCanvas, CanvasLike, ReplacedLayer, Face, FaceSo } from './types.js';

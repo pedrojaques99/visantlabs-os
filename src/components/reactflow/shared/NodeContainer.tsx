@@ -68,8 +68,8 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         selected
           ? 'border-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
           : warning
-          ? 'border-neutral-600/40'
-          : 'border-gray-700/30',
+            ? 'border-neutral-600/40'
+            : 'border-gray-700/30',
         dragging && 'pointer-events-none',
         dragging ? 'node-container-dragging' : 'node-container-static',
         // Apply default padding unless overridden by className - maintain padding during dragging

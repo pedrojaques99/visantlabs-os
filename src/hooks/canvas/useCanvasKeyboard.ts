@@ -443,14 +443,14 @@ export const useCanvasKeyboard = (
           typeof firstSelectedNode.style?.width === 'number'
             ? firstSelectedNode.style.width
             : typeof firstSelectedNode.style?.width === 'string'
-            ? parseFloat(firstSelectedNode.style.width) || 150
-            : 150;
+              ? parseFloat(firstSelectedNode.style.width) || 150
+              : 150;
         const nodeHeight =
           typeof firstSelectedNode.style?.height === 'number'
             ? firstSelectedNode.style.height
             : typeof firstSelectedNode.style?.height === 'string'
-            ? parseFloat(firstSelectedNode.style.height) || 100
-            : 100;
+              ? parseFloat(firstSelectedNode.style.height) || 100
+              : 100;
 
         const nodeCenterX = firstSelectedNode.position.x + nodeWidth / 2;
         const nodeCenterY = firstSelectedNode.position.y + nodeHeight / 2;

@@ -12,9 +12,7 @@ async function makePng(opts: { alpha: boolean }): Promise<Buffer> {
       width: 8,
       height: 8,
       channels: opts.alpha ? 4 : 3,
-      background: opts.alpha
-        ? { r: 255, g: 0, b: 0, alpha: 0.5 }
-        : { r: 255, g: 0, b: 0 },
+      background: opts.alpha ? { r: 255, g: 0, b: 0, alpha: 0.5 } : { r: 255, g: 0, b: 0 },
     },
   })
     .png()

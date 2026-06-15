@@ -94,10 +94,7 @@ async function refundJobOnce(job: ImageLabJob): Promise<void> {
  * `op` is the provider call (already bound with its params). On success the job
  * captures the result; on failure it refunds credits (Phase 1.3 contract).
  */
-export async function runImageLabJob(
-  job: ImageLabJob,
-  op: () => Promise<unknown>
-): Promise<void> {
+export async function runImageLabJob(job: ImageLabJob, op: () => Promise<unknown>): Promise<void> {
   job.status = 'processing';
   await saveJob(job);
 

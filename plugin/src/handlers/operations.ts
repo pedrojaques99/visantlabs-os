@@ -206,7 +206,7 @@ function normalizeRGBA(color: any): RGBA {
     r: c.r,
     g: c.g,
     b: c.b,
-    a: color && typeof color === 'object' && color.a !== undefined ? color.a : c.a ?? 1,
+    a: color && typeof color === 'object' && color.a !== undefined ? color.a : (c.a ?? 1),
   };
 }
 
@@ -591,9 +591,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       content: result.content,
       mimeType: result.mimeType,
     });
-    pushSummary(
-      `Exportado ${result.frameCount} frames → ${result.filename} (${result.format})`
-    );
+    pushSummary(`Exportado ${result.frameCount} frames → ${result.filename} (${result.format})`);
     return;
   }
 
@@ -1009,8 +1007,8 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
     const node = op.nodeId
       ? await figma.getNodeByIdAsync(op.nodeId)
       : op.ref
-      ? createdNodes.get(op.ref)
-      : null;
+        ? createdNodes.get(op.ref)
+        : null;
     if (node && 'fills' in node) {
       try {
         const image = await figma.createImageAsync(op.imageUrl);
@@ -1755,9 +1753,10 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       // Image overrides — use pre-built cache (O(1) lookup, no repeated findAll)
       if (op.imageOverrides && Array.isArray(op.imageOverrides)) {
         for (const imgOv of op.imageOverrides) {
-          const targetLayer = ('children' in cloned)
-            ? (cloned as FrameNode).findOne((n) => n.name === imgOv.layerName) as any
-            : null;
+          const targetLayer =
+            'children' in cloned
+              ? ((cloned as FrameNode).findOne((n) => n.name === imgOv.layerName) as any)
+              : null;
           if (!targetLayer || !('fills' in targetLayer)) continue;
 
           const srcName: string = imgOv.sourceNodeName;
@@ -2209,7 +2208,7 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
             format: s.format,
             suffix: s.suffix || '',
             constraint: s.constraint || { type: 'SCALE', value: 1 },
-          } as ExportSettings)
+          }) as ExportSettings
       );
       (node as SceneNode & ExportMixin).exportSettings = settings;
       pushSummary(`Export settings em @"${(node as any).name}"`, node as SceneNode);

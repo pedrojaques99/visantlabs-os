@@ -134,7 +134,9 @@ export async function optimizeSvg(
     const { JSDOM } = await import('jsdom');
     const dom = new JSDOM(svg, { contentType: 'image/svg+xml' });
     const doc = dom.window.document;
-    doc.querySelectorAll('[display="none"], [visibility="hidden"]').forEach((el: any) => el.remove());
+    doc
+      .querySelectorAll('[display="none"], [visibility="hidden"]')
+      .forEach((el: any) => el.remove());
     svg = doc.documentElement.outerHTML;
   }
 

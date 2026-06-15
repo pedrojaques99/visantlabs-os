@@ -117,17 +117,17 @@ export const useMockupNodeHandlers = ({
         imageInputType: imageInput?.startsWith('http')
           ? 'URL'
           : imageInput?.startsWith('data:')
-          ? 'dataURL'
-          : imageInput
-          ? 'base64'
-          : 'none',
+            ? 'dataURL'
+            : imageInput
+              ? 'base64'
+              : 'none',
         connectedImageFromDataType: connectedImageFromData?.startsWith('http')
           ? 'URL'
           : connectedImageFromData?.startsWith('data:')
-          ? 'dataURL'
-          : connectedImageFromData
-          ? 'base64'
-          : 'none',
+            ? 'dataURL'
+            : connectedImageFromData
+              ? 'base64'
+              : 'none',
         usingImageInput: !!imageInput,
         usingConnectedImageFromData: !imageInput && !!connectedImageFromData,
         colorsCount: selectedColors?.length || 0,

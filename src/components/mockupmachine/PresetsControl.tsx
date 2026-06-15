@@ -122,8 +122,8 @@ export const PresetsControl: React.FC = () => {
             isOpen
               ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
               : theme === 'dark'
-              ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
-              : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
+                ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
+                : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
           )}
         >
           <FolderOpen size={14} />
@@ -140,8 +140,8 @@ export const PresetsControl: React.FC = () => {
             isSaving
               ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
               : theme === 'dark'
-              ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
-              : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
+                ? 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:text-neutral-300'
+                : 'bg-white/50 text-neutral-600 border-neutral-200 hover:bg-neutral-100 hover:text-neutral-800'
           )}
         >
           <Save size={14} />

@@ -25,8 +25,8 @@ export const TextSection: React.FC<TextSectionProps> = ({
     typeof content === 'string'
       ? cleanContent(content)
       : content
-      ? cleanContent(String(content))
-      : '';
+        ? cleanContent(String(content))
+        : '';
 
   if (isEditing && onContentChange) {
     return (

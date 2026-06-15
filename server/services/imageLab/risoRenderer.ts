@@ -6,11 +6,7 @@
  * `applyRisoUniforms` so client and server set identical uniforms.
  */
 import type { RisoSettings } from './types.js';
-import {
-  RISO_VERTEX_SHADER,
-  RISO_FRAGMENT_SHADER,
-  applyRisoUniforms,
-} from '@visant/print-fx/riso';
+import { RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER, applyRisoUniforms } from '@visant/print-fx/riso';
 import {
   acquireSharedContext,
   getOrCreateProgram,

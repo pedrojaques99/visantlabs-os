@@ -144,23 +144,23 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
           !disabled && isPrompt
             ? 'bg-white border-white text-black shadow-lg hover:scale-[1.02] active:scale-[0.98] hover:bg-white/90'
             : !disabled && isPrimaryAction
-            ? cn(
-                'text-black',
-                'shadow-xl hover:scale-[1.02] active:scale-[0.98] font-black',
-                isPrimarySurprise
-                  ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
-                  : isPromptReady || autoGenerate
-                  ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90 ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black transition-shadow duration-500 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.15)]'
-                  : 'bg-neutral-800 border-white/10 text-neutral-400 hover:text-white hover:bg-neutral-700',
-                isPrimarySurprise &&
-                  isActive &&
-                  'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
-              )
-            : !disabled && isActive
-            ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-md'
-            : isLight
-            ? 'bg-neutral-100/80 border-neutral-300/50 hover:bg-neutral-200/50 hover:border-neutral-400/50 text-neutral-600 shadow-sm'
-            : 'bg-neutral-900/80 border-neutral-800/50 hover:bg-neutral-800/60 hover:border-neutral-700/50 text-neutral-400 shadow-sm',
+              ? cn(
+                  'text-black',
+                  'shadow-xl hover:scale-[1.02] active:scale-[0.98] font-black',
+                  isPrimarySurprise
+                    ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
+                    : isPromptReady || autoGenerate
+                      ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90 ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black transition-shadow duration-500 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.15)]'
+                      : 'bg-neutral-800 border-white/10 text-neutral-400 hover:text-white hover:bg-neutral-700',
+                  isPrimarySurprise &&
+                    isActive &&
+                    'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
+                )
+              : !disabled && isActive
+                ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-md'
+                : isLight
+                  ? 'bg-neutral-100/80 border-neutral-300/50 hover:bg-neutral-200/50 hover:border-neutral-400/50 text-neutral-600 shadow-sm'
+                  : 'bg-neutral-900/80 border-neutral-800/50 hover:bg-neutral-800/60 hover:border-neutral-700/50 text-neutral-400 shadow-sm',
           disabled && 'opacity-20 cursor-not-allowed pointer-events-none'
         )}
       >
@@ -181,8 +181,8 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
               !disabled && (isPrimaryAction || isPrompt || isActive)
                 ? 'text-black'
                 : dark
-                ? 'text-neutral-400'
-                : 'text-neutral-600'
+                  ? 'text-neutral-400'
+                  : 'text-neutral-600'
             )}
           >
             {label}

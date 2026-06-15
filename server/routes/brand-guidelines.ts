@@ -907,10 +907,10 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
       const ct = data.startsWith('data:image/svg')
         ? 'image/svg+xml'
         : data.startsWith('data:application/pdf')
-        ? 'application/pdf'
-        : data.startsWith('data:image/jpeg')
-        ? 'image/jpeg'
-        : 'image/png';
+          ? 'application/pdf'
+          : data.startsWith('data:image/jpeg')
+            ? 'image/jpeg'
+            : 'image/png';
       logoUrl = await uploadBrandMedia(
         data,
         req.userId,

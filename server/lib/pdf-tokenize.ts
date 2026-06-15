@@ -228,11 +228,11 @@ export async function tokenizePdf(
           typeof v === 'string' && HEX_RE.test(v)
             ? v.toLowerCase()
             : typeof args?.[0] === 'number'
-            ? '#' +
-              [args[0], args[1], args[2]]
-                .map((n) => Math.round(n).toString(16).padStart(2, '0'))
-                .join('')
-            : null;
+              ? '#' +
+                [args[0], args[1], args[2]]
+                  .map((n) => Math.round(n).toString(16).padStart(2, '0'))
+                  .join('')
+              : null;
         if (hex) colorCounter.set(hex, (colorCounter.get(hex) || 0) + 1);
       } else if (fn === OPS.setFillCMYKColor || fn === OPS.setStrokeCMYKColor) {
         if (args?.length >= 4) {

@@ -354,7 +354,7 @@ describe('creative-full tool contract', () => {
     credits.plan = (plan as any).creditsUsed ?? null;
 
     const backgroundImageUrl = steps.bg ? (steps.bg as any).imageUrl : undefined;
-    credits.background = steps.bg ? (steps.bg as any).creditsUsed ?? null : null;
+    credits.background = steps.bg ? ((steps.bg as any).creditsUsed ?? null) : null;
 
     if (!steps.render) {
       return {
@@ -691,9 +691,9 @@ describe('psd-mockup-produce flow', () => {
   });
 
   it('rejects when both artPrompt and artUrl provided', () => {
-    expect(
-      simulateProduce({ artPrompt: 'p', artUrl: 'https://x' }, { renderOk: true }).error
-    ).toBe('VALIDATION_ERROR');
+    expect(simulateProduce({ artPrompt: 'p', artUrl: 'https://x' }, { renderOk: true }).error).toBe(
+      'VALIDATION_ERROR'
+    );
   });
 
   it('refunds generation credits when render fails after generating art', () => {

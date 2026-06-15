@@ -6,13 +6,13 @@ It powers the Visant Labs **ImageLab** (halftone / riso / shader effects) and is
 
 ## What's inside
 
-| Surface | What it does |
-| --- | --- |
-| **Halftone** | CMYK halftone as an **SVG** string (per-channel rotated dot grids). Rasterize with any canvas → PNG/JPEG. Pure JS, no GL. |
-| **Riso** | Risograph fragment shader (ink layers, 5 dither modes, halftone shapes, misregistration, paper/ink grain) + `applyRisoUniforms` to bind a `RisoSettings` to any GL context. |
-| **Shaders** | 14 post-fx GLSL fragment shaders (vhs, ascii, dither, duotone, halftone, glitch, crt, …) behind a registry. |
-| **GL runner** | Framework-agnostic compile / fullscreen-quad / texture / readPixels helpers + a per-context program cache. Bring your own context. |
-| **Presets** | Halftone / riso / texture preset catalogs — single source of truth. |
+| Surface       | What it does                                                                                                                                                                |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Halftone**  | CMYK halftone as an **SVG** string (per-channel rotated dot grids). Rasterize with any canvas → PNG/JPEG. Pure JS, no GL.                                                   |
+| **Riso**      | Risograph fragment shader (ink layers, 5 dither modes, halftone shapes, misregistration, paper/ink grain) + `applyRisoUniforms` to bind a `RisoSettings` to any GL context. |
+| **Shaders**   | 14 post-fx GLSL fragment shaders (vhs, ascii, dither, duotone, halftone, glitch, crt, …) behind a registry.                                                                 |
+| **GL runner** | Framework-agnostic compile / fullscreen-quad / texture / readPixels helpers + a per-context program cache. Bring your own context.                                          |
+| **Presets**   | Halftone / riso / texture preset catalogs — single source of truth.                                                                                                         |
 
 > The engine owns context lifecycle? No — **you** do. The package never creates or destroys GL contexts itself (so the server can keep its singleton + mutex, and the browser its per-canvas context). It only knows how to compile, draw, and read.
 
@@ -28,16 +28,16 @@ npm i gl canvas
 
 ## Exports
 
-| Entry | Purpose |
-| --- | --- |
-| `.` | everything below, flat |
-| `./halftone` | `generateHalftoneSvg`, `HalftoneSettings`, `HALFTONE_DEFAULTS` |
-| `./riso` | `RISO_VERTEX_SHADER`, `RISO_FRAGMENT_SHADER`, `applyRisoUniforms`, maps, types |
-| `./shaders` | `getShaderDefinition`, `getHalftoneShaderSource`, `registerShader`, registry, types |
-| `./gl` | `compileShader`, `createProgram`, `setupFullscreenQuad`, `uploadTexture`, `readPixels`, `deleteRenderResources`, `getOrCreateProgram` |
-| `./presets` | `HALFTONE_PRESETS_DATA`, `RISO_FULL_PRESETS_DATA`, `TEXTURE_PRESETS_DATA`, `SHADER_TYPES` |
-| `./adapters/node` | `createNodeAdapter()`, `createHeadlessGLContext()`, `destroyHeadlessGLContext()` |
-| `./adapters/browser` | `createCanvas`, `getWebGLContext`, `loadImage`, `toBlob` |
+| Entry                | Purpose                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`                  | everything below, flat                                                                                                                |
+| `./halftone`         | `generateHalftoneSvg`, `HalftoneSettings`, `HALFTONE_DEFAULTS`                                                                        |
+| `./riso`             | `RISO_VERTEX_SHADER`, `RISO_FRAGMENT_SHADER`, `applyRisoUniforms`, maps, types                                                        |
+| `./shaders`          | `getShaderDefinition`, `getHalftoneShaderSource`, `registerShader`, registry, types                                                   |
+| `./gl`               | `compileShader`, `createProgram`, `setupFullscreenQuad`, `uploadTexture`, `readPixels`, `deleteRenderResources`, `getOrCreateProgram` |
+| `./presets`          | `HALFTONE_PRESETS_DATA`, `RISO_FULL_PRESETS_DATA`, `TEXTURE_PRESETS_DATA`, `SHADER_TYPES`                                             |
+| `./adapters/node`    | `createNodeAdapter()`, `createHeadlessGLContext()`, `destroyHeadlessGLContext()`                                                      |
+| `./adapters/browser` | `createCanvas`, `getWebGLContext`, `loadImage`, `toBlob`                                                                              |
 
 ## Halftone — CMYK SVG (browser or node)
 
@@ -56,7 +56,13 @@ const svg = generateHalftoneSvg(rgbaPixels, width, height, {
 
 ```ts
 import { getShaderDefinition } from '@visant/print-fx/shaders';
-import { getOrCreateProgram, setupFullscreenQuad, uploadTexture, readPixels, deleteRenderResources } from '@visant/print-fx/gl';
+import {
+  getOrCreateProgram,
+  setupFullscreenQuad,
+  uploadTexture,
+  readPixels,
+  deleteRenderResources,
+} from '@visant/print-fx/gl';
 import { createHeadlessGLContext } from '@visant/print-fx/adapters/node';
 
 const VERTEX = `attribute vec2 a_position; attribute vec2 a_texCoord; varying vec2 v_texCoord;

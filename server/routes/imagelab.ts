@@ -267,7 +267,16 @@ router.post(
       if (!maskBase64 && !maskRegion) {
         return res.status(400).json({ error: 'Either maskBase64 or maskRegion is required.' });
       }
-      const params = { imageUrl, mode, prompt, maskBase64, maskRegion, resolution, aspectRatio, apiKey };
+      const params = {
+        imageUrl,
+        mode,
+        prompt,
+        maskBase64,
+        maskRegion,
+        resolution,
+        aspectRatio,
+        apiKey,
+      };
       // Charge BEFORE the operation; refund if it fails AFTER a successful charge.
       const charge = await chargeCredits(req.userId!, 2);
 

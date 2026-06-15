@@ -216,12 +216,16 @@
   }
 
   html {
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
     font-family: 'Manrope', sans-serif;
   }
 
@@ -286,21 +290,24 @@
 
   /* Cursor bullet branco para toda a WelcomeScreen (padrão) */
   .welcome-screen {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E")
+    cursor:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E")
         4 4,
       auto;
   }
 
   /* Cursor bullet branco no fundo ASCII do WelcomeScreen */
   .welcome-ascii-bg canvas {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E")
+    cursor:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='white'/%3E%3C/svg%3E")
         4 4,
       auto;
   }
 
   .welcome-screen button,
   .welcome-screen [role='button'] {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E")
+    cursor:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E")
         4 4,
       auto !important;
   }
@@ -311,16 +318,19 @@
   }
 
   .welcome-screen a {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.5' fill='none' stroke='white' stroke-width='0.5'/%3E%3Ccircle cx='5' cy='5' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E")
+    cursor:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.5' fill='none' stroke='white' stroke-width='0.5'/%3E%3Ccircle cx='5' cy='5' r='3' fill='%23brand-cyan'/%3E%3C/svg%3E")
         5 5,
       auto !important;
-    text-shadow: 0 0 10px color-mix(in srgb, var(--brand-cyan), transparent 40%),
+    text-shadow:
+      0 0 10px color-mix(in srgb, var(--brand-cyan), transparent 40%),
       0 0 16px color-mix(in srgb, var(--brand-cyan), transparent 60%);
     transition: text-shadow 0.3s ease;
   }
 
   .welcome-screen a:hover {
-    text-shadow: 0 0 12px color-mix(in srgb, var(--brand-cyan), transparent 10%),
+    text-shadow:
+      0 0 12px color-mix(in srgb, var(--brand-cyan), transparent 10%),
       0 0 24px color-mix(in srgb, var(--brand-cyan), transparent 40%),
       0 0 36px color-mix(in srgb, var(--brand-cyan), transparent 60%);
   }
@@ -396,7 +406,9 @@
 }
 
 .mockup-image-wrapper {
-  transition: transform 0.2s ease-out, filter 0.2s ease-out;
+  transition:
+    transform 0.2s ease-out,
+    filter 0.2s ease-out;
 }
 
 .mockup-image-wrapper:hover {
@@ -420,7 +432,9 @@
   border-radius: 50%;
   background: color-mix(in srgb, var(--brand-cyan), transparent 80%);
   transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease;
 }
 
 .tag-button:active::before {
@@ -1111,7 +1125,9 @@
 /* Drag and Drop Styles */
 .drag-handle {
   cursor: grab;
-  transition: opacity 0.2s ease, color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
 }
 
 .drag-handle:active {
@@ -1160,7 +1176,9 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
   border-radius: 10px 0 0 0;
   user-select: none;
   -webkit-user-select: none;
@@ -1238,7 +1256,10 @@
 
 /* Section Card Drag States */
 .section-card-draggable {
-  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .section-card-draggable:hover {

@@ -454,8 +454,8 @@ export const ColorPalettePage: React.FC = () => {
                             const bg = wcag.normalAA
                               ? 'bg-emerald-950/40'
                               : wcag.largeAA
-                              ? 'bg-yellow-950/40'
-                              : 'bg-red-950/30';
+                                ? 'bg-yellow-950/40'
+                                : 'bg-red-950/30';
                             return (
                               <td
                                 key={ci}
@@ -467,8 +467,8 @@ export const ColorPalettePage: React.FC = () => {
                                   wcag.normalAA
                                     ? 'AA pass'
                                     : wcag.largeAA
-                                    ? 'Large AA pass'
-                                    : 'Fail'
+                                      ? 'Large AA pass'
+                                      : 'Fail'
                                 }
                               >
                                 <span
@@ -476,8 +476,8 @@ export const ColorPalettePage: React.FC = () => {
                                     wcag.normalAA
                                       ? 'text-success'
                                       : wcag.largeAA
-                                      ? 'text-warning'
-                                      : 'text-destructive'
+                                        ? 'text-warning'
+                                        : 'text-destructive'
                                   )}
                                 >
                                   {ratio.toFixed(1)}

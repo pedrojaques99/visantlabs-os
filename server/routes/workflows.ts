@@ -159,7 +159,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
           .map((t: string) => String(t).substring(0, 200))
       : [];
     const thumbVal =
-      thumbnailUrl != null ? ensureString(thumbnailUrl, 2000) ?? undefined : undefined;
+      thumbnailUrl != null ? (ensureString(thumbnailUrl, 2000) ?? undefined) : undefined;
     const isPub = ensureOptionalBoolean(isPublic);
 
     const workflow = await prisma.canvasWorkflow.create({

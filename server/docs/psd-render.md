@@ -29,16 +29,16 @@ automaticamente e nunca tratados como face.
 
 ## Controle de acesso por tier
 
-| Tier | Quem | O que pode |
-|---|---|---|
-| `all` | admins, membros da equipe, `PSD_RENDER_ALLOWED_USERS` | biblioteca inteira (`GOOGLE_DRIVE_FOLDER_IDS`) + `psdUrl` arbitrária |
-| `public` | qualquer usuário autenticado | só mockups BOXY (`GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`); sem `psdUrl` |
+| Tier     | Quem                                                  | O que pode                                                           |
+| -------- | ----------------------------------------------------- | -------------------------------------------------------------------- |
+| `all`    | admins, membros da equipe, `PSD_RENDER_ALLOWED_USERS` | biblioteca inteira (`GOOGLE_DRIVE_FOLDER_IDS`) + `psdUrl` arbitrária |
+| `public` | qualquer usuário autenticado                          | só mockups BOXY (`GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`); sem `psdUrl`     |
 
 **Equipe** = documento na collection Mongo **`team_members`** com `{ email }`
 ou `{ userId }` (e-mail em lowercase). Adicionar alguém:
 
 ```js
-db.team_members.insertOne({ email: "designer@visantlabs.com" })
+db.team_members.insertOne({ email: 'designer@visantlabs.com' });
 ```
 
 O escopo de pasta usa verificação de ancestralidade (subpastas valem). Com
@@ -48,17 +48,17 @@ enxergaria a conta inteira (loga aviso no boot). Sem
 
 ## Env (Coolify)
 
-| Var | Obrigatória | Descrição |
-|---|---|---|
-| `GOOGLE_DRIVE_REFRESH_TOKEN` | p/ psdFileName (opção A) | Reusa o `GOOGLE_CLIENT_ID/SECRET` já configurado. Gerar uma vez: adicionar `http://localhost:53682` nos redirect URIs do OAuth client e rodar `bun server/scripts/drive-auth-helper.ts`. Acessa o Drive como a sua conta, sem compartilhar pastas |
-| `GOOGLE_SERVICE_ACCOUNT_KEY` | p/ psdFileName (opção B) | JSON de service account (Drive readonly). Compartilhar as pastas de PSD com o e-mail dele |
-| `GOOGLE_DRIVE_FOLDER_IDS` | não | Restringe busca a essas pastas (CSV) |
-| `PSD_CACHE_DIR` / `PSD_CACHE_MAX_GB` | não | Cache LRU de PSDs (default `/tmp/psd-cache`, 5GB) |
-| `DO_SPACES_BUCKET` | p/ output no Spaces | Bucket de destino (creds `DO_SPACES_KEY/SECRET/ENDPOINT` já existem) |
-| `DO_SPACES_CDN_URL` | não | URL pública CDN do bucket |
-| `PSD_RENDER_ENGINE` | não | `agpsd` (default) ou `photopea` (legado) |
-| `PSD_RENDER_MAX_CONCURRENT` | não | default 2 no agpsd (leve), 1 no photopea |
-| `PSD_RENDER_ALLOWED_USERS` | recomendada | CSV de user IDs/e-mails autorizados além dos admins. Vazio = só admins |
+| Var                                  | Obrigatória              | Descrição                                                                                                                                                                                                                                         |
+| ------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_DRIVE_REFRESH_TOKEN`         | p/ psdFileName (opção A) | Reusa o `GOOGLE_CLIENT_ID/SECRET` já configurado. Gerar uma vez: adicionar `http://localhost:53682` nos redirect URIs do OAuth client e rodar `bun server/scripts/drive-auth-helper.ts`. Acessa o Drive como a sua conta, sem compartilhar pastas |
+| `GOOGLE_SERVICE_ACCOUNT_KEY`         | p/ psdFileName (opção B) | JSON de service account (Drive readonly). Compartilhar as pastas de PSD com o e-mail dele                                                                                                                                                         |
+| `GOOGLE_DRIVE_FOLDER_IDS`            | não                      | Restringe busca a essas pastas (CSV)                                                                                                                                                                                                              |
+| `PSD_CACHE_DIR` / `PSD_CACHE_MAX_GB` | não                      | Cache LRU de PSDs (default `/tmp/psd-cache`, 5GB)                                                                                                                                                                                                 |
+| `DO_SPACES_BUCKET`                   | p/ output no Spaces      | Bucket de destino (creds `DO_SPACES_KEY/SECRET/ENDPOINT` já existem)                                                                                                                                                                              |
+| `DO_SPACES_CDN_URL`                  | não                      | URL pública CDN do bucket                                                                                                                                                                                                                         |
+| `PSD_RENDER_ENGINE`                  | não                      | `agpsd` (default) ou `photopea` (legado)                                                                                                                                                                                                          |
+| `PSD_RENDER_MAX_CONCURRENT`          | não                      | default 2 no agpsd (leve), 1 no photopea                                                                                                                                                                                                          |
+| `PSD_RENDER_ALLOWED_USERS`           | recomendada              | CSV de user IDs/e-mails autorizados além dos admins. Vazio = só admins                                                                                                                                                                            |
 
 ## Exemplos
 
@@ -104,14 +104,15 @@ nos dois modos (explícito e all-faces).
 ## Scene Packages — render no browser, RAM mínima
 
 Um **Scene Package** é o PSD pré-processado uma única vez em geometria compacta
-+ camadas flatten, para que o render por arte vire um warp + blend trivial em
-qualquer canvas (sem mandar o PSD pro cliente, sem abrir o PSD a cada render).
-Resolve o OOM do compose server-side (camadas full-res simultâneas) movendo o
-render quente pro browser do usuário (Boxy / Visant web) ou pro node local
-(mockup-store).
 
-- **O que é:** `scene.json` (`SceneDoc`: dimensões + faces `{key, name, quad,
-  innerW/H, maskRef?}` + camadas `base`/`over` com `blendMode`/`opacity`) +
+- camadas flatten, para que o render por arte vire um warp + blend trivial em
+  qualquer canvas (sem mandar o PSD pro cliente, sem abrir o PSD a cada render).
+  Resolve o OOM do compose server-side (camadas full-res simultâneas) movendo o
+  render quente pro browser do usuário (Boxy / Visant web) ou pro node local
+  (mockup-store).
+
+* **O que é:** `scene.json` (`SceneDoc`: dimensões + faces `{key, name, quad,
+innerW/H, maskRef?}` + camadas `base`/`over` com `blendMode`/`opacity`) +
   imagens flatten (WebP/PNG) das camadas. **O PSD nunca vai pro browser** — só
   flattens não-editáveis + JSON, servidos por signed URL com TTL atrás do gate
   de quota. `doc.warnings[]` sinaliza blend modes que o mapeamento Canvas-2D não
@@ -130,11 +131,11 @@ bytes`). É a única operação pesada e roda **uma vez** por PSD (semáforo Red
 
 ### Endpoints de scene
 
-| Rota | Auth | Função |
-|---|---|---|
-| `POST /api/psd-render/scene-prepare` | `generate` (+ tier `all` ou partner key p/ pasta pública) | Dispara o extract de um PSD sem scene |
-| `GET /api/psd-render/scenes` | `authenticate` (tier) | Lista scenes disponíveis pro tier (catálogo) |
-| `GET /api/psd-render/scenes/:psdFileName` | `authenticate` (tier) | Retorna `SceneDoc` + **signed URLs (TTL ~10min)** das camadas — é o que o proxy da Boxy chama após o check de quota |
+| Rota                                      | Auth                                                      | Função                                                                                                              |
+| ----------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/psd-render/scene-prepare`      | `generate` (+ tier `all` ou partner key p/ pasta pública) | Dispara o extract de um PSD sem scene                                                                               |
+| `GET /api/psd-render/scenes`              | `authenticate` (tier)                                     | Lista scenes disponíveis pro tier (catálogo)                                                                        |
+| `GET /api/psd-render/scenes/:psdFileName` | `authenticate` (tier)                                     | Retorna `SceneDoc` + **signed URLs (TTL ~10min)** das camadas — é o que o proxy da Boxy chama após o check de quota |
 
 ### Fast path no /render
 
@@ -153,10 +154,10 @@ O agente produz mockups fim-a-fim (escolhe template → gera arte → renderiza 
 publica) via tools no `server/mcp/platform-mcp.ts`. `psd_scenes` é a porta única
 do catálogo (sem acesso direto ao banco):
 
-| Tool | Scope | Função |
-|---|---|---|
-| `psd-scene-list` | read | Catálogo de scenes/PSDs com faces, dimensões, warnings |
-| `psd-scene-prepare` | generate | Dispara o preprocessamento de um PSD sem scene |
+| Tool                 | Scope    | Função                                                                                                                                                                                                                                            |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `psd-scene-list`     | read     | Catálogo de scenes/PSDs com faces, dimensões, warnings                                                                                                                                                                                            |
+| `psd-scene-prepare`  | generate | Dispara o preprocessamento de um PSD sem scene                                                                                                                                                                                                    |
 | `psd-mockup-produce` | generate | Fim-a-fim: gera arte (`artPrompt`/`brandGuidelineId`) ou usa `artUrl` → render via scene fast path (fallback `/render`) → publica no Spaces → `{ imageUrl, sceneUsed, face, artUrl }`. Cobra 1 geração de imagem (render grátis), refund em falha |
 
 Os tools `mockup-store-*` (bridge local pro `Z:\BOXY\mockup-store`) continuam

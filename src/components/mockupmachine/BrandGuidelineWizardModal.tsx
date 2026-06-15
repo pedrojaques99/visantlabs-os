@@ -296,7 +296,9 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
       }
 
       rejected.forEach((f) =>
-        toast.error(`${f.name}: ${t('mockup.brandWizardUnsupportedFile') || 'formato não suportado'}`)
+        toast.error(
+          `${f.name}: ${t('mockup.brandWizardUnsupportedFile') || 'formato não suportado'}`
+        )
       );
     },
     [t]
@@ -337,7 +339,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
   const hasFigma = isFigmaUrl(figmaUrl.trim());
   const canSubmit = trimmedName.length > 0 && !isSubmitting && !isIngesting;
   const isProcessing = isSubmitting || isIngesting;
-  const materialsCount = (pdfFile ? 1 : 0) + imageFiles.length + (figFile ? 1 : 0) + (hasFigma ? 1 : 0);
+  const materialsCount =
+    (pdfFile ? 1 : 0) + imageFiles.length + (figFile ? 1 : 0) + (hasFigma ? 1 : 0);
   const hasStagedFiles = !!pdfFile || imageFiles.length > 0 || !!figFile;
 
   const handleClose = useCallback(() => {
@@ -730,8 +733,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     const primaryLabel = isEditMode
       ? t('common.save')
       : materialsCount > 0
-      ? t('mockup.brandWizardSubmit')
-      : t('mockup.brandWizardSubmitNoUrl');
+        ? t('mockup.brandWizardSubmit')
+        : t('mockup.brandWizardSubmitNoUrl');
     footer = (
       <div className="flex items-center gap-3 w-full">
         <Button
@@ -806,9 +809,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     </span>
                     {s.label}
                   </button>
-                  {i === 0 && (
-                    <span className="flex-1 h-px bg-neutral-800" aria-hidden />
-                  )}
+                  {i === 0 && <span className="flex-1 h-px bg-neutral-800" aria-hidden />}
                 </React.Fragment>
               ))}
             </div>

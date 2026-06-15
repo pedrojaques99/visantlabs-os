@@ -304,7 +304,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 <MicroTitle as="p" className="text-neutral-600 tracking-widest text-center pt-1">
                   {subscriptionStatus.hasActiveSubscription
                     ? t('credits.renews', { date: formatDate(subscriptionStatus.creditsResetDate) })
-                    : t('credits.resets', { date: formatDate(subscriptionStatus.creditsResetDate) })}
+                    : t('credits.resets', {
+                        date: formatDate(subscriptionStatus.creditsResetDate),
+                      })}
                 </MicroTitle>
               )}
             </div>

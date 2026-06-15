@@ -2,8 +2,10 @@ import React, { forwardRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export interface SearchBarProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'size'> {
+export interface SearchBarProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'onChange' | 'value' | 'size'
+> {
   value: string;
   onChange: (value: string) => void;
   onClear?: () => void;

@@ -178,8 +178,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               feedbackGiven === 'up'
                 ? 'text-brand-cyan'
                 : theme === 'dark'
-                ? 'hover:bg-neutral-950/70 text-neutral-400 hover:text-brand-cyan'
-                : 'hover:bg-neutral-200 text-neutral-600 hover:text-brand-cyan'
+                  ? 'hover:bg-neutral-950/70 text-neutral-400 hover:text-brand-cyan'
+                  : 'hover:bg-neutral-200 text-neutral-600 hover:text-brand-cyan'
             }`}
           >
             <ThumbsUp className={`h-4 w-4 ${feedbackGiven === 'up' ? 'fill-current' : ''}`} />

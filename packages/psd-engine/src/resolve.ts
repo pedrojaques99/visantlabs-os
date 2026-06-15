@@ -36,7 +36,7 @@ function area(l: SoLayer): number {
 export function resolveSoTarget(allLayers: any[], soName: string): any | null {
   const smartObjects: SoLayer[] = allLayers.filter((l: any) => l.placedLayer);
 
-  const byArea = (a: SoLayer, b: SoLayer) => area(b) > area(a) ? b : a;
+  const byArea = (a: SoLayer, b: SoLayer) => (area(b) > area(a) ? b : a);
   const lower = soName.toLowerCase();
 
   return (
@@ -45,10 +45,10 @@ export function resolveSoTarget(allLayers: any[], soName: string): any | null {
     allLayers.find((l: any) => l.path?.toLowerCase().includes(lower)) ||
     allLayers.find((l: any) => l.name?.toLowerCase().includes(lower)) ||
     (smartObjects.length === 1 ? smartObjects[0] : null) ||
-    ((() => {
+    (() => {
       const matches = smartObjects.filter((l: any) => SO_TARGET.test(l.name ?? ''));
       return matches.length ? matches.reduce(byArea) : null;
-    })()) ||
+    })() ||
     (smartObjects.length ? smartObjects.reduce(byArea) : null)
   );
 }
@@ -73,8 +73,7 @@ export function applyHideRules(
   for (const layer of allLayers) {
     const name: string = layer.name ?? '';
     const shouldHide =
-      (BRAND_HIDE.test(name) && !replacedNames.has(name)) ||
-      hideLayers.includes(name);
+      (BRAND_HIDE.test(name) && !replacedNames.has(name)) || hideLayers.includes(name);
     if (shouldHide && layer.__original) {
       layer.__original.hidden = true;
     }

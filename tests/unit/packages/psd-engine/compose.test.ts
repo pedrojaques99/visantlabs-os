@@ -72,7 +72,15 @@ describe('composePsd — synthetic in-memory tree', () => {
       children: [
         { name: 'bg', left: 0, top: 0, right: 20, bottom: 20, canvas: solid(20, 20, '#ff0000') },
         // hidden top layer must NOT paint
-        { name: 'hidden', hidden: true, left: 0, top: 0, right: 20, bottom: 20, canvas: solid(20, 20, '#0000ff') },
+        {
+          name: 'hidden',
+          hidden: true,
+          left: 0,
+          top: 0,
+          right: 20,
+          bottom: 20,
+          canvas: solid(20, 20, '#0000ff'),
+        },
         // small green square only over the left-top corner
         { name: 'dot', left: 0, top: 0, right: 5, bottom: 5, canvas: solid(5, 5, '#00ff00') },
       ],
@@ -90,7 +98,15 @@ describe('composePsd — synthetic in-memory tree', () => {
       height: 10,
       children: [
         { name: 'bg', left: 0, top: 0, right: 10, bottom: 10, canvas: solid(10, 10, '#000000') },
-        { name: 'half', opacity: 0.5, left: 0, top: 0, right: 10, bottom: 10, canvas: solid(10, 10, '#ffffff') },
+        {
+          name: 'half',
+          opacity: 0.5,
+          left: 0,
+          top: 0,
+          right: 10,
+          bottom: 10,
+          canvas: solid(10, 10, '#ffffff'),
+        },
       ],
     };
     const out = composePsd(psd, cc);

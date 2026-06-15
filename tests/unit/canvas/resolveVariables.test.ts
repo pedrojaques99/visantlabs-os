@@ -4,10 +4,10 @@ import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, VariablesNodeData, DataNodeData } from '@/types/reactFlow';
 
 const makeNode = (id: string, type: string, data: any): Node<FlowNodeData> =>
-  ({ id, type, position: { x: 0, y: 0 }, data } as Node<FlowNodeData>);
+  ({ id, type, position: { x: 0, y: 0 }, data }) as Node<FlowNodeData>;
 
 const makeEdge = (source: string, target: string): Edge =>
-  ({ id: `${source}->${target}`, source, target } as Edge);
+  ({ id: `${source}->${target}`, source, target }) as Edge;
 
 describe('applyVariables', () => {
   it('replaces known placeholders', () => {

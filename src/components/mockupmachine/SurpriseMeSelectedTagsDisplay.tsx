@@ -97,7 +97,14 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
 
   // Close dropdown on outside-click; escape: false because handleKeyDown already handles
   // Escape on the input (it also clears searchQuery, so it does more than just close)
-  useClickOutside(dropdownRef, () => { setIsOpen(false); setSearchQuery(''); }, { enabled: isOpen, escape: false });
+  useClickOutside(
+    dropdownRef,
+    () => {
+      setIsOpen(false);
+      setSearchQuery('');
+    },
+    { enabled: isOpen, escape: false }
+  );
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -184,8 +191,8 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             ? 'bg-brand-cyan/10 text-brand-cyan'
             : 'bg-brand-cyan/10 text-brand-cyan'
           : theme === 'dark'
-          ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
-          : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
+            ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
+            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
       )}
     >
       <span className="truncate">{translateTag(tag)}</span>
@@ -209,8 +216,8 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-neutral-700'
             : theme === 'dark'
-            ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
-            : 'bg-neutral-100 text-neutral-500 border-neutral-300 hover:border-neutral-400'
+              ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
+              : 'bg-neutral-100 text-neutral-500 border-neutral-300 hover:border-neutral-400'
         )}
       >
         <span className="truncate">
@@ -344,8 +351,8 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
         value
           ? 'bg-brand-cyan/80 border-brand-cyan'
           : theme === 'dark'
-          ? 'bg-neutral-700 border-neutral-600'
-          : 'bg-white border-neutral-400'
+            ? 'bg-neutral-700 border-neutral-600'
+            : 'bg-white border-neutral-400'
       )}
     >
       {value && <Check size={10} className="text-black" strokeWidth={3} />}

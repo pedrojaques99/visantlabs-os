@@ -68,8 +68,8 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
                     missingDeps.length > 0
                       ? 'text-orange-400'
                       : theme === 'dark'
-                      ? 'text-neutral-400'
-                      : 'text-neutral-500'
+                        ? 'text-neutral-400'
+                        : 'text-neutral-500'
                   }
                 >
                   {dependencies.map((dep) => getDependencyStepTitle(dep, steps)).join(', ')}

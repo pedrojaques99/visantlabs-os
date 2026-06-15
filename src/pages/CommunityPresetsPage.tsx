@@ -465,10 +465,13 @@ export const CommunityPresetsPage: React.FC = () => {
 
   // ── Category counts ────────────────────────────────────────────────────────
   const sortedCategories = useMemo(() => {
-    const counts = PROMPT_CATEGORIES.reduce((acc, cat) => {
-      acc[cat] = cat === 'all' ? source.length : source.filter((p) => p.category === cat).length;
-      return acc;
-    }, {} as Record<PromptCategory, number>);
+    const counts = PROMPT_CATEGORIES.reduce(
+      (acc, cat) => {
+        acc[cat] = cat === 'all' ? source.length : source.filter((p) => p.category === cat).length;
+        return acc;
+      },
+      {} as Record<PromptCategory, number>
+    );
     return [
       'all' as PromptCategory,
       ...PROMPT_CATEGORIES.filter((c) => c !== 'all').sort((a, b) => counts[b] - counts[a]),

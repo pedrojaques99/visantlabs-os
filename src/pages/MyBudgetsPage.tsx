@@ -243,8 +243,8 @@ export const MyBudgetsPage: React.FC = () => {
                     {isLoadingPresets
                       ? 'Carregando...'
                       : presets.length === 0
-                      ? t('budget.noPresets') || 'Nenhum preset salvo ainda'
-                      : `${presets.length} ${presets.length === 1 ? 'preset' : 'presets'}`}
+                        ? t('budget.noPresets') || 'Nenhum preset salvo ainda'
+                        : `${presets.length} ${presets.length === 1 ? 'preset' : 'presets'}`}
                   </p>
                 </div>
               </div>

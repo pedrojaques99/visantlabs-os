@@ -252,10 +252,13 @@ const RunBenchmark: React.FC = () => {
     }
   };
 
-  const modelsByTier = models.reduce<Record<BenchmarkTier, BenchmarkModel[]>>((acc, m) => {
-    (acc[m.tier] = acc[m.tier] || []).push(m);
-    return acc;
-  }, {} as Record<BenchmarkTier, BenchmarkModel[]>);
+  const modelsByTier = models.reduce<Record<BenchmarkTier, BenchmarkModel[]>>(
+    (acc, m) => {
+      (acc[m.tier] = acc[m.tier] || []).push(m);
+      return acc;
+    },
+    {} as Record<BenchmarkTier, BenchmarkModel[]>
+  );
 
   const tierOrder: BenchmarkTier[] = ['flagship', 'balanced', 'fast', 'legacy'];
 
@@ -365,7 +368,9 @@ const RunBenchmark: React.FC = () => {
                           {model.description}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-white/20">{model.creditsCost1K} cr</span>
+                          <span className="text-[10px] text-white/20">
+                            {model.creditsCost1K} cr
+                          </span>
                           {!model.available && (
                             <span className="text-[10px] text-destructive/50">no key</span>
                           )}
@@ -491,8 +496,8 @@ const RunBenchmark: React.FC = () => {
               streamingResults.length <= 2
                 ? 'grid-cols-1 sm:grid-cols-2'
                 : streamingResults.length <= 4
-                ? 'grid-cols-2'
-                : 'grid-cols-2 lg:grid-cols-3'
+                  ? 'grid-cols-2'
+                  : 'grid-cols-2 lg:grid-cols-3'
             )}
           >
             <AnimatePresence mode="popLayout">
@@ -618,10 +623,7 @@ const RunBenchmark: React.FC = () => {
           {/* Credits summary */}
           {creditsRefunded > 0 && (
             <div className="text-center">
-              <Badge
-                variant="outline"
-                className="text-success border-success/20 text-[10px]"
-              >
+              <Badge variant="outline" className="text-success border-success/20 text-[10px]">
                 {creditsRefunded} credits refunded
               </Badge>
             </div>
@@ -856,10 +858,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
               <CreditCard className="w-3 h-3" /> {benchmark.totalCreditsCharged} cr
             </span>
             {benchmark.creditsRefunded > 0 && (
-              <Badge
-                variant="outline"
-                className="text-success border-success/20 text-[10px]"
-              >
+              <Badge variant="outline" className="text-success border-success/20 text-[10px]">
                 -{benchmark.creditsRefunded} refunded
               </Badge>
             )}
@@ -873,8 +872,8 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
           successResults.length <= 2
             ? 'grid-cols-1 sm:grid-cols-2'
             : successResults.length <= 4
-            ? 'grid-cols-2'
-            : 'grid-cols-2 lg:grid-cols-3'
+              ? 'grid-cols-2'
+              : 'grid-cols-2 lg:grid-cols-3'
         )}
       >
         {successResults.map((result) => {

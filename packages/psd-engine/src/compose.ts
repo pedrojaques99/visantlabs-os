@@ -19,7 +19,9 @@ export { coverArtCanvas, perspectiveWarp } from './warp.js';
 export function flattenLayers(layers: any[], parentPath = ''): any[] {
   const result: any[] = [];
   for (const layer of layers) {
-    const currentPath = parentPath ? `${parentPath} > ${layer.name || 'unnamed'}` : (layer.name || 'unnamed');
+    const currentPath = parentPath
+      ? `${parentPath} > ${layer.name || 'unnamed'}`
+      : layer.name || 'unnamed';
     // __original = referência ao objeto real em psd.children (não cópia)
     result.push({ ...layer, path: currentPath, __original: layer });
     if (layer.children) {
@@ -47,11 +49,13 @@ export function applyDisplacementFilter(
   edgeMode: 'wrap around' | 'repeat edge pixels',
   cc: CreateCanvas
 ): any {
-  const W = src.width, H = src.height;
+  const W = src.width,
+    H = src.height;
   const srcData: Uint8ClampedArray = src.getContext('2d').getImageData(0, 0, W, H).data;
 
   // Fit displacement map to source size
-  const dW = dispCanvas.width, dH = dispCanvas.height;
+  const dW = dispCanvas.width,
+    dH = dispCanvas.height;
   let dispData: Uint8ClampedArray;
   if (mapMode === 'stretch to fit' || (dW === W && dH === H)) {
     const fitted = cc(W, H);
@@ -71,33 +75,44 @@ export function applyDisplacementFilter(
   const outImg = outCtx.getImageData(0, 0, W, H);
   const outData: Uint8ClampedArray = outImg.data;
 
-  const wrapX = edgeMode === 'wrap around'
-    ? (v: number) => ((Math.floor(v) % W) + W) % W
-    : (v: number) => Math.max(0, Math.min(W - 1, Math.floor(v)));
-  const wrapY = edgeMode === 'wrap around'
-    ? (v: number) => ((Math.floor(v) % H) + H) % H
-    : (v: number) => Math.max(0, Math.min(H - 1, Math.floor(v)));
+  const wrapX =
+    edgeMode === 'wrap around'
+      ? (v: number) => ((Math.floor(v) % W) + W) % W
+      : (v: number) => Math.max(0, Math.min(W - 1, Math.floor(v)));
+  const wrapY =
+    edgeMode === 'wrap around'
+      ? (v: number) => ((Math.floor(v) % H) + H) % H
+      : (v: number) => Math.max(0, Math.min(H - 1, Math.floor(v)));
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const di = (y * W + x) * 4;
       // R → X, G → Y; 128 = neutral
-      const dx = (dispData[di] - 128) / 128 * hScale;
-      const dy = (dispData[di + 1] - 128) / 128 * vScale;
+      const dx = ((dispData[di] - 128) / 128) * hScale;
+      const dy = ((dispData[di + 1] - 128) / 128) * vScale;
 
       // Bilinear interpolation from source
-      const sx = x + dx, sy = y + dy;
-      const sx0 = Math.floor(sx), sy0 = Math.floor(sy);
-      const fx = sx - sx0, fy = sy - sy0;
+      const sx = x + dx,
+        sy = y + dy;
+      const sx0 = Math.floor(sx),
+        sy0 = Math.floor(sy);
+      const fx = sx - sx0,
+        fy = sy - sy0;
 
-      const ax0 = wrapX(sx0), ay0 = wrapY(sy0);
-      const ax1 = wrapX(sx0 + 1), ay1 = wrapY(sy0 + 1);
-      const i00 = (ay0 * W + ax0) * 4, i10 = (ay0 * W + ax1) * 4;
-      const i01 = (ay1 * W + ax0) * 4, i11 = (ay1 * W + ax1) * 4;
+      const ax0 = wrapX(sx0),
+        ay0 = wrapY(sy0);
+      const ax1 = wrapX(sx0 + 1),
+        ay1 = wrapY(sy0 + 1);
+      const i00 = (ay0 * W + ax0) * 4,
+        i10 = (ay0 * W + ax1) * 4;
+      const i01 = (ay1 * W + ax0) * 4,
+        i11 = (ay1 * W + ax1) * 4;
 
       for (let c = 0; c < 4; c++) {
-        const v00 = srcData[i00 + c], v10 = srcData[i10 + c];
-        const v01 = srcData[i01 + c], v11 = srcData[i11 + c];
+        const v00 = srcData[i00 + c],
+          v10 = srcData[i10 + c];
+        const v01 = srcData[i01 + c],
+          v11 = srcData[i11 + c];
         outData[di + c] = Math.round(
           v00 + (v10 - v00) * fx + (v01 - v00) * fy + (v11 - v10 - v01 + v00) * fx * fy
         );
@@ -112,15 +127,21 @@ export function applyDisplacementFilter(
 /** Aplica a arte em UMA camada SO usando o quad de cantos do placedLayer. */
 function replaceOne(orig: any, artImg: any, cc: CreateCanvas): ReplacedLayer {
   const pl = orig.placedLayer || {};
-  const innerW = Math.max(1, Math.round(pl.width || (orig.right - orig.left) || 1));
-  const innerH = Math.max(1, Math.round(pl.height || (orig.bottom - orig.top) || 1));
+  const innerW = Math.max(1, Math.round(pl.width || orig.right - orig.left || 1));
+  const innerH = Math.max(1, Math.round(pl.height || orig.bottom - orig.top || 1));
   let artCanvas = coverArtCanvas(artImg, innerW, innerH, cc);
 
   // Smart Filters: apply pre-loaded Displace filters (attach via pl.__displacementCanvases)
   const dispFilters: any[] = pl.__displacementCanvases || [];
   for (const df of dispFilters) {
     artCanvas = applyDisplacementFilter(
-      artCanvas, df.canvas, df.hScale, df.vScale, df.mapMode, df.edgeMode, cc
+      artCanvas,
+      df.canvas,
+      df.hScale,
+      df.vScale,
+      df.mapMode,
+      df.edgeMode,
+      cc
     );
   }
 
@@ -157,8 +178,10 @@ function replaceOne(orig: any, artImg: any, cc: CreateCanvas): ReplacedLayer {
         // Afim puro (sem nonAffineTransform) → matrix 2D direta, sem grid de triângulos.
         // Usar perspectiveWarp aqui cria artefatos de crosshatch nas bordas dos triângulos.
         const [tl, tr, , bl] = local;
-        const a = (tr.x - tl.x) / innerW, b = (tr.y - tl.y) / innerW;
-        const c = (bl.x - tl.x) / innerH, d = (bl.y - tl.y) / innerH;
+        const a = (tr.x - tl.x) / innerW,
+          b = (tr.y - tl.y) / innerW;
+        const c = (bl.x - tl.x) / innerH,
+          d = (bl.y - tl.y) / innerH;
         const ctx2 = warpCanvas.getContext('2d') as any;
         ctx2.transform(a, b, c, d, tl.x, tl.y);
         ctx2.drawImage(artCanvas, 0, 0);
@@ -196,9 +219,7 @@ export function replaceLinkedSmartObjects(
   cc: CreateCanvas
 ): ReplacedLayer[] {
   const targetId = target.placedLayer?.id;
-  const linked = targetId
-    ? allLayers.filter((l: any) => l.placedLayer?.id === targetId)
-    : [target];
+  const linked = targetId ? allLayers.filter((l: any) => l.placedLayer?.id === targetId) : [target];
 
   const anyVisible = linked.some((l: any) => !isEffectivelyHidden(l, allLayers));
   const replaced: ReplacedLayer[] = [];
@@ -216,9 +237,7 @@ function isEffectivelyHidden(layer: any, allLayers: any[]): boolean {
   if (layer.hidden) return true;
   const path: string = layer.path || '';
   // ancestrais = entradas cujo path é prefixo do path da camada
-  return allLayers.some(
-    (g: any) => g.children && g.hidden && path.startsWith(g.path + ' > ')
-  );
+  return allLayers.some((g: any) => g.children && g.hidden && path.startsWith(g.path + ' > '));
 }
 
 // ── Perspective warp ──────────────────────────────────────────────────────────
@@ -233,48 +252,57 @@ function isEffectivelyHidden(layer: any, allLayers: any[]): boolean {
 
 // Blend modes do PSD (strings do ag-psd) → globalCompositeOperation do Canvas 2D
 export const BLEND_MAP: Record<string, string> = {
-  'normal': 'source-over',
-  'dissolve': 'source-over',
-  'darken': 'darken',
-  'multiply': 'multiply',
+  normal: 'source-over',
+  dissolve: 'source-over',
+  darken: 'darken',
+  multiply: 'multiply',
   'color burn': 'color-burn',
-  'linear burn': 'color-burn',  // CSS fallback; pixel-level used in compositor
+  'linear burn': 'color-burn', // CSS fallback; pixel-level used in compositor
   'darker color': 'darken',
-  'lighten': 'lighten',
-  'screen': 'screen',
+  lighten: 'lighten',
+  screen: 'screen',
   'color dodge': 'color-dodge',
   'linear dodge': 'lighter',
   'lighter color': 'lighten',
-  'overlay': 'overlay',
+  overlay: 'overlay',
   'soft light': 'soft-light',
   'hard light': 'hard-light',
-  'vivid light': 'hard-light',  // CSS fallback; pixel-level used in compositor
+  'vivid light': 'hard-light', // CSS fallback; pixel-level used in compositor
   'linear light': 'hard-light', // CSS fallback; pixel-level used in compositor
-  'pin light': 'hard-light',    // CSS fallback; pixel-level used in compositor
-  'hard mix': 'hard-light',     // CSS fallback; pixel-level used in compositor
-  'difference': 'difference',
-  'exclusion': 'exclusion',
-  'subtract': 'difference',     // CSS fallback; pixel-level used in compositor
-  'divide': 'source-over',      // CSS fallback; pixel-level used in compositor
-  'hue': 'hue',
-  'saturation': 'saturation',
-  'color': 'color',
-  'luminosity': 'luminosity',
+  'pin light': 'hard-light', // CSS fallback; pixel-level used in compositor
+  'hard mix': 'hard-light', // CSS fallback; pixel-level used in compositor
+  difference: 'difference',
+  exclusion: 'exclusion',
+  subtract: 'difference', // CSS fallback; pixel-level used in compositor
+  divide: 'source-over', // CSS fallback; pixel-level used in compositor
+  hue: 'hue',
+  saturation: 'saturation',
+  color: 'color',
+  luminosity: 'luminosity',
 };
 
 // PS blend modes that Canvas 2D doesn't support accurately — compositor uses
 // getImageData/putImageData pixel-level blending for these instead.
 const PIXEL_BLEND_SET = new Set([
-  'divide', 'subtract', 'linear burn', 'linear light',
-  'vivid light', 'pin light', 'hard mix',
+  'divide',
+  'subtract',
+  'linear burn',
+  'linear light',
+  'vivid light',
+  'pin light',
+  'hard mix',
 ]);
 
 function blendCh(mode: string, b: number, s: number): number {
   switch (mode) {
-    case 'divide':      return s === 0 ? 1 : Math.min(1, b / s);
-    case 'subtract':    return Math.max(0, b - s);
-    case 'linear burn': return Math.max(0, b + s - 1);
-    case 'linear light': return Math.max(0, Math.min(1, b + 2 * s - 1));
+    case 'divide':
+      return s === 0 ? 1 : Math.min(1, b / s);
+    case 'subtract':
+      return Math.max(0, b - s);
+    case 'linear burn':
+      return Math.max(0, b + s - 1);
+    case 'linear light':
+      return Math.max(0, Math.min(1, b + 2 * s - 1));
     case 'vivid light': {
       if (s <= 0.5) return s === 0 ? 0 : Math.max(0, 1 - (1 - b) / (2 * s));
       return s === 1 ? 1 : Math.min(1, b / (2 * (1 - s)));
@@ -282,11 +310,18 @@ function blendCh(mode: string, b: number, s: number): number {
     case 'pin light':
       return s <= 0.5 ? Math.min(b, 2 * s) : Math.max(b, 2 * s - 1);
     case 'hard mix': {
-      const vl = s <= 0.5 ? (s === 0 ? 0 : Math.max(0, 1 - (1 - b) / (2 * s)))
-                           : (s === 1 ? 1 : Math.min(1, b / (2 * (1 - s))));
+      const vl =
+        s <= 0.5
+          ? s === 0
+            ? 0
+            : Math.max(0, 1 - (1 - b) / (2 * s))
+          : s === 1
+            ? 1
+            : Math.min(1, b / (2 * (1 - s)));
       return vl >= 0.5 ? 1 : 0;
     }
-    default: return b;
+    default:
+      return b;
   }
 }
 
@@ -338,7 +373,10 @@ function drawChildren(ctx: any, layers: any[], W: number, H: number, cc: CreateC
   let i = 0;
   while (i < layers.length) {
     const layer = layers[i];
-    if (layer.hidden || layer.clipping) { i++; continue; }
+    if (layer.hidden || layer.clipping) {
+      i++;
+      continue;
+    }
     const clipped: any[] = [];
     let j = i + 1;
     while (j < layers.length && layers[j].clipping) {
@@ -387,7 +425,13 @@ function drawOne(ctx: any, layer: any, clipped: any[], W: number, H: number, cc:
 
   // Atalho: grupo passthrough sem máscara/clip/opacity renderiza direto no pai
   const passthrough = !layer.blendMode || layer.blendMode === 'pass through';
-  if (layer.children && passthrough && alpha >= 1 && clipped.length === 0 && !hasUsableMask(layer)) {
+  if (
+    layer.children &&
+    passthrough &&
+    alpha >= 1 &&
+    clipped.length === 0 &&
+    !hasUsableMask(layer)
+  ) {
     drawChildren(ctx, layer.children, W, H, cc);
     return;
   }
@@ -429,11 +473,11 @@ function drawOne(ctx: any, layer: any, clipped: any[], W: number, H: number, cc:
         // causa grain/shadow/light mais fortes do que o esperado. Fix: dois passos.
         const tmp = cc(W, H);
         const tctx = tmp.getContext('2d') as any;
-        tctx.drawImage(content, 0, 0);       // base atual (conteúdo acumulado)
+        tctx.drawImage(content, 0, 0); // base atual (conteúdo acumulado)
         tctx.globalCompositeOperation = clBlend;
-        tctx.drawImage(clContent, 0, 0);     // blend em opacidade plena
+        tctx.drawImage(clContent, 0, 0); // blend em opacidade plena
         cctx.save();
-        (cctx as any).globalAlpha = clAlpha;  // source-over padrão → mix correto
+        (cctx as any).globalAlpha = clAlpha; // source-over padrão → mix correto
         (cctx as any).drawImage(tmp, 0, 0);
         cctx.restore();
       } else {
@@ -472,11 +516,11 @@ function drawOne(ctx: any, layer: any, clipped: any[], W: number, H: number, cc:
     // Para source-over a equação é idêntica, mas para multiply/soft-light/etc. não.
     const tmp = cc(W, H);
     const tctx = tmp.getContext('2d') as any;
-    tctx.drawImage(ctx.canvas, 0, 0);      // copia base atual
+    tctx.drawImage(ctx.canvas, 0, 0); // copia base atual
     tctx.globalCompositeOperation = effectiveBlend;
-    tctx.drawImage(content, 0, 0);         // blend em opacidade plena
+    tctx.drawImage(content, 0, 0); // blend em opacidade plena
     ctx.save();
-    ctx.globalAlpha = alpha;               // source-over → mix(base, blend_result, alpha)
+    ctx.globalAlpha = alpha; // source-over → mix(base, blend_result, alpha)
     ctx.drawImage(tmp, 0, 0);
     ctx.restore();
   } else {
@@ -563,7 +607,8 @@ function applyRasterMask(canvas: any, layer: any, W: number, H: number) {
   const top = Math.max(0, Math.floor(layer.top ?? 0));
   const right = Math.min(W, Math.ceil(layer.right ?? W));
   const bottom = Math.min(H, Math.ceil(layer.bottom ?? H));
-  const rw = right - left, rh = bottom - top;
+  const rw = right - left,
+    rh = bottom - top;
   if (rw <= 0 || rh <= 0) return;
 
   const ctx = canvas.getContext('2d');
@@ -572,8 +617,10 @@ function applyRasterMask(canvas: any, layer: any, W: number, H: number) {
 
   const mc = mask.canvas;
   const mdata = mc.getContext('2d').getImageData(0, 0, mc.width, mc.height).data;
-  const ml = Math.floor(mask.left ?? 0), mt = Math.floor(mask.top ?? 0);
-  const mw = mc.width, mh = mc.height;
+  const ml = Math.floor(mask.left ?? 0),
+    mt = Math.floor(mask.top ?? 0);
+  const mw = mc.width,
+    mh = mc.height;
   const def = (mask.defaultColor ?? 255) / 255;
 
   for (let y = 0; y < rh; y++) {

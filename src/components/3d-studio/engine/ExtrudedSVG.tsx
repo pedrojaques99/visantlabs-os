@@ -456,8 +456,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       roughness: isGold
         ? 0.12
         : wantsTransparency
-        ? Math.max(0.02, materialSettings.roughness * 0.3)
-        : materialSettings.roughness,
+          ? Math.max(0.02, materialSettings.roughness * 0.3)
+          : materialSettings.roughness,
       transmission:
         materialSettings.transmission !== undefined
           ? materialSettings.transmission
@@ -466,15 +466,15 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
         materialSettings.thickness !== undefined
           ? materialSettings.thickness
           : wantsTransparency
-          ? 2.5
-          : 0,
+            ? 2.5
+            : 0,
       ior: isGold
         ? 2.5
         : materialSettings.ior !== undefined
-        ? materialSettings.ior
-        : wantsTransparency
-        ? 1.5
-        : 1.45,
+          ? materialSettings.ior
+          : wantsTransparency
+            ? 1.5
+            : 1.45,
       opacity: 1 as number,
       transparent: (blendMode !== 'normal') as boolean,
       blending: threeBlending,
@@ -484,15 +484,15 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       clearcoat: isGold
         ? 1.0
         : materialSettings.clearcoat !== undefined
-        ? materialSettings.clearcoat
-        : wantsTransparency
-        ? 1
-        : preset.clearcoat ?? 0,
+          ? materialSettings.clearcoat
+          : wantsTransparency
+            ? 1
+            : (preset.clearcoat ?? 0),
       clearcoatRoughness: isGold
         ? 0.03
         : materialSettings.clearcoatRoughness !== undefined
-        ? materialSettings.clearcoatRoughness
-        : 0.05,
+          ? materialSettings.clearcoatRoughness
+          : 0.05,
       sheen: materialSettings.sheen !== undefined ? materialSettings.sheen : 0,
       sheenRoughness:
         materialSettings.sheenRoughness !== undefined ? materialSettings.sheenRoughness : 0,
@@ -501,18 +501,18 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       iridescence: isGold
         ? 0.35
         : materialSettings.iridescence !== undefined
-        ? materialSettings.iridescence
-        : 0,
+          ? materialSettings.iridescence
+          : 0,
       iridescenceIOR: isGold
         ? 1.6
         : materialSettings.iridescenceIOR !== undefined
-        ? materialSettings.iridescenceIOR
-        : 1.3,
+          ? materialSettings.iridescenceIOR
+          : 1.3,
       reflectivity: isGold
         ? 0.95
         : materialSettings.reflectivity !== undefined
-        ? materialSettings.reflectivity
-        : 0.5,
+          ? materialSettings.reflectivity
+          : 0.5,
       side: THREE.DoubleSide,
       envMapIntensity: isGold ? 2.2 : envMapIntensityProp,
     };
@@ -741,14 +741,14 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
       shapeType === 'coin'
         ? coinRadius
         : shapeType === 'shield'
-        ? shieldHeight
-        : shapeType === 'badge'
-        ? badgeHeight / 2
-        : shapeType === 'stamp'
-        ? stampRadius
-        : shapeType === 'hexagon'
-        ? hexRadius
-        : 2.0;
+          ? shieldHeight
+          : shapeType === 'badge'
+            ? badgeHeight / 2
+            : shapeType === 'stamp'
+              ? stampRadius
+              : shapeType === 'hexagon'
+                ? hexRadius
+                : 2.0;
 
     const bailRadius = bailSize;
     const bailTube = bailSize * 0.3;
@@ -908,15 +908,15 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
                   materialSettings.thickness !== undefined
                     ? materialSettings.thickness
                     : wantsTransparency
-                    ? 2.5
-                    : 0
+                      ? 2.5
+                      : 0
                 }
                 ior={
                   materialSettings.ior !== undefined
                     ? materialSettings.ior
                     : wantsTransparency
-                    ? 1.5
-                    : 1.45
+                      ? 1.5
+                      : 1.45
                 }
                 opacity={1}
                 transparent={blendMode !== 'normal'}
@@ -928,8 +928,8 @@ export const ExtrudedSVG: React.FC<ExtrudedSVGProps> = ({
                   materialSettings.clearcoat !== undefined
                     ? materialSettings.clearcoat
                     : wantsTransparency
-                    ? 1
-                    : preset.clearcoat ?? 0
+                      ? 1
+                      : (preset.clearcoat ?? 0)
                 }
                 clearcoatRoughness={
                   materialSettings.clearcoatRoughness !== undefined

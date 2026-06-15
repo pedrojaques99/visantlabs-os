@@ -46,8 +46,8 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
     mode === 'halftone'
       ? 'bg-cyan-950/30'
       : mode === 'riso'
-      ? 'bg-amber-950/30'
-      : 'bg-purple-950/30';
+        ? 'bg-amber-950/30'
+        : 'bg-purple-950/30';
 
   return (
     <div

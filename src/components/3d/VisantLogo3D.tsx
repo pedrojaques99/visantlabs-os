@@ -347,8 +347,12 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
-    const onEnter = () => { isHovering.current = true; };
-    const onLeave = () => { isHovering.current = false; };
+    const onEnter = () => {
+      isHovering.current = true;
+    };
+    const onLeave = () => {
+      isHovering.current = false;
+    };
     el.addEventListener('mouseenter', onEnter);
     el.addEventListener('mouseleave', onLeave);
     return () => {

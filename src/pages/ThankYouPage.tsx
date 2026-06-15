@@ -210,9 +210,9 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
                     interval: interval
                       ? t(`common.${interval}`)
                       : (planCredits || purchasedCredits) &&
-                        (planCredits || purchasedCredits)! > 500
-                      ? t('common.year')
-                      : t('common.month'),
+                          (planCredits || purchasedCredits)! > 500
+                        ? t('common.year')
+                        : t('common.month'),
                   })}
                 </span>
               </li>

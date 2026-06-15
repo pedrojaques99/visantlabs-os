@@ -10,7 +10,7 @@ const base = (overrides: Partial<BrandGuideline> = {}): BrandGuideline =>
     logos: [],
     tags: {},
     ...overrides,
-  } as BrandGuideline);
+  }) as BrandGuideline;
 
 describe('mergeBrandGuidelines', () => {
   it('keeps existing identity fields (no overwrite)', () => {

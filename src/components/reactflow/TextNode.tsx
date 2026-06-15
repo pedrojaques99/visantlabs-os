@@ -217,8 +217,8 @@ export const TextNode = memo(
                 isVeryLongText
                   ? 'text-warning bg-warning/10 border-node border-warning/20'
                   : isLongText
-                  ? 'text-neutral-400 bg-neutral-800/50'
-                  : 'text-neutral-500 bg-neutral-800/30'
+                    ? 'text-neutral-400 bg-neutral-800/50'
+                    : 'text-neutral-500 bg-neutral-800/30'
               )}
             >
               {charCount.toLocaleString()} {t('canvasNodes.textNode.characters') || 'chars'}

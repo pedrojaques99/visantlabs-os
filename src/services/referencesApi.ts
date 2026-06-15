@@ -130,10 +130,7 @@ export const referencesApi = {
     return resp.json();
   },
 
-  async similarTo(
-    id: string,
-    limit = 24
-  ): Promise<{ references: ReferenceItem[]; total: number }> {
+  async similarTo(id: string, limit = 24): Promise<{ references: ReferenceItem[]; total: number }> {
     const resp = await fetch(`${BASE}/${encodeURIComponent(id)}/similar?limit=${limit}`, {
       headers: authHeaders(),
     });

@@ -1401,9 +1401,9 @@ const MockupMachinePageContent: React.FC = () => {
         // Always track prompt generation usage (even if tokens are not available, use 0)
         try {
           const inputTokens =
-            typeof smartPromptResult === 'object' ? smartPromptResult.inputTokens ?? 0 : 0;
+            typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
           const outputTokens =
-            typeof smartPromptResult === 'object' ? smartPromptResult.outputTokens ?? 0 : 0;
+            typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
 
           const token = authService.getToken();
           await fetch(`${API_BASE}/mockups/track-prompt-generation`, {

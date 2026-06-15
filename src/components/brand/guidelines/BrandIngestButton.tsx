@@ -52,10 +52,15 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
     fig.state.status !== 'idle'
       ? { state: fig.state, reset: fig.reset, title: 'Extract from .fig', source: 'fig_file' }
       : pdf.state.status !== 'idle'
-      ? { state: pdf.state, reset: pdf.reset, title: 'Extract from PDF', source: 'pdf' }
-      : images.state.status !== 'idle'
-      ? { state: images.state, reset: images.reset, title: 'Review extraction', source: 'images' }
-      : null;
+        ? { state: pdf.state, reset: pdf.reset, title: 'Extract from PDF', source: 'pdf' }
+        : images.state.status !== 'idle'
+          ? {
+              state: images.state,
+              reset: images.reset,
+              title: 'Review extraction',
+              source: 'images',
+            }
+          : null;
 
   const isBusy = !!active && active.state.status === 'streaming';
   const showExtractModal = !!active && active.state.status !== 'idle';

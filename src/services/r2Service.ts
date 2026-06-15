@@ -1205,7 +1205,11 @@ const STORAGE_LIMIT_ADMIN = Number.MAX_SAFE_INTEGER; // No limit for admins
  * Custom error for storage limit exceeded
  */
 export class StorageLimitExceededError extends Error {
-  constructor(public used: number, public limit: number, public fileSize: number) {
+  constructor(
+    public used: number,
+    public limit: number,
+    public fileSize: number
+  ) {
     const usedMB = (used / 1024 / 1024).toFixed(2);
     const limitMB = (limit / 1024 / 1024).toFixed(2);
     const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);

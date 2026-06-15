@@ -2102,10 +2102,8 @@ Content-Type: application/json`}</pre>
                               <Badge
                                 variant="outline"
                                 className={cn('font-redhatmono uppercase', {
-                                  'bg-success/10 text-success border-success/20':
-                                    method === 'GET',
-                                  'bg-warning/10 text-warning border-warning/20':
-                                    method === 'POST',
+                                  'bg-success/10 text-success border-success/20': method === 'GET',
+                                  'bg-warning/10 text-warning border-warning/20': method === 'POST',
                                   'bg-blue-500/10 text-blue-500 border-blue-500/20':
                                     method === 'PUT',
                                   'bg-destructive/10 text-destructive border-destructive/20':
@@ -2561,10 +2559,8 @@ Content-Type: application/json`}</pre>
                               <Badge
                                 variant="outline"
                                 className={cn('font-redhatmono uppercase', {
-                                  'bg-success/10 text-success border-success/20':
-                                    method === 'GET',
-                                  'bg-warning/10 text-warning border-warning/20':
-                                    method === 'POST',
+                                  'bg-success/10 text-success border-success/20': method === 'GET',
+                                  'bg-warning/10 text-warning border-warning/20': method === 'POST',
                                   'bg-destructive/10 text-destructive border-destructive/20':
                                     method === 'DELETE',
                                 })}
@@ -2650,10 +2646,8 @@ Content-Type: application/json`}</pre>
                               <Badge
                                 variant="outline"
                                 className={cn('font-redhatmono uppercase', {
-                                  'bg-success/10 text-success border-success/20':
-                                    method === 'GET',
-                                  'bg-warning/10 text-warning border-warning/20':
-                                    method === 'POST',
+                                  'bg-success/10 text-success border-success/20': method === 'GET',
+                                  'bg-warning/10 text-warning border-warning/20': method === 'POST',
                                   'bg-blue-500/10 text-blue-500 border-blue-500/20':
                                     method === 'PUT',
                                   'bg-destructive/10 text-destructive border-destructive/20':

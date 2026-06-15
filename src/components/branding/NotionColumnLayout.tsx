@@ -502,8 +502,8 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                       isDragged
                         ? 'opacity-100 scale-95'
                         : isDropTargetBefore || isDropTargetAfter
-                        ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
-                        : ''
+                          ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
+                          : ''
                     }`}
                   >
                     {sectionElement}
@@ -734,8 +734,8 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                 isColumnHighlighted
                   ? 'bg-brand-cyan/5 border-2 border-[brand-cyan]/40'
                   : isEmptyColumn
-                  ? 'bg-transparent'
-                  : ''
+                    ? 'bg-transparent'
+                    : ''
               }`}
               onDragOver={(e) => handleColumnDragOver(e, columnIndex)}
               onDrop={(e) => handleColumnDrop(e, columnIndex)}
@@ -828,8 +828,8 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                         isDragged
                           ? 'opacity-100 scale-95'
                           : isDropTarget
-                          ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
-                          : ''
+                            ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
+                            : ''
                       }`}
                     >
                       {sectionElement}

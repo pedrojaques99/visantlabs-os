@@ -616,8 +616,8 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
         freeGenerationsUsed: hasActiveSubscription
           ? freeGenerationsUsed
           : isAdmin
-          ? freeGenerationsUsed
-          : freeGenerationsUsed + 1,
+            ? freeGenerationsUsed
+            : freeGenerationsUsed + 1,
         creditsUsed: responseCreditsUsed,
         creditsRemaining: responseMonthlyCreditsRemaining,
         totalCreditsEarned: responseTotalCreditsEarned,

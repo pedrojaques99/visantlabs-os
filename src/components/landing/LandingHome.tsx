@@ -28,7 +28,6 @@ const MARQUEE = [
   'ascii-vortex',
 ];
 
-
 const Marquee: React.FC<{ names: string[]; reverse?: boolean; speed?: number }> = ({
   names,
   reverse = false,
@@ -173,11 +172,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       {/* ── Hero ────────────────────────────────────────────────── */}
       <header className="relative h-[100svh] min-h-[640px] overflow-hidden">
         {/* 3D logo as full background */}
-        <div
-          data-stage
-          aria-hidden
-          className="absolute inset-0 z-0 opacity-60"
-        >
+        <div data-stage aria-hidden className="absolute inset-0 z-0 opacity-60">
           <VisantLogo3D
             presetIndex={1}
             xOffsetPx={0}
@@ -197,9 +192,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           <div data-hero className="flex flex-col items-center gap-7">
             <h1 className="text-5xl font-semibold leading-[0.91] tracking-[-0.08em] sm:text-7xl lg:text-[6rem]">
               <span className="block text-white">{t('landing.hero.titleLine1')}</span>
-              <span className="block text-brand-cyan">
-                {t('landing.hero.titleLine2')}
-              </span>
+              <span className="block text-brand-cyan">{t('landing.hero.titleLine2')}</span>
             </h1>
             <p className="max-w-lg text-base text-neutral-400 sm:text-lg">
               {t('landing.hero.subtitle')}
@@ -240,16 +233,30 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         </div>
         <div className="grid grid-cols-1 gap-px bg-white/5 sm:grid-cols-3 rounded-2xl overflow-hidden border border-white/5">
           {[
-            { num: t('landing.howItWorks.step1Num'), title: t('landing.howItWorks.step1Title'), desc: t('landing.howItWorks.step1Desc') },
-            { num: t('landing.howItWorks.step2Num'), title: t('landing.howItWorks.step2Title'), desc: t('landing.howItWorks.step2Desc') },
-            { num: t('landing.howItWorks.step3Num'), title: t('landing.howItWorks.step3Title'), desc: t('landing.howItWorks.step3Desc') },
+            {
+              num: t('landing.howItWorks.step1Num'),
+              title: t('landing.howItWorks.step1Title'),
+              desc: t('landing.howItWorks.step1Desc'),
+            },
+            {
+              num: t('landing.howItWorks.step2Num'),
+              title: t('landing.howItWorks.step2Title'),
+              desc: t('landing.howItWorks.step2Desc'),
+            },
+            {
+              num: t('landing.howItWorks.step3Num'),
+              title: t('landing.howItWorks.step3Title'),
+              desc: t('landing.howItWorks.step3Desc'),
+            },
           ].map((step) => (
             <div
               key={step.num}
               data-reveal
               className="flex flex-col gap-5 bg-neutral-950 p-8 sm:p-10"
             >
-              <span className="font-redhatmono text-[11px] text-neutral-600 tracking-widest">{step.num}</span>
+              <span className="font-redhatmono text-[11px] text-neutral-600 tracking-widest">
+                {step.num}
+              </span>
               <div className="flex flex-col gap-2">
                 <h3 className="text-lg font-semibold text-white tracking-tight">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-neutral-500">{step.desc}</p>
@@ -308,7 +315,10 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
             t('landing.trust.label3'),
             t('landing.trust.label4'),
           ].map((label) => (
-            <span key={label} className="font-redhatmono text-[11px] uppercase tracking-widest text-neutral-500">
+            <span
+              key={label}
+              className="font-redhatmono text-[11px] uppercase tracking-widest text-neutral-500"
+            >
               {label}
             </span>
           ))}
@@ -325,12 +335,19 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         className="relative overflow-hidden min-h-[420px] cursor-default"
         onMouseMove={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
-          setCtaGlow({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100, active: true });
+          setCtaGlow({
+            x: ((e.clientX - r.left) / r.width) * 100,
+            y: ((e.clientY - r.top) / r.height) * 100,
+            active: true,
+          });
         }}
         onMouseLeave={() => setCtaGlow((g) => ({ ...g, active: false }))}
       >
         {/* Subtle ambient gradient base */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(82,221,235,0.07),transparent)]" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(82,221,235,0.07),transparent)]"
+        />
         {/* Mouse-follow glow — CSS only, no GPU */}
         <div
           aria-hidden

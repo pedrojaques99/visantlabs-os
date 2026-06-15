@@ -27,8 +27,6 @@ describe('stripDataUriPrefix', () => {
   });
 
   it('only strips the leading prefix, not embedded text', () => {
-    expect(stripDataUriPrefix('AAAdata:image/png;base64,BBB')).toBe(
-      'AAAdata:image/png;base64,BBB'
-    );
+    expect(stripDataUriPrefix('AAAdata:image/png;base64,BBB')).toBe('AAAdata:image/png;base64,BBB');
   });
 });

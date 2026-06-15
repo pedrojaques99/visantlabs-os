@@ -77,7 +77,7 @@ export const SelectionHud: React.FC<Props> = ({
   const selectedLayerIds = useCreativeStore((s) => s.selectedLayerIds);
   const layer = useCreativeStore((s) =>
     s.selectedLayerIds.length === 1
-      ? s.layers.find((l) => l.id === s.selectedLayerIds[0]) ?? null
+      ? (s.layers.find((l) => l.id === s.selectedLayerIds[0]) ?? null)
       : null
   );
   const updateLayer = useCreativeStore((s) => s.updateLayer);

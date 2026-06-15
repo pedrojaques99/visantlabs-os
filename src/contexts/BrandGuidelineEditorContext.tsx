@@ -151,7 +151,7 @@ const LiveblocksStorageSyncer: React.FC<{
     const updatedAt =
       typeof guideline.updatedAt === 'string'
         ? guideline.updatedAt
-        : (guideline.updatedAt as any)?.toString() ?? '';
+        : ((guideline.updatedAt as any)?.toString() ?? '');
     const key = `${guideline.id}:${updatedAt}`;
     if (syncedKey.current !== key) {
       syncedKey.current = key;

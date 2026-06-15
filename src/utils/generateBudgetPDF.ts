@@ -352,7 +352,7 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const secondaryTextColor = (isDarkBg ? [200, 200, 200] : [100, 100, 100]) as [
     number,
     number,
-    number
+    number,
   ];
 
   function hexToRgb(hex: string): [number, number, number] {

@@ -24,7 +24,7 @@ describe('API keys lifecycle', () => {
 
     const list = await agent.get('/api/apiKeys').set('Authorization', bearer(token));
     expect([200]).toContain(list.status);
-    const keys = Array.isArray(list.body) ? list.body : list.body?.keys ?? [];
+    const keys = Array.isArray(list.body) ? list.body : (list.body?.keys ?? []);
     expect(keys.length).toBeGreaterThanOrEqual(1);
 
     const id = keys[0].id ?? create.body?.id;

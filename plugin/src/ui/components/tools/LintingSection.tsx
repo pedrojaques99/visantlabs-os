@@ -12,10 +12,10 @@ function BrandLintReport({ report }: { report: any }) {
     score === null
       ? ''
       : score >= 80
-      ? 'text-green-500'
-      : score >= 50
-      ? 'text-yellow-500'
-      : 'text-red-500';
+        ? 'text-green-500'
+        : score >= 50
+          ? 'text-yellow-500'
+          : 'text-red-500';
 
   return (
     <div className="border border-white/5 rounded-lg p-3 space-y-2 mt-3 bg-white/[0.02]">

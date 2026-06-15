@@ -370,11 +370,7 @@ export const FaviconPage: React.FC = () => {
         asChild
       >
         <motion.button whileTap={{ scale: 0.98 }} disabled={isGenerating}>
-          {isGenerating ? (
-            <GlitchLoader size={14} color="currentColor" />
-          ) : (
-            <ImageIcon size={14} />
-          )}
+          {isGenerating ? <GlitchLoader size={14} color="currentColor" /> : <ImageIcon size={14} />}
           <span className="ml-2">{isGenerating ? 'Generating...' : 'Generate Icons'}</span>
         </motion.button>
       </Button>
@@ -576,11 +572,7 @@ export const FaviconPage: React.FC = () => {
                           className="absolute top-2 right-2 text-neutral-600 hover:text-neutral-300 transition-colors duration-200"
                           title="Copy"
                         >
-                          {copiedSnippet === 'manifest' ? (
-                            <Check size={12} />
-                          ) : (
-                            <Copy size={12} />
-                          )}
+                          {copiedSnippet === 'manifest' ? <Check size={12} /> : <Copy size={12} />}
                         </motion.button>
                       </div>
                     </motion.div>

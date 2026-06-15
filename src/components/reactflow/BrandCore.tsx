@@ -69,8 +69,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const identityType: 'pdf' | 'png' | undefined = connectedPdf
     ? 'pdf'
     : connectedImage
-    ? 'png'
-    : uploadedIdentityType;
+      ? 'png'
+      : uploadedIdentityType;
 
   // Auto-expand when brandIdentity is added
   useEffect(() => {
@@ -465,8 +465,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     {connectedPdf
                       ? 'Reference document'
                       : connectedImage
-                      ? 'Style reference'
-                      : 'Local upload'}
+                        ? 'Style reference'
+                        : 'Local upload'}
                   </div>
                 </div>
               </div>

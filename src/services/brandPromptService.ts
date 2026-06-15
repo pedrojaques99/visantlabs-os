@@ -79,8 +79,8 @@ export const generateVisualPrompt = async (
     aspectRatio === '16:9'
       ? 'widescreen cinematic shot'
       : aspectRatio === '4:3'
-      ? 'standard photo'
-      : 'square composition'
+        ? 'standard photo'
+        : 'square composition'
   } of a ${mockupType} mockup. 
 Color palette: ${colorPalette || 'brand colors'}. 
 Visual style: ${visualStyle || 'brand style'}. 

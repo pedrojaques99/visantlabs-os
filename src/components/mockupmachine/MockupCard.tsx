@@ -139,8 +139,8 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
       aspectRatio === '16:9'
         ? 'aspect-[16/9]'
         : aspectRatio === '4:3'
-        ? 'aspect-[4/3]'
-        : 'aspect-square';
+          ? 'aspect-[4/3]'
+          : 'aspect-square';
 
     return (
       <GlassPanel

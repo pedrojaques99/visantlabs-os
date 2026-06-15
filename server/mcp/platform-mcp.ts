@@ -320,7 +320,11 @@ export function buildRenderPayload(args: {
   artUrl: string;
   face?: string;
   preview?: boolean;
-}): { psdFileName: string; arts: Array<{ smartObject: string; artUrl: string }>; preview?: boolean } {
+}): {
+  psdFileName: string;
+  arts: Array<{ smartObject: string; artUrl: string }>;
+  preview?: boolean;
+} {
   return {
     psdFileName: args.psdFileName,
     arts: [{ smartObject: args.face || '*', artUrl: args.artUrl }],
@@ -638,8 +642,8 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
       const authHeader = currentUserId
         ? `x-mcp-user-id: ${currentUserId}` // will be handled below
         : jwt
-        ? null
-        : null;
+          ? null
+          : null;
 
       if (!currentUserId && !jwt) {
         return ERR.validation(
@@ -3434,7 +3438,18 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       limit: z.number().int().min(1).max(50).default(20).describe('Max results.'),
     },
     { title: 'Search References', readOnlyHint: true },
-    async ({ search, niche, aesthetic, vibe, lighting, texture, mockup_type, country, region, limit }) => {
+    async ({
+      search,
+      niche,
+      aesthetic,
+      vibe,
+      lighting,
+      texture,
+      mockup_type,
+      country,
+      region,
+      limit,
+    }) => {
       try {
         await connectToMongoDB();
         const db = getDb();
@@ -3510,7 +3525,19 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       year: z.number().int().optional().describe('Year the work was produced/awarded.'),
     },
     { title: 'Ingest Reference Material', destructiveHint: false },
-    async ({ imageUrl, name, studio, tags, prompt, country, region, designer, sourceUrl, awardSource, year }) => {
+    async ({
+      imageUrl,
+      name,
+      studio,
+      tags,
+      prompt,
+      country,
+      region,
+      designer,
+      sourceUrl,
+      awardSource,
+      year,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -5553,8 +5580,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const data = await res.json();
         const sceneId = data.scene?._id || data.scene?.id;
 
-        const frontendBase =
-          FRONTEND_BASE_URL;
+        const frontendBase = FRONTEND_BASE_URL;
         const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
 
         return jsonResponse({
@@ -5607,8 +5633,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!res.ok) return ERR.internal(await res.text());
         const data = await res.json();
 
-        const frontendBase =
-          FRONTEND_BASE_URL;
+        const frontendBase = FRONTEND_BASE_URL;
         const deepLink = `${frontendBase}/3d-studio?sceneId=${sceneId}`;
 
         return jsonResponse({ ...data, deepLink });
@@ -6118,7 +6143,13 @@ Workflow: pick a scene + face by brand/brief, then call psd-mockup-produce with 
         }
         const q = (search || '').trim().toLowerCase();
         const scenes = (result.scenes || [])
-          .filter((s: any) => !q || String(s.psdFileName || '').toLowerCase().includes(q))
+          .filter(
+            (s: any) =>
+              !q ||
+              String(s.psdFileName || '')
+                .toLowerCase()
+                .includes(q)
+          )
           .map((s: any) => ({
             psdFileName: s.psdFileName,
             width: s.width,
@@ -6149,7 +6180,9 @@ Workflow: pick a scene + face by brand/brief, then call psd-mockup-produce with 
     {
       psdFileName: z
         .string()
-        .describe('Bare PSD file name from the Drive catalog (e.g. "HM_BANNER_002.psd"). No paths.'),
+        .describe(
+          'Bare PSD file name from the Drive catalog (e.g. "HM_BANNER_002.psd"). No paths.'
+        ),
     },
     { title: 'Prepare PSD Scene', destructiveHint: false },
     async ({ psdFileName }) => {
@@ -6201,15 +6234,21 @@ Pick the template with psd-scene-list first and match the art aspect ratio to th
       artUrl: z
         .string()
         .optional()
-        .describe('URL of existing artwork to place. Skips generation (free). Use artPrompt OR artUrl.'),
+        .describe(
+          'URL of existing artwork to place. Skips generation (free). Use artPrompt OR artUrl.'
+        ),
       brandGuidelineId: z
         .string()
         .optional()
-        .describe('Brand guideline ID — injects logo/colors/typography when generating art (artPrompt path).'),
+        .describe(
+          'Brand guideline ID — injects logo/colors/typography when generating art (artPrompt path).'
+        ),
       face: z
         .string()
         .optional()
-        .describe('Target smart object name/key from psd-scene-list. Omit to apply to all editable faces.'),
+        .describe(
+          'Target smart object name/key from psd-scene-list. Omit to apply to all editable faces.'
+        ),
       model: z
         .enum(IMAGE_MODEL_IDS)
         .default(DEFAULT_IMAGE_MODEL_ID)
@@ -6386,7 +6425,10 @@ Pick the template with psd-scene-list first and match the art aspect ratio to th
           .enum(['primary', 'dark', 'light', 'icon', 'accent', 'custom'])
           .optional()
           .describe('Logo variant. Default: primary.'),
-        smartObject: z.string().optional().describe('Smart object name (auto-detected if omitted).'),
+        smartObject: z
+          .string()
+          .optional()
+          .describe('Smart object name (auto-detected if omitted).'),
         mode: z
           .enum(['contain', 'cover', 'stretch'])
           .optional()

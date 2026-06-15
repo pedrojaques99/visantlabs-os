@@ -1219,9 +1219,8 @@ router.post(
       // Use retry mechanism to ensure usage record is created for audit trail
       const createUsageRecordWithRetry = async (maxRetries: number = 3): Promise<void> => {
         const db = getDb();
-        const { createUsageRecord, calculateImageGenerationCost } = await import(
-          '../utils/usageTracking.js'
-        );
+        const { createUsageRecord, calculateImageGenerationCost } =
+          await import('../utils/usageTracking.js');
 
         const usageRecord = createUsageRecord(
           req.userId!,
@@ -1746,9 +1745,8 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
 
     if (success) {
       // Import usage tracking utilities
-      const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import(
-        '../utils/usageTracking.js'
-      );
+      const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } =
+        await import('../utils/usageTracking.js');
 
       // Calculate credits required based on model and resolution
       const creditsPerImage = getCreditsRequired(

@@ -12,22 +12,49 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@server': path.resolve(__dirname, './server'),
-      '@visant/psd-engine/scene': path.resolve(__dirname, './packages/psd-engine/src/scene/index.ts'),
-      '@visant/psd-engine/adapters/node': path.resolve(__dirname, './packages/psd-engine/src/adapters/node.ts'),
-      '@visant/psd-engine/adapters/browser': path.resolve(__dirname, './packages/psd-engine/src/adapters/browser.ts'),
+      '@visant/psd-engine/scene': path.resolve(
+        __dirname,
+        './packages/psd-engine/src/scene/index.ts'
+      ),
+      '@visant/psd-engine/adapters/node': path.resolve(
+        __dirname,
+        './packages/psd-engine/src/adapters/node.ts'
+      ),
+      '@visant/psd-engine/adapters/browser': path.resolve(
+        __dirname,
+        './packages/psd-engine/src/adapters/browser.ts'
+      ),
       '@visant/psd-engine': path.resolve(__dirname, './packages/psd-engine/src/index.ts'),
-      '@visant/print-fx/halftone': path.resolve(__dirname, './packages/print-fx/src/halftone/index.ts'),
+      '@visant/print-fx/halftone': path.resolve(
+        __dirname,
+        './packages/print-fx/src/halftone/index.ts'
+      ),
       '@visant/print-fx/riso': path.resolve(__dirname, './packages/print-fx/src/riso/index.ts'),
-      '@visant/print-fx/shaders': path.resolve(__dirname, './packages/print-fx/src/shaders/index.ts'),
+      '@visant/print-fx/shaders': path.resolve(
+        __dirname,
+        './packages/print-fx/src/shaders/index.ts'
+      ),
       '@visant/print-fx/presets': path.resolve(__dirname, './packages/print-fx/src/presets.ts'),
       '@visant/print-fx/gl': path.resolve(__dirname, './packages/print-fx/src/gl/index.ts'),
-      '@visant/print-fx/adapters/node': path.resolve(__dirname, './packages/print-fx/src/adapters/node.ts'),
-      '@visant/print-fx/adapters/browser': path.resolve(__dirname, './packages/print-fx/src/adapters/browser.ts'),
+      '@visant/print-fx/adapters/node': path.resolve(
+        __dirname,
+        './packages/print-fx/src/adapters/node.ts'
+      ),
+      '@visant/print-fx/adapters/browser': path.resolve(
+        __dirname,
+        './packages/print-fx/src/adapters/browser.ts'
+      ),
       '@visant/print-fx': path.resolve(__dirname, './packages/print-fx/src/index.ts'),
       '@visant/logo-trace/presets': path.resolve(__dirname, './packages/logo-trace/src/presets.ts'),
-      '@visant/logo-trace/sanitize': path.resolve(__dirname, './packages/logo-trace/src/sanitize.ts'),
+      '@visant/logo-trace/sanitize': path.resolve(
+        __dirname,
+        './packages/logo-trace/src/sanitize.ts'
+      ),
       '@visant/logo-trace': path.resolve(__dirname, './packages/logo-trace/src/index.ts'),
-      '@visant/extrude3d/materials': path.resolve(__dirname, './packages/extrude3d/src/materials.ts'),
+      '@visant/extrude3d/materials': path.resolve(
+        __dirname,
+        './packages/extrude3d/src/materials.ts'
+      ),
       '@visant/extrude3d/fonts': path.resolve(__dirname, './packages/extrude3d/src/fonts.ts'),
       '@visant/extrude3d/glb': path.resolve(__dirname, './packages/extrude3d/src/glb.ts'),
       '@visant/extrude3d': path.resolve(__dirname, './packages/extrude3d/src/index.ts'),

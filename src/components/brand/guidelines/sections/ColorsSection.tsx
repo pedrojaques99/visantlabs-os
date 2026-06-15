@@ -273,10 +273,10 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                       pair.wcagAAA
                         ? 'bg-success/20 text-success'
                         : pair.wcagAA
-                        ? 'bg-white/10 text-neutral-300'
-                        : pair.largeAA
-                        ? 'bg-warning/20 text-warning'
-                        : 'bg-destructive/20 text-destructive'
+                          ? 'bg-white/10 text-neutral-300'
+                          : pair.largeAA
+                            ? 'bg-warning/20 text-warning'
+                            : 'bg-destructive/20 text-destructive'
                     }`}
                   >
                     {pair.wcagAAA ? 'AAA' : pair.wcagAA ? 'AA' : pair.largeAA ? 'AA Lg' : 'Fail'}

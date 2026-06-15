@@ -163,7 +163,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
     contrast: shaderType === 'halftone' ? contrast : undefined,
     spacing: shaderType === 'halftone' ? spacing : undefined,
     halftoneThreshold: shaderType === 'halftone' ? halftoneThreshold : undefined,
-    halftoneInvert: shaderType === 'halftone' ? data.halftoneInvert ?? 0.0 : undefined,
+    halftoneInvert: shaderType === 'halftone' ? (data.halftoneInvert ?? 0.0) : undefined,
     // VHS
     tapeWaveIntensity: shaderType === 'vhs' ? tapeWaveIntensity : undefined,
     tapeCreaseIntensity: shaderType === 'vhs' ? tapeCreaseIntensity : undefined,
@@ -746,255 +746,255 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
                           },
                         ]
                       : shaderType === 'dither'
-                      ? [
-                          {
-                            label: 'Dither Size',
-                            value: ditherSize,
-                            min: 1,
-                            max: 16,
-                            step: 1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { ditherSize: value });
-                              }
+                        ? [
+                            {
+                              label: 'Dither Size',
+                              value: ditherSize,
+                              min: 1,
+                              max: 16,
+                              step: 1,
+                              onChange: (value: number) => {
+                                if (data.onUpdateData) {
+                                  data.onUpdateData(id, { ditherSize: value });
+                                }
+                              },
+                              formatValue: (value: number) => value.toFixed(0),
                             },
-                            formatValue: (value: number) => value.toFixed(0),
-                          },
-                          {
-                            label: 'Contrast',
-                            value: ditherContrast,
-                            min: 0.1,
-                            max: 3,
-                            step: 0.1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { ditherContrast: value });
-                              }
+                            {
+                              label: 'Contrast',
+                              value: ditherContrast,
+                              min: 0.1,
+                              max: 3,
+                              step: 0.1,
+                              onChange: (value: number) => {
+                                if (data.onUpdateData) {
+                                  data.onUpdateData(id, { ditherContrast: value });
+                                }
+                              },
+                              formatValue: (value: number) => value.toFixed(1),
                             },
-                            formatValue: (value: number) => value.toFixed(1),
-                          },
-                          {
-                            label: 'Offset',
-                            value: offset,
-                            min: -0.5,
-                            max: 0.5,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { offset: value });
-                              }
+                            {
+                              label: 'Offset',
+                              value: offset,
+                              min: -0.5,
+                              max: 0.5,
+                              step: 0.01,
+                              onChange: (value: number) => {
+                                if (data.onUpdateData) {
+                                  data.onUpdateData(id, { offset: value });
+                                }
+                              },
+                              formatValue: (value: number) => value.toFixed(2),
                             },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                          {
-                            label: 'Bit Depth',
-                            value: bitDepth,
-                            min: 1,
-                            max: 8,
-                            step: 1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { bitDepth: value });
-                              }
+                            {
+                              label: 'Bit Depth',
+                              value: bitDepth,
+                              min: 1,
+                              max: 8,
+                              step: 1,
+                              onChange: (value: number) => {
+                                if (data.onUpdateData) {
+                                  data.onUpdateData(id, { bitDepth: value });
+                                }
+                              },
+                              formatValue: (value: number) => value.toFixed(0),
                             },
-                            formatValue: (value: number) => value.toFixed(0),
-                          },
-                          {
-                            label: 'Palette',
-                            value: palette,
-                            min: 0,
-                            max: 4,
-                            step: 1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { palette: value });
-                              }
+                            {
+                              label: 'Palette',
+                              value: palette,
+                              min: 0,
+                              max: 4,
+                              step: 1,
+                              onChange: (value: number) => {
+                                if (data.onUpdateData) {
+                                  data.onUpdateData(id, { palette: value });
+                                }
+                              },
+                              formatValue: (value: number) =>
+                                paletteNames[Math.floor(value)] || 'Monochrome',
                             },
-                            formatValue: (value: number) =>
-                              paletteNames[Math.floor(value)] || 'Monochrome',
-                          },
-                        ]
-                      : shaderType === 'matrixDither'
-                      ? [
-                          {
-                            label: 'Matrix Size',
-                            value: matrixSize,
-                            min: 2,
-                            max: 8,
-                            step: 1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { matrixSize: value });
-                              }
-                            },
-                            formatValue: (value: number) =>
-                              `${value.toFixed(0)}x${value.toFixed(0)}`,
-                          },
-                          {
-                            label: 'Bias',
-                            value: bias,
-                            min: -1,
-                            max: 1,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { bias: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                        ]
-                      : shaderType === 'ascii'
-                      ? [
-                          {
-                            label: 'Character Size',
-                            value: asciiCharSize,
-                            min: 2,
-                            max: 32,
-                            step: 1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { asciiCharSize: value });
-                              }
-                            },
-                            formatValue: (value: number) => `${value.toFixed(0)}px`,
-                          },
-                          {
-                            label: 'Contrast',
-                            value: asciiContrast,
-                            min: 0.1,
-                            max: 3,
-                            step: 0.1,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { asciiContrast: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(1),
-                          },
-                          {
-                            label: 'Brightness',
-                            value: asciiBrightness,
-                            min: -0.5,
-                            max: 0.5,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { asciiBrightness: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                        ]
-                      : shaderType === 'duotone'
-                      ? [
-                          {
-                            label: 'Intensity',
-                            value: duotoneIntensity,
-                            min: 0,
-                            max: 1,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { duotoneIntensity: value });
-                              }
-                            },
-                            formatValue: (value: number) => `${Math.round(value * 100)}%`,
-                          },
-                          {
-                            label: 'Contrast',
-                            value: duotoneContrast,
-                            min: 0.5,
-                            max: 2,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { duotoneContrast: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                          {
-                            label: 'Brightness',
-                            value: duotoneBrightness,
-                            min: -0.5,
-                            max: 0.5,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { duotoneBrightness: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                        ]
-                      : [
-                          {
-                            label: 'Tape Wave',
-                            value: tapeWaveIntensity,
-                            min: 0,
-                            max: 2,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { tapeWaveIntensity: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                          {
-                            label: 'Tape Crease',
-                            value: tapeCreaseIntensity,
-                            min: 0,
-                            max: 2,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { tapeCreaseIntensity: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                          {
-                            label: 'Switching Noise',
-                            value: switchingNoiseIntensity,
-                            min: 0,
-                            max: 2,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { switchingNoiseIntensity: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                          {
-                            label: 'Bloom',
-                            value: bloomIntensity,
-                            min: 0,
-                            max: 2,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { bloomIntensity: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                          {
-                            label: 'AC Beat',
-                            value: acBeatIntensity,
-                            min: 0,
-                            max: 2,
-                            step: 0.01,
-                            onChange: (value: number) => {
-                              if (data.onUpdateData) {
-                                data.onUpdateData(id, { acBeatIntensity: value });
-                              }
-                            },
-                            formatValue: (value: number) => value.toFixed(2),
-                          },
-                        ];
+                          ]
+                        : shaderType === 'matrixDither'
+                          ? [
+                              {
+                                label: 'Matrix Size',
+                                value: matrixSize,
+                                min: 2,
+                                max: 8,
+                                step: 1,
+                                onChange: (value: number) => {
+                                  if (data.onUpdateData) {
+                                    data.onUpdateData(id, { matrixSize: value });
+                                  }
+                                },
+                                formatValue: (value: number) =>
+                                  `${value.toFixed(0)}x${value.toFixed(0)}`,
+                              },
+                              {
+                                label: 'Bias',
+                                value: bias,
+                                min: -1,
+                                max: 1,
+                                step: 0.01,
+                                onChange: (value: number) => {
+                                  if (data.onUpdateData) {
+                                    data.onUpdateData(id, { bias: value });
+                                  }
+                                },
+                                formatValue: (value: number) => value.toFixed(2),
+                              },
+                            ]
+                          : shaderType === 'ascii'
+                            ? [
+                                {
+                                  label: 'Character Size',
+                                  value: asciiCharSize,
+                                  min: 2,
+                                  max: 32,
+                                  step: 1,
+                                  onChange: (value: number) => {
+                                    if (data.onUpdateData) {
+                                      data.onUpdateData(id, { asciiCharSize: value });
+                                    }
+                                  },
+                                  formatValue: (value: number) => `${value.toFixed(0)}px`,
+                                },
+                                {
+                                  label: 'Contrast',
+                                  value: asciiContrast,
+                                  min: 0.1,
+                                  max: 3,
+                                  step: 0.1,
+                                  onChange: (value: number) => {
+                                    if (data.onUpdateData) {
+                                      data.onUpdateData(id, { asciiContrast: value });
+                                    }
+                                  },
+                                  formatValue: (value: number) => value.toFixed(1),
+                                },
+                                {
+                                  label: 'Brightness',
+                                  value: asciiBrightness,
+                                  min: -0.5,
+                                  max: 0.5,
+                                  step: 0.01,
+                                  onChange: (value: number) => {
+                                    if (data.onUpdateData) {
+                                      data.onUpdateData(id, { asciiBrightness: value });
+                                    }
+                                  },
+                                  formatValue: (value: number) => value.toFixed(2),
+                                },
+                              ]
+                            : shaderType === 'duotone'
+                              ? [
+                                  {
+                                    label: 'Intensity',
+                                    value: duotoneIntensity,
+                                    min: 0,
+                                    max: 1,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { duotoneIntensity: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => `${Math.round(value * 100)}%`,
+                                  },
+                                  {
+                                    label: 'Contrast',
+                                    value: duotoneContrast,
+                                    min: 0.5,
+                                    max: 2,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { duotoneContrast: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                  {
+                                    label: 'Brightness',
+                                    value: duotoneBrightness,
+                                    min: -0.5,
+                                    max: 0.5,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { duotoneBrightness: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                ]
+                              : [
+                                  {
+                                    label: 'Tape Wave',
+                                    value: tapeWaveIntensity,
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { tapeWaveIntensity: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                  {
+                                    label: 'Tape Crease',
+                                    value: tapeCreaseIntensity,
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { tapeCreaseIntensity: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                  {
+                                    label: 'Switching Noise',
+                                    value: switchingNoiseIntensity,
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { switchingNoiseIntensity: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                  {
+                                    label: 'Bloom',
+                                    value: bloomIntensity,
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { bloomIntensity: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                  {
+                                    label: 'AC Beat',
+                                    value: acBeatIntensity,
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.01,
+                                    onChange: (value: number) => {
+                                      if (data.onUpdateData) {
+                                        data.onUpdateData(id, { acBeatIntensity: value });
+                                      }
+                                    },
+                                    formatValue: (value: number) => value.toFixed(2),
+                                  },
+                                ];
 
                   data.onViewFullscreen(resultImageUrl, data.resultImageBase64, sliders);
                 }
@@ -1035,88 +1035,92 @@ export const ShaderNode = memo(ShaderNodeComponent, (prevProps, nextProps) => {
   const prevSettings = {
     shaderType: prevShaderType,
     halftoneVariant: prevShaderType === 'halftone' ? prevHalftoneVariant : undefined,
-    dotSize: prevShaderType === 'halftone' ? prevProps.data.dotSize ?? 5.0 : undefined,
-    angle: prevShaderType === 'halftone' ? prevProps.data.angle ?? 0.0 : undefined,
-    contrast: prevShaderType === 'halftone' ? prevProps.data.contrast ?? 1.0 : undefined,
-    spacing: prevShaderType === 'halftone' ? prevProps.data.spacing ?? 2.0 : undefined,
+    dotSize: prevShaderType === 'halftone' ? (prevProps.data.dotSize ?? 5.0) : undefined,
+    angle: prevShaderType === 'halftone' ? (prevProps.data.angle ?? 0.0) : undefined,
+    contrast: prevShaderType === 'halftone' ? (prevProps.data.contrast ?? 1.0) : undefined,
+    spacing: prevShaderType === 'halftone' ? (prevProps.data.spacing ?? 2.0) : undefined,
     halftoneThreshold:
-      prevShaderType === 'halftone' ? prevProps.data.halftoneThreshold ?? 1.0 : undefined,
+      prevShaderType === 'halftone' ? (prevProps.data.halftoneThreshold ?? 1.0) : undefined,
     tapeWaveIntensity:
-      prevShaderType === 'vhs' ? prevProps.data.tapeWaveIntensity ?? 1.0 : undefined,
+      prevShaderType === 'vhs' ? (prevProps.data.tapeWaveIntensity ?? 1.0) : undefined,
     tapeCreaseIntensity:
-      prevShaderType === 'vhs' ? prevProps.data.tapeCreaseIntensity ?? 1.0 : undefined,
+      prevShaderType === 'vhs' ? (prevProps.data.tapeCreaseIntensity ?? 1.0) : undefined,
     switchingNoiseIntensity:
-      prevShaderType === 'vhs' ? prevProps.data.switchingNoiseIntensity ?? 1.0 : undefined,
-    bloomIntensity: prevShaderType === 'vhs' ? prevProps.data.bloomIntensity ?? 1.0 : undefined,
-    acBeatIntensity: prevShaderType === 'vhs' ? prevProps.data.acBeatIntensity ?? 1.0 : undefined,
-    ditherSize: prevShaderType === 'dither' ? prevProps.data.ditherSize ?? 4.0 : undefined,
-    ditherContrast: prevShaderType === 'dither' ? prevProps.data.ditherContrast ?? 1.5 : undefined,
-    offset: prevShaderType === 'dither' ? prevProps.data.offset ?? 0.0 : undefined,
-    bitDepth: prevShaderType === 'dither' ? prevProps.data.bitDepth ?? 4.0 : undefined,
-    palette: prevShaderType === 'dither' ? prevProps.data.palette ?? 0.0 : undefined,
-    asciiCharSize: prevShaderType === 'ascii' ? prevProps.data.asciiCharSize ?? 8.0 : undefined,
-    asciiContrast: prevShaderType === 'ascii' ? prevProps.data.asciiContrast ?? 1.0 : undefined,
-    asciiBrightness: prevShaderType === 'ascii' ? prevProps.data.asciiBrightness ?? 0.0 : undefined,
-    asciiCharSet: prevShaderType === 'ascii' ? prevProps.data.asciiCharSet ?? 3.0 : undefined,
-    asciiColored: prevShaderType === 'ascii' ? prevProps.data.asciiColored ?? 0.0 : undefined,
-    asciiInvert: prevShaderType === 'ascii' ? prevProps.data.asciiInvert ?? 0.0 : undefined,
+      prevShaderType === 'vhs' ? (prevProps.data.switchingNoiseIntensity ?? 1.0) : undefined,
+    bloomIntensity: prevShaderType === 'vhs' ? (prevProps.data.bloomIntensity ?? 1.0) : undefined,
+    acBeatIntensity: prevShaderType === 'vhs' ? (prevProps.data.acBeatIntensity ?? 1.0) : undefined,
+    ditherSize: prevShaderType === 'dither' ? (prevProps.data.ditherSize ?? 4.0) : undefined,
+    ditherContrast:
+      prevShaderType === 'dither' ? (prevProps.data.ditherContrast ?? 1.5) : undefined,
+    offset: prevShaderType === 'dither' ? (prevProps.data.offset ?? 0.0) : undefined,
+    bitDepth: prevShaderType === 'dither' ? (prevProps.data.bitDepth ?? 4.0) : undefined,
+    palette: prevShaderType === 'dither' ? (prevProps.data.palette ?? 0.0) : undefined,
+    asciiCharSize: prevShaderType === 'ascii' ? (prevProps.data.asciiCharSize ?? 8.0) : undefined,
+    asciiContrast: prevShaderType === 'ascii' ? (prevProps.data.asciiContrast ?? 1.0) : undefined,
+    asciiBrightness:
+      prevShaderType === 'ascii' ? (prevProps.data.asciiBrightness ?? 0.0) : undefined,
+    asciiCharSet: prevShaderType === 'ascii' ? (prevProps.data.asciiCharSet ?? 3.0) : undefined,
+    asciiColored: prevShaderType === 'ascii' ? (prevProps.data.asciiColored ?? 0.0) : undefined,
+    asciiInvert: prevShaderType === 'ascii' ? (prevProps.data.asciiInvert ?? 0.0) : undefined,
     duotoneShadowColor:
       prevShaderType === 'duotone'
-        ? prevProps.data.duotoneShadowColor ?? [0.1, 0.0, 0.2]
+        ? (prevProps.data.duotoneShadowColor ?? [0.1, 0.0, 0.2])
         : undefined,
     duotoneHighlightColor:
       prevShaderType === 'duotone'
-        ? prevProps.data.duotoneHighlightColor ?? [0.3, 0.9, 0.9]
+        ? (prevProps.data.duotoneHighlightColor ?? [0.3, 0.9, 0.9])
         : undefined,
     duotoneIntensity:
-      prevShaderType === 'duotone' ? prevProps.data.duotoneIntensity ?? 1.0 : undefined,
+      prevShaderType === 'duotone' ? (prevProps.data.duotoneIntensity ?? 1.0) : undefined,
     duotoneContrast:
-      prevShaderType === 'duotone' ? prevProps.data.duotoneContrast ?? 1.0 : undefined,
+      prevShaderType === 'duotone' ? (prevProps.data.duotoneContrast ?? 1.0) : undefined,
     duotoneBrightness:
-      prevShaderType === 'duotone' ? prevProps.data.duotoneBrightness ?? 0.0 : undefined,
+      prevShaderType === 'duotone' ? (prevProps.data.duotoneBrightness ?? 0.0) : undefined,
   };
   const nextSettings = {
     shaderType: nextShaderType,
     halftoneVariant: nextShaderType === 'halftone' ? nextHalftoneVariant : undefined,
-    dotSize: nextShaderType === 'halftone' ? nextProps.data.dotSize ?? 5.0 : undefined,
-    angle: nextShaderType === 'halftone' ? nextProps.data.angle ?? 0.0 : undefined,
-    contrast: nextShaderType === 'halftone' ? nextProps.data.contrast ?? 1.0 : undefined,
-    spacing: nextShaderType === 'halftone' ? nextProps.data.spacing ?? 2.0 : undefined,
+    dotSize: nextShaderType === 'halftone' ? (nextProps.data.dotSize ?? 5.0) : undefined,
+    angle: nextShaderType === 'halftone' ? (nextProps.data.angle ?? 0.0) : undefined,
+    contrast: nextShaderType === 'halftone' ? (nextProps.data.contrast ?? 1.0) : undefined,
+    spacing: nextShaderType === 'halftone' ? (nextProps.data.spacing ?? 2.0) : undefined,
     halftoneThreshold:
-      nextShaderType === 'halftone' ? nextProps.data.halftoneThreshold ?? 1.0 : undefined,
+      nextShaderType === 'halftone' ? (nextProps.data.halftoneThreshold ?? 1.0) : undefined,
     tapeWaveIntensity:
-      nextShaderType === 'vhs' ? nextProps.data.tapeWaveIntensity ?? 1.0 : undefined,
+      nextShaderType === 'vhs' ? (nextProps.data.tapeWaveIntensity ?? 1.0) : undefined,
     tapeCreaseIntensity:
-      nextShaderType === 'vhs' ? nextProps.data.tapeCreaseIntensity ?? 1.0 : undefined,
+      nextShaderType === 'vhs' ? (nextProps.data.tapeCreaseIntensity ?? 1.0) : undefined,
     switchingNoiseIntensity:
-      nextShaderType === 'vhs' ? nextProps.data.switchingNoiseIntensity ?? 1.0 : undefined,
-    bloomIntensity: nextShaderType === 'vhs' ? nextProps.data.bloomIntensity ?? 1.0 : undefined,
-    acBeatIntensity: nextShaderType === 'vhs' ? nextProps.data.acBeatIntensity ?? 1.0 : undefined,
-    ditherSize: nextShaderType === 'dither' ? nextProps.data.ditherSize ?? 4.0 : undefined,
-    ditherContrast: nextShaderType === 'dither' ? nextProps.data.ditherContrast ?? 1.5 : undefined,
-    offset: nextShaderType === 'dither' ? nextProps.data.offset ?? 0.0 : undefined,
-    bitDepth: nextShaderType === 'dither' ? nextProps.data.bitDepth ?? 4.0 : undefined,
-    palette: nextShaderType === 'dither' ? nextProps.data.palette ?? 0.0 : undefined,
-    asciiCharSize: nextShaderType === 'ascii' ? nextProps.data.asciiCharSize ?? 8.0 : undefined,
-    asciiContrast: nextShaderType === 'ascii' ? nextProps.data.asciiContrast ?? 1.0 : undefined,
-    asciiBrightness: nextShaderType === 'ascii' ? nextProps.data.asciiBrightness ?? 0.0 : undefined,
-    asciiCharSet: nextShaderType === 'ascii' ? nextProps.data.asciiCharSet ?? 3.0 : undefined,
-    asciiColored: nextShaderType === 'ascii' ? nextProps.data.asciiColored ?? 0.0 : undefined,
-    asciiInvert: nextShaderType === 'ascii' ? nextProps.data.asciiInvert ?? 0.0 : undefined,
+      nextShaderType === 'vhs' ? (nextProps.data.switchingNoiseIntensity ?? 1.0) : undefined,
+    bloomIntensity: nextShaderType === 'vhs' ? (nextProps.data.bloomIntensity ?? 1.0) : undefined,
+    acBeatIntensity: nextShaderType === 'vhs' ? (nextProps.data.acBeatIntensity ?? 1.0) : undefined,
+    ditherSize: nextShaderType === 'dither' ? (nextProps.data.ditherSize ?? 4.0) : undefined,
+    ditherContrast:
+      nextShaderType === 'dither' ? (nextProps.data.ditherContrast ?? 1.5) : undefined,
+    offset: nextShaderType === 'dither' ? (nextProps.data.offset ?? 0.0) : undefined,
+    bitDepth: nextShaderType === 'dither' ? (nextProps.data.bitDepth ?? 4.0) : undefined,
+    palette: nextShaderType === 'dither' ? (nextProps.data.palette ?? 0.0) : undefined,
+    asciiCharSize: nextShaderType === 'ascii' ? (nextProps.data.asciiCharSize ?? 8.0) : undefined,
+    asciiContrast: nextShaderType === 'ascii' ? (nextProps.data.asciiContrast ?? 1.0) : undefined,
+    asciiBrightness:
+      nextShaderType === 'ascii' ? (nextProps.data.asciiBrightness ?? 0.0) : undefined,
+    asciiCharSet: nextShaderType === 'ascii' ? (nextProps.data.asciiCharSet ?? 3.0) : undefined,
+    asciiColored: nextShaderType === 'ascii' ? (nextProps.data.asciiColored ?? 0.0) : undefined,
+    asciiInvert: nextShaderType === 'ascii' ? (nextProps.data.asciiInvert ?? 0.0) : undefined,
     duotoneShadowColor:
       nextShaderType === 'duotone'
-        ? nextProps.data.duotoneShadowColor ?? [0.1, 0.0, 0.2]
+        ? (nextProps.data.duotoneShadowColor ?? [0.1, 0.0, 0.2])
         : undefined,
     duotoneHighlightColor:
       nextShaderType === 'duotone'
-        ? nextProps.data.duotoneHighlightColor ?? [0.3, 0.9, 0.9]
+        ? (nextProps.data.duotoneHighlightColor ?? [0.3, 0.9, 0.9])
         : undefined,
     duotoneIntensity:
-      nextShaderType === 'duotone' ? nextProps.data.duotoneIntensity ?? 1.0 : undefined,
+      nextShaderType === 'duotone' ? (nextProps.data.duotoneIntensity ?? 1.0) : undefined,
     duotoneContrast:
-      nextShaderType === 'duotone' ? nextProps.data.duotoneContrast ?? 1.0 : undefined,
+      nextShaderType === 'duotone' ? (nextProps.data.duotoneContrast ?? 1.0) : undefined,
     duotoneBrightness:
-      nextShaderType === 'duotone' ? nextProps.data.duotoneBrightness ?? 0.0 : undefined,
+      nextShaderType === 'duotone' ? (nextProps.data.duotoneBrightness ?? 0.0) : undefined,
   };
 
   const settingsChanged =

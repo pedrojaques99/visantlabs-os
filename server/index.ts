@@ -131,9 +131,8 @@ if (!process.env.VERCEL) {
       process.env.NODE_ENV === 'production' ||
       process.env.ENABLE_PAYMENT_RECONCILIATION === 'true'
     ) {
-      const { startPaymentReconciliationScheduler } = await import(
-        './services/paymentReconciliation.js'
-      );
+      const { startPaymentReconciliationScheduler } =
+        await import('./services/paymentReconciliation.js');
       startPaymentReconciliationScheduler();
     }
   })();

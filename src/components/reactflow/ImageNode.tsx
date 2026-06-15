@@ -228,10 +228,10 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')
               ? 'image/jpeg'
               : imageUrl.includes('.webp')
-              ? 'image/webp'
-              : imageUrl.includes('.gif')
-              ? 'image/gif'
-              : 'image/png';
+                ? 'image/webp'
+                : imageUrl.includes('.gif')
+                  ? 'image/gif'
+                  : 'image/png';
           imageInput = { base64, mimeType };
         } catch (error: any) {
           toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), {

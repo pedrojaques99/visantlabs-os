@@ -49,8 +49,8 @@ const Item: React.FC<{
       disabled
         ? 'text-neutral-600 cursor-not-allowed'
         : danger
-        ? 'text-destructive hover:bg-destructive/10'
-        : 'text-neutral-300 hover:bg-white/5 hover:text-white'
+          ? 'text-destructive hover:bg-destructive/10'
+          : 'text-neutral-300 hover:bg-white/5 hover:text-white'
     }`}
   >
     <span className="w-3.5 flex justify-center opacity-70">{icon}</span>
@@ -81,7 +81,7 @@ export const CreativeContextMenu: React.FC<Props> = ({ state, onClose }) => {
       ? selectedLayerIds
       : [state.layerId]
     : selectedLayerIds;
-  const targetLayer = state.layerId ? layers.find((l) => l.id === state.layerId) ?? null : null;
+  const targetLayer = state.layerId ? (layers.find((l) => l.id === state.layerId) ?? null) : null;
   const hasTarget = targetIds.length > 0;
 
   const wrap = (fn: () => void) => () => {

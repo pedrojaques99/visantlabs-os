@@ -47,7 +47,7 @@ interface RegistryEntry {
 const publicDecls: any[] = (CHAT_TOOLS as any).functionDeclarations ?? [];
 const adminDecls: any[] = Array.isArray(ADMIN_CHAT_TOOLS)
   ? ADMIN_CHAT_TOOLS.flatMap((t: any) => t.functionDeclarations ?? [])
-  : (ADMIN_CHAT_TOOLS as any).functionDeclarations ?? [];
+  : ((ADMIN_CHAT_TOOLS as any).functionDeclarations ?? []);
 
 const REGISTRY: Record<string, RegistryEntry> = {};
 

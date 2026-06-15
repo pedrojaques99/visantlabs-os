@@ -1005,17 +1005,20 @@ Step values:
           schema: p.schema,
         })),
         requestBody: endpoint.requestBody,
-        responses: Object.entries(endpoint.responses).reduce((acc, [code, schema]) => {
-          acc[code] = {
-            description: schema.description,
-            content: {
-              'application/json': {
-                schema: schema.schema,
+        responses: Object.entries(endpoint.responses).reduce(
+          (acc, [code, schema]) => {
+            acc[code] = {
+              description: schema.description,
+              content: {
+                'application/json': {
+                  schema: schema.schema,
+                },
               },
-            },
-          };
-          return acc;
-        }, {} as Record<string, any>),
+            };
+            return acc;
+          },
+          {} as Record<string, any>
+        ),
         security: endpoint.security
           ? [
               {

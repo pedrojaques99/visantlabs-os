@@ -8,13 +8,14 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import JSZip from 'jszip';
 import { redisClient } from '../lib/redis.js';
 import { uploadSharedAsset } from './r2Service.js';
-import { getCachedOrDownload, isDriveConfigured, allFolderIds, publicFolderIds } from './driveService.js';
-import { uploadPublicAsset, isSpacesConfigured } from './spacesService.js';
 import {
-  getSceneRecord,
-  downloadSceneAssets,
-  type SceneRecord,
-} from './sceneStore.js';
+  getCachedOrDownload,
+  isDriveConfigured,
+  allFolderIds,
+  publicFolderIds,
+} from './driveService.js';
+import { uploadPublicAsset, isSpacesConfigured } from './spacesService.js';
+import { getSceneRecord, downloadSceneAssets, type SceneRecord } from './sceneStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -158,7 +159,10 @@ async function downloadArt(url: string, destPath: string): Promise<void> {
   writeFileSync(destPath, buffer);
 }
 
-function runBunWorker(script: string, args: string[]): Promise<{ stdout: string; stderr: string; code: number }> {
+function runBunWorker(
+  script: string,
+  args: string[]
+): Promise<{ stdout: string; stderr: string; code: number }> {
   return new Promise((resolve, reject) => {
     const proc = spawn('bun', [script, ...args], {
       timeout: RENDER_TIMEOUT_MS,
@@ -184,7 +188,11 @@ function runBunWorker(script: string, args: string[]): Promise<{ stdout: string;
 }
 
 /** Upload do resultado: DO Spaces (BOXY, sem custo novo) com fallback pro R2. */
-async function uploadRenderOutput(buffer: Buffer, key: string, contentType: string): Promise<string> {
+async function uploadRenderOutput(
+  buffer: Buffer,
+  key: string,
+  contentType: string
+): Promise<string> {
   if (isSpacesConfigured()) {
     return uploadPublicAsset(buffer, key, contentType);
   }
@@ -246,10 +254,14 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
       } else {
         folderScope = publicFolderIds();
         if (!folderScope.length) {
-          throw new Error('Mockups públicos indisponíveis (GOOGLE_DRIVE_PUBLIC_FOLDER_IDS não configurada)');
+          throw new Error(
+            'Mockups públicos indisponíveis (GOOGLE_DRIVE_PUBLIC_FOLDER_IDS não configurada)'
+          );
         }
       }
-      console.log(`[psd-render] Job ${jobId}: resolvendo "${req.psdFileName}" via Drive (tier ${req.accessTier})...`);
+      console.log(
+        `[psd-render] Job ${jobId}: resolvendo "${req.psdFileName}" via Drive (tier ${req.accessTier})...`
+      );
       psdLocal = await getCachedOrDownload(req.psdFileName, folderScope);
     } else if (req.psdUrl) {
       if (req.accessTier !== 'all') {
@@ -263,8 +275,9 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
     }
 
     // ── 2. Artes (multi-face ou legado) ────────────────────────────────────
-    const arts: RenderArt[] =
-      req.arts?.length ? req.arts : [{ smartObject: req.smartObject, artUrl: req.artUrl }];
+    const arts: RenderArt[] = req.arts?.length
+      ? req.arts
+      : [{ smartObject: req.smartObject, artUrl: req.artUrl }];
 
     const replacements: Array<{ smartObject?: string; artPath: string }> = [];
     for (const [i, art] of arts.entries()) {
@@ -287,30 +300,41 @@ export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult>
       // Engine legado (Chromium) — só arte única
       const first = replacements[0];
       const args = [
-        '--psd', psdLocal,
-        '--art', first.artPath,
-        '--smart-object', first.smartObject || 'Your design',
-        '--output', outputLocal,
+        '--psd',
+        psdLocal,
+        '--art',
+        first.artPath,
+        '--smart-object',
+        first.smartObject || 'Your design',
+        '--output',
+        outputLocal,
       ];
       if (req.hideLayers?.length) args.push('--hide', req.hideLayers.join(','));
       const result = await runBunWorker(WORKER_SCRIPT, args);
       if (result.code !== 0) {
-        throw new Error(`Render failed (exit ${result.code}): ${result.stderr || result.stdout || 'Unknown error'}`);
+        throw new Error(
+          `Render failed (exit ${result.code}): ${result.stderr || result.stdout || 'Unknown error'}`
+        );
       }
     } else {
       // ag-psd (default): compositor portado do mockup-store, multi-face
       const previewMaxPx = req.preview ? (typeof req.preview === 'number' ? req.preview : 1400) : 0;
       const jobFile = path.join(jobDir, 'job.json');
-      writeFileSync(jobFile, JSON.stringify({
-        psdPath: psdLocal,
-        outputPath: outputLocal,
-        replacements,
-        hideLayers: req.hideLayers || [],
-        previewMaxPx,
-      }));
+      writeFileSync(
+        jobFile,
+        JSON.stringify({
+          psdPath: psdLocal,
+          outputPath: outputLocal,
+          replacements,
+          hideLayers: req.hideLayers || [],
+          previewMaxPx,
+        })
+      );
       const result = await runBunWorker(WORKER_SCRIPT_AGPSD, ['--job', jobFile]);
       if (result.code !== 0) {
-        throw new Error(`Render failed (exit ${result.code}): ${result.stderr || result.stdout || 'Unknown error'}`);
+        throw new Error(
+          `Render failed (exit ${result.code}): ${result.stderr || result.stdout || 'Unknown error'}`
+        );
       }
       try {
         const lines = result.stdout.trim().split('\n');
@@ -399,8 +423,9 @@ async function tryRenderFromScene(
   }
 
   // 2. Resolve as artes pra arquivos (mesmo tratamento do pipeline: artBase64 | artUrl).
-  const artInputs: RenderArt[] =
-    req.arts?.length ? req.arts : [{ smartObject: req.smartObject, artUrl: req.artUrl }];
+  const artInputs: RenderArt[] = req.arts?.length
+    ? req.arts
+    : [{ smartObject: req.smartObject, artUrl: req.artUrl }];
 
   const sceneJobDir = path.join(TMP_DIR, jobId, 'scene');
   mkdirSync(sceneJobDir, { recursive: true });
@@ -455,7 +480,14 @@ async function tryRenderFromScene(
   const jobPath = path.join(sceneJobDir, 'job.json');
   writeFileSync(
     jobPath,
-    JSON.stringify({ docPath, assets: assetPaths, artByFace, defaultArtPath, previewMaxPx, outputPath })
+    JSON.stringify({
+      docPath,
+      assets: assetPaths,
+      artByFace,
+      defaultArtPath,
+      previewMaxPx,
+      outputPath,
+    })
   );
 
   const result = await runBunWorker(WORKER_SCRIPT_SCENE, [jobPath]);
@@ -464,7 +496,9 @@ async function tryRenderFromScene(
   try {
     parsed = JSON.parse(lastLine);
   } catch {
-    throw new Error(`scene worker output inválido (exit ${result.code}): ${result.stderr.slice(0, 300)}`);
+    throw new Error(
+      `scene worker output inválido (exit ${result.code}): ${result.stderr.slice(0, 300)}`
+    );
   }
   if (!parsed.success) {
     throw new Error(`scene worker: ${parsed.error || `exit ${result.code}`}`);

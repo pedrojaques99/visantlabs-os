@@ -115,8 +115,8 @@ const SectionShell: React.FC<{
           allChecked
             ? 'bg-white/10 border-white/20'
             : someChecked
-            ? 'bg-white/5 border-white/15'
-            : 'border-white/10'
+              ? 'bg-white/5 border-white/15'
+              : 'border-white/10'
         }`}
       >
         {allChecked ? (
@@ -561,12 +561,12 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
   const modalDescription = showUploadPhase
     ? 'Drag & drop or browse files to extract brand tokens'
     : showProcessingPhase
-    ? state.statusMessage || 'Extracting brand tokens…'
-    : isStreaming
-    ? `${state.statusMessage || 'Parsing…'} · ${totalLoaded} categories`
-    : isDone
-    ? `${totalLoaded} categories · ${totalSelected} items selected`
-    : state.error || '';
+      ? state.statusMessage || 'Extracting brand tokens…'
+      : isStreaming
+        ? `${state.statusMessage || 'Parsing…'} · ${totalLoaded} categories`
+        : isDone
+          ? `${totalLoaded} categories · ${totalSelected} items selected`
+          : state.error || '';
 
   const showFooter = !showUploadPhase && !showProcessingPhase;
 

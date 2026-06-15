@@ -31,9 +31,9 @@ const makeNode = (id: string, selected = false, type = 'image'): Node<FlowNodeDa
     selected,
     position: { x: 0, y: 0 },
     data: {} as FlowNodeData,
-  } as Node<FlowNodeData>);
+  }) as Node<FlowNodeData>;
 
-const makeEdge = (id: string): Edge => ({ id, source: 'a', target: 'b' } as Edge);
+const makeEdge = (id: string): Edge => ({ id, source: 'a', target: 'b' }) as Edge;
 
 function makeDefaults(overrides: Record<string, any> = {}) {
   return {

@@ -1332,8 +1332,8 @@ export const useCanvasNodeCreation = (
             const errorMessage = error?.message?.includes('Failed to get upload URL')
               ? 'Falha ao conectar com o servidor. Usando método alternativo.'
               : error?.message?.includes('Failed to upload to R2')
-              ? 'Falha ao fazer upload. Usando método alternativo.'
-              : 'Falha ao fazer upload. Usando método alternativo.';
+                ? 'Falha ao fazer upload. Usando método alternativo.'
+                : 'Falha ao fazer upload. Usando método alternativo.';
 
             toast.warning(errorMessage, { duration: 3000 });
 

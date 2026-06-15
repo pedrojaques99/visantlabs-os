@@ -66,8 +66,8 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
         action.type === 'prompt'
           ? { prompt: action.fullPrompt }
           : action.type === 'text'
-          ? { text: action.fullPrompt }
-          : undefined;
+            ? { text: action.fullPrompt }
+            : undefined;
       onCreateNode(nodeId, action.type as any, initialData, true);
     }
   };

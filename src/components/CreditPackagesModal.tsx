@@ -525,7 +525,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             const benefits = (
                               plan.metadata?.features && Array.isArray(plan.metadata.features)
                                 ? plan.metadata.features
-                                : plan.description?.split(',') ?? []
+                                : (plan.description?.split(',') ?? [])
                             ).slice(0, 4);
                             const isPopular = plan.displayOrder === 1;
                             return (
@@ -646,7 +646,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     } = subscriptionStatus;
 
                     const totalCreditsAvailable =
-                      typeof totalCredits === 'number' ? totalCredits : totalCreditsEarned ?? 0;
+                      typeof totalCredits === 'number' ? totalCredits : (totalCreditsEarned ?? 0);
 
                     const usedPercentage =
                       monthlyCredits > 0

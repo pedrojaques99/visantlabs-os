@@ -879,10 +879,10 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           isSelecting && !isDrawingMode && activeTool === 'select' && !spacePressed
             ? customCursorSvg
             : isTypeTool
-            ? 'text'
-            : isDrawingOrShapes
-            ? pencilCursorSvg
-            : undefined,
+              ? 'text'
+              : isDrawingOrShapes
+                ? pencilCursorSvg
+                : undefined,
       }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

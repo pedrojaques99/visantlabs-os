@@ -222,7 +222,7 @@ function validateExtracted(data: any): ExtractedBrandData {
             category: c.category,
             logoVariant: validVariants.includes(c.logoVariant) ? c.logoVariant : 'custom',
             label: typeof c.label === 'string' ? c.label : undefined,
-          } as AssetClassification)
+          }) as AssetClassification
       );
   }
 

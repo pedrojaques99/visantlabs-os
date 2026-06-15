@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Settings, Pickaxe, User as UserIcon } from 'lucide-react';
 
 export function Header() {
-  const { setActiveView, credits, activeView, userInfo, authEmail, toggleDevMode, devMode } = usePluginStore();
+  const { setActiveView, credits, activeView, userInfo, authEmail, toggleDevMode, devMode } =
+    usePluginStore();
   const { isConnected } = useServerStatus();
   const clickCount = useRef(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,8 +42,8 @@ export function Header() {
             isConnected === true
               ? 'Server connected'
               : isConnected === false
-              ? 'Server disconnected'
-              : 'Checking connection'
+                ? 'Server disconnected'
+                : 'Checking connection'
           }
           style={{
             backgroundColor:
@@ -53,8 +54,8 @@ export function Header() {
             isConnected === true
               ? 'Server connected'
               : isConnected === false
-              ? 'Server disconnected'
-              : 'Checking...'
+                ? 'Server disconnected'
+                : 'Checking...'
           }
         />
 
@@ -75,8 +76,12 @@ export function Header() {
           aria-label="Open profile"
         >
           {userInfo?.photoUrl ? (
-            <img src={userInfo.photoUrl} alt={userInfo.name} className="w-full h-full object-cover" />
-          ) : (authEmail || userInfo?.name) ? (
+            <img
+              src={userInfo.photoUrl}
+              alt={userInfo.name}
+              className="w-full h-full object-cover"
+            />
+          ) : authEmail || userInfo?.name ? (
             <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
               <span className="text-[10px] font-bold text-neutral-300 uppercase">
                 {(userInfo?.name ?? authEmail ?? '?').charAt(0)}

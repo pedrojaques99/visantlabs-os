@@ -29,11 +29,7 @@ import {
   allFolderIds,
   publicFolderIds,
 } from './driveService.js';
-import {
-  uploadPrivateAsset,
-  getSignedReadUrl,
-  downloadAsset,
-} from './spacesService.js';
+import { uploadPrivateAsset, getSignedReadUrl, downloadAsset } from './spacesService.js';
 
 export interface SceneFileEntry {
   /** ref usado no scene.json (ex.: "base-0", "over-1", "mask-0"). */
@@ -65,7 +61,10 @@ export const SCENES_COLLECTION = 'psd_scenes';
 
 /** Hash determinístico do par (nome do PSD, mtime) — muda quando o PSD muda. */
 export function sceneHash(psdFileName: string, mtimeMs: number): string {
-  return createHash('sha256').update(`${psdFileName}:${Math.floor(mtimeMs)}`).digest('hex').slice(0, 24);
+  return createHash('sha256')
+    .update(`${psdFileName}:${Math.floor(mtimeMs)}`)
+    .digest('hex')
+    .slice(0, 24);
 }
 
 /**
@@ -84,11 +83,15 @@ export async function resolvePsdPath(
     return ref;
   }
   if (!isDriveConfigured()) {
-    throw new Error('psdFileName requer Drive configurado (GOOGLE_SERVICE_ACCOUNT_KEY ou refresh token)');
+    throw new Error(
+      'psdFileName requer Drive configurado (GOOGLE_SERVICE_ACCOUNT_KEY ou refresh token)'
+    );
   }
   const folderScope = accessTier === 'all' ? allFolderIds() : publicFolderIds();
   if (accessTier !== 'all' && !folderScope.length) {
-    throw new Error('Mockups públicos indisponíveis (GOOGLE_DRIVE_PUBLIC_FOLDER_IDS não configurada)');
+    throw new Error(
+      'Mockups públicos indisponíveis (GOOGLE_DRIVE_PUBLIC_FOLDER_IDS não configurada)'
+    );
   }
   return getCachedOrDownload(ref, folderScope);
 }
@@ -113,7 +116,9 @@ async function readPsdTree(psdPath: string): Promise<any> {
  * espúrio em Image.setSource que derrubou o fast path em produção). Browsers
  * decodificam PNG nativamente; o custo é só uns KB a mais por asset.
  */
-async function encodeAsset(canvas: any): Promise<{ buffer: Buffer; ext: string; contentType: string }> {
+async function encodeAsset(
+  canvas: any
+): Promise<{ buffer: Buffer; ext: string; contentType: string }> {
   const png: Buffer = canvas.toBuffer('image/png');
   return { buffer: png, ext: 'png', contentType: 'image/png' };
 }
@@ -138,7 +143,10 @@ export async function extractSceneFromPsd(
 
   const adapter = await createNodeAdapter();
   const psd = await readPsdTree(psdPath);
-  const { doc, assets }: { doc: SceneDoc; assets: AssetMap } = extractScene(psd, adapter.createCanvas);
+  const { doc, assets }: { doc: SceneDoc; assets: AssetMap } = extractScene(
+    psd,
+    adapter.createCanvas
+  );
 
   const files: SceneFileEntry[] = [];
   const uploads: ExtractAndStoreResult['uploads'] = [];
@@ -167,9 +175,7 @@ export async function extractSceneFromPsd(
 }
 
 /** Sobe os assets (privados) do Scene Package pro Spaces. */
-export async function uploadSceneAssets(
-  uploads: ExtractAndStoreResult['uploads']
-): Promise<void> {
+export async function uploadSceneAssets(uploads: ExtractAndStoreResult['uploads']): Promise<void> {
   for (const u of uploads) {
     await uploadPrivateAsset(u.buffer, u.key, u.contentType);
   }

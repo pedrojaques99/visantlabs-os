@@ -359,7 +359,9 @@ export const ProfilePage: React.FC = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="bg-neutral-900 border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-destructive">{t('profile.deleteDialog.title')}</DialogTitle>
+            <DialogTitle className="text-destructive">
+              {t('profile.deleteDialog.title')}
+            </DialogTitle>
             <DialogDescription className="text-neutral-400 text-sm font-mono">
               {t('profile.deleteDialog.description')}{' '}
               <strong className="text-white">{deleteConfirmWord}</strong>{' '}

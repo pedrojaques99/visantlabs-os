@@ -162,12 +162,12 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                       ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                       : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                     : theme === 'dark'
-                    ? isSuggested
-                      ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-brand-cyan/50 hover:text-white'
-                      : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                    : isSuggested
-                    ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
-                    : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
+                      ? isSuggested
+                        ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-brand-cyan/50 hover:text-white'
+                        : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                      : isSuggested
+                        ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
+                        : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
                   isDisabled && 'opacity-100 cursor-not-allowed'
                 )}
               >

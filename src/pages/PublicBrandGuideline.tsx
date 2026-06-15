@@ -55,12 +55,7 @@ import {
   type ExportFormat,
 } from '@/components/brand/guidelines/preview/exportMock';
 import { useTranslation } from '@/hooks/useTranslation';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   BrandRoomProvider,
   BrandCollaboratorAvatars,
@@ -411,8 +406,8 @@ export const PublicBrandGuideline: React.FC = () => {
             theme === 'brand'
               ? 'bg-[var(--accent)] text-[var(--accent-text)] border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]'
               : theme === 'dark'
-              ? 'bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800'
-              : 'bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm'
+                ? 'bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800'
+                : 'bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm'
           )}
         >
           {theme === 'brand' ? (
@@ -677,7 +672,12 @@ export const PublicBrandGuideline: React.FC = () => {
 
       {/* Section edit Sheet — renders via portal (outside brand theme vars) */}
       {editMode && (
-        <Sheet open={activeEditSection !== null} onOpenChange={(open) => { if (!open) setActiveEditSection(null); }}>
+        <Sheet
+          open={activeEditSection !== null}
+          onOpenChange={(open) => {
+            if (!open) setActiveEditSection(null);
+          }}
+        >
           <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
               <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400">
@@ -688,7 +688,11 @@ export const PublicBrandGuideline: React.FC = () => {
               </SheetTitle>
             </SheetHeader>
             {activeEditSection && guideline.id && (
-              <React.Suspense fallback={<div className="p-6 text-neutral-500 text-sm font-mono">Loading editor...</div>}>
+              <React.Suspense
+                fallback={
+                  <div className="p-6 text-neutral-500 text-sm font-mono">Loading editor...</div>
+                }
+              >
                 <PublicSectionEditSheet
                   section={activeEditSection}
                   guidelineId={guideline.id}
@@ -706,11 +710,7 @@ export const PublicBrandGuideline: React.FC = () => {
   // Wrap in BrandRoomProvider only for owners in edit mode — anonymous visitors never connect
   if (editMode && canEdit && guideline.id) {
     return (
-      <BrandRoomProvider
-        guidelineId={guideline.id}
-        guideline={guideline}
-        onSave={handleSave}
-      >
+      <BrandRoomProvider guidelineId={guideline.id} guideline={guideline} onSave={handleSave}>
         {pageContent}
       </BrandRoomProvider>
     );

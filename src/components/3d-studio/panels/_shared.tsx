@@ -125,52 +125,50 @@ export const LightPositionSliders: React.FC<{
 export const MaterialCategoryTabs: React.FC<{
   activeCat: string;
   store: Pick<StoreState, 'material' | 'setMaterial'>;
-}> = React.memo(
-  ({ activeCat, store }) => {
-    const { t } = useTranslation();
-    const [openCat, setOpenCat] = useState(activeCat);
+}> = React.memo(({ activeCat, store }) => {
+  const { t } = useTranslation();
+  const [openCat, setOpenCat] = useState(activeCat);
 
-    const handleCat = useCallback((cat: string) => {
-      setOpenCat((prev) => (prev === cat ? '' : cat));
-    }, []);
+  const handleCat = useCallback((cat: string) => {
+    setOpenCat((prev) => (prev === cat ? '' : cat));
+  }, []);
 
-    return (
-      <div className="space-y-1.5">
+  return (
+    <div className="space-y-1.5">
+      <ToolPanelGrid cols={3}>
+        {MATERIAL_CATEGORIES.map((cat) => (
+          <ToolPanelChip key={cat} active={openCat === cat} onClick={() => handleCat(cat)}>
+            {t(`studio3d.material.categories.${cat}`)}
+          </ToolPanelChip>
+        ))}
+      </ToolPanelGrid>
+      {openCat && (
         <ToolPanelGrid cols={3}>
-          {MATERIAL_CATEGORIES.map((cat) => (
-            <ToolPanelChip key={cat} active={openCat === cat} onClick={() => handleCat(cat)}>
-              {t(`studio3d.material.categories.${cat}`)}
+          {MATERIAL_PRESETS.filter((m) => m.category === openCat).map((m) => (
+            <ToolPanelChip
+              key={m.id}
+              active={store.material === m.id}
+              onClick={() => store.setMaterial(m.id)}
+            >
+              <span className="flex flex-col items-center gap-1">
+                <span
+                  className={cn(
+                    'w-5 h-5 rounded-full border flex-shrink-0',
+                    store.material === m.id ? 'border-white/40' : 'border-white/10'
+                  )}
+                  style={{ backgroundColor: m.color || '#666' }}
+                />
+                <span className="text-[8px] uppercase tracking-wider leading-tight text-center truncate w-full">
+                  {m.label}
+                </span>
+              </span>
             </ToolPanelChip>
           ))}
         </ToolPanelGrid>
-        {openCat && (
-          <ToolPanelGrid cols={3}>
-            {MATERIAL_PRESETS.filter((m) => m.category === openCat).map((m) => (
-              <ToolPanelChip
-                key={m.id}
-                active={store.material === m.id}
-                onClick={() => store.setMaterial(m.id)}
-              >
-                <span className="flex flex-col items-center gap-1">
-                  <span
-                    className={cn(
-                      'w-5 h-5 rounded-full border flex-shrink-0',
-                      store.material === m.id ? 'border-white/40' : 'border-white/10'
-                    )}
-                    style={{ backgroundColor: m.color || '#666' }}
-                  />
-                  <span className="text-[8px] uppercase tracking-wider leading-tight text-center truncate w-full">
-                    {m.label}
-                  </span>
-                </span>
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-        )}
-      </div>
-    );
-  }
-);
+      )}
+    </div>
+  );
+});
 
 /* ── Procedural textures ──────────────────────────────── */
 

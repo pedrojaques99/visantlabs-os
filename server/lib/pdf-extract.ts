@@ -231,8 +231,8 @@ function remapTypographyWithFamilies(
       t.role === 'heading'
         ? families[0]
         : t.role === 'body'
-        ? families[1] || families[0]
-        : families[families.length - 1] || families[0];
+          ? families[1] || families[0]
+          : families[families.length - 1] || families[0];
     return { ...t, family };
   });
 }

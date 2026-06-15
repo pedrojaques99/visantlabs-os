@@ -225,7 +225,9 @@ export const AboutPage: React.FC = () => {
                       <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mt-0.5">
                         {member.role}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{member.bio}</p>
+                      <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
+                        {member.bio}
+                      </p>
                     </div>
                     <ArrowUpRight
                       size={14}

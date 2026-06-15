@@ -106,83 +106,78 @@ function buildLibraryFilter(query: Request['query']): Record<string, any> {
 }
 
 // ── POST /upload — user uploads images, pipeline tags + populates ────────────
-router.post(
-  '/upload',
-  ingestRateLimiter,
-  authenticate,
-  async (req: AuthRequest, res: Response) => {
-    try {
-      const userId = req.userId;
-      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+router.post('/upload', ingestRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
-      const { images } = req.body;
-      if (!Array.isArray(images) || images.length === 0) {
-        return res.status(400).json({ error: 'images array is required (max 10)' });
-      }
-      if (images.length > 10) {
-        return res.status(400).json({ error: 'Maximum 10 images per batch' });
-      }
-
-      const r2Service = await import('../../src/services/r2Service.js');
-      if (!r2Service.isR2Configured()) {
-        return res.status(503).json({ error: 'Storage is not configured' });
-      }
-      const { ingestReference } = await import('../lib/mockup/referenceIngestor.js');
-
-      // Charge 1 credit per image up-front (AI analysis cost)
-      await chargeCredits(userId, images.length);
-
-      const results: any[] = [];
-      const errors: any[] = [];
-
-      for (const img of images) {
-        try {
-          const base64 = typeof img === 'string' ? img : img.data;
-          if (!base64) {
-            errors.push({ name: img?.name, error: 'Missing image data' });
-            continue;
-          }
-
-          const presetId = `userref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-          const imageUrl = await r2Service.uploadMockupPresetReference(base64, presetId);
-
-          const result = await ingestReference({
-            imageBase64: base64,
-            imageUrl,
-            name: img.name,
-            studio: img.studio,
-            userId: String(userId),
-            tags: Array.isArray(img.tags) ? img.tags : undefined,
-            country: img.country,
-            region: img.region,
-            designer: img.designer,
-            sourceUrl: img.sourceUrl,
-            awardSource: img.awardSource,
-            year: typeof img.year === 'number' ? img.year : undefined,
-            // User uploads are owned by the user; public only if they opt in
-            isAdminCurated: false,
-            isPublic: img.isPublic === true,
-          });
-
-          results.push(result);
-        } catch (err: any) {
-          errors.push({ name: img?.name, error: err.message });
-        }
-      }
-
-      return res.json({
-        success: true,
-        ingested: results.length,
-        failed: errors.length,
-        results,
-        errors: errors.length > 0 ? errors : undefined,
-      });
-    } catch (error: any) {
-      console.error('[references] upload error:', error);
-      return res.status(500).json({ error: 'Failed to ingest references', details: error.message });
+    const { images } = req.body;
+    if (!Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'images array is required (max 10)' });
     }
+    if (images.length > 10) {
+      return res.status(400).json({ error: 'Maximum 10 images per batch' });
+    }
+
+    const r2Service = await import('../../src/services/r2Service.js');
+    if (!r2Service.isR2Configured()) {
+      return res.status(503).json({ error: 'Storage is not configured' });
+    }
+    const { ingestReference } = await import('../lib/mockup/referenceIngestor.js');
+
+    // Charge 1 credit per image up-front (AI analysis cost)
+    await chargeCredits(userId, images.length);
+
+    const results: any[] = [];
+    const errors: any[] = [];
+
+    for (const img of images) {
+      try {
+        const base64 = typeof img === 'string' ? img : img.data;
+        if (!base64) {
+          errors.push({ name: img?.name, error: 'Missing image data' });
+          continue;
+        }
+
+        const presetId = `userref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const imageUrl = await r2Service.uploadMockupPresetReference(base64, presetId);
+
+        const result = await ingestReference({
+          imageBase64: base64,
+          imageUrl,
+          name: img.name,
+          studio: img.studio,
+          userId: String(userId),
+          tags: Array.isArray(img.tags) ? img.tags : undefined,
+          country: img.country,
+          region: img.region,
+          designer: img.designer,
+          sourceUrl: img.sourceUrl,
+          awardSource: img.awardSource,
+          year: typeof img.year === 'number' ? img.year : undefined,
+          // User uploads are owned by the user; public only if they opt in
+          isAdminCurated: false,
+          isPublic: img.isPublic === true,
+        });
+
+        results.push(result);
+      } catch (err: any) {
+        errors.push({ name: img?.name, error: err.message });
+      }
+    }
+
+    return res.json({
+      success: true,
+      ingested: results.length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error: any) {
+    console.error('[references] upload error:', error);
+    return res.status(500).json({ error: 'Failed to ingest references', details: error.message });
   }
-);
+});
 
 // ── GET / — public browse ────────────────────────────────────────────────────
 router.get('/', apiRateLimiter, async (req: Request, res: Response) => {

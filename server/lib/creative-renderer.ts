@@ -295,7 +295,7 @@ export async function renderCreativePlan(
       // Compute total line width for alignment
       let totalWidth = 0;
       for (const seg of segments) {
-        ctx.fillStyle = seg.accent ? accentColor : layer.color ?? '#ffffff';
+        ctx.fillStyle = seg.accent ? accentColor : (layer.color ?? '#ffffff');
         totalWidth += ctx.measureText(seg.text).width;
       }
 
@@ -307,7 +307,7 @@ export async function renderCreativePlan(
       // (matches the simple banner use-case; multi-line would need a wrap pass)
       let cursorX = startX;
       for (const seg of segments) {
-        ctx.fillStyle = seg.accent ? accentColor : layer.color ?? '#ffffff';
+        ctx.fillStyle = seg.accent ? accentColor : (layer.color ?? '#ffffff');
         ctx.fillText(seg.text, cursorX, py);
         cursorX += ctx.measureText(seg.text).width;
       }

@@ -285,12 +285,12 @@ export function extractExportData(g: BrandGuideline): GuidelineExportData {
         const format = ext.endsWith('.svg')
           ? 'svg'
           : ext.endsWith('.png')
-          ? 'png'
-          : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
-          ? 'jpg'
-          : ext.endsWith('.webp')
-          ? 'webp'
-          : undefined;
+            ? 'png'
+            : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
+              ? 'jpg'
+              : ext.endsWith('.webp')
+                ? 'webp'
+                : undefined;
         return { url: l.url, variant: l.variant, label: l.label, format };
       }),
 

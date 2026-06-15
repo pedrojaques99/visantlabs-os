@@ -58,7 +58,9 @@ describe('@visant/print-fx gl — runner', () => {
 
   it('compileShader throws (and cleans up) on a compile error', () => {
     const gl = makeMockGL({ compileOk: false });
-    expect(() => compileShader(gl, (gl as any).FRAGMENT_SHADER, FS)).toThrow(/Shader compilation error/);
+    expect(() => compileShader(gl, (gl as any).FRAGMENT_SHADER, FS)).toThrow(
+      /Shader compilation error/
+    );
     expect((gl as any).deleteShader).toHaveBeenCalledOnce();
   });
 

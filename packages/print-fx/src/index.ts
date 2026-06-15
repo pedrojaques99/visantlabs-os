@@ -8,11 +8,7 @@ export { generateHalftoneSvg } from './halftone/svg.js';
 
 // ── Riso ──
 export { RISO_VERTEX_SHADER, RISO_FRAGMENT_SHADER } from './riso/shaders.js';
-export {
-  applyRisoUniforms,
-  RISO_DITHER_MODE_MAP,
-  RISO_SHAPE_MAP,
-} from './riso/uniforms.js';
+export { applyRisoUniforms, RISO_DITHER_MODE_MAP, RISO_SHAPE_MAP } from './riso/uniforms.js';
 
 // ── Post-FX shaders ──
 export {
@@ -43,9 +39,7 @@ export {
 } from './presets.js';
 
 // ── Types ──
-export {
-  HALFTONE_DEFAULTS,
-} from './types.js';
+export { HALFTONE_DEFAULTS } from './types.js';
 export type {
   HalftoneSettings,
   RisoSettings,

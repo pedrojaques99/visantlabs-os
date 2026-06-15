@@ -81,14 +81,14 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(
         source instanceof HTMLVideoElement
           ? source.videoWidth
           : source instanceof HTMLImageElement
-          ? source.naturalWidth || source.width
-          : (source as HTMLCanvasElement).width;
+            ? source.naturalWidth || source.width
+            : (source as HTMLCanvasElement).width;
       const h =
         source instanceof HTMLVideoElement
           ? source.videoHeight
           : source instanceof HTMLImageElement
-          ? source.naturalHeight || source.height
-          : (source as HTMLCanvasElement).height;
+            ? source.naturalHeight || source.height
+            : (source as HTMLCanvasElement).height;
       const tmpCanvas = document.createElement('canvas');
       tmpCanvas.width = w;
       tmpCanvas.height = h;

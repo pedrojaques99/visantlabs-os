@@ -87,8 +87,8 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
     isVideo && allowVideo
       ? VIDEO_RESOLUTIONS
       : openaiConfig
-      ? openaiConfig.supportedResolutions
-      : IMAGE_RESOLUTIONS;
+        ? openaiConfig.supportedResolutions
+        : IMAGE_RESOLUTIONS;
 
   if (compact) {
     return (

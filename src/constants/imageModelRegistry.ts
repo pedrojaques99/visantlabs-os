@@ -130,5 +130,5 @@ export const IMAGE_MODEL_IDS = IMAGE_MODEL_REGISTRY.map((m) => m.id) as [string,
  */
 export const IMAGE_PROVIDERS = [...new Set(IMAGE_MODEL_REGISTRY.map((m) => m.provider))] as [
   string,
-  ...string[]
+  ...string[],
 ];

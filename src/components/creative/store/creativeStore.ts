@@ -677,7 +677,7 @@ export const useCreativeStore = create<CreativeStore>()(
         // Blob URLs (blob:... from URL.createObjectURL) die with the page — persisting
         // them causes ERR_FILE_NOT_FOUND on reload. Drop them; the user re-uploads.
         const dropBlob = (u: string | null | undefined) =>
-          u && u.startsWith('blob:') ? null : u ?? null;
+          u && u.startsWith('blob:') ? null : (u ?? null);
         return {
           brandId: state.brandId,
           prompt: state.prompt,

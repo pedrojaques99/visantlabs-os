@@ -20,7 +20,7 @@ function makePane(left = 0, top = 0) {
       x: left,
       y: top,
       toJSON: () => {},
-    } as DOMRect);
+    }) as DOMRect;
   return pane;
 }
 

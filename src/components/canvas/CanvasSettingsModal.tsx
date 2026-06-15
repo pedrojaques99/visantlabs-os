@@ -181,8 +181,8 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   const gridHexColor = gridColor.startsWith('rgba')
     ? rgbaToHex(gridColor)
     : gridColor.startsWith('#')
-    ? gridColor
-    : '#ffffff';
+      ? gridColor
+      : '#ffffff';
 
   return (
     <div

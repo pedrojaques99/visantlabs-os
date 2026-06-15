@@ -257,8 +257,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                             isSectionActive
                               ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
                               : activeItemId === item.id
-                              ? 'text-neutral-300 hover:text-neutral-200'
-                              : 'text-neutral-500 hover:text-neutral-300',
+                                ? 'text-neutral-300 hover:text-neutral-200'
+                                : 'text-neutral-500 hover:text-neutral-300',
                             'hover:bg-neutral-800/30'
                           )}
                         >
