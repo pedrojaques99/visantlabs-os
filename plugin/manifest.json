@@ -5,7 +5,7 @@
   "main": "dist/code.js",
   "ui": "ui.html",
   "documentAccess": "dynamic-page",
-  "editorType": ["figma"],
+  "editorType": ["figma", "slides"],
   "permissions": ["currentuser", "teamlibrary"],
   "networkAccess": {
     "allowedDomains": [
