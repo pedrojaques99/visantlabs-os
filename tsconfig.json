@@ -41,5 +41,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["node_modules", "dist", "build", "tmp", "**/*.example.ts", "plugin", "cli"]
+  "exclude": ["node_modules", "dist", "build", "tmp", "**/*.example.ts", "plugin", "cli", "packages/psd-engine"]
 }
