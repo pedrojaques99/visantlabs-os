@@ -15,6 +15,7 @@ import {
   Redo2,
   PanelRightOpen,
   Hand,
+  MousePointer2,
   Printer,
   Play,
   Pause,
@@ -696,6 +697,11 @@ export const ImageLabPage: React.FC = () => {
         const current = labStore.getState().compareMode;
         setCompareMode(current === 'split' ? 'off' : 'split');
       },
+      v: (e) => {
+        if (!noMods(e)) return;
+        e.preventDefault();
+        setMagicHandActive(false);
+      },
       m: (e) => {
         if (!noMods(e)) return;
         e.preventDefault();
@@ -939,18 +945,32 @@ export const ImageLabPage: React.FC = () => {
           <ImageLabUploadWidget imageUrl={sourceUrl} onLoad={broadcastImage} />
           {hasImage && <OpacityToggle value={effectOpacity} onChange={setEffectOpacity} />}
           {hasImage && (
-            <button
-              onClick={() => setMagicHandActive(!magicHandActive)}
-              title="Magic Hand (M)"
-              className={cn(
-                tbBtn,
-                magicHandActive
-                  ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
-              )}
-            >
-              <Hand size={tbIcon} />
-            </button>
+            <>
+              <button
+                onClick={() => setMagicHandActive(false)}
+                title="Select (V)"
+                className={cn(
+                  tbBtn,
+                  !magicHandActive
+                    ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
+                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                )}
+              >
+                <MousePointer2 size={tbIcon} />
+              </button>
+              <button
+                onClick={() => setMagicHandActive(!magicHandActive)}
+                title="Magic Hand (M)"
+                className={cn(
+                  tbBtn,
+                  magicHandActive
+                    ? 'bg-white/10 text-white ring-1 ring-white/30 shadow-sm'
+                    : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                )}
+              >
+                <Hand size={tbIcon} />
+              </button>
+            </>
           )}
           {hasImage && sourceMediaType === 'video' && (
             <>
@@ -1156,13 +1176,22 @@ export const ImageLabPage: React.FC = () => {
           ref={magicHandAreaRef}
           className="absolute inset-0 z-10"
           onWheel={(e) => {
-            e.currentTarget.style.pointerEvents = 'none';
-            requestAnimationFrame(() => {
-              if (magicHandAreaRef.current) {
-                magicHandAreaRef.current.style.pointerEvents =
-                  magicHandActive && hasImage ? 'auto' : 'none';
-              }
-            });
+            const overlay = e.currentTarget as HTMLElement;
+            overlay.style.pointerEvents = 'none';
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            overlay.style.pointerEvents = 'auto';
+            target?.dispatchEvent(
+              new WheelEvent('wheel', {
+                bubbles: true,
+                cancelable: true,
+                deltaX: e.deltaX,
+                deltaY: e.deltaY,
+                deltaZ: e.deltaZ,
+                deltaMode: e.deltaMode,
+                clientX: e.clientX,
+                clientY: e.clientY,
+              })
+            );
           }}
           style={{
             cursor: magicHandActive && hasImage ? 'grab' : undefined,
@@ -1241,6 +1270,7 @@ export const ImageLabPage: React.FC = () => {
                         ['Ctrl+Z', 'Undo'],
                         ['Ctrl+Shift+Z', 'Redo'],
                         ['[ / ]', 'Cycle presets'],
+                        ['V', 'Select tool'],
                         ['M', 'Magic hand tool'],
                         ['Scroll', 'Zoom'],
                       ],
@@ -1455,15 +1485,26 @@ function useStatusItems(mode: ImageLabMode) {
   ]);
 }
 
-/* ─── Opacity Toggle (collapsible) ─── */
+/* ─── Opacity Toggle (horizontal popover) ─── */
 
 const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> = ({
   value,
   onChange,
 }) => {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
   return (
-    <div className="flex flex-col items-center">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
         title={`Effect Opacity ${Math.round(value * 100)}%`}
@@ -1477,7 +1518,10 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
         <Blend size={15} />
       </button>
       {open && (
-        <div className="flex flex-col items-center gap-0.5 py-1 animate-fade-in">
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-30 flex items-center gap-2 bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/60 rounded-lg px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
+          <span className="text-[10px] font-mono text-neutral-600 w-6 text-right shrink-0">
+            {Math.round(value * 100)}
+          </span>
           <input
             type="range"
             min={0}
@@ -1485,15 +1529,8 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
             step={0.01}
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="w-7 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-            style={{
-              writingMode: 'vertical-lr' as any,
-              direction: 'rtl',
-              height: '56px',
-              width: '12px',
-            }}
+            className="w-28 h-[2px] appearance-none bg-neutral-700 rounded-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
           />
-          <span className="text-[10px] font-mono text-neutral-600">{Math.round(value * 100)}</span>
         </div>
       )}
     </div>
