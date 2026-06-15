@@ -23,6 +23,7 @@ import {
   Blend,
   Pin,
   HelpCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -932,8 +933,13 @@ export const ImageLabPage: React.FC = () => {
         hideTopBar
         canvasClassName="absolute inset-0 transition-all duration-300"
       >
-        {/* Proximity sensor for FX bar auto-hide */}
+        {/* Proximity sensor for FX bar auto-hide (z-0: works when magic hand inactive) */}
         <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
+        {/* Top-strip proximity trigger — z-[25] above magic hand overlay (z-10) */}
+        <div
+          className="absolute top-0 left-0 right-0 h-20 z-[25]"
+          onPointerMove={handleCanvasPointerMove}
+        />
 
         {/* Floating tools — canvas-only actions */}
         <div
@@ -1026,15 +1032,36 @@ export const ImageLabPage: React.FC = () => {
         {/* Floating top bar — FX modes + undo/redo + panel toggle */}
         <div
           ref={fxBarRef}
+          className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center"
           onPointerEnter={handleFxBarEnter}
           onPointerLeave={handleFxBarLeave}
-          className={cn(
-            'absolute top-3 left-1/2 -translate-x-1/2 z-20 transition-all duration-300',
-            fxBarVisible
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 -translate-y-2 pointer-events-none'
-          )}
         >
+          {/* Collapsed handle — always visible on desktop when bar is hidden */}
+          {canAutoHide && (
+            <button
+              onClick={() => {
+                clearTimeout(fxHideTimer.current);
+                setFxBarVisible(true);
+              }}
+              title="Show FX bar"
+              className={cn(
+                'flex items-center justify-center h-5 px-8 rounded-b-lg transition-all duration-300',
+                'bg-neutral-900/60 backdrop-blur-xl border-b border-x border-neutral-800/60',
+                'text-neutral-600 hover:text-neutral-400 hover:bg-neutral-900/90',
+                fxBarVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              )}
+            >
+              <ChevronDown size={10} />
+            </button>
+          )}
+
+          {/* Full bar */}
+          <div
+            className={cn(
+              'mt-3 transition-all duration-300',
+              fxBarVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
+            )}
+          >
           <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
             {/* Undo / Redo */}
             <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
@@ -1154,6 +1181,7 @@ export const ImageLabPage: React.FC = () => {
                 </>
               )}
             </div>
+          </div>
           </div>
         </div>
 
