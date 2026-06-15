@@ -20,11 +20,6 @@ export { SO_TARGET, BRAND_HIDE, SO_DECOR } from './constants.js';
 
 export { resolveSoTarget, applyHideRules } from './resolve.js';
 
-export { extractScene } from './scene/index.js';
-export type { ExtractResult } from './scene/index.js';
-export { renderScene } from './scene/index.js';
-export type { ArtMap, RenderSceneOptions, SceneDoc, SceneFace, SceneLayer, Quad, AssetMap } from './scene/index.js';
-
 export { createNodeAdapter, initializeAgPsdCanvas } from './adapters/node.js';
 export { createBrowserAdapter } from './adapters/browser.js';
 
