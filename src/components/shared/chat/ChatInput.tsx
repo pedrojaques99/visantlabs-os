@@ -206,7 +206,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       {/* Disclaimer sutil */}
       {!compact && (
         <div className="px-4 text-xs text-white/20 text-center">
-          Powered by Gemini · Visant Labs OS
+          Visant Labs OS · Assistente de marca
         </div>
       )}
     </div>

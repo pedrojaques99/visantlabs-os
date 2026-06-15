@@ -667,7 +667,7 @@ export const DocsPage: React.FC = () => {
                     <Card id="mcp-overview" className="border border-border bg-card">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Server className="w-5 h-5 text-brand-cyan" /> Two MCP Servers
+                          <Server className="w-5 h-5 text-neutral-400" /> Two MCP Servers
                         </CardTitle>
                         <CardDescription>
                           Choose the server that fits your use case. You can use both
@@ -678,7 +678,7 @@ export const DocsPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs">
+                              <Badge className="bg-white/[0.05] text-neutral-400 border border-white/[0.08] text-xs">
                                 HTTP/SSE
                               </Badge>
                               <span className="font-semibold text-foreground text-sm">
@@ -1261,7 +1261,7 @@ const result = await client.callTool({
                           },
                           {
                             label: 'Structure',
-                            color: 'text-blue-400',
+                            color: 'text-neutral-400',
                             ops: [
                               'GROUP_NODES',
                               'UNGROUP',

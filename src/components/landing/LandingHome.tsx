@@ -1,8 +1,8 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useTranslation } from '@/hooks/useTranslation';
-import { VisantLogo3D } from '../3d/VisantLogo3D';
+import { VisantLogo3D, HERO_SHADER_NAMES, type HeroShaderName } from '../3d/VisantLogo3D';
 import { Button } from '../ui/button';
 import ASCIIFooter from '../ASCIIFooter';
 import { useNavigate } from 'react-router-dom';
@@ -73,6 +73,40 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
   const { t } = useTranslation();
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
+  const [shaderIntensity, setShaderIntensity] = useState(0.25);
+  const [ctaGlow, setCtaGlow] = useState({ x: 50, y: 50, active: false });
+  const intensityRef = useRef(0.25);
+  const targetIntensityRef = useRef(0.25);
+  const rafRef = useRef<number>(0);
+
+  const lerpIntensity = (target: number) => {
+    targetIntensityRef.current = target;
+    const step = () => {
+      const cur = intensityRef.current;
+      const tgt = targetIntensityRef.current;
+      const next = cur + (tgt - cur) * 0.28;
+      if (Math.abs(next - tgt) < 0.004) {
+        intensityRef.current = tgt;
+        setShaderIntensity(tgt);
+        return;
+      }
+      intensityRef.current = next;
+      setShaderIntensity(next);
+      rafRef.current = requestAnimationFrame(step);
+    };
+    cancelAnimationFrame(rafRef.current!);
+    rafRef.current = requestAnimationFrame(step);
+  };
+
+  // Pick one shader per session, stable across re-renders
+  const sessionShader = useMemo<HeroShaderName>(() => {
+    const KEY = 'vsn-hero-shader';
+    const stored = sessionStorage.getItem(KEY) as HeroShaderName | null;
+    if (stored && (HERO_SHADER_NAMES as readonly string[]).includes(stored)) return stored;
+    const pick = HERO_SHADER_NAMES[Math.floor(Math.random() * HERO_SHADER_NAMES.length)];
+    sessionStorage.setItem(KEY, pick);
+    return pick;
+  }, []);
 
   // Featured tools — the bento. First one is wide. Image + short label.
   const bento = [
@@ -95,6 +129,8 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       desc: t('landing.bento.brandingDesc'),
     },
   ];
+
+  useLayoutEffect(() => () => cancelAnimationFrame(rafRef.current!), []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -140,9 +176,14 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         <div
           data-stage
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 opacity-60"
+          className="absolute inset-0 z-0 opacity-60"
         >
-          <VisantLogo3D presetIndex={1} xOffsetPx={0} />
+          <VisantLogo3D
+            presetIndex={1}
+            xOffsetPx={0}
+            shaderName={sessionShader}
+            shaderIntensity={shaderIntensity}
+          />
         </div>
 
         {/* Bottom fade so hero bleeds into bento cleanly */}
@@ -151,8 +192,8 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-neutral-950 to-transparent z-10"
         />
 
-        {/* Hero text — sits above the 3D */}
-        <div className="relative z-20 flex h-full flex-col items-center justify-center px-6 text-center">
+        {/* Hero text — pointer-events-none so drag passes through to canvas; buttons restore it */}
+        <div className="pointer-events-none relative z-20 flex h-full flex-col items-center justify-center px-6 text-center">
           <div data-hero className="flex flex-col items-center gap-7">
             <h1 className="text-5xl font-semibold leading-[0.91] tracking-[-0.08em] sm:text-7xl lg:text-[6rem]">
               <span className="block text-white">{t('landing.hero.titleLine1')}</span>
@@ -163,7 +204,11 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
             <p className="max-w-lg text-base text-neutral-400 sm:text-lg">
               {t('landing.hero.subtitle')}
             </p>
-            <div className="mt-1 flex flex-col items-center gap-3 sm:flex-row">
+            <div
+              className="pointer-events-auto mt-1 flex flex-col items-center gap-3 sm:flex-row"
+              onMouseEnter={() => lerpIntensity(2)}
+              onMouseLeave={() => lerpIntensity(0.25)}
+            >
               <Button
                 variant="brand"
                 onClick={onGetStarted}
@@ -182,6 +227,37 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           </div>
         </div>
       </header>
+
+      {/* ── How It Works ────────────────────────────────────────── */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28">
+        <div data-reveal className="mb-14 flex flex-col gap-3 text-center">
+          <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+            {t('landing.howItWorks.eyebrow')}
+          </span>
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            {t('landing.howItWorks.title')}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 gap-px bg-white/5 sm:grid-cols-3 rounded-2xl overflow-hidden border border-white/5">
+          {[
+            { num: t('landing.howItWorks.step1Num'), title: t('landing.howItWorks.step1Title'), desc: t('landing.howItWorks.step1Desc') },
+            { num: t('landing.howItWorks.step2Num'), title: t('landing.howItWorks.step2Title'), desc: t('landing.howItWorks.step2Desc') },
+            { num: t('landing.howItWorks.step3Num'), title: t('landing.howItWorks.step3Title'), desc: t('landing.howItWorks.step3Desc') },
+          ].map((step) => (
+            <div
+              key={step.num}
+              data-reveal
+              className="flex flex-col gap-5 bg-neutral-950 p-8 sm:p-10"
+            >
+              <span className="font-redhatmono text-[11px] text-neutral-600 tracking-widest">{step.num}</span>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-lg font-semibold text-white tracking-tight">{step.title}</h3>
+                <p className="text-sm leading-relaxed text-neutral-500">{step.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ── Bento ───────────────────────────────────────────────── */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28">
@@ -223,17 +299,47 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         </div>
       </section>
 
+      {/* ── Trust bar ───────────────────────────────────────────── */}
+      <section className="relative z-10 border-y border-white/5 py-5">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-8 gap-y-3 px-6">
+          {[
+            t('landing.trust.label1'),
+            t('landing.trust.label2'),
+            t('landing.trust.label3'),
+            t('landing.trust.label4'),
+          ].map((label) => (
+            <span key={label} className="font-redhatmono text-[11px] uppercase tracking-widest text-neutral-500">
+              {label}
+            </span>
+          ))}
+        </div>
+      </section>
+
       {/* ── Motion band ─────────────────────────────────────────── */}
       <section className="relative z-10 py-6">
         <Marquee names={MARQUEE} speed={60} />
       </section>
 
       {/* ── Final CTA ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden min-h-[420px]">
-        {/* 3D background — same as hero, quieter */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-40">
-          <VisantLogo3D presetIndex={2} xOffsetPx={0} />
-        </div>
+      <section
+        className="relative overflow-hidden min-h-[420px] cursor-default"
+        onMouseMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setCtaGlow({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100, active: true });
+        }}
+        onMouseLeave={() => setCtaGlow((g) => ({ ...g, active: false }))}
+      >
+        {/* Subtle ambient gradient base */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(82,221,235,0.07),transparent)]" />
+        {/* Mouse-follow glow — CSS only, no GPU */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-500"
+          style={{
+            opacity: ctaGlow.active ? 1 : 0,
+            background: `radial-gradient(500px at ${ctaGlow.x}% ${ctaGlow.y}%, rgba(82,221,235,0.1), transparent 65%)`,
+          }}
+        />
         <div
           data-reveal
           className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-7 px-6 py-28 text-center sm:py-36"
@@ -248,6 +354,9 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           >
             {t('landing.finalCta.button')}
           </Button>
+          <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-600">
+            {t('landing.finalCta.anchor')}
+          </p>
         </div>
       </section>
 

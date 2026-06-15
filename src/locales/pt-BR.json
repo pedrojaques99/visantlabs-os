@@ -403,7 +403,7 @@
       "description": "Extraia, amplie e anime imagens de moodboards. Gere vídeos cinematográficos com Veo 3."
     },
     "mockupMachine": {
-      "description": "Gere mockups profissionais com IA",
+      "description": "Seus designs em produtos reais. Em segundos.",
       "name": "Mockup Machine"
     },
     "seoDescription": "Escolha entre nossas ferramentas criativas: Mockup Machine, Branding Machine, Budget Machine e Canvas Editor.",
@@ -641,9 +641,9 @@
     "saveProject": "Salvar Projeto",
     "saving": "Salvando...",
     "sectionNotGenerated": "Esta seção ainda não foi gerada",
-    "seoDescription": "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
-    "seoKeywords": "branding machine, AI branding, identidade visual, estratégia de marca, design de marca",
-    "seoTitle": "Branding Machine com IA",
+    "seoDescription": "Construa sua identidade de marca do zero ao conceito em etapas guiadas. Do brief ao manual completo.",
+    "seoKeywords": "branding machine, identidade visual, estratégia de marca, design de marca, manual de marca",
+    "seoTitle": "Branding Machine — Construa Sua Identidade de Marca",
     "startAnalysis": "Iniciar Análise de Branding",
     "starting": "Iniciando...",
     "step": "Etapa",
@@ -730,11 +730,11 @@
     "thumbsUp": "Thumbs Up",
     "machine": {
       "falar_com_especialista": "Falar com Especialista",
-      "crie_estratgias_completas_de_bran": "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
-      "branding_machine_com_ia": "Branding Machine com IA"
+      "crie_estratgias_completas_de_bran": "Construa sua identidade de marca do zero ao conceito em etapas guiadas. Do brief ao manual completo.",
+      "branding_machine_com_ia": "Branding Machine"
     },
     "expert": {
-      "converse_com_nosso_assistente_espe": "Converse com nosso assistente especialista em estratégia e metodologia de branding.",
+      "converse_com_nosso_assistente_espe": "Refine sua estratégia. Questione cada decisão. Chegue numa marca que realmente funciona.",
       "especialista_em_branding_visant_la": "Especialista em Branding | Visant Labs"
     }
   },
@@ -2756,7 +2756,7 @@
     "segmentDescription": "Escolha um segmento para contextualizar suas gerações.",
     "seoDescription": "Crie mockups realistas em segundos. Envie seu design, escolha um estilo e deixe nossa IA fazer o resto.",
     "seoKeywords": "mockup, ia, gerador de mockup, design, branding, apresentação",
-    "seoTitle": "Mockup Machine — Gerador de Mockups Profissionais com IA",
+    "seoTitle": "Mockup Machine — Seus Designs em Produtos Reais",
     "setup": "Configuração",
     "setupAndAnalysis": "CONFIGURAÇÃO & ANÁLISE",
     "setupStepContinue": "Continuar",
@@ -2819,7 +2819,7 @@
     "selectModelToGenerate": "Select Model To Generate",
     "title": "Title",
     "machine": {
-      "gere_mockups_profissionais_com_inte": "Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
+      "gere_mockups_profissionais_com_inte": "Seus designs em produtos reais em segundos. Ferramenta integrada de mockups e assets para times de marca."
     }
   },
   "mockupsPage": {
@@ -2941,7 +2941,7 @@
     "selectPlan": "Select Plan",
     "visant_processingcdn": "Visant Processing/CDN",
     "google_api_gemini_31": "Google API (Gemini 3.1)",
-    "planos_e_pacotes_de_crditos_para_gerar_m": "Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design.",
+    "planos_e_pacotes_de_crditos_para_gerar_m": "Planos e pacotes de créditos para seus mockups e assets. Escolha o volume certo para o seu time.",
     "preos_e_planos": "Preços e Planos",
     "api": {
       "includedTitle": "Incluído no seu plano",
@@ -4881,32 +4881,52 @@
   },
   "landing": {
     "hero": {
-      "titleLine1": "A IA que entende",
-      "titleLine2": "a sua marca.",
-      "subtitle": "Suas brand guidelines viram contexto vivo de IA. Mockups, peças e campanhas sempre na sua identidade.",
+      "titleLine1": "Pare de corrigir outputs",
+      "titleLine2": "que ignoram sua marca.",
+      "subtitle": "Suas brand guidelines viram contexto estruturado para qualquer modelo. O que sai sempre parece seu.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver os apps"
     },
+    "howItWorks": {
+      "eyebrow": "Como funciona",
+      "title": "Três passos. Zero retrabalho.",
+      "step1Num": "01",
+      "step1Title": "Suba suas guidelines",
+      "step1Desc": "PDF, URL ou texto. Visant extrai a essência da sua identidade — cores, tipografia, tom de voz, regras.",
+      "step2Num": "02",
+      "step2Title": "Viram contexto real",
+      "step2Desc": "Suas regras deixam de ser um documento e passam a ser contexto estruturado que qualquer modelo lê antes de gerar.",
+      "step3Num": "03",
+      "step3Title": "O output parece seu",
+      "step3Desc": "Mockups, copy, campanhas. Gerados dentro da sua identidade. Sem precisar corrigir o que saiu errado."
+    },
+    "trust": {
+      "label1": "Open source",
+      "label2": "API-first",
+      "label3": "MCP-ready",
+      "label4": "Figma Plugin"
+    },
     "bento": {
       "eyebrow": "A plataforma",
-      "title": "Tudo conectado pela sua marca.",
+      "title": "Tudo parece seu. Sempre.",
       "mockupName": "Mockup Machine",
       "mockupDesc": "Mockups realistas do produto em segundos.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Sua identidade, viva como contexto de IA.",
+      "brandDesc": "Sua identidade em cada geração. Não só em documentos.",
       "canvasName": "Canvas",
-      "canvasDesc": "Editor visual com pipelines de IA.",
+      "canvasDesc": "Desenhe, conecte, gere. Tudo num canvas.",
       "studioName": "3D Studio",
       "studioDesc": "Cenas e render 3D no navegador.",
       "brandingName": "Branding",
-      "brandingDesc": "Identidades de marca geradas por IA."
+      "brandingDesc": "Identidades que parecem suas desde o primeiro rascunho."
     },
     "finalCta": {
-      "title": "Sua marca, agora com IA.",
-      "button": "Começar grátis"
+      "title": "Sua marca. Consistente em tudo que você gera.",
+      "button": "Começar grátis",
+      "anchor": "Grátis para começar · Sem cartão de crédito · Cancele quando quiser"
     },
     "footer": {
-      "tagline": "A única IA que conhece a sua marca."
+      "tagline": "O único que realmente conhece sua marca."
     }
   }
 }

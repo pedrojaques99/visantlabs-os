@@ -1,6 +1,15 @@
 import React, { Suspense, useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, Float, ContactShadows, PresentationControls, Html } from '@react-three/drei';
+import {
+  EffectComposer,
+  ChromaticAberration,
+  Glitch,
+  Noise,
+  Pixelation,
+  DotScreen,
+} from '@react-three/postprocessing';
+import { BlendFunction } from 'postprocessing';
 import * as THREE from 'three';
 
 // ─── Presets ──────────────────────────────────────────────────────────────────
@@ -88,6 +97,46 @@ export const GLASS_BASE = {
 
 export type Preset = (typeof PRESETS)[number];
 export const randomPresetIndex = () => Math.floor(Math.random() * PRESETS.length);
+
+// ─── Hero shader names (subset of our engine shaders, mapped to r3f postprocessing) ──
+export const HERO_SHADER_NAMES = [
+  'chromaticAberration',
+  'glitch',
+  'filmGrain',
+  'pixelate',
+  'halftone',
+] as const;
+export type HeroShaderName = (typeof HERO_SHADER_NAMES)[number];
+
+// intensity: 0.0 = base (always on, subtle) → 1.0 = full hover
+const HeroEffect: React.FC<{ name: HeroShaderName; intensity: number }> = ({ name, intensity }) => {
+  switch (name) {
+    case 'chromaticAberration':
+      return (
+        <ChromaticAberration
+          offset={new THREE.Vector2(0.002 + 0.007 * intensity, 0.002 + 0.007 * intensity)}
+          blendFunction={BlendFunction.NORMAL}
+        />
+      );
+    case 'glitch':
+      return (
+        <Glitch
+          delay={new THREE.Vector2(1.5, 3.5)}
+          duration={new THREE.Vector2(0.2, 0.6)}
+          strength={new THREE.Vector2(0.05 + 0.3 * intensity, 0.1 + 0.4 * intensity)}
+          ratio={0.04 + 0.1 * intensity}
+        />
+      );
+    case 'filmGrain':
+      return <Noise opacity={0.12 + 0.48 * intensity} blendFunction={BlendFunction.SOFT_LIGHT} />;
+    case 'pixelate':
+      return <Pixelation granularity={Math.max(1, Math.round(2 + 5 * intensity))} />;
+    case 'halftone':
+      return <DotScreen scale={0.5 + 0.5 * intensity} blendFunction={BlendFunction.OVERLAY} />;
+    default:
+      return null;
+  }
+};
 
 const ZOOM_MIN = 5;
 const ZOOM_MAX = 18;
@@ -262,12 +311,18 @@ export interface VisantLogo3DProps {
   xOffsetPx?: number;
   /** Fills the fixed viewport as a background layer (pointer-events: none) */
   fullScreen?: boolean;
+  /** One of our engine shader names to apply as postprocessing on capable devices */
+  shaderName?: HeroShaderName;
+  /** Shader intensity 0–1: base always-on level, 1 = full hover. Skip postprocessing below 0 */
+  shaderIntensity?: number;
 }
 
 export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
   presetIndex = 0,
   xOffsetPx = 0,
   fullScreen = false,
+  shaderName,
+  shaderIntensity = 0,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const fov = window.innerWidth < 768 ? 120 : 100;
@@ -276,6 +331,8 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
   const isHovering = useRef(false);
 
   const preset = PRESETS[presetIndex % PRESETS.length];
+  // Skip postprocessing on mobile or underpowered devices (≤4 logical cores)
+  const isCapable = !isMobile && (navigator.hardwareConcurrency ?? 8) > 4;
 
   useEffect(() => {
     const onResize = () => {
@@ -290,32 +347,18 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
-    const onEnter = () => {
-      isHovering.current = true;
-    };
-    const onLeave = () => {
-      isHovering.current = false;
-    };
-    const onWheel = (e: WheelEvent) => {
-      if (!isHovering.current) return;
-      e.preventDefault();
-      targetZRef.current = Math.min(
-        ZOOM_MAX,
-        Math.max(ZOOM_MIN, targetZRef.current + e.deltaY * 0.008)
-      );
-    };
+    const onEnter = () => { isHovering.current = true; };
+    const onLeave = () => { isHovering.current = false; };
     el.addEventListener('mouseenter', onEnter);
     el.addEventListener('mouseleave', onLeave);
-    el.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       el.removeEventListener('mouseenter', onEnter);
       el.removeEventListener('mouseleave', onLeave);
-      el.removeEventListener('wheel', onWheel);
     };
   }, []);
 
   const meshX = pxToWorld(xOffsetPx, window.innerWidth, targetZRef.current, fov);
-  const initZ = calcInitialZ(window.innerWidth, window.innerHeight);
+  const initZ = ZOOM_MAX;
 
   return (
     <div ref={wrapperRef} className={fullScreen ? 'fixed inset-0 z-[1]' : 'w-full h-full'}>
@@ -335,7 +378,6 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
             </Html>
           }
         >
-          <ZoomSync targetZRef={targetZRef} />
           <ambientLight intensity={isMobile ? 1.5 : 1} />
           <spotLight
             position={[10, 10, 10]}
@@ -379,6 +421,12 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
               color="#000000"
               position={[meshX, -4, 0]}
             />
+          )}
+
+          {isCapable && shaderName && (
+            <EffectComposer>
+              <HeroEffect name={shaderName} intensity={shaderIntensity} />
+            </EffectComposer>
           )}
         </Suspense>
       </Canvas>

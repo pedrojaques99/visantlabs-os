@@ -435,7 +435,7 @@ function Spinner() {
 function Watermark() {
   return (
     <p className="text-[11px] text-muted-foreground/50 text-center select-none">
-      Powered by{' '}
+      via{' '}
       <a
         href="https://visantlabs.com"
         className="hover:text-muted-foreground transition-colors"
@@ -561,7 +561,7 @@ function ProviderIcon({ id }: { id: string }) {
 
   if (id === 'cursor') {
     return (
-      <div className={cn(base, 'bg-[#1a1a1a] dark:bg-white/10')}>
+      <div className={cn(base, 'bg-neutral-900 dark:bg-white/10')}>
         <svg viewBox="0 0 24 24" className="w-4 h-4 text-white" fill="currentColor">
           <path d="M5.868 2.75L10 12l-4.132 9.25L2 12l3.868-9.25zM13.132 2.75L22 12l-8.868 9.25L9 12l4.132-9.25z" />
         </svg>

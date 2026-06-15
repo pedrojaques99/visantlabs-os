@@ -253,8 +253,7 @@ export const ProfilePage: React.FC = () => {
       seoTitle={t('common.profile')}
       seoDescription={t('profile.seoDescription')}
       title={t('common.profile') || 'Perfil'}
-      description={t('common.subtitle') || 'Gerencie sua conta e assinatura'}
-      microTitle="User // Account"
+      hideHeader
       breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('common.profile') || 'Profile' }]}
     >
       <div className="space-y-6">
@@ -273,22 +272,22 @@ export const ProfilePage: React.FC = () => {
         )}
 
         <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="bg-neutral-900/60 border border-white/10 rounded-xl p-1 w-full sm:w-auto justify-start overflow-x-auto">
+          <TabsList className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-1 w-full sm:w-auto justify-start overflow-x-auto">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-brand-cyan data-[state=active]:text-black px-4 sm:px-6"
+              className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-neutral-100 data-[state=active]:shadow-none px-4 sm:px-6 text-neutral-500 hover:text-neutral-300 transition-colors"
             >
               {t('common.tabs.overview')}
             </TabsTrigger>
             <TabsTrigger
               value="history"
-              className="data-[state=active]:bg-brand-cyan data-[state=active]:text-black px-4 sm:px-6"
+              className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-neutral-100 data-[state=active]:shadow-none px-4 sm:px-6 text-neutral-500 hover:text-neutral-300 transition-colors"
             >
               {t('common.tabs.history')}
             </TabsTrigger>
             <TabsTrigger
               value="configuration"
-              className="data-[state=active]:bg-brand-cyan data-[state=active]:text-black px-4 sm:px-6"
+              className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-neutral-100 data-[state=active]:shadow-none px-4 sm:px-6 text-neutral-500 hover:text-neutral-300 transition-colors"
             >
               {t('common.tabs.configuration')}
             </TabsTrigger>
