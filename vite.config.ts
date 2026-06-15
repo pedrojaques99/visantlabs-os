@@ -40,6 +40,33 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': aliasPath,
+        // Resolve local workspace packages directly from source so Vercel
+        // doesn't need a pre-built dist/ (dist is gitignored).
+        '@visant/psd-engine/adapters/browser': path.resolve(
+          __dirname,
+          'packages/psd-engine/src/adapters/browser.ts'
+        ),
+        '@visant/psd-engine/adapters/node': path.resolve(
+          __dirname,
+          'packages/psd-engine/src/adapters/node.ts'
+        ),
+        '@visant/psd-engine/scene': path.resolve(
+          __dirname,
+          'packages/psd-engine/src/scene/index.ts'
+        ),
+        '@visant/psd-engine': path.resolve(__dirname, 'packages/psd-engine/src/index.ts'),
+        '@visant/extrude3d/materials': path.resolve(
+          __dirname,
+          'packages/extrude3d/src/materials.ts'
+        ),
+        '@visant/extrude3d/fonts': path.resolve(__dirname, 'packages/extrude3d/src/fonts.ts'),
+        '@visant/extrude3d/glb': path.resolve(__dirname, 'packages/extrude3d/src/glb.ts'),
+        '@visant/extrude3d': path.resolve(__dirname, 'packages/extrude3d/src/index.ts'),
+        '@visant/print-fx/halftone': path.resolve(
+          __dirname,
+          'packages/print-fx/src/halftone/index.ts'
+        ),
+        '@visant/print-fx': path.resolve(__dirname, 'packages/print-fx/src/index.ts'),
         'onnxruntime-web/webgpu': path.resolve(
           __dirname,
           'node_modules/onnxruntime-web/dist/ort.webgpu.bundle.min.mjs'
