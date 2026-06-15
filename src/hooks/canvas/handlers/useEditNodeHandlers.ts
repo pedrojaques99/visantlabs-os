@@ -208,10 +208,10 @@ export const useEditNodeHandlers = ({
         imageType: connectedImage?.startsWith('http')
           ? 'URL'
           : connectedImage?.startsWith('data:')
-          ? 'dataURL'
-          : connectedImage
-          ? 'base64'
-          : 'none',
+            ? 'dataURL'
+            : connectedImage
+              ? 'base64'
+              : 'none',
       });
 
       let inputImage: string | null = null;
@@ -253,8 +253,8 @@ export const useEditNodeHandlers = ({
         inputImageType: inputImage?.startsWith('http')
           ? 'URL'
           : inputImage?.startsWith('data:')
-          ? 'dataURL'
-          : 'base64',
+            ? 'dataURL'
+            : 'base64',
         inputImageLength: inputImage?.length || 0,
         resolution,
         model,
@@ -427,9 +427,9 @@ export const useEditNodeHandlers = ({
 
         try {
           const inputTokens =
-            typeof smartPromptResult === 'object' ? smartPromptResult.inputTokens ?? 0 : 0;
+            typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
           const outputTokens =
-            typeof smartPromptResult === 'object' ? smartPromptResult.outputTokens ?? 0 : 0;
+            typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
 
           const token = authService.getToken();
           await fetch('/api/mockups/track-prompt-generation', {

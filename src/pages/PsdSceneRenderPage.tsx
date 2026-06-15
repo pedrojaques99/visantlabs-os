@@ -155,8 +155,8 @@ export const PsdSceneRenderPage: React.FC = () => {
             PSD Scene Render (browser)
           </CardTitle>
           <CardDescription>
-            Render client-side via Scene Packages — escolha uma scene, suba a arte, veja o mockup
-            na hora e baixe. Mesmo pipeline da Boxy (@visant/psd-engine).
+            Render client-side via Scene Packages — escolha uma scene, suba a arte, veja o mockup na
+            hora e baixe. Mesmo pipeline da Boxy (@visant/psd-engine).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

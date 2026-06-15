@@ -39,7 +39,10 @@ class ExportTimeoutError extends Error {}
 function withTimeout<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
   let timer: NodeJS.Timeout;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new ExportTimeoutError(`${label} timed out after ${ms}ms`)), ms);
+    timer = setTimeout(
+      () => reject(new ExportTimeoutError(`${label} timed out after ${ms}ms`)),
+      ms
+    );
   });
   return Promise.race([work, timeout]).finally(() => clearTimeout(timer)) as Promise<T>;
 }

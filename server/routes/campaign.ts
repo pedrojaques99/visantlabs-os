@@ -321,10 +321,13 @@ async function runCampaign(params: {
     if (creditsCharged > 0 && failedCount > 0 && perImageCredits > 0) {
       const refundAmount = Math.min(failedCount * perImageCredits, creditsCharged);
       await refundCreditsWithRetry(userId, refundAmount).catch(() => {});
-      console.log(`[campaign] Refunded ${refundAmount} credit(s) for ${failedCount} failed image(s)`, {
-        jobId: job.jobId,
-        userId,
-      });
+      console.log(
+        `[campaign] Refunded ${refundAmount} credit(s) for ${failedCount} failed image(s)`,
+        {
+          jobId: job.jobId,
+          userId,
+        }
+      );
     }
   } catch (err: any) {
     job.status = 'error';

@@ -140,8 +140,8 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
           value
             ? 'bg-brand-cyan/80 border-brand-cyan'
             : theme === 'dark'
-            ? 'bg-neutral-700 border-neutral-600'
-            : 'bg-white border-neutral-400'
+              ? 'bg-neutral-700 border-neutral-600'
+              : 'bg-white border-neutral-400'
         )}
       >
         {value && (
@@ -354,8 +354,8 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                         selectedColors.length >= 5
                           ? 'opacity-50 cursor-not-allowed'
                           : theme === 'dark'
-                          ? 'border-neutral-700/40 hover:border-neutral-500 hover:scale-110'
-                          : 'border-neutral-300 hover:border-neutral-400 hover:scale-110'
+                            ? 'border-neutral-700/40 hover:border-neutral-500 hover:scale-110'
+                            : 'border-neutral-300 hover:border-neutral-400 hover:scale-110'
                       }`}
                       style={{ backgroundColor: color }}
                       title={

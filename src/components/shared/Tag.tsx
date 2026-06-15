@@ -56,18 +56,18 @@ export const Tag: React.FC<TagProps> = ({
     inPool && selected
       ? poolActiveStyles
       : inPool
-      ? poolStyles
-      : theme === 'dark'
-      ? selected
-        ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
-        : suggested
-        ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-neutral-700 hover:text-white'
-        : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-      : selected
-      ? 'bg-brand-cyan/20 text-neutral-800 border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
-      : suggested
-      ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
-      : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900';
+        ? poolStyles
+        : theme === 'dark'
+          ? selected
+            ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
+            : suggested
+              ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-neutral-700 hover:text-white'
+              : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+          : selected
+            ? 'bg-brand-cyan/20 text-neutral-800 border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
+            : suggested
+              ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
+              : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900';
 
   const disabledStyles = disabled ? 'opacity-100 cursor-not-allowed' : '';
 

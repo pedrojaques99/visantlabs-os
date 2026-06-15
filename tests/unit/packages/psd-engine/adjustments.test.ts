@@ -10,7 +10,13 @@ describe('buildAdjustmentLut', () => {
   it('levels: gamma neutro + range cheio = identidade', () => {
     const lut = buildAdjustmentLut({
       type: 'levels',
-      rgb: { shadowInput: 0, highlightInput: 255, midtoneInput: 1, shadowOutput: 0, highlightOutput: 255 },
+      rgb: {
+        shadowInput: 0,
+        highlightInput: 255,
+        midtoneInput: 1,
+        shadowOutput: 0,
+        highlightOutput: 255,
+      },
     })!;
     expect(lut.r[0]).toBe(0);
     expect(lut.r[128]).toBe(128);
@@ -20,7 +26,13 @@ describe('buildAdjustmentLut', () => {
   it('levels: aumentar shadowInput escurece os tons baixos (mais contraste)', () => {
     const lut = buildAdjustmentLut({
       type: 'levels',
-      rgb: { shadowInput: 50, highlightInput: 205, midtoneInput: 1, shadowOutput: 0, highlightOutput: 255 },
+      rgb: {
+        shadowInput: 50,
+        highlightInput: 205,
+        midtoneInput: 1,
+        shadowOutput: 0,
+        highlightOutput: 255,
+      },
     })!;
     expect(lut.r[50]).toBe(0); // tudo <=50 vira preto
     expect(lut.r[255]).toBe(255); // tudo >=205 vira branco
@@ -37,7 +49,10 @@ describe('buildAdjustmentLut', () => {
   it('curves: 2 pontos lineares interpolam', () => {
     const lut = buildAdjustmentLut({
       type: 'curves',
-      rgb: [{ input: 0, output: 0 }, { input: 255, output: 255 }],
+      rgb: [
+        { input: 0, output: 0 },
+        { input: 255, output: 255 },
+      ],
     })!;
     expect(lut.r[128]).toBe(128);
   });

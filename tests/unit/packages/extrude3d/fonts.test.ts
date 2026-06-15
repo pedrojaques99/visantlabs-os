@@ -18,7 +18,12 @@ beforeAll(() => {
  * (getPath / stringToGlyphs / getKerningValue) that textToSvg uses.
  */
 function squareFont(): opentype.Font {
-  const notdef = new opentype.Glyph({ name: '.notdef', unicode: 0, advanceWidth: 650, path: new opentype.Path() });
+  const notdef = new opentype.Glyph({
+    name: '.notdef',
+    unicode: 0,
+    advanceWidth: 650,
+    path: new opentype.Path(),
+  });
 
   const path = new opentype.Path();
   path.moveTo(100, 0);

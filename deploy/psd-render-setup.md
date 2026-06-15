@@ -101,7 +101,7 @@ curl https://api.visantlabs.com/api/psd-render/status \
 
 - **Interactive sessions** (logged-in browser, JWT) and trusted internal **MCP** calls are full-access and bypass the scope check.
 - **Scoped credentials** — API keys (`visant_sk_*`) and OAuth tokens — must carry the **`generate`** scope or the request is rejected with `403 Insufficient scope`. A read-only key cannot trigger renders.
-- **Access tier** (`resolveTier`) is computed from the *credential owner*: admin / team-member / `PSD_RENDER_ALLOWED_USERS` → `all` (full library + arbitrary `psdUrl`); everyone else → `public` (only `GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`, no `psdUrl`). A partner key minted on a **dedicated non-admin account** therefore resolves to `public` by construction — it can never escalate to the full library even if leaked.
+- **Access tier** (`resolveTier`) is computed from the _credential owner_: admin / team-member / `PSD_RENDER_ALLOWED_USERS` → `all` (full library + arbitrary `psdUrl`); everyone else → `public` (only `GOOGLE_DRIVE_PUBLIC_FOLDER_IDS`, no `psdUrl`). A partner key minted on a **dedicated non-admin account** therefore resolves to `public` by construction — it can never escalate to the full library even if leaked.
 
 ## Constraints
 

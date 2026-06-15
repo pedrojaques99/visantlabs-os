@@ -9,7 +9,9 @@ import {
 describe('detectExport', () => {
   it('detects the real-world request from the screenshot', () => {
     expect(
-      detectExport('consegue me voltar um json com todos os orçamentos com os dados cliente valor categoria')
+      detectExport(
+        'consegue me voltar um json com todos os orçamentos com os dados cliente valor categoria'
+      )
     ).toBe(true);
   });
 
@@ -48,9 +50,11 @@ describe('detectExportFormat', () => {
 
 describe('extractExportFields', () => {
   it('extracts quoted field lists', () => {
-    expect(
-      extractExportFields('json com os dados "cliente" "valor" "categoria"')
-    ).toEqual(['cliente', 'valor', 'categoria']);
+    expect(extractExportFields('json com os dados "cliente" "valor" "categoria"')).toEqual([
+      'cliente',
+      'valor',
+      'categoria',
+    ]);
   });
 
   it('extracts comma/e-separated lists after a cue word', () => {

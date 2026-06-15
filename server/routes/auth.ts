@@ -419,8 +419,8 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
     const referralCode = stateStr?.startsWith('ref:')
       ? stateStr.substring(4)
       : stateStr && !stateStr.startsWith('plugin:') && !stateStr.startsWith('link:')
-      ? stateStr
-      : undefined;
+        ? stateStr
+        : undefined;
 
     // Find or create user
     let user = await prisma.user.findUnique({
@@ -706,8 +706,7 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
 // the widget shows exactly when the server is configured to verify.
 router.get('/config', apiRateLimiter, (_req, res) => {
   res.json({
-    hcaptchaSiteKey:
-      process.env.HCAPTCHA_SITE_KEY || process.env.VITE_HCAPTCHA_SITE_KEY || null,
+    hcaptchaSiteKey: process.env.HCAPTCHA_SITE_KEY || process.env.VITE_HCAPTCHA_SITE_KEY || null,
   });
 });
 
@@ -814,9 +813,8 @@ router.post('/signup', signupRateLimiter, signupBackoff, async (req, res) => {
 
     // Send verification email (replaces welcome email)
     try {
-      const { sendVerificationEmail, isEmailConfigured } = await import(
-        '../services/emailService.js'
-      );
+      const { sendVerificationEmail, isEmailConfigured } =
+        await import('../services/emailService.js');
 
       if (isEmailConfigured()) {
         await sendVerificationEmail({
@@ -1013,9 +1011,8 @@ router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (
 
       // Send email
       try {
-        const { sendPasswordResetEmail, isEmailConfigured } = await import(
-          '../services/emailService.js'
-        );
+        const { sendPasswordResetEmail, isEmailConfigured } =
+          await import('../services/emailService.js');
 
         if (!isEmailConfigured()) {
           console.warn('Email service not configured. Password reset email not sent.');
@@ -1305,9 +1302,8 @@ router.post(
         data: { verificationToken, verificationExpires },
       });
 
-      const { sendVerificationEmail, isEmailConfigured } = await import(
-        '../services/emailService.js'
-      );
+      const { sendVerificationEmail, isEmailConfigured } =
+        await import('../services/emailService.js');
       if (!isEmailConfigured()) {
         return res.status(500).json({ error: 'Email service not configured' });
       }

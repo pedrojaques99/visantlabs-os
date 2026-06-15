@@ -269,7 +269,9 @@ export const ColorConverterPage: React.FC = () => {
   /* Panel: input + batch actions + WCAG contrast */
   const panel = (
     <div className="space-y-6">
-      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Color Input</h2>
+      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+        Color Input
+      </h2>
 
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Enter Color</label>
@@ -368,11 +370,7 @@ export const ColorConverterPage: React.FC = () => {
       <div className="max-w-2xl mx-auto w-full py-8 px-4">
         <AnimatePresence mode="wait">
           {colors.length > 0 ? (
-            <motion.div
-              key="color-list"
-              {...fadeScale}
-              className="space-y-2"
-            >
+            <motion.div key="color-list" {...fadeScale} className="space-y-2">
               {colors.map((c, i) => (
                 <motion.div
                   key={`${c.hex}-${i}`}

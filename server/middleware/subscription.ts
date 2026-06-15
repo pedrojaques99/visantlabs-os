@@ -205,12 +205,12 @@ export const checkSubscription = async (
         reason: hasActiveSubscription
           ? 'No credits available (active subscription)'
           : hasManualCredits
-          ? 'Should not happen - hasManualCredits is true but canGenerate is false'
-          : freeGenerationsUsed >= FREE_GENERATIONS_LIMIT
-          ? 'Free generations limit reached and no manual credits'
-          : !hasAnyCredits
-          ? 'No credits available (neither manual nor monthly)'
-          : 'Unknown reason',
+            ? 'Should not happen - hasManualCredits is true but canGenerate is false'
+            : freeGenerationsUsed >= FREE_GENERATIONS_LIMIT
+              ? 'Free generations limit reached and no manual credits'
+              : !hasAnyCredits
+                ? 'No credits available (neither manual nor monthly)'
+                : 'Unknown reason',
       });
 
       return res.status(403).json({

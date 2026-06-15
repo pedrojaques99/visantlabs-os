@@ -34,8 +34,7 @@ const nodeButtonVariants = cva(
 );
 
 export interface NodeButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof nodeButtonVariants> {}
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof nodeButtonVariants> {}
 
 const NodeButton = React.forwardRef<HTMLButtonElement, NodeButtonProps>(
   ({ className, variant, size, ...props }, ref) => {

@@ -22,7 +22,13 @@ describe('computeFaces', () => {
   });
 
   it('detects faces by the extended target vocab (change / PT verbs / sua arte)', () => {
-    for (const name of ['CHANGE DESIGN', 'Troque aqui a arte', 'Coloque sua arte', 'Substitua a imagem', 'Sua Logo']) {
+    for (const name of [
+      'CHANGE DESIGN',
+      'Troque aqui a arte',
+      'Coloque sua arte',
+      'Substitua a imagem',
+      'Sua Logo',
+    ]) {
       const faces = computeFaces([so({ name, linkId: name })]);
       expect(faces, `"${name}" deveria virar face`).toHaveLength(1);
     }

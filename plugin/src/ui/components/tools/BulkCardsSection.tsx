@@ -14,18 +14,17 @@ function parseJson(raw: unknown): Influencer[] {
   const collections = Array.isArray(raw) ? raw : [raw];
   for (const collection of collections) {
     if (!collection || typeof collection !== 'object') continue;
-    const firstCollection = ((collection as any)?.Influencers ?? Object.values(collection as object)[0]) as any;
+    const firstCollection = ((collection as any)?.Influencers ??
+      Object.values(collection as object)[0]) as any;
     const modes = firstCollection?.modes;
     if (modes && typeof modes === 'object') {
-      return Object.values(modes as Record<string, Record<string, { $value: unknown }>>).map(
-        (vars) => ({
+      return Object.values(modes as Record<string, Record<string, { $value: unknown }>>)
+        .map((vars) => ({
           nome: String(vars.nome?.$value ?? vars.Nome?.$value ?? ''),
           instagram: String(vars.instagram?.$value ?? vars.Instagram?.$value ?? ''),
-          foto_arquivo: vars.foto_arquivo?.$value
-            ? String(vars.foto_arquivo.$value)
-            : undefined,
-        })
-      ).filter((inf) => inf.nome);
+          foto_arquivo: vars.foto_arquivo?.$value ? String(vars.foto_arquivo.$value) : undefined,
+        }))
+        .filter((inf) => inf.nome);
     }
   }
   return [];
@@ -137,7 +136,8 @@ export function BulkCardsSection() {
 
       {useImages && hasImages && (
         <p className="text-[8px] text-neutral-600 px-1 leading-tight">
-          Os frames das fotos devem estar na página com o mesmo nome do campo <code>foto_arquivo</code> do JSON (ex: &quot;01 - Anderson Cabral.jpg&quot;)
+          Os frames das fotos devem estar na página com o mesmo nome do campo{' '}
+          <code>foto_arquivo</code> do JSON (ex: &quot;01 - Anderson Cabral.jpg&quot;)
         </p>
       )}
 
@@ -148,13 +148,15 @@ export function BulkCardsSection() {
         onClick={generate}
         disabled={busy || influencers.length === 0}
       >
-        {busy ? <GlitchLoader size={12} className="mr-2" /> : <LayoutGrid size={12} className="mr-2" />}
+        {busy ? (
+          <GlitchLoader size={12} className="mr-2" />
+        ) : (
+          <LayoutGrid size={12} className="mr-2" />
+        )}
         {busy ? status : `Gerar ${influencers.length || '…'} cards`}
       </Button>
 
-      {status && !busy && (
-        <p className="text-[9px] text-muted-foreground text-center">{status}</p>
-      )}
+      {status && !busy && <p className="text-[9px] text-muted-foreground text-center">{status}</p>}
     </div>
   );
 }

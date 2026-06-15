@@ -680,7 +680,8 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
                       variant="outline"
                       className={cn(
                         'text-[10px] px-1.5 py-0 border-neutral-700 text-neutral-300',
-                        editing && 'cursor-pointer hover:border-destructive/50 hover:text-destructive'
+                        editing &&
+                          'cursor-pointer hover:border-destructive/50 hover:text-destructive'
                       )}
                       onClick={editing ? () => removeDimensionTag(key, val) : undefined}
                     >

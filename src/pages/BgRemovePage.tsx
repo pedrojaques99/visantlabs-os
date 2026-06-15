@@ -631,9 +631,7 @@ export const BgRemovePage: React.FC = () => {
                   {isProcessing
                     ? 'Processing...'
                     : `Remove ${
-                        queuedOrErrorCount > 1
-                          ? `${queuedOrErrorCount} images`
-                          : 'background'
+                        queuedOrErrorCount > 1 ? `${queuedOrErrorCount} images` : 'background'
                       }`}
                 </span>
               </Button>

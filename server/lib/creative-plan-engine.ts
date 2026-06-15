@@ -85,7 +85,10 @@ LAYOUT:
 OUTPUT: only the JSON object. No markdown fences, no commentary.`;
 
 export class PlanValidationError extends Error {
-  constructor(public reason: string, public raw: string) {
+  constructor(
+    public reason: string,
+    public raw: string
+  ) {
     super(reason);
     this.name = 'PlanValidationError';
   }
@@ -287,17 +290,17 @@ export function applyBrandFidelityPasses(
         layer.role === 'headline'
           ? fonts.heading
           : layer.role === 'subheadline' || layer.role === 'body'
-          ? fonts.body
-          : fonts.heading || fonts.body;
+            ? fonts.body
+            : fonts.heading || fonts.body;
       const fontFamily =
         layer.fontFamily && fonts.all.includes(layer.fontFamily)
           ? layer.fontFamily
-          : wantedFont ?? layer.fontFamily;
+          : (wantedFont ?? layer.fontFamily);
 
       const colorIsBrand = palette.some((h) => h.toLowerCase() === layer.color.toLowerCase());
       const color = colorIsBrand
         ? layer.color
-        : nearestBrandColor(layer.color, palette) ?? layer.color;
+        : (nearestBrandColor(layer.color, palette) ?? layer.color);
 
       return { ...layer, fontFamily: fontFamily ?? layer.fontFamily, color };
     }
@@ -305,7 +308,7 @@ export function applyBrandFidelityPasses(
       const colorIsBrand = palette.some((h) => h.toLowerCase() === layer.color.toLowerCase());
       const color = colorIsBrand
         ? layer.color
-        : nearestBrandColor(layer.color, palette) ?? layer.color;
+        : (nearestBrandColor(layer.color, palette) ?? layer.color);
       return { ...layer, color };
     }
     return layer;

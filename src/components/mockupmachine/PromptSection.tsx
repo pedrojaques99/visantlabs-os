@@ -472,12 +472,12 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                       isGenerateDisabled
                         ? t('mockup.insufficientCredits') || 'Insufficient credits to generate'
                         : creditsPerGeneration && creditsPerGeneration > 0
-                        ? `${t('mockup.generateOutputs')} — ${creditsPerGeneration} ${
-                            creditsPerGeneration === 1
-                              ? t('mockup.creditUnitSingular')
-                              : t('mockup.creditUnitPlural')
-                          }`
-                        : t('mockup.generateOutputs')
+                          ? `${t('mockup.generateOutputs')} — ${creditsPerGeneration} ${
+                              creditsPerGeneration === 1
+                                ? t('mockup.creditUnitSingular')
+                                : t('mockup.creditUnitPlural')
+                            }`
+                          : t('mockup.generateOutputs')
                     }
                     position="top"
                   >

@@ -197,12 +197,12 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   const finalImageUrl = mockup
     ? getImageUrl(mockup)
     : propImageUrl
-    ? propImageUrl
-    : base64Image
-    ? base64Image.startsWith('http') || base64Image.startsWith('data:')
-      ? base64Image
-      : `data:image/png;base64,${base64Image}`
-    : '';
+      ? propImageUrl
+      : base64Image
+        ? base64Image.startsWith('http') || base64Image.startsWith('data:')
+          ? base64Image
+          : `data:image/png;base64,${base64Image}`
+        : '';
 
   // Sanitize the URL to prevent XSS
   const safeImageUrl = isSafeUrl(finalImageUrl) ? finalImageUrl : '';

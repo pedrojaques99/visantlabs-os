@@ -12,7 +12,11 @@
 }
 
 .fp-container {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 11px;
   color: var(--fp-text);
   background: var(--fp-bg);

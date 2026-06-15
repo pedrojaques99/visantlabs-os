@@ -190,10 +190,10 @@ router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, r
       (categoryData.category !== 'presets' && referenceImageUrl);
 
     const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) : null;
-    const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
-    const diffVal = difficulty != null ? ensureString(difficulty, 100) ?? undefined : undefined;
-    const ctxVal = context != null ? ensureString(context, 100) ?? undefined : undefined;
-    const ucVal = useCase != null ? ensureString(useCase, 1000) ?? undefined : undefined;
+    const modelVal = model != null ? (ensureString(model, 100) ?? undefined) : undefined;
+    const diffVal = difficulty != null ? (ensureString(difficulty, 100) ?? undefined) : undefined;
+    const ctxVal = context != null ? (ensureString(context, 100) ?? undefined) : undefined;
+    const ucVal = useCase != null ? (ensureString(useCase, 1000) ?? undefined) : undefined;
 
     const preset: any = {
       userId: new ObjectId(req.userId!),

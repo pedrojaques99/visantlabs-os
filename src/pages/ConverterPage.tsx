@@ -303,9 +303,7 @@ export const ConverterPage: React.FC = () => {
             )}
           >
             <img
-              src={
-                previewItem?.id === item.id && item.resultUrl ? item.resultUrl : item.sourceUrl
-              }
+              src={previewItem?.id === item.id && item.resultUrl ? item.resultUrl : item.sourceUrl}
               alt=""
               className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
             />

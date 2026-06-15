@@ -9,10 +9,10 @@ import type { Node, Edge } from '@xyflow/react';
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const makeNode = (id: string, data: Record<string, unknown> = {}): Node =>
-  ({ id, type: 'image', position: { x: 0, y: 0 }, data } as Node);
+  ({ id, type: 'image', position: { x: 0, y: 0 }, data }) as Node;
 
 const makeEdge = (id: string, source: string, target: string): Edge =>
-  ({ id, source, target } as Edge);
+  ({ id, source, target }) as Edge;
 
 // ── exportCanvasToJson — meta ──────────────────────────────────────────────────
 

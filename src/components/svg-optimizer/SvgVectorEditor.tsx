@@ -635,8 +635,8 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
     tool === 'eraser'
       ? 'cursor-crosshair'
       : tool === 'lasso'
-      ? 'cursor-crosshair'
-      : 'cursor-default';
+        ? 'cursor-crosshair'
+        : 'cursor-default';
 
   return (
     <div

@@ -1006,8 +1006,8 @@ function buildDeviceCodeEntryPage(token: string): string {
       var code = document.getElementById('deviceCode').value.trim();
       if (!code) { document.getElementById('error').textContent = 'Enter the code from your agent'; document.getElementById('error').style.display = 'block'; return; }
       window.location.href = '${apiBase}/oauth/device?code=' + encodeURIComponent(code) + '&token=' + encodeURIComponent('${esc(
-    token
-  )}');
+        token
+      )}');
     });
   </script>
 </body>
@@ -1087,8 +1087,8 @@ function buildDeviceDonePage(approved: boolean): string {
   <div class="card" style="text-align:center;">
     <div class="brand">VISANT LABS&reg;</div>
     <div class="status-icon ${approved ? 'success' : 'denied'}">${
-    approved ? '&#10003;' : '&#10005;'
-  }</div>
+      approved ? '&#10003;' : '&#10005;'
+    }</div>
     <h1>${approved ? 'Agent Connected' : 'Access Denied'}</h1>
     <p class="subtitle">${
       approved

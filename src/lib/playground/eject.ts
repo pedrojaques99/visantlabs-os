@@ -81,8 +81,8 @@ ${pad}    ${
             props.trend === 'up'
               ? 'text-success'
               : props.trend === 'down'
-              ? 'text-destructive'
-              : 'text-neutral-400'
+                ? 'text-destructive'
+                : 'text-neutral-400'
           }">${props.change}</span>`
         : ''
     }

@@ -42,12 +42,18 @@ const PublicSectionEditSheet: React.FC<Props> = ({
   const mediaInitRef = useRef(true);
 
   useEffect(() => {
-    if (logosInitRef.current) { logosInitRef.current = false; return; }
+    if (logosInitRef.current) {
+      logosInitRef.current = false;
+      return;
+    }
     updateDraft({ logos: localLogos });
   }, [localLogos]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (mediaInitRef.current) { mediaInitRef.current = false; return; }
+    if (mediaInitRef.current) {
+      mediaInitRef.current = false;
+      return;
+    }
     updateDraft({ media: localMedia });
   }, [localMedia]); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -143,10 +143,10 @@ export const useImageNodeHandlers = ({
             const extension = mimeType.includes('jpeg')
               ? 'jpg'
               : mimeType.includes('webp')
-              ? 'webp'
-              : mimeType.includes('gif')
-              ? 'gif'
-              : 'png';
+                ? 'webp'
+                : mimeType.includes('gif')
+                  ? 'gif'
+                  : 'png';
             fileName = `${node.type === 'image' ? 'image' : 'output'}-${Date.now()}.${extension}`;
 
             blob = new Blob([base64ToUint8Array(base64Data)], { type: mimeType });
@@ -178,10 +178,10 @@ export const useImageNodeHandlers = ({
           const extension = contentType.includes('jpeg')
             ? 'jpg'
             : contentType.includes('webp')
-            ? 'webp'
-            : contentType.includes('gif')
-            ? 'gif'
-            : imageUrl.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] || 'png';
+              ? 'webp'
+              : contentType.includes('gif')
+                ? 'gif'
+                : imageUrl.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] || 'png';
           fileName = `${node.type === 'image' ? 'image' : 'output'}-${Date.now()}.${extension}`;
         } catch (fetchError: any) {
           console.error('Fetch error:', fetchError);

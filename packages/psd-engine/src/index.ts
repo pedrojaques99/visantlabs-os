@@ -7,6 +7,7 @@ export {
   perspectiveWarp,
   composePsd,
   coverArtCanvas,
+  applyDisplacementFilter,
   BLEND_MAP,
 } from './compose.js';
 
@@ -17,10 +18,12 @@ export type { RgbLut } from './adjustments.js';
 
 export { SO_TARGET, BRAND_HIDE, SO_DECOR } from './constants.js';
 
-export type {
-  CreateCanvas,
-  CanvasLike,
-  ReplacedLayer,
-  Face,
-  FaceSo,
-} from './types.js';
+export { resolveSoTarget, applyHideRules } from './resolve.js';
+
+export { createNodeAdapter, initializeAgPsdCanvas } from './adapters/node.js';
+export { createBrowserAdapter } from './adapters/browser.js';
+
+export { preloadDisplacementMaps, createBrowserFsCallbacks } from './displacement.js';
+export type { DisplacementCanvas, FsCallbacks } from './displacement.js';
+
+export type { CreateCanvas, CanvasLike, ReplacedLayer, Face, FaceSo } from './types.js';

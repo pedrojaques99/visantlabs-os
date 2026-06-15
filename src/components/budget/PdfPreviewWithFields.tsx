@@ -1408,14 +1408,14 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
           ? 'rgba(82, 221, 235, 0.15)'
           : 'rgba(82, 221, 235, 0.08)'
         : editable && isDragging
-        ? 'rgba(82, 221, 235, 0.2)'
-        : 'transparent',
+          ? 'rgba(82, 221, 235, 0.2)'
+          : 'transparent',
     border: editable
       ? isDragging
         ? '2px solid brand-cyan'
         : isSelected
-        ? '2px solid brand-cyan'
-        : '1px solid rgba(82, 221, 235, 0.4)'
+          ? '2px solid brand-cyan'
+          : '1px solid rgba(82, 221, 235, 0.4)'
       : 'none',
     padding: editable ? '3px 6px' : '0',
     borderRadius: editable ? 'var(--radius)' : '0',
@@ -1423,10 +1423,10 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
       editable && isDragging
         ? '0 10px 16px rgba(82, 221, 235, 0.4)'
         : editable && isSelected
-        ? '0 4px 12px rgba(82, 221, 235, 0.3)'
-        : editable
-        ? '0 2px 4px rgba(0, 0, 0, 0.1)'
-        : 'none',
+          ? '0 4px 12px rgba(82, 221, 235, 0.3)'
+          : editable
+            ? '0 2px 4px rgba(0, 0, 0, 0.1)'
+            : 'none',
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 200 : isPositioning ? 200 : isSelected ? 150 : 100,
     transition: isDragging ? 'none' : 'all 0.2s ease',

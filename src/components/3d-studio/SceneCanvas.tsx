@@ -619,7 +619,9 @@ function EffectsContent() {
           offset={[s.chromaticAberrationOffset, s.chromaticAberrationOffset] as any}
         />
       )}
-      {s.noiseEnabled && <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />}
+      {s.noiseEnabled && (
+        <Noise blendFunction={BlendFunction.SOFT_LIGHT} opacity={s.noiseOpacity} />
+      )}
       {s.colorGradingEnabled && (
         <BrightnessContrast brightness={s.cgBrightness} contrast={s.cgContrast} />
       )}

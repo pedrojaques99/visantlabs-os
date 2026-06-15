@@ -16,7 +16,15 @@
  *   PSD_CACHE_DIR               default /tmp/psd-cache
  *   PSD_CACHE_MAX_GB            default 5
  */
-import { createWriteStream, existsSync, mkdirSync, readdirSync, rmSync, statSync, utimesSync } from 'fs';
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  utimesSync,
+} from 'fs';
 import path from 'path';
 import { randomBytes } from 'crypto';
 import { pipeline } from 'stream/promises';
@@ -123,7 +131,10 @@ async function isInsideAllowedFolder(fileId: string, allowed: string[]): Promise
 }
 
 /** Acha um arquivo pelo nome exato, restrito ao conjunto de pastas dado (default: todas as permitidas). */
-export async function findFileByName(fileName: string, folderScope?: string[]): Promise<DriveFile | null> {
+export async function findFileByName(
+  fileName: string,
+  folderScope?: string[]
+): Promise<DriveFile | null> {
   const drive = await getDrive();
   const escaped = fileName.replace(/['\\]/g, '\\$&');
   const allowed = folderScope ?? allFolderIds();
@@ -206,7 +217,9 @@ function evictLru(): void {
       if (total <= CACHE_MAX_BYTES) break;
       rmSync(e.path, { force: true });
       total -= e.size;
-      console.log(`[drive-cache] evicted ${path.basename(e.path)} (${(e.size / 1e6).toFixed(0)}MB)`);
+      console.log(
+        `[drive-cache] evicted ${path.basename(e.path)} (${(e.size / 1e6).toFixed(0)}MB)`
+      );
     }
   } catch (err) {
     console.warn('[drive-cache] evict error:', err);
@@ -218,7 +231,10 @@ function evictLru(): void {
  * baixa pro cache e retorna. `folderScope` restringe a quais pastas o arquivo
  * pode pertencer (tier do usuário). Lança erro se não existir/estiver fora do escopo.
  */
-export async function getCachedOrDownload(fileName: string, folderScope?: string[]): Promise<string> {
+export async function getCachedOrDownload(
+  fileName: string,
+  folderScope?: string[]
+): Promise<string> {
   mkdirSync(CACHE_DIR, { recursive: true });
   const cachePath = path.join(CACHE_DIR, safeCacheName(fileName));
 
@@ -230,12 +246,16 @@ export async function getCachedOrDownload(fileName: string, folderScope?: string
   if (existsSync(cachePath)) {
     // touch atime pro LRU
     const now = new Date();
-    try { utimesSync(cachePath, now, statSync(cachePath).mtime); } catch {}
+    try {
+      utimesSync(cachePath, now, statSync(cachePath).mtime);
+    } catch {}
     console.log(`[drive-cache] hit: ${fileName}`);
     return cachePath;
   }
 
-  console.log(`[drive-cache] miss: baixando ${fileName} (${((file.size || 0) / 1e6).toFixed(0)}MB)...`);
+  console.log(
+    `[drive-cache] miss: baixando ${fileName} (${((file.size || 0) / 1e6).toFixed(0)}MB)...`
+  );
   await downloadToCache(file, cachePath);
   evictLru();
   return cachePath;

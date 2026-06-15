@@ -51,7 +51,7 @@ export function BrandSection({
         title={description}
       >
         <div className="flex items-center gap-2">
-          {Icon && <Icon size={14} className="text-brand-cyan" />}
+          {Icon && <Icon size={14} className="text-neutral-500" />}
           <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400">
             {title}
           </h3>
@@ -63,7 +63,7 @@ export function BrandSection({
         </div>
         <div className="flex items-center gap-2">
           {badge && (
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.05] text-neutral-500 border border-white/[0.08]">
               {badge}
             </span>
           )}

@@ -116,8 +116,8 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
         provider: model.startsWith('seedream')
           ? 'seedream'
           : model.startsWith('gpt-image')
-          ? 'openai'
-          : 'gemini',
+            ? 'openai'
+            : 'gemini',
         uniqueId: `brand-mockup-${Date.now()}`,
       });
       if (cancelledRef.current) return;
@@ -219,8 +219,8 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
           provider: model.startsWith('seedream')
             ? 'seedream'
             : model.startsWith('gpt-image')
-            ? 'openai'
-            : 'gemini',
+              ? 'openai'
+              : 'gemini',
           uniqueId: `brand-surprise-${Date.now()}-${idx}`,
         });
         if (cancelledRef.current) break;
@@ -704,8 +704,8 @@ export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideli
                     {saved
                       ? 'Todos salvos'
                       : saving
-                      ? 'Salvando…'
-                      : `Salvar todos (${batchResults.filter(Boolean).length})`}
+                        ? 'Salvando…'
+                        : `Salvar todos (${batchResults.filter(Boolean).length})`}
                   </Button>
                   <Button
                     onClick={() => handleOpenChange(false)}

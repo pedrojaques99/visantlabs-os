@@ -47,7 +47,9 @@ export async function createNodeAdapter(): Promise<{
  * Wire ag-psd's canvas backend to node-canvas. Call once before readPsd if the
  * caller wants ag-psd to read raster layers into node canvases.
  */
-export async function initializeAgPsdCanvas(agPsd: { initializeCanvas: (cc: any) => void }): Promise<void> {
+export async function initializeAgPsdCanvas(agPsd: {
+  initializeCanvas: (cc: any) => void;
+}): Promise<void> {
   const mod = await loadCanvasModule();
   agPsd.initializeCanvas(mod.createCanvas);
 }

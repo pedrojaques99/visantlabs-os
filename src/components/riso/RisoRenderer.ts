@@ -568,11 +568,11 @@ export class RisoRenderer {
         gl.uniform1i(visibleUniforms[i], layer.visible ? 1 : 0);
         gl.uniform1i(
           layerDitherUniforms[i],
-          layer.ditherMode ? ditherModeMap[layer.ditherMode] ?? -1 : -1
+          layer.ditherMode ? (ditherModeMap[layer.ditherMode] ?? -1) : -1
         );
         gl.uniform1i(
           layerHShapeUniforms[i],
-          layer.halftoneShape ? shapeMap[layer.halftoneShape] ?? -1 : -1
+          layer.halftoneShape ? (shapeMap[layer.halftoneShape] ?? -1) : -1
         );
       } else {
         gl.uniform3f(colorUniforms[i], 0, 0, 0);

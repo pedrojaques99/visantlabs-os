@@ -61,7 +61,10 @@ const KeyRow: React.FC<KeyRowProps> = ({
   <div className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-2 min-w-0">
-        <label htmlFor={id} className="text-sm font-semibold text-neutral-300 font-manrope truncate">
+        <label
+          htmlFor={id}
+          className="text-sm font-semibold text-neutral-300 font-manrope truncate"
+        >
           {label}
         </label>
         {hasKey && (

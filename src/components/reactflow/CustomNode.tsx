@@ -49,8 +49,8 @@ export const CustomNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       (cfg.renderCategory === 'transform'
         ? (cfg as TransformConfig).userDescription
         : cfg.renderCategory === 'multi-input'
-        ? (cfg as MultiInputConfig).userDescription
-        : '')
+          ? (cfg as MultiInputConfig).userDescription
+          : '')
   );
 
   const handlePromptChange = useCallback(

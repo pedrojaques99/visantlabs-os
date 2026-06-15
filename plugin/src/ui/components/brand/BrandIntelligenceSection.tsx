@@ -28,62 +28,62 @@ export function BrandIntelligenceSection() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2">
-          <Button
-            onClick={() => runImport({ overwrite: false })}
-            disabled={isImporting || isGenerating}
-            variant="brand"
-            size="sm"
-            title="Detect and sync tokens, colors, typography from this Figma file"
-            className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
-          >
-            {isImporting ? (
-              <GlitchLoader size={12} className="mr-2" />
-            ) : (
-              <RefreshCw size={12} className="mr-2" />
-            )}
-            {isImporting ? 'Syncing…' : 'Smart Import from Figma'}
-          </Button>
+        <Button
+          onClick={() => runImport({ overwrite: false })}
+          disabled={isImporting || isGenerating}
+          variant="brand"
+          size="sm"
+          title="Detect and sync tokens, colors, typography from this Figma file"
+          className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
+        >
+          {isImporting ? (
+            <GlitchLoader size={12} className="mr-2" />
+          ) : (
+            <RefreshCw size={12} className="mr-2" />
+          )}
+          {isImporting ? 'Syncing…' : 'Smart Import from Figma'}
+        </Button>
 
-          <Button
-            onClick={() => runStrategyIngest()}
-            disabled={isIngesting || isImporting || isGenerating}
-            variant="outline"
-            size="sm"
-            title={
-              hasSelection
-                ? `Extract text from ${selectionCount} selected frame${
-                    selectionCount > 1 ? 's' : ''
-                  } and populate brand strategy`
-                : 'Extract text from the current page and populate brand strategy fields'
-            }
-            className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
-          >
-            {isIngesting ? (
-              <GlitchLoader size={12} className="mr-2" />
-            ) : (
-              <FileText size={12} className="mr-2" />
-            )}
-            {isIngesting
-              ? 'Extracting strategy…'
-              : hasSelection
+        <Button
+          onClick={() => runStrategyIngest()}
+          disabled={isIngesting || isImporting || isGenerating}
+          variant="outline"
+          size="sm"
+          title={
+            hasSelection
+              ? `Extract text from ${selectionCount} selected frame${
+                  selectionCount > 1 ? 's' : ''
+                } and populate brand strategy`
+              : 'Extract text from the current page and populate brand strategy fields'
+          }
+          className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
+        >
+          {isIngesting ? (
+            <GlitchLoader size={12} className="mr-2" />
+          ) : (
+            <FileText size={12} className="mr-2" />
+          )}
+          {isIngesting
+            ? 'Extracting strategy…'
+            : hasSelection
               ? `Populate Strategy from ${selectionCount} Frame${selectionCount > 1 ? 's' : ''}`
               : 'Populate Strategy from Page'}
-          </Button>
+        </Button>
 
-          <OpButton
-            opId="smartScan"
-            runner={runner}
-            message={{ type: 'SMART_SCAN_SELECTION' }}
-            responseTypes={['SMART_SCAN_RESULT']}
-            busyLabel="Scanning…"
-            variant="outline"
-            size="sm"
-            title="Categorize selected layers into brand asset types"
-            className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
-          >
-            <Layers size={12} className="mr-2" />
-            Scan Selection for Insights
-          </OpButton>
+        <OpButton
+          opId="smartScan"
+          runner={runner}
+          message={{ type: 'SMART_SCAN_SELECTION' }}
+          responseTypes={['SMART_SCAN_RESULT']}
+          busyLabel="Scanning…"
+          variant="outline"
+          size="sm"
+          title="Categorize selected layers into brand asset types"
+          className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
+        >
+          <Layers size={12} className="mr-2" />
+          Scan Selection for Insights
+        </OpButton>
       </div>
 
       {references.length > 0 && (

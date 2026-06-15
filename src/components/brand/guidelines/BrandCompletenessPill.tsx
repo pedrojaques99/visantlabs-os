@@ -122,8 +122,8 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                           pct >= 75
                             ? 'bg-success/60'
                             : pct >= 40
-                            ? 'bg-warning/60'
-                            : 'bg-destructive/40'
+                              ? 'bg-warning/60'
+                              : 'bg-destructive/40'
                         )}
                         style={{ width: `${pct}%` }}
                       />

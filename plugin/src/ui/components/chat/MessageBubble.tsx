@@ -222,8 +222,8 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
   const bubbleClass = isUser
     ? 'bg-brand-cyan text-black'
     : isError
-    ? 'bg-destructive/10 border border-destructive/30 text-destructive'
-    : 'bg-card border border-border text-foreground';
+      ? 'bg-destructive/10 border border-destructive/30 text-destructive'
+      : 'bg-card border border-border text-foreground';
 
   return (
     <div

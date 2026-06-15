@@ -849,8 +849,8 @@ router.get('/feed', async (req, res) => {
       sort === 'likes'
         ? { likesCount: 'desc' as const }
         : sort === 'popular'
-        ? { viewsCount: 'desc' as const }
-        : { createdAt: 'desc' as const };
+          ? { viewsCount: 'desc' as const }
+          : { createdAt: 'desc' as const };
 
     const [miniApps, total] = await Promise.all([
       prisma.miniApp.findMany({

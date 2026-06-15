@@ -18,12 +18,12 @@ npm i ag-psd canvas
 
 ## Exports
 
-| Entry | Purpose |
-| --- | --- |
-| `.` | `composePsd`, `flattenLayers`, `replaceLinkedSmartObjects`, `perspectiveWarp`, `coverArtCanvas`, `BLEND_MAP`, `computeFaces`, constants, types |
-| `./scene` | `extractScene` (PSD tree → `SceneDoc` + layer canvases), `renderScene` (`SceneDoc` + art → canvas) |
-| `./adapters/node` | `createNodeAdapter()` → `{ createCanvas, loadImage, toBuffer }`, `initializeAgPsdCanvas(agPsd)` |
-| `./adapters/browser` | `createCanvas`, `loadImage`, `toBlob` |
+| Entry                | Purpose                                                                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`                  | `composePsd`, `flattenLayers`, `replaceLinkedSmartObjects`, `perspectiveWarp`, `coverArtCanvas`, `BLEND_MAP`, `computeFaces`, constants, types |
+| `./scene`            | `extractScene` (PSD tree → `SceneDoc` + layer canvases), `renderScene` (`SceneDoc` + art → canvas)                                             |
+| `./adapters/node`    | `createNodeAdapter()` → `{ createCanvas, loadImage, toBuffer }`, `initializeAgPsdCanvas(agPsd)`                                                |
+| `./adapters/browser` | `createCanvas`, `loadImage`, `toBlob`                                                                                                          |
 
 ## Server render (full PSD)
 

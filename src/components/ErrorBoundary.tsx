@@ -119,15 +119,18 @@ export class ErrorBoundary extends Component<Props, State> {
       const currentRetryCount = prevState.retryCount || 0;
 
       // Wait a bit before retrying
-      this.retryTimeout = setTimeout(() => {
-        this.setState({
-          hasError: false,
-          error: null,
-          errorInfo: null,
-          retryCount: currentRetryCount + 1,
-          isRetrying: false,
-        });
-      }, 1000 * (currentRetryCount + 1));
+      this.retryTimeout = setTimeout(
+        () => {
+          this.setState({
+            hasError: false,
+            error: null,
+            errorInfo: null,
+            retryCount: currentRetryCount + 1,
+            isRetrying: false,
+          });
+        },
+        1000 * (currentRetryCount + 1)
+      );
 
       return {
         ...prevState,

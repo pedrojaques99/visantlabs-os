@@ -236,7 +236,7 @@ export const usePromptNodeHandlers = ({
             if (uploadedImages.length > 1) {
               const maxReferenceImages =
                 provider === 'seedream'
-                  ? getSeedreamModelConfig(selectedModel)?.maxRefImages ?? 14
+                  ? (getSeedreamModelConfig(selectedModel)?.maxRefImages ?? 14)
                   : getMaxRefImages(selectedModel as GeminiModel);
               referenceImages = uploadedImages.slice(1, 1 + maxReferenceImages);
             }

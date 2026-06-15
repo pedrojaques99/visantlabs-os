@@ -127,13 +127,7 @@ describe('@visant/print-fx riso — applyRisoUniforms', () => {
 
   it('zeroes out the unused ink slots (slots 2 and 3 with 2 layers)', () => {
     const { gl, set } = makeUniformRecorder();
-    applyRisoUniforms(
-      gl,
-      {} as WebGLProgram,
-      settings({ layers: [layer({}), layer({})] }),
-      16,
-      16
-    );
+    applyRisoUniforms(gl, {} as WebGLProgram, settings({ layers: [layer({}), layer({})] }), 16, 16);
     expect(set.u_inkColor2).toEqual([0, 0, 0]);
     expect(set.u_inkAlpha3).toEqual([0]);
     expect(set.u_inkVisible3).toEqual([0]);

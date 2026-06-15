@@ -399,12 +399,7 @@ export const OgImagePage: React.FC = () => {
           <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
             <Upload size={10} />
             Upload
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleLogoUpload}
-            />
+            <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
           </label>
           {logoUrl && (
             <button
@@ -427,12 +422,7 @@ export const OgImagePage: React.FC = () => {
             <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
               <Upload size={10} />
               Upload
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleBgUpload}
-              />
+              <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
             </label>
             {backgroundImageUrl && (
               <button

@@ -8,10 +8,7 @@ import { signTestToken, bearer } from '../../helpers/auth.js';
  * returns the raw `visant_sk_*` token. Returns null if the route isn't mounted
  * in this harness (fail-soft, mirrors apiKeys.test.ts).
  */
-async function createApiKey(
-  userToken: string,
-  scopes: string[]
-): Promise<string | null> {
+async function createApiKey(userToken: string, scopes: string[]): Promise<string | null> {
   const agent = await request();
   const res = await agent
     .post('/api/apiKeys/create')

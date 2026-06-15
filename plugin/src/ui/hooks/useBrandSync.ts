@@ -48,8 +48,8 @@ export function useBrandSync() {
       const rawArr = Array.isArray(response)
         ? response
         : Array.isArray((response as any)?.guidelines)
-        ? (response as any).guidelines
-        : [];
+          ? (response as any).guidelines
+          : [];
       if (guidelines.length === 0 && rawArr.length > 0) {
         console.warn('[brandSync] schema filtered all items; using raw list', rawArr);
         guidelines = rawArr;

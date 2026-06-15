@@ -44,7 +44,12 @@ function ResizeHandle() {
       className="absolute bottom-0 right-0 z-50 w-4 h-4 cursor-nwse-resize text-muted-foreground/40 hover:text-muted-foreground transition-colors"
     >
       <svg viewBox="0 0 16 16" fill="none" className="w-full h-full">
-        <path d="M15 6 L6 15 M15 11 L11 15" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+        <path
+          d="M15 6 L6 15 M15 11 L11 15"
+          stroke="currentColor"
+          strokeWidth="1.25"
+          strokeLinecap="round"
+        />
       </svg>
     </div>
   );

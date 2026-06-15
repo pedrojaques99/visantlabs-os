@@ -310,9 +310,7 @@ function isAllowedHdriUrl(url: string): boolean {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:') return false;
     const hostname = parsed.hostname.toLowerCase();
-    return ALLOWED_HDRI_HOSTS.some(
-      (host) => hostname === host || hostname.endsWith('.' + host)
-    );
+    return ALLOWED_HDRI_HOSTS.some((host) => hostname === host || hostname.endsWith('.' + host));
   } catch {
     return false;
   }

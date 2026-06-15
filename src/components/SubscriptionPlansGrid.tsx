@@ -182,19 +182,19 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                           </div>
                         ))
                       : plan.description
-                      ? plan.description.split(',').map((benefit: string, idx: number) => (
-                          <div
-                            key={idx}
-                            className="flex items-start gap-3 text-sm text-neutral-400"
-                          >
-                            <CheckCircle2
-                              size={16}
-                              className="text-brand-cyan mt-0.5 flex-shrink-0"
-                            />
-                            <span>{benefit.trim()}</span>
-                          </div>
-                        ))
-                      : null}
+                        ? plan.description.split(',').map((benefit: string, idx: number) => (
+                            <div
+                              key={idx}
+                              className="flex items-start gap-3 text-sm text-neutral-400"
+                            >
+                              <CheckCircle2
+                                size={16}
+                                className="text-brand-cyan mt-0.5 flex-shrink-0"
+                              />
+                              <span>{benefit.trim()}</span>
+                            </div>
+                          ))
+                        : null}
                   </div>
 
                   <div className="mt-auto pt-4">

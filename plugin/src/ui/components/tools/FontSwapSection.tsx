@@ -233,7 +233,7 @@ export function FontSwapSection() {
         ...prev,
         [groupKey]: {
           family,
-          style: styles.includes('Regular') ? 'Regular' : styles[0] ?? 'Regular',
+          style: styles.includes('Regular') ? 'Regular' : (styles[0] ?? 'Regular'),
         },
       }));
     },
@@ -322,7 +322,7 @@ export function FontSwapSection() {
       <div className="space-y-2">
         {groups.map((group) => {
           const target = targets[group.key];
-          const availableStyles = target ? stylesCache[target.family] ?? [] : [];
+          const availableStyles = target ? (stylesCache[target.family] ?? []) : [];
 
           return (
             <div

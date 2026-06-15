@@ -91,8 +91,8 @@ export function loadCreativeIntoStore(project: CreativeProject) {
   const layers = Array.isArray(project.layers)
     ? project.layers
     : typeof project.layers === 'string'
-    ? (JSON.parse(project.layers || '[]') as typeof project.layers)
-    : [];
+      ? (JSON.parse(project.layers || '[]') as typeof project.layers)
+      : [];
 
   const pages = project.pages || [
     {

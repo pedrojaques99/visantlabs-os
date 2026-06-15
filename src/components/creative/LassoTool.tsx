@@ -139,13 +139,13 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
           height: Math.abs(dragCurrent.y - dragStart.y) * canvasHeight,
         }
       : lassoRegion
-      ? {
-          left: lassoRegion.x * canvasWidth,
-          top: lassoRegion.y * canvasHeight,
-          width: lassoRegion.w * canvasWidth,
-          height: lassoRegion.h * canvasHeight,
-        }
-      : null;
+        ? {
+            left: lassoRegion.x * canvasWidth,
+            top: lassoRegion.y * canvasHeight,
+            width: lassoRegion.w * canvasWidth,
+            height: lassoRegion.h * canvasHeight,
+          }
+        : null;
 
   return (
     <>

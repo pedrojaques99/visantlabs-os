@@ -127,12 +127,12 @@ function calcComponentUsage(imports: number): { percentage: number; level: strin
       imports > 30
         ? 'critical'
         : imports > 10
-        ? 'frequent'
-        : imports > 2
-        ? 'moderate'
-        : imports > 0
-        ? 'rare'
-        : 'unused',
+          ? 'frequent'
+          : imports > 2
+            ? 'moderate'
+            : imports > 0
+              ? 'rare'
+              : 'unused',
   };
 }
 

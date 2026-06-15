@@ -267,8 +267,8 @@ export const { registry, handlers } = defineRegistry(visantCatalog, {
                 props.trend === 'up'
                   ? 'text-success'
                   : props.trend === 'down'
-                  ? 'text-destructive'
-                  : 'text-neutral-400'
+                    ? 'text-destructive'
+                    : 'text-neutral-400'
               )}
             >
               {props.change}

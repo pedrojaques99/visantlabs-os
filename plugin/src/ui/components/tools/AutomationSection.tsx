@@ -29,10 +29,10 @@ export function AutomationSection() {
     colorRename.status === 'scanning'
       ? 'Scanning colors…'
       : colorRename.status === 'naming'
-      ? 'AI naming…'
-      : colorRename.status === 'applying'
-      ? 'Applying…'
-      : 'Smart Color Rename';
+        ? 'AI naming…'
+        : colorRename.status === 'applying'
+          ? 'Applying…'
+          : 'Smart Color Rename';
 
   return (
     <div className="space-y-2">

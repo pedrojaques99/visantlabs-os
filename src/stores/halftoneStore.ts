@@ -12,8 +12,10 @@ export const BLEND_MODES = [
 // Single source of truth: shared/imagelab/presets.ts (also consumed server-side).
 // 'Classic Print' is {} there — applyPreset spreads HALFTONE_DEFAULTS first, so
 // it resolves to pure defaults exactly as before.
-export const HALFTONE_PRESETS: Record<string, Partial<HalftoneSettings>> =
-  HALFTONE_PRESETS_DATA as Record<string, Partial<HalftoneSettings>>;
+export const HALFTONE_PRESETS: Record<
+  string,
+  Partial<HalftoneSettings>
+> = HALFTONE_PRESETS_DATA as Record<string, Partial<HalftoneSettings>>;
 
 const MAX_HISTORY = 30;
 const HISTORY_DEBOUNCE_MS = 400;

@@ -139,23 +139,23 @@ export const useCanvasEvents = (
           (sourceNode.type === 'image' || sourceNode.type === 'output' || sourceNode.type === 'logo'
             ? 'image'
             : sourceNode.type === 'text'
-            ? 'text'
-            : null);
+              ? 'text'
+              : null);
         const effectiveTargetType =
           targetHandleType ||
           (targetHandle === 'text-input'
             ? 'text'
             : targetHandle?.startsWith('input-') ||
-              targetHandle === 'logo-input' ||
-              targetHandle === 'identity-input'
-            ? 'image'
-            : targetNode.type === 'image' ||
-              targetNode.type === 'output' ||
-              targetNode.type === 'logo'
-            ? 'image'
-            : targetNode.type === 'text'
-            ? 'text'
-            : null);
+                targetHandle === 'logo-input' ||
+                targetHandle === 'identity-input'
+              ? 'image'
+              : targetNode.type === 'image' ||
+                  targetNode.type === 'output' ||
+                  targetNode.type === 'logo'
+                ? 'image'
+                : targetNode.type === 'text'
+                  ? 'text'
+                  : null);
 
         // Explicitly prevent image handles from connecting to text handles
         if (effectiveSourceType === 'image' && effectiveTargetType === 'text') {

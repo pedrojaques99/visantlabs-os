@@ -65,9 +65,7 @@ vi.mock('../../../server/lib/redis.js', () => ({
 /** Poll the async job endpoint until it leaves a non-terminal state. */
 async function pollUntilDone(agent: any, token: string, jobId: string) {
   for (let i = 0; i < 50; i++) {
-    const res = await agent
-      .get(`/api/imagelab/jobs/${jobId}`)
-      .set('Authorization', bearer(token));
+    const res = await agent.get(`/api/imagelab/jobs/${jobId}`).set('Authorization', bearer(token));
     if (res.status !== 200) return res;
     if (res.body.status === 'done' || res.body.status === 'error') return res;
     await new Promise((r) => setTimeout(r, 10));
@@ -438,7 +436,12 @@ describe('ImageLab Routes Integration', () => {
       const create = await agent
         .post('/api/imagelab/inpaint')
         .set('Authorization', bearer(token))
-        .send({ imageUrl: PUBLIC_IMG, mode: 'remove', maskRegion: { x: 0, y: 0, w: 1, h: 1 }, async: true });
+        .send({
+          imageUrl: PUBLIC_IMG,
+          mode: 'remove',
+          maskRegion: { x: 0, y: 0, w: 1, h: 1 },
+          async: true,
+        });
 
       expect(create.status).toBe(202);
 
@@ -461,7 +464,10 @@ describe('ImageLab Routes Integration', () => {
 
     it('returns 403 when polling a job owned by another user', async () => {
       const owner = await authedUser();
-      mockGenerativeExpand.mockResolvedValue({ imageUrl: 'https://cdn.test/x.png', base64: 'AAAA' });
+      mockGenerativeExpand.mockResolvedValue({
+        imageUrl: 'https://cdn.test/x.png',
+        base64: 'AAAA',
+      });
 
       const agent = await request();
       const create = await agent

@@ -107,13 +107,14 @@ export async function getSignedReadUrl(key: string, expiresInSeconds = 600): Pro
   const bucket = process.env.DO_SPACES_BUCKET?.trim();
   if (!bucket) throw new Error('DO_SPACES_BUCKET não configurado');
   try {
-    return await getSignedUrl(
-      getClient(),
-      new GetObjectCommand({ Bucket: bucket, Key: key }),
-      { expiresIn: Math.min(Math.max(60, Math.floor(expiresInSeconds)), 86400) }
-    );
+    return await getSignedUrl(getClient(), new GetObjectCommand({ Bucket: bucket, Key: key }), {
+      expiresIn: Math.min(Math.max(60, Math.floor(expiresInSeconds)), 86400),
+    });
   } catch (err) {
-    console.warn('[spaces] signed URL falhou, usando URL pública (key com hash):', (err as Error).message);
+    console.warn(
+      '[spaces] signed URL falhou, usando URL pública (key com hash):',
+      (err as Error).message
+    );
     return publicSpacesUrl(bucket, key);
   }
 }

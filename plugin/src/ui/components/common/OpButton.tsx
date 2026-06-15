@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { OpRunner } from '../../hooks/useOpRunner';
 
-export interface OpButtonProps
-  extends Omit<React.ComponentProps<typeof Button>, 'onClick' | 'disabled'> {
+export interface OpButtonProps extends Omit<
+  React.ComponentProps<typeof Button>,
+  'onClick' | 'disabled'
+> {
   /** Unique id for this op. Used to track busy state. */
   opId: string;
   /** Runner instance from useOpRunner(). */
@@ -62,7 +64,7 @@ export function OpButton({
       ) : icon ? (
         <span className="mr-2 inline-flex">{icon}</span>
       ) : null}
-      {busy ? busyLabel ?? <>{children}…</> : children}
+      {busy ? (busyLabel ?? <>{children}…</>) : children}
     </Button>
   );
 }

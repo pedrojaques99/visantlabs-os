@@ -1,10 +1,7 @@
 import * as THREE from 'three';
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import type {
-  BuildExtrudedGeometryOptions,
-  ExtrudedGeometryResult,
-} from './types.js';
+import type { BuildExtrudedGeometryOptions, ExtrudedGeometryResult } from './types.js';
 
 const SMOOTH_VERTEX_LIMIT = 300_000;
 

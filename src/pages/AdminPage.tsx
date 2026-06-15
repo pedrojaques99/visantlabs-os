@@ -638,11 +638,14 @@ export const AdminPage: React.FC = () => {
   const userGrowthData = useMemo(() => {
     if (!data?.users) return [];
 
-    const usersByDate = data.users.reduce((acc, user) => {
-      const date = new Date(user.createdAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const usersByDate = data.users.reduce(
+      (acc, user) => {
+        const date = new Date(user.createdAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Sort by date and calculate cumulative
     const sortedDates = Object.keys(usersByDate).sort();
@@ -752,10 +755,13 @@ export const AdminPage: React.FC = () => {
 
   const userLookup = useMemo(() => {
     if (!data) return {};
-    return data.users.reduce((acc, user) => {
-      acc[user.id] = user;
-      return acc;
-    }, {} as Record<string, AdminUser>);
+    return data.users.reduce(
+      (acc, user) => {
+        acc[user.id] = user;
+        return acc;
+      },
+      {} as Record<string, AdminUser>
+    );
   }, [data]);
 
   // Daily Cost Stats
@@ -1943,8 +1949,8 @@ export const AdminPage: React.FC = () => {
                                         e.event === 'generation_failed'
                                           ? 'text-destructive'
                                           : e.event === 'generation_completed'
-                                          ? 'text-success'
-                                          : 'text-brand-cyan'
+                                            ? 'text-success'
+                                            : 'text-brand-cyan'
                                       }`}
                                     >
                                       {e.count.toLocaleString()}
@@ -2945,8 +2951,8 @@ export const AdminPage: React.FC = () => {
                                             row.approvalRate >= 70
                                               ? 'bg-emerald-900/40 text-success border-emerald-800'
                                               : row.approvalRate >= 40
-                                              ? 'bg-yellow-900/40 text-warning border-yellow-800'
-                                              : 'bg-red-900/40 text-destructive border-red-800'
+                                                ? 'bg-yellow-900/40 text-warning border-yellow-800'
+                                                : 'bg-red-900/40 text-destructive border-red-800'
                                           }`}
                                         >
                                           {row.approvalRate.toFixed(1)}%
@@ -3245,8 +3251,8 @@ export const AdminPage: React.FC = () => {
                                           t.category === 'branding'
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                                             : t.category === 'category'
-                                            ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                            : 'bg-amber-900/30 text-warning border-amber-800/50'
+                                              ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
+                                              : 'bg-amber-900/30 text-warning border-amber-800/50'
                                         }`}
                                       >
                                         {t.tag}
@@ -3283,8 +3289,8 @@ export const AdminPage: React.FC = () => {
                                           t.category === 'branding'
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                                             : t.category === 'category'
-                                            ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                            : 'bg-amber-900/30 text-warning border-amber-800/50'
+                                              ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
+                                              : 'bg-amber-900/30 text-warning border-amber-800/50'
                                         }`}
                                       >
                                         {t.tag}

@@ -115,8 +115,8 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                     selectedTags.includes(tag)
                       ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
                       : theme === 'dark'
-                      ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
-                      : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
+                        ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
+                        : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-neutral-700 hover:text-brand-cyan cursor-pointer'
                   )}
                 >
                   {translateTag(tag)}

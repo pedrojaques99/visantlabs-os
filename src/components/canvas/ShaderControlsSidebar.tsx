@@ -234,8 +234,8 @@ export const ShaderControlsSidebar = ({
         isCollapsed
           ? 'w-[56px] h-[56px]'
           : variant === 'standalone'
-          ? 'w-[280px] h-[calc(100vh-910px)]'
-          : 'w-full'
+            ? 'w-[280px] h-[calc(100vh-910px)]'
+            : 'w-full'
       )}
       style={{
         width: isCollapsed ? '56px' : '100%',

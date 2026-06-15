@@ -72,9 +72,9 @@ export function resolveGenerationContext(
   return {
     provider: 'gemini',
     resolution: advanced
-      ? overrides.resolution ?? getDefaultResolution(geminiModel) ?? '1K'
+      ? (overrides.resolution ?? getDefaultResolution(geminiModel) ?? '1K')
       : undefined,
-    aspectRatio: advanced ? overrides.aspectRatio ?? DEFAULT_ASPECT_RATIO : undefined,
+    aspectRatio: advanced ? (overrides.aspectRatio ?? DEFAULT_ASPECT_RATIO) : undefined,
   };
 }
 

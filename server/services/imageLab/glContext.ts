@@ -83,9 +83,9 @@ let _queueTail: Promise<void> = Promise.resolve();
 
 function buildSingleton(factory: NonNullable<typeof createGL>, w: number, h: number): void {
   _singleton = factory(w, h, { preserveDrawingBuffer: true, antialias: false });
-  const ext = _singleton.getExtension('STACKGL_resize_drawingbuffer') as
-    | { resize: (w: number, h: number) => void }
-    | null;
+  const ext = _singleton.getExtension('STACKGL_resize_drawingbuffer') as {
+    resize: (w: number, h: number) => void;
+  } | null;
   _resizeExt = ext && typeof ext.resize === 'function' ? ext : null;
   _resizeUsable = _resizeExt !== null;
 }

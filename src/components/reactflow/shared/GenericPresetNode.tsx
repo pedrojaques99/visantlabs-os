@@ -69,7 +69,7 @@ interface GenericPresetNodeConfig<TPresetType extends string, TNodeData> {
 
 export function createGenericPresetNode<
   TPresetType extends string,
-  TNodeData extends Record<string, any>
+  TNodeData extends Record<string, any>,
 >(config: GenericPresetNodeConfig<TPresetType, TNodeData>) {
   const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({
     data,

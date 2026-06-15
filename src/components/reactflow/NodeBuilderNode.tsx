@@ -189,8 +189,8 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       isActive
                         ? 'bg-brand-cyan/10 border-brand-cyan/30 shadow-[0_0_12px_rgba(0,195,255,0.08)]'
                         : isPast
-                        ? 'bg-neutral-900/30 border-neutral-800 opacity-40'
-                        : 'bg-transparent border-transparent opacity-20'
+                          ? 'bg-neutral-900/30 border-neutral-800 opacity-40'
+                          : 'bg-transparent border-transparent opacity-20'
                     )}
                   >
                     <StepIcon
@@ -200,8 +200,8 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                         isActive
                           ? 'text-brand-cyan'
                           : isPast
-                          ? 'text-neutral-500'
-                          : 'text-neutral-700'
+                            ? 'text-neutral-500'
+                            : 'text-neutral-700'
                       )}
                     />
                     <span
@@ -210,8 +210,8 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                         isActive
                           ? 'text-brand-cyan'
                           : isPast
-                          ? 'text-neutral-500'
-                          : 'text-neutral-700'
+                            ? 'text-neutral-500'
+                            : 'text-neutral-700'
                       )}
                     >
                       {step.label}

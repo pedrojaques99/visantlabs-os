@@ -5,7 +5,7 @@
 // EXACT same primitives as the full PSD compositor (coverArtCanvas +
 // perspectiveWarp + BLEND_MAP) — zero re-implementation of the warp math.
 
-import { coverArtCanvas, perspectiveWarp } from '../compose.js';
+import { coverArtCanvas, perspectiveWarp } from '../warp.js';
 import type { CreateCanvas } from '../types.js';
 import type { SceneDoc, AssetMap } from './types.js';
 

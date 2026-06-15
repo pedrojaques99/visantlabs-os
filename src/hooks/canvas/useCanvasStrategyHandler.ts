@@ -59,9 +59,8 @@ export const useCanvasStrategyHandler = ({
       );
 
       try {
-        const { generatePersona, generateArchetypes, generateMarketResearch } = await import(
-          '@/services/brandingService'
-        );
+        const { generatePersona, generateArchetypes, generateMarketResearch } =
+          await import('@/services/brandingService');
 
         const newStrategyData: any = { ...strategyData.strategyData };
 

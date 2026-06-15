@@ -150,8 +150,8 @@ export function BrandColorGrid() {
                   borderColor: awaitingSlot
                     ? undefined
                     : color
-                    ? 'rgba(255,255,255,0.08)'
-                    : 'rgba(255,255,255,0.15)',
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'rgba(255,255,255,0.15)',
                   borderStyle: color ? 'solid' : 'dashed',
                 }}
               >

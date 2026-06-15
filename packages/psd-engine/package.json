@@ -10,7 +10,15 @@
     "url": "https://github.com/pedrojaques99/visantlabs-os",
     "directory": "packages/psd-engine"
   },
-  "keywords": ["psd", "ag-psd", "mockup", "canvas", "compositor", "smart-object", "perspective-warp"],
+  "keywords": [
+    "psd",
+    "ag-psd",
+    "mockup",
+    "canvas",
+    "compositor",
+    "smart-object",
+    "perspective-warp"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -30,10 +38,12 @@
       "import": "./dist/adapters/browser.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "prepare": "tsc -p tsconfig.json",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {

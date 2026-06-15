@@ -82,10 +82,10 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
           isGeneratingPrompt
             ? t('mockup.generatingPrompt')
             : isGenerating
-            ? t('mockup.generatingOutputs')
-            : isPromptReady
-            ? t('mockup.generateOutputs')
-            : t('mockup.generatePrompt')
+              ? t('mockup.generatingOutputs')
+              : isPromptReady
+                ? t('mockup.generateOutputs')
+                : t('mockup.generatePrompt')
         }
         title={
           isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')
@@ -163,10 +163,10 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
         isGeneratingPrompt
           ? t('mockup.generatingPrompt')
           : isGenerating
-          ? t('mockup.generatingOutputs')
-          : isPromptReady
-          ? t('mockup.generateOutputs')
-          : t('mockup.generatePrompt')
+            ? t('mockup.generatingOutputs')
+            : isPromptReady
+              ? t('mockup.generateOutputs')
+              : t('mockup.generatePrompt')
       }
       title={
         isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')

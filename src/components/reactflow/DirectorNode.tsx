@@ -139,9 +139,9 @@ export const DirectorNode = memo(
                     connectedImage.startsWith('data:')
                       ? connectedImage
                       : connectedImage.startsWith('http://') ||
-                        connectedImage.startsWith('https://')
-                      ? connectedImage
-                      : `data:image/png;base64,${connectedImage}`
+                          connectedImage.startsWith('https://')
+                        ? connectedImage
+                        : `data:image/png;base64,${connectedImage}`
                   }
                   alt="Connected"
                   className="w-full h-32 object-cover"

@@ -39,7 +39,12 @@ function layerAlpha(layer: any): number {
 }
 
 /** Does this layer (or any descendant) carry a placedLayer whose id is a face? */
-function subtreeHasFace(layer: any, faceLinkIds: Set<string>, facePaths: Set<string>, path: string): boolean {
+function subtreeHasFace(
+  layer: any,
+  faceLinkIds: Set<string>,
+  facePaths: Set<string>,
+  path: string
+): boolean {
   const id = layer.placedLayer?.id;
   if ((id && faceLinkIds.has(id)) || facePaths.has(path)) return true;
   if (layer.children) {
@@ -89,8 +94,8 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
       .map((l: any) => ({
         name: l.name || 'unnamed',
         path: l.path,
-        innerWidth: l.placedLayer.width || (l.right - l.left),
-        innerHeight: l.placedLayer.height || (l.bottom - l.top),
+        innerWidth: l.placedLayer.width || l.right - l.left,
+        innerHeight: l.placedLayer.height || l.bottom - l.top,
         hidden: !!l.hidden,
         linkId: l.placedLayer.id || undefined,
       }));
@@ -116,8 +121,11 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
     facePaths.add(so.path);
 
     const pl = so.placedLayer || {};
-    const innerW = Math.max(1, Math.round(pl.width || (so.right - so.left) || face.innerWidth || 1));
-    const innerH = Math.max(1, Math.round(pl.height || (so.bottom - so.top) || face.innerHeight || 1));
+    const innerW = Math.max(1, Math.round(pl.width || so.right - so.left || face.innerWidth || 1));
+    const innerH = Math.max(
+      1,
+      Math.round(pl.height || so.bottom - so.top || face.innerHeight || 1)
+    );
     const rawQuad: number[] | null =
       (pl.nonAffineTransform?.length === 8 && pl.nonAffineTransform) ||
       (pl.transform?.length === 8 && pl.transform) ||
@@ -161,22 +169,36 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
   if (firstFaceIdx === -1) {
     // No face container found among top-level groups (faces nested deep or none).
     // Fallback: single base flatten of everything visible (documented limitation).
-    warnings.push('nenhum container de face no nível superior — base única (limitação documentada)');
+    warnings.push(
+      'nenhum container de face no nível superior — base única (limitação documentada)'
+    );
     const baseChildren = topChildren.filter(visibleEligible);
     if (baseChildren.length) {
       const ref = nextRef('base');
       assets[ref] = flattenSubset(baseChildren, width, height, cc);
-      layers.push({ role: 'base', src: ref, blendMode: 'source-over', opacity: 1, left: 0, top: 0 });
+      layers.push({
+        role: 'base',
+        src: ref,
+        blendMode: 'source-over',
+        opacity: 1,
+        left: 0,
+        top: 0,
+      });
     }
   } else {
     // Base = everything below the first face container, flattened into one image.
-    const baseChildren = topChildren
-      .slice(0, firstFaceIdx)
-      .filter(visibleEligible);
+    const baseChildren = topChildren.slice(0, firstFaceIdx).filter(visibleEligible);
     if (baseChildren.length) {
       const ref = nextRef('base');
       assets[ref] = flattenSubset(baseChildren, width, height, cc);
-      layers.push({ role: 'base', src: ref, blendMode: 'source-over', opacity: 1, left: 0, top: 0 });
+      layers.push({
+        role: 'base',
+        src: ref,
+        blendMode: 'source-over',
+        opacity: 1,
+        left: 0,
+        top: 0,
+      });
     }
 
     // Over = each top-level child at/above firstFaceIdx that is NOT a face container,
@@ -193,7 +215,12 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
       const ref = nextRef('over');
       // Flatten this single top-level child at full size (preserves its internal
       // composition); its own blend/opacity are applied at render time.
-      assets[ref] = flattenSubset([{ ...c, opacity: 1, fillOpacity: 1, blendMode: 'normal' }], width, height, cc);
+      assets[ref] = flattenSubset(
+        [{ ...c, opacity: 1, fillOpacity: 1, blendMode: 'normal' }],
+        width,
+        height,
+        cc
+      );
       layers.push({
         role: 'over',
         src: ref,

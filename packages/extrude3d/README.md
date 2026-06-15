@@ -27,7 +27,7 @@ import { buildExtrudedGeometry } from '@visant/extrude3d';
 import * as THREE from 'three';
 
 const result = buildExtrudedGeometry(svgString, {
-  depth: 2,        // extrusion depth knob
+  depth: 2, // extrusion depth knob
   smoothness: 0.5, // 0–1 → bevel segments + curve subdivisions
   bevelEnabled: true,
 });
@@ -74,7 +74,7 @@ import * as opentype from 'opentype.js';
 import { textToSvg, buildExtrudedGeometry } from '@visant/extrude3d';
 
 const font = opentype.parse(fontArrayBuffer);
-const svg = textToSvg('Visant', font);      // centered 200×200 SVG of glyph paths
+const svg = textToSvg('Visant', font); // centered 200×200 SVG of glyph paths
 const result = buildExtrudedGeometry(svg, { depth: 2, smoothness: 0.6 });
 ```
 
@@ -90,36 +90,36 @@ const props = getSimpleMaterialProps('chrome', '#ff0066');
 
 ## Exports
 
-| Entry | Purpose |
-| --- | --- |
-| `.` | everything below, flat |
+| Entry         | Purpose                                                                                             |
+| ------------- | --------------------------------------------------------------------------------------------------- |
+| `.`           | everything below, flat                                                                              |
 | `./materials` | PBR preset library (`materialPresets`, `MATERIAL_LIB`, `getSimpleMaterialProps`, `resolveMaterial`) |
-| `./fonts` | `textToSvg(text, font)` — opentype glyphs → centered SVG |
-| `./glb` | `svgToGlb(svg, opts)` — dependency-free binary glTF serializer |
+| `./fonts`     | `textToSvg(text, font)` — opentype glyphs → centered SVG                                            |
+| `./glb`       | `svgToGlb(svg, opts)` — dependency-free binary glTF serializer                                      |
 
 ### Geometry API
 
-| Export | Signature |
-| --- | --- |
-| `buildExtrudedGeometry` | `(svg \| Shape[], opts) => { geometry, center, baseScale, shapeCount } \| null` |
-| `parseShapesFromSVG` | `(svg) => THREE.Shape[]` — SVGLoader fills + tessellated strokes, drops the viewBox rect |
-| `buildExtrudeSettings` | `(maxFlatDim, shapeCount, opts) => ExtrudeSettings` — the engine's depth/bevel/segment math |
-| `measureFlatMaxDim` | `(shapes) => number` — larger of flat width/height (≥ 1) |
-| `smoothCreaseNormals` | `(geometry, creaseAngleRad) => BufferGeometry` — averages normals below the crease angle |
-| `recomputeTriplanarUVs` | `(geometry, box3) => void` — box-projected UVs, in place |
+| Export                  | Signature                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `buildExtrudedGeometry` | `(svg \| Shape[], opts) => { geometry, center, baseScale, shapeCount } \| null`             |
+| `parseShapesFromSVG`    | `(svg) => THREE.Shape[]` — SVGLoader fills + tessellated strokes, drops the viewBox rect    |
+| `buildExtrudeSettings`  | `(maxFlatDim, shapeCount, opts) => ExtrudeSettings` — the engine's depth/bevel/segment math |
+| `measureFlatMaxDim`     | `(shapes) => number` — larger of flat width/height (≥ 1)                                    |
+| `smoothCreaseNormals`   | `(geometry, creaseAngleRad) => BufferGeometry` — averages normals below the crease angle    |
+| `recomputeTriplanarUVs` | `(geometry, box3) => void` — box-projected UVs, in place                                    |
 
 ## Options
 
 `buildExtrudedGeometry(svg, opts)`:
 
-| Option | Default | Meaning |
-| --- | --- | --- |
-| `depth` | — | extrusion depth knob (scaled by flat bounds) |
-| `smoothness` | — | 0–1 → bevel segments (`4 + s·8`) + curve subdivisions (`32 + s·64`) |
-| `bevelEnabled` | `true` | |
-| `bevelThickness` / `bevelSize` | `0.5` | scaled by `min(maxFlatDim·0.05, 1)`, clamped to half the depth |
-| `vertexBudget` | `600000` | total vertex budget; segment counts shrink to fit |
-| `creaseAngle` | `Math.PI/6` | crease-smoothing threshold; `null` → plain `computeVertexNormals` |
+| Option                         | Default     | Meaning                                                             |
+| ------------------------------ | ----------- | ------------------------------------------------------------------- |
+| `depth`                        | —           | extrusion depth knob (scaled by flat bounds)                        |
+| `smoothness`                   | —           | 0–1 → bevel segments (`4 + s·8`) + curve subdivisions (`32 + s·64`) |
+| `bevelEnabled`                 | `true`      |                                                                     |
+| `bevelThickness` / `bevelSize` | `0.5`       | scaled by `min(maxFlatDim·0.05, 1)`, clamped to half the depth      |
+| `vertexBudget`                 | `600000`    | total vertex budget; segment counts shrink to fit                   |
+| `creaseAngle`                  | `Math.PI/6` | crease-smoothing threshold; `null` → plain `computeVertexNormals`   |
 
 ## License
 

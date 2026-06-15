@@ -383,85 +383,83 @@ export const SvgOptimizerPage: React.FC = () => {
       </div>
 
       {/* Controls: PNG trace (only for selected PNG item) */}
-      {selectedItem &&
-        selectedItem.source === 'png' &&
-        selectedItem.status !== 'tracing' && (
-          <>
-            <div className="h-px bg-neutral-800" />
-            <motion.div {...fadeUp} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-warning uppercase tracking-wider">
-                  Trace preset
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
-                  <motion.button
-                    key={p}
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => handlePresetChange(p)}
-                    className={cn(
-                      'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
-                      localPreset === p
-                        ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
-                        : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
-                    )}
-                  >
-                    {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
-                  </motion.button>
-                ))}
-              </div>
-              {localPreset === 'custom' && (
-                <div className="space-y-1.5">
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <ScrubInput
-                      label="Noise"
-                      value={localTurd}
-                      min={0}
-                      max={20}
-                      step={1}
-                      onChange={setLocalTurd}
-                    />
-                    <ScrubInput
-                      label="Simplify"
-                      value={localOpt}
-                      min={0}
-                      max={2}
-                      step={0.05}
-                      onChange={setLocalOpt}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <ScrubInput
-                      label="Threshold"
-                      value={typeof localThresh === 'number' ? localThresh : 128}
-                      min={0}
-                      max={255}
-                      step={1}
-                      onChange={setLocalThresh}
-                    />
-                    <ScrubInput
-                      label="Corners"
-                      value={localAlphaMax}
-                      min={0}
-                      max={1.334}
-                      step={0.05}
-                      onChange={setLocalAlphaMax}
-                    />
-                  </div>
+      {selectedItem && selectedItem.source === 'png' && selectedItem.status !== 'tracing' && (
+        <>
+          <div className="h-px bg-neutral-800" />
+          <motion.div {...fadeUp} className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-warning uppercase tracking-wider">
+                Trace preset
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
+                <motion.button
+                  key={p}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => handlePresetChange(p)}
+                  className={cn(
+                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                    localPreset === p
+                      ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
+                      : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
+                  )}
+                >
+                  {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
+                </motion.button>
+              ))}
+            </div>
+            {localPreset === 'custom' && (
+              <div className="space-y-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <ScrubInput
+                    label="Noise"
+                    value={localTurd}
+                    min={0}
+                    max={20}
+                    step={1}
+                    onChange={setLocalTurd}
+                  />
+                  <ScrubInput
+                    label="Simplify"
+                    value={localOpt}
+                    min={0}
+                    max={2}
+                    step={0.05}
+                    onChange={setLocalOpt}
+                  />
                 </div>
-              )}
-              <Button
-                variant="outline"
-                className="w-full text-[10px] font-mono uppercase tracking-widest h-8 border-neutral-700"
-                onClick={handleRetrace}
-              >
-                <RefreshCw size={12} className="mr-1.5" /> Re-trace
-              </Button>
-            </motion.div>
-          </>
-        )}
+                <div className="grid grid-cols-2 gap-1.5">
+                  <ScrubInput
+                    label="Threshold"
+                    value={typeof localThresh === 'number' ? localThresh : 128}
+                    min={0}
+                    max={255}
+                    step={1}
+                    onChange={setLocalThresh}
+                  />
+                  <ScrubInput
+                    label="Corners"
+                    value={localAlphaMax}
+                    min={0}
+                    max={1.334}
+                    step={0.05}
+                    onChange={setLocalAlphaMax}
+                  />
+                </div>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              className="w-full text-[10px] font-mono uppercase tracking-widest h-8 border-neutral-700"
+              onClick={handleRetrace}
+            >
+              <RefreshCw size={12} className="mr-1.5" /> Re-trace
+            </Button>
+          </motion.div>
+        </>
+      )}
 
       <div className="h-px bg-neutral-800" />
 
@@ -483,9 +481,7 @@ export const SvgOptimizerPage: React.FC = () => {
                 assetData={
                   selectedItem && selectedItem.status === 'done'
                     ? {
-                        imageBase64: btoa(
-                          unescape(encodeURIComponent(selectedItem.optimizedSvg))
-                        ),
+                        imageBase64: btoa(unescape(encodeURIComponent(selectedItem.optimizedSvg))),
                         mimeType: 'image/svg+xml',
                         label: selectedItem.fileName,
                       }

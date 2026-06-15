@@ -91,8 +91,8 @@ export const ResponsivePageWrapper: React.FC<ResponsivePageWrapperProps> = ({
         transform: isVisible
           ? 'translateY(0) scale(1)'
           : enableScrollAnimation
-          ? 'translateY(40px) scale(0.98)'
-          : 'none',
+            ? 'translateY(40px) scale(0.98)'
+            : 'none',
         transition: enableScrollAnimation
           ? `opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s, transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s`
           : 'none',

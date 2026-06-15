@@ -41,7 +41,8 @@ const SEGMENTS: Segment[] = [
     icon: Building2,
     route: '/brand-guidelines',
     actionTitle: 'Centralize a marca dos seus clientes',
-    actionDesc: 'Uma fonte de verdade por cliente — compartilhe, gere e repita sem copiar hex na mao.',
+    actionDesc:
+      'Uma fonte de verdade por cliente — compartilhe, gere e repita sem copiar hex na mao.',
     actionCta: 'Criar brand guideline',
   },
   {
@@ -61,7 +62,8 @@ const SEGMENTS: Segment[] = [
     icon: Code,
     route: '/developer/getting-started',
     actionTitle: 'Conecte via API e MCP',
-    actionDesc: 'Design tokens como codigo e contexto de marca em qualquer agente. Comece pelos docs.',
+    actionDesc:
+      'Design tokens como codigo e contexto de marca em qualquer agente. Comece pelos docs.',
     actionCta: 'Ver documentacao',
   },
 ];

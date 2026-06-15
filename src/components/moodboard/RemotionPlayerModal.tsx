@@ -77,8 +77,8 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
     propSlides && propSlides.length > 0
       ? propSlides
       : imageUrl
-      ? [{ imageUrl, preset, durationInSeconds: 5, width: 1920, height: 1080 }]
-      : [];
+        ? [{ imageUrl, preset, durationInSeconds: 5, width: 1920, height: 1080 }]
+        : [];
 
   if (baseSlides.length === 0) return null;
 

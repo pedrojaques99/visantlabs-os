@@ -258,10 +258,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                       isError
                         ? 'bg-destructive/5 border-destructive/20 text-destructive'
                         : isRunning
-                        ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
-                        : isExpanded
-                        ? 'bg-white/5 border-white/10 text-neutral-300'
-                        : 'bg-white/[0.03] border-neutral-800 text-neutral-400',
+                          ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
+                          : isExpanded
+                            ? 'bg-white/5 border-white/10 text-neutral-300'
+                            : 'bg-white/[0.03] border-neutral-800 text-neutral-400',
                       hasDetail &&
                         !isRunning &&
                         'hover:bg-white/5 hover:border-white/10 cursor-pointer'

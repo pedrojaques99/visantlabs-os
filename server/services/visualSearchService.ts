@@ -217,8 +217,8 @@ async function searchPixabay(
       type: (item.type === 'vector/svg'
         ? 'vector'
         : item.type === 'illustration'
-        ? 'vector'
-        : 'photo') as VisualSearchResult['type'],
+          ? 'vector'
+          : 'photo') as VisualSearchResult['type'],
       source: 'pixabay' as const,
       imageUrl: item.largeImageURL || item.webformatURL,
       thumbnailUrl: item.webformatURL || item.previewURL,

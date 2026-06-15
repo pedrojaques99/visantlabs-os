@@ -305,8 +305,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                     isActive
                       ? 'bg-brand-cyan/20'
                       : isLight
-                      ? 'hover:bg-neutral-200/50'
-                      : 'hover:bg-neutral-800/50'
+                        ? 'hover:bg-neutral-200/50'
+                        : 'hover:bg-neutral-800/50'
                   )}
                   style={{
                     color: isActive ? 'var(--brand-cyan)' : textColors.muted,
@@ -362,8 +362,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           fontFamily === font.value
                             ? 'border-brand-cyan bg-brand-cyan/10'
                             : isLight
-                            ? 'border-neutral-300'
-                            : 'border-neutral-700'
+                              ? 'border-neutral-300'
+                              : 'border-neutral-700'
                         )}
                         style={{
                           color:
@@ -402,8 +402,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         strokeColor === colorPalette.primary.brand
                           ? 'border-brand-cyan'
                           : isLight
-                          ? 'border-neutral-300 hover:border-neutral-400'
-                          : 'border-neutral-700 hover:border-neutral-600'
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
                       )}
                       style={{ backgroundColor: colorPalette.primary.brand }}
                       aria-label="Brand cyan"
@@ -425,8 +425,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         strokeColor === colorPalette.primary.black
                           ? 'border-brand-cyan'
                           : isLight
-                          ? 'border-neutral-300 hover:border-neutral-400'
-                          : 'border-neutral-700 hover:border-neutral-600'
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
                       )}
                       style={{ backgroundColor: colorPalette.primary.black }}
                       aria-label="Black"
@@ -448,8 +448,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           strokeColor === item.color
                             ? 'border-brand-cyan'
                             : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
+                              ? 'border-neutral-300 hover:border-neutral-400'
+                              : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -472,8 +472,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           strokeColor === item.color
                             ? 'border-brand-cyan'
                             : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
+                              ? 'border-neutral-300 hover:border-neutral-400'
+                              : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -496,8 +496,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           strokeColor === item.color
                             ? 'border-brand-cyan'
                             : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
+                              ? 'border-neutral-300 hover:border-neutral-400'
+                              : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -564,8 +564,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   isActive
                     ? 'bg-brand-cyan/20'
                     : isLight
-                    ? 'hover:bg-neutral-200/50'
-                    : 'hover:bg-neutral-800/50'
+                      ? 'hover:bg-neutral-200/50'
+                      : 'hover:bg-neutral-800/50'
                 )}
                 style={{
                   color: isActive ? 'var(--brand-cyan)' : textColors.muted,

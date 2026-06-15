@@ -54,7 +54,10 @@ export function matchField(field: string, items: TextItem[]): string | undefined
 
   // 3. Sibling: text == label, value is the following text
   for (let i = 0; i < items.length; i++) {
-    const label = items[i].text.toLowerCase().replace(/[:：]\s*$/, '').trim();
+    const label = items[i].text
+      .toLowerCase()
+      .replace(/[:：]\s*$/, '')
+      .trim();
     if (label === key && items[i + 1]) return items[i + 1].text.trim();
   }
 
@@ -83,7 +86,13 @@ export function buildFields(items: TextItem[], fields: string[]): Record<string,
 }
 
 export function sanitizeFilename(s: string): string {
-  return s.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 60) || 'export';
+  return (
+    s
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 60) || 'export'
+  );
 }
 
 function escapeHtml(s: string): string {

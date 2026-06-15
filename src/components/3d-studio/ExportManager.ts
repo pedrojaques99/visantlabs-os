@@ -118,8 +118,8 @@ export async function exportVideo(
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
       ? 'video/webm;codecs=vp9'
       : MediaRecorder.isTypeSupported('video/webm')
-      ? 'video/webm'
-      : null;
+        ? 'video/webm'
+        : null;
     if (!mimeType) {
       throw new Error(
         'Video recording is not supported in this browser. Try Chrome or Edge for best compatibility.'

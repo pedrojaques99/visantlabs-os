@@ -978,8 +978,8 @@ router.post('/presets/mockup', validateAdmin, async (req: Request, res: Response
         .status(400)
         .json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
     }
-    const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) ?? '' : '';
-    const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
+    const refUrl = referenceImageUrl != null ? (ensureString(referenceImageUrl, 2000) ?? '') : '';
+    const modelVal = model != null ? (ensureString(model, 100) ?? undefined) : undefined;
     const mcat =
       mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
 
@@ -1250,8 +1250,8 @@ router.put('/presets/mockup/:id', validateAdmin, async (req: Request, res: Respo
         .status(400)
         .json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
     }
-    const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) ?? '' : '';
-    const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
+    const refUrl = referenceImageUrl != null ? (ensureString(referenceImageUrl, 2000) ?? '') : '';
+    const modelVal = model != null ? (ensureString(model, 100) ?? undefined) : undefined;
     const mcat =
       mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
 

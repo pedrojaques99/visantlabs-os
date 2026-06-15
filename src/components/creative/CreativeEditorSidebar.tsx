@@ -313,8 +313,8 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               layer.data.type === 'text'
                 ? layer.data.content.replace(/<\/?accent>/g, '').slice(0, 20) || 'Texto'
                 : layer.data.type === 'logo'
-                ? 'Logo'
-                : 'Shape';
+                  ? 'Logo'
+                  : 'Shape';
             const isSelected = selectedLayerIds.includes(layer.id);
             return (
               <div
@@ -378,10 +378,10 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             const label = hasBg
               ? 'Imagem'
               : hasOverlay
-              ? overlay.type === 'solid'
-                ? 'Cor sólida'
-                : 'Gradiente'
-              : 'Fundo vazio';
+                ? overlay.type === 'solid'
+                  ? 'Cor sólida'
+                  : 'Gradiente'
+                : 'Fundo vazio';
             const Icon = hasBg ? Image : Palette;
             return (
               <div

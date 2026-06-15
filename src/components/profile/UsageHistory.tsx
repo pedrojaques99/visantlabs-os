@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FileText, CreditCard, TrendingUp, Image, Palette, ImageIcon, X } from 'lucide-react';
+import { FileText, Image, Palette, ImageIcon, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   usageHistoryService,
   type UsageHistoryRecord,
   type FeatureType,
 } from '@/services/usageHistoryService';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableHeader,
@@ -19,6 +18,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/utils/localeUtils';
+import { cn } from '@/lib/utils';
 
 interface UsageHistoryProps {
   isAuthenticated: boolean;
@@ -38,7 +38,6 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
   });
   const [serverStats, setServerStats] = useState<any>(null);
 
-  // Load usage history
   useEffect(() => {
     const loadUsageHistory = async () => {
       if (!isAuthenticated) return;
@@ -73,7 +72,6 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     loadUsageHistory();
   }, [isAuthenticated, historyFilter, historyPagination.offset, historyPagination.limit, t]);
 
-  // Reset pagination when filter changes
   useEffect(() => {
     setHistoryPagination((prev) => {
       if (prev.offset !== 0) {
@@ -83,19 +81,15 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     });
   }, [historyFilter]);
 
-  // Helper to format dates
   const formatFriendlyDateTime = (dateString: string | Date): string => {
     return formatDateTime(dateString);
   };
 
-  // Calculate statistics (mix of server stats and local fallback if needed)
   const usageStats = useMemo(() => {
-    // If we have server stats, use them (they are more accurate for totals > limit)
     if (serverStats) {
       return serverStats;
     }
 
-    // Fallback to local calculation (only accurate if total records <= limit)
     if (!usageHistory || usageHistory.length === 0) {
       return {
         totalRecords: 0,
@@ -132,19 +126,16 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
       const recordDate = new Date(record.timestamp);
       const credits = record.creditsDeducted || 0;
 
-      // By feature
       if (record.feature && record.feature in stats.byFeature) {
         const feature = record.feature as keyof typeof stats.byFeature;
         stats.byFeature[feature].count++;
         stats.byFeature[feature].credits += credits;
       }
 
-      // By model
       if (record.model) {
         stats.byModel[record.model] = (stats.byModel[record.model] || 0) + 1;
       }
 
-      // By period
       if (recordDate >= sevenDaysAgo) {
         stats.last7Days.count++;
         stats.last7Days.credits += credits;
@@ -158,327 +149,229 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     return stats;
   }, [usageHistory, serverStats]);
 
+  const FILTER_OPTIONS: { value: FeatureType | 'all'; label: string }[] = [
+    { value: 'all', label: t('usageHistory.all') || 'Todos' },
+    { value: 'mockupmachine', label: t('usageHistory.mockupMachine') || 'Mockup Machine' },
+    { value: 'brandingmachine', label: t('usageHistory.brandingMachine') || 'Branding Machine' },
+    { value: 'canvas', label: t('usageHistory.canvas') || 'Canvas' },
+  ];
+
+  if (isLoadingHistory && usageHistory.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <GlitchLoader size={24} />
+      </div>
+    );
+  }
+
+  if (usageHistory.length === 0 && !isLoadingHistory) {
+    return (
+      <div className="border border-white/10 rounded-2xl bg-neutral-900/20 p-12 flex flex-col items-center gap-4">
+        <p className="text-sm text-neutral-500 font-mono">
+          {t('usageHistory.noRecords') || 'Nenhum registro encontrado'}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <FileText size={24} className="text-brand-cyan" />
-        <div>
-          <h2 className="text-xl font-semibold text-neutral-100 font-manrope">
-            {t('usageHistory.title') || 'Histórico de Uso'}
-          </h2>
-          <p className="text-sm text-neutral-500 font-mono">
-            Visualize seu histórico de uso e consumo de créditos
-          </p>
-        </div>
+    <div className="space-y-4 animate-in fade-in duration-300">
+      {/* Section header */}
+      <div className="mb-2">
+        <h2 className="text-sm font-semibold text-neutral-200">
+          {t('usageHistory.title') || 'Histórico de Uso'}
+        </h2>
+        <p className="text-xs text-neutral-500 font-mono mt-0.5">
+          {t('usageHistory.subtitle') || 'Consumo de créditos por ferramenta'}
+        </p>
       </div>
 
-      {/* Error Display */}
+      {/* Error */}
       {historyError && (
-        <Card className="bg-neutral-900 border border-destructive/30 rounded-xl">
-          <CardContent className="p-4">
-            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
-              <X size={16} />
-              {historyError}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Loading State */}
-      {isLoadingHistory && usageHistory.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card
-              key={i}
-              className="bg-neutral-900 border border-neutral-800/50 h-32 flex items-center justify-center"
-            >
-              <GlitchLoader size={20} />
-            </Card>
-          ))}
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
+          <X size={14} className="shrink-0" />
+          <span className="flex-1">{historyError}</span>
         </div>
-      ) : usageHistory.length === 0 ? (
-        <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex flex-col items-center justify-center gap-3 py-8">
-              <p className="text-sm text-neutral-500 font-mono text-center">
-                {t('usageHistory.noRecords') || 'Nenhum registro encontrado'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {/* Statistics Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
-            {/* Total Records */}
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-brand-cyan/10 rounded-md">
-                    <FileText className="h-6 w-6 text-brand-cyan" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                    {usageStats.totalRecords}
-                  </p>
-                  <p className="text-sm text-neutral-500 font-mono">Total de Usos</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Total Credits */}
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-brand-cyan/10 rounded-md">
-                    <CreditCard className="h-6 w-6 text-brand-cyan" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                    {usageStats.totalCredits}
-                  </p>
-                  <p className="text-sm text-neutral-500 font-mono">Créditos Gastos</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Mockup Machine Stats */}
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-brand-cyan/10 rounded-md">
-                    <Image className="h-6 w-6 text-brand-cyan" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                    {usageStats.byFeature.mockupmachine.count}
-                  </p>
-                  <p className="text-sm text-neutral-500 font-mono">Mockup Machine</p>
-                  <p className="text-xs text-neutral-400 font-mono mt-1">
-                    {usageStats.byFeature.mockupmachine.credits} créditos
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Branding Machine Stats */}
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-brand-cyan/10 rounded-md">
-                    <Palette className="h-6 w-6 text-brand-cyan" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                    {usageStats.byFeature.brandingmachine.count}
-                  </p>
-                  <p className="text-sm text-neutral-500 font-mono">Branding Machine</p>
-                  <p className="text-xs text-neutral-400 font-mono mt-1">
-                    {usageStats.byFeature.brandingmachine.credits} créditos
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Canvas Stats */}
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-brand-cyan/10 rounded-md">
-                    <ImageIcon className="h-6 w-6 text-brand-cyan" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                    {usageStats.byFeature.canvas.count}
-                  </p>
-                  <p className="text-sm text-neutral-500 font-mono">Canvas</p>
-                  <p className="text-xs text-neutral-400 font-mono mt-1">
-                    {usageStats.byFeature.canvas.credits} créditos
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filter buttons */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-wrap gap-2">
-                {(['all', 'brandingmachine', 'mockupmachine', 'canvas'] as const).map((filter) => (
-                  <Button
-                    variant="ghost"
-                    key={filter}
-                    onClick={() => setHistoryFilter(filter)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-mono transition ${
-                      historyFilter === filter
-                        ? 'bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan'
-                        : 'bg-neutral-950/70 border border-neutral-800 text-neutral-400 hover:bg-neutral-950/60'
-                    }`}
-                  >
-                    {filter === 'all'
-                      ? t('usageHistory.all') || 'Todos'
-                      : filter === 'brandingmachine'
-                      ? t('usageHistory.brandingMachine') || 'Branding Machine'
-                      : filter === 'mockupmachine'
-                      ? t('usageHistory.mockupMachine') || 'Mockup Machine'
-                      : t('usageHistory.canvas') || 'Canvas'}
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* History Table */}
-          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700 transition-all duration-300 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-neutral-300 font-mono text-base">
-                <FileText className="h-5 w-5 text-brand-cyan" />
-                {t('usageHistory.details') || 'Detalhes do Histórico'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border border-neutral-800/50 overflow-hidden">
-                <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-neutral-900/50">
-                    <TableRow className="border-neutral-800/50 hover:bg-transparent">
-                      <TableHead className="text-neutral-500 font-mono">
-                        {t('usageHistory.date') || 'Data'}
-                      </TableHead>
-                      <TableHead className="text-neutral-500 font-mono">
-                        {t('usageHistory.feature') || 'Recurso'}
-                      </TableHead>
-                      <TableHead className="text-neutral-500 font-mono">
-                        {t('usageHistory.credits') || 'Créditos'}
-                      </TableHead>
-                      <TableHead className="text-neutral-500 font-mono">
-                        {t('usageHistory.model') || 'Modelo'}
-                      </TableHead>
-                      <TableHead className="text-neutral-500 font-mono">
-                        {t('usageHistory.details') || 'Detalhes'}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {usageHistory.map((record) => (
-                      <TableRow
-                        key={record.id}
-                        className="border-neutral-800/30 text-neutral-300 hover:bg-neutral-950/20 transition-colors"
-                      >
-                        <TableCell className="px-4 py-4 text-sm font-mono whitespace-nowrap">
-                          {formatFriendlyDateTime(record.timestamp)}
-                        </TableCell>
-                        <TableCell className="px-4 py-4 text-sm font-mono">
-                          <div className="flex items-center gap-2">
-                            {record.feature === 'brandingmachine' && (
-                              <Palette className="w-3 h-3 text-neutral-300" />
-                            )}
-                            {record.feature === 'mockupmachine' && (
-                              <Image className="w-3 h-3 text-neutral-300" />
-                            )}
-                            {record.feature === 'canvas' && (
-                              <ImageIcon className="w-3 h-3 text-brand-cyan" />
-                            )}
-                            <span>
-                              {record.feature === 'brandingmachine' &&
-                                (t('usageHistory.brandingMachine') || 'Branding Machine')}
-                              {record.feature === 'mockupmachine' &&
-                                (t('usageHistory.mockupMachine') || 'Mockup Machine')}
-                              {record.feature === 'canvas' &&
-                                (t('usageHistory.canvas') || 'Canvas')}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-4 py-4 text-sm text-brand-cyan font-mono font-semibold">
-                          {record.creditsDeducted}
-                        </TableCell>
-                        <TableCell className="px-4 py-4 text-sm text-neutral-400 font-mono">
-                          {record.model ? (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] bg-neutral-950/70 border-neutral-700/50"
-                            >
-                              {record.model}
-                            </Badge>
-                          ) : (
-                            '-'
-                          )}
-                        </TableCell>
-                        <TableCell className="px-4 py-4 text-sm text-neutral-400 font-mono">
-                          <div className="flex flex-wrap gap-1">
-                            {record.stepNumber && (
-                              <span className="text-xs bg-neutral-900 px-1.5 py-0.5 rounded text-neutral-500">
-                                Step {record.stepNumber}
-                              </span>
-                            )}
-                            {record.resolution && (
-                              <span className="text-xs bg-neutral-900 px-1.5 py-0.5 rounded text-neutral-500">
-                                {record.resolution}
-                              </span>
-                            )}
-                            {!record.stepNumber && !record.resolution && (
-                              <span className="text-neutral-600">-</span>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                </div>
-              </div>
-
-              {/* Pagination */}
-              {historyPagination.total > historyPagination.limit && (
-                <div className="flex items-center justify-between gap-4 pt-4 mt-4 border-t border-neutral-800">
-                  <p className="text-xs text-neutral-500 font-mono">
-                    {t('usageHistory.showing') || 'Exibindo'} {historyPagination.offset + 1} -{' '}
-                    {Math.min(
-                      historyPagination.offset + historyPagination.limit,
-                      historyPagination.total
-                    )}{' '}
-                    {t('usageHistory.of') || 'de'} {historyPagination.total}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      onClick={() =>
-                        setHistoryPagination((prev) => ({
-                          ...prev,
-                          offset: Math.max(0, prev.offset - prev.limit),
-                        }))
-                      }
-                      disabled={historyPagination.offset === 0}
-                      className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-neutral-950/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      {t('usageHistory.previous') || 'Anterior'}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() =>
-                        setHistoryPagination((prev) => ({
-                          ...prev,
-                          offset: prev.offset + prev.limit,
-                        }))
-                      }
-                      disabled={!historyPagination.hasMore}
-                      className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-neutral-950/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      {t('usageHistory.next') || 'Próximo'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
       )}
+
+      {/* Compact stats strip */}
+      <div className="flex divide-x divide-white/5 border border-white/5 rounded-xl overflow-hidden bg-white/[0.03]">
+        {[
+          { value: usageStats.totalRecords, label: 'Total de Usos' },
+          { value: usageStats.totalCredits, label: 'Créditos Gastos' },
+          { value: usageStats.byFeature.mockupmachine.count, label: 'Mockup Machine' },
+          { value: usageStats.byFeature.brandingmachine.count, label: 'Branding Machine' },
+          { value: usageStats.byFeature.canvas.count, label: 'Canvas' },
+        ].map((stat) => (
+          <div key={stat.label} className="flex-1 px-4 py-4 min-w-0">
+            <p className="text-xl font-bold text-neutral-100 font-mono tabular-nums leading-none">
+              {stat.value}
+            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mt-1.5 truncate">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter strip + table — unified container */}
+      <div className="border border-white/10 rounded-2xl overflow-hidden">
+        {/* Filter strip */}
+        <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-white/5 bg-white/[0.03]">
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setHistoryFilter(opt.value)}
+              className={cn(
+                'px-3 py-1 rounded-md text-[11px] font-mono transition-colors',
+                historyFilter === opt.value
+                  ? 'bg-white/10 text-neutral-200'
+                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+          {isLoadingHistory && (
+            <span className="ml-auto flex items-center">
+              <GlitchLoader size={12} />
+            </span>
+          )}
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/5 hover:bg-transparent">
+                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                  {t('usageHistory.date') || 'Data'}
+                </TableHead>
+                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                  {t('usageHistory.feature') || 'Recurso'}
+                </TableHead>
+                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                  {t('usageHistory.credits') || 'Créditos'}
+                </TableHead>
+                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                  {t('usageHistory.model') || 'Modelo'}
+                </TableHead>
+                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                  {t('usageHistory.details') || 'Detalhes'}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {usageHistory.map((record) => (
+                <TableRow
+                  key={record.id}
+                  className="border-white/[0.03] text-neutral-400 hover:bg-white/[0.03] transition-colors"
+                >
+                  <TableCell className="px-4 py-3 text-xs font-mono whitespace-nowrap text-neutral-400">
+                    {formatFriendlyDateTime(record.timestamp)}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      {record.feature === 'brandingmachine' && (
+                        <Palette className="w-3 h-3 text-neutral-500" />
+                      )}
+                      {record.feature === 'mockupmachine' && (
+                        <Image className="w-3 h-3 text-neutral-500" />
+                      )}
+                      {record.feature === 'canvas' && (
+                        <ImageIcon className="w-3 h-3 text-neutral-500" />
+                      )}
+                      <span className="text-neutral-300">
+                        {record.feature === 'brandingmachine' &&
+                          (t('usageHistory.brandingMachine') || 'Branding Machine')}
+                        {record.feature === 'mockupmachine' &&
+                          (t('usageHistory.mockupMachine') || 'Mockup Machine')}
+                        {record.feature === 'canvas' && (t('usageHistory.canvas') || 'Canvas')}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-xs font-mono text-neutral-200 tabular-nums">
+                    {record.creditsDeducted}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-xs text-neutral-500 font-mono">
+                    {record.model ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-white/[0.03] border-white/10 text-neutral-500"
+                      >
+                        {record.model}
+                      </Badge>
+                    ) : (
+                      <span className="text-neutral-700">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-xs text-neutral-500 font-mono">
+                    <div className="flex flex-wrap gap-1">
+                      {record.stepNumber && (
+                        <span className="text-[10px] bg-white/[0.03] px-1.5 py-0.5 rounded text-neutral-600">
+                          Step {record.stepNumber}
+                        </span>
+                      )}
+                      {record.resolution && (
+                        <span className="text-[10px] bg-white/[0.03] px-1.5 py-0.5 rounded text-neutral-600">
+                          {record.resolution}
+                        </span>
+                      )}
+                      {!record.stepNumber && !record.resolution && (
+                        <span className="text-neutral-700">—</span>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination */}
+        {historyPagination.total > historyPagination.limit && (
+          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-white/5">
+            <p className="text-[10px] text-neutral-600 font-mono">
+              {historyPagination.offset + 1}–
+              {Math.min(
+                historyPagination.offset + historyPagination.limit,
+                historyPagination.total
+              )}{' '}
+              / {historyPagination.total}
+            </p>
+            <div className="flex gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setHistoryPagination((prev) => ({
+                    ...prev,
+                    offset: Math.max(0, prev.offset - prev.limit),
+                  }))
+                }
+                disabled={historyPagination.offset === 0}
+                className="h-7 px-3 text-[11px] font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30"
+              >
+                {t('usageHistory.previous') || 'Anterior'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setHistoryPagination((prev) => ({
+                    ...prev,
+                    offset: prev.offset + prev.limit,
+                  }))
+                }
+                disabled={!historyPagination.hasMore}
+                className="h-7 px-3 text-[11px] font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30"
+              >
+                {t('usageHistory.next') || 'Próximo'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

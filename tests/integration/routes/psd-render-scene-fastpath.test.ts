@@ -45,8 +45,19 @@ async function seedScene(psdFileName: string) {
     version: 1,
     width: 40,
     height: 40,
-    faces: [{ key: 'FACE1', name: 'Frente', quad: null, origin: { left: 0, top: 0 }, innerW: 40, innerH: 40 }],
-    layers: [{ role: 'base', src: 'base-0', blendMode: 'source-over', opacity: 1, left: 0, top: 0 }],
+    faces: [
+      {
+        key: 'FACE1',
+        name: 'Frente',
+        quad: null,
+        origin: { left: 0, top: 0 },
+        innerW: 40,
+        innerH: 40,
+      },
+    ],
+    layers: [
+      { role: 'base', src: 'base-0', blendMode: 'source-over', opacity: 1, left: 0, top: 0 },
+    ],
     warnings: [],
   };
   await db.collection(SCENES_COLLECTION).updateOne(

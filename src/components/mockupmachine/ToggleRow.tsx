@@ -18,8 +18,8 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({ checked, onClick, label, d
         checked
           ? 'bg-brand-cyan/20 border-brand-cyan/40'
           : dark
-          ? 'bg-neutral-900 border-neutral-800'
-          : 'bg-neutral-100 border-neutral-300'
+            ? 'bg-neutral-900 border-neutral-800'
+            : 'bg-neutral-100 border-neutral-300'
       )}
       onClick={onClick}
       role="switch"
@@ -56,8 +56,8 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({ checked, onClick, label, d
           checked
             ? 'text-brand-cyan'
             : dark
-            ? 'text-neutral-500 group-hover:text-neutral-400'
-            : 'text-neutral-500 group-hover:text-neutral-700'
+              ? 'text-neutral-500 group-hover:text-neutral-400'
+              : 'text-neutral-500 group-hover:text-neutral-700'
         )}
       >
         {label}

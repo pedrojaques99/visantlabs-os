@@ -118,12 +118,12 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                     const fmt = ext.endsWith('.svg')
                       ? 'SVG'
                       : ext.endsWith('.png')
-                      ? 'PNG'
-                      : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
-                      ? 'JPG'
-                      : ext.endsWith('.webp')
-                      ? 'WEBP'
-                      : '';
+                        ? 'PNG'
+                        : ext.endsWith('.jpg') || ext.endsWith('.jpeg')
+                          ? 'JPG'
+                          : ext.endsWith('.webp')
+                            ? 'WEBP'
+                            : '';
                     return fmt ? (
                       <span
                         className={`absolute top-1 right-1 text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10 ${

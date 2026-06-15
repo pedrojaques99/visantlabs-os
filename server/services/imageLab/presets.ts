@@ -12,10 +12,7 @@ import {
   TEXTURE_PRESETS_DATA,
 } from '@visant/print-fx/presets';
 
-export const HALFTONE_PRESETS = HALFTONE_PRESETS_DATA as Record<
-  string,
-  Partial<HalftoneSettings>
->;
+export const HALFTONE_PRESETS = HALFTONE_PRESETS_DATA as Record<string, Partial<HalftoneSettings>>;
 
 export const RISO_FULL_PRESETS = RISO_FULL_PRESETS_DATA as unknown as Record<
   string,

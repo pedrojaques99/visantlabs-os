@@ -25,8 +25,8 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
         ? { full: rawManifesto }
         : null
       : rawManifesto && (rawManifesto.full || rawManifesto.provocation || rawManifesto.promise)
-      ? rawManifesto
-      : null;
+        ? rawManifesto
+        : null;
 
   const primaryLogo =
     logos.find((l) => l.variant === 'primary') ||

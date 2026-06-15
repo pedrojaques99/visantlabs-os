@@ -94,88 +94,105 @@ async function resolveTier(req: TierRequest, _res: express.Response, next: expre
   next();
 }
 
-router.post('/render', authenticate, requireScope('generate'), renderLimiter, resolveTier, async (req: TierRequest, res) => {
-  const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview, forcePsd } = req.body;
+router.post(
+  '/render',
+  authenticate,
+  requireScope('generate'),
+  renderLimiter,
+  resolveTier,
+  async (req: TierRequest, res) => {
+    const { psdUrl, psdFileName, artUrl, smartObject, hideLayers, arts, preview, forcePsd } =
+      req.body;
 
-  // PSD: URL http(s) OU nome de arquivo no Google Drive
-  if (psdUrl !== undefined && typeof psdUrl !== 'string') {
-    return res.status(400).json({ error: 'psdUrl must be a string' });
-  }
-  if (psdFileName !== undefined && typeof psdFileName !== 'string') {
-    return res.status(400).json({ error: 'psdFileName must be a string' });
-  }
-  if (!psdUrl && !psdFileName) {
-    return res.status(400).json({ error: 'Provide psdUrl or psdFileName' });
-  }
-  if (psdUrl) {
-    try { new URL(psdUrl); } catch {
-      return res.status(400).json({ error: 'psdUrl must be a valid URL' });
+    // PSD: URL http(s) OU nome de arquivo no Google Drive
+    if (psdUrl !== undefined && typeof psdUrl !== 'string') {
+      return res.status(400).json({ error: 'psdUrl must be a string' });
     }
-  }
-  if (psdFileName && (psdFileName.includes('/') || psdFileName.includes('\\') || psdFileName.includes('..'))) {
-    return res.status(400).json({ error: 'psdFileName must be a bare file name' });
-  }
-
-  // Arte: arts[] (multi-face) OU artUrl+smartObject (legado)
-  let artList: Array<{ smartObject?: string; artUrl?: string; artBase64?: string }> | undefined;
-  if (Array.isArray(arts) && arts.length > 0) {
-    if (arts.length > 8) {
-      return res.status(400).json({ error: 'Max 8 arts per render' });
+    if (psdFileName !== undefined && typeof psdFileName !== 'string') {
+      return res.status(400).json({ error: 'psdFileName must be a string' });
     }
-    for (const a of arts) {
-      if (!a || typeof a !== 'object' || (!a.artUrl && !a.artBase64)) {
-        return res.status(400).json({ error: 'Each arts[] item needs artUrl or artBase64' });
+    if (!psdUrl && !psdFileName) {
+      return res.status(400).json({ error: 'Provide psdUrl or psdFileName' });
+    }
+    if (psdUrl) {
+      try {
+        new URL(psdUrl);
+      } catch {
+        return res.status(400).json({ error: 'psdUrl must be a valid URL' });
       }
-      if (a.artUrl) {
-        try { new URL(a.artUrl); } catch {
-          return res.status(400).json({ error: 'arts[].artUrl must be a valid URL' });
+    }
+    if (
+      psdFileName &&
+      (psdFileName.includes('/') || psdFileName.includes('\\') || psdFileName.includes('..'))
+    ) {
+      return res.status(400).json({ error: 'psdFileName must be a bare file name' });
+    }
+
+    // Arte: arts[] (multi-face) OU artUrl+smartObject (legado)
+    let artList: Array<{ smartObject?: string; artUrl?: string; artBase64?: string }> | undefined;
+    if (Array.isArray(arts) && arts.length > 0) {
+      if (arts.length > 8) {
+        return res.status(400).json({ error: 'Max 8 arts per render' });
+      }
+      for (const a of arts) {
+        if (!a || typeof a !== 'object' || (!a.artUrl && !a.artBase64)) {
+          return res.status(400).json({ error: 'Each arts[] item needs artUrl or artBase64' });
+        }
+        if (a.artUrl) {
+          try {
+            new URL(a.artUrl);
+          } catch {
+            return res.status(400).json({ error: 'arts[].artUrl must be a valid URL' });
+          }
         }
       }
+      artList = arts.map((a: any) => ({
+        smartObject: typeof a.smartObject === 'string' ? a.smartObject : undefined,
+        artUrl: typeof a.artUrl === 'string' ? a.artUrl : undefined,
+        artBase64: typeof a.artBase64 === 'string' ? a.artBase64 : undefined,
+      }));
+    } else {
+      if (!artUrl || typeof artUrl !== 'string') {
+        return res.status(400).json({ error: 'Provide arts[] or artUrl' });
+      }
+      try {
+        new URL(artUrl);
+      } catch {
+        return res.status(400).json({ error: 'artUrl must be a valid URL' });
+      }
     }
-    artList = arts.map((a: any) => ({
-      smartObject: typeof a.smartObject === 'string' ? a.smartObject : undefined,
-      artUrl: typeof a.artUrl === 'string' ? a.artUrl : undefined,
-      artBase64: typeof a.artBase64 === 'string' ? a.artBase64 : undefined,
-    }));
-  } else {
-    if (!artUrl || typeof artUrl !== 'string') {
-      return res.status(400).json({ error: 'Provide arts[] or artUrl' });
-    }
-    try { new URL(artUrl); } catch {
-      return res.status(400).json({ error: 'artUrl must be a valid URL' });
+
+    try {
+      const result = await renderPsdMockup({
+        psdUrl,
+        psdFileName,
+        arts: artList,
+        artUrl,
+        smartObject: typeof smartObject === 'string' ? smartObject : undefined,
+        hideLayers: Array.isArray(hideLayers) ? hideLayers : [],
+        preview: preview === true || typeof preview === 'number' ? preview : undefined,
+        userId: req.userId!,
+        accessTier: req.psdTier || 'public',
+        forcePsd: forcePsd === true,
+      });
+
+      res.json({
+        success: true,
+        data: {
+          url: result.url,
+          sizeBytes: result.sizeBytes,
+          durationMs: result.durationMs,
+          engine: result.engine,
+          replaced: result.replaced,
+        },
+      });
+    } catch (err: any) {
+      console.error('[psd-render] Error:', err.message || err, err.stack);
+      const status = err.message?.includes('queue is full') ? 429 : 500;
+      res.status(status).json({ error: err.message || 'Render failed' });
     }
   }
-
-  try {
-    const result = await renderPsdMockup({
-      psdUrl,
-      psdFileName,
-      arts: artList,
-      artUrl,
-      smartObject: typeof smartObject === 'string' ? smartObject : undefined,
-      hideLayers: Array.isArray(hideLayers) ? hideLayers : [],
-      preview: preview === true || typeof preview === 'number' ? preview : undefined,
-      userId: req.userId!,
-      accessTier: req.psdTier || 'public',
-      forcePsd: forcePsd === true,
-    });
-
-    res.json({
-      success: true,
-      data: {
-        url: result.url,
-        sizeBytes: result.sizeBytes,
-        durationMs: result.durationMs,
-        engine: result.engine,
-        replaced: result.replaced,
-      },
-    });
-  } catch (err: any) {
-    console.error('[psd-render] Error:', err.message || err, err.stack);
-    const status = err.message?.includes('queue is full') ? 429 : 500;
-    res.status(status).json({ error: err.message || 'Render failed' });
-  }
-});
+);
 
 // ── Scene Packages ───────────────────────────────────────────────────────────
 // Pré-processamento (1x por PSD) + catálogo + entrega por signed URL.
@@ -217,7 +234,9 @@ router.post(
 
     const active = await redisClient.get(SCENE_PREPARE_ACTIVE_KEY);
     if (active && parseInt(active, 10) >= SCENE_PREPARE_MAX) {
-      return res.status(429).json({ error: 'Scene preparation queue is full. Try again in a moment.' });
+      return res
+        .status(429)
+        .json({ error: 'Scene preparation queue is full. Try again in a moment.' });
     }
     await redisClient.incr(SCENE_PREPARE_ACTIVE_KEY);
     await redisClient.expire(SCENE_PREPARE_ACTIVE_KEY, 600);
@@ -310,7 +329,9 @@ router.get('/status', authenticate, async (_req: AuthRequest, res) => {
     maxConcurrent: parseInt(process.env.PSD_RENDER_MAX_CONCURRENT || '2', 10),
     driveConfigured: !!(
       process.env.GOOGLE_SERVICE_ACCOUNT_KEY ||
-      (process.env.GOOGLE_DRIVE_REFRESH_TOKEN && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+      (process.env.GOOGLE_DRIVE_REFRESH_TOKEN &&
+        process.env.GOOGLE_CLIENT_ID &&
+        process.env.GOOGLE_CLIENT_SECRET)
     ),
     spacesConfigured: !!(process.env.DO_SPACES_BUCKET && process.env.DO_SPACES_KEY),
   });

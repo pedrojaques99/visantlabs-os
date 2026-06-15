@@ -42,8 +42,10 @@ export const TEXTURE_PRESETS: TexturePreset[] = [
 ];
 
 // Single source of truth: shared/imagelab/presets.ts (also consumed server-side).
-export const FILTER_PRESETS: Record<string, Partial<TextureFilterSettings>> =
-  TEXTURE_PRESETS_DATA as Record<string, Partial<TextureFilterSettings>>;
+export const FILTER_PRESETS: Record<
+  string,
+  Partial<TextureFilterSettings>
+> = TEXTURE_PRESETS_DATA as Record<string, Partial<TextureFilterSettings>>;
 
 export interface TextureFilterSettings {
   opacity: number;

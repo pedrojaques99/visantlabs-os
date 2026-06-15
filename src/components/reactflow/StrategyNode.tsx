@@ -914,19 +914,22 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           hasPrompt: !!project.prompt,
           promptLength: project.prompt?.length || 0,
           dataKeys: Object.keys(project.data || {}),
-          dataValues: Object.keys(project.data || {}).reduce((acc, key) => {
-            const value = project.data[key];
-            if (Array.isArray(value)) {
-              acc[key] = `Array(${value.length})`;
-            } else if (typeof value === 'object' && value !== null) {
-              acc[key] = `Object(${Object.keys(value).length} keys)`;
-            } else if (typeof value === 'string') {
-              acc[key] = `String(${value.length} chars)`;
-            } else {
-              acc[key] = typeof value;
-            }
-            return acc;
-          }, {} as Record<string, string>),
+          dataValues: Object.keys(project.data || {}).reduce(
+            (acc, key) => {
+              const value = project.data[key];
+              if (Array.isArray(value)) {
+                acc[key] = `Array(${value.length})`;
+              } else if (typeof value === 'object' && value !== null) {
+                acc[key] = `Object(${Object.keys(value).length} keys)`;
+              } else if (typeof value === 'string') {
+                acc[key] = `String(${value.length} chars)`;
+              } else {
+                acc[key] = typeof value;
+              }
+              return acc;
+            },
+            {} as Record<string, string>
+          ),
         });
 
         const convertedStrategyData: any = {};
@@ -1582,19 +1585,20 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   ? t('canvasNodes.strategyNode.generatingAllSections') ||
                     'Generating all sections...'
                   : generatingStep === 'marketResearch'
-                  ? t('canvasNodes.strategyNode.analyzing') || 'Analyzing...'
-                  : generatingSteps.length > 0
-                  ? t('canvasNodes.strategyNode.generatingSection', {
-                      section:
-                        sections.find((s) => s.type === generatingSteps[0])?.label ||
-                        generatingSteps[0],
-                    }) || `Generating ${generatingSteps[0]}...`
-                  : generatingStep
-                  ? t('canvasNodes.strategyNode.generatingSection', {
-                      section:
-                        sections.find((s) => s.type === generatingStep)?.label || generatingStep,
-                    }) || `Generating ${generatingStep}...`
-                  : t('canvasNodes.strategyNode.generating') || 'Generating...'}
+                    ? t('canvasNodes.strategyNode.analyzing') || 'Analyzing...'
+                    : generatingSteps.length > 0
+                      ? t('canvasNodes.strategyNode.generatingSection', {
+                          section:
+                            sections.find((s) => s.type === generatingSteps[0])?.label ||
+                            generatingSteps[0],
+                        }) || `Generating ${generatingSteps[0]}...`
+                      : generatingStep
+                        ? t('canvasNodes.strategyNode.generatingSection', {
+                            section:
+                              sections.find((s) => s.type === generatingStep)?.label ||
+                              generatingStep,
+                          }) || `Generating ${generatingStep}...`
+                        : t('canvasNodes.strategyNode.generating') || 'Generating...'}
               </span>
             </div>
             {nodeData.onCancelGeneration && (

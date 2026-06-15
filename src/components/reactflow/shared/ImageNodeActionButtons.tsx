@@ -173,8 +173,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             isLiked
               ? t(`${translationKeyPrefix}.removeFromFavorites`) || 'Remove from favorites'
               : onSave
-              ? t(`${translationKeyPrefix}.saveToCollection`) || 'Save to collection'
-              : t(`${translationKeyPrefix}.addToFavorites`) || 'Add to favorites'
+                ? t(`${translationKeyPrefix}.saveToCollection`) || 'Save to collection'
+                : t(`${translationKeyPrefix}.addToFavorites`) || 'Add to favorites'
           }
           onMouseDown={handleMouseDown}
         >

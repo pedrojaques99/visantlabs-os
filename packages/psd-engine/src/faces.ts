@@ -63,7 +63,8 @@ export function computeFaces(smartObjects: FaceSo[]): Face[] {
 
     // Representante: o que bate SO_TARGET no NOME (é o que o template manda
     // editar), senão no path, senão o visível não-decorativo, senão o primeiro.
-    const repr = members.find(nameTarget) || members.find(pathTarget) || visibleNonDecor[0] || members[0];
+    const repr =
+      members.find(nameTarget) || members.find(pathTarget) || visibleNonDecor[0] || members[0];
     faces.push({
       key,
       name: displayName(repr.name),

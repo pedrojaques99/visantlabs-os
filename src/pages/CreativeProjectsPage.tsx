@@ -208,8 +208,8 @@ export const CreativeProjectsPage: React.FC = () => {
         projects.length === 0
           ? 'No creatives yet'
           : searchQuery.trim()
-          ? `${filteredProjects.length} of ${projects.length} creatives found`
-          : `Manage ${projects.length} ${projects.length === 1 ? 'creative' : 'creatives'}`
+            ? `${filteredProjects.length} of ${projects.length} creatives found`
+            : `Manage ${projects.length} ${projects.length === 1 ? 'creative' : 'creatives'}`
       }
       breadcrumb={[
         { label: 'Home', to: '/' },

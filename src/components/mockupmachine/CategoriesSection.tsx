@@ -602,8 +602,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                             ? 'bg-neutral-800/30 border-neutral-800'
                             : 'bg-white/60 border-neutral-200'
                           : theme === 'dark'
-                          ? 'bg-neutral-900/20 border-neutral-800'
-                          : 'bg-white/30 border-neutral-200/50'
+                            ? 'bg-neutral-900/20 border-neutral-800'
+                            : 'bg-white/30 border-neutral-200/50'
                       )}
                     >
                       <div className="flex items-center gap-1.5 mb-2">

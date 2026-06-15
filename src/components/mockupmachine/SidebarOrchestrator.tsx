@@ -148,8 +148,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               isOutputsLoading
                 ? 'bg-neutral-800 text-neutral-600 border border-neutral-800'
                 : isPromptReady
-                ? 'bg-brand-cyan text-black hover:scale-110 active:scale-95 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.25)] ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black'
-                : 'bg-neutral-900 text-neutral-500 hover:text-white border border-neutral-800 hover:bg-neutral-800'
+                  ? 'bg-brand-cyan text-black hover:scale-110 active:scale-95 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.25)] ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black'
+                  : 'bg-neutral-900 text-neutral-500 hover:text-white border border-neutral-800 hover:bg-neutral-800'
             )}
             title="Generate Outputs"
           >

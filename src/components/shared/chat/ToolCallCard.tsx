@@ -44,8 +44,8 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
     tc.status === 'running'
       ? 'text-brand-cyan'
       : tc.status === 'done'
-      ? 'text-success'
-      : 'text-destructive';
+        ? 'text-success'
+        : 'text-destructive';
   const friendlyName = tc.name.replace(/_/g, ' ');
   const statusLabel =
     tc.status === 'running' ? 'Running' : tc.status === 'done' ? 'Completed' : 'Failed';

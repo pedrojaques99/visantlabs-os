@@ -34,10 +34,10 @@ const svg = await trace(png, { preset: 'logo' });
 // Or explicit options (override any preset value):
 const svg2 = await trace(png, {
   preset: 'lettering',
-  threshold: 'auto',   // Otsu + auto-invert
-  turdSize: 2,         // drop speckles < 2px²
-  optTolerance: 0.2,   // curve smoothing
-  alphaMax: 0.8,       // corner roundness
+  threshold: 'auto', // Otsu + auto-invert
+  turdSize: 2, // drop speckles < 2px²
+  optTolerance: 0.2, // curve smoothing
+  alphaMax: 0.8, // corner roundness
   color: '#111111',
 });
 ```
@@ -46,31 +46,31 @@ const svg2 = await trace(png, {
 
 ## Exports
 
-| Entry | Purpose |
-| --- | --- |
-| `.` | everything below, flat |
-| `./presets` | `TRACE_PRESETS`, `resolveTraceOptions` |
+| Entry        | Purpose                                                      |
+| ------------ | ------------------------------------------------------------ |
+| `.`          | everything below, flat                                       |
+| `./presets`  | `TRACE_PRESETS`, `resolveTraceOptions`                       |
 | `./sanitize` | `parseBase64Image`, `sanitizeSvg`, `optimizeSvg`, `cleanSvg` |
 
 ### API
 
-| Export | Signature |
-| --- | --- |
-| `trace` / `tracePipeline` | `(buffer, opts?) => Promise<string>` — full pipeline |
-| `traceImage` | `(buffer, opts?) => Promise<string>` — raw potrace SVG, no cleanup |
-| `cleanSvgPipeline` / `cleanSvg` | `(rawSvg) => Promise<string>` — sanitize + optimize an existing SVG |
-| `parseBase64Image` | `(dataUri) => Buffer \| null` — parse a `data:image/...;base64,...` URI |
-| `TRACE_PRESETS` | calibrated parameter sets per preset |
-| `resolveTraceOptions` | `(opts) => TraceOptions` — merge a preset under explicit options |
+| Export                          | Signature                                                               |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| `trace` / `tracePipeline`       | `(buffer, opts?) => Promise<string>` — full pipeline                    |
+| `traceImage`                    | `(buffer, opts?) => Promise<string>` — raw potrace SVG, no cleanup      |
+| `cleanSvgPipeline` / `cleanSvg` | `(rawSvg) => Promise<string>` — sanitize + optimize an existing SVG     |
+| `parseBase64Image`              | `(dataUri) => Buffer \| null` — parse a `data:image/...;base64,...` URI |
+| `TRACE_PRESETS`                 | calibrated parameter sets per preset                                    |
+| `resolveTraceOptions`           | `(opts) => TraceOptions` — merge a preset under explicit options        |
 
 ## Presets
 
-| Preset | turdSize | optTolerance | threshold | alphaMax |
-| --- | --- | --- | --- | --- |
-| `logo` | 3 | 0.3 | auto | 0.8 |
-| `lettering` | 1 | 0.15 | auto | 0.5 |
-| `lineArt` | 0 | 0.1 | 128 | 1.0 |
-| `stamp` | 5 | 0.5 | auto | 0.8 |
+| Preset      | turdSize | optTolerance | threshold | alphaMax |
+| ----------- | -------- | ------------ | --------- | -------- |
+| `logo`      | 3        | 0.3          | auto      | 0.8      |
+| `lettering` | 1        | 0.15         | auto      | 0.5      |
+| `lineArt`   | 0        | 0.1          | 128       | 1.0      |
+| `stamp`     | 5        | 0.5          | auto      | 0.8      |
 
 ## From a base64 data URI
 

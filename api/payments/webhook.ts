@@ -55,10 +55,10 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
     const monthlyCredits = metadata.monthlyCredits
       ? parseInt(metadata.monthlyCredits, 10)
       : tier === 'premium'
-      ? 100
-      : tier === 'pro'
-      ? 500
-      : 3;
+        ? 100
+        : tier === 'pro'
+          ? 500
+          : 3;
 
     return { tier, monthlyCredits };
   } catch (error) {
@@ -970,8 +970,8 @@ export default async (req: any, res: any) => {
           typeof abacateSecret === 'string'
             ? abacateSecret
             : Array.isArray(abacateSecret)
-            ? abacateSecret[0]
-            : String(abacateSecret);
+              ? abacateSecret[0]
+              : String(abacateSecret);
 
         if (secretValue !== abacateWebhookSecret) {
           console.error('❌ AbacatePay webhook secret validation failed');

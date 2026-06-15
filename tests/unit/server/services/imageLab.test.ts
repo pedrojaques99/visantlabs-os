@@ -133,9 +133,9 @@ describe('imageLab service — security guards', () => {
       // loadImage throw a marker — proving the magic-byte gate let it through.
       mockLoadImage.mockRejectedValue(new Error('decode-marker'));
       const png = dataUrl([...PNG_SIG, ...new Array(32).fill(0)]);
-      await expect(
-        imageLabApplyEffect({ imageUrl: png, mode: 'halftone' }, 'u')
-      ).rejects.toThrow(/decode-marker/);
+      await expect(imageLabApplyEffect({ imageUrl: png, mode: 'halftone' }, 'u')).rejects.toThrow(
+        /decode-marker/
+      );
       expect(mockLoadImage).toHaveBeenCalledOnce();
     });
 
@@ -144,9 +144,9 @@ describe('imageLab service — security guards', () => {
       const svg = `data:image/svg+xml;base64,${Buffer.from(
         '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
       ).toString('base64')}`;
-      await expect(
-        imageLabApplyEffect({ imageUrl: svg, mode: 'halftone' }, 'u')
-      ).rejects.toThrow(/decode-marker/);
+      await expect(imageLabApplyEffect({ imageUrl: svg, mode: 'halftone' }, 'u')).rejects.toThrow(
+        /decode-marker/
+      );
     });
   });
 
@@ -156,10 +156,7 @@ describe('imageLab service — security guards', () => {
     it('rejects a data: payload larger than the 50MB cap', async () => {
       // Build a >50MB buffer with a valid PNG header so size — not signature —
       // is the failing gate.
-      const big = Buffer.concat([
-        Buffer.from(PNG_SIG),
-        Buffer.alloc(51 * 1024 * 1024, 0),
-      ]);
+      const big = Buffer.concat([Buffer.from(PNG_SIG), Buffer.alloc(51 * 1024 * 1024, 0)]);
       const url = `data:image/png;base64,${big.toString('base64')}`;
       await expect(imageLabApplyEffect({ imageUrl: url, mode: 'halftone' }, 'u')).rejects.toThrow(
         /too large/i
@@ -178,9 +175,9 @@ describe('imageLab service — security guards', () => {
     });
 
     it('rejects a missing imageUrl', async () => {
-      await expect(
-        imageLabApplyEffect({ imageUrl: '', mode: 'halftone' }, 'u')
-      ).rejects.toThrow(/imageUrl is required/i);
+      await expect(imageLabApplyEffect({ imageUrl: '', mode: 'halftone' }, 'u')).rejects.toThrow(
+        /imageUrl is required/i
+      );
     });
   });
 });

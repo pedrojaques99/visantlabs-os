@@ -214,7 +214,7 @@ export async function generateSeedreamImage(
     throw new Error('No base64 data in Seedream response');
   }
 
-  const finalSeed = usedSeed === -1 ? data.seed ?? -1 : usedSeed;
+  const finalSeed = usedSeed === -1 ? (data.seed ?? -1) : usedSeed;
   const usage = data.usage;
   console.log(
     `[Seedream] Generation complete. seed=${finalSeed}, tokens=${usage?.total_tokens ?? 'n/a'}`

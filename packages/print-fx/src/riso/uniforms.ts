@@ -77,11 +77,11 @@ export function applyRisoUniforms(
     gl.uniform1i(u(`u_inkVisible${i}`)!, layer?.visible ? 1 : 0);
     gl.uniform1i(
       u(`u_layerDither${i}`)!,
-      layer?.ditherMode ? RISO_DITHER_MODE_MAP[layer.ditherMode] ?? -1 : -1
+      layer?.ditherMode ? (RISO_DITHER_MODE_MAP[layer.ditherMode] ?? -1) : -1
     );
     gl.uniform1i(
       u(`u_layerHShape${i}`)!,
-      layer?.halftoneShape ? RISO_SHAPE_MAP[layer.halftoneShape] ?? -1 : -1
+      layer?.halftoneShape ? (RISO_SHAPE_MAP[layer.halftoneShape] ?? -1) : -1
     );
   }
 }
