@@ -3,17 +3,21 @@ import { usePluginStore } from '../../store';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { useBrandStrategyIngest } from '../../hooks/useBrandStrategyIngest';
+import { useSlidesAnalyze } from '../../hooks/useSlidesAnalyze';
+import { SlidesPreviewPanel } from './SlidesPreviewPanel';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { RefreshCw, Layers, FileText } from 'lucide-react';
+import { RefreshCw, Layers, FileText, Presentation } from 'lucide-react';
 
 export function BrandIntelligenceSection() {
   const { brandGuideline, isGenerating } = usePluginStore();
   const runner = useOpRunner({ globalBusy: isGenerating });
   const { run: runImport, isImporting } = useBrandImport();
   const { run: runStrategyIngest, isIngesting, hasSelection } = useBrandStrategyIngest();
+  const { scan, apply, dismiss, isScanning, isApplying, progress, preview } = useSlidesAnalyze();
   const selectionCount = usePluginStore((s) => s.selectionDetails.length);
+  const busy = isImporting || isIngesting || isScanning || isApplying || isGenerating;
 
   if (!brandGuideline) {
     return (
@@ -23,18 +27,46 @@ export function BrandIntelligenceSection() {
     );
   }
 
+  // Show full-panel preview when dry-run result is available
+  if (preview) {
+    return (
+      <SlidesPreviewPanel
+        preview={preview}
+        isApplying={isApplying}
+        onApply={apply}
+        onDismiss={dismiss}
+      />
+    );
+  }
+
   const references = brandGuideline.media?.filter((m: any) => m.type === 'reference') || [];
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2">
         <Button
-          onClick={() => runImport({ overwrite: false })}
-          disabled={isImporting || isGenerating}
+          onClick={() => scan()}
+          disabled={busy}
           variant="brand"
           size="sm"
-          title="Detect and sync tokens, colors, typography from this Figma file"
+          title="Escaneia todos os slides e popula estratégia, cores, logos, fotos e mockups via IA"
           className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
+        >
+          {isScanning ? (
+            <GlitchLoader size={12} className="mr-2" />
+          ) : (
+            <Presentation size={12} className="mr-2" />
+          )}
+          {isScanning ? (progress ?? 'Analisando…') : 'Analyze All Slides'}
+        </Button>
+
+        <Button
+          onClick={() => runImport({ overwrite: false })}
+          disabled={busy}
+          variant="outline"
+          size="sm"
+          title="Detect and sync tokens, colors, typography from this Figma file"
+          className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
         >
           {isImporting ? (
             <GlitchLoader size={12} className="mr-2" />
@@ -46,14 +78,12 @@ export function BrandIntelligenceSection() {
 
         <Button
           onClick={() => runStrategyIngest()}
-          disabled={isIngesting || isImporting || isGenerating}
+          disabled={busy}
           variant="outline"
           size="sm"
           title={
             hasSelection
-              ? `Extract text from ${selectionCount} selected frame${
-                  selectionCount > 1 ? 's' : ''
-                } and populate brand strategy`
+              ? `Extract text from ${selectionCount} selected frame${selectionCount > 1 ? 's' : ''} and populate brand strategy`
               : 'Extract text from the current page and populate brand strategy fields'
           }
           className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
@@ -78,6 +108,7 @@ export function BrandIntelligenceSection() {
           busyLabel="Scanning…"
           variant="outline"
           size="sm"
+          disabled={busy}
           title="Categorize selected layers into brand asset types"
           className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
         >

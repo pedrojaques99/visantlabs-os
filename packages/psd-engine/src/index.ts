@@ -26,4 +26,7 @@ export { createBrowserAdapter } from './adapters/browser.js';
 export { preloadDisplacementMaps, createBrowserFsCallbacks } from './displacement.js';
 export type { DisplacementCanvas, FsCallbacks } from './displacement.js';
 
+export { extractScene, renderScene } from './scene/index.js';
+export type { SceneDoc, SceneFace, SceneLayer, Quad, AssetMap, ArtMap, RenderSceneOptions, ExtractResult } from './scene/index.js';
+
 export type { CreateCanvas, CanvasLike, ReplacedLayer, Face, FaceSo } from './types.js';

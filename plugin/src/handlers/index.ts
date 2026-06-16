@@ -59,3 +59,4 @@ export {
   getLinearConfig,
 } from './linearBridge';
 export { scanColorsForRename, applyColorRename } from './colorRename';
+export { scanAllSlidesForBrand } from './slidesAnalyze';
