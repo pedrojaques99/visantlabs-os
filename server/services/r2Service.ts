@@ -468,9 +468,8 @@ export async function uploadBrandMedia(
   if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
   const cleanBase64 = stripDataUriPrefix(base64Data);
-  const buffer = Buffer.from(cleanBase64, 'base64');
-
-  await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
+  let buffer = Buffer.from(cleanBase64, 'base64');
+  let uploadContentType = contentType;
 
   let extension = 'png';
   if (contentType.includes('jpeg') || contentType.includes('jpg')) extension = 'jpg';
@@ -478,6 +477,25 @@ export async function uploadBrandMedia(
   else if (contentType.includes('gif')) extension = 'gif';
   else if (contentType.includes('pdf')) extension = 'pdf';
   else if (contentType.includes('svg')) extension = 'svg';
+
+  // Optimize raster images to webp (smaller, faster). Vectors/PDF/GIF (possibly
+  // animated) are left untouched. Only adopt webp when it actually saves bytes,
+  // so already-small assets (e.g. flat logos) keep their original encoding.
+  if (extension === 'png' || extension === 'jpg') {
+    try {
+      const { default: sharp } = await import('sharp');
+      const webp = await sharp(buffer).webp({ quality: 90 }).toBuffer();
+      if (webp.length > 0 && webp.length < buffer.length) {
+        buffer = webp;
+        extension = 'webp';
+        uploadContentType = 'image/webp';
+      }
+    } catch (error: unknown) {
+      console.warn('[uploadBrandMedia] webp conversion failed, using original:', getErrorMessage(error));
+    }
+  }
+
+  await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
 
   const key = `brands/${userId}/${guidelineId}/${mediaId}.${extension}`;
 
@@ -489,7 +507,7 @@ export async function uploadBrandMedia(
         Bucket: bucketName,
         Key: key,
         Body: buffer,
-        ContentType: contentType,
+        ContentType: uploadContentType,
       })
     );
 
