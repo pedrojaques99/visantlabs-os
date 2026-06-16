@@ -1,31 +1,16 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import {
-  useBrandGuidelines,
-  useBrandGuideline,
-  useUpdateGuideline,
-} from '@/hooks/queries/useBrandGuidelines';
-import { useQueryClient } from '@tanstack/react-query';
+import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { SEO } from '@/components/SEO';
 import { AuthModal } from '@/components/AuthModal';
 import { Button } from '@/components/ui/button';
-import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
-import { GuidelineDetail } from '@/components/brand/guidelines/GuidelineDetail';
-import { BrandOverview } from '@/components/brand/guidelines/BrandOverview';
-import { BrandRoomProvider } from '@/components/brand/guidelines/BrandCollaborators';
-import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
-import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
-import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
-import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
-import { BrandAiPopulateDialog } from '@/components/brand/guidelines/BrandAiPopulateDialog';
-import { BrandMockupDialog } from '@/components/brand/guidelines/BrandMockupDialog';
+import { PublicBrandGuideline } from '@/pages/PublicBrandGuideline';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -33,20 +18,9 @@ import { Input } from '@/components/ui/input';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { computeBrandCompleteness, completenessStatus } from '@/lib/brandCompleteness';
 import {
-  Palette,
   Layers,
   AlignLeft,
-  Share2,
-  Eye,
   Plus,
-  ClipboardCheck,
-  Zap,
-  Figma,
-  Copy,
-  Check,
-  Image,
-  MoreHorizontal,
-  SlidersHorizontal,
   Search,
   Globe,
   Folder,
@@ -55,14 +29,12 @@ import {
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { SECTION_TABS, SECTION_BY_ID } from '@/components/brand/guidelines/sections-manifest';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { copyToClipboard } from '@/utils/clipboard';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   const { t } = useTranslation();
@@ -407,51 +379,9 @@ export const BrandGuidelinesPage: React.FC = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isShareOpen, setIsShareOpen] = useState(false);
-  const [figmaCopied, setFigmaCopied] = useState(false);
-  const [activeTabId, setActiveTabId] = useState(SECTION_TABS[0].id);
-  const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
-  const [isMockupOpen, setIsMockupOpen] = useState(false);
-  const updateMutation = useUpdateGuideline();
-  const queryClient = useQueryClient();
 
-  // Server state via react-query
+  // Server state via react-query — dashboard only needs the list.
   const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
-  const { data: selected } = useBrandGuideline(selectedId);
-
-  const tabSections = useMemo(
-    () => SECTION_TABS.find((t) => t.id === activeTabId)?.sections ?? [],
-    [activeTabId]
-  );
-
-  // All visible sections across every tab for the selected guideline.
-  // Defaults to every known section ID (all on). Persisted in guideline.activeSections.
-  const ALL_SECTION_IDS = useMemo(() => SECTION_TABS.flatMap((t) => t.sections), []);
-
-  // Derived: only sections that are in the current tab AND toggled on
-  const visibleSections = useMemo(() => {
-    const activeSections = (selected?.activeSections as string[])?.length
-      ? (selected?.activeSections as string[])
-      : ALL_SECTION_IDS;
-    return tabSections.filter((id) => activeSections.includes(id));
-  }, [tabSections, selected, ALL_SECTION_IDS]);
-
-  const toggleSection = useCallback(
-    (sectionId: string) => {
-      if (!selectedId || !selected) return;
-
-      const currentActive = (selected.activeSections as string[])?.length
-        ? (selected.activeSections as string[])
-        : ALL_SECTION_IDS;
-
-      const next = currentActive.includes(sectionId)
-        ? currentActive.filter((s) => s !== sectionId)
-        : [...currentActive, sectionId];
-
-      updateMutation.mutate({ id: selectedId, data: { activeSections: next } });
-    },
-    [selectedId, selected, ALL_SECTION_IDS, updateMutation]
-  );
 
   // Auth guard
   React.useEffect(() => {
@@ -462,19 +392,11 @@ export const BrandGuidelinesPage: React.FC = () => {
     setSelectedId(g.id!);
   }, []);
 
-  const [reviewGuidelineId, setReviewGuidelineId] = useState<string | null>(null);
-  const ingestTriggerRef = useRef<((files: FileList) => void) | null>(null);
-
-  const handleWizardSuccess = useCallback(
-    (id: string) => {
-      setIsWizardOpen(false);
-      setEditingGuideline(null);
-      setSelectedId(id);
-      // Auto-open review after new brand creation (not edit)
-      if (!editingGuideline) setReviewGuidelineId(id);
-    },
-    [editingGuideline]
-  );
+  const handleWizardSuccess = useCallback((id: string) => {
+    setIsWizardOpen(false);
+    setEditingGuideline(null);
+    setSelectedId(id);
+  }, []);
 
   const handleOpenWizard = useCallback((guideline?: BrandGuideline | null) => {
     setEditingGuideline(guideline || null);
@@ -485,6 +407,13 @@ export const BrandGuidelinesPage: React.FC = () => {
     setIsWizardOpen(false);
     setEditingGuideline(null);
   }, []);
+
+  // Unified view — selecting a brand opens the single per-brand view (same component
+  // as the public page, with owner advanced edit). Replaces the old duplicated admin
+  // editor shell. Wizard still mounts here for creation; the unified view handles edit.
+  if (selectedId && !isWizardOpen) {
+    return <PublicBrandGuideline idOverride={selectedId} onBack={() => setSelectedId(null)} />;
+  }
 
   return (
     <div
@@ -564,129 +493,14 @@ export const BrandGuidelinesPage: React.FC = () => {
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-base font-semibold text-neutral-100 truncate">
-                    {selected
-                      ? selected.identity?.name || selected.name || 'Untitled'
-                      : t('brandGuidelines.title')}
+                    {t('brandGuidelines.title')}
                   </h1>
-                  {selected?.identity?.tagline && (
-                    <p className="text-xs text-neutral-500 mt-0.5 truncate">
-                      {selected.identity.tagline}
-                    </p>
-                  )}
                 </div>
               </div>
-
-              {selected && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <BrandCompletenessPill guideline={selected} />
-                  <Button
-                    onClick={() => setIsAiPopulateOpen(true)}
-                    variant="subtle"
-                    size="sm"
-                    className="h-8 gap-1.5 text-xs"
-                  >
-                    <Zap size={13} />
-                    <span className="hidden sm:inline">Generate</span>
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-md">
-                        <MoreHorizontal size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[180px]">
-                      <Button variant="menuItem" onClick={() => setIsMockupOpen(true)}>
-                        <Image size={13} /> Mockup
-                      </Button>
-                      <Button variant="menuItem" onClick={() => setIsShareOpen(true)}>
-                        <Share2 size={13} /> Share
-                      </Button>
-                      {selected.isPublic && (
-                        <Button variant="menuItem" asChild>
-                          <Link to={`/brand/${selected.publicSlug}`}>
-                            <Eye size={13} /> View Public
-                          </Link>
-                        </Button>
-                      )}
-                      <Button
-                        variant="menuItem"
-                        onClick={() => {
-                          copyToClipboard(selected.id!);
-                          setFigmaCopied(true);
-                          setTimeout(() => setFigmaCopied(false), 2000);
-                        }}
-                      >
-                        {figmaCopied ? (
-                          <Check size={13} className="text-success" />
-                        ) : (
-                          <Figma size={13} />
-                        )}
-                        {figmaCopied ? 'Copied!' : 'Use in Figma'}
-                      </Button>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <BrandIngestButton
-                    guideline={selected}
-                    onSuccess={() =>
-                      queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })
-                    }
-                    triggerRef={ingestTriggerRef}
-                  />
-                </div>
-              )}
             </div>
 
-            {/* Tab bar */}
-            {selected && (
-              <div className="flex items-center border-b border-neutral-800 mb-8 overflow-x-auto scrollbar-none">
-                {SECTION_TABS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTabId(tab.id)}
-                    className={cn(
-                      'px-4 py-2.5 text-xs whitespace-nowrap transition-colors border-b-2 -mb-px',
-                      activeTabId === tab.id
-                        ? 'text-neutral-200 border-neutral-400'
-                        : 'text-neutral-600 border-transparent hover:text-neutral-400'
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-                {tabSections.length > 0 && (
-                  <div className="ml-auto pl-2 shrink-0">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="flex items-center px-2 py-1.5 text-neutral-700 hover:text-neutral-400 transition-colors"
-                          aria-label={t('brand.guidelines.toggle_sections')}
-                        >
-                          <SlidersHorizontal size={13} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-[160px]">
-                        {tabSections.map((id) => {
-                          const meta = SECTION_BY_ID[id];
-                          if (!meta) return null;
-                          return (
-                            <DropdownMenuCheckboxItem
-                              key={id}
-                              className="text-xs gap-2"
-                              checked={visibleSections.includes(id)}
-                              onCheckedChange={() => toggleSection(id)}
-                            >
-                              {meta.label}
-                            </DropdownMenuCheckboxItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Content */}
+            {/* Content — dashboard/list. The per-brand editor lives in the unified
+                view (PublicBrandGuideline), reached via the early return above. */}
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div
@@ -708,84 +522,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                   animate={{ opacity: 1 }}
                   className="flex flex-col gap-8 md:gap-16 items-start w-full"
                 >
-                  {selected ? (
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={selected.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="w-full"
-                      >
-                        {reviewGuidelineId === selected.id ? (
-                          <DesignSystemValidation
-                            guideline={selected}
-                            onUpdate={(patch) =>
-                              updateMutation.mutate({ id: selected.id!, data: patch })
-                            }
-                            onComplete={() => setReviewGuidelineId(null)}
-                            onEditSection={(sectionId) => {
-                              setReviewGuidelineId(null);
-                              const tab = SECTION_TABS.find((t) => t.sections.includes(sectionId));
-                              if (tab) setActiveTabId(tab.id);
-                            }}
-                            onExtractFiles={(files) => ingestTriggerRef.current?.(files)}
-                          />
-                        ) : (
-                          <ErrorBoundary>
-                            {/* Review trigger button */}
-                            {selected.validation &&
-                              Object.values(selected.validation).some((v) => v !== 'approved') && (
-                                <GlassPanel intensity="subtle" asChild>
-                                  <button
-                                    onClick={() => setReviewGuidelineId(selected.id!)}
-                                    className="mb-8 w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group"
-                                  >
-                                    <ClipboardCheck
-                                      size={15}
-                                      className="text-neutral-600 group-hover:text-neutral-400 shrink-0 transition-colors"
-                                    />
-                                    <p className="flex-1 text-left text-xs text-neutral-500 group-hover:text-neutral-400 transition-colors">
-                                      {
-                                        Object.values(selected.validation).filter(
-                                          (v) => v === 'approved'
-                                        ).length
-                                      }{' '}
-                                      of {Object.keys(selected.validation).length} sections reviewed
-                                    </p>
-                                    <span className="text-[11px] text-neutral-600 group-hover:text-neutral-400 transition-colors">
-                                      {t('brand.guidelines.review')}
-                                    </span>
-                                  </button>
-                                </GlassPanel>
-                              )}
-                            {activeTabId === 'overview' ? (
-                              <BrandOverview guideline={selected} />
-                            ) : (
-                              <BrandRoomProvider
-                                guideline={selected}
-                                guidelineId={selected.id!}
-                                onSave={(patch) =>
-                                  updateMutation.mutate({ id: selected.id!, data: patch })
-                                }
-                              >
-                                <GuidelineDetail
-                                  guideline={selected}
-                                  visibleSections={visibleSections}
-                                  onHideSection={toggleSection}
-                                  onOpenWizard={() => handleOpenWizard(selected)}
-                                  onStartReview={() => setReviewGuidelineId(selected.id!)}
-                                />
-                              </BrandRoomProvider>
-                            )}
-                          </ErrorBoundary>
-                        )}
-                      </motion.div>
-                    </AnimatePresence>
-                  ) : (
-                    <BrandGrid guidelines={guidelines} onSelect={handleSelect} />
-                  )}
+                  <BrandGrid guidelines={guidelines} onSelect={handleSelect} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -811,34 +548,6 @@ export const BrandGuidelinesPage: React.FC = () => {
         }}
         isSignUp={false}
       />
-
-      {selected && (
-        <ShareGuidelineDialog
-          isOpen={isShareOpen}
-          onClose={() => setIsShareOpen(false)}
-          guideline={selected}
-          onUpdate={(updated) => {
-            updateMutation.mutate({ id: updated.id!, data: updated });
-          }}
-        />
-      )}
-
-      {selected && (
-        <BrandAiPopulateDialog
-          open={isAiPopulateOpen}
-          onOpenChange={setIsAiPopulateOpen}
-          guideline={selected}
-          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] })}
-        />
-      )}
-
-      {selected && (
-        <BrandMockupDialog
-          open={isMockupOpen}
-          onOpenChange={setIsMockupOpen}
-          guideline={selected}
-        />
-      )}
     </div>
   );
 };

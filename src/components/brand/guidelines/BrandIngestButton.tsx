@@ -1,6 +1,7 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
+import { FileInput } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useExtractFileStream } from '@/hooks/useExtractFigStream';
 import { useIngestAsStream } from '@/hooks/useIngestAsStream';
 import { BrandIngestModal } from './BrandIngestModal';
@@ -18,6 +19,8 @@ interface BrandIngestButtonProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
   triggerRef?: React.MutableRefObject<((files: FileList) => void) | null>;
+  /** Override the default button styling (e.g. to match a host toolbar). */
+  className?: string;
 }
 
 type SourceTag = 'fig_file' | 'pdf' | 'images';
@@ -41,6 +44,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
   guideline,
   onSuccess,
   triggerRef,
+  className,
 }) => {
   const fig = useExtractFileStream(guideline.id!, 'extract-fig');
   const pdf = useExtractFileStream(guideline.id!, 'extract-pdf');
@@ -105,18 +109,22 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
     <>
       <Button
         variant="ghost"
-        className="h-8 px-3 gap-1.5 text-xs border border-white/10 text-neutral-400 hover:text-neutral-200"
+        className={cn(
+          className ||
+            'h-8 px-3 gap-1.5 text-xs border border-white/10 text-neutral-400 hover:text-neutral-200'
+        )}
         disabled={isBusy}
         onClick={() => setShowDropZoneModal(true)}
+        title="Ingest brand files (.fig, PDF, images)"
       >
-        {isBusy ? <GlitchLoader size={13} /> : <Upload size={13} />}
-        <span className="hidden sm:inline">Extract</span>
+        {isBusy ? <GlitchLoader size={13} /> : <FileInput size={13} />}
+        <span className="hidden sm:inline">Ingest</span>
       </Button>
 
       {/* Drop zone modal (no extraction running yet) */}
       {showDropZoneModal && !showExtractModal && (
         <BrandIngestModal
-          title="Extract Brand"
+          title="Ingest Brand"
           source="manual"
           state={IDLE_STATE}
           guideline={guideline}
