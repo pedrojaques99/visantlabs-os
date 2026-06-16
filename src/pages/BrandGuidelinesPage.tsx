@@ -19,6 +19,7 @@ import { Sheet, SheetTrigger, SheetContent, SheetTitle } from '@/components/ui/s
 import { GuidelinesSidebar } from '@/components/brand/guidelines/GuidelinesSidebar';
 import { GuidelineDetail } from '@/components/brand/guidelines/GuidelineDetail';
 import { BrandOverview } from '@/components/brand/guidelines/BrandOverview';
+import { PublicBrandGuideline } from '@/pages/PublicBrandGuideline';
 import { BrandRoomProvider } from '@/components/brand/guidelines/BrandCollaborators';
 import { DesignSystemValidation } from '@/components/brand/guidelines/DesignSystemValidation';
 import { ShareGuidelineDialog } from '@/components/brand/guidelines/ShareGuidelineDialog';
@@ -485,6 +486,13 @@ export const BrandGuidelinesPage: React.FC = () => {
     setIsWizardOpen(false);
     setEditingGuideline(null);
   }, []);
+
+  // Unified view — selecting a brand opens the single per-brand view (same component
+  // as the public page, with owner advanced edit). Replaces the old duplicated admin
+  // editor shell. Wizard still mounts here for creation; the unified view handles edit.
+  if (selectedId && !isWizardOpen) {
+    return <PublicBrandGuideline idOverride={selectedId} onBack={() => setSelectedId(null)} />;
+  }
 
   return (
     <div

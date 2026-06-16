@@ -145,7 +145,13 @@ const PREVIEW_MOCKS = [
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export const PublicBrandGuideline: React.FC = () => {
+// `idOverride` makes this the unified owner-editor: load a brand by id (auth) and
+// open straight into advanced edit. Without it, it's the public-by-slug view.
+// `onBack` overrides the VOLTAR action (admin uses it to return to the dashboard).
+export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () => void }> = ({
+  idOverride,
+  onBack,
+}) => {
   const { t } = useTranslation();
   const { user } = useLayout();
   const isAdmin = !!user?.isAdmin;
@@ -161,10 +167,10 @@ export const PublicBrandGuideline: React.FC = () => {
   const [activePreview, setActivePreview] = useState('instagram');
   const [exporting, setExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const [connecting, setConnecting] = useState(false);
-  const [advancedEdit, setAdvancedEdit] = useState(false);
+  const [advancedEdit, setAdvancedEdit] = useState(!!idOverride);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   // Owner action dialogs (ported from the admin editor)
   const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
@@ -235,17 +241,25 @@ export const PublicBrandGuideline: React.FC = () => {
   );
 
   const fetchGuideline = useCallback(async () => {
-    if (!slug) return;
     try {
-      const result = await brandGuidelineApi.getPublic(slug);
-      setGuideline(result.guideline);
-      setCanEdit(result.canEdit);
+      if (idOverride) {
+        // Owner editor path — load by id (auth); owner of this brand can always edit.
+        const g = await brandGuidelineApi.getById(idOverride);
+        setGuideline(g);
+        setCanEdit(true);
+      } else if (slug) {
+        const result = await brandGuidelineApi.getPublic(slug);
+        setGuideline(result.guideline);
+        setCanEdit(result.canEdit);
+      } else {
+        return;
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load brand guidelines');
     } finally {
       setIsLoading(false);
     }
-  }, [slug]);
+  }, [slug, idOverride]);
 
   useEffect(() => {
     fetchGuideline();
@@ -458,7 +472,7 @@ export const PublicBrandGuideline: React.FC = () => {
           <Home size={14} /> <span className="hidden sm:inline">HOME</span>
         </Button>
         <Button
-          onClick={() => navigate(-1)}
+          onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
           className={cn(
             'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
