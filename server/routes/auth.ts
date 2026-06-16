@@ -968,6 +968,50 @@ router.post('/signin', signinRateLimiter, signinBackoff, async (req, res) => {
   }
 });
 
+// ── DEV ONLY ───────────────────────────────────────────────────────────────────
+// Issue a real JWT for local development without OAuth/password. Hard-gated to
+// non-production (returns 404 in prod). Resolves the user by body.email, else
+// DEV_LOGIN_EMAIL, else the first admin. Lets the local frontend authenticate
+// when Google OAuth can't redirect to localhost.
+router.post('/dev-login', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  try {
+    const email = String(req.body?.email || process.env.DEV_LOGIN_EMAIL || '')
+      .toLowerCase()
+      .trim();
+    const user = email
+      ? await prisma.user.findUnique({ where: { email } })
+      : await prisma.user.findFirst({ where: { isAdmin: true }, orderBy: { createdAt: 'asc' } });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: 'No user found. Pass { "email": "..." } or set DEV_LOGIN_EMAIL.' });
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    console.warn(`⚠️  [dev-login] issued token for ${user.email} — DEV ONLY`);
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        username: user.username,
+        isAdmin: user.isAdmin,
+        emailVerified: user.emailVerified,
+        onboardingCompleted: user.onboardingCompleted,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'dev-login failed', message: error?.message });
+  }
+});
+
 // Logout (client-side token removal, but we can add token blacklisting here if needed)
 router.post('/logout', apiRateLimiter, (req, res) => {
   res.json({ message: 'Logged out successfully' });
