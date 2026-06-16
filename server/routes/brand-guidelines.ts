@@ -1234,6 +1234,35 @@ router.get('/public/:slug', publicRateLimiter, async (req: AuthRequest, res) => 
   }
 });
 
+// POST /api/brand-guidelines/public/:slug/connect — anyone can connect to a public brand (no auth)
+router.post('/public/:slug/connect', publicRateLimiter, async (req: AuthRequest, res) => {
+  try {
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { publicSlug: req.params.slug, isPublic: true },
+      select: { id: true, userId: true, identity: true },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand not found or not public' });
+
+    const brandName = (guideline.identity as any)?.name || 'Brand Kit';
+    const token = nanoid(16);
+
+    await prisma.brandInvite.create({
+      data: {
+        token,
+        brandGuidelineId: guideline.id,
+        createdByUserId: guideline.userId,
+        role: 'viewer',
+        label: `${brandName} — Connect`,
+      },
+    });
+
+    res.json({ connectUrl: `${FRONTEND_BASE_URL}/connect/${token}` });
+  } catch (error: any) {
+    console.error('[Brand Public Connect] Error:', error);
+    res.status(500).json({ error: 'Failed to create connect link' });
+  }
+});
+
 // ═══════════════════════════════════════════════════
 // BRAND INVITE (Connect flow)
 // ═══════════════════════════════════════════════════
@@ -1353,9 +1382,20 @@ router.post(
         return res.status(410).json({ error: 'Invite expired' });
       }
 
-      // Don't let the owner accept their own invite
+      // Owner clicking their own public connect link — already has access, just return success
       if (invite.createdByUserId === req.userId) {
-        return res.status(409).json({ error: 'Cannot accept your own invite' });
+        const ownGuideline = await prisma.brandGuideline.findUnique({
+          where: { id: invite.brandGuidelineId },
+          select: { identity: true },
+        });
+        const apiBaseUrl = process.env.API_BASE_URL || 'https://api.visantlabs.com';
+        return res.json({
+          ok: true,
+          brandGuidelineId: invite.brandGuidelineId,
+          brandName: (ownGuideline?.identity as any)?.name,
+          mcpUrl: `${apiBaseUrl}/api/mcp`,
+          role: invite.role,
+        });
       }
 
       // Add user to brand's canView or canEdit

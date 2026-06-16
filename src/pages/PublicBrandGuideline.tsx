@@ -20,6 +20,7 @@ import {
   Pencil,
   Eye,
   ExternalLink,
+  Plug,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -115,6 +116,7 @@ export const PublicBrandGuideline: React.FC = () => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
+  const [connecting, setConnecting] = useState(false);
   const publicMockRef = useRef<HTMLDivElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
@@ -189,6 +191,18 @@ export const PublicBrandGuideline: React.FC = () => {
     },
     [guideline?.id]
   );
+
+  const handleConnect = async () => {
+    if (!slug) return;
+    setConnecting(true);
+    try {
+      const { connectUrl } = await brandGuidelineApi.getPublicConnectLink(slug);
+      window.location.href = connectUrl;
+    } catch {
+      toast.error('Failed to generate connect link');
+      setConnecting(false);
+    }
+  };
 
   const handleDownloadJSON = () => {
     if (!guideline) return;
@@ -420,6 +434,22 @@ export const PublicBrandGuideline: React.FC = () => {
           {theme}
         </Button>
         <Button
+          onClick={handleConnect}
+          disabled={connecting}
+          variant="ghost"
+          aria-label="Connect brand to Claude or Cursor"
+          className={cn(
+            'h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest',
+            theme === 'dark'
+              ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white'
+              : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm',
+            connecting && 'opacity-60 cursor-not-allowed'
+          )}
+        >
+          <Plug size={14} aria-hidden="true" className={connecting ? 'animate-pulse' : ''} />
+          {connecting ? 'Connecting…' : 'Connect'}
+        </Button>
+        <Button
           onClick={handleDownloadJSON}
           variant="ghost"
           aria-label={t('public.brand.guideline.download_brand_guidelines_a')}
@@ -475,7 +505,7 @@ export const PublicBrandGuideline: React.FC = () => {
         <div className="sticky top-6 z-40 mb-16 px-2">
           <GlassPanel
             padding="sm"
-            className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-surface)]/80 border-[var(--brand-text)]/10 shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
+            className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-bg)]/30 border-[var(--brand-text)]/8 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-[var(--brand-text)]/5"
           >
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
