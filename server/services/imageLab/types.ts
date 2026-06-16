@@ -10,6 +10,7 @@
 export interface HalftoneSettings {
   frequency: number;
   dotSize: number;
+  dotSpacing?: number;
   roughness: number;
   fuzz: number;
   paperNoise: number;
@@ -95,6 +96,7 @@ export interface RisoSettings {
   layers: InkLayer[];
   frequency: number;
   dotSize: number;
+  dotSpacing?: number;
   contrast: number;
   lightness: number;
   paperColor: string;

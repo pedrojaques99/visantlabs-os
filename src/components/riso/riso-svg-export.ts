@@ -216,7 +216,7 @@ export function generateRisoSvg(
         );
         if (!draw) continue;
 
-        const baseRadius = settings.dotSize * cellSize * 0.45;
+        const baseRadius = Math.max(0, settings.dotSize * cellSize * 0.45 - (settings.dotSpacing ?? 0) * cellSize * 0.5);
         const radius = radiusScale * baseRadius;
 
         if (radius < 0.3) continue;

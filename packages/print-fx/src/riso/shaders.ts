@@ -23,6 +23,7 @@ uniform vec2 u_resolution;
 
 uniform float u_frequency;
 uniform float u_dotSize;
+uniform float u_dotSpacing;
 uniform float u_contrast;
 uniform float u_lightness;
 uniform float u_paperNoise;
@@ -133,7 +134,7 @@ float getCellScale() {
 
 float dotShape(vec2 f, float dotSz) {
   float d = length(f) * 2.0;
-  float r = dotSz * 0.5;
+  float r = max(0.0, dotSz * 0.5 - u_dotSpacing * 0.5);
   return 1.0 - smoothstep(r - 0.08, r + 0.08, d);
 }
 
@@ -217,7 +218,7 @@ float halftonePattern(vec2 st, float intensity, float angle, float layerSeed, in
   float cellScale = getCellScale();
   vec2 cell = floor(pos * cellScale);
   vec2 f = fract(pos * cellScale) - 0.5;
-  float radius = sqrt(intensity) * u_dotSize * 0.5;
+  float radius = max(0.0, sqrt(intensity) * u_dotSize * 0.5 - u_dotSpacing * 0.5);
   float result = 0.0;
   if (shape == 0) {
     result = 1.0 - smoothstep(radius - 0.03, radius + 0.03, length(f));
