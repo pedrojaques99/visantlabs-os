@@ -1244,17 +1244,38 @@ router.post('/public/:slug/connect', publicRateLimiter, async (req: AuthRequest,
     if (!guideline) return res.status(404).json({ error: 'Brand not found or not public' });
 
     const brandName = (guideline.identity as any)?.name || 'Brand Kit';
-    const token = nanoid(16);
+    const label = `${brandName} — Connect`;
+    const now = new Date();
 
-    await prisma.brandInvite.create({
-      data: {
-        token,
+    // Reuse a still-valid public connect invite for this brand instead of
+    // minting a new row on every click (no-auth endpoint → bound DB growth).
+    const existing = await prisma.brandInvite.findFirst({
+      where: {
         brandGuidelineId: guideline.id,
         createdByUserId: guideline.userId,
         role: 'viewer',
-        label: `${brandName} — Connect`,
+        status: 'pending',
+        label,
+        expiresAt: { gt: now },
       },
+      select: { token: true },
+      orderBy: { createdAt: 'desc' },
     });
+
+    let token = existing?.token;
+    if (!token) {
+      token = nanoid(16);
+      await prisma.brandInvite.create({
+        data: {
+          token,
+          brandGuidelineId: guideline.id,
+          createdByUserId: guideline.userId,
+          role: 'viewer',
+          label,
+          expiresAt: new Date(now.getTime() + 30 * 86_400_000), // 30-day TTL
+        },
+      });
+    }
 
     res.json({ connectUrl: `${FRONTEND_BASE_URL}/connect/${token}` });
   } catch (error: any) {

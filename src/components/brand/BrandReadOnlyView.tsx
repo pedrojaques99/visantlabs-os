@@ -9,6 +9,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { FullScreenViewer } from '@/components/FullScreenViewer';
 import { copyToClipboard, copyImageAsPng } from '@/utils/clipboard';
+import { getProxiedUrl } from '@/utils/proxyUtils';
 import { getArchetypeImage } from '@/constants/archetypeImages';
 
 export type BrandViewSection =
@@ -463,12 +464,14 @@ const ImgOrFallback: React.FC<{
   seed: string;
   fallback: React.ReactNode;
   fit?: 'cover' | 'contain';
-}> = ({ src, alt, seed, fallback, fit }) => {
+  /** When false, skip the photo placeholder and render `fallback` if there's no src. */
+  usePlaceholder?: boolean;
+}> = ({ src, alt, seed, fallback, fit, usePlaceholder = true }) => {
   const [failed, setFailed] = useState(false);
   const isReal = !!src;
+  if ((!src && !usePlaceholder) || failed) return <>{fallback}</>;
   const url = src || placeholderImage(seed);
   const objectFit = fit || (isReal ? 'object-contain' : 'object-cover');
-  if (failed) return <>{fallback}</>;
   return (
     <img
       src={url}
@@ -582,10 +585,14 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                 <ImgOrFallback
                   src={persona.image}
                   alt={persona.name}
-                  seed={`persona-${persona.name}-${persona.age ?? ''}`}
+                  seed={`persona-${persona.name}`}
+                  fit="cover"
+                  usePlaceholder={false}
                   fallback={
-                    <div className="w-full h-full bg-black/20 flex items-center justify-center opacity-30">
-                      <User size={64} />
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--brand-surface)] to-[var(--brand-bg)]">
+                      <span className="text-6xl font-black opacity-15 select-none">
+                        {persona.name?.[0]?.toUpperCase() || <User size={56} />}
+                      </span>
                     </div>
                   }
                 />
@@ -951,7 +958,9 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
 
   const handleCopySvg = useCallback(async (logo: any) => {
     try {
-      const r = await fetch(logo.url);
+      // R2 dev domain lacks CORS headers → fetch via same-origin image proxy.
+      let r = await fetch(logo.url).catch(() => null);
+      if (!r || !r.ok) r = await fetch(getProxiedUrl(logo.url));
       const text = await r.text();
       const ok = await copyToClipboard(text);
       if (ok) toast.success('Copied SVG code');
@@ -961,7 +970,9 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
     }
   }, []);
 
-  if (filtered.length === 0) return null;
+  // Assets whose image loaded ok — hide the whole section if every asset is broken.
+  const visible = filtered.filter((l) => !failed.has(l.id));
+  if (filtered.length === 0 || visible.length === 0) return null;
 
   if (compact) {
     return (
@@ -1012,10 +1023,10 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
               variant="ghost"
               size="sm"
               className="text-[10px] font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
-              onClick={() => onBatchDownload(filtered)}
+              onClick={() => onBatchDownload(visible)}
             >
               <Download size={12} />
-              Export {filtered.length} Assets
+              Export {visible.length} Assets
             </Button>
           )}
         </div>

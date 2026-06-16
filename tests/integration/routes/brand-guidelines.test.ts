@@ -388,6 +388,41 @@ describe('POST /api/brand-guidelines/:id/share + GET /public/:slug', () => {
   });
 });
 
+// ─── POST /public/:slug/connect (no-auth connect flow) ─────────────────────────
+
+describe('POST /api/brand-guidelines/public/:slug/connect', () => {
+  it('anyone (no auth) gets a connect link for a public brand', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Connectable' });
+    const share = await (await request())
+      .post(`${BASE}/${guideline._id}/share`)
+      .set('Authorization', bearer(token));
+    const slug = share.body.publicSlug;
+
+    const res = await (await request()).post(`${BASE}/public/${slug}/connect`);
+    expect(res.status).toBe(200);
+    expect(res.body.connectUrl).toMatch(/\/connect\/[\w-]+$/);
+  });
+
+  it('reuses the same pending invite across repeated clicks (no row spam)', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Reuse' });
+    const share = await (await request())
+      .post(`${BASE}/${guideline._id}/share`)
+      .set('Authorization', bearer(token));
+    const slug = share.body.publicSlug;
+
+    const a = await (await request()).post(`${BASE}/public/${slug}/connect`);
+    const b = await (await request()).post(`${BASE}/public/${slug}/connect`);
+    expect(a.body.connectUrl).toBe(b.body.connectUrl);
+  });
+
+  it('404 for a non-public / unknown slug', async () => {
+    const res = await (await request()).post(`${BASE}/public/does-not-exist/connect`);
+    expect(res.status).toBe(404);
+  });
+});
+
 // ─── POST /:id/figma-sync ──────────────────────────────────────────────────────
 
 describe('POST /api/brand-guidelines/:id/figma-sync', () => {

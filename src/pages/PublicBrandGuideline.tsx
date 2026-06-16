@@ -384,7 +384,7 @@ export const PublicBrandGuideline: React.FC = () => {
             navBtnClass
           )}
         >
-          <Home size={14} /> HOME
+          <Home size={14} /> <span className="hidden sm:inline">HOME</span>
         </Button>
         <Button
           onClick={() => navigate(-1)}
@@ -394,12 +394,12 @@ export const PublicBrandGuideline: React.FC = () => {
             navBtnClass
           )}
         >
-          <ChevronLeft size={14} /> VOLTAR
+          <ChevronLeft size={14} /> <span className="hidden sm:inline">VOLTAR</span>
         </Button>
       </div>
 
       {/* Top-right controls */}
-      <div className="flex gap-2 fixed top-5 right-5 z-[1000] items-center">
+      <div className="flex flex-wrap justify-end gap-2 fixed top-5 right-5 z-[1000] items-center max-w-[70vw]">
         {/* Collaborator avatars — only visible in edit mode (inside room) */}
         {editMode && (
           <div className="mr-1">
@@ -417,7 +417,9 @@ export const PublicBrandGuideline: React.FC = () => {
                 className={ctrlBtnClass}
               >
                 <ExternalLink size={13} />
-                {t('public.brand.guideline.open_full_editor')}
+                <span className="hidden sm:inline">
+                  {t('public.brand.guideline.open_full_editor')}
+                </span>
               </Button>
             )}
             <Button
@@ -429,9 +431,11 @@ export const PublicBrandGuideline: React.FC = () => {
               )}
             >
               {editMode ? <Eye size={13} /> : <Pencil size={13} />}
-              {editMode
-                ? t('public.brand.guideline.viewing_mode')
-                : t('public.brand.guideline.edit_mode')}
+              <span className="hidden sm:inline">
+                {editMode
+                  ? t('public.brand.guideline.viewing_mode')
+                  : t('public.brand.guideline.edit_mode')}
+              </span>
             </Button>
           </>
         )}
@@ -455,18 +459,22 @@ export const PublicBrandGuideline: React.FC = () => {
           ) : (
             <Moon size={14} aria-hidden="true" />
           )}
-          {theme}
+          <span className="hidden sm:inline">{theme}</span>
         </Button>
 
         <Button
           onClick={handleConnect}
           disabled={connecting}
           variant="ghost"
-          aria-label="Connect brand to Claude, Cursor or other AI tools"
+          aria-label={t('public.brand.guideline.connect_brand_aria')}
           className={cn(ctrlBtnClass, connecting && 'opacity-60 cursor-not-allowed')}
         >
           <Plug size={14} aria-hidden="true" className={connecting ? 'animate-pulse' : ''} />
-          {connecting ? 'Connecting…' : 'Connect'}
+          <span className="hidden sm:inline">
+            {connecting
+              ? t('public.brand.guideline.connecting')
+              : t('public.brand.guideline.connect')}
+          </span>
         </Button>
 
         {/* Unified download — single button, JSON / CSS in a dropdown */}
@@ -474,51 +482,55 @@ export const PublicBrandGuideline: React.FC = () => {
           <Button
             onClick={() => setShowDownloadMenu((v) => !v)}
             variant="ghost"
-            aria-label="Download brand guidelines"
+            aria-label={t('public.brand.guideline.download_brand_aria')}
+            aria-haspopup="menu"
             aria-expanded={showDownloadMenu}
             className={ctrlBtnClass}
           >
-            <Download size={14} aria-hidden="true" /> Download
+            <Download size={14} aria-hidden="true" />
+            <span className="hidden sm:inline">{t('public.brand.guideline.download')}</span>
             <ChevronDown size={11} aria-hidden="true" />
           </Button>
           {showDownloadMenu && (
             <div
+              role="menu"
+              aria-label={t('public.brand.guideline.download_brand_aria')}
               className={cn(
                 'absolute right-0 top-full mt-1.5 z-50 rounded-xl border overflow-hidden min-w-[160px] backdrop-blur-md shadow-xl',
-                isLightBg
-                  ? 'bg-white/90 border-black/10'
-                  : 'bg-neutral-900/90 border-white/10'
+                isLightBg ? 'bg-white/90 border-black/10' : 'bg-neutral-900/90 border-white/10'
               )}
             >
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   handleDownloadJSON();
                   setShowDownloadMenu(false);
                 }}
                 className={cn(
-                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors',
+                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors focus:outline-none',
                   isLightBg
-                    ? 'text-black/70 hover:text-black hover:bg-black/5'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                    ? 'text-black/70 hover:text-black hover:bg-black/5 focus:bg-black/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/10'
                 )}
               >
                 <Download size={12} /> JSON
               </button>
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   handleDownloadCSS();
                   setShowDownloadMenu(false);
                 }}
                 className={cn(
-                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors',
+                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors focus:outline-none',
                   isLightBg
-                    ? 'text-black/70 hover:text-black hover:bg-black/5'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                    ? 'text-black/70 hover:text-black hover:bg-black/5 focus:bg-black/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/10'
                 )}
               >
-                <Download size={12} /> CSS Variables
+                <Download size={12} /> {t('public.brand.guideline.css_variables')}
               </button>
             </div>
           )}
