@@ -9,6 +9,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { FullScreenViewer } from '@/components/FullScreenViewer';
 import { copyToClipboard, copyImageAsPng } from '@/utils/clipboard';
+import { getArchetypeImage } from '@/constants/archetypeImages';
 
 export type BrandViewSection =
   | 'identity'
@@ -461,10 +462,12 @@ const ImgOrFallback: React.FC<{
   alt: string;
   seed: string;
   fallback: React.ReactNode;
-}> = ({ src, alt, seed, fallback }) => {
+  fit?: 'cover' | 'contain';
+}> = ({ src, alt, seed, fallback, fit }) => {
   const [failed, setFailed] = useState(false);
   const isReal = !!src;
   const url = src || placeholderImage(seed);
+  const objectFit = fit || (isReal ? 'object-contain' : 'object-cover');
   if (failed) return <>{fallback}</>;
   return (
     <img
@@ -472,7 +475,7 @@ const ImgOrFallback: React.FC<{
       alt={alt}
       loading="lazy"
       onError={() => setFailed(true)}
-      className={cn('w-full h-full', isReal ? 'object-contain' : 'object-cover')}
+      className={cn('w-full h-full', objectFit === 'cover' ? 'object-cover' : 'object-contain')}
     />
   );
 };
@@ -510,20 +513,14 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
             key={i}
             className="group relative rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center overflow-hidden min-h-[400px] transition-colors bg-[var(--brand-surface)]/40 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10"
           >
-            <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] p-4 flex flex-col items-center justify-between relative transition-all duration-500 border-[var(--brand-text)]/20 bg-[var(--brand-bg)] shadow-2xl group-hover:rotate-2">
-              <div className="w-full text-center border-b border-[var(--brand-text)]/10 pb-2 flex items-center justify-center px-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
-                  {arch.name}
-                </span>
-              </div>
-              <div className="flex-1 w-full overflow-hidden rounded-xl flex items-center justify-center">
-                <ImgOrFallback
-                  src={arch.image}
-                  alt={arch.name}
-                  seed={`archetype-${arch.name}`}
-                  fallback={<Diamond size={64} className="opacity-10" aria-hidden="true" />}
-                />
-              </div>
+            <div className="w-full md:w-1/2 aspect-[3/4] max-w-[280px] mx-auto rounded-2xl overflow-hidden relative transition-transform duration-500 shadow-2xl group-hover:rotate-2 bg-[var(--brand-bg)] flex items-center justify-center">
+              <ImgOrFallback
+                src={arch.image || getArchetypeImage(arch.name) || undefined}
+                alt={arch.name}
+                seed={`archetype-${arch.name}`}
+                fit={arch.image ? 'contain' : 'cover'}
+                fallback={<Diamond size={64} className="opacity-10" aria-hidden="true" />}
+              />
             </div>
             <div className="flex-1 space-y-6">
               <h4 className="text-3xl font-bold tracking-tight opacity-90">{arch.name}</h4>

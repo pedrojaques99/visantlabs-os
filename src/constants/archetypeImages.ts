@@ -1,26 +1,78 @@
-const BASE = 'https://assets.visantlabs.com/static/archetypes';
+// Shared R2 library — the 12 Jungian archetype tarot cards (webp).
+// Uploaded via scripts/upload-archetype-cards.mjs.
+const BASE = 'https://pub-0acbd500af3b4beaa8b93b07f6490d58.r2.dev/archetypes';
 
 export const ARCHETYPE_IMAGES: Record<string, string> = {
-  'O Amante': `${BASE}/O Amante-1.png`,
-  'O Bobo da Corte': `${BASE}/O Bobo da Corte-1.png`,
-  'O Cara Comum': `${BASE}/O Cara Comum-1.png`,
-  'O Criador': `${BASE}/O Criador-1.png`,
-  'O Cuidador': `${BASE}/O Cuidador-1.png`,
-  'O Explorador': `${BASE}/O Explorador-1.png`,
-  'O Governante': `${BASE}/O Governante-1.png`,
-  'O Herói': `${BASE}/O Herói-1.png`,
-  'O Inocente': `${BASE}/O Inocente-1.png`,
-  'O Mago': `${BASE}/O Mago-1.png`,
-  'O Rebelde': `${BASE}/O Rebelde-1.png`,
-  'O Sábio': `${BASE}/O Sábio-1.png`,
+  'O Amante': `${BASE}/o-amante.webp`,
+  'O Bobo da Corte': `${BASE}/o-bobo-da-corte.webp`,
+  'O Cara Comum': `${BASE}/o-cara-comum.webp`,
+  'O Criador': `${BASE}/o-criador.webp`,
+  'O Cuidador': `${BASE}/o-cuidador.webp`,
+  'O Explorador': `${BASE}/o-explorador.webp`,
+  'O Governante': `${BASE}/o-governante.webp`,
+  'O Herói': `${BASE}/o-heroi.webp`,
+  'O Inocente': `${BASE}/o-inocente.webp`,
+  'O Mago': `${BASE}/o-mago.webp`,
+  'O Rebelde': `${BASE}/o-rebelde.webp`,
+  'O Sábio': `${BASE}/o-sabio.webp`,
 };
 
+// Accent-insensitive slug used for matching (PT names + EN aliases).
+const norm = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-');
+
+// English / variant name → canonical PT key.
+const EN_ALIASES: Record<string, string> = {
+  'the-lover': 'O Amante',
+  lover: 'O Amante',
+  'the-jester': 'O Bobo da Corte',
+  jester: 'O Bobo da Corte',
+  'the-fool': 'O Bobo da Corte',
+  fool: 'O Bobo da Corte',
+  'the-everyman': 'O Cara Comum',
+  everyman: 'O Cara Comum',
+  'regular-guy': 'O Cara Comum',
+  orphan: 'O Cara Comum',
+  'the-creator': 'O Criador',
+  creator: 'O Criador',
+  'the-caregiver': 'O Cuidador',
+  caregiver: 'O Cuidador',
+  'the-explorer': 'O Explorador',
+  explorer: 'O Explorador',
+  'the-ruler': 'O Governante',
+  ruler: 'O Governante',
+  'the-hero': 'O Herói',
+  hero: 'O Herói',
+  'the-innocent': 'O Inocente',
+  innocent: 'O Inocente',
+  'the-magician': 'O Mago',
+  magician: 'O Mago',
+  mage: 'O Mago',
+  'the-outlaw': 'O Rebelde',
+  outlaw: 'O Rebelde',
+  'the-rebel': 'O Rebelde',
+  rebel: 'O Rebelde',
+  'the-sage': 'O Sábio',
+  sage: 'O Sábio',
+};
+
+const SLUG_TO_KEY: Record<string, string> = Object.keys(ARCHETYPE_IMAGES).reduce(
+  (acc, key) => {
+    acc[norm(key)] = key;
+    return acc;
+  },
+  {} as Record<string, string>
+);
+
 export const getArchetypeImage = (title: string): string | null => {
-  const key = Object.keys(ARCHETYPE_IMAGES).find(
-    (k) =>
-      k.toLowerCase() === title.toLowerCase().trim() ||
-      title.toLowerCase().includes(k.toLowerCase().replace('o ', ''))
-  );
+  if (!title) return null;
+  const slug = norm(title);
+  const key = SLUG_TO_KEY[slug] || EN_ALIASES[slug];
   return key ? ARCHETYPE_IMAGES[key] : null;
 };
 
