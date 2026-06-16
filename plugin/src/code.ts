@@ -66,6 +66,7 @@ import {
   fetchMilestones,
   saveLinearConfig,
   getLinearConfig,
+  scanAllSlidesForBrand,
 } from './handlers/index';
 import { dispatch } from './handlers/registry';
 import { isEnvelope } from '@shared/protocol';
@@ -1057,6 +1058,16 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     try {
       const brand = (msg as any).brand || {};
       await fixBrandIssues(brand);
+    } catch (err) {
+      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+    }
+    return;
+  }
+
+  // ── Scan all slides/pages for brand analysis ──
+  if ((msg as any).type === 'SCAN_SLIDES_FOR_BRAND') {
+    try {
+      await scanAllSlidesForBrand((msg as any).maxWidth ?? 800);
     } catch (err) {
       postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
     }

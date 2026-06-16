@@ -23,19 +23,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./scene": {
       "types": "./dist/scene/index.d.ts",
-      "import": "./dist/scene/index.js"
+      "import": "./dist/scene/index.js",
+      "default": "./dist/scene/index.js"
     },
     "./adapters/node": {
       "types": "./dist/adapters/node.d.ts",
-      "import": "./dist/adapters/node.js"
+      "import": "./dist/adapters/node.js",
+      "default": "./dist/adapters/node.js"
     },
     "./adapters/browser": {
       "types": "./dist/adapters/browser.d.ts",
-      "import": "./dist/adapters/browser.js"
+      "import": "./dist/adapters/browser.js",
+      "default": "./dist/adapters/browser.js"
     }
   },
   "files": [
@@ -60,5 +64,6 @@
   },
   "devDependencies": {
     "typescript": "~5.8.2"
-  }
+  },
+  "main": "./dist/index.js"
 }
