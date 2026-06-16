@@ -20,6 +20,7 @@ export interface RisoSettings {
   layers: InkLayer[];
   frequency: number;
   dotSize: number;
+  dotSpacing?: number;
   contrast: number;
   lightness: number;
   paperColor: string;
@@ -124,6 +125,7 @@ export const RISO_DEFAULTS: RisoSettings = {
   layers: [],
   frequency: 40,
   dotSize: 0.85,
+  dotSpacing: 0.0,
   contrast: 1.2,
   lightness: 0.0,
   paperColor: '#f5f0e0',
@@ -361,6 +363,7 @@ export class RisoRenderer {
       'u_resolution',
       'u_frequency',
       'u_dotSize',
+      'u_dotSpacing',
       'u_contrast',
       'u_lightness',
       'u_paperNoise',
@@ -503,6 +506,7 @@ export class RisoRenderer {
     gl.uniform2f(u.u_resolution, this.imageWidth, this.imageHeight);
     gl.uniform1f(u.u_frequency, settings.frequency);
     gl.uniform1f(u.u_dotSize, settings.dotSize);
+    gl.uniform1f(u.u_dotSpacing, settings.dotSpacing ?? 0);
     gl.uniform1f(u.u_contrast, settings.contrast);
     gl.uniform1f(u.u_lightness, settings.lightness);
     gl.uniform1f(u.u_paperNoise, settings.paperNoise);

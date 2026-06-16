@@ -147,7 +147,7 @@ export function generateHalftoneSvg(
         const value = cmyk[ch.cmykIndex];
         if (value < settings.threshold) continue;
         const intensity = Math.min(Math.max(value, 0), 1);
-        const radius = intensity * intensity * settings.dotSize * cellSize * 0.5;
+        const radius = Math.max(0, intensity * intensity * settings.dotSize * cellSize * 0.5 - (settings.dotSpacing ?? 0) * cellSize * 0.5);
         if (radius < 0.5) continue;
 
         dots.push({

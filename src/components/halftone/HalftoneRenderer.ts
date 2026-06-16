@@ -19,6 +19,7 @@ uniform vec2 u_resolution;
 
 uniform float u_frequency;
 uniform float u_dotSize;
+uniform float u_dotSpacing;
 uniform float u_roughness;
 uniform float u_fuzz;
 uniform float u_paperNoise;
@@ -128,7 +129,7 @@ float halftoneChannel(vec2 st, float channelValue, float angle, float roughness,
   vec2 uv = 2.0 * fract(rotatedSt) - 1.0;
   float intensity = clamp(channelValue, 0.0, 1.0);
   float contrastCurve = intensity * intensity;
-  float baseRadius = contrastCurve * u_dotSize;
+  float baseRadius = max(0.0, contrastCurve * u_dotSize - u_dotSpacing);
   if (intensity > 0.1) baseRadius += roughness * paperNoise * intensity;
   float dist = length(uv);
   float radius = baseRadius - dist;
@@ -259,6 +260,7 @@ void main() {
 export interface HalftoneSettings {
   frequency: number;
   dotSize: number;
+  dotSpacing?: number;
   roughness: number;
   fuzz: number;
   paperNoise: number;
@@ -293,6 +295,7 @@ export interface HalftoneSettings {
 export const HALFTONE_DEFAULTS: HalftoneSettings = {
   frequency: 85,
   dotSize: 1.0,
+  dotSpacing: 0.0,
   roughness: 2.0,
   fuzz: 0.1,
   paperNoise: 0.0,
@@ -374,6 +377,7 @@ export class HalftoneRenderer {
       'u_resolution',
       'u_frequency',
       'u_dotSize',
+      'u_dotSpacing',
       'u_roughness',
       'u_fuzz',
       'u_paperNoise',
@@ -498,6 +502,7 @@ export class HalftoneRenderer {
     gl.uniform2f(u.u_resolution, this.imageWidth, this.imageHeight);
     gl.uniform1f(u.u_frequency, settings.frequency);
     gl.uniform1f(u.u_dotSize, settings.dotSize);
+    gl.uniform1f(u.u_dotSpacing, settings.dotSpacing ?? 0);
     gl.uniform1f(u.u_roughness, settings.roughness);
     gl.uniform1f(u.u_fuzz, settings.fuzz);
     gl.uniform1f(u.u_paperNoise, settings.paperNoise);

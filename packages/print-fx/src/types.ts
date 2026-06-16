@@ -7,6 +7,7 @@
 export interface HalftoneSettings {
   frequency: number;
   dotSize: number;
+  dotSpacing?: number;
   roughness: number;
   fuzz: number;
   paperNoise: number;
@@ -42,6 +43,7 @@ export interface HalftoneSettings {
 export const HALFTONE_DEFAULTS: HalftoneSettings = {
   frequency: 85,
   dotSize: 1.0,
+  dotSpacing: 0.0,
   roughness: 2.0,
   fuzz: 0.1,
   paperNoise: 0.0,
@@ -93,6 +95,7 @@ export interface RisoSettings {
   layers: InkLayer[];
   frequency: number;
   dotSize: number;
+  dotSpacing?: number;
   contrast: number;
   lightness: number;
   paperColor: string;
