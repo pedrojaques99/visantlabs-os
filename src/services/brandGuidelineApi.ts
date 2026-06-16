@@ -366,6 +366,15 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  async getPublicConnectLink(slug: string): Promise<{ connectUrl: string }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/public/${slug}/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) throw new Error('Failed to create connect link');
+    return response.json();
+  },
+
   async getPublic(slug: string): Promise<{ guideline: BrandGuideline; canEdit: boolean }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/public/${slug}`, {
       headers: getAuthHeaders(),

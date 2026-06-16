@@ -692,7 +692,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {currentUser &&
           currentUser.emailVerified === false &&
-          !location.pathname.startsWith('/verify-email') && (
+          !location.pathname.startsWith('/verify-email') &&
+          !location.pathname.startsWith('/brand/') && (
             <div className="bg-warning/10 border-b border-warning/20 px-4 py-2 flex items-center justify-between">
               <span className="text-warning text-xs font-mono">
                 Verifique seu email para desbloquear todas as funcionalidades.
