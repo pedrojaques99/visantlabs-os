@@ -21,6 +21,7 @@ import {
   Eye,
   ExternalLink,
   Plug,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,7 @@ import {
 } from '@/components/brand/guidelines/preview/exportMock';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
+import { DEFAULT_SECTION_IDS } from '@/components/brand/guidelines/sections-manifest';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   BrandRoomProvider,
@@ -66,6 +68,14 @@ import {
 // Anonymous visitors never download this chunk.
 const PublicSectionEditSheet = React.lazy(
   () => import('@/components/brand/guidelines/PublicSectionEditSheet')
+);
+
+// Lazy — full advanced editor (all 26 sections). Only loaded for owners who
+// switch on Advanced edit mode; anonymous/visitors never download it.
+const GuidelineDetail = React.lazy(() =>
+  import('@/components/brand/guidelines/GuidelineDetail').then((m) => ({
+    default: m.GuidelineDetail,
+  }))
 );
 
 // ─── Section label map ────────────────────────────────────────────────────────
@@ -118,6 +128,7 @@ export const PublicBrandGuideline: React.FC = () => {
   const [editMode, setEditMode] = useState(false);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [advancedEdit, setAdvancedEdit] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const publicMockRef = useRef<HTMLDivElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
@@ -211,6 +222,25 @@ export const PublicBrandGuideline: React.FC = () => {
       }
     },
     [guideline?.id]
+  );
+
+  // Advanced editor section visibility — persisted in guideline.activeSections (same as admin).
+  const advancedVisibleSections = useMemo(() => {
+    const active = ((guideline?.activeSections as string[]) || []).length
+      ? (guideline!.activeSections as string[])
+      : DEFAULT_SECTION_IDS;
+    return DEFAULT_SECTION_IDS.filter((id) => active.includes(id));
+  }, [guideline]);
+
+  const handleHideSection = useCallback(
+    (id: string) => {
+      const active = ((guideline?.activeSections as string[]) || []).length
+        ? (guideline!.activeSections as string[])
+        : DEFAULT_SECTION_IDS;
+      const next = active.includes(id) ? active.filter((s) => s !== id) : [...active, id];
+      handleSave({ activeSections: next } as Partial<BrandGuideline>);
+    },
+    [guideline, handleSave]
   );
 
   const handleConnect = async () => {
@@ -410,6 +440,21 @@ export const PublicBrandGuideline: React.FC = () => {
         {/* Edit / View toggle — only for owners/editors */}
         {canEdit && (
           <>
+            {editMode && (
+              <Button
+                onClick={() => setAdvancedEdit((v) => !v)}
+                variant="ghost"
+                aria-pressed={advancedEdit}
+                className={cn(
+                  ctrlBtnClass,
+                  advancedEdit &&
+                    'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)]'
+                )}
+              >
+                <SlidersHorizontal size={13} />
+                <span className="hidden sm:inline">Advanced</span>
+              </Button>
+            )}
             {editMode && (
               <Button
                 onClick={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
@@ -717,32 +762,48 @@ export const PublicBrandGuideline: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Brand content sections */}
-        {activeTab !== 'preview' && (
-          <BrandReadOnlyView
-            guideline={guideline}
-            sections={visibleSections}
-            searchTerm={searchTerm}
-            renderSectionActions={
-              editMode
-                ? (section) => (
-                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <SectionPresenceDot section={section} />
-                      <button
-                        type="button"
-                        aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
-                        onClick={() => setActiveEditSection(section)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/20 border border-warning/30 text-warning text-[10px] font-mono uppercase tracking-widest hover:bg-warning/30 transition-colors"
-                      >
-                        <Pencil size={10} />
-                        {SECTION_LABELS[section]}
-                      </button>
-                    </div>
-                  )
-                : undefined
-            }
-          />
-        )}
+        {/* Brand content sections — advanced (full editor) for owners, else read view */}
+        {activeTab !== 'preview' &&
+          (advancedEdit && canEdit && editMode && guideline.id ? (
+            <React.Suspense
+              fallback={
+                <div className="py-20 text-center text-[10px] font-mono uppercase tracking-widest opacity-40">
+                  Loading editor…
+                </div>
+              }
+            >
+              <GuidelineDetail
+                guideline={guideline}
+                visibleSections={advancedVisibleSections}
+                onHideSection={handleHideSection}
+                onOpenWizard={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
+              />
+            </React.Suspense>
+          ) : (
+            <BrandReadOnlyView
+              guideline={guideline}
+              sections={visibleSections}
+              searchTerm={searchTerm}
+              renderSectionActions={
+                editMode
+                  ? (section) => (
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <SectionPresenceDot section={section} />
+                        <button
+                          type="button"
+                          aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
+                          onClick={() => setActiveEditSection(section)}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/20 border border-warning/30 text-warning text-[10px] font-mono uppercase tracking-widest hover:bg-warning/30 transition-colors"
+                        >
+                          <Pencil size={10} />
+                          {SECTION_LABELS[section]}
+                        </button>
+                      </div>
+                    )
+                  : undefined
+              }
+            />
+          ))}
 
         {/* Dynamic Footer */}
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
