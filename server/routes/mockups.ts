@@ -1525,6 +1525,18 @@ router.post(
           message: modelResponse,
           isModelQuestion: true,
         };
+      } else if (/No .+ API key available/i.test(msg)) {
+        // Env/BYOK key is missing entirely — the service threw BEFORE any provider
+        // call. This is NOT a rejected/expired key (no 401 happened); surfacing it
+        // as provider_auth misleads debugging. Keep the raw message so the caller
+        // sees exactly which env var (e.g. IDEOGRAM_API_KEY) to configure.
+        statusCode = 503;
+        errorResponse = {
+          error: 'provider_not_configured',
+          message: msg,
+          hint: 'This provider has no API key configured on the server (or via BYOK). Set the env var named in the message, or switch to a different model.',
+          alternatives: [DEFAULT_IMAGE_MODEL_ID],
+        };
       } else if (
         msg.includes('API key') ||
         msg.includes('apiKey') ||
