@@ -29,6 +29,10 @@ export interface SceneFace {
   innerH: number;
   /** Optional reference to a raster mask image in the asset map. */
   maskRef?: string;
+  /** Optional reference to a displacement map image in the asset map (R=X, G=Y, 128=neutral). */
+  dispRef?: string;
+  /** Displacement scale in pixels (applied symmetrically to H and V). Default 8. */
+  dispScale?: number;
 }
 
 export interface SceneLayer {

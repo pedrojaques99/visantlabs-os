@@ -6,6 +6,7 @@
 // perspectiveWarp + BLEND_MAP) — zero re-implementation of the warp math.
 
 import { coverArtCanvas, perspectiveWarp } from '../warp.js';
+import { applyDisplacementFilter } from '../compose.js';
 import type { CreateCanvas } from '../types.js';
 import type { SceneDoc, AssetMap } from './types.js';
 
@@ -75,6 +76,17 @@ export function renderScene(
       faceCanvas = artCanvas;
       dx = face.origin?.left ?? 0;
       dy = face.origin?.top ?? 0;
+    }
+
+    // Apply displacement map if present (surface texture warp).
+    if (face.dispRef && assets[face.dispRef]) {
+      const scale = face.dispScale ?? 8;
+      faceCanvas = applyDisplacementFilter(
+        faceCanvas, assets[face.dispRef],
+        scale, scale,
+        'stretch to fit', 'repeat edge pixels',
+        cc
+      );
     }
 
     // Apply the face's raster mask if present (multiplies alpha).
