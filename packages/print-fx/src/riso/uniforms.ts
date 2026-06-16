@@ -48,6 +48,7 @@ export function applyRisoUniforms(
   gl.uniform1f(u('u_frequency')!, settings.frequency);
   gl.uniform1f(u('u_dotSize')!, settings.dotSize);
   gl.uniform1f(u('u_dotSpacing')!, settings.dotSpacing ?? 0);
+  gl.uniform1f(u('u_dotGain')!, settings.dotGain ?? 0);
   gl.uniform1f(u('u_contrast')!, settings.contrast);
   gl.uniform1f(u('u_lightness')!, settings.lightness);
   gl.uniform1f(u('u_paperNoise')!, settings.paperNoise);

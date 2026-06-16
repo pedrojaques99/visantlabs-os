@@ -24,6 +24,7 @@ uniform vec2 u_resolution;
 uniform float u_frequency;
 uniform float u_dotSize;
 uniform float u_dotSpacing;
+uniform float u_dotGain;
 uniform float u_contrast;
 uniform float u_lightness;
 uniform float u_paperNoise;
@@ -132,6 +133,13 @@ float getCellScale() {
   return u_frequency / max(u_resolution.x, u_resolution.y);
 }
 
+// Dot gain: lifts intensity gamma so more dots fire in highlights.
+// gain=0 → no change; gain=1 → strong highlight boost (gamma ~0.2)
+float applyDotGain(float intensity) {
+  float gamma = 1.0 - u_dotGain * 0.8;
+  return pow(clamp(intensity, 0.001, 0.999), max(0.05, gamma));
+}
+
 float dotShape(vec2 f, float dotSz) {
   float d = length(f) * 2.0;
   float r = max(0.0, dotSz * 0.5 - u_dotSpacing * 0.5);
@@ -236,13 +244,14 @@ float halftonePattern(vec2 st, float intensity, float angle, float layerSeed, in
 }
 
 float applyLayerDither(vec2 st, float intensity, float angle, float layerSeed, int layerDither, int layerShape) {
+  float gained = applyDotGain(intensity);
   int mode = layerDither >= 0 ? layerDither : u_ditherMode;
   int shape = layerShape >= 0 ? layerShape : u_halftoneShape;
-  if (mode == 1) return atkinsonDither(st, intensity, angle, layerSeed);
-  if (mode == 2) return floydSteinbergDither(st, intensity, angle, layerSeed);
-  if (mode == 3) return bayerDither(st, intensity, angle, layerSeed);
-  if (mode == 4) return halftonePattern(st, intensity, angle, layerSeed, shape);
-  return risoGrain(st, intensity, angle, layerSeed);
+  if (mode == 1) return atkinsonDither(st, gained, angle, layerSeed);
+  if (mode == 2) return floydSteinbergDither(st, gained, angle, layerSeed);
+  if (mode == 3) return bayerDither(st, gained, angle, layerSeed);
+  if (mode == 4) return halftonePattern(st, gained, angle, layerSeed, shape);
+  return risoGrain(st, gained, angle, layerSeed);
 }
 
 vec3 sampleAt(vec2 uv) {
