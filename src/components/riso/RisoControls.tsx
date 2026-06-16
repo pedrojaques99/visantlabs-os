@@ -254,6 +254,14 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('dotSpacing', v)}
               />
               <ScrubInput
+                label="Gain"
+                value={store.dotGain ?? 0}
+                min={0}
+                max={1}
+                step={0.01}
+                onChange={(v) => set('dotGain', v)}
+              />
+              <ScrubInput
                 label="Contrast"
                 value={store.contrast}
                 min={0.3}

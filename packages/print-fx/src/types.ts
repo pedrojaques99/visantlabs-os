@@ -96,6 +96,7 @@ export interface RisoSettings {
   frequency: number;
   dotSize: number;
   dotSpacing?: number;
+  dotGain?: number;
   contrast: number;
   lightness: number;
   paperColor: string;
