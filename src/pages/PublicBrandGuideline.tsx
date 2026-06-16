@@ -19,9 +19,15 @@ import {
   Home,
   Pencil,
   Eye,
-  ExternalLink,
   Plug,
   SlidersHorizontal,
+  Zap,
+  Image as ImageIcon,
+  Share2,
+  Figma,
+  Check,
+  ShieldCheck,
+  MoreHorizontal,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -57,6 +63,14 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { DEFAULT_SECTION_IDS } from '@/components/brand/guidelines/sections-manifest';
+import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
+import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
+import { copyToClipboard } from '@/utils/clipboard';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+} from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   BrandRoomProvider,
@@ -75,6 +89,28 @@ const PublicSectionEditSheet = React.lazy(
 const GuidelineDetail = React.lazy(() =>
   import('@/components/brand/guidelines/GuidelineDetail').then((m) => ({
     default: m.GuidelineDetail,
+  }))
+);
+
+// Owner-only action dialogs — lazy so anonymous visitors never download them.
+const BrandAiPopulateDialog = React.lazy(() =>
+  import('@/components/brand/guidelines/BrandAiPopulateDialog').then((m) => ({
+    default: m.BrandAiPopulateDialog,
+  }))
+);
+const BrandMockupDialog = React.lazy(() =>
+  import('@/components/brand/guidelines/BrandMockupDialog').then((m) => ({
+    default: m.BrandMockupDialog,
+  }))
+);
+const ShareGuidelineDialog = React.lazy(() =>
+  import('@/components/brand/guidelines/ShareGuidelineDialog').then((m) => ({
+    default: m.ShareGuidelineDialog,
+  }))
+);
+const DesignSystemValidation = React.lazy(() =>
+  import('@/components/brand/guidelines/DesignSystemValidation').then((m) => ({
+    default: m.DesignSystemValidation,
   }))
 );
 
@@ -130,6 +166,12 @@ export const PublicBrandGuideline: React.FC = () => {
   const [connecting, setConnecting] = useState(false);
   const [advancedEdit, setAdvancedEdit] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  // Owner action dialogs (ported from the admin editor)
+  const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
+  const [isMockupOpen, setIsMockupOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [figmaCopied, setFigmaCopied] = useState(false);
   const publicMockRef = useRef<HTMLDivElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
@@ -192,23 +234,22 @@ export const PublicBrandGuideline: React.FC = () => {
     [activePreview, guideline]
   );
 
-  useEffect(() => {
+  const fetchGuideline = useCallback(async () => {
     if (!slug) return;
-
-    const fetchGuideline = async () => {
-      try {
-        const result = await brandGuidelineApi.getPublic(slug);
-        setGuideline(result.guideline);
-        setCanEdit(result.canEdit);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load brand guidelines');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGuideline();
+    try {
+      const result = await brandGuidelineApi.getPublic(slug);
+      setGuideline(result.guideline);
+      setCanEdit(result.canEdit);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load brand guidelines');
+    } finally {
+      setIsLoading(false);
+    }
   }, [slug]);
+
+  useEffect(() => {
+    fetchGuideline();
+  }, [fetchGuideline]);
 
   // onSave: called by LiveblocksEditorProvider on every patch — persist to DB + update local state
   const handleSave = useCallback(
@@ -456,16 +497,62 @@ export const PublicBrandGuideline: React.FC = () => {
               </Button>
             )}
             {editMode && (
-              <Button
-                onClick={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
-                variant="ghost"
-                className={ctrlBtnClass}
-              >
-                <ExternalLink size={13} />
-                <span className="hidden sm:inline">
-                  {t('public.brand.guideline.open_full_editor')}
-                </span>
-              </Button>
+              <>
+                <BrandCompletenessPill guideline={guideline} />
+                <Button
+                  onClick={() => setIsAiPopulateOpen(true)}
+                  variant="ghost"
+                  className={ctrlBtnClass}
+                >
+                  <Zap size={13} />
+                  <span className="hidden sm:inline">Generate</span>
+                </Button>
+                <Button
+                  onClick={() => setIsShareOpen(true)}
+                  variant="ghost"
+                  className={ctrlBtnClass}
+                >
+                  <Share2 size={13} />
+                  <span className="hidden sm:inline">Share</span>
+                </Button>
+                {guideline.id && (
+                  <BrandIngestButton
+                    guideline={guideline}
+                    onSuccess={fetchGuideline}
+                    className={ctrlBtnClass}
+                  />
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className={ctrlBtnClass} aria-label="More actions">
+                      <MoreHorizontal size={14} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[180px]">
+                    <Button variant="menuItem" onClick={() => setIsMockupOpen(true)}>
+                      <ImageIcon size={13} /> Mockup
+                    </Button>
+                    <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
+                      <ShieldCheck size={13} /> Review
+                    </Button>
+                    <Button
+                      variant="menuItem"
+                      onClick={() => {
+                        if (guideline.id) copyToClipboard(guideline.id);
+                        setFigmaCopied(true);
+                        setTimeout(() => setFigmaCopied(false), 2000);
+                      }}
+                    >
+                      {figmaCopied ? (
+                        <Check size={13} className="text-success" />
+                      ) : (
+                        <Figma size={13} />
+                      )}
+                      {figmaCopied ? 'Copied!' : 'Use in Figma'}
+                    </Button>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             )}
             <Button
               onClick={() => setEditMode((v) => !v)}
@@ -853,6 +940,47 @@ export const PublicBrandGuideline: React.FC = () => {
             )}
           </SheetContent>
         </Sheet>
+      )}
+
+      {/* Owner action dialogs (ported from admin editor) */}
+      {canEdit && (isAiPopulateOpen || isMockupOpen || isShareOpen || isReviewOpen) && (
+        <React.Suspense fallback={null}>
+          {isAiPopulateOpen && (
+            <BrandAiPopulateDialog
+              open={isAiPopulateOpen}
+              onOpenChange={setIsAiPopulateOpen}
+              guideline={guideline}
+              onSuccess={fetchGuideline}
+            />
+          )}
+          {isMockupOpen && (
+            <BrandMockupDialog
+              open={isMockupOpen}
+              onOpenChange={setIsMockupOpen}
+              guideline={guideline}
+            />
+          )}
+          {isShareOpen && (
+            <ShareGuidelineDialog
+              isOpen={isShareOpen}
+              onClose={() => setIsShareOpen(false)}
+              guideline={guideline}
+              onUpdate={(g) => setGuideline(g)}
+            />
+          )}
+          {isReviewOpen && guideline.id && (
+            <DesignSystemValidation
+              guideline={guideline}
+              onUpdate={(patch) => handleSave(patch)}
+              onComplete={() => setIsReviewOpen(false)}
+              onEditSection={() => {
+                setIsReviewOpen(false);
+                setEditMode(true);
+                setAdvancedEdit(true);
+              }}
+            />
+          )}
+        </React.Suspense>
       )}
     </div>
   );
