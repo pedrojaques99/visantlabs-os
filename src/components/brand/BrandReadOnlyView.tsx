@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, MousePointerClick, Diamond, User } from 'lucide-react';
+import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,9 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { FullScreenViewer } from '@/components/FullScreenViewer';
-import { copyToClipboard } from '@/utils/clipboard';
+import { copyToClipboard, copyImageAsPng } from '@/utils/clipboard';
+import { getProxiedUrl } from '@/utils/proxyUtils';
+import { getArchetypeImage } from '@/constants/archetypeImages';
 
 export type BrandViewSection =
   | 'identity'
@@ -449,6 +451,38 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, co
   );
 };
 
+// Deterministic neutral photo placeholder for empty archetype/persona slots.
+// Grayscale reads as a placeholder; real images replace it once uploaded to R2.
+function placeholderImage(seed: string, w = 600, h = 800): string {
+  return `https://picsum.photos/seed/${encodeURIComponent(seed || 'brand')}/${w}/${h}?grayscale`;
+}
+
+// <img> that falls back to a placeholder photo when no src, then to an icon if both fail.
+const ImgOrFallback: React.FC<{
+  src?: string;
+  alt: string;
+  seed: string;
+  fallback: React.ReactNode;
+  fit?: 'cover' | 'contain';
+  /** When false, skip the photo placeholder and render `fallback` if there's no src. */
+  usePlaceholder?: boolean;
+}> = ({ src, alt, seed, fallback, fit, usePlaceholder = true }) => {
+  const [failed, setFailed] = useState(false);
+  const isReal = !!src;
+  if ((!src && !usePlaceholder) || failed) return <>{fallback}</>;
+  const url = src || placeholderImage(seed);
+  const objectFit = fit || (isReal ? 'object-contain' : 'object-cover');
+  return (
+    <img
+      src={url}
+      alt={alt}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className={cn('w-full h-full', objectFit === 'cover' ? 'object-cover' : 'object-contain')}
+    />
+  );
+};
+
 export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
   const archetypes = guideline.strategy?.archetypes || [];
   if (archetypes.length === 0) return null;
@@ -482,19 +516,14 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
             key={i}
             className="group relative rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center overflow-hidden min-h-[400px] transition-colors bg-[var(--brand-surface)]/40 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10"
           >
-            <div className="w-full md:w-1/2 aspect-[3/4] rounded-2xl border-[3px] p-4 flex flex-col items-center justify-between relative transition-all duration-500 border-[var(--brand-text)]/20 bg-[var(--brand-bg)] shadow-2xl group-hover:rotate-2">
-              <div className="w-full text-center border-b border-[var(--brand-text)]/10 pb-2 flex items-center justify-center px-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
-                  {arch.name}
-                </span>
-              </div>
-              <div className="flex-1 flex items-center justify-center py-8">
-                {arch.image ? (
-                  <img src={arch.image} alt={arch.name} className="w-full object-contain" />
-                ) : (
-                  <Diamond size={64} className="opacity-10" aria-hidden="true" />
-                )}
-              </div>
+            <div className="w-full md:w-1/2 aspect-[3/4] max-w-[280px] mx-auto rounded-2xl overflow-hidden relative transition-transform duration-500 shadow-2xl group-hover:rotate-2 bg-[var(--brand-bg)] flex items-center justify-center">
+              <ImgOrFallback
+                src={arch.image || getArchetypeImage(arch.name) || undefined}
+                alt={arch.name}
+                seed={`archetype-${arch.name}`}
+                fit={arch.image ? 'contain' : 'cover'}
+                fallback={<Diamond size={64} className="opacity-10" aria-hidden="true" />}
+              />
             </div>
             <div className="flex-1 space-y-6">
               <h4 className="text-3xl font-bold tracking-tight opacity-90">{arch.name}</h4>
@@ -553,17 +582,20 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
           >
             <div className="flex flex-col md:flex-row gap-12">
               <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
-                {persona.image ? (
-                  <img
-                    src={persona.image}
-                    alt={persona.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-black/20 flex items-center justify-center opacity-30">
-                    <User size={64} />
-                  </div>
-                )}
+                <ImgOrFallback
+                  src={persona.image}
+                  alt={persona.name}
+                  seed={`persona-${persona.name}`}
+                  fit="cover"
+                  usePlaceholder={false}
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--brand-surface)] to-[var(--brand-bg)]">
+                      <span className="text-6xl font-black opacity-15 select-none">
+                        {persona.name?.[0]?.toUpperCase() || <User size={56} />}
+                      </span>
+                    </div>
+                  }
+                />
               </div>
               <div className="flex-1 space-y-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -900,7 +932,47 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
     [onAssetClick]
   );
 
-  if (filtered.length === 0) return null;
+  // Hide assets whose image fails to load (broken R2 links, dead URLs).
+  const [failed, setFailed] = useState<Set<string>>(new Set());
+  const markFailed = useCallback((id: string) => {
+    setFailed((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleDownload = useCallback((logo: any) => {
+    triggerAssetDownload(
+      logo.url,
+      `${safeFileName(logo.label || logo.variant)}.${extFromUrl(logo.url)}`
+    );
+  }, []);
+
+  const handleCopyPng = useCallback(async (logo: any) => {
+    const res = await copyImageAsPng(logo.url);
+    if (res.success) toast.success('Copied as PNG');
+    else toast.error(res.error || 'Could not copy image');
+  }, []);
+
+  const handleCopySvg = useCallback(async (logo: any) => {
+    try {
+      // R2 dev domain lacks CORS headers → fetch via same-origin image proxy.
+      let r = await fetch(logo.url).catch(() => null);
+      if (!r || !r.ok) r = await fetch(getProxiedUrl(logo.url));
+      const text = await r.text();
+      const ok = await copyToClipboard(text);
+      if (ok) toast.success('Copied SVG code');
+      else toast.error('Could not copy SVG');
+    } catch {
+      toast.error('Could not copy SVG');
+    }
+  }, []);
+
+  // Assets whose image loaded ok — hide the whole section if every asset is broken.
+  const visible = filtered.filter((l) => !failed.has(l.id));
+  if (filtered.length === 0 || visible.length === 0) return null;
 
   if (compact) {
     return (
@@ -951,53 +1023,88 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
               variant="ghost"
               size="sm"
               className="text-[10px] font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
-              onClick={() => onBatchDownload(filtered)}
+              onClick={() => onBatchDownload(visible)}
             >
               <Download size={12} />
-              Export {filtered.length} Assets
+              Export {visible.length} Assets
             </Button>
           )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtered.map((logo) => (
-            <motion.div
-              key={logo.id}
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="group relative flex flex-col gap-4"
-              draggable={!!onAssetDragStart}
-              onDragStart={(e) =>
-                onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')
-              }
-            >
-              <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
-                <img
-                  src={logo.url}
-                  alt={logo.label || 'Logo'}
-                  className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]"
-                />
-                <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                  <Button
-                    className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
-                    onClick={() => handleClick(logo)}
-                  >
-                    {onAssetClick ? <MousePointerClick size={14} /> : <Download size={14} />}
-                    {onAssetClick ? 'Use' : 'Download'}
-                  </Button>
+          {filtered.map((logo) => {
+            if (failed.has(logo.id)) return null;
+            const isSvg = extFromUrl(logo.url) === 'svg';
+            return (
+              <motion.div
+                key={logo.id}
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="group relative flex flex-col gap-4"
+                draggable={!!onAssetDragStart}
+                onDragStart={(e) =>
+                  onAssetDragStart?.(e as unknown as React.DragEvent, logo.url, 'logo')
+                }
+              >
+                <div className="relative aspect-[4/3] rounded-3xl p-8 flex items-center justify-center overflow-hidden transition-all duration-500 border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 group-hover:bg-[var(--brand-surface)]/40 group-hover:border-[var(--brand-text)]/10 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)]">
+                  <img
+                    src={logo.url}
+                    alt={logo.label || 'Logo'}
+                    loading="lazy"
+                    onError={() => markFailed(logo.id)}
+                    className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                    {onAssetClick ? (
+                      <Button
+                        className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
+                        onClick={() => handleClick(logo)}
+                      >
+                        <MousePointerClick size={14} /> Use
+                      </Button>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          title="Download"
+                          className="flex-1 h-9 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-1.5 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
+                          onClick={() => handleDownload(logo)}
+                        >
+                          <Download size={13} /> Download
+                        </Button>
+                        <Button
+                          title="Copy as PNG"
+                          aria-label="Copy as PNG"
+                          className="h-9 w-9 p-0 rounded-xl shadow-lg transition-all bg-[var(--brand-surface)] text-[var(--brand-text)] border border-[var(--brand-text)]/10 hover:scale-[1.05]"
+                          onClick={() => handleCopyPng(logo)}
+                        >
+                          <Copy size={13} />
+                        </Button>
+                        {isSvg && (
+                          <Button
+                            title="Copy SVG code"
+                            aria-label="Copy SVG code"
+                            className="h-9 w-9 p-0 rounded-xl shadow-lg transition-all bg-[var(--brand-surface)] text-[var(--brand-text)] border border-[var(--brand-text)]/10 hover:scale-[1.05]"
+                            onClick={() => handleCopySvg(logo)}
+                          >
+                            <FileCode size={13} />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="px-2">
-                <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">
-                  {logo.label || 'Untitled Asset'}
-                </p>
-                <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">
-                  {logo.variant} Variant
-                </p>
-              </div>
-            </motion.div>
-          ))}
+                <div className="px-2">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">
+                    {logo.label || 'Untitled Asset'}
+                  </p>
+                  <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">
+                    {logo.variant} Variant
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </motion.section>
@@ -1025,6 +1132,15 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
   );
 
   const [fullScreenIdx, setFullScreenIdx] = useState<number | null>(null);
+  const [failed, setFailed] = useState<Set<string>>(new Set());
+  const markFailed = useCallback((id: string) => {
+    setFailed((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  }, []);
 
   const handleDownload = useCallback((item: any) => {
     triggerAssetDownload(
@@ -1087,7 +1203,9 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((item, i) => (
+          {filtered.map((item, i) => {
+            if (failed.has(item.id)) return null;
+            return (
             <motion.div
               key={item.id}
               layout
@@ -1106,6 +1224,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                 <img
                   src={item.url}
                   alt={item.label || 'Media'}
+                  onError={() => markFailed(item.id)}
                   className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -1133,7 +1252,8 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                 </div>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         {fullScreenIdx !== null && (

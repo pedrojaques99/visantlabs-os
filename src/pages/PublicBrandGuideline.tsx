@@ -11,7 +11,7 @@ import {
   Download,
   AlertCircle,
   Search,
-  Diamond,
+  Palette,
   ChevronLeft,
   ChevronDown,
   Sun,
@@ -36,9 +36,7 @@ import {
 import {
   PUBLIC_TABS,
   downloadBlob,
-  triggerAssetDownload,
   safeFileName,
-  extFromUrl,
 } from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
 import {
@@ -56,6 +54,7 @@ import {
   type ExportFormat,
 } from '@/components/brand/guidelines/preview/exportMock';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLayout } from '@/hooks/useLayout';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   BrandRoomProvider,
@@ -102,6 +101,8 @@ const PREVIEW_MOCKS = [
 
 export const PublicBrandGuideline: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useLayout();
+  const isAdmin = !!user?.isAdmin;
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
@@ -117,8 +118,10 @@ export const PublicBrandGuideline: React.FC = () => {
   const [editMode, setEditMode] = useState(false);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const publicMockRef = useRef<HTMLDivElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!showExportMenu) return;
@@ -137,6 +140,24 @@ export const PublicBrandGuideline: React.FC = () => {
       document.removeEventListener('keydown', handleKey);
     };
   }, [showExportMenu]);
+
+  useEffect(() => {
+    if (!showDownloadMenu) return;
+    const handleClick = (e: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(e.target as Node)) {
+        setShowDownloadMenu(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowDownloadMenu(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [showDownloadMenu]);
 
   const handleExportMock = useCallback(
     async (format: ExportFormat) => {
@@ -221,11 +242,17 @@ export const PublicBrandGuideline: React.FC = () => {
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
 
+  // Preview tab is WIP — only admins see it for now.
+  const visibleTabs = useMemo(
+    () => PUBLIC_TABS.filter((tab) => tab.id !== 'preview' || isAdmin),
+    [isAdmin]
+  );
   const currentTab = PUBLIC_TABS.find((t) => t.id === activeTab) || PUBLIC_TABS[0];
   const visibleSections = currentTab.sections;
 
   const hasPreviewData =
-    tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name;
+    isAdmin &&
+    (tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name);
 
   if (isLoading) {
     return (
@@ -278,6 +305,11 @@ export const PublicBrandGuideline: React.FC = () => {
   const navBtnClass = isLightBg
     ? 'bg-black/5 border-black/10 text-black hover:bg-black/10'
     : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
+  // Unified top-right control pill — same design system as HOME/VOLTAR (contrast-safe hover).
+  const ctrlBtnClass = cn(
+    'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-all',
+    navBtnClass
+  );
 
   // The Sheet and edit pencil buttons are placed inside the room so they can
   // access useBrandGuidelineEditor(). The room is only mounted when editMode=true
@@ -308,7 +340,7 @@ export const PublicBrandGuideline: React.FC = () => {
         aria-label={t('public.brand.guideline.brand_sections')}
         className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4"
       >
-        {PUBLIC_TABS.map((tab) => {
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
@@ -352,7 +384,7 @@ export const PublicBrandGuideline: React.FC = () => {
             navBtnClass
           )}
         >
-          <Home size={14} /> HOME
+          <Home size={14} /> <span className="hidden sm:inline">HOME</span>
         </Button>
         <Button
           onClick={() => navigate(-1)}
@@ -362,12 +394,12 @@ export const PublicBrandGuideline: React.FC = () => {
             navBtnClass
           )}
         >
-          <ChevronLeft size={14} /> VOLTAR
+          <ChevronLeft size={14} /> <span className="hidden sm:inline">VOLTAR</span>
         </Button>
       </div>
 
       {/* Top-right controls */}
-      <div className="flex gap-2 fixed top-5 right-5 z-[1000] items-center">
+      <div className="flex flex-wrap justify-end gap-2 fixed top-5 right-5 z-[1000] items-center max-w-[70vw]">
         {/* Collaborator avatars — only visible in edit mode (inside room) */}
         {editMode && (
           <div className="mr-1">
@@ -382,29 +414,28 @@ export const PublicBrandGuideline: React.FC = () => {
               <Button
                 onClick={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
                 variant="ghost"
-                className={cn(
-                  'h-10 px-3 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
-                  'bg-neutral-900/80 border-neutral-700 text-neutral-400 hover:text-white'
-                )}
+                className={ctrlBtnClass}
               >
                 <ExternalLink size={13} />
-                {t('public.brand.guideline.open_full_editor')}
+                <span className="hidden sm:inline">
+                  {t('public.brand.guideline.open_full_editor')}
+                </span>
               </Button>
             )}
             <Button
               onClick={() => setEditMode((v) => !v)}
               variant="ghost"
               className={cn(
-                'h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
-                editMode
-                  ? 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
-                  : 'bg-neutral-900/60 border-neutral-700 text-neutral-300 hover:text-white'
+                ctrlBtnClass,
+                editMode && 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
               )}
             >
               {editMode ? <Eye size={13} /> : <Pencil size={13} />}
-              {editMode
-                ? t('public.brand.guideline.viewing_mode')
-                : t('public.brand.guideline.edit_mode')}
+              <span className="hidden sm:inline">
+                {editMode
+                  ? t('public.brand.guideline.viewing_mode')
+                  : t('public.brand.guideline.edit_mode')}
+              </span>
             </Button>
           </>
         )}
@@ -416,65 +447,94 @@ export const PublicBrandGuideline: React.FC = () => {
           variant="ghost"
           aria-label={`Switch theme, current: ${theme}`}
           className={cn(
-            'h-10 px-4 rounded-full border transition-all duration-500 gap-2 font-mono text-[10px] font-bold uppercase tracking-widest',
-            theme === 'brand'
-              ? 'bg-[var(--accent)] text-[var(--accent-text)] border-transparent shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]'
-              : theme === 'dark'
-                ? 'bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800'
-                : 'bg-white border-neutral-200 text-neutral-900 hover:bg-neutral-50 shadow-sm'
+            ctrlBtnClass,
+            theme === 'brand' &&
+              'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]'
           )}
         >
           {theme === 'brand' ? (
-            <Diamond size={14} className="animate-pulse" aria-hidden="true" />
+            <Palette size={14} className="animate-pulse" aria-hidden="true" />
           ) : theme === 'light' ? (
             <Sun size={14} aria-hidden="true" />
           ) : (
             <Moon size={14} aria-hidden="true" />
           )}
-          {theme}
+          <span className="hidden sm:inline">{theme}</span>
         </Button>
+
         <Button
           onClick={handleConnect}
           disabled={connecting}
           variant="ghost"
-          aria-label="Connect brand to Claude or Cursor"
-          className={cn(
-            'h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest',
-            theme === 'dark'
-              ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white'
-              : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm',
-            connecting && 'opacity-60 cursor-not-allowed'
-          )}
+          aria-label={t('public.brand.guideline.connect_brand_aria')}
+          className={cn(ctrlBtnClass, connecting && 'opacity-60 cursor-not-allowed')}
         >
           <Plug size={14} aria-hidden="true" className={connecting ? 'animate-pulse' : ''} />
-          {connecting ? 'Connecting…' : 'Connect'}
+          <span className="hidden sm:inline">
+            {connecting
+              ? t('public.brand.guideline.connecting')
+              : t('public.brand.guideline.connect')}
+          </span>
         </Button>
-        <Button
-          onClick={handleDownloadJSON}
-          variant="ghost"
-          aria-label={t('public.brand.guideline.download_brand_guidelines_a')}
-          className={cn(
-            'h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest',
-            theme === 'dark'
-              ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white'
-              : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm'
+
+        {/* Unified download — single button, JSON / CSS in a dropdown */}
+        <div ref={downloadMenuRef} className="relative">
+          <Button
+            onClick={() => setShowDownloadMenu((v) => !v)}
+            variant="ghost"
+            aria-label={t('public.brand.guideline.download_brand_aria')}
+            aria-haspopup="menu"
+            aria-expanded={showDownloadMenu}
+            className={ctrlBtnClass}
+          >
+            <Download size={14} aria-hidden="true" />
+            <span className="hidden sm:inline">{t('public.brand.guideline.download')}</span>
+            <ChevronDown size={11} aria-hidden="true" />
+          </Button>
+          {showDownloadMenu && (
+            <div
+              role="menu"
+              aria-label={t('public.brand.guideline.download_brand_aria')}
+              className={cn(
+                'absolute right-0 top-full mt-1.5 z-50 rounded-xl border overflow-hidden min-w-[160px] backdrop-blur-md shadow-xl',
+                isLightBg ? 'bg-white/90 border-black/10' : 'bg-neutral-900/90 border-white/10'
+              )}
+            >
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  handleDownloadJSON();
+                  setShowDownloadMenu(false);
+                }}
+                className={cn(
+                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors focus:outline-none',
+                  isLightBg
+                    ? 'text-black/70 hover:text-black hover:bg-black/5 focus:bg-black/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/10'
+                )}
+              >
+                <Download size={12} /> JSON
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  handleDownloadCSS();
+                  setShowDownloadMenu(false);
+                }}
+                className={cn(
+                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors focus:outline-none',
+                  isLightBg
+                    ? 'text-black/70 hover:text-black hover:bg-black/5 focus:bg-black/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/10'
+                )}
+              >
+                <Download size={12} /> {t('public.brand.guideline.css_variables')}
+              </button>
+            </div>
           )}
-        >
-          <Download size={14} aria-hidden="true" /> JSON
-        </Button>
-        <Button
-          onClick={handleDownloadCSS}
-          variant="ghost"
-          aria-label={t('public.brand.guideline.download_brand_variables_as')}
-          className={cn(
-            'h-10 px-3 rounded-full border transition-colors gap-1.5 text-[10px] font-mono uppercase tracking-widest',
-            theme === 'dark'
-              ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400 hover:text-white'
-              : 'bg-white border-neutral-200 text-neutral-500 hover:text-neutral-900 shadow-sm'
-          )}
-        >
-          <Download size={14} aria-hidden="true" /> CSS
-        </Button>
+        </div>
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-16 md:py-24">
@@ -509,18 +569,21 @@ export const PublicBrandGuideline: React.FC = () => {
           >
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40" size={16} />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--brand-text)] opacity-60"
+                  size={16}
+                />
                 <Input
                   placeholder={t('public.brand.guideline.search_assets_colors_or_spe')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 bg-transparent border-none focus-visible:ring-0 text-sm placeholder:opacity-40"
+                  className="pl-10 h-11 bg-transparent border-none focus-visible:ring-0 text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-text)] placeholder:opacity-60"
                 />
               </div>
 
               {/* Mobile tab selector */}
               <div className="md:hidden border-t border-[var(--brand-text)]/10 pt-3 flex gap-1 overflow-x-auto scrollbar-none">
-                {PUBLIC_TABS.map((tab) => (
+                {visibleTabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -539,7 +602,7 @@ export const PublicBrandGuideline: React.FC = () => {
 
               {/* Desktop tabs */}
               <div className="hidden md:flex items-center gap-1 border-l border-[var(--brand-text)]/10 pl-4">
-                {PUBLIC_TABS.map((tab) => (
+                {visibleTabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -660,10 +723,6 @@ export const PublicBrandGuideline: React.FC = () => {
             guideline={guideline}
             sections={visibleSections}
             searchTerm={searchTerm}
-            onAssetClick={(url, _type, item) => {
-              const name = safeFileName(item.label || item.variant);
-              triggerAssetDownload(url, `${name}.${extFromUrl(url)}`);
-            }}
             renderSectionActions={
               editMode
                 ? (section) => (

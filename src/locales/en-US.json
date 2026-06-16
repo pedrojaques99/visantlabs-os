@@ -4771,7 +4771,13 @@
         "viewing_mode": "VIEW",
         "edit_section": "Edit section",
         "open_full_editor": "Open full editor →",
-        "editing_section": "Editing"
+        "editing_section": "Editing",
+        "connect": "Connect",
+        "connecting": "Connecting…",
+        "connect_brand_aria": "Connect brand to Claude, Cursor or other AI tools",
+        "download": "Download",
+        "download_brand_aria": "Download brand guidelines",
+        "css_variables": "CSS Variables"
       }
     }
   },
