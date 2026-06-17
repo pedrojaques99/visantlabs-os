@@ -49,6 +49,13 @@ import {
   isAssetAnalysisConfigured,
 } from '../lib/brand/assetAnalysis.js';
 import {
+  indexAsset,
+  searchAssets,
+  similarAssets,
+  removeGuidelineVectors,
+  isVectorSearchConfigured,
+} from '../lib/brand/assetVectors.js';
+import {
   BrandGuidelineSchema,
   BrandGuidelinePatchSchema,
 } from '../../src/lib/brandGuidelineSchema.js';
@@ -171,9 +178,11 @@ async function analyzeGuidelineAssets(
   const media = ((g.media as any[]) || []).map((m) => ({ ...m }));
 
   // Only analyzable image assets that are missing analysis (or all, when forced).
-  const targets: any[] = [
-    ...logos.filter((l) => l?.url && (force || !l.analysis)),
-    ...media.filter((m) => m?.url && m.type !== 'pdf' && (force || !m.analysis)),
+  const targets: Array<{ asset: any; kind: 'logo' | 'media' }> = [
+    ...logos.filter((l) => l?.url && (force || !l.analysis)).map((asset) => ({ asset, kind: 'logo' as const })),
+    ...media
+      .filter((m) => m?.url && m.type !== 'pdf' && (force || !m.analysis))
+      .map((asset) => ({ asset, kind: 'media' as const })),
   ];
 
   let analyzed = 0;
@@ -181,11 +190,19 @@ async function analyzeGuidelineAssets(
   for (let i = 0; i < targets.length; i += CONCURRENCY) {
     const batch = targets.slice(i, i + CONCURRENCY);
     await Promise.all(
-      batch.map(async (asset) => {
+      batch.map(async ({ asset, kind }) => {
         const result = await analyzeAssetImage(asset.url);
         if (result) {
           asset.analysis = result.analysis;
           analyzed++;
+          // Best-effort semantic indexing (no-op if Pinecone unconfigured).
+          await indexAsset({
+            guidelineId,
+            userId: g.userId,
+            kind,
+            asset,
+            image: result.image,
+          });
         }
       })
     );
@@ -496,6 +513,8 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
 
     if (!guideline) return res.status(404).json({ error: 'Not found' });
     await prisma.brandGuideline.delete({ where: { id: guideline.id } });
+    // Drop this brand's asset vectors from Pinecone (best-effort).
+    void removeGuidelineVectors(guideline.id).catch(() => {});
     res.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting brand guideline:', error);
@@ -1057,6 +1076,87 @@ router.post('/:id/assets/analyze', apiRateLimiter, authenticate, async (req: Aut
     res.status(500).json({ error: 'Failed to analyze assets', message: error?.message });
   }
 });
+
+// GET /api/brand-guidelines/:id/assets/search?q=...&topK=
+// Semantic search within the brand's own indexed assets. Hits resolve to the
+// actual logo/media object on the guideline (with a relevance score).
+router.get('/:id/assets/search', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    if (!isVectorSearchConfigured()) {
+      return res.status(503).json({
+        error: 'vector_search_not_configured',
+        message: 'Set PINECONE_API_KEY to enable semantic asset search.',
+      });
+    }
+
+    const q = String(req.query.q || '').trim();
+    if (!q) return res.status(400).json({ error: 'Missing query (?q=)' });
+    const topK = Math.min(Math.max(parseInt(String(req.query.topK || '12'), 10) || 12, 1), 50);
+
+    const hits = await searchAssets(guideline.id, q, topK);
+    const byId = new Map<string, any>();
+    for (const l of (guideline.logos as any[]) || []) byId.set(l.id, { ...l, assetKind: 'logo' });
+    for (const m of (guideline.media as any[]) || []) byId.set(m.id, { ...m, assetKind: 'media' });
+
+    // Resolve hits to live asset objects (drop stale vectors whose asset is gone).
+    const results = hits
+      .map((h) => {
+        const asset = byId.get(h.assetId);
+        return asset ? { ...asset, score: h.score } : null;
+      })
+      .filter(Boolean);
+
+    res.json({ query: q, results });
+  } catch (error: any) {
+    console.error('[Brand Asset Search] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to search assets', message: error?.message });
+  }
+});
+
+// GET /api/brand-guidelines/:id/assets/:assetId/similar — "more like this"
+router.get(
+  '/:id/assets/:assetId/similar',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+      if (!isVectorSearchConfigured()) {
+        return res.status(503).json({
+          error: 'vector_search_not_configured',
+          message: 'Set PINECONE_API_KEY to enable semantic asset search.',
+        });
+      }
+
+      const hits = await similarAssets(guideline.id, req.params.assetId);
+      const byId = new Map<string, any>();
+      for (const l of (guideline.logos as any[]) || []) byId.set(l.id, { ...l, assetKind: 'logo' });
+      for (const m of (guideline.media as any[]) || []) byId.set(m.id, { ...m, assetKind: 'media' });
+      const results = hits
+        .map((h) => {
+          const asset = byId.get(h.assetId);
+          return asset ? { ...asset, score: h.score } : null;
+        })
+        .filter(Boolean);
+
+      res.json({ assetId: req.params.assetId, results });
+    } catch (error: any) {
+      console.error('[Brand Asset Similar] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to find similar assets', message: error?.message });
+    }
+  }
+);
 
 // POST /api/brand-guidelines/:id/personas/resolve-images
 // Fills missing persona portraits from free stock (Unsplash/Pexels) and persists

@@ -284,6 +284,37 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  /** Semantic search within a brand's own indexed assets. */
+  async searchAssets(
+    guidelineId: string,
+    query: string,
+    topK = 12
+  ): Promise<{ query: string; results: any[] }> {
+    const params = new URLSearchParams({ q: query, topK: String(topK) });
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/search?${params}`,
+      { headers: getAuthHeaders() }
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.message || body?.error || 'Failed to search assets');
+    }
+    return response.json();
+  },
+
+  /** "More like this" — assets semantically similar to a given asset. */
+  async similarAssets(guidelineId: string, assetId: string): Promise<{ results: any[] }> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/${assetId}/similar`,
+      { headers: getAuthHeaders() }
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.message || body?.error || 'Failed to find similar assets');
+    }
+    return response.json();
+  },
+
   /** Auto-fill missing persona portraits from free stock photos. */
   async resolvePersonaImages(
     guidelineId: string,

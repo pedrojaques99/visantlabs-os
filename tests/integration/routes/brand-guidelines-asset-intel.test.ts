@@ -137,3 +137,64 @@ describe('POST /:id/assets/analyze', () => {
     expect(res.body.error).toBe('vision_not_configured');
   });
 });
+
+// ─── assets/search + similar (Pinecone) ──────────────────────────────────────
+
+describe('GET /:id/assets/search & /:assetId/similar', () => {
+  const ORIG = { a: process.env.PINECONE_API_KEY, b: process.env.PINECONE_KEY };
+  afterEach(() => {
+    if (ORIG.a) process.env.PINECONE_API_KEY = ORIG.a;
+    else delete process.env.PINECONE_API_KEY;
+    if (ORIG.b) process.env.PINECONE_KEY = ORIG.b;
+    else delete process.env.PINECONE_KEY;
+  });
+
+  it('search: 401 without token', async () => {
+    const res = await (await request()).get(`${BASE}/anyid/assets/search?q=bold`);
+    expect(res.status).toBe(401);
+  });
+
+  it("search: 404 on another user's guideline", async () => {
+    const { token } = await seedUser();
+    const { user: other } = await createUser();
+    const { guideline } = await createBrandGuideline({ userId: other.id });
+    const res = await (await request())
+      .get(`${BASE}/${guideline.id}/assets/search?q=bold`)
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(404);
+  });
+
+  it('search: 503 when Pinecone is not configured', async () => {
+    delete process.env.PINECONE_API_KEY;
+    delete process.env.PINECONE_KEY;
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+    const res = await (await request())
+      .get(`${BASE}/${guideline.id}/assets/search?q=bold`)
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(503);
+    expect(res.body.error).toBe('vector_search_not_configured');
+  });
+
+  it('search: 400 when query is missing (Pinecone configured)', async () => {
+    process.env.PINECONE_API_KEY = 'test-key';
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+    const res = await (await request())
+      .get(`${BASE}/${guideline.id}/assets/search`)
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(400);
+  });
+
+  it('similar: 503 when Pinecone is not configured', async () => {
+    delete process.env.PINECONE_API_KEY;
+    delete process.env.PINECONE_KEY;
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+    const res = await (await request())
+      .get(`${BASE}/${guideline.id}/assets/anyasset/similar`)
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(503);
+    expect(res.body.error).toBe('vector_search_not_configured');
+  });
+});
