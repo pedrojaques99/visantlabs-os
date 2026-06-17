@@ -61,14 +61,37 @@ export function inferGender(persona: PersonaLike): PersonaGender {
   return 'neutral';
 }
 
-function buildQuery(persona: PersonaLike, gender: PersonaGender): string {
-  const who =
-    gender === 'male' ? 'man' : gender === 'female' ? 'woman' : 'person';
+function buildQuery(persona: PersonaLike, gender: PersonaGender, styleHint?: string): string {
+  const who = gender === 'male' ? 'man' : gender === 'female' ? 'woman' : 'person';
   const occ = (persona.occupation || '').toString().trim();
-  // "candid professional portrait" biases toward real headshots over abstract art.
-  return [`candid professional portrait of a ${who}`, occ, 'natural light, plain background']
+  // "candid portrait / real person" biases toward real headshots over abstract art;
+  // the brand styleHint nudges the photographic mood toward the brand's imagery.
+  return [
+    `candid portrait of a ${who}`,
+    occ,
+    styleHint || 'natural light',
+    'documentary style, real person',
+  ]
     .filter(Boolean)
     .join(', ');
+}
+
+/**
+ * Derive a short photographic-mood hint from the brand so auto-resolved
+ * portraits feel coherent (vs random stock). Prefers the brand's stated imagery
+ * direction, falls back to its tone-of-voice words.
+ */
+export function brandImageryHint(guideline: any): string | undefined {
+  const imagery = guideline?.guidelines?.imagery;
+  if (typeof imagery === 'string' && imagery.trim()) {
+    return imagery.split(/[.\n]/)[0].trim().slice(0, 80);
+  }
+  const tone = (guideline?.strategy?.voiceValues || [])
+    .map((v: any) => v?.title)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(', ');
+  return tone || undefined;
 }
 
 export interface ResolvedPortrait {
@@ -79,10 +102,11 @@ export interface ResolvedPortrait {
 /** Resolve a single portrait URL for a persona (or null if none found). */
 export async function resolvePersonaPortrait(
   persona: PersonaLike,
-  seedOffset = 0
+  seedOffset = 0,
+  styleHint?: string
 ): Promise<ResolvedPortrait | null> {
   const gender = inferGender(persona);
-  const query = buildQuery(persona, gender);
+  const query = buildQuery(persona, gender, styleHint);
 
   const { results } = await aggregateSearch({
     query,
