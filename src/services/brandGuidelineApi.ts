@@ -252,6 +252,35 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  /** Re-derive per-color usage proportions from the brand's own assets. */
+  async recomputeColorUsage(
+    guidelineId: string
+  ): Promise<{ colors: BrandGuideline['colors']; guideline?: BrandGuideline }> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/color-usage/recompute`,
+      { method: 'POST', headers: getAuthHeaders() }
+    );
+    if (!response.ok) throw new Error('Failed to compute color usage');
+    return response.json();
+  },
+
+  /** Auto-fill missing persona portraits from free stock photos. */
+  async resolvePersonaImages(
+    guidelineId: string,
+    force = false
+  ): Promise<{ personas: any[]; resolved: number; guideline?: BrandGuideline }> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/personas/resolve-images`,
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ force }),
+      }
+    );
+    if (!response.ok) throw new Error('Failed to resolve persona images');
+    return response.json();
+  },
+
   async deleteMedia(guidelineId: string, mediaId: string): Promise<void> {
     const response = await fetch(
       `${API_BASE_URL}/brand-guidelines/${guidelineId}/media/${mediaId}`,

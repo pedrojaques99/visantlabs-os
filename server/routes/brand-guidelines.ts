@@ -41,6 +41,8 @@ import {
   formatVersionListItem,
 } from '../lib/versionUtils.js';
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js';
+import { computeColorUsage, collectAssetUrls } from '../lib/brand/colorUsage.js';
+import { resolvePersonaPortrait } from '../lib/brand/personaPhotos.js';
 import {
   BrandGuidelineSchema,
   BrandGuidelinePatchSchema,
@@ -67,6 +69,39 @@ const publicRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+/** Invalidate cached brand context so plugins/MCP/public view get fresh data. */
+async function invalidateBrandCache(guidelineId: string): Promise<void> {
+  const keysToInvalidate = CacheInvalidation.onBrandEdit(guidelineId);
+  for (const pattern of keysToInvalidate) {
+    try {
+      const matches = await redisClient.keys(pattern);
+      if (matches.length > 0) await redisClient.del(...matches);
+    } catch {
+      /* Redis down — graceful degradation */
+    }
+  }
+}
+
+/**
+ * Re-derive per-color usage from a guideline's current assets and persist it.
+ * Used by the explicit recompute endpoint and fire-and-forget after asset uploads.
+ * Returns the updated colors, or null if the guideline vanished.
+ */
+async function recomputeColorUsageForGuideline(guidelineId: string): Promise<any[] | null> {
+  const g = await prisma.brandGuideline.findUnique({ where: { id: guidelineId } });
+  if (!g) return null;
+  const colors = ((g.colors as any[]) || []).filter((c) => c && c.hex);
+  if (colors.length === 0) return [];
+  const assetUrls = collectAssetUrls(g as any);
+  const updatedColors = await computeColorUsage(colors, assetUrls);
+  await prisma.brandGuideline.update({
+    where: { id: guidelineId },
+    data: { colors: updatedColors as any },
+  });
+  await invalidateBrandCache(guidelineId);
+  return updatedColors;
+}
 
 // GET /api/brand-guidelines — list all user's brand guidelines
 router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
@@ -837,6 +872,9 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
       data: { media: updatedMedia as any },
     });
 
+    // Refresh color-usage proportions from the new asset set (non-blocking).
+    void recomputeColorUsageForGuideline(guideline.id).catch(() => {});
+
     res.status(201).json({
       media: newMedia,
       allMedia: updatedMedia,
@@ -847,6 +885,85 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
     res.status(500).json({ error: 'Failed to upload media', message: error.message });
   }
 });
+
+// POST /api/brand-guidelines/:id/color-usage/recompute
+// Re-derives per-color usage proportions from the brand's own assets and
+// persists `usage`/`usageRank` onto each color (derived field — no version bump).
+router.post(
+  '/:id/color-usage/recompute',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+      const updatedColors = await recomputeColorUsageForGuideline(guideline.id);
+      res.json({ colors: updatedColors || [] });
+    } catch (error: any) {
+      console.error('[Brand Color Usage] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to compute color usage', message: error?.message });
+    }
+  }
+);
+
+// POST /api/brand-guidelines/:id/personas/resolve-images
+// Fills missing persona portraits from free stock (Unsplash/Pexels) and persists
+// them. Body: { force?: boolean } to re-resolve personas that already have an image.
+router.post(
+  '/:id/personas/resolve-images',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+      const strategy = (guideline.strategy as any) || {};
+      const personas = Array.isArray(strategy.personas) ? strategy.personas : [];
+      if (personas.length === 0) return res.json({ personas: [] });
+
+      const force = req.body?.force === true;
+      let resolvedCount = 0;
+      let offset = 0;
+      const updatedPersonas = [];
+      for (const persona of personas) {
+        if (persona?.image && !force) {
+          updatedPersonas.push(persona);
+          continue;
+        }
+        const portrait = await resolvePersonaPortrait(persona, offset++);
+        if (portrait) {
+          resolvedCount++;
+          updatedPersonas.push({
+            ...persona,
+            image: portrait.imageUrl,
+            imageAttribution: portrait.attribution,
+          });
+        } else {
+          updatedPersonas.push(persona);
+        }
+      }
+
+      const updated = await prisma.brandGuideline.update({
+        where: { id: guideline.id },
+        data: { strategy: { ...strategy, personas: updatedPersonas } as any },
+      });
+
+      await invalidateBrandCache(guideline.id);
+      res.json({ personas: updatedPersonas, resolved: resolvedCount, guideline: { ...updated, _id: updated.id } });
+    } catch (error: any) {
+      console.error('[Brand Persona Photos] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to resolve persona images', message: error?.message });
+    }
+  }
+);
 
 // DELETE /api/brand-guidelines/:id/media/:mediaId — remove media from kit
 router.delete(
@@ -986,6 +1103,9 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
       where: { id: guideline.id },
       data: { logos: updatedLogos as any },
     });
+
+    // Refresh color-usage proportions from the new asset set (non-blocking).
+    void recomputeColorUsageForGuideline(guideline.id).catch(() => {});
 
     res
       .status(201)

@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -10,9 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Plus, Trash2 } from 'lucide-react';
+import { User, Plus, Trash2, ImagePlus, Loader2 } from 'lucide-react';
 import type { BrandGuideline, BrandPersona } from '@/lib/figma-types';
 import { InlineTags } from '../InlineTags';
+import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 
 interface PersonasSectionProps {
   guideline: BrandGuideline;
@@ -120,6 +122,25 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
     [persist]
   );
 
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  const autoFillPhotos = useCallback(async () => {
+    if (!guideline.id) return;
+    setLoadingPhotos(true);
+    try {
+      const { personas: next, resolved } = await brandGuidelineApi.resolvePersonaImages(
+        guideline.id
+      );
+      if (Array.isArray(next)) persist(next as BrandPersona[]);
+      toast.success(
+        resolved > 0 ? `${resolved} foto(s) de banco adicionada(s)` : 'Nenhuma foto nova encontrada'
+      );
+    } catch {
+      toast.error('Falha ao buscar fotos de banco');
+    } finally {
+      setLoadingPhotos(false);
+    }
+  }, [guideline.id, persist]);
+
   return (
     <SectionBlock
       id="personas"
@@ -134,6 +155,23 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               section="strategy.personas"
               onResult={handleAiResult}
             />
+          )}
+          {personas.length > 0 && guideline.id && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5"
+              onClick={autoFillPhotos}
+              disabled={loadingPhotos}
+              aria-label="Auto-fill persona photos from free stock"
+              title="Buscar fotos grátis (Unsplash/Pexels)"
+            >
+              {loadingPhotos ? (
+                <Loader2 size={11} className="animate-spin" />
+              ) : (
+                <ImagePlus size={11} />
+              )}
+            </Button>
           )}
           <Button
             variant="ghost"
