@@ -159,10 +159,10 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
       );
       if (Array.isArray(next)) persist(next as BrandPersona[]);
       toast.success(
-        resolved > 0 ? `${resolved} foto(s) de banco adicionada(s)` : 'Nenhuma foto nova encontrada'
+        resolved > 0 ? `${resolved} stock photo(s) added` : 'No new photos found'
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Falha ao buscar fotos de banco');
+      toast.error(e instanceof Error ? e.message : 'Failed to fetch stock photos');
     } finally {
       setLoadingPhotos(false);
     }
@@ -191,7 +191,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               onClick={autoFillPhotos}
               disabled={loadingPhotos}
               aria-label="Auto-fill persona photos from free stock"
-              title="Buscar fotos grátis (Unsplash/Pexels)"
+              title="Fetch free stock photos (Unsplash/Pexels)"
             >
               {loadingPhotos ? (
                 <Loader2 size={11} className="animate-spin" />

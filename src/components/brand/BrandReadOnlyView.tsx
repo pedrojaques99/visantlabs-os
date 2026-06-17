@@ -612,6 +612,7 @@ const ArchetypesInteractive: React.FC<{ archetypes: NonNullable<NonNullable<Bran
               type="button"
               onClick={() => setSelected(isActive ? null : i)}
               aria-expanded={isActive}
+              aria-controls="archetype-detail-panel"
               className={cn(
                 'group relative rounded-[40px] p-10 flex flex-col items-center gap-6 overflow-hidden text-center transition-all bg-[var(--brand-surface)]/40 border',
                 isActive
@@ -649,6 +650,9 @@ const ArchetypesInteractive: React.FC<{ archetypes: NonNullable<NonNullable<Bran
         {active && (
           <motion.div
             key={selected}
+            id="archetype-detail-panel"
+            role="region"
+            aria-live="polite"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
