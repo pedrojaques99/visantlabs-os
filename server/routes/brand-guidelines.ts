@@ -210,7 +210,8 @@ async function analyzeGuidelineAssets(
   };
 
   // One slow/dead asset URL must never stall the whole job — bound each asset.
-  const ASSET_TIMEOUT_MS = 45_000;
+  // Generous so legitimate rate-limit retries (backoff ~3+6+12s) aren't killed.
+  const ASSET_TIMEOUT_MS = 120_000;
   const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
     Promise.race([
       p,
@@ -220,7 +221,9 @@ async function analyzeGuidelineAssets(
   let analyzed = 0;
   let processed = 0;
   let sinceSave = 0;
-  const CONCURRENCY = 3;
+  // Gentle concurrency keeps bulk bursts under the Gemini per-minute quota; the
+  // per-call retry/backoff in analyzeAssetImage absorbs whatever still 429s.
+  const CONCURRENCY = 2;
   const PERSIST_EVERY = 12; // flush to DB every ~12 assets (bounded write amplification)
 
   for (let i = 0; i < targets.length; i += CONCURRENCY) {
