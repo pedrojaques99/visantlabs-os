@@ -3,6 +3,7 @@ import { hexToRgb, colorDistance, computeColorUsage, collectAssetSources } from 
 import { inferGender, brandImageryHint } from '../personaPhotos.js';
 import { aggregateVisualSignature, hasSignature } from '../visualSignature.js';
 import { assetVectorId, isVectorSearchConfigured } from '../assetVectors.js';
+import { createAnalysisJob } from '../../brandAssetAnalysisJobs.js';
 
 describe('colorUsage helpers', () => {
   it('parses 6- and 3-digit hex (with/without #)', () => {
@@ -115,6 +116,22 @@ describe('assetVectors helpers', () => {
     if (orig.a) process.env.PINECONE_API_KEY = orig.a;
     else delete process.env.PINECONE_API_KEY;
     if (orig.b) process.env.PINECONE_KEY = orig.b;
+  });
+});
+
+describe('createAnalysisJob', () => {
+  it('starts a pending job with zeroed progress and a unique id', () => {
+    const a = createAnalysisJob({ guidelineId: 'g1', userId: 'u1' });
+    expect(a).toMatchObject({
+      guidelineId: 'g1',
+      userId: 'u1',
+      status: 'pending',
+      processed: 0,
+      total: 0,
+      analyzed: 0,
+    });
+    expect(a.jobId).toBeTruthy();
+    expect(createAnalysisJob({ guidelineId: 'g1', userId: 'u1' }).jobId).not.toBe(a.jobId);
   });
 });
 
