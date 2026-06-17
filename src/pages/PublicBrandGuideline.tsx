@@ -10,7 +10,6 @@ import { motion } from 'framer-motion';
 import {
   Download,
   AlertCircle,
-  Search,
   Palette,
   ChevronLeft,
   Sun,
@@ -32,7 +31,6 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
-import { Input } from '@/components/ui/input';
 import {
   BrandReadOnlyView,
   extractBrandTheme,
@@ -40,6 +38,7 @@ import {
   toCSSVariables,
   type BrandViewSection,
 } from '@/components/brand/BrandReadOnlyView';
+import { BrandSectionNav } from '@/components/brand/BrandSectionNav';
 import { PUBLIC_TABS, downloadBlob, safeFileName } from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
 import { BrandOverviewBento } from '@/components/brand/guidelines/preview/BrandOverviewBento';
@@ -134,6 +133,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  // Nav collapses from top-bar → sidebar once the hero scrolls out of view.
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const heroSentinelRef = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>('brand');
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
@@ -253,6 +255,18 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const currentTab = PUBLIC_TABS.find((t) => t.id === activeTab) || PUBLIC_TABS[0];
   const visibleSections = currentTab.sections;
 
+  // Collapse the top nav into the sidebar once the hero sentinel leaves the top.
+  useEffect(() => {
+    const el = heroSentinelRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => setNavCollapsed(!entry.isIntersecting), {
+      threshold: 0,
+      rootMargin: '-24px 0px 0px 0px',
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [guideline?.id]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
@@ -346,43 +360,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         description={guideline.identity?.description || guideline.identity?.tagline}
       />
 
-      {/* Floating Side Nav (Desktop) */}
-      <nav
-        aria-label={t('public.brand.guideline.brand_sections')}
-        className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4"
-      >
-        {visibleTabs.map((tab) => {
-          return (
-            <button
-              key={tab.id}
-              aria-current={activeTab === tab.id ? 'true' : undefined}
-              onClick={() => {
-                setActiveTab(tab.id);
-                document
-                  .getElementById(tab.id)
-                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-              className={cn(
-                'group flex items-center gap-3 transition-all duration-300',
-                activeTab === tab.id ? 'translate-x-2' : 'opacity-60 hover:opacity-100'
-              )}
-            >
-              <div
-                aria-hidden="true"
-                className={cn(
-                  'w-1 h-1 rounded-full transition-all duration-300',
-                  activeTab === tab.id
-                    ? 'h-6 bg-[var(--accent)] shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]'
-                    : 'bg-current opacity-20 group-hover:opacity-60'
-                )}
-              />
-              <span className="text-[10px] uppercase font-bold tracking-wider font-mono opacity-80 group-hover:opacity-100 transition-opacity">
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
+      {/* Section nav (top bar + sidebar) is rendered once, lower in the tree,
+          by <BrandSectionNav/> so the tab list stays single-source. */}
 
       {/* Top-left nav buttons */}
       <div className={cn('flex gap-2 fixed left-5 z-40', toolbarTop)}>
@@ -613,66 +592,23 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           </div>
         </motion.div>
 
-        {/* Global Controls */}
-        <div className="sticky top-6 z-40 mb-16 px-2">
-          <GlassPanel
-            padding="sm"
-            className="backdrop-blur-2xl transition-all duration-500 bg-[var(--brand-bg)]/30 border-[var(--brand-text)]/8 shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-[var(--brand-text)]/5"
-          >
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--brand-text)] opacity-60"
-                  size={16}
-                />
-                <Input
-                  placeholder={t('public.brand.guideline.search_assets_colors_or_spe')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 bg-transparent border-none focus-visible:ring-0 text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-text)] placeholder:opacity-60"
-                />
-              </div>
+        {/* Hero sentinel: when it leaves the top, the nav collapses to sidebar. */}
+        <div ref={heroSentinelRef} aria-hidden="true" className="h-px w-full" />
 
-              {/* Mobile tab selector */}
-              <div className="md:hidden border-t border-[var(--brand-text)]/10 pt-3 flex gap-1 overflow-x-auto scrollbar-none">
-                {visibleTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    aria-current={activeTab === tab.id ? 'true' : undefined}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0',
-                      activeTab === tab.id
-                        ? 'bg-[var(--accent)] text-[var(--accent-text)]'
-                        : 'opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5'
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Desktop tabs */}
-              <div className="hidden md:flex items-center gap-1 border-l border-[var(--brand-text)]/10 pl-4">
-                {visibleTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    aria-current={activeTab === tab.id ? 'true' : undefined}
-                    className={cn(
-                      'px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
-                      activeTab === tab.id
-                        ? 'bg-[var(--accent)] text-[var(--accent-text)]'
-                        : 'opacity-40 hover:opacity-100 hover:bg-[var(--brand-text)]/5'
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </GlassPanel>
-        </div>
+        {/* Unified, scroll-aware section nav (top bar ↔ sidebar) */}
+        <BrandSectionNav
+          tabs={visibleTabs}
+          activeTab={activeTab}
+          onTabChange={(id) => {
+            setActiveTab(id);
+            if (navCollapsed) window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          collapsed={navCollapsed}
+          searchPlaceholder={t('public.brand.guideline.search_assets_colors_or_spe')}
+          sectionsLabel={t('public.brand.guideline.brand_sections')}
+        />
 
         {/* Content router:
             · Preview tab → grouped mock gallery (BrandPreviewGallery)
