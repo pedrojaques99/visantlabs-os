@@ -170,7 +170,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const [connecting, setConnecting] = useState(false);
-  const [advancedEdit, setAdvancedEdit] = useState(!!idOverride);
+  const [advancedEdit, setAdvancedEdit] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   // Owner action dialogs (ported from the admin editor)
   const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
@@ -395,6 +395,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-all',
     navBtnClass
   );
+  // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
+  // so push the floating toolbars below it. Public route hides the header → top-5.
+  const toolbarTop = idOverride ? 'top-12 md:top-16' : 'top-5';
 
   // The Sheet and edit pencil buttons are placed inside the room so they can
   // access useBrandGuidelineEditor(). The room is only mounted when editMode=true
@@ -460,7 +463,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       </nav>
 
       {/* Top-left nav buttons */}
-      <div className="flex gap-2 fixed top-5 left-5 z-[1000]">
+      <div className={cn('flex gap-2 fixed left-5 z-[1000]', toolbarTop)}>
         <Button
           onClick={() => navigate('/')}
           variant="ghost"
@@ -484,7 +487,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       </div>
 
       {/* Top-right controls */}
-      <div className="flex flex-wrap justify-end gap-2 fixed top-5 right-5 z-[1000] items-center max-w-[70vw]">
+      <div
+        className={cn(
+          'flex flex-wrap justify-end gap-2 fixed right-5 z-[1000] items-center max-w-[70vw]',
+          toolbarTop
+        )}
+      >
         {/* Collaborator avatars — only visible in edit mode (inside room) */}
         {editMode && (
           <div className="mr-1">
@@ -683,7 +691,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         </div>
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 py-16 md:py-24">
+      <div
+        className={cn(
+          'relative z-10 max-w-5xl mx-auto px-6 pb-16 md:pb-24',
+          idOverride ? 'pt-28 md:pt-32' : 'pt-16 md:pt-24'
+        )}
+      >
         {/* Dynamic Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -863,48 +876,33 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           </motion.div>
         )}
 
-        {/* Brand content sections — advanced (full editor) for owners, else read view */}
-        {activeTab !== 'preview' &&
-          (advancedEdit && canEdit && editMode && guideline.id ? (
-            <React.Suspense
-              fallback={
-                <div className="py-20 text-center text-[10px] font-mono uppercase tracking-widest opacity-40">
-                  Loading editor…
-                </div>
-              }
-            >
-              <GuidelineDetail
-                guideline={guideline}
-                visibleSections={advancedVisibleSections}
-                onHideSection={handleHideSection}
-                onOpenWizard={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
-              />
-            </React.Suspense>
-          ) : (
-            <BrandReadOnlyView
-              guideline={guideline}
-              sections={visibleSections}
-              searchTerm={searchTerm}
-              renderSectionActions={
-                editMode
-                  ? (section) => (
-                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <SectionPresenceDot section={section} />
-                        <button
-                          type="button"
-                          aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
-                          onClick={() => setActiveEditSection(section)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/20 border border-warning/30 text-warning text-[10px] font-mono uppercase tracking-widest hover:bg-warning/30 transition-colors"
-                        >
-                          <Pencil size={10} />
-                          {SECTION_LABELS[section]}
-                        </button>
-                      </div>
-                    )
-                  : undefined
-              }
-            />
-          ))}
+        {/* Brand content — single view. Owners edit inline (pencil per section);
+            the Advanced editor opens as a side panel (Sheet), not inline. */}
+        {activeTab !== 'preview' && (
+          <BrandReadOnlyView
+            guideline={guideline}
+            sections={visibleSections}
+            searchTerm={searchTerm}
+            renderSectionActions={
+              editMode
+                ? (section) => (
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <SectionPresenceDot section={section} />
+                      <button
+                        type="button"
+                        aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
+                        onClick={() => setActiveEditSection(section)}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/20 border border-warning/30 text-warning text-[10px] font-mono uppercase tracking-widest hover:bg-warning/30 transition-colors"
+                      >
+                        <Pencil size={10} />
+                        {SECTION_LABELS[section]}
+                      </button>
+                    </div>
+                  )
+                : undefined
+            }
+          />
+        )}
 
         {/* Dynamic Footer */}
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
@@ -952,6 +950,34 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 />
               </React.Suspense>
             )}
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Advanced editor — full GuidelineDetail in a side panel (shared Sheet) */}
+      {canEdit && guideline.id && (
+        <Sheet open={advancedEdit} onOpenChange={(open) => setAdvancedEdit(open)}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto"
+          >
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400 flex items-center gap-2">
+                <SlidersHorizontal size={14} /> Advanced editor
+              </SheetTitle>
+            </SheetHeader>
+            <React.Suspense
+              fallback={
+                <div className="p-6 text-neutral-500 text-sm font-mono">Loading editor…</div>
+              }
+            >
+              <GuidelineDetail
+                guideline={guideline}
+                visibleSections={advancedVisibleSections}
+                onHideSection={handleHideSection}
+                onOpenWizard={() => navigate(`/brand-guidelines?id=${guideline.id}`)}
+              />
+            </React.Suspense>
           </SheetContent>
         </Sheet>
       )}
