@@ -44,13 +44,16 @@ export const BRAND_SECTION_PRESETS = {
     'themes',
     'knowledge',
   ] as BrandContextSection[],
+  // Visual-only: image generation needs palette/type/logos/visual style —
+  // not tone-of-voice, personas or pain points (those bloat the prompt).
   imageGen: [
     'identity',
     'colors',
     'typography',
-    'voice',
-    'strategy',
+    'logos',
+    'tokens',
     'themes',
+    'tags',
   ] as BrandContextSection[],
   minimal: ['identity', 'colors', 'typography'] as BrandContextSection[],
 };

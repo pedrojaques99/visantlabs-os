@@ -49,7 +49,10 @@ function computeHomography(src: number[][], dst: number[][]): number[] {
     let maxVal = Math.abs(M[col][col]);
     for (let row = col + 1; row < n; row++) {
       const v = Math.abs(M[row][col]);
-      if (v > maxVal) { maxVal = v; maxRow = row; }
+      if (v > maxVal) {
+        maxVal = v;
+        maxRow = row;
+      }
     }
     [M[col], M[maxRow]] = [M[maxRow], M[col]];
     const pivot = M[col][col];
@@ -104,35 +107,53 @@ export function perspectiveWarp(
 
   // Compute exact homography: art corners → destination quad corners
   const H = computeHomography(
-    [[0, 0], [srcW, 0], [srcW, srcH], [0, srcH]],
-    [[tl.x, tl.y], [tr.x, tr.y], [br.x, br.y], [bl.x, bl.y]],
+    [
+      [0, 0],
+      [srcW, 0],
+      [srcW, srcH],
+      [0, srcH],
+    ],
+    [
+      [tl.x, tl.y],
+      [tr.x, tr.y],
+      [br.x, br.y],
+      [bl.x, bl.y],
+    ]
   );
 
   const E = 2.0; // clip expansion to seal inter-cell gaps (0.5 leaves sub-pixel seams on extreme perspective)
 
   for (let gy = 0; gy < gridSize; gy++) {
     for (let gx = 0; gx < gridSize; gx++) {
-      const u0 = gx / gridSize,       u1 = (gx + 1) / gridSize;
-      const v0 = gy / gridSize,       v1 = (gy + 1) / gridSize;
+      const u0 = gx / gridSize,
+        u1 = (gx + 1) / gridSize;
+      const v0 = gy / gridSize,
+        v1 = (gy + 1) / gridSize;
 
       // Exact projective corners of this cell in destination space
       const p00 = applyH(H, u0 * srcW, v0 * srcH); // TL of cell in dest
       const p10 = applyH(H, u1 * srcW, v0 * srcH); // TR
       const p01 = applyH(H, u0 * srcW, v1 * srcH); // BL
 
-      const sx = u0 * srcW, sy = v0 * srcH;
-      const sw = (u1 - u0) * srcW, sh = (v1 - v0) * srcH;
+      const sx = u0 * srcW,
+        sy = v0 * srcH;
+      const sw = (u1 - u0) * srcW,
+        sh = (v1 - v0) * srcH;
 
       // TL-affine: maps (sx,sy)→p00, (sx+sw,sy)→p10, (sx,sy+sh)→p01
-      const dxu = p10.x - p00.x, dyu = p10.y - p00.y;
-      const dxv = p01.x - p00.x, dyv = p01.y - p00.y;
+      const dxu = p10.x - p00.x,
+        dyu = p10.y - p00.y;
+      const dxv = p01.x - p00.x,
+        dyv = p01.y - p00.y;
 
       ctx.save();
       ctx.transform(
-        dxu / sw, dyu / sw,
-        dxv / sh, dyv / sh,
+        dxu / sw,
+        dyu / sw,
+        dxv / sh,
+        dyv / sh,
         p00.x - (sx * dxu) / sw - (sy * dxv) / sh,
-        p00.y - (sx * dyu) / sw - (sy * dyv) / sh,
+        p00.y - (sx * dyu) / sw - (sy * dyv) / sh
       );
       ctx.beginPath();
       ctx.rect(sx - E, sy - E, sw + 2 * E, sh + 2 * E);

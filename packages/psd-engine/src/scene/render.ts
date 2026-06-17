@@ -82,9 +82,12 @@ export function renderScene(
     if (face.dispRef && assets[face.dispRef]) {
       const scale = face.dispScale ?? 8;
       faceCanvas = applyDisplacementFilter(
-        faceCanvas, assets[face.dispRef],
-        scale, scale,
-        'stretch to fit', 'repeat edge pixels',
+        faceCanvas,
+        assets[face.dispRef],
+        scale,
+        scale,
+        'stretch to fit',
+        'repeat edge pixels',
         cc
       );
     }

@@ -19,12 +19,7 @@ export const ARCHETYPE_IMAGES: Record<string, string> = {
 
 // Accent-insensitive slug used for matching (PT names + EN aliases).
 const norm = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-');
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, '-');
 
 // English / variant name → canonical PT key.
 const EN_ALIASES: Record<string, string> = {

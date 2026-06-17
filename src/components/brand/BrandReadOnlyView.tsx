@@ -536,7 +536,7 @@ function placeholderImage(seed: string, w = 600, h = 800): string {
   return `https://picsum.photos/seed/${encodeURIComponent(seed || 'brand')}/${w}/${h}?grayscale`;
 }
 
-// <img> that falls back to a placeholder photo when no src, then to an icon if both fail.
+// Image that falls back to a placeholder photo when no src, then to an icon if both fail.
 const ImgOrFallback: React.FC<{
   src?: string;
   alt: string;
@@ -1285,52 +1285,52 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
           {filtered.map((item, i) => {
             if (failed.has(item.id)) return null;
             return (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="group relative flex flex-col gap-4"
-              draggable={!!onAssetDragStart}
-              onDragStart={(e) =>
-                onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')
-              }
-            >
-              <div
-                className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10 cursor-pointer"
-                onClick={() => handleClick(item, i)}
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="group relative flex flex-col gap-4"
+                draggable={!!onAssetDragStart}
+                onDragStart={(e) =>
+                  onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')
+                }
               >
-                <img
-                  src={item.url}
-                  alt={item.label || 'Media'}
-                  onError={() => markFailed(item.id)}
-                  className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
-
-                <Button
-                  size="icon"
-                  className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-all z-10"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(item);
-                  }}
+                <div
+                  className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10 cursor-pointer"
+                  onClick={() => handleClick(item, i)}
                 >
-                  <Download size={16} />
-                </Button>
+                  <img
+                    src={item.url}
+                    alt={item.label || 'Media'}
+                    onError={() => markFailed(item.id)}
+                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
 
-                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-white tracking-tight">
-                      {item.label || 'Production File'}
-                    </p>
-                    <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">
-                      Asset // {String(i + 1).padStart(2, '0')}
-                    </span>
+                  <Button
+                    size="icon"
+                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-all z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(item);
+                    }}
+                  >
+                    <Download size={16} />
+                  </Button>
+
+                  <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-white tracking-tight">
+                        {item.label || 'Production File'}
+                      </p>
+                      <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">
+                        Asset // {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
             );
           })}
         </div>

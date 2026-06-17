@@ -30,14 +30,29 @@ export async function parseUrl(url: string): Promise<ParsedChunk[]> {
     targetUrl = `https://${targetUrl}`;
   }
 
-  assertSafeUrl(targetUrl);
-
-  const response = await fetch(targetUrl, {
-    headers: { 'User-Agent': 'VisantBot/1.0 (brand-extractor)' },
-    signal: AbortSignal.timeout(15000),
-    redirect: 'manual',
-  });
-  if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${targetUrl}`);
+  // Follow redirects manually (max 5 hops) so the SSRF guard re-runs on every
+  // hop — native redirect:'follow' would skip assertSafeUrl on the redirect
+  // target. Most real sites 301/302 (www→apex, http→https), so refusing to
+  // follow redirects breaks the common case.
+  let response: Response | undefined;
+  let currentUrl = targetUrl;
+  for (let hop = 0; hop < 5; hop++) {
+    assertSafeUrl(currentUrl);
+    response = await fetch(currentUrl, {
+      headers: { 'User-Agent': 'VisantBot/1.0 (brand-extractor)' },
+      signal: AbortSignal.timeout(15000),
+      redirect: 'manual',
+    });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) break;
+      currentUrl = new URL(location, currentUrl).toString();
+      continue;
+    }
+    break;
+  }
+  if (!response) throw new Error(`Failed to fetch ${targetUrl}`);
+  if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${currentUrl}`);
 
   const html = await response.text();
   const text = await stripHtml(html);

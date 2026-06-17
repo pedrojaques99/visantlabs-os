@@ -1059,129 +1059,131 @@ export const ImageLabPage: React.FC = () => {
           <div
             className={cn(
               'mt-3 transition-all duration-300',
-              fxBarVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
+              fxBarVisible
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-2 pointer-events-none'
             )}
           >
-          <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
-            {/* Undo / Redo */}
-            <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
-              <button
-                onClick={undo}
-                disabled={historyIndex < 0}
-                title="Undo (Ctrl+Z)"
-                className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
-              >
-                <Undo2 size={14} />
-              </button>
-              <button
-                onClick={redo}
-                disabled={historyIndex >= historyLength - 1}
-                title="Redo (Ctrl+Shift+Z)"
-                className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
-              >
-                <Redo2 size={14} />
-              </button>
-            </div>
-
-            {/* FX Mode tabs */}
-            {MODE_ITEMS.map((m, i) => {
-              const thumb = thumbs[m.id];
-              const isActive = mode === m.id;
-              return (
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-neutral-900/70 backdrop-blur-xl border border-neutral-800 shadow-2xl shadow-black/40">
+              {/* Undo / Redo */}
+              <div className="flex items-center gap-0.5 pr-1 border-r border-neutral-800/60">
                 <button
-                  key={m.id}
-                  onClick={() => handleModeChange(m.id)}
-                  className={cn(
-                    'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 text-[11px] font-medium whitespace-nowrap',
-                    isActive
-                      ? 'bg-white/12 text-white shadow-sm'
-                      : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                  )}
+                  onClick={undo}
+                  disabled={historyIndex < 0}
+                  title="Undo (Ctrl+Z)"
+                  className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
                 >
-                  <span
+                  <Undo2 size={14} />
+                </button>
+                <button
+                  onClick={redo}
+                  disabled={historyIndex >= historyLength - 1}
+                  title="Redo (Ctrl+Shift+Z)"
+                  className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors disabled:opacity-25 disabled:pointer-events-none"
+                >
+                  <Redo2 size={14} />
+                </button>
+              </div>
+
+              {/* FX Mode tabs */}
+              {MODE_ITEMS.map((m, i) => {
+                const thumb = thumbs[m.id];
+                const isActive = mode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => handleModeChange(m.id)}
                     className={cn(
-                      'transition-colors',
-                      isActive ? 'text-white' : 'text-neutral-600 group-hover/fx:text-neutral-400'
+                      'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 text-[11px] font-medium whitespace-nowrap',
+                      isActive
+                        ? 'bg-white/12 text-white shadow-sm'
+                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
                     )}
                   >
-                    {m.icon}
-                  </span>
-                  <span>{m.label}</span>
-                  <span
-                    className={cn(
-                      'text-[10px] font-mono tabular-nums transition-colors',
-                      isActive ? 'text-neutral-500' : 'text-neutral-700'
-                    )}
-                  >
-                    {i + 1}
-                  </span>
-                  {thumb && !isActive && (
-                    <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
-                      <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
-                        <img src={thumb} alt={m.label} className="w-28 h-28 object-cover" />
-                        <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
-                          {m.label} preview
+                    <span
+                      className={cn(
+                        'transition-colors',
+                        isActive ? 'text-white' : 'text-neutral-600 group-hover/fx:text-neutral-400'
+                      )}
+                    >
+                      {m.icon}
+                    </span>
+                    <span>{m.label}</span>
+                    <span
+                      className={cn(
+                        'text-[10px] font-mono tabular-nums transition-colors',
+                        isActive ? 'text-neutral-500' : 'text-neutral-700'
+                      )}
+                    >
+                      {i + 1}
+                    </span>
+                    {thumb && !isActive && (
+                      <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
+                        <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
+                          <img src={thumb} alt={m.label} className="w-28 h-28 object-cover" />
+                          <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
+                            {m.label} preview
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+                    )}
+                  </button>
+                );
+              })}
 
-            {/* Help + Pin + Panel toggle */}
-            <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
-              {hasImage && (
-                <SendToButton
-                  source="image-lab"
-                  outputMime="image/png"
-                  mimeType="image/png"
-                  label={`Image Lab — ${mode}`}
-                  variant="node"
-                  getImageBase64={captureResultPng}
-                  className="mr-0.5"
-                />
-              )}
-              <button
-                onClick={() => setShortcutsOpen(true)}
-                title="Shortcuts (?)"
-                className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
-              >
-                <HelpCircle size={12} />
-              </button>
-              {!isMobile && (
-                <>
-                  <button
-                    onClick={() => {
-                      setFxBarPinned(!fxBarPinned);
-                      setFxBarVisible(true);
-                    }}
-                    title={fxBarPinned ? 'Unpin toolbar' : 'Pin toolbar'}
-                    className={cn(
-                      'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
-                      fxBarPinned
-                        ? 'text-neutral-300 bg-white/10'
-                        : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
-                    )}
-                  >
-                    <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
-                  </button>
-                  <button
-                    onClick={() => setPanelVisible(!panelVisible)}
-                    title="Toggle panel (Tab)"
-                    className={cn(
-                      'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
-                      panelVisible
-                        ? 'text-neutral-400 hover:text-neutral-200'
-                        : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
-                    )}
-                  >
-                    <PanelRightOpen size={14} />
-                  </button>
-                </>
-              )}
+              {/* Help + Pin + Panel toggle */}
+              <div className="pl-1 border-l border-neutral-800/60 flex items-center gap-0.5">
+                {hasImage && (
+                  <SendToButton
+                    source="image-lab"
+                    outputMime="image/png"
+                    mimeType="image/png"
+                    label={`Image Lab — ${mode}`}
+                    variant="node"
+                    getImageBase64={captureResultPng}
+                    className="mr-0.5"
+                  />
+                )}
+                <button
+                  onClick={() => setShortcutsOpen(true)}
+                  title="Shortcuts (?)"
+                  className="flex items-center justify-center w-7 h-7 rounded-full text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
+                >
+                  <HelpCircle size={12} />
+                </button>
+                {!isMobile && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setFxBarPinned(!fxBarPinned);
+                        setFxBarVisible(true);
+                      }}
+                      title={fxBarPinned ? 'Unpin toolbar' : 'Pin toolbar'}
+                      className={cn(
+                        'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
+                        fxBarPinned
+                          ? 'text-neutral-300 bg-white/10'
+                          : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                      )}
+                    >
+                      <Pin size={12} className={cn(fxBarPinned && 'rotate-45')} />
+                    </button>
+                    <button
+                      onClick={() => setPanelVisible(!panelVisible)}
+                      title="Toggle panel (Tab)"
+                      className={cn(
+                        'flex items-center justify-center w-7 h-7 rounded-full transition-colors',
+                        panelVisible
+                          ? 'text-neutral-400 hover:text-neutral-200'
+                          : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/5'
+                      )}
+                    >
+                      <PanelRightOpen size={14} />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
           </div>
         </div>
 
