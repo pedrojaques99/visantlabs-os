@@ -470,16 +470,18 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
       {/* Top-left nav buttons */}
       <div className={cn('flex gap-2 fixed left-5 z-[1000]', toolbarTop)}>
-        <Button
-          onClick={() => navigate('/')}
-          variant="ghost"
-          className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
-            navBtnClass
-          )}
-        >
-          <Home size={14} /> <span className="hidden sm:inline">HOME</span>
-        </Button>
+        {!idOverride && (
+          <Button
+            onClick={() => navigate('/')}
+            variant="ghost"
+            className={cn(
+              'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+              navBtnClass
+            )}
+          >
+            <Home size={14} /> <span className="hidden sm:inline">HOME</span>
+          </Button>
+        )}
         <Button
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
@@ -982,7 +984,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         <Sheet open={advancedEdit} onOpenChange={(open) => setAdvancedEdit(open)}>
           <SheetContent
             side="right"
-            className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto"
+            className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto z-[1100]"
           >
             <SheetHeader className="mb-6">
               <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400 flex items-center gap-2">
