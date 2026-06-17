@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Palette, Plus, Trash2, Copy, ShieldCheck, X } from 'lucide-react';
+import { Palette, Plus, Trash2, Copy, ShieldCheck, X, BarChart3, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { checkWCAGCompliance, getContrastRatioPublic, hexToCmyk } from '@/utils/colorUtils';
 import { copyToClipboard } from '@/utils/clipboard';
+import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 
 interface ColorsSectionProps {
   guideline: BrandGuideline;
@@ -35,6 +36,26 @@ interface ContrastPair {
 export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdate, span }) => {
   const local = guideline.colors || [];
   const [showWCAG, setShowWCAG] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  const analyzeUsage = useCallback(async () => {
+    if (!guideline.id) return;
+    setAnalyzing(true);
+    try {
+      const { colors } = await brandGuidelineApi.recomputeColorUsage(guideline.id);
+      if (Array.isArray(colors)) onUpdate({ colors });
+      const ranked = (colors || []).filter((c) => (c as any)?.usage > 0).length;
+      toast.success(
+        ranked > 0
+          ? 'Hierarquia de cores atualizada pelo uso nas peças'
+          : 'Nenhuma cor da paleta encontrada nas peças'
+      );
+    } catch {
+      toast.error('Falha ao analisar uso de cores');
+    } finally {
+      setAnalyzing(false);
+    }
+  }, [guideline.id, onUpdate]);
 
   const persist = useCallback(
     (colors: typeof local) => {
@@ -133,6 +154,18 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       span={span as any}
       actions={
         <div className="flex items-center gap-1">
+          {local.length > 0 && guideline.id && (
+            <Button
+              variant="action"
+              size="icon-sm"
+              onClick={analyzeUsage}
+              disabled={analyzing}
+              title="Analisar uso das cores nas peças (hierarquia por proporção)"
+              aria-label="Analyze color usage across assets"
+            >
+              {analyzing ? <Loader2 size={12} className="animate-spin" /> : <BarChart3 size={12} />}
+            </Button>
+          )}
           {local.length >= 2 && (
             <Button
               variant="action"

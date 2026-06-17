@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -586,31 +586,95 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
     );
   }
 
+  return <ArchetypesInteractive archetypes={archetypes} />;
+};
+
+/**
+ * Progressive-disclosure archetypes: cards show only image + name by default.
+ * Clicking a card reveals a single detail panel below with the running
+ * description + examples. Nothing is expanded on first paint.
+ */
+const ArchetypesInteractive: React.FC<{ archetypes: NonNullable<NonNullable<BrandGuideline['strategy']>['archetypes']> }> = ({
+  archetypes,
+}) => {
+  const [selected, setSelected] = useState<number | null>(null);
+  const active = selected !== null ? archetypes[selected] : null;
+
   return (
-    <div className="space-y-16">
+    <div className="space-y-12">
       <FullSectionHeader label="Archetypes" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {archetypes.map((arch, i) => (
-          <div
-            key={i}
-            className="group relative rounded-[40px] p-12 flex flex-col md:flex-row gap-12 items-center overflow-hidden min-h-[400px] transition-colors bg-[var(--brand-surface)]/40 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10"
-          >
-            <div className="w-full md:w-1/2 aspect-[3/4] max-w-[280px] mx-auto rounded-2xl overflow-hidden relative transition-transform duration-500 shadow-2xl group-hover:rotate-2 bg-[var(--brand-bg)] flex items-center justify-center">
-              <ImgOrFallback
-                src={arch.image || getArchetypeImage(arch.name) || undefined}
-                alt={arch.name}
-                seed={`archetype-${arch.name}`}
-                fit="contain"
-                fallback={<Diamond size={64} className="opacity-10" aria-hidden="true" />}
-              />
-            </div>
-            <div className="flex-1 space-y-6">
-              <h4 className="text-3xl font-bold tracking-tight opacity-90">{arch.name}</h4>
-              <p className="text-lg font-light leading-relaxed opacity-60">{arch.description}</p>
-            </div>
-          </div>
-        ))}
+        {archetypes.map((arch, i) => {
+          const isActive = selected === i;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setSelected(isActive ? null : i)}
+              aria-expanded={isActive}
+              className={cn(
+                'group relative rounded-[40px] p-10 flex flex-col items-center gap-6 overflow-hidden text-center transition-all bg-[var(--brand-surface)]/40 border',
+                isActive
+                  ? 'border-[var(--accent)]/40 ring-1 ring-[var(--accent)]/25'
+                  : 'border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/15'
+              )}
+            >
+              <div className="w-full aspect-[3/4] max-w-[240px] rounded-2xl overflow-hidden relative transition-transform duration-500 shadow-2xl group-hover:rotate-2 bg-[var(--brand-bg)] flex items-center justify-center">
+                <ImgOrFallback
+                  src={arch.image || getArchetypeImage(arch.name) || undefined}
+                  alt={arch.name}
+                  seed={`archetype-${arch.name}`}
+                  fit="contain"
+                  fallback={<Diamond size={64} className="opacity-10" aria-hidden="true" />}
+                />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-2xl font-bold tracking-tight opacity-90">{arch.name}</h4>
+                {arch.role && (
+                  <span className="block text-[10px] font-mono uppercase tracking-widest opacity-40">
+                    {arch.role}
+                  </span>
+                )}
+              </div>
+              <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest opacity-40">
+                <MousePointerClick size={11} aria-hidden="true" />
+                {isActive ? 'Hide' : 'Details'}
+              </span>
+            </button>
+          );
+        })}
       </div>
+
+      <AnimatePresence mode="wait">
+        {active && (
+          <motion.div
+            key={selected}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25 }}
+          >
+            <GlassPanel padding="lg" className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/10">
+              <div className="space-y-6">
+                <h4 className="text-3xl font-bold tracking-tight opacity-90">{active.name}</h4>
+                <p className="text-lg font-light leading-relaxed opacity-60">{active.description}</p>
+                {active.examples && active.examples.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {active.examples.map((ex, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-[10px] font-bold uppercase tracking-widest opacity-60"
+                      >
+                        {ex}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </GlassPanel>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -660,21 +724,41 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
             <div className="flex flex-col md:flex-row gap-12">
-              <div className="w-full md:w-1/3 aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
-                <ImgOrFallback
-                  src={persona.image}
-                  alt={persona.name}
-                  seed={`persona-${persona.name}`}
-                  fit="cover"
-                  usePlaceholder={false}
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--brand-surface)] to-[var(--brand-bg)]">
-                      <span className="text-6xl font-black opacity-15 select-none">
-                        {persona.name?.[0]?.toUpperCase() || <User size={56} />}
-                      </span>
-                    </div>
-                  }
-                />
+              <div className="w-full md:w-1/3 space-y-2">
+                <div className="aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
+                  <ImgOrFallback
+                    src={persona.image}
+                    alt={persona.name}
+                    seed={`persona-${persona.name}`}
+                    fit="cover"
+                    usePlaceholder={false}
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--brand-surface)] to-[var(--brand-bg)]">
+                        <span className="text-6xl font-black opacity-15 select-none">
+                          {persona.name?.[0]?.toUpperCase() || <User size={56} />}
+                        </span>
+                      </div>
+                    }
+                  />
+                </div>
+                {persona.imageAttribution?.author && (
+                  <p className="text-[10px] font-mono opacity-30 text-center">
+                    Photo:{' '}
+                    {persona.imageAttribution.authorUrl ? (
+                      <a
+                        href={persona.imageAttribution.authorUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-60 underline"
+                      >
+                        {persona.imageAttribution.author}
+                      </a>
+                    ) : (
+                      persona.imageAttribution.author
+                    )}{' '}
+                    / {persona.imageAttribution.license}
+                  </p>
+                )}
               </div>
               <div className="flex-1 space-y-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -788,6 +872,91 @@ export interface BrandColorsViewProps extends SectionCommonProps {
   onColorClick?: (hex: string, item: { name?: string; role?: string }) => void;
 }
 
+/** Grid span per usage rank — biggest tile = most used (φ-laddered hierarchy). */
+function rankSpan(rank?: number): string {
+  switch (rank) {
+    case 1:
+      return 'sm:col-span-2 sm:row-span-2';
+    case 2:
+      return 'sm:col-span-1 sm:row-span-2';
+    case 3:
+      return 'sm:col-span-2 sm:row-span-1';
+    default:
+      return 'sm:col-span-1 sm:row-span-1';
+  }
+}
+
+/**
+ * Proportional palette: tiles sized by how much each color is actually used
+ * across the brand's assets (most used = largest). Falls back to the uniform
+ * grid (caller decides) when no usage data exists.
+ */
+const ColorUsagePalette: React.FC<{
+  colors: BrandGuideline['colors'];
+  onClick: (hex: string, item: { name?: string; role?: string }) => void;
+}> = ({ colors, onClick }) => {
+  const ranked = useMemo(
+    () =>
+      [...(colors || [])].sort(
+        (a, b) => (a.usageRank ?? 999) - (b.usageRank ?? 999) || (b.usage ?? 0) - (a.usage ?? 0)
+      ),
+    [colors]
+  );
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 auto-rows-[110px] sm:auto-rows-[140px] gap-4 grid-flow-dense">
+      {ranked.map((color, i) => {
+        const pct = typeof color.usage === 'number' ? Math.round(color.usage * 100) : null;
+        const big = (color.usageRank ?? 99) <= 2;
+        return (
+          <motion.button
+            key={i}
+            type="button"
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={() => onClick(color.hex, color)}
+            aria-label={`Copy hex ${color.hex}${color.name ? ` — ${color.name}` : ''}${
+              pct !== null ? ` — ${pct}% usage` : ''
+            }`}
+            className={cn(
+              'group relative rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all hover:border-[var(--accent)]/30 shadow-2xl text-left',
+              rankSpan(color.usageRank)
+            )}
+          >
+            <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+            {pct !== null && (
+              <span
+                className={cn(
+                  'absolute top-3 right-3 font-mono tabular-nums text-white/90 drop-shadow',
+                  big ? 'text-2xl font-bold' : 'text-xs font-bold'
+                )}
+              >
+                {pct}%
+              </span>
+            )}
+            <div className="absolute bottom-0 inset-x-0 p-3 flex flex-col gap-0.5">
+              <span
+                className={cn(
+                  'font-bold uppercase tracking-tight text-white/95 truncate drop-shadow',
+                  big ? 'text-sm' : 'text-[11px]'
+                )}
+              >
+                {color.name || 'Untitled'}
+              </span>
+              <span className="text-[10px] font-mono uppercase text-white/60 flex items-center gap-1.5">
+                {color.hex}
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity">· copy</span>
+              </span>
+            </div>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+};
+
 export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
   guideline,
   compact,
@@ -813,6 +982,12 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
     },
     [onColorClick]
   );
+
+  // Proportional layout only when usage was computed AND we're not filtering
+  // (a search would break the rank hierarchy).
+  const hasUsage =
+    !searchTerm &&
+    filtered.some((c) => typeof c.usage === 'number' && c.usage > 0 && !!c.usageRank);
 
   if (filtered.length === 0) return null;
 
@@ -848,38 +1023,42 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
         <div className="flex items-end justify-between border-b border-[var(--brand-text)]/10 pb-12">
           <FullSectionHeader label="Color Palette" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {filtered.map((color, i) => (
-            <motion.button
-              key={i}
-              type="button"
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              onClick={() => handleClick(color.hex, color)}
-              aria-label={`Copy hex ${color.hex}${color.name ? ` — ${color.name}` : ''}`}
-              className="group cursor-pointer space-y-3 text-left"
-            >
-              <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all group-hover:scale-105 group-hover:border-[var(--accent)]/30 shadow-2xl">
-                <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
-                  <span className="text-[10px] font-mono text-white opacity-60">COPY HEX</span>
+        {hasUsage ? (
+          <ColorUsagePalette colors={filtered} onClick={handleClick} />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {filtered.map((color, i) => (
+              <motion.button
+                key={i}
+                type="button"
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={() => handleClick(color.hex, color)}
+                aria-label={`Copy hex ${color.hex}${color.name ? ` — ${color.name}` : ''}`}
+                className="group cursor-pointer space-y-3 text-left"
+              >
+                <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all group-hover:scale-105 group-hover:border-[var(--accent)]/30 shadow-2xl">
+                  <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
+                    <span className="text-[10px] font-mono text-white opacity-60">COPY HEX</span>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">
-                  {color.name || 'Untitled'}
-                </p>
-                <span className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
-                  {color.hex}
-                  <span className="w-1 h-1 rounded-full bg-current opacity-20" />
-                  {color.role || 'Accent'}
-                </span>
-              </div>
-            </motion.button>
-          ))}
-        </div>
+                <div>
+                  <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">
+                    {color.name || 'Untitled'}
+                  </p>
+                  <span className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
+                    {color.hex}
+                    <span className="w-1 h-1 rounded-full bg-current opacity-20" />
+                    {color.role || 'Accent'}
+                  </span>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        )}
       </div>
     </motion.section>
   );

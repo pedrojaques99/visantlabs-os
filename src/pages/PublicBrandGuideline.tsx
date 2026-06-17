@@ -699,7 +699,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                         type="button"
                         aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
                         onClick={() => setActiveEditSection(section)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/20 border border-warning/30 text-warning text-[10px] font-mono uppercase tracking-widest hover:bg-warning/30 transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/45 text-[10px] font-mono uppercase tracking-widest hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
                       >
                         <Pencil size={10} />
                         {SECTION_LABELS[section]}

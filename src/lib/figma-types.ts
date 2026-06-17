@@ -776,6 +776,10 @@ export interface BrandGuidelineColor {
   name: string;
   role?: string;
   cmyk?: { c: number; m: number; y: number; k: number };
+  /** 0..1 proportion of how much this color appears across the brand's assets. */
+  usage?: number;
+  /** 1 = most used. Derived alongside `usage` by the backend analyzer. */
+  usageRank?: number;
 }
 
 export interface BrandGuidelineTypography {
@@ -846,6 +850,10 @@ export interface BrandPersona {
   desires?: string[];
   painPoints?: string[];
   image?: string;
+  /** Used to bias auto-resolved stock portraits toward the right person. */
+  gender?: 'male' | 'female' | 'neutral';
+  /** Attribution for an auto-resolved free-stock portrait. */
+  imageAttribution?: { author: string; authorUrl?: string; license: string };
 }
 
 export interface BrandToneOfVoiceValue {
