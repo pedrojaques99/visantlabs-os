@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { hexToRgb, colorDistance, computeColorUsage, collectAssetUrls } from '../colorUsage.js';
-import { inferGender } from '../personaPhotos.js';
+import { hexToRgb, colorDistance, computeColorUsage, collectAssetSources } from '../colorUsage.js';
+import { inferGender, brandImageryHint } from '../personaPhotos.js';
 
 describe('colorUsage helpers', () => {
   it('parses 6- and 3-digit hex (with/without #)', () => {
@@ -17,21 +17,48 @@ describe('colorUsage helpers', () => {
     expect(colorDistance(black, white)).toBeGreaterThan(colorDistance(black, { r: 10, g: 10, b: 10 }));
   });
 
-  it('collectAssetUrls pulls image media + logos, skips pdfs', () => {
-    const urls = collectAssetUrls({
+  it('collectAssetSources weights logos > designed media > stock, skips pdfs', () => {
+    const sources = collectAssetSources({
       media: [
-        { url: 'https://x/a.png', type: 'image' },
+        { url: 'https://x/stock.png', type: 'image', category: 'stock' },
+        { url: 'https://x/graphic.png', type: 'image', category: 'graphic' },
+        { url: 'https://x/plain.png', type: 'image' },
         { url: 'https://x/doc.pdf', type: 'pdf' },
       ],
       logos: [{ url: 'https://x/logo.svg' }, { url: undefined as any }],
     });
-    expect(urls).toEqual(['https://x/a.png', 'https://x/logo.svg']);
+    // logo first at full weight, pdf dropped
+    expect(sources.map((s) => s.url)).toEqual([
+      'https://x/logo.svg',
+      'https://x/stock.png',
+      'https://x/graphic.png',
+      'https://x/plain.png',
+    ]);
+    const w = Object.fromEntries(sources.map((s) => [s.url, s.weight]));
+    expect(w['https://x/logo.svg']).toBe(1.0);
+    expect(w['https://x/stock.png']).toBeLessThan(w['https://x/graphic.png']);
+    expect(w['https://x/graphic.png']).toBeLessThanOrEqual(1.0);
   });
 
   it('computeColorUsage returns input unchanged when there are no assets', async () => {
     const colors = [{ hex: '#ff0000', name: 'Red' }];
     const out = await computeColorUsage(colors, []);
     expect(out).toEqual(colors);
+  });
+});
+
+describe('brandImageryHint', () => {
+  it('prefers the brand imagery direction (first sentence, capped)', () => {
+    expect(
+      brandImageryHint({ guidelines: { imagery: 'Warm, muted documentary tones. Avoid stock.' } })
+    ).toBe('Warm, muted documentary tones');
+  });
+
+  it('falls back to tone-of-voice titles, then undefined', () => {
+    expect(
+      brandImageryHint({ strategy: { voiceValues: [{ title: 'Bold' }, { title: 'Human' }] } })
+    ).toBe('Bold, Human');
+    expect(brandImageryHint({})).toBeUndefined();
   });
 });
 

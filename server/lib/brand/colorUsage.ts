@@ -54,11 +54,18 @@ export function colorDistance(a: RGB, b: RGB): number {
 const MATCH_TOLERANCE = 120;
 const SAMPLE_EDGE = 56; // downsample longest edge to this many px
 
-async function accumulateFromImage(
-  buffer: Buffer,
-  brand: RGB[],
-  counts: number[]
-): Promise<void> {
+/** A weighted analysis source — designed pieces count more than stock media. */
+export interface AssetSource {
+  url: string;
+  weight: number;
+}
+
+/**
+ * Return the per-color matched-pixel counts for a SINGLE image. The caller
+ * normalizes these into a distribution so one large image can't outvote a small
+ * logo by raw pixel volume.
+ */
+async function colorCountsFromImage(buffer: Buffer, brand: RGB[]): Promise<number[]> {
   const { default: sharp } = await import('sharp');
   const { data, info } = await sharp(buffer)
     .resize(SAMPLE_EDGE, SAMPLE_EDGE, { fit: 'inside', withoutEnlargement: true })
@@ -66,6 +73,7 @@ async function accumulateFromImage(
     .raw()
     .toBuffer({ resolveWithObject: true });
 
+  const counts = new Array(brand.length).fill(0);
   const channels = info.channels; // 4 (RGBA) after ensureAlpha
   for (let i = 0; i < data.length; i += channels) {
     const alpha = data[i + 3];
@@ -83,52 +91,67 @@ async function accumulateFromImage(
     }
     if (best >= 0 && bestDist <= MATCH_TOLERANCE) counts[best] += 1;
   }
+  return counts;
 }
 
 /**
  * Compute usage proportions and return a NEW colors array with `usage` (0..1)
- * and `usageRank` (1 = most used) merged onto each color. Colors that never
- * matched keep `usage: 0`. Returns the input unchanged if there are no valid
- * colors or no assets to analyze.
+ * and `usageRank` (1 = most used) merged onto each color.
+ *
+ * Each asset contributes its *internal* color distribution (normalized to 1),
+ * scaled by an importance `weight`, so a single large stock photo can't dominate
+ * a small logo. Colors that never matched keep `usage: 0`. Returns the input
+ * unchanged if there are no valid colors or no assets to analyze.
  */
 export async function computeColorUsage<T extends UsageColor>(
   colors: T[],
-  assetUrls: string[]
+  assets: AssetSource[]
 ): Promise<T[]> {
   if (!Array.isArray(colors) || colors.length === 0) return colors;
   const brand = colors.map((c) => hexToRgb(c.hex));
   const valid = brand.every(Boolean);
-  if (!valid || assetUrls.length === 0) return colors;
+  if (!valid || !Array.isArray(assets) || assets.length === 0) return colors;
 
-  const counts = new Array(colors.length).fill(0);
+  const weighted = new Array(colors.length).fill(0);
 
   // Bound the work: at most 40 assets, fetch in small concurrent batches.
-  const urls = assetUrls.filter((u) => typeof u === 'string' && /^https?:/i.test(u)).slice(0, 40);
+  const sources = assets
+    .filter((a) => a && typeof a.url === 'string' && /^https?:/i.test(a.url))
+    .slice(0, 40);
   const BATCH = 6;
-  for (let i = 0; i < urls.length; i += BATCH) {
-    const batch = urls.slice(i, i + BATCH);
-    await Promise.all(
-      batch.map(async (url) => {
+  for (let i = 0; i < sources.length; i += BATCH) {
+    const batch = sources.slice(i, i + BATCH);
+    const perAsset = await Promise.all(
+      batch.map(async (src) => {
         try {
-          const res = await safeFetch(url);
-          if (!res.ok) return;
+          const res = await safeFetch(src.url);
+          if (!res.ok) return null;
           const buf = Buffer.from(await res.arrayBuffer());
-          if (buf.length === 0) return;
-          await accumulateFromImage(buf, brand as RGB[], counts);
+          if (buf.length === 0) return null;
+          const counts = await colorCountsFromImage(buf, brand as RGB[]);
+          return { counts, weight: src.weight };
         } catch {
-          /* unreachable / decode failure — skip this asset */
+          return null; // unreachable / decode failure — skip this asset
         }
       })
     );
+    for (const r of perAsset) {
+      if (!r) continue;
+      const sum = r.counts.reduce((a, b) => a + b, 0);
+      if (sum === 0) continue; // no brand color present in this asset
+      for (let c = 0; c < weighted.length; c++) {
+        weighted[c] += (r.counts[c] / sum) * r.weight; // normalized distribution × weight
+      }
+    }
   }
 
-  const total = counts.reduce((a, b) => a + b, 0);
+  const total = weighted.reduce((a, b) => a + b, 0);
   if (total === 0) {
     // Nothing matched — clear any stale usage so the UI falls back to uniform.
     return colors.map((c) => ({ ...c, usage: 0, usageRank: undefined }));
   }
 
-  const withUsage = colors.map((c, i) => ({ ...c, usage: counts[i] / total }));
+  const withUsage = colors.map((c, i) => ({ ...c, usage: weighted[i] / total }));
   // Rank by usage descending (1 = most used).
   const order = withUsage
     .map((c, i) => ({ i, usage: c.usage }))
@@ -140,17 +163,34 @@ export async function computeColorUsage<T extends UsageColor>(
   return withUsage;
 }
 
-/** Collect analyzable image URLs from a guideline's media + logos. */
-export function collectAssetUrls(guideline: {
-  media?: Array<{ url?: string; type?: string }> | null;
+// Importance weights: designed marks speak loudest about brand-color intent;
+// stock/background imagery barely counts (it isn't "the brand using its colors").
+const WEIGHT_LOGO = 1.0;
+const WEIGHT_MEDIA_DEFAULT = 0.6;
+const WEIGHT_MEDIA_BY_CATEGORY: Record<string, number> = {
+  stock: 0.15,
+  background: 0.4,
+  texture: 0.4,
+  product: 0.7,
+  graphic: 0.8,
+};
+
+/** Collect weighted analysis sources from a guideline's media + logos. */
+export function collectAssetSources(guideline: {
+  media?: Array<{ url?: string; type?: string; category?: string }> | null;
   logos?: Array<{ url?: string }> | null;
-}): string[] {
-  const urls: string[] = [];
-  for (const m of guideline.media || []) {
-    if (m?.url && m.type !== 'pdf') urls.push(m.url);
-  }
+}): AssetSource[] {
+  const sources: AssetSource[] = [];
   for (const l of guideline.logos || []) {
-    if (l?.url) urls.push(l.url);
+    if (l?.url) sources.push({ url: l.url, weight: WEIGHT_LOGO });
   }
-  return urls;
+  for (const m of guideline.media || []) {
+    if (m?.url && m.type !== 'pdf') {
+      const weight = m.category
+        ? (WEIGHT_MEDIA_BY_CATEGORY[m.category] ?? WEIGHT_MEDIA_DEFAULT)
+        : WEIGHT_MEDIA_DEFAULT;
+      sources.push({ url: m.url, weight });
+    }
+  }
+  return sources;
 }

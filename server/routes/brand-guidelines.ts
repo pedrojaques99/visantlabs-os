@@ -41,8 +41,8 @@ import {
   formatVersionListItem,
 } from '../lib/versionUtils.js';
 import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js';
-import { computeColorUsage, collectAssetUrls } from '../lib/brand/colorUsage.js';
-import { resolvePersonaPortrait } from '../lib/brand/personaPhotos.js';
+import { computeColorUsage, collectAssetSources } from '../lib/brand/colorUsage.js';
+import { resolvePersonaPortrait, brandImageryHint } from '../lib/brand/personaPhotos.js';
 import {
   BrandGuidelineSchema,
   BrandGuidelinePatchSchema,
@@ -83,24 +83,70 @@ async function invalidateBrandCache(guidelineId: string): Promise<void> {
   }
 }
 
+// Skip redundant work: remember the (colors + assets) fingerprint we last
+// analyzed per guideline. Usage depends on BOTH the palette and the asset set,
+// so a palette edit must invalidate even when assets are unchanged.
+const lastUsageFingerprint = new Map<string, string>();
+
+function usageFingerprint(colors: any[], sources: { url: string; weight: number }[]): string {
+  const palette = colors.map((c) => `${c.hex}`).join(',');
+  const assets = sources
+    .map((s) => `${s.url}@${s.weight}`)
+    .sort()
+    .join('|');
+  return crypto.createHash('sha1').update(`${palette}::${assets}`).digest('hex');
+}
+
 /**
  * Re-derive per-color usage from a guideline's current assets and persist it.
- * Used by the explicit recompute endpoint and fire-and-forget after asset uploads.
- * Returns the updated colors, or null if the guideline vanished.
+ * Used by the explicit recompute endpoint and (debounced) after asset uploads.
+ * Skips work when the palette+asset fingerprint is unchanged unless `force`.
+ *
+ * sharp runs in this (main) process by design: node-canvas always runs in a
+ * child worker here, so there's no libvips×Cairo clash — only sharp lives here.
+ *
+ * Returns the updated colors, null if the guideline vanished, or undefined when
+ * skipped as a no-op.
  */
-async function recomputeColorUsageForGuideline(guidelineId: string): Promise<any[] | null> {
+async function recomputeColorUsageForGuideline(
+  guidelineId: string,
+  force = false
+): Promise<any[] | null | undefined> {
   const g = await prisma.brandGuideline.findUnique({ where: { id: guidelineId } });
   if (!g) return null;
   const colors = ((g.colors as any[]) || []).filter((c) => c && c.hex);
   if (colors.length === 0) return [];
-  const assetUrls = collectAssetUrls(g as any);
-  const updatedColors = await computeColorUsage(colors, assetUrls);
+
+  const sources = collectAssetSources(g as any);
+  const fingerprint = usageFingerprint(colors, sources);
+  if (!force && lastUsageFingerprint.get(guidelineId) === fingerprint) {
+    return undefined; // nothing changed since last analysis
+  }
+
+  const updatedColors = await computeColorUsage(colors, sources);
   await prisma.brandGuideline.update({
     where: { id: guidelineId },
     data: { colors: updatedColors as any },
   });
+  lastUsageFingerprint.set(guidelineId, fingerprint);
   await invalidateBrandCache(guidelineId);
   return updatedColors;
+}
+
+// Debounce asset-upload triggers so a burst of uploads coalesces into one
+// analysis instead of re-fetching every asset N times.
+const usageRecomputeTimers = new Map<string, NodeJS.Timeout>();
+
+function scheduleColorUsageRecompute(guidelineId: string, delayMs = 8000): void {
+  const existing = usageRecomputeTimers.get(guidelineId);
+  if (existing) clearTimeout(existing);
+  const timer = setTimeout(() => {
+    usageRecomputeTimers.delete(guidelineId);
+    recomputeColorUsageForGuideline(guidelineId).catch(() => {});
+  }, delayMs);
+  // Don't keep the event loop alive purely for a pending recompute.
+  if (typeof timer.unref === 'function') timer.unref();
+  usageRecomputeTimers.set(guidelineId, timer);
 }
 
 // GET /api/brand-guidelines — list all user's brand guidelines
@@ -872,8 +918,8 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
       data: { media: updatedMedia as any },
     });
 
-    // Refresh color-usage proportions from the new asset set (non-blocking).
-    void recomputeColorUsageForGuideline(guideline.id).catch(() => {});
+    // Refresh color-usage proportions from the new asset set (debounced, coalesced).
+    scheduleColorUsageRecompute(guideline.id);
 
     res.status(201).json({
       media: newMedia,
@@ -901,7 +947,7 @@ router.post(
       });
       if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-      const updatedColors = await recomputeColorUsageForGuideline(guideline.id);
+      const updatedColors = await recomputeColorUsageForGuideline(guideline.id, true);
       res.json({ colors: updatedColors || [] });
     } catch (error: any) {
       console.error('[Brand Color Usage] Error:', error?.message || error);
@@ -925,10 +971,20 @@ router.post(
       });
       if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
+      // No stock provider configured → tell the client plainly instead of
+      // masquerading as an empty search result.
+      if (!process.env.UNSPLASH_ACCESS_KEY && !process.env.PEXELS_API_KEY) {
+        return res.status(503).json({
+          error: 'stock_provider_not_configured',
+          message: 'Set UNSPLASH_ACCESS_KEY or PEXELS_API_KEY to auto-fill persona photos.',
+        });
+      }
+
       const strategy = (guideline.strategy as any) || {};
       const personas = Array.isArray(strategy.personas) ? strategy.personas : [];
       if (personas.length === 0) return res.json({ personas: [] });
 
+      const styleHint = brandImageryHint(guideline);
       const force = req.body?.force === true;
       let resolvedCount = 0;
       let offset = 0;
@@ -938,7 +994,7 @@ router.post(
           updatedPersonas.push(persona);
           continue;
         }
-        const portrait = await resolvePersonaPortrait(persona, offset++);
+        const portrait = await resolvePersonaPortrait(persona, offset++, styleHint);
         if (portrait) {
           resolvedCount++;
           updatedPersonas.push({
@@ -1104,8 +1160,8 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
       data: { logos: updatedLogos as any },
     });
 
-    // Refresh color-usage proportions from the new asset set (non-blocking).
-    void recomputeColorUsageForGuideline(guideline.id).catch(() => {});
+    // Refresh color-usage proportions from the new asset set (debounced, coalesced).
+    scheduleColorUsageRecompute(guideline.id);
 
     res
       .status(201)

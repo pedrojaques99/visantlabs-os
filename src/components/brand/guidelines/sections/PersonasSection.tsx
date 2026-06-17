@@ -29,11 +29,18 @@ const fromLines = (text: string) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
+const GENDERS: { value: NonNullable<BrandPersona['gender']>; label: string }[] = [
+  { value: 'female', label: 'F' },
+  { value: 'male', label: 'M' },
+  { value: 'neutral', label: 'N' },
+];
+
 const Avatar: React.FC<{
   persona: BrandPersona;
   mediaItems: BrandGuideline['media'];
   onPickImage: (url: string) => void;
-}> = ({ persona, mediaItems, onPickImage }) => {
+  onSetGender: (gender: BrandPersona['gender']) => void;
+}> = ({ persona, mediaItems, onPickImage, onSetGender }) => {
   const img = (persona as any).image as string | undefined;
   const initials = persona.name
     ? persona.name
@@ -50,7 +57,7 @@ const Avatar: React.FC<{
       <DropdownMenuTrigger asChild>
         <button
           className="w-10 h-10 rounded-full shrink-0 overflow-hidden border border-white/10 bg-neutral-800 flex items-center justify-center hover:border-white/20 transition-colors"
-          title="Set avatar from media"
+          title="Set avatar / gender for stock photos"
         >
           {img ? (
             <img src={img} alt={persona.name} className="w-full h-full object-cover" />
@@ -60,6 +67,26 @@ const Avatar: React.FC<{
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52 p-1">
+        {/* Gender — steers auto-resolved stock portraits */}
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <span className="text-[10px] uppercase tracking-wide text-neutral-600">Stock gender</span>
+          <div className="flex gap-1">
+            {GENDERS.map((g) => (
+              <button
+                key={g.value}
+                onClick={() => onSetGender(g.value)}
+                className={`w-6 h-6 rounded text-[10px] font-bold transition-colors ${
+                  persona.gender === g.value
+                    ? 'bg-white/15 text-neutral-100'
+                    : 'bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
+                }`}
+                title={g.value}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+        </div>
         {img && (
           <DropdownMenuItem className="text-xs text-neutral-500" onClick={() => onPickImage('')}>
             Remove avatar
@@ -134,8 +161,8 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
       toast.success(
         resolved > 0 ? `${resolved} foto(s) de banco adicionada(s)` : 'Nenhuma foto nova encontrada'
       );
-    } catch {
-      toast.error('Falha ao buscar fotos de banco');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Falha ao buscar fotos de banco');
     } finally {
       setLoadingPhotos(false);
     }
@@ -200,6 +227,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
                 persona={p}
                 mediaItems={guideline.media}
                 onPickImage={(url) => set(i, { ...(p as any), image: url || undefined })}
+                onSetGender={(gender) => set(i, { gender })}
               />
               <div className="flex-1 min-w-0">
                 <Input
