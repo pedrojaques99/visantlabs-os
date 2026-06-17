@@ -323,7 +323,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
   return (
     <div className="space-y-8">
       <FullSectionHeader label="Mensagem Central" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {(editable || cm.product) && (
           <GlassPanel
             padding="md"
@@ -409,7 +409,7 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
   return (
     <div className="space-y-8">
       <FullSectionHeader label="Pilares" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {pillars.map((p, i) => (
           <GlassPanel
             key={i}
@@ -477,7 +477,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
           <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
           <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {fields.map(([key, label, value]) =>
             editable || value ? (
               <div key={key} className="space-y-3">
@@ -600,7 +600,7 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
                 src={arch.image || getArchetypeImage(arch.name) || undefined}
                 alt={arch.name}
                 seed={`archetype-${arch.name}`}
-                fit={arch.image ? 'contain' : 'cover'}
+                fit="contain"
                 fallback={<Diamond size={64} className="opacity-10" aria-hidden="true" />}
               />
             </div>
@@ -1490,8 +1490,10 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   const wrap = (id: BrandViewSection, node: React.ReactNode) => {
     const actions = renderSectionActions?.(id);
     if (!actions) return node;
+    // Named group so the section-hover doesn't trigger every card's `group-hover`
+    // inside (cards use their own plain `group`).
     return (
-      <div key={id} className="relative group">
+      <div key={id} className="relative group/section">
         {node}
         <div className="absolute top-0 right-0">{actions}</div>
       </div>
