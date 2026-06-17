@@ -73,8 +73,22 @@ window.addEventListener('unhandledrejection', (event) => {
 
   if (isChunkError) {
     console.warn('Chunk load error detected, attempting recovery...');
-    // Don't prevent default - let ErrorBoundary handle it
-    // But log it for debugging
+    // Stale deploy: the loaded bundle references chunks a newer deploy replaced
+    // (404 → SPA fallback HTML → MIME error). Reload once to pull fresh
+    // index.html + chunk refs. sessionStorage guard prevents reload loops if the
+    // chunk is genuinely broken.
+    try {
+      const KEY = 'chunk-reload-ts';
+      const last = Number(sessionStorage.getItem(KEY) || '0');
+      if (Date.now() - last > 10000) {
+        sessionStorage.setItem(KEY, String(Date.now()));
+        event.preventDefault();
+        window.location.reload();
+        return false;
+      }
+    } catch {
+      /* sessionStorage unavailable — fall through to ErrorBoundary */
+    }
   }
 });
 
