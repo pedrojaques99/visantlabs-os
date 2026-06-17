@@ -34,6 +34,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
   span,
 }) => {
   const [analyzing, setAnalyzing] = useState(false);
+  const [progress, setProgress] = useState<{ processed: number; total: number } | null>(null);
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
@@ -42,10 +43,15 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
   const analyzeAssets = useCallback(async () => {
     if (!guidelineId) return;
     setAnalyzing(true);
+    setProgress(null);
     try {
-      const res = await brandGuidelineApi.analyzeAssets(guidelineId);
-      if (Array.isArray(res.media)) onMediaChange(res.media);
-      if (Array.isArray(res.logos)) onLogosChange(res.logos);
+      const res = await brandGuidelineApi.analyzeAssets(guidelineId, {
+        onProgress: (p) => setProgress(p),
+      });
+      // Re-fetch so the gallery shows each asset's freshly-persisted analysis.
+      const g = await brandGuidelineApi.getById(guidelineId);
+      if (Array.isArray(g.media)) onMediaChange(g.media);
+      if (Array.isArray(g.logos)) onLogosChange(g.logos);
       toast.success(
         res.analyzed > 0
           ? `${res.analyzed} asset(s) analyzed by AI`
@@ -55,6 +61,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       toast.error(e instanceof Error ? e.message : 'Failed to analyze assets');
     } finally {
       setAnalyzing(false);
+      setProgress(null);
     }
   }, [guidelineId, onMediaChange, onLogosChange]);
 
@@ -99,6 +106,14 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       }
     >
       <div className="py-6 space-y-5">
+        {analyzing && (
+          <div className="flex items-center gap-2 text-[11px] text-neutral-400">
+            <Loader2 size={12} className="animate-spin" />
+            {progress && progress.total > 0
+              ? `Analyzing assets with AI… ${progress.processed}/${progress.total}`
+              : 'Starting analysis…'}
+          </div>
+        )}
         {hasAssets && guidelineId && (
           <div className="space-y-3">
             {/* Semantic search over the brand's own analyzed assets */}

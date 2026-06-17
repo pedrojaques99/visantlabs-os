@@ -264,11 +264,11 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
-  /** LLM-tag brand image assets (logos + media) with visual dimensions. */
-  async analyzeAssets(
+  /** Start an async asset-analysis job (returns immediately with a jobId). */
+  async startAssetAnalysis(
     guidelineId: string,
     force = false
-  ): Promise<{ logos: any[]; media: any[]; signature: any; analyzed: number }> {
+  ): Promise<{ jobId: string; status: string }> {
     const response = await fetch(
       `${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/analyze`,
       {
@@ -279,9 +279,50 @@ export const brandGuidelineApi = {
     );
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body?.message || body?.error || 'Failed to analyze assets');
+      throw new Error(body?.message || body?.error || 'Failed to start asset analysis');
     }
     return response.json();
+  },
+
+  /** Fetch the current state of an asset-analysis job. */
+  async getAssetAnalysisJob(
+    guidelineId: string,
+    jobId: string
+  ): Promise<{
+    status: 'pending' | 'processing' | 'done' | 'error';
+    processed: number;
+    total: number;
+    analyzed: number;
+    signature?: any;
+    error?: string;
+  }> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/analyze/${jobId}`,
+      { headers: getAuthHeaders() }
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.message || body?.error || 'Failed to load analysis job');
+    }
+    return response.json();
+  },
+
+  /** Start + poll an asset-analysis job to completion, reporting progress. */
+  async analyzeAssets(
+    guidelineId: string,
+    opts: { force?: boolean; onProgress?: (p: { processed: number; total: number }) => void } = {}
+  ): Promise<{ analyzed: number; signature: any }> {
+    const { jobId } = await this.startAssetAnalysis(guidelineId, opts.force ?? false);
+    const POLL_MS = 1500;
+    const DEADLINE = Date.now() + 30 * 60 * 1000; // 30 min ceiling for huge brands
+    for (;;) {
+      const job = await this.getAssetAnalysisJob(guidelineId, jobId);
+      opts.onProgress?.({ processed: job.processed, total: job.total });
+      if (job.status === 'done') return { analyzed: job.analyzed, signature: job.signature };
+      if (job.status === 'error') throw new Error(job.error || 'Analysis failed');
+      if (Date.now() > DEADLINE) throw new Error('Analysis timed out');
+      await new Promise((r) => setTimeout(r, POLL_MS));
+    }
   },
 
   /** Semantic search within a brand's own indexed assets. */

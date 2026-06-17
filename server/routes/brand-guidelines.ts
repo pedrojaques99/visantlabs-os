@@ -57,6 +57,12 @@ import {
   isVectorSearchConfigured,
 } from '../lib/brand/assetVectors.js';
 import {
+  createAnalysisJob,
+  saveAnalysisJob,
+  loadAnalysisJob,
+  reconcileIfOrphaned,
+} from '../lib/brandAssetAnalysisJobs.js';
+import {
   BrandGuidelineSchema,
   BrandGuidelinePatchSchema,
 } from '../../src/lib/brandGuidelineSchema.js';
@@ -170,8 +176,12 @@ function scheduleColorUsageRecompute(guidelineId: string, delayMs = 8000): void 
  */
 async function analyzeGuidelineAssets(
   guidelineId: string,
-  force = false
-): Promise<{ logos: any[]; media: any[]; signature: any; analyzed: number } | null> {
+  opts: {
+    force?: boolean;
+    onProgress?: (p: { processed: number; total: number }) => void | Promise<void>;
+  } = {}
+): Promise<{ logos: any[]; media: any[]; signature: any; analyzed: number; total: number } | null> {
+  const { force = false, onProgress } = opts;
   const g = await prisma.brandGuideline.findUnique({ where: { id: guidelineId } });
   if (!g) return null;
 
@@ -185,9 +195,24 @@ async function analyzeGuidelineAssets(
       .filter((m) => m?.url && m.type !== 'pdf' && (force || !m.analysis))
       .map((asset) => ({ asset, kind: 'media' as const })),
   ];
+  const total = targets.length;
+
+  // Persist what we have so far — makes large jobs resumable: a client timeout or
+  // server restart never loses analyzed assets, and re-running skips them.
+  const persist = async () => {
+    await prisma.brandGuideline.update({
+      where: { id: guidelineId },
+      data: { logos: logos as any, media: media as any },
+    });
+    await invalidateBrandCache(guidelineId);
+  };
 
   let analyzed = 0;
+  let processed = 0;
+  let sinceSave = 0;
   const CONCURRENCY = 3;
+  const PERSIST_EVERY = 12; // flush to DB every ~12 assets (bounded write amplification)
+
   for (let i = 0; i < targets.length; i += CONCURRENCY) {
     const batch = targets.slice(i, i + CONCURRENCY);
     await Promise.all(
@@ -197,31 +222,28 @@ async function analyzeGuidelineAssets(
           asset.analysis = result.analysis;
           analyzed++;
           // Best-effort semantic indexing (no-op if Pinecone unconfigured).
-          await indexAsset({
-            guidelineId,
-            userId: g.userId,
-            kind,
-            asset,
-            image: result.image,
-          });
+          await indexAsset({ guidelineId, userId: g.userId, kind, asset, image: result.image });
         }
       })
     );
+    processed += batch.length;
+    sinceSave += batch.length;
+    if (analyzed > 0 && sinceSave >= PERSIST_EVERY) {
+      await persist();
+      sinceSave = 0;
+    }
+    if (onProgress) await onProgress({ processed, total });
   }
 
   const signature = aggregateVisualSignature([...logos, ...media]);
 
   if (analyzed > 0) {
-    await prisma.brandGuideline.update({
-      where: { id: guidelineId },
-      data: { logos: logos as any, media: media as any },
-    });
-    await invalidateBrandCache(guidelineId);
+    await persist(); // final flush (remainder below PERSIST_EVERY)
     // New `medium` tags change per-asset color weights → refresh the hierarchy.
     scheduleColorUsageRecompute(guidelineId);
   }
 
-  return { logos, media, signature, analyzed };
+  return { logos, media, signature, analyzed, total };
 }
 
 // Debounce asset-analysis triggers so a burst of uploads coalesces into one pass
@@ -1070,14 +1092,74 @@ router.post('/:id/assets/analyze', apiRateLimiter, authenticate, async (req: Aut
       });
     }
 
-    const result = await analyzeGuidelineAssets(guideline.id, req.body?.force === true);
-    if (!result) return res.status(404).json({ error: 'Brand guideline not found' });
-    res.json(result);
+    // Async: create a job, respond 202 immediately, process in the background with
+    // incremental persistence + progress. Scales to hundreds of assets without a
+    // long request the proxy would time out. Clients poll the GET endpoint below.
+    const force = req.body?.force === true;
+    const job = createAnalysisJob({ guidelineId: guideline.id, userId: req.userId });
+    await saveAnalysisJob(job);
+    res.status(202).json({ jobId: job.jobId, status: job.status });
+
+    void (async () => {
+      job.status = 'processing';
+      await saveAnalysisJob(job);
+      try {
+        const result = await analyzeGuidelineAssets(guideline.id, {
+          force,
+          onProgress: async ({ processed, total }) => {
+            job.processed = processed;
+            job.total = total;
+            await saveAnalysisJob(job);
+          },
+        });
+        job.status = 'done';
+        job.total = result?.total ?? job.total;
+        job.processed = result?.total ?? job.processed;
+        job.analyzed = result?.analyzed ?? 0;
+        job.signature = result?.signature;
+        await saveAnalysisJob(job);
+      } catch (err: any) {
+        job.status = 'error';
+        job.error = err?.message || 'Analysis failed';
+        await saveAnalysisJob(job);
+      }
+    })().catch(() => {});
   } catch (error: any) {
     console.error('[Brand Asset Analysis] Error:', error?.message || error);
     res.status(500).json({ error: 'Failed to analyze assets', message: error?.message });
   }
 });
+
+// GET /api/brand-guidelines/:id/assets/analyze/:jobId — poll analysis progress
+router.get(
+  '/:id/assets/analyze/:jobId',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const job = await loadAnalysisJob(req.params.jobId);
+      if (!job || job.guidelineId !== req.params.id) {
+        return res.status(404).json({ error: 'Analysis job not found or expired' });
+      }
+      if (job.userId !== req.userId) return res.status(403).json({ error: 'Forbidden' });
+
+      const reconciled = await reconcileIfOrphaned(job);
+      res.json({
+        jobId: reconciled.jobId,
+        status: reconciled.status,
+        processed: reconciled.processed,
+        total: reconciled.total,
+        analyzed: reconciled.analyzed,
+        signature: reconciled.signature,
+        error: reconciled.error,
+      });
+    } catch (error: any) {
+      console.error('[Brand Asset Analysis Poll] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to load analysis job', message: error?.message });
+    }
+  }
+);
 
 // GET /api/brand-guidelines/:id/assets/search?q=...&topK=
 // Semantic search within the brand's own indexed assets. Hits resolve to the

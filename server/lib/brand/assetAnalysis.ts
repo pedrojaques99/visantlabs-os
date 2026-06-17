@@ -71,11 +71,27 @@ async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: str
   try {
     const res = await safeFetch(url);
     if (!res.ok) return null;
-    const mimeType = res.headers.get('content-type')?.split(';')[0] || 'image/png';
-    if (!mimeType.startsWith('image/')) return null; // skip pdfs / non-images
+    const ct = res.headers.get('content-type')?.split(';')[0] || '';
+    const isSvg = ct.includes('svg') || /\.svg(\?|$)/i.test(url);
+    if (!isSvg && !ct.startsWith('image/') && !/\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(url)) {
+      return null; // skip pdfs / non-images
+    }
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length === 0) return null;
-    return { data: buf.toString('base64'), mimeType };
+
+    // Vision models can't read SVG — rasterize to a flat-white PNG first so logo
+    // marks (which are often SVG) actually get analyzed instead of returning empty.
+    if (isSvg) {
+      const { default: sharp } = await import('sharp');
+      const png = await sharp(buf, { density: 200 })
+        .resize(512, 512, { fit: 'inside', withoutEnlargement: false })
+        .flatten({ background: '#ffffff' })
+        .png()
+        .toBuffer();
+      return { data: png.toString('base64'), mimeType: 'image/png' };
+    }
+
+    return { data: buf.toString('base64'), mimeType: ct.startsWith('image/') ? ct : 'image/png' };
   } catch {
     return null;
   }

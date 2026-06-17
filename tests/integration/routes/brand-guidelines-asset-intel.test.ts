@@ -138,6 +138,24 @@ describe('POST /:id/assets/analyze', () => {
   });
 });
 
+// ─── assets/analyze/:jobId (async progress poll) ─────────────────────────────
+
+describe('GET /:id/assets/analyze/:jobId', () => {
+  it('401 without token', async () => {
+    const res = await (await request()).get(`${BASE}/anyid/assets/analyze/somejob`);
+    expect(res.status).toBe(401);
+  });
+
+  it('404 for an unknown / expired job', async () => {
+    const { user, token } = await seedUser();
+    const { guideline } = await createBrandGuideline({ userId: user.id });
+    const res = await (await request())
+      .get(`${BASE}/${guideline.id}/assets/analyze/does-not-exist`)
+      .set('Authorization', bearer(token));
+    expect(res.status).toBe(404);
+  });
+});
+
 // ─── assets/search + similar (Pinecone) ──────────────────────────────────────
 
 describe('GET /:id/assets/search & /:assetId/similar', () => {
