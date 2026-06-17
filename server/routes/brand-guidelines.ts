@@ -196,6 +196,8 @@ async function analyzeGuidelineAssets(
       .map((asset) => ({ asset, kind: 'media' as const })),
   ];
   const total = targets.length;
+  // Report total upfront so a poller sees it immediately (before the first chunk).
+  if (onProgress) await onProgress({ processed: 0, total });
 
   // Persist what we have so far — makes large jobs resumable: a client timeout or
   // server restart never loses analyzed assets, and re-running skips them.
@@ -207,6 +209,14 @@ async function analyzeGuidelineAssets(
     await invalidateBrandCache(guidelineId);
   };
 
+  // One slow/dead asset URL must never stall the whole job — bound each asset.
+  const ASSET_TIMEOUT_MS = 45_000;
+  const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([
+      p,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error('asset timeout')), ms)),
+    ]);
+
   let analyzed = 0;
   let processed = 0;
   let sinceSave = 0;
@@ -217,12 +227,19 @@ async function analyzeGuidelineAssets(
     const batch = targets.slice(i, i + CONCURRENCY);
     await Promise.all(
       batch.map(async ({ asset, kind }) => {
-        const result = await analyzeAssetImage(asset.url);
-        if (result) {
-          asset.analysis = result.analysis;
-          analyzed++;
-          // Best-effort semantic indexing (no-op if Pinecone unconfigured).
-          await indexAsset({ guidelineId, userId: g.userId, kind, asset, image: result.image });
+        try {
+          const result = await withTimeout(analyzeAssetImage(asset.url), ASSET_TIMEOUT_MS);
+          if (result) {
+            asset.analysis = result.analysis;
+            analyzed++;
+            // Best-effort semantic indexing (no-op if Pinecone unconfigured).
+            await withTimeout(
+              indexAsset({ guidelineId, userId: g.userId, kind, asset, image: result.image }),
+              ASSET_TIMEOUT_MS
+            );
+          }
+        } catch {
+          /* timeout / failure on one asset — skip it, keep the job moving */
         }
       })
     );

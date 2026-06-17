@@ -69,7 +69,8 @@ export function isAssetAnalysisConfigured(): boolean {
 
 async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: string } | null> {
   try {
-    const res = await safeFetch(url);
+    // 20s socket timeout so a dead asset host can't stall a large analysis job.
+    const res = await safeFetch(url, { timeoutMs: 20_000 } as any);
     if (!res.ok) return null;
     const ct = res.headers.get('content-type')?.split(';')[0] || '';
     const isSvg = ct.includes('svg') || /\.svg(\?|$)/i.test(url);

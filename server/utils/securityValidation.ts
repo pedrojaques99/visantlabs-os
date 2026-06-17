@@ -155,6 +155,9 @@ export async function safeFetch(
   const path = parsed.pathname + parsed.search;
 
   return new Promise<Response>((resolve, reject) => {
+    // Opt-in socket timeout: callers fetching many external URLs (e.g. asset
+    // analysis) pass timeoutMs so one dead host can't hang the connection forever.
+    const timeoutMs = (init as { timeoutMs?: number } | undefined)?.timeoutMs;
     const req = request(
       {
         hostname: parsed.hostname,
@@ -162,6 +165,7 @@ export async function safeFetch(
         path: path || '/',
         method,
         headers: (init?.headers as Record<string, string>) ?? {},
+        ...(timeoutMs ? { timeout: timeoutMs } : {}),
       },
       (res) => {
         const status = res.statusCode ?? 0;
@@ -182,6 +186,9 @@ export async function safeFetch(
       }
     );
     req.on('error', reject);
+    if (timeoutMs) {
+      req.on('timeout', () => req.destroy(new Error(`Request timed out after ${timeoutMs}ms`)));
+    }
     if (init?.body != null && method !== 'GET') {
       if (init.body instanceof FormData) {
         // Serialize FormData — read full body then write at once
