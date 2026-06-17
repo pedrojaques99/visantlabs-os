@@ -402,15 +402,19 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     navBtnClass
   );
   // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
-  // so push the floating toolbars below it. Public route hides the header → top-5.
-  const toolbarTop = idOverride ? 'top-12 md:top-16' : 'top-5';
+  // Admin view covers the whole viewport (incl. native header), so toolbars sit at top-5.
+  const toolbarTop = 'top-5';
 
   // The Sheet and edit pencil buttons are placed inside the room so they can
   // access useBrandGuidelineEditor(). The room is only mounted when editMode=true
   // to avoid Liveblocks connections for anonymous visitors.
   const pageContent = (
     <div
-      className="min-h-screen transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden"
+      className={cn(
+        'transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden',
+        // Admin (idOverride): cover the whole viewport over the native app header.
+        idOverride ? 'fixed inset-0 z-[60] overflow-y-auto' : 'min-h-screen'
+      )}
       style={
         {
           '--accent': brandTheme.accent,
@@ -470,18 +474,16 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
       {/* Top-left nav buttons */}
       <div className={cn('flex gap-2 fixed left-5 z-[1000]', toolbarTop)}>
-        {!idOverride && (
-          <Button
-            onClick={() => navigate('/')}
-            variant="ghost"
-            className={cn(
-              'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
-              navBtnClass
-            )}
-          >
-            <Home size={14} /> <span className="hidden sm:inline">HOME</span>
-          </Button>
-        )}
+        <Button
+          onClick={() => navigate('/')}
+          variant="ghost"
+          className={cn(
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            navBtnClass
+          )}
+        >
+          <Home size={14} /> <span className="hidden sm:inline">HOME</span>
+        </Button>
         <Button
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
@@ -699,12 +701,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         </div>
       </div>
 
-      <div
-        className={cn(
-          'relative z-10 max-w-5xl mx-auto px-6 pb-16 md:pb-24',
-          idOverride ? 'pt-28 md:pt-32' : 'pt-16 md:pt-24'
-        )}
-      >
+      <div className="relative z-10 max-w-5xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
         {/* Dynamic Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -911,7 +908,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             renderSectionActions={
               editMode
                 ? (section) => (
-                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover/section:opacity-100 transition-opacity">
                       <SectionPresenceDot section={section} />
                       <button
                         type="button"
