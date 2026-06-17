@@ -11,6 +11,7 @@ import { FullScreenViewer } from '@/components/FullScreenViewer';
 import { copyToClipboard, copyImageAsPng } from '@/utils/clipboard';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { getArchetypeImage } from '@/constants/archetypeImages';
+import { InlineEditable } from './InlineEditable';
 
 export type BrandViewSection =
   | 'identity'
@@ -44,6 +45,9 @@ export interface BrandReadOnlyViewProps {
   onAssetDragStart?: (e: React.DragEvent, url: string, type: AssetType) => void;
   /** Render an action node (e.g. edit button) anchored to each section header. */
   renderSectionActions?: (section: BrandViewSection) => React.ReactNode;
+  /** Owner inline editing of prose fields (identity/manifesto/coreMessage). */
+  editable?: boolean;
+  onPatch?: (patch: Partial<BrandGuideline>) => void;
   className?: string;
 }
 
@@ -198,6 +202,10 @@ const sectionVariants = {
 interface SectionCommonProps {
   guideline: BrandGuideline;
   compact?: boolean;
+  /** When true, prose fields become inline-editable. */
+  editable?: boolean;
+  /** Persist an inline edit (merged patch). */
+  onPatch?: (patch: Partial<BrandGuideline>) => void;
 }
 
 const CompactSectionHeader: React.FC<{ label: string }> = ({ label }) => (
@@ -211,9 +219,14 @@ const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({
   className,
 }) => <h2 className={cn('text-4xl font-bold font-manrope opacity-90', className)}>{label}</h2>;
 
-export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+export const BrandIdentityView: React.FC<SectionCommonProps> = ({
+  guideline,
+  compact,
+  editable,
+  onPatch,
+}) => {
   const identity = guideline.identity || {};
-  if (!identity.description && !identity.tagline) return null;
+  if (!editable && !identity.description && !identity.tagline) return null;
 
   if (compact) {
     return (
@@ -241,20 +254,35 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, com
     >
       <div className="flex flex-col gap-10">
         <FullSectionHeader label="Identity" />
-        {identity.description && (
+        {(editable || identity.description || identity.tagline) && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="md:col-span-2">
-              <p className="text-lg md:text-xl leading-relaxed font-light opacity-70">
-                {identity.description}
-              </p>
+              {(editable || identity.description) && (
+                <InlineEditable
+                  as="p"
+                  multiline
+                  editable={editable}
+                  value={identity.description || ''}
+                  placeholder="Brand description…"
+                  onCommit={(v) => onPatch?.({ identity: { ...identity, description: v } })}
+                  className="text-lg md:text-xl leading-relaxed font-light opacity-70"
+                />
+              )}
             </div>
             <div className="space-y-8">
-              {identity.tagline && (
+              {(editable || identity.tagline) && (
                 <div className="space-y-2">
                   <span className="text-[10px] font-mono text-[var(--brand-text)]/50 uppercase tracking-widest">
                     Brand Tagline
                   </span>
-                  <p className="text-sm font-bold uppercase opacity-80">{identity.tagline}</p>
+                  <InlineEditable
+                    as="p"
+                    editable={editable}
+                    value={identity.tagline || ''}
+                    placeholder="Tagline…"
+                    onCommit={(v) => onPatch?.({ identity: { ...identity, tagline: v } })}
+                    className="text-sm font-bold uppercase opacity-80"
+                  />
                 </div>
               )}
             </div>
@@ -265,9 +293,19 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({ guideline, com
   );
 };
 
-export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
-  const cm = guideline.strategy?.coreMessage;
-  if (!cm?.product && !cm?.differential && !cm?.emotionalBond) return null;
+export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
+  guideline,
+  compact,
+  editable,
+  onPatch,
+}) => {
+  const cm: { product?: string; differential?: string; emotionalBond?: string } =
+    guideline.strategy?.coreMessage || {};
+  if (!editable && !cm.product && !cm.differential && !cm.emotionalBond) return null;
+  const setField = (key: 'product' | 'differential' | 'emotionalBond') => (v: string) =>
+    onPatch?.({
+      strategy: { ...guideline.strategy, coreMessage: { ...cm, [key]: v } } as any,
+    });
 
   if (compact) {
     return (
@@ -286,16 +324,24 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, 
     <div className="space-y-8">
       <FullSectionHeader label="Mensagem Central" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {cm.product && (
+        {(editable || cm.product) && (
           <GlassPanel
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
             <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Produto</MicroTitle>
-            <p className="text-lg font-medium opacity-80">{cm.product}</p>
+            <InlineEditable
+              as="p"
+              multiline
+              editable={editable}
+              value={cm.product || ''}
+              placeholder="Produto…"
+              onCommit={setField('product')}
+              className="text-lg font-medium opacity-80"
+            />
           </GlassPanel>
         )}
-        {cm.differential && (
+        {(editable || cm.differential) && (
           <GlassPanel
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
@@ -303,10 +349,18 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, 
             <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
               Diferencial
             </MicroTitle>
-            <p className="text-lg font-medium opacity-80">{cm.differential}</p>
+            <InlineEditable
+              as="p"
+              multiline
+              editable={editable}
+              value={cm.differential || ''}
+              placeholder="Diferencial…"
+              onCommit={setField('differential')}
+              className="text-lg font-medium opacity-80"
+            />
           </GlassPanel>
         )}
-        {cm.emotionalBond && (
+        {(editable || cm.emotionalBond) && (
           <GlassPanel
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
@@ -314,7 +368,15 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({ guideline, 
             <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
               Elo Emocional
             </MicroTitle>
-            <p className="text-lg font-medium opacity-80">{cm.emotionalBond}</p>
+            <InlineEditable
+              as="p"
+              multiline
+              editable={editable}
+              value={cm.emotionalBond || ''}
+              placeholder="Elo emocional…"
+              onCommit={setField('emotionalBond')}
+              className="text-lg font-medium opacity-80"
+            />
           </GlassPanel>
         )}
       </div>
@@ -368,15 +430,29 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
   );
 };
 
-export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
+export const BrandManifestoView: React.FC<SectionCommonProps> = ({
+  guideline,
+  compact,
+  editable,
+  onPatch,
+}) => {
   const raw = guideline.strategy?.manifesto;
-  if (!raw) return null;
+  if (!editable && !raw) return null;
 
-  const isStructured = typeof raw === 'object';
+  const isStructured = typeof raw === 'object' && raw !== null;
   const fullText = isStructured
-    ? raw.full || [raw.provocation, raw.tension, raw.promise].filter(Boolean).join('\n\n')
-    : raw;
-  if (!fullText) return null;
+    ? (raw as any).full ||
+      [(raw as any).provocation, (raw as any).tension, (raw as any).promise]
+        .filter(Boolean)
+        .join('\n\n')
+    : (raw as string);
+  if (!editable && !fullText) return null;
+
+  // Structured object used for inline editing (seed legacy string into `full`).
+  const m: { provocation?: string; tension?: string; promise?: string; full?: string } =
+    isStructured ? (raw as any) : typeof raw === 'string' && raw ? { full: raw } : {};
+  const setManifesto = (key: 'provocation' | 'tension' | 'promise') => (v: string) =>
+    onPatch?.({ strategy: { ...guideline.strategy, manifesto: { ...m, [key]: v } } });
 
   if (compact) {
     return (
@@ -389,7 +465,12 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, co
     );
   }
 
-  if (isStructured && (raw.provocation || raw.tension || raw.promise)) {
+  if (editable || (isStructured && (m.provocation || m.tension || m.promise))) {
+    const fields: Array<['provocation' | 'tension' | 'promise', string, string]> = [
+      ['provocation', 'Provocação', m.provocation || ''],
+      ['tension', 'Tensão', m.tension || ''],
+      ['promise', 'Promessa', m.promise || ''],
+    ];
     return (
       <div className="space-y-12">
         <div className="flex items-center gap-4">
@@ -397,28 +478,26 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({ guideline, co
           <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {raw.provocation && (
-            <div className="space-y-3">
-              <MicroTitle className="text-[var(--accent)]/40 tracking-wider">Provocação</MicroTitle>
-              <p className="text-lg leading-relaxed font-light opacity-70">{raw.provocation}</p>
-            </div>
-          )}
-          {raw.tension && (
-            <div className="space-y-3">
-              <MicroTitle className="text-[var(--accent)]/40 tracking-wider">Tensão</MicroTitle>
-              <p className="text-lg leading-relaxed font-light opacity-70">{raw.tension}</p>
-            </div>
-          )}
-          {raw.promise && (
-            <div className="space-y-3">
-              <MicroTitle className="text-[var(--accent)]/40 tracking-wider">Promessa</MicroTitle>
-              <p className="text-lg leading-relaxed font-light opacity-70">{raw.promise}</p>
-            </div>
+          {fields.map(([key, label, value]) =>
+            editable || value ? (
+              <div key={key} className="space-y-3">
+                <MicroTitle className="text-[var(--accent)]/40 tracking-wider">{label}</MicroTitle>
+                <InlineEditable
+                  as="p"
+                  multiline
+                  editable={editable}
+                  value={value}
+                  placeholder={`${label}…`}
+                  onCommit={setManifesto(key)}
+                  className="text-lg leading-relaxed font-light opacity-70"
+                />
+              </div>
+            ) : null
           )}
         </div>
-        {raw.full && (
+        {m.full && (
           <p className="text-xl leading-relaxed font-light opacity-60 mt-8 italic">
-            &ldquo;{raw.full}&rdquo;
+            &ldquo;{m.full}&rdquo;
           </p>
         )}
       </div>
@@ -1399,6 +1478,8 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   onAssetClick,
   onAssetDragStart,
   renderSectionActions,
+  editable,
+  onPatch,
   className,
 }) => {
   if (!guideline) return null;
@@ -1420,13 +1501,37 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   return (
     <div className={cn(wrapperCls, className)}>
       {enabled.has('identity') &&
-        wrap('identity', <BrandIdentityView guideline={guideline} compact={compact} />)}
+        wrap(
+          'identity',
+          <BrandIdentityView
+            guideline={guideline}
+            compact={compact}
+            editable={editable}
+            onPatch={onPatch}
+          />
+        )}
       {enabled.has('coreMessage') &&
-        wrap('coreMessage', <BrandCoreMessageView guideline={guideline} compact={compact} />)}
+        wrap(
+          'coreMessage',
+          <BrandCoreMessageView
+            guideline={guideline}
+            compact={compact}
+            editable={editable}
+            onPatch={onPatch}
+          />
+        )}
       {enabled.has('pillars') &&
         wrap('pillars', <BrandPillarsView guideline={guideline} compact={compact} />)}
       {enabled.has('manifesto') &&
-        wrap('manifesto', <BrandManifestoView guideline={guideline} compact={compact} />)}
+        wrap(
+          'manifesto',
+          <BrandManifestoView
+            guideline={guideline}
+            compact={compact}
+            editable={editable}
+            onPatch={onPatch}
+          />
+        )}
       {enabled.has('archetypes') &&
         wrap('archetypes', <BrandArchetypesView guideline={guideline} compact={compact} />)}
       {enabled.has('personas') &&

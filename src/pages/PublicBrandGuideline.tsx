@@ -64,6 +64,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { DEFAULT_SECTION_IDS } from '@/components/brand/guidelines/sections-manifest';
 import { InlineEditable } from '@/components/brand/InlineEditable';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -79,37 +80,35 @@ import {
   SectionPresenceDot,
 } from '@/components/brand/guidelines/BrandCollaborators';
 
-// Lazy — section editors are only needed by authenticated owners in edit mode.
-// Anonymous visitors never download this chunk.
-const PublicSectionEditSheet = React.lazy(
+// Lazy (with chunk-retry) — these are only needed by authenticated owners in edit
+// mode; anonymous visitors never download them. lazyWithRetry recovers from stale
+// chunks / MIME errors after a deploy.
+const PublicSectionEditSheet = lazyWithRetry(
   () => import('@/components/brand/guidelines/PublicSectionEditSheet')
 );
 
-// Lazy — full advanced editor (all 26 sections). Only loaded for owners who
-// switch on Advanced edit mode; anonymous/visitors never download it.
-const GuidelineDetail = React.lazy(() =>
+const GuidelineDetail = lazyWithRetry(() =>
   import('@/components/brand/guidelines/GuidelineDetail').then((m) => ({
     default: m.GuidelineDetail,
   }))
 );
 
-// Owner-only action dialogs — lazy so anonymous visitors never download them.
-const BrandAiPopulateDialog = React.lazy(() =>
+const BrandAiPopulateDialog = lazyWithRetry(() =>
   import('@/components/brand/guidelines/BrandAiPopulateDialog').then((m) => ({
     default: m.BrandAiPopulateDialog,
   }))
 );
-const BrandMockupDialog = React.lazy(() =>
+const BrandMockupDialog = lazyWithRetry(() =>
   import('@/components/brand/guidelines/BrandMockupDialog').then((m) => ({
     default: m.BrandMockupDialog,
   }))
 );
-const ShareGuidelineDialog = React.lazy(() =>
+const ShareGuidelineDialog = lazyWithRetry(() =>
   import('@/components/brand/guidelines/ShareGuidelineDialog').then((m) => ({
     default: m.ShareGuidelineDialog,
   }))
 );
-const DesignSystemValidation = React.lazy(() =>
+const DesignSystemValidation = lazyWithRetry(() =>
   import('@/components/brand/guidelines/DesignSystemValidation').then((m) => ({
     default: m.DesignSystemValidation,
   }))
@@ -905,6 +904,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             guideline={guideline}
             sections={visibleSections}
             searchTerm={searchTerm}
+            editable={canEdit && editMode}
+            onPatch={handleSave}
             renderSectionActions={
               editMode
                 ? (section) => (
