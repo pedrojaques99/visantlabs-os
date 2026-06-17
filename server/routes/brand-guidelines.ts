@@ -52,6 +52,7 @@ import {
   indexAsset,
   searchAssets,
   similarAssets,
+  removeAssetVector,
   removeGuidelineVectors,
   isVectorSearchConfigured,
 } from '../lib/brand/assetVectors.js';
@@ -1256,6 +1257,7 @@ router.delete(
         where: { id: guideline.id },
         data: { media: updatedMedia as any },
       });
+      void removeAssetVector(guideline.id, req.params.mediaId).catch(() => {});
 
       res.json({ success: true, allMedia: updatedMedia });
     } catch (error: any) {
@@ -1404,6 +1406,7 @@ router.delete('/:id/logos/:logoId', apiRateLimiter, authenticate, async (req: Au
       where: { id: guideline.id },
       data: { logos: updatedLogos as any },
     });
+    void removeAssetVector(guideline.id, req.params.logoId).catch(() => {});
 
     res.json({ success: true, allLogos: updatedLogos });
   } catch (error: any) {

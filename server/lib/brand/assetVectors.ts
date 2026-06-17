@@ -132,6 +132,16 @@ export async function similarAssets(
   return toHits(matches).filter((h) => h.assetId !== assetId).slice(0, topK);
 }
 
+/** Remove a single asset's vector (call when one logo/media is deleted). */
+export async function removeAssetVector(guidelineId: string, assetId: string): Promise<void> {
+  if (!isVectorSearchConfigured()) return;
+  try {
+    await vectorService.delete(assetVectorId(guidelineId, assetId));
+  } catch (err) {
+    console.warn('[assetVectors] asset cleanup failed for', assetId, (err as any)?.message || err);
+  }
+}
+
 /** Remove all vectors for a guideline (call on guideline delete). */
 export async function removeGuidelineVectors(guidelineId: string): Promise<void> {
   if (!isVectorSearchConfigured()) return;
