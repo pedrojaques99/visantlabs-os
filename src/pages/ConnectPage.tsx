@@ -7,6 +7,7 @@ import { useLayout } from '../hooks/useLayout';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from 'lucide-react';
+import { getCurrentLocale } from '../utils/localeUtils';
 
 const API = (import.meta as any).env?.VITE_API_URL || '/api';
 
@@ -44,35 +45,7 @@ function vscodeLink() {
   return `vscode://mcp/install?${encodeURIComponent(cfg)}`;
 }
 
-// Primary, hand-held guides for non-technical clients (their most likely tools).
-const ASSISTANTS = [
-  {
-    id: 'claude',
-    name: 'Claude',
-    tag: 'Recommended',
-    open: 'https://claude.ai/settings/connectors',
-    steps: [
-      'Open Claude → Settings → Connectors',
-      'Click "Add custom connector"',
-      'Paste the link below',
-      'Sign in with your account when Claude asks',
-    ],
-  },
-  {
-    id: 'chatgpt',
-    name: 'ChatGPT',
-    tag: '',
-    open: 'https://chatgpt.com',
-    steps: [
-      'Open ChatGPT → Settings → Connectors',
-      'Add a connector',
-      'Paste the link below',
-      'Sign in with your account when ChatGPT asks',
-    ],
-  },
-] as const;
-
-// Collapsed under "For developers".
+// Collapsed under "For developers" (dev terms are universal — not localized).
 const DEV_PROVIDERS = [
   { id: 'cursor', name: 'Cursor', sub: 'One-click install', href: cursorLink(), action: 'connect' as const },
   { id: 'vscode', name: 'VS Code', sub: 'One-click install', href: vscodeLink(), action: 'connect' as const },
@@ -85,12 +58,135 @@ const DEV_PROVIDERS = [
   },
 ] as const;
 
-// Copy-ready first prompts so the client immediately feels the value.
-const examplePrompts = (brand: string) => [
-  `Create an on-brand Instagram post for ${brand}.`,
-  `Write a product description in ${brand}'s tone of voice.`,
-  `What are ${brand}'s colors, fonts and logos?`,
-];
+// ── Localized copy (the brand manual is PT-first, so the connect flow follows) ──
+type Assistant = { id: string; name: string; tag: string; open: string; steps: string[] };
+interface ConnectCopy {
+  loading: string;
+  errorHint: string;
+  back: string;
+  invitedBy: (name: string) => string;
+  inviteDesc: (brand: string) => string;
+  ctaAuthed: string;
+  ctaGuest: string;
+  freeHint: string;
+  accepting: (brand: string) => string;
+  connectedTitle: (brand: string) => string;
+  connectedSubtext: string;
+  step1: string;
+  step2: string;
+  dashboard: string;
+  dev: string;
+  open: string;
+  assistants: Assistant[];
+  prompts: (brand: string) => string[];
+}
+
+const COPY: Record<'pt' | 'en', ConnectCopy> = {
+  pt: {
+    loading: 'Carregando convite...',
+    errorHint:
+      'Este link de conexão pode ter expirado ou já ter sido usado. Abra o link da sua marca de novo e toque em Conectar para gerar um novo — ou peça pra quem te enviou reenviar.',
+    back: 'Voltar ao início',
+    invitedBy: (n) => `Enviado por ${n}`,
+    inviteDesc: (b) =>
+      `Conecte ${b} ao seu assistente de IA (Claude, ChatGPT…). Ele vai criar, escrever e desenhar no padrão da marca — cores, fontes, logos e tom de voz, automaticamente.`,
+    ctaAuthed: 'Aceitar e conectar',
+    ctaGuest: 'Criar conta grátis e conectar',
+    freeHint: 'Grátis — entre com o Google em um clique.',
+    accepting: (b) => `Conectando ${b}...`,
+    connectedTitle: (b) => `${b} está conectada`,
+    connectedSubtext:
+      'Dois passos rápidos e seu assistente de IA vai criar, escrever e desenhar no padrão da marca — automaticamente.',
+    step1: '1 · Conecte seu assistente',
+    step2: '2 · Teste — abra seu assistente e peça',
+    dashboard: 'Ir para o painel',
+    dev: 'Para desenvolvedores (Cursor, VS Code, Terminal)',
+    open: 'Abrir',
+    assistants: [
+      {
+        id: 'claude',
+        name: 'Claude',
+        tag: 'Recomendado',
+        open: 'https://claude.ai/settings/connectors',
+        steps: [
+          'Abra o Claude → Configurações → Conectores',
+          'Clique em "Adicionar conector personalizado"',
+          'Cole o link abaixo',
+          'Faça login com sua conta quando o Claude pedir',
+        ],
+      },
+      {
+        id: 'chatgpt',
+        name: 'ChatGPT',
+        tag: '',
+        open: 'https://chatgpt.com',
+        steps: [
+          'Abra o ChatGPT → Configurações → Conectores',
+          'Adicione um conector',
+          'Cole o link abaixo',
+          'Faça login com sua conta quando o ChatGPT pedir',
+        ],
+      },
+    ],
+    prompts: (b) => [
+      `Crie um post de Instagram no padrão da ${b}.`,
+      `Escreva uma descrição de produto no tom de voz da ${b}.`,
+      `Quais são as cores, fontes e logos da ${b}?`,
+    ],
+  },
+  en: {
+    loading: 'Loading invite...',
+    errorHint:
+      'This connect link may have expired or already been used. Open your brand link again and tap Connect for a fresh one — or ask the team that shared it to resend.',
+    back: 'Back to home',
+    invitedBy: (n) => `Invited by ${n}`,
+    inviteDesc: (b) =>
+      `Connect ${b} to your AI assistant (Claude, ChatGPT…). It will then design, write and create on-brand — colors, fonts, logos and voice, automatically.`,
+    ctaAuthed: 'Accept & Connect',
+    ctaGuest: 'Create free account & connect',
+    freeHint: 'Free — sign in with Google in one click.',
+    accepting: (b) => `Connecting ${b}...`,
+    connectedTitle: (b) => `${b} is connected`,
+    connectedSubtext:
+      'Two quick steps and your AI assistant will design, write and create on-brand — automatically.',
+    step1: '1 · Connect your assistant',
+    step2: '2 · Try it — open your assistant and ask',
+    dashboard: 'Go to dashboard',
+    dev: 'For developers (Cursor, VS Code, Terminal)',
+    open: 'Open',
+    assistants: [
+      {
+        id: 'claude',
+        name: 'Claude',
+        tag: 'Recommended',
+        open: 'https://claude.ai/settings/connectors',
+        steps: [
+          'Open Claude → Settings → Connectors',
+          'Click "Add custom connector"',
+          'Paste the link below',
+          'Sign in with your account when Claude asks',
+        ],
+      },
+      {
+        id: 'chatgpt',
+        name: 'ChatGPT',
+        tag: '',
+        open: 'https://chatgpt.com',
+        steps: [
+          'Open ChatGPT → Settings → Connectors',
+          'Add a connector',
+          'Paste the link below',
+          'Sign in with your account when ChatGPT asks',
+        ],
+      },
+    ],
+    prompts: (b) => [
+      `Create an on-brand Instagram post for ${b}.`,
+      `Write a product description in ${b}'s tone of voice.`,
+      `What are ${b}'s colors, fonts and logos?`,
+    ],
+  },
+};
 
 // ── Animations ──
 
@@ -122,6 +218,9 @@ export default function ConnectPage() {
   const [showAuth, setShowAuth] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [brandName, setBrandName] = useState('');
+
+  // Brand manual is PT-first → the connect flow follows the same locale.
+  const L = COPY[getCurrentLocale() === 'pt-BR' ? 'pt' : 'en'];
 
   useEffect(() => {
     if (!token) {
@@ -210,7 +309,7 @@ export default function ConnectPage() {
             className="flex flex-col items-center gap-3"
           >
             <Spinner />
-            <p className="text-[13px] text-muted-foreground">Loading invite...</p>
+            <p className="text-[13px] text-muted-foreground">{L.loading}</p>
           </motion.div>
         )}
 
@@ -227,11 +326,7 @@ export default function ConnectPage() {
             <div className="text-5xl font-mono font-bold text-foreground/10 select-none">?</div>
             <div className="space-y-1.5">
               <p className="text-sm text-foreground/80">{error}</p>
-              <p className="text-[12px] text-muted-foreground leading-relaxed">
-                This connect link may have expired or already been used. Open your brand link again
-                and tap <span className="text-foreground/70">Connect</span> for a fresh one — or ask
-                the team that shared it to resend.
-              </p>
+              <p className="text-[12px] text-muted-foreground leading-relaxed">{L.errorHint}</p>
             </div>
             <Button
               variant="ghost"
@@ -239,7 +334,7 @@ export default function ConnectPage() {
               className="text-muted-foreground hover:text-foreground"
               onClick={() => navigate('/')}
             >
-              Back to home
+              {L.back}
             </Button>
           </motion.div>
         )}
@@ -282,7 +377,7 @@ export default function ConnectPage() {
                   {brandName}
                 </h1>
                 {creator && (
-                  <p className="text-[13px] text-muted-foreground">Invited by {creator}</p>
+                  <p className="text-[13px] text-muted-foreground">{L.invitedBy(creator)}</p>
                 )}
               </motion.div>
 
@@ -305,9 +400,7 @@ export default function ConnectPage() {
               variants={itemVariants}
               className="text-[13px] text-muted-foreground text-center leading-relaxed max-w-xs mx-auto"
             >
-              Connect <span className="text-foreground/80 font-medium">{brandName}</span> to your AI
-              assistant (Claude, ChatGPT…). It will then design, write and create on-brand —
-              colors, fonts, logos and voice, automatically.
+              {L.inviteDesc(brandName)}
             </motion.p>
 
             {/* CTA */}
@@ -317,14 +410,12 @@ export default function ConnectPage() {
                 onClick={handleConnect}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  {isAuthenticated ? 'Accept & Connect' : 'Create free account & connect'}
+                  {isAuthenticated ? L.ctaAuthed : L.ctaGuest}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Button>
               {!isAuthenticated && (
-                <p className="text-[11px] text-muted-foreground/70 text-center">
-                  Free — sign in with Google in one click.
-                </p>
+                <p className="text-[11px] text-muted-foreground/70 text-center">{L.freeHint}</p>
               )}
             </motion.div>
 
@@ -343,7 +434,7 @@ export default function ConnectPage() {
             className="flex flex-col items-center gap-3"
           >
             <Spinner />
-            <p className="text-[13px] text-muted-foreground">Connecting {brandName}...</p>
+            <p className="text-[13px] text-muted-foreground">{L.accepting(brandName)}</p>
           </motion.div>
         )}
 
@@ -377,30 +468,35 @@ export default function ConnectPage() {
                 variants={itemVariants}
                 className="text-lg font-semibold text-foreground tracking-tight"
               >
-                {brandName} is connected
+                {L.connectedTitle(brandName)}
               </motion.h1>
               <motion.p
                 variants={itemVariants}
                 className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed"
               >
-                Two quick steps and your AI assistant will design, write and create on-brand —
-                automatically.
+                {L.connectedSubtext}
               </motion.p>
             </motion.div>
 
             {/* Step 1 — connect your assistant */}
             <motion.div variants={itemVariants} className="space-y-3">
               <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-                1 · Connect your assistant
+                {L.step1}
               </p>
-              {ASSISTANTS.map((a) => (
-                <AssistantCard key={a.id} assistant={a} copied={copied} onCopy={copy} />
+              {L.assistants.map((a) => (
+                <AssistantCard
+                  key={a.id}
+                  assistant={a}
+                  openLabel={L.open}
+                  copied={copied}
+                  onCopy={copy}
+                />
               ))}
 
               {/* Developers — collapsed */}
               <details className="group rounded-xl border border-border/50 overflow-hidden">
                 <summary className="flex items-center justify-between px-4 py-2.5 cursor-pointer list-none text-[12px] text-muted-foreground hover:text-foreground transition-colors">
-                  For developers (Cursor, VS Code, Terminal)
+                  {L.dev}
                   <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="p-2 pt-0 space-y-1.5">
@@ -414,10 +510,10 @@ export default function ConnectPage() {
             {/* Step 2 — try it now */}
             <motion.div variants={itemVariants} className="space-y-3">
               <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-                2 · Try it — open your assistant and ask
+                {L.step2}
               </p>
               <div className="space-y-1.5">
-                {examplePrompts(brandName).map((p) => (
+                {L.prompts(brandName).map((p) => (
                   <PromptChip key={p} text={p} copied={copied} onCopy={copy} />
                 ))}
               </div>
@@ -431,7 +527,7 @@ export default function ConnectPage() {
                 className="text-muted-foreground hover:text-foreground text-[13px]"
                 onClick={() => navigate('/brand-guidelines')}
               >
-                Go to dashboard
+                {L.dashboard}
                 <ChevronRight className="w-3.5 h-3.5 ml-1" />
               </Button>
               <Watermark />
@@ -537,10 +633,12 @@ function CopyBtn({
 
 function AssistantCard({
   assistant,
+  openLabel,
   copied,
   onCopy,
 }: {
-  assistant: (typeof ASSISTANTS)[number];
+  assistant: Assistant;
+  openLabel: string;
   copied: string | null;
   onCopy: (t: string, id: string) => void;
 }) {
@@ -565,7 +663,7 @@ function AssistantCard({
           rel="noopener"
           className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
-          Open <ExternalLink className="w-3 h-3" />
+          {openLabel} <ExternalLink className="w-3 h-3" />
         </a>
       </div>
       <ol className="space-y-1.5">
