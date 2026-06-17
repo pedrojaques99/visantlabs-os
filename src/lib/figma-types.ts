@@ -1012,6 +1012,8 @@ export interface BrandGuideline {
   // Public sharing
   publicSlug?: string;
   isPublic?: boolean;
+  /** Brand's default display theme, set by the owner — loaded first for everyone. */
+  defaultTheme?: 'brand' | 'light' | 'dark';
   // Figma Integration
   figmaFileUrl?: string;
   figmaFileKey?: string;

@@ -190,6 +190,22 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     [guideline?.id]
   );
 
+  // Theme: owners persist their pick as the brand's default (loaded first next time).
+  const chooseTheme = useCallback(
+    (next: 'brand' | 'light' | 'dark') => {
+      setTheme(next);
+      if (canEdit && guideline?.id) handleSave({ defaultTheme: next } as Partial<BrandGuideline>);
+    },
+    [canEdit, guideline?.id, handleSave]
+  );
+
+  // Load the brand's saved default theme on first load (once per brand).
+  useEffect(() => {
+    const dt = guideline?.defaultTheme;
+    if (dt === 'brand' || dt === 'light' || dt === 'dark') setTheme(dt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guideline?.id]);
+
   // Advanced editor section visibility — persisted in guideline.activeSections (same as admin).
   const advancedVisibleSections = useMemo(() => {
     const active = ((guideline?.activeSections as string[]) || []).length
@@ -243,6 +259,20 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
+  // Brand theme CSS vars — also passed to portaled overlays (dropdown) so their
+  // glass surfaces match the live page theme.
+  const themeVars = useMemo(
+    () =>
+      ({
+        '--accent': brandTheme.accent,
+        '--accent-rgb': brandTheme.accentRgb,
+        '--accent-text': brandTheme.accentText,
+        '--brand-bg': brandTheme.bg,
+        '--brand-surface': brandTheme.surface,
+        '--brand-text': brandTheme.text,
+      }) as React.CSSProperties,
+    [brandTheme]
+  );
 
   // Preview tab (gallery) + Overview's Mockups tile render from local mock
   // tokens — available to anyone viewing the brand once there's enough to draw.
@@ -450,7 +480,11 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               <MoreHorizontal size={14} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[210px]">
+          <DropdownMenuContent
+            align="end"
+            style={themeVars}
+            className="w-auto min-w-0 p-2 rounded-2xl border border-[var(--brand-text)]/10 bg-[var(--brand-bg)]/70 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.25)] text-[var(--brand-text)]"
+          >
             {/* Import / Create — edit mode only */}
             {canEdit && editMode && (
               <>
@@ -527,18 +561,37 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 {advancedEdit && <Check size={13} className="ml-auto text-success" />}
               </Button>
             )}
-            <Button variant="menuItem" onClick={() => setTheme('brand')}>
-              <Palette size={13} /> Brand theme
-              {theme === 'brand' && <Check size={13} className="ml-auto text-success" />}
-            </Button>
-            <Button variant="menuItem" onClick={() => setTheme('light')}>
-              <Sun size={13} /> Light
-              {theme === 'light' && <Check size={13} className="ml-auto text-success" />}
-            </Button>
-            <Button variant="menuItem" onClick={() => setTheme('dark')}>
-              <Moon size={13} /> Dark
-              {theme === 'dark' && <Check size={13} className="ml-auto text-success" />}
-            </Button>
+            {/* Theme — compact icon row, persisted as the brand default for owners */}
+            <div
+              className="flex items-center gap-1.5 px-2 py-1.5"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <span className="text-[11px] font-medium opacity-60 mr-auto">Theme</span>
+              {(
+                [
+                  { k: 'brand', Icon: Palette, label: 'Brand theme' },
+                  { k: 'light', Icon: Sun, label: 'Light' },
+                  { k: 'dark', Icon: Moon, label: 'Dark' },
+                ] as const
+              ).map(({ k, Icon, label }) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => chooseTheme(k)}
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={theme === k}
+                  className={cn(
+                    'w-7 h-7 rounded-lg flex items-center justify-center transition-colors',
+                    theme === k
+                      ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                      : 'opacity-50 hover:opacity-100 hover:bg-[var(--brand-text)]/10'
+                  )}
+                >
+                  <Icon size={13} />
+                </button>
+              ))}
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
 
