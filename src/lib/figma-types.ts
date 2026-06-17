@@ -782,6 +782,20 @@ export interface BrandGuidelineColor {
   usageRank?: number;
 }
 
+/** LLM-derived visual analysis persisted on a brand asset (logo/media). */
+export interface BrandAssetAnalysis {
+  description?: string;
+  dimensions?: {
+    vibe?: string[];
+    aesthetic?: string[];
+    theme?: string[];
+    mood?: string[];
+    medium?: string[];
+  };
+  analyzedAt?: string;
+  model?: string;
+}
+
 export interface BrandGuidelineTypography {
   family: string;
   style?: string;
@@ -915,6 +929,7 @@ export interface BrandGuideline {
     url: string;
     variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
     label?: string;
+    analysis?: BrandAssetAnalysis;
   }>;
   colors?: BrandGuidelineColor[];
   typography?: BrandGuidelineTypography[];
@@ -925,6 +940,7 @@ export interface BrandGuideline {
     type: 'image' | 'pdf';
     label?: string;
     category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
+    analysis?: BrandAssetAnalysis;
   }>;
   tokens?: {
     spacing?: Record<string, number>;

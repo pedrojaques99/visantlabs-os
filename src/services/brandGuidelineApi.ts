@@ -264,6 +264,26 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  /** LLM-tag brand image assets (logos + media) with visual dimensions. */
+  async analyzeAssets(
+    guidelineId: string,
+    force = false
+  ): Promise<{ logos: any[]; media: any[]; signature: any; analyzed: number }> {
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/analyze`,
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ force }),
+      }
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.message || body?.error || 'Failed to analyze assets');
+    }
+    return response.json();
+  },
+
   /** Auto-fill missing persona portraits from free stock photos. */
   async resolvePersonaImages(
     guidelineId: string,

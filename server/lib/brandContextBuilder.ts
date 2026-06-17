@@ -14,6 +14,15 @@ import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import type { TokenRegistry } from './tokenRegistry.js';
 import { redisClient } from './redis.js';
 import { CACHE_TTL, CacheKey } from './cache-utils.js';
+import { aggregateVisualSignature, hasSignature } from './brand/visualSignature.js';
+
+/** Compact " · vibe/aesthetic" suffix from an asset's persisted visual analysis. */
+function assetTags(asset: { analysis?: { dimensions?: Record<string, string[]> } }): string {
+  const d = asset?.analysis?.dimensions;
+  if (!d) return '';
+  const tags = [...(d.vibe || []), ...(d.aesthetic || [])].slice(0, 3);
+  return tags.length ? ` · ${tags.join('/')}` : '';
+}
 
 export type BrandContextSection =
   | 'identity'
@@ -470,7 +479,7 @@ export function buildBrandContext(
   if (s('logos') && includeLogos && bg.logos?.length) {
     lines.push('LOGOS:');
     for (const l of bg.logos) {
-      lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}`);
+      lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}${assetTags(l)}`);
     }
     lines.push('');
   }
@@ -480,9 +489,26 @@ export function buildBrandContext(
     lines.push('MEDIA KIT (reference assets):');
     for (const m of bg.media) {
       const cat = m.category ? ` [${m.category}]` : '';
-      lines.push(`  [${m.type}]${cat} ${m.url}${m.label ? ` — ${m.label}` : ''}`);
+      lines.push(`  [${m.type}]${cat} ${m.url}${m.label ? ` — ${m.label}` : ''}${assetTags(m)}`);
     }
     lines.push('');
+  }
+
+  // Visual Language — brand's own visual vocabulary, derived from asset analysis.
+  // This is the differentiator: assets become INPUT for generation, not just files.
+  if ((s('media') || s('logos')) && (bg.logos?.length || bg.media?.length)) {
+    const sig = aggregateVisualSignature([...(bg.logos || []), ...(bg.media || [])] as any);
+    if (hasSignature(sig)) {
+      lines.push('VISUAL LANGUAGE (derived from the brand’s assets):');
+      const row = (label: string, vals: string[]) =>
+        vals.length ? lines.push(`  ${label}: ${vals.join(', ')}`) : undefined;
+      row('Vibe', sig.vibe);
+      row('Aesthetic', sig.aesthetic);
+      row('Theme', sig.theme);
+      row('Mood', sig.mood);
+      row('Medium', sig.medium);
+      lines.push('');
+    }
   }
 
   // Design tokens

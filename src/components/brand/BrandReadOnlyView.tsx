@@ -1375,6 +1375,28 @@ export interface BrandMediaViewProps extends SectionCommonProps {
   onAssetDragStart?: BrandReadOnlyViewProps['onAssetDragStart'];
 }
 
+/** Compact vibe/aesthetic chips from an asset's LLM analysis (read-only). */
+const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[]> } }> = ({
+  analysis,
+}) => {
+  const dims = analysis?.dimensions;
+  if (!dims) return null;
+  const tags = [...(dims.vibe || []), ...(dims.aesthetic || [])].slice(0, 3);
+  if (tags.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1 py-0.5">
+      {tags.map((t, i) => (
+        <span
+          key={i}
+          className="px-1.5 py-0.5 rounded-full bg-white/15 backdrop-blur-sm text-[9px] font-mono uppercase tracking-wide text-white/80"
+        >
+          {t}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
   guideline,
   compact,
@@ -1498,11 +1520,12 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
                     <Download size={16} />
                   </Button>
 
-                  <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-bold text-white tracking-tight">
+                  <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-sm font-bold text-white tracking-tight truncate">
                         {item.label || 'Production File'}
                       </p>
+                      <AssetTagChips analysis={item.analysis} />
                       <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">
                         Asset // {String(i + 1).padStart(2, '0')}
                       </span>

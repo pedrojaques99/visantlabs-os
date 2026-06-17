@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import { SectionBlock } from '../SectionBlock';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 
 interface MediaSectionProps {
   guidelineId: string;
@@ -21,12 +24,48 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
   onLogosChange,
   span,
 }) => {
+  const [analyzing, setAnalyzing] = useState(false);
+  const hasAssets = (media?.length || 0) + (logos?.length || 0) > 0;
+
+  const analyzeAssets = useCallback(async () => {
+    if (!guidelineId) return;
+    setAnalyzing(true);
+    try {
+      const res = await brandGuidelineApi.analyzeAssets(guidelineId);
+      if (Array.isArray(res.media)) onMediaChange(res.media);
+      if (Array.isArray(res.logos)) onLogosChange(res.logos);
+      toast.success(
+        res.analyzed > 0
+          ? `${res.analyzed} asset(s) analisado(s) pela IA`
+          : 'Todos os assets já estavam analisados'
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Falha ao analisar assets');
+    } finally {
+      setAnalyzing(false);
+    }
+  }, [guidelineId, onMediaChange, onLogosChange]);
+
   return (
     <SectionBlock
       id="media"
       span={span as any}
       icon={<ImageIcon size={14} />}
       title="Visual Library & Components"
+      actions={
+        hasAssets && guidelineId ? (
+          <Button
+            variant="action"
+            size="icon-sm"
+            onClick={analyzeAssets}
+            disabled={analyzing}
+            title="Analisar assets com IA (vibe, estética, tema, mood)"
+            aria-label="Analyze assets with AI"
+          >
+            {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+          </Button>
+        ) : undefined
+      }
     >
       <div className="py-6">
         <MediaKitGallery
