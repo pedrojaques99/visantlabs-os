@@ -44,6 +44,11 @@ import { extractFigmaFileKey, isValidFigmaUrl } from '../lib/figmaUtils.js';
 import { computeColorUsage, collectAssetSources } from '../lib/brand/colorUsage.js';
 import { resolvePersonaPortrait, brandImageryHint } from '../lib/brand/personaPhotos.js';
 import {
+  analyzeAssetImage,
+  aggregateVisualSignature,
+  isAssetAnalysisConfigured,
+} from '../lib/brand/assetAnalysis.js';
+import {
   BrandGuidelineSchema,
   BrandGuidelinePatchSchema,
 } from '../../src/lib/brandGuidelineSchema.js';
@@ -147,6 +152,72 @@ function scheduleColorUsageRecompute(guidelineId: string, delayMs = 8000): void 
   // Don't keep the event loop alive purely for a pending recompute.
   if (typeof timer.unref === 'function') timer.unref();
   usageRecomputeTimers.set(guidelineId, timer);
+}
+
+/**
+ * LLM-tag a guideline's image assets (logos + media) into visual dimensions and
+ * persist `analysis` onto each. Skips already-analyzed assets unless `force`.
+ * Returns the updated logos/media + aggregated visual signature, or null if the
+ * guideline vanished. Direct prisma writes (derived data — no version bump).
+ */
+async function analyzeGuidelineAssets(
+  guidelineId: string,
+  force = false
+): Promise<{ logos: any[]; media: any[]; signature: any; analyzed: number } | null> {
+  const g = await prisma.brandGuideline.findUnique({ where: { id: guidelineId } });
+  if (!g) return null;
+
+  const logos = ((g.logos as any[]) || []).map((l) => ({ ...l }));
+  const media = ((g.media as any[]) || []).map((m) => ({ ...m }));
+
+  // Only analyzable image assets that are missing analysis (or all, when forced).
+  const targets: any[] = [
+    ...logos.filter((l) => l?.url && (force || !l.analysis)),
+    ...media.filter((m) => m?.url && m.type !== 'pdf' && (force || !m.analysis)),
+  ];
+
+  let analyzed = 0;
+  const CONCURRENCY = 3;
+  for (let i = 0; i < targets.length; i += CONCURRENCY) {
+    const batch = targets.slice(i, i + CONCURRENCY);
+    await Promise.all(
+      batch.map(async (asset) => {
+        const result = await analyzeAssetImage(asset.url);
+        if (result) {
+          asset.analysis = result.analysis;
+          analyzed++;
+        }
+      })
+    );
+  }
+
+  const signature = aggregateVisualSignature([...logos, ...media]);
+
+  if (analyzed > 0) {
+    await prisma.brandGuideline.update({
+      where: { id: guidelineId },
+      data: { logos: logos as any, media: media as any },
+    });
+    await invalidateBrandCache(guidelineId);
+  }
+
+  return { logos, media, signature, analyzed };
+}
+
+// Debounce asset-analysis triggers so a burst of uploads coalesces into one pass
+// (only newly-added, un-analyzed assets are processed).
+const assetAnalysisTimers = new Map<string, NodeJS.Timeout>();
+
+function scheduleAssetAnalysis(guidelineId: string, delayMs = 10000): void {
+  if (!isAssetAnalysisConfigured()) return; // no Gemini key → don't bother
+  const existing = assetAnalysisTimers.get(guidelineId);
+  if (existing) clearTimeout(existing);
+  const timer = setTimeout(() => {
+    assetAnalysisTimers.delete(guidelineId);
+    analyzeGuidelineAssets(guidelineId).catch(() => {});
+  }, delayMs);
+  if (typeof timer.unref === 'function') timer.unref();
+  assetAnalysisTimers.set(guidelineId, timer);
 }
 
 // GET /api/brand-guidelines — list all user's brand guidelines
@@ -920,6 +991,8 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
 
     // Refresh color-usage proportions from the new asset set (debounced, coalesced).
     scheduleColorUsageRecompute(guideline.id);
+    // LLM-tag any newly-added image assets (debounced, only un-analyzed ones).
+    scheduleAssetAnalysis(guideline.id);
 
     res.status(201).json({
       media: newMedia,
@@ -955,6 +1028,33 @@ router.post(
     }
   }
 );
+
+// POST /api/brand-guidelines/:id/assets/analyze
+// LLM-tags image assets (logos + media) with visual dimensions and persists them.
+// Body: { force?: boolean } to re-analyze assets that already have analysis.
+router.post('/:id/assets/analyze', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    if (!isAssetAnalysisConfigured()) {
+      return res.status(503).json({
+        error: 'vision_not_configured',
+        message: 'Set GEMINI_API_KEY to analyze brand assets.',
+      });
+    }
+
+    const result = await analyzeGuidelineAssets(guideline.id, req.body?.force === true);
+    if (!result) return res.status(404).json({ error: 'Brand guideline not found' });
+    res.json(result);
+  } catch (error: any) {
+    console.error('[Brand Asset Analysis] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to analyze assets', message: error?.message });
+  }
+});
 
 // POST /api/brand-guidelines/:id/personas/resolve-images
 // Fills missing persona portraits from free stock (Unsplash/Pexels) and persists
@@ -1162,6 +1262,8 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
 
     // Refresh color-usage proportions from the new asset set (debounced, coalesced).
     scheduleColorUsageRecompute(guideline.id);
+    // LLM-tag any newly-added image assets (debounced, only un-analyzed ones).
+    scheduleAssetAnalysis(guideline.id);
 
     res
       .status(201)

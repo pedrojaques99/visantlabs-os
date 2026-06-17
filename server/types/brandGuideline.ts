@@ -7,6 +7,20 @@ export interface BrandGuidelineIdentity {
   description?: string;
 }
 
+/** LLM-derived visual analysis persisted on a brand asset (logo/media). */
+export interface BrandAssetAnalysis {
+  description?: string;
+  dimensions?: {
+    vibe?: string[];
+    aesthetic?: string[];
+    theme?: string[];
+    mood?: string[];
+    medium?: string[];
+  };
+  analyzedAt?: string;
+  model?: string;
+}
+
 export interface BrandGuidelineLogo {
   id: string;
   url: string;
@@ -18,6 +32,7 @@ export interface BrandGuidelineLogo {
   figmaKey?: string;
   figmaFileKey?: string;
   figmaNodeId?: string;
+  analysis?: BrandAssetAnalysis;
 }
 
 export interface BrandGuidelineColor {
@@ -85,6 +100,7 @@ export interface BrandGuidelineMedia {
   type: 'image' | 'pdf';
   label?: string;
   category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
+  analysis?: BrandAssetAnalysis;
 }
 
 export interface BrandGuidelineTokens {

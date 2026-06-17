@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { hexToRgb, colorDistance, computeColorUsage, collectAssetSources } from '../colorUsage.js';
 import { inferGender, brandImageryHint } from '../personaPhotos.js';
+import { aggregateVisualSignature, hasSignature } from '../visualSignature.js';
 
 describe('colorUsage helpers', () => {
   it('parses 6- and 3-digit hex (with/without #)', () => {
@@ -59,6 +60,24 @@ describe('brandImageryHint', () => {
       brandImageryHint({ strategy: { voiceValues: [{ title: 'Bold' }, { title: 'Human' }] } })
     ).toBe('Bold, Human');
     expect(brandImageryHint({})).toBeUndefined();
+  });
+});
+
+describe('aggregateVisualSignature', () => {
+  it('ranks tags by frequency across assets (top 5, lowercased)', () => {
+    const sig = aggregateVisualSignature([
+      { analysis: { dimensions: { vibe: ['Premium', 'bold'], aesthetic: ['minimalist'] } } },
+      { analysis: { dimensions: { vibe: ['premium'], aesthetic: ['minimalist', 'editorial'] } } },
+      { analysis: { dimensions: { vibe: ['premium'] } } },
+      {}, // un-analyzed asset is ignored
+    ]);
+    expect(sig.vibe[0]).toBe('premium'); // 3× → most frequent first
+    expect(sig.aesthetic).toContain('minimalist');
+    expect(hasSignature(sig)).toBe(true);
+  });
+
+  it('reports an empty signature as not present', () => {
+    expect(hasSignature(aggregateVisualSignature([{}, { analysis: {} }]))).toBe(false);
   });
 });
 
