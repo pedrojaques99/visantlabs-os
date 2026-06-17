@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import { GoogleGenAI } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
@@ -11,7 +12,7 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { chargeCredits } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry, type CreditChargeResult } from '../lib/credits.js';
 import { getChatMessageCreditsRequired } from '../../src/utils/creditCalculator.js';
 import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 import { formatGeminiHistory } from '../lib/chat/history.js';
@@ -25,6 +26,14 @@ const chatRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // Max 20 messages per hour
   message: { error: 'Limite de mensagens atingido. Tente novamente em uma hora.' },
+});
+
+// Rate limiter for the Canvas Chat Node: more generous than the session chat
+// above, since the canvas is an interactive multi-node surface.
+const canvasChatRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 60,
+  message: { error: 'Limite de mensagens do canvas atingido. Tente novamente em uma hora.' },
 });
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -328,6 +337,101 @@ router.post(
     } catch (err: any) {
       console.error('[Chat] Message error:', err);
       res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// POST /api/chat/canvas-generate — stateless proxy for the Canvas Chat Node.
+//
+// The browser builds the Gemini `contents` array (including image processing,
+// strategy/text context and the system prompt) and POSTs it here. The server
+// holds the API key and makes the actual Gemini call, so the browser never
+// connects to generativelanguage.googleapis.com — which the page CSP blocks.
+router.post(
+  '/canvas-generate',
+  // Rate limit BEFORE auth so the authorization/DB work itself is protected.
+  canvasChatRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { contents, userMessageCount, config } = req.body as {
+        contents?: unknown;
+        userMessageCount?: number;
+        config?: Record<string, unknown>;
+      };
+
+      if (!Array.isArray(contents) || contents.length === 0) {
+        return res.status(400).json({ error: 'contents must be a non-empty array' });
+      }
+
+      // Resolve the key server-side: user's own (BYOK) first, system key fallback.
+      const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true }).catch(
+        () => undefined
+      );
+      const apiKey = userOwnKey || (await getGeminiApiKey(req.userId!).catch(() => undefined));
+      if (!apiKey) {
+        return res.status(503).json({ error: 'AI provider not configured' });
+      }
+
+      // Meter credits: 1 credit every 4 user messages (same rule as session chat).
+      // Admins / unlimited / BYOK accounts are skipped inside chargeCredits.
+      const count = Number.isFinite(userMessageCount)
+        ? Math.max(0, Math.floor(userMessageCount as number))
+        : 0;
+      const creditsNeeded = getChatMessageCreditsRequired(count);
+      let charge: CreditChargeResult | null = null;
+      if (creditsNeeded > 0) {
+        try {
+          charge = await chargeCredits(req.userId!, creditsNeeded, {
+            isUserApiKey: !!userOwnKey,
+          });
+        } catch (creditErr: any) {
+          if (creditErr?.message?.includes('Insufficient credits')) {
+            return res
+              .status(402)
+              .json({ error: 'insufficient_credits', message: creditErr.message });
+          }
+          throw creditErr;
+        }
+      }
+
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: GEMINI_MODELS.TEXT,
+          contents: contents as any,
+          // `config` is optional: chat omits it (text only); the brand/merge
+          // helpers pass responseMimeType + responseSchema for structured JSON.
+          ...(config ? { config: config as any } : {}),
+        });
+
+        const text = response.text?.trim() ?? '';
+        if (!text) {
+          if (charge?.charged) {
+            await refundCreditsWithRetry(
+              req.userId!,
+              charge.creditsDeducted,
+              charge.deductionSource
+            ).catch(() => {});
+          }
+          return res.status(502).json({ error: 'No text response generated' });
+        }
+
+        return res.json({ text, usageMetadata: (response as any).usageMetadata });
+      } catch (genErr) {
+        // Generation failed after we charged — refund so the user keeps the credit.
+        if (charge?.charged) {
+          await refundCreditsWithRetry(
+            req.userId!,
+            charge.creditsDeducted,
+            charge.deductionSource
+          ).catch(() => {});
+        }
+        throw genErr;
+      }
+    } catch (err: any) {
+      console.error('[Chat] Canvas generate error:', err);
+      res.status(500).json({ error: err.message || 'Failed to generate response' });
     }
   }
 );

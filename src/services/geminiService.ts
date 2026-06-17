@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality, Type } from '@google/genai';
+import { generateTextViaProxy } from './geminiProxy';
 import type {
   UploadedImage,
   AspectRatio,
@@ -703,18 +704,15 @@ export const generateMergePrompt = async (
 
       parts.push({ text: promptToGemini });
 
-      const response = await getAI().models.generateContent({
-        model: GEMINI_MODELS.TEXT,
-        contents: { parts },
-      });
+      const response = await generateTextViaProxy({ contents: { parts } });
 
       // Extract usage metadata
-      const usageMetadata = (response as any).usageMetadata;
+      const usageMetadata = response.usageMetadata;
       const inputTokens = usageMetadata?.promptTokenCount;
       const outputTokens = usageMetadata?.candidatesTokenCount;
 
       return {
-        prompt: (response.text ?? '').trim(),
+        prompt: response.text.trim(),
         inputTokens,
         outputTokens,
       };

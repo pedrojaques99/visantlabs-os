@@ -1,8 +1,7 @@
-import { GoogleGenAI } from '@google/genai';
 import type { StrategyNodeData } from '../types/reactFlow';
 import { validateMessage, validateContext } from './chatValidators';
 import { buildSystemPrompt } from './promptTemplates';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { generateTextViaProxy } from './geminiProxy';
 
 // ============================================================================
 // Types & Interfaces
@@ -18,64 +17,6 @@ export interface ChatContext {
   text?: string; // Text context from TextNode
   strategyData?: StrategyNodeData['strategyData']; // Strategy data from StrategyNode
 }
-
-// ============================================================================
-// AI Instance Management
-// ============================================================================
-
-// Lazy initialization to avoid breaking app startup if API key is not configured
-let ai: GoogleGenAI | null = null;
-let currentApiKey: string | null = null;
-
-/**
- * Get or create AI instance
- * @param apiKey - Optional API key (user's own key)
- * @returns GoogleGenAI instance
- */
-const getAI = (apiKey?: string): GoogleGenAI => {
-  // If a specific API key is provided, use it (for user's own API key)
-  if (apiKey && apiKey.trim().length > 0) {
-    return new GoogleGenAI({ apiKey: apiKey.trim() });
-  }
-
-  // Helper to safely get env vars in both Node.js and Vite environments
-  const getEnvVar = (key: string): string | undefined => {
-    // Try process.env (Node.js/Server)
-    if (typeof process !== 'undefined' && process.env && process.env[key]) {
-      return process.env[key];
-    }
-    // Try import.meta.env (Vite/Client)
-    try {
-      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
-        return import.meta.env[key];
-      }
-    } catch (e) {
-      // Ignore errors accessing import.meta
-    }
-    return undefined;
-  };
-
-  const storedKey =
-    getEnvVar('VITE_GEMINI_API_KEY') ||
-    getEnvVar('VITE_API_KEY') ||
-    getEnvVar('GEMINI_API_KEY') ||
-    '';
-  const currentKey = storedKey.trim();
-
-  // Otherwise use cached instance or create from environment
-  if (!ai || currentApiKey !== currentKey) {
-    if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
-      throw new Error(
-        'GEMINI_API_KEY não encontrada. ' +
-          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA.'
-      );
-    }
-
-    currentApiKey = currentKey;
-    ai = new GoogleGenAI({ apiKey: currentKey });
-  }
-  return ai;
-};
 
 // ============================================================================
 // Action Detection
@@ -341,17 +282,25 @@ async function processImage(source: string): Promise<{ data: string; mimeType: s
 /**
  * Send chat message to Gemini API
  *
+ * The browser builds the Gemini request and POSTs it to the backend proxy
+ * (`/api/chat/canvas-generate`); the server holds the API key and makes the
+ * actual Gemini call. This keeps the browser off generativelanguage.googleapis.com,
+ * which the page CSP blocks, and keeps the key off the client. BYOK is resolved
+ * server-side from the user's stored key.
+ *
  * @param messages - Conversation history
  * @param context - Optional context (images, text, strategy)
- * @param apiKey - Optional API key (user's own key)
+ * @param _apiKey - Deprecated; BYOK is now resolved server-side (kept for signature compatibility)
  * @param systemPrompt - Optional custom system prompt (overrides DEFAULT_SYSTEM_PROMPT)
+ * @param userMessageCount - Running count of user messages, used server-side for credit metering
  * @returns AI response text
  */
 export async function sendChatMessage(
   messages: ChatMessage[],
   context?: ChatContext,
-  apiKey?: string,
-  systemPrompt?: string
+  _apiKey?: string,
+  systemPrompt?: string,
+  userMessageCount?: number
 ): Promise<string> {
   // Validate last message (user message)
   const lastMessage = messages[messages.length - 1];
@@ -366,8 +315,6 @@ export async function sendChatMessage(
   }
 
   try {
-    const aiInstance = getAI(apiKey);
-
     // Build context prompt
     const contextParts: string[] = [];
 
@@ -440,28 +387,15 @@ export async function sendChatMessage(
       });
     }
 
-    // CRITICAL: Do NOT include responseModalities - we only want text
-    const response = await aiInstance.models.generateContent({
-      model: GEMINI_MODELS.TEXT,
-      contents: contents,
-      // No responseModalities = text only
-    });
-
-    const textResponse = response.text?.trim() ?? '';
+    // Send the prepared request to the backend proxy. The server holds the API
+    // key and calls Gemini, so the browser only ever talks to our own API
+    // (CSP-safe). Text-only output is enforced server-side; userMessageCount
+    // drives credit metering.
+    const { text } = await generateTextViaProxy({ contents, userMessageCount });
+    const textResponse = text.trim();
 
     if (!textResponse) {
       throw new Error('No text response generated');
-    }
-
-    // Verify no images were generated (safety check)
-    const hasImages = response.candidates?.[0]?.content?.parts?.some(
-      (part) => part.inlineData !== undefined
-    );
-
-    if (hasImages) {
-      console.warn(
-        '[ChatService] Received image data when text-only was expected. Ignoring images.'
-      );
     }
 
     return textResponse;

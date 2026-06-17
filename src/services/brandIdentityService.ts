@@ -1,38 +1,7 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import type { BrandIdentity } from '../types/reactFlow';
 import type { UploadedImage } from '../types/types';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
-
-// Lazy initialization to avoid breaking app startup if API key is not configured
-let ai: GoogleGenAI | null = null;
-let currentApiKey: string | null = null;
-
-const getAI = (): GoogleGenAI => {
-  // Use cached instance or create from environment
-  if (
-    !ai ||
-    currentApiKey !==
-      (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()
-  ) {
-    const envApiKey = (
-      import.meta.env.VITE_GEMINI_API_KEY ||
-      import.meta.env.VITE_API_KEY ||
-      ''
-    ).trim();
-
-    if (!envApiKey || envApiKey === 'undefined' || envApiKey.length === 0) {
-      throw new Error(
-        'GEMINI_API_KEY não encontrada. ' +
-          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. ' +
-          'Veja docs/SETUP_LLM.md para mais informações.'
-      );
-    }
-
-    currentApiKey = envApiKey;
-    ai = new GoogleGenAI({ apiKey: envApiKey });
-  }
-  return ai;
-};
+import { generateTextViaProxy } from './geminiProxy';
 
 /**
  * Extract brand identity from logo image and PDF/PNG document using Gemini
@@ -145,8 +114,7 @@ You must return a JSON object matching this exact structure:
   // Add prompt
   parts.push({ text: prompt });
 
-  const response = await getAI().models.generateContent({
-    model: GEMINI_MODELS.TEXT,
+  const response = await generateTextViaProxy({
     contents: { parts },
     config: {
       responseMimeType: 'application/json',

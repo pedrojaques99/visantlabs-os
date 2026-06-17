@@ -323,7 +323,10 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       className={cn(
         'transition-all duration-1000 selection:bg-[var(--accent)]/30 overflow-x-hidden',
         // Admin (idOverride): cover the whole viewport over the native app header.
-        idOverride ? 'fixed inset-0 z-[60] overflow-y-auto' : 'min-h-screen'
+        // z-50 (tie with the header) wins by DOM order — same mechanism that lets
+        // portaled overlays (dialogs/menus/sheets, z-50) render above this shell.
+        // Going higher (z-[60]) trapped every overlay behind the shell.
+        idOverride ? 'fixed inset-0 z-50 overflow-y-auto' : 'min-h-screen'
       )}
       style={
         {
@@ -382,7 +385,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       </nav>
 
       {/* Top-left nav buttons */}
-      <div className={cn('flex gap-2 fixed left-5 z-[1000]', toolbarTop)}>
+      <div className={cn('flex gap-2 fixed left-5 z-40', toolbarTop)}>
         <Button
           onClick={() => navigate('/')}
           variant="ghost"
@@ -408,7 +411,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       {/* Top-right controls */}
       <div
         className={cn(
-          'flex flex-wrap justify-end gap-2 fixed right-5 z-[1000] items-center max-w-[70vw]',
+          'flex flex-wrap justify-end gap-2 fixed right-5 z-40 items-center max-w-[70vw]',
           toolbarTop
         )}
       >
