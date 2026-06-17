@@ -78,8 +78,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
     toast.success(`Copied ${hex}`);
   }, []);
 
-  const statement =
-    tokens.manifestoFirstLine || tokens.description || tokens.tagline || '';
+  const statement = tokens.manifestoFirstLine || tokens.description || tokens.tagline || '';
   const palette = tokens.palette.filter((c) => c.hex);
   const fonts = guideline.typography || [];
   const mediaImages = (guideline.media || [])
@@ -104,11 +103,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
     >
       {/* Manifesto — wide editorial statement */}
       {hasManifesto && (
-        <Tile
-          label="Manifesto"
-          onView={() => onOpenTab('strategy')}
-          className="md:col-span-4"
-        >
+        <Tile label="Manifesto" onView={() => onOpenTab('strategy')} className="md:col-span-4">
           <blockquote
             className="text-2xl md:text-[2rem] font-light leading-[1.25] tracking-tight text-[var(--brand-text)]/85 line-clamp-5"
             style={{ fontFamily: tokens.headingFamily }}
@@ -125,7 +120,12 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
 
       {/* Logo — primary lockup */}
       {hasLogo && (
-        <Tile label="Logo" onView={() => onOpenTab('logos')} viewLabel="Assets" className="md:col-span-2">
+        <Tile
+          label="Logo"
+          onView={() => onOpenTab('logos')}
+          viewLabel="Assets"
+          className="md:col-span-2"
+        >
           <div className="h-full min-h-[140px] rounded-2xl bg-[var(--brand-surface)]/40 border border-[var(--brand-text)]/5 flex items-center justify-center p-6">
             {tokens.primaryLogo?.url ? (
               <img
@@ -226,19 +226,19 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
 
       {/* Assets — media mosaic */}
       {hasAssets && (
-        <Tile label="Assets" onView={() => onOpenTab('media')} viewLabel="Library" className="md:col-span-2">
+        <Tile
+          label="Assets"
+          onView={() => onOpenTab('media')}
+          viewLabel="Library"
+          className="md:col-span-2"
+        >
           <div className="grid grid-cols-2 gap-2">
             {mediaImages.slice(0, 4).map((url, i) => (
               <div
                 key={i}
                 className="relative aspect-square rounded-xl overflow-hidden border border-[var(--brand-text)]/5 bg-[var(--brand-surface)]/40"
               >
-                <img
-                  src={url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 {i === 3 && mediaImages.length > 4 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-white text-sm font-bold">
                     +{mediaImages.length - 4}
