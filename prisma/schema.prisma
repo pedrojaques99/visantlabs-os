@@ -547,6 +547,9 @@ model BrandGuideline {
   publicViews  Int      @default(0)
   lastViewedAt DateTime?
 
+  // Display — owner-chosen default theme ('brand' | 'light' | 'dark')
+  defaultTheme String?
+
   // Collaborative editing — arrays of userId strings
   canEdit    Json?    // string[] — users with edit access
   canView    Json?    // string[] — users with view-only access (cursor presence)

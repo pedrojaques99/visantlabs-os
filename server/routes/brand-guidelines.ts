@@ -390,6 +390,7 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
       'validation',
       'isPublic',
       'publicSlug',
+      'defaultTheme',
       'knowledgeFiles',
       'figmaFileUrl',
       'figmaFileKey',
