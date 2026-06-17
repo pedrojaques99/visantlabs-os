@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import { GoogleGenAI } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
@@ -25,6 +26,14 @@ const chatRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // Max 20 messages per hour
   message: { error: 'Limite de mensagens atingido. Tente novamente em uma hora.' },
+});
+
+// Rate limiter for the Canvas Chat Node: more generous than the session chat
+// above, since the canvas is an interactive multi-node surface.
+const canvasChatRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 60,
+  message: { error: 'Limite de mensagens do canvas atingido. Tente novamente em uma hora.' },
 });
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -328,6 +337,49 @@ router.post(
     } catch (err: any) {
       console.error('[Chat] Message error:', err);
       res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// POST /api/chat/canvas-generate — stateless proxy for the Canvas Chat Node.
+//
+// The browser builds the Gemini `contents` array (including image processing,
+// strategy/text context and the system prompt) and POSTs it here. The server
+// holds the API key and makes the actual Gemini call, so the browser never
+// connects to generativelanguage.googleapis.com — which the page CSP blocks.
+router.post(
+  '/canvas-generate',
+  authenticate,
+  canvasChatRateLimiter,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { contents } = req.body as { contents?: unknown };
+
+      if (!Array.isArray(contents) || contents.length === 0) {
+        return res.status(400).json({ error: 'contents must be a non-empty array' });
+      }
+
+      const apiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
+      if (!apiKey) {
+        return res.status(503).json({ error: 'AI provider not configured' });
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODELS.TEXT,
+        contents: contents as any,
+        // No responseModalities = text only (mirrors previous client behaviour).
+      });
+
+      const text = response.text?.trim() ?? '';
+      if (!text) {
+        return res.status(502).json({ error: 'No text response generated' });
+      }
+
+      res.json({ text });
+    } catch (err: any) {
+      console.error('[Chat] Canvas generate error:', err);
+      res.status(500).json({ error: err.message || 'Failed to generate response' });
     }
   }
 );
