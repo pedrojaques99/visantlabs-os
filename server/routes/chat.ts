@@ -349,8 +349,9 @@ router.post(
 // connects to generativelanguage.googleapis.com — which the page CSP blocks.
 router.post(
   '/canvas-generate',
-  authenticate,
+  // Rate limit BEFORE auth so the authorization/DB work itself is protected.
   canvasChatRateLimiter,
+  authenticate,
   async (req: AuthRequest, res: Response) => {
     try {
       const { contents, userMessageCount, config } = req.body as {
