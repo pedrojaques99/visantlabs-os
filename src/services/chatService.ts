@@ -1,8 +1,7 @@
 import type { StrategyNodeData } from '../types/reactFlow';
 import { validateMessage, validateContext } from './chatValidators';
 import { buildSystemPrompt } from './promptTemplates';
-import { API_BASE } from '@/config/api';
-import { authService } from './authService';
+import { generateTextViaProxy } from './geminiProxy';
 
 // ============================================================================
 // Types & Interfaces
@@ -293,13 +292,15 @@ async function processImage(source: string): Promise<{ data: string; mimeType: s
  * @param context - Optional context (images, text, strategy)
  * @param _apiKey - Deprecated; BYOK is now resolved server-side (kept for signature compatibility)
  * @param systemPrompt - Optional custom system prompt (overrides DEFAULT_SYSTEM_PROMPT)
+ * @param userMessageCount - Running count of user messages, used server-side for credit metering
  * @returns AI response text
  */
 export async function sendChatMessage(
   messages: ChatMessage[],
   context?: ChatContext,
   _apiKey?: string,
-  systemPrompt?: string
+  systemPrompt?: string,
+  userMessageCount?: number
 ): Promise<string> {
   // Validate last message (user message)
   const lastMessage = messages[messages.length - 1];
@@ -386,26 +387,12 @@ export async function sendChatMessage(
       });
     }
 
-    // Send the prepared request to the backend proxy. The server holds the
-    // API key and calls Gemini, so the browser only ever talks to our own API
-    // (CSP-safe). Text-only output is enforced server-side.
-    const token = authService.getToken();
-    const res = await fetch(`${API_BASE}/chat/canvas-generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ contents }),
-    });
-
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}) as { error?: string });
-      throw new Error(errBody.error || `Chat request failed (${res.status})`);
-    }
-
-    const data = (await res.json()) as { text?: string };
-    const textResponse = data.text?.trim() ?? '';
+    // Send the prepared request to the backend proxy. The server holds the API
+    // key and calls Gemini, so the browser only ever talks to our own API
+    // (CSP-safe). Text-only output is enforced server-side; userMessageCount
+    // drives credit metering.
+    const { text } = await generateTextViaProxy({ contents, userMessageCount });
+    const textResponse = text.trim();
 
     if (!textResponse) {
       throw new Error('No text response generated');

@@ -12,7 +12,7 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { chargeCredits } from '../lib/credits.js';
+import { chargeCredits, refundCreditsWithRetry, type CreditChargeResult } from '../lib/credits.js';
 import { getChatMessageCreditsRequired } from '../../src/utils/creditCalculator.js';
 import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 import { formatGeminiHistory } from '../lib/chat/history.js';
@@ -353,30 +353,81 @@ router.post(
   canvasChatRateLimiter,
   async (req: AuthRequest, res: Response) => {
     try {
-      const { contents } = req.body as { contents?: unknown };
+      const { contents, userMessageCount, config } = req.body as {
+        contents?: unknown;
+        userMessageCount?: number;
+        config?: Record<string, unknown>;
+      };
 
       if (!Array.isArray(contents) || contents.length === 0) {
         return res.status(400).json({ error: 'contents must be a non-empty array' });
       }
 
-      const apiKey = await getGeminiApiKey(req.userId!).catch(() => undefined);
+      // Resolve the key server-side: user's own (BYOK) first, system key fallback.
+      const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true }).catch(
+        () => undefined
+      );
+      const apiKey = userOwnKey || (await getGeminiApiKey(req.userId!).catch(() => undefined));
       if (!apiKey) {
         return res.status(503).json({ error: 'AI provider not configured' });
       }
 
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: GEMINI_MODELS.TEXT,
-        contents: contents as any,
-        // No responseModalities = text only (mirrors previous client behaviour).
-      });
-
-      const text = response.text?.trim() ?? '';
-      if (!text) {
-        return res.status(502).json({ error: 'No text response generated' });
+      // Meter credits: 1 credit every 4 user messages (same rule as session chat).
+      // Admins / unlimited / BYOK accounts are skipped inside chargeCredits.
+      const count = Number.isFinite(userMessageCount)
+        ? Math.max(0, Math.floor(userMessageCount as number))
+        : 0;
+      const creditsNeeded = getChatMessageCreditsRequired(count);
+      let charge: CreditChargeResult | null = null;
+      if (creditsNeeded > 0) {
+        try {
+          charge = await chargeCredits(req.userId!, creditsNeeded, {
+            isUserApiKey: !!userOwnKey,
+          });
+        } catch (creditErr: any) {
+          if (creditErr?.message?.includes('Insufficient credits')) {
+            return res
+              .status(402)
+              .json({ error: 'insufficient_credits', message: creditErr.message });
+          }
+          throw creditErr;
+        }
       }
 
-      res.json({ text });
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: GEMINI_MODELS.TEXT,
+          contents: contents as any,
+          // `config` is optional: chat omits it (text only); the brand/merge
+          // helpers pass responseMimeType + responseSchema for structured JSON.
+          ...(config ? { config: config as any } : {}),
+        });
+
+        const text = response.text?.trim() ?? '';
+        if (!text) {
+          if (charge?.charged) {
+            await refundCreditsWithRetry(
+              req.userId!,
+              charge.creditsDeducted,
+              charge.deductionSource
+            ).catch(() => {});
+          }
+          return res.status(502).json({ error: 'No text response generated' });
+        }
+
+        return res.json({ text, usageMetadata: (response as any).usageMetadata });
+      } catch (genErr) {
+        // Generation failed after we charged — refund so the user keeps the credit.
+        if (charge?.charged) {
+          await refundCreditsWithRetry(
+            req.userId!,
+            charge.creditsDeducted,
+            charge.deductionSource
+          ).catch(() => {});
+        }
+        throw genErr;
+      }
     } catch (err: any) {
       console.error('[Chat] Canvas generate error:', err);
       res.status(500).json({ error: err.message || 'Failed to generate response' });

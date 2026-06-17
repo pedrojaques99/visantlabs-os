@@ -456,8 +456,9 @@ export const useCanvasChatHandler = ({
         'chat'
       );
 
-      // Note: Credit deduction is handled on the backend via the generate endpoint
-      // The backend validates credits before processing the request
+      // Credit deduction is handled on the backend by /api/chat/canvas-generate,
+      // which charges based on userMessageCount (1 credit every 4 messages) and
+      // refunds automatically if the generation fails.
 
       try {
         // Prepare messages for API (convert to ChatMessage format)
@@ -470,16 +471,19 @@ export const useCanvasChatHandler = ({
               : msg.content,
         }));
 
-        // Call chat service with custom system prompt if available
+        // Call chat service with custom system prompt if available.
+        // The browser builds the request; the backend proxy holds the API key
+        // and calls Gemini (CSP-safe). userMessageCount drives credit metering.
         const response = await sendChatMessage(
           apiMessages,
           context,
           undefined,
-          chatData.systemPrompt
+          chatData.systemPrompt,
+          currentMessageCount
         );
 
-        // Add assistant response (client-side generationId — canvas chat calls Gemini
-        // directly from the browser, so there's no server round-trip to mint one).
+        // Add assistant response with a client-side generationId for local
+        // feedback/tracking (the proxy returns plain text, not a server id).
         const assistantMessage = {
           id: `msg-${Date.now()}-assistant`,
           role: 'assistant' as const,

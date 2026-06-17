@@ -1,37 +1,5 @@
 import type { BrandIdentity, StrategyNodeData } from '../types/reactFlow';
-import { GoogleGenAI } from '@google/genai';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
-
-// Lazy initialization to avoid breaking app startup if API key is not configured
-let ai: GoogleGenAI | null = null;
-let currentApiKey: string | null = null;
-
-const getAI = (): GoogleGenAI => {
-  // Use cached instance or create from environment
-  if (
-    !ai ||
-    currentApiKey !==
-      (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()
-  ) {
-    const envApiKey = (
-      import.meta.env.VITE_GEMINI_API_KEY ||
-      import.meta.env.VITE_API_KEY ||
-      ''
-    ).trim();
-
-    if (!envApiKey || envApiKey === 'undefined' || envApiKey.length === 0) {
-      throw new Error(
-        'GEMINI_API_KEY não encontrada. ' +
-          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. ' +
-          'Veja docs/SETUP_LLM.md para mais informações.'
-      );
-    }
-
-    currentApiKey = envApiKey;
-    ai = new GoogleGenAI({ apiKey: envApiKey });
-  }
-  return ai;
-};
+import { generateTextViaProxy } from './geminiProxy';
 
 /**
  * Gera prompt visual otimizado para nano banana (geração de mockups)
@@ -422,10 +390,7 @@ ${JSON.stringify(consolidatedStrategies, null, 2)}
 
 Generate a concise, actionable strategic prompt that synthesizes this information.`;
 
-  const response = await getAI().models.generateContent({
-    model: GEMINI_MODELS.TEXT,
-    contents: { parts: [{ text: prompt }] },
-  });
+  const response = await generateTextViaProxy({ contents: { parts: [{ text: prompt }] } });
 
   return response.text.trim();
 };
