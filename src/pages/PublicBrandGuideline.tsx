@@ -63,6 +63,7 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { DEFAULT_SECTION_IDS } from '@/components/brand/guidelines/sections-manifest';
+import { InlineEditable } from '@/components/brand/InlineEditable';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -299,10 +300,16 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   );
 
   const handleConnect = async () => {
-    if (!slug) return;
+    // Admin context loads by id (no slug) — fall back to the brand's publicSlug.
+    const connectSlug = slug || guideline?.publicSlug;
+    if (!connectSlug) {
+      toast.error('Make the brand public first to connect it');
+      setIsShareOpen(true);
+      return;
+    }
     setConnecting(true);
     try {
-      const { connectUrl } = await brandGuidelineApi.getPublicConnectLink(slug);
+      const { connectUrl } = await brandGuidelineApi.getPublicConnectLink(connectSlug);
       window.location.href = connectUrl;
     } catch {
       toast.error('Failed to generate connect link');
@@ -711,11 +718,26 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
             <div className="space-y-6">
               <MicroTitle className="text-[var(--accent)] tracking-[0.1em] font-bold opacity-60">
-                {guideline.identity?.tagline || 'Brand Guidelines'}
+                <InlineEditable
+                  as="span"
+                  value={guideline.identity?.tagline || ''}
+                  editable={canEdit && editMode}
+                  placeholder="Brand Guidelines"
+                  onCommit={(v) =>
+                    handleSave({ identity: { ...(guideline.identity || {}), tagline: v } })
+                  }
+                />
               </MicroTitle>
-              <h1 className="text-6xl md:text-8xl font-black font-manrope tracking-tight leading-[0.9]">
-                {brandName}
-              </h1>
+              <InlineEditable
+                as="h1"
+                className="text-6xl md:text-8xl font-black font-manrope tracking-tight leading-[0.9]"
+                value={guideline.identity?.name || ''}
+                editable={canEdit && editMode}
+                placeholder="Brand name"
+                onCommit={(v) =>
+                  handleSave({ identity: { ...(guideline.identity || {}), name: v } })
+                }
+              />
             </div>
           </div>
         </motion.div>
