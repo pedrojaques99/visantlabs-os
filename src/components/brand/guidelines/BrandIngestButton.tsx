@@ -19,6 +19,9 @@ interface BrandIngestButtonProps {
   guideline: BrandGuideline;
   onSuccess: () => void;
   triggerRef?: React.MutableRefObject<((files: FileList) => void) | null>;
+  /** Exposes a callback that opens the drop-zone modal — lets a host (e.g. an
+   * overflow menu item) trigger ingest while this button stays mounted/hidden. */
+  openRef?: React.MutableRefObject<(() => void) | null>;
   /** Override the default button styling (e.g. to match a host toolbar). */
   className?: string;
 }
@@ -44,6 +47,7 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
   guideline,
   onSuccess,
   triggerRef,
+  openRef,
   className,
 }) => {
   const fig = useExtractFileStream(guideline.id!, 'extract-fig');
@@ -99,6 +103,13 @@ export const BrandIngestButton: React.FC<BrandIngestButtonProps> = ({
       if (triggerRef) triggerRef.current = null;
     };
   }, [triggerRef, handleFiles]);
+
+  useEffect(() => {
+    if (openRef) openRef.current = () => setShowDropZoneModal(true);
+    return () => {
+      if (openRef) openRef.current = null;
+    };
+  }, [openRef]);
 
   const handleClose = useCallback(() => {
     setShowDropZoneModal(false);
