@@ -247,6 +247,33 @@ function jsonResponse(data: unknown) {
   };
 }
 
+/**
+ * Per-response quota footprint attached as `_meta`. The public docs/llms.txt
+ * promise "every tool response includes _meta with remaining credits" in the
+ * shape { credits_remaining, plan } — so we keep it on every response but trim
+ * it to that documented shape. The full credit/storage detail lives in
+ * account-usage / account-profile (which spread the whole quota as their body).
+ */
+function slimMeta(quota: any) {
+  if (!quota) return quota; // null on compute failure — stays advisory
+  return {
+    credits_remaining: quota.credits_remaining,
+    can_generate: quota.can_generate,
+    plan: quota.plan,
+  };
+}
+
+/** Drop top-level null/undefined/empty-array keys to cut response noise. */
+function stripNullish<T extends Record<string, any>>(obj: T): Partial<T> {
+  const out: any = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === null || v === undefined) continue;
+    if (Array.isArray(v) && v.length === 0) continue;
+    out[k] = v;
+  }
+  return out;
+}
+
 // ─── Community likes helper ──────────────────────────────────────────────────
 async function getCommunityLikesMap(
   db: any,
@@ -942,7 +969,7 @@ Content-Type: application/json
       try {
         const quota = await getQuotaMeta(currentUserId);
         if (!quota) return jsonResponse({ error: 'User not found' });
-        return jsonResponse({ ...quota, _meta: quota });
+        return jsonResponse({ ...quota, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -977,7 +1004,7 @@ Content-Type: application/json
         );
         if (!user) return jsonResponse({ error: 'User not found' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ id: currentUserId, ...user, _id: undefined, _meta: quota });
+        return jsonResponse({ id: currentUserId, ...user, _id: undefined, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1016,7 +1043,7 @@ Content-Type: application/json
           },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ mockups, total: mockups.length, _meta: quota });
+        return jsonResponse({ mockups, total: mockups.length, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1039,7 +1066,7 @@ Content-Type: application/json
         });
         if (!mockup) return jsonResponse({ error: 'Mockup not found' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...mockup, _meta: quota });
+        return jsonResponse({ ...mockup, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1072,7 +1099,7 @@ Content-Type: application/json
         const db = await connectToMongoDB();
         const presets = await db.collection('mockup_presets').find({ type }).limit(50).toArray();
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ presets, total: presets.length, _meta: quota });
+        return jsonResponse({ presets, total: presets.length, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1139,7 +1166,7 @@ Content-Type: application/json
           resolution,
           seed: result.seed ?? seed ?? null,
           creditsUsed: result.creditsUsed ?? null,
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -1252,7 +1279,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           resolution,
           seed: result.seed ?? seed ?? null,
           creditsUsed: result.creditsUsed ?? null,
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -1372,7 +1399,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           modelUsed: result.modelUsed || model,
           creditsDeducted: result.creditsDeducted ?? null,
           creditsRemaining: result.creditsRemaining ?? null,
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -1399,7 +1426,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           select: { id: true, name: true, prompt: true, createdAt: true },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ projects, total: projects.length, _meta: quota });
+        return jsonResponse({ projects, total: projects.length, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1422,7 +1449,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         if (!project) return jsonResponse({ error: 'Branding project not found' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...project, _meta: quota });
+        return jsonResponse({ ...project, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1540,7 +1567,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             results.push({ step: stepNum, data: result.data });
           }
           const quota = await getQuotaMeta(currentUserId);
-          return jsonResponse({ brandingData: accumulatedData, steps: results, _meta: quota });
+          return jsonResponse({ brandingData: accumulatedData, steps: results, _meta: slimMeta(quota) });
         }
 
         const resolvedStep = visantStepMap[step] || step;
@@ -1561,7 +1588,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           return ERR.internal(detail || `Branding generation failed (${response.status})`);
         }
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, step, _meta: quota });
+        return jsonResponse({ ...result, step, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1587,7 +1614,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           select: { id: true, name: true, createdAt: true, shareId: true },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ projects, total: projects.length, _meta: quota });
+        return jsonResponse({ projects, total: projects.length, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1610,7 +1637,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         if (!project) return jsonResponse({ error: 'Canvas project not found' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...project, _meta: quota });
+        return jsonResponse({ ...project, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1632,7 +1659,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           data: { userId: currentUserId, name, nodes: [], edges: [] },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...project, _meta: quota });
+        return jsonResponse({ ...project, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1658,7 +1685,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           select: { id: true, name: true, clientName: true, template: true, createdAt: true },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ budgets, total: budgets.length, _meta: quota });
+        return jsonResponse({ budgets, total: budgets.length, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1681,7 +1708,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         if (!budget) return jsonResponse({ error: 'Budget not found' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...budget, _meta: quota });
+        return jsonResponse({ ...budget, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1719,7 +1746,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...budget, _meta: quota });
+        return jsonResponse({ ...budget, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1749,7 +1776,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         }
         const result = await improvePrompt(prompt, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: quota });
+        return jsonResponse({ improvedPrompt: result.improvedPrompt, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1789,7 +1816,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ url: result.url, id: result.id, size: result.size, _meta: quota });
+        return jsonResponse({ url: result.url, id: result.id, size: result.size, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1827,7 +1854,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
         const result = await describeImage(imageInput as any, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ description: result.description, title: result.title, _meta: quota });
+        return jsonResponse({ description: result.description, title: result.title, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1871,7 +1898,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || 'Extraction failed');
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1897,7 +1924,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           select: { id: true, identity: true, isPublic: true, publicSlug: true, updatedAt: true },
         });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ guidelines, total: guidelines.length, _meta: quota });
+        return jsonResponse({ guidelines, total: guidelines.length, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1958,11 +1985,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             context,
             id: guideline.id,
             sections: resolvedSections || 'full',
-            _meta: quota,
+            _meta: slimMeta(quota),
           });
         }
 
-        return jsonResponse({ ...guideline, _meta: quota });
+        return jsonResponse({ ...stripNullish(guideline as any), _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1986,7 +2013,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
         // Return without userId for privacy
         const { userId, ...publicData } = guideline as any;
-        return jsonResponse({ guideline: publicData });
+        return jsonResponse({ guideline: stripNullish(publicData) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2152,7 +2179,13 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         return jsonResponse({
           guideline: { id: guideline.id, identity: guideline.identity },
-          _meta: quota,
+          nextSteps: [
+            'Populate it fast — brand-guidelines-ingest with source=url (your website) or source=text.',
+            'Or fill sections by hand — brand-guidelines-update (colors, typography, guidelines, strategy).',
+            'See what is missing anytime — brand-guidelines-health-check.',
+          ],
+          viewUrl: `${FRONTEND_BASE_URL}/brand-guidelines?id=${guideline.id}`,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2512,7 +2545,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           id: updated.id,
           updated: Object.keys(updateData),
           guideline: { id: updated.id, identity: updated.identity },
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2542,7 +2575,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         await prisma.brandGuideline.delete({ where: { id: existing.id } });
 
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ success: true, deleted: name, _meta: quota });
+        return jsonResponse({ success: true, deleted: name, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2551,7 +2584,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'brand-guidelines-ingest',
-    'Extract brand data (colors, typography, voice, strategy) from a URL or raw text and merge it into an existing brand guideline. Useful for bootstrapping a guideline from a website, landing page, or brand document. Returns what was extracted so the user can review before saving.',
+    'Extract brand data (colors, typography, voice, strategy) from a URL or raw text and MERGE it into an existing brand guideline. Useful for bootstrapping a guideline from a website, landing page, or brand document. Returns the extracted values. Pass preview=true to see what would be extracted WITHOUT saving (dry run), then re-run without preview to commit.',
     {
       id: z.string().describe('Brand guideline ID to merge extracted data into.'),
       source: z
@@ -2562,9 +2595,13 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .string()
         .optional()
         .describe('Raw text or markdown to extract from (required when source=text).'),
+      preview: z
+        .boolean()
+        .optional()
+        .describe('Dry run: return the extraction without saving. Re-run without preview to merge.'),
     },
     { title: 'Ingest Brand from URL', destructiveHint: false },
-    async ({ id, source, url, text }) => {
+    async ({ id, source, url, text, preview }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       if (source === 'url' && !url) return ERR.validation('url is required when source=url');
@@ -2579,6 +2616,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const body: Record<string, any> = { source };
         if (source === 'url') body.url = url;
         if (source === 'text') body.data = text;
+        if (preview) body.dryRun = true;
 
         const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/ingest`, {
           method: 'POST',
@@ -2599,15 +2637,14 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const result = (await resp.json()) as any;
         const extracted = result.extracted || {};
         return jsonResponse({
-          message: 'Extracted and merged successfully.',
-          extracted: {
-            colors: extracted.colors?.length ?? 0,
-            typography: extracted.typography?.length ?? 0,
-            guidelines: !!extracted.guidelines,
-            strategy: !!extracted.strategy,
-          },
+          saved: !preview,
+          message: preview
+            ? 'Dry run — nothing saved. Re-run without preview to merge this into the brand.'
+            : 'Extracted and merged into the brand. The values found are below (no need to re-fetch).',
+          // Actual extracted values so the caller can review without a second get call.
+          extracted,
           id,
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2646,7 +2683,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             success: true,
             isPublic: false,
             message: 'Public access revoked.',
-            _meta: quota,
+            _meta: slimMeta(quota),
           });
         }
 
@@ -2668,7 +2705,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const baseUrl = process.env.VITE_SITE_URL || 'https://visantlabs.com';
         const shareUrl = `${baseUrl}/brand/${publicSlug}`;
 
-        return jsonResponse({ success: true, isPublic: true, shareUrl, publicSlug, _meta: quota });
+        return jsonResponse({ success: true, isPublic: true, shareUrl, publicSlug, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2737,7 +2774,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           expiresAt: expiresAt?.toISOString() || null,
           instructions:
             'Send this URL to your client. They will create an account (or log in), accept the invite, and get one-click connection buttons for Cursor, VS Code, Claude, and ChatGPT.',
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2784,7 +2821,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             changed: v.changedFields,
             at: v.createdAt,
           })),
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -2833,7 +2870,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
-        return jsonResponse({ logo: result.logo, allLogos: result.allLogos, _meta: quota });
+        return jsonResponse({ logo: result.logo, allLogos: result.allLogos, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2868,7 +2905,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           const errBody = (await resp.json().catch(() => ({}))) as any;
           return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
         }
-        return jsonResponse({ success: true, deleted: logoId, _meta: quota });
+        return jsonResponse({ success: true, deleted: logoId, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2909,7 +2946,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
-        return jsonResponse({ media: result.media, allMedia: result.allMedia, _meta: quota });
+        return jsonResponse({ media: result.media, allMedia: result.allMedia, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2944,7 +2981,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           const errBody = (await resp.json().catch(() => ({}))) as any;
           return ERR.internal(errBody?.error || `Delete failed (${resp.status})`);
         }
-        return jsonResponse({ success: true, deleted: mediaId, _meta: quota });
+        return jsonResponse({ success: true, deleted: mediaId, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2973,7 +3010,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Duplicate failed (${resp.status})`);
-        return jsonResponse({ guideline: result.guideline, _meta: quota });
+        return jsonResponse({ guideline: result.guideline, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3010,7 +3047,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         );
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Restore failed (${resp.status})`);
-        return jsonResponse({ success: true, restoredTo: version, id, _meta: quota });
+        return jsonResponse({ success: true, restoredTo: version, id, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3019,7 +3056,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'brand-guidelines-compliance-check',
-    'Run an AI compliance check on a brand guideline — validates color contrast, typography consistency, voice coherence, and completeness. Returns a scored report with actionable suggestions.',
+    "Validate a brand's color palette for WCAG contrast and internal consistency. Returns a scored report with violations. (For strategy ↔ visual ↔ voice coherence, use brand-guidelines-health-check instead.)",
     {
       id: z.string().describe('Brand guideline ID to check.'),
     },
@@ -3032,18 +3069,40 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           where: { id, userId: currentUserId },
         });
         if (!existing) return ERR.notFound('Brand guideline');
+
+        // The underlying checker validates supplied content against the brand.
+        // For a brand-level audit we feed the brand's OWN palette so contrast
+        // and consistency are actually evaluated (instead of erroring on no input).
+        const brandColors = ((existing.colors as any[]) || []).map((c) => ({
+          hex: c.hex,
+          name: c.name,
+          role: c.role,
+        }));
+        if (brandColors.length === 0) {
+          return jsonResponse({
+            error:
+              'This brand has no colors yet. Add a palette (brand-guidelines-update or -ingest) — compliance-check validates the palette’s contrast and consistency.',
+          });
+        }
+
         const quota = await getQuotaMeta(currentUserId);
         const resp = await fetch(
           `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/compliance-check`,
           {
             method: 'POST',
-            headers: { 'x-mcp-user-id': currentUserId },
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({
+              colors: brandColors,
+              checkContrast: true,
+              checkColors: true,
+              checkTone: false,
+            }),
           }
         );
         const result = (await resp.json()) as any;
         if (!resp.ok)
           return ERR.internal(result?.error || `Compliance check failed (${resp.status})`);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3626,7 +3685,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Failed to list creative projects' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3651,7 +3710,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Creative project not found' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3700,7 +3759,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           return ERR.internal(detail || `Creative generation failed (${response.status})`);
         }
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3787,7 +3846,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const quota = await getQuotaMeta(currentUserId);
         // Omit base64 from MCP response to avoid truncation
         const { imageBase64: _omit, ...cleanResult } = result;
-        return jsonResponse({ ...cleanResult, _meta: quota });
+        return jsonResponse({ ...cleanResult, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3943,7 +4002,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           plan,
           projectId,
           creditsUsed: credits,
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         return ERR.internal(err.message);
@@ -4000,7 +4059,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Failed to create creative project' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4048,7 +4107,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Failed to update creative project' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4174,7 +4233,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Failed to save branding project' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4238,7 +4297,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Failed to update canvas project' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4351,7 +4410,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const result = await response.json();
         if (!response.ok) return jsonResponse({ error: result.error || 'Failed to update budget' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4402,7 +4461,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!response.ok)
           return jsonResponse({ error: result.error || 'Failed to duplicate budget' });
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ ...result, _meta: quota });
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4926,7 +4985,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
   // ─── Brand: Export guideline ───────────────────────────────────────────────
   server.tool(
     'brand-guidelines-export',
-    'Export a brand guideline as a complete JSON document for backup, migration, or sharing.',
+    'Export a brand guideline as a portable JSON document for backup or migration — internal fields (ownership, view counts, sync state) are stripped. For working with a brand in-session, prefer brand-guidelines-get (supports section filtering and prompt format).',
     {
       id: z.string().describe('Brand guideline ID.'),
     },
@@ -4939,7 +4998,18 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           where: { id, userId: currentUserId },
         });
         if (!guideline) return ERR.notFound('Brand guideline');
-        return jsonResponse(guideline);
+        // Strip ownership + internal runtime fields; keep a clean portable doc.
+        const {
+          userId,
+          publicViews,
+          lastViewedAt,
+          figmaFileKey,
+          figmaSyncedAt,
+          canEdit,
+          canView,
+          ...portable
+        } = guideline as any;
+        return jsonResponse(stripNullish(portable));
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -4949,7 +5019,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
   // ─── Brand: Compile design tokens ──────────────────────────────────────────
   server.tool(
     'brand-guidelines-compile',
-    'Compile a brand guideline into design tokens (CSS custom properties, Tailwind config values, JSON tokens). Use for design-to-code workflows.',
+    'Compile a brand guideline into design tokens — returns four ready-to-use files: CSS custom properties, a Tailwind theme extension, React/TS tokens, and SCSS variables. Use for design-to-code workflows.',
     {
       id: z.string().describe('Brand guideline ID.'),
     },
@@ -6363,7 +6433,7 @@ Pick the template with psd-scene-list first and match the art aspect ratio to th
           replaced: data.replaced || [],
           artUrl: resolvedArtUrl,
           creditsCharged,
-          _meta: quota,
+          _meta: slimMeta(quota),
         });
       } catch (err: any) {
         if (creditsCharged > 0) {

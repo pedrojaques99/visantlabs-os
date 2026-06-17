@@ -23,7 +23,7 @@ import { redisClient } from '../lib/redis.js';
 import { CacheInvalidation } from '../lib/cache-utils.js';
 import { brandSharedService } from '../services/brandSharedService.js';
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
-import { runBrandHealth } from '../lib/brandHealth.js';
+import { runBrandHealth, isBrandEmpty, buildEmptyBrandHealthReport } from '../lib/brandHealth.js';
 import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
@@ -517,9 +517,29 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
     });
     extraction.completeness = calculateCompleteness(merged);
 
+    // Snapshot the pre-ingest state so version history captures ingests too,
+    // not just manual PUT edits.
+    const ingestChangedFields = calculateChangedFields(existing as any, merged as any);
+    let ingestNextVersion: number | undefined;
+    if (ingestChangedFields.length > 0) {
+      const currentVersion = (existing as any).currentVersion || 1;
+      await prisma.brandGuidelineVersion.create({
+        data: {
+          guidelineId: existing.id,
+          snapshot: createSnapshot(existing as any) as any,
+          versionNumber: currentVersion,
+          changeNote: `Ingested from ${source}${url ? ` (${url})` : ''}`,
+          changedFields: ingestChangedFields,
+          createdBy: req.userId,
+        },
+      });
+      ingestNextVersion = currentVersion + 1;
+    }
+
     const guideline = await prisma.brandGuideline.update({
       where: { id: existing.id },
       data: {
+        ...(ingestNextVersion ? { currentVersion: ingestNextVersion } : {}),
         identity: merged.identity as any,
         logos: merged.logos as any,
         colors: merged.colors as any,
@@ -1758,6 +1778,11 @@ router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthR
       where: { id: req.params.id, userId: req.userId },
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    // Empty brands get a deterministic checklist — no LLM, no credit charged.
+    if (isBrandEmpty(guideline as any)) {
+      return res.json({ report: buildEmptyBrandHealthReport(guideline as any) });
+    }
 
     await chargeCredits(req.userId!, 1);
     const apiKey = await getGeminiApiKey(req.userId).catch(() => undefined);

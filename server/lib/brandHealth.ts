@@ -58,13 +58,86 @@ Rules for the audit:
 - Score reflects COHERENCE between strategy ↔ visual ↔ voice, not completeness.
 - Look for contradictions (e.g. "minimalist" manifesto + 5+ font families).
 - Consider AI-generation impact: ambiguous palette roles → bad image gen; missing tone → off-brand copy.
-- 4-8 insights, 3-6 recommendations. Be terse, professional, no emoji, no praise filler.
+- 4-8 insights, 3-6 recommendations. Be clear, specific and human — plain language a brand owner understands, not academic jargon. No emoji, no praise filler.
+- Each "detail" and "reason" must say something concrete and actionable about THIS brand; never use abstract filler like "strategic void" or "precludes calibration".
 - Detect the language of the brand context (Portuguese vs English) and respond in that language for "summary"/"title"/"detail"/"action"/"reason".`;
+
+/**
+ * True when a guideline has no substantive content yet — only an identity (or
+ * nothing). Running an LLM audit on this just spends a credit to say "it's
+ * empty", so callers should short-circuit with buildEmptyBrandHealthReport.
+ */
+export function isBrandEmpty(bg: BrandGuideline): boolean {
+  const g = bg as any;
+  return (
+    !(g.colors?.length) &&
+    !(g.typography?.length) &&
+    !g.guidelines?.voice &&
+    !(g.guidelines?.dos?.length) &&
+    !(g.guidelines?.donts?.length) &&
+    !g.strategy?.manifesto &&
+    !g.strategy?.coreMessage?.product &&
+    !(g.strategy?.positioning?.length) &&
+    !(g.logos?.length)
+  );
+}
+
+/**
+ * Deterministic, friendly report for an empty brand — no LLM, no credit spend.
+ * Tells the owner exactly what to add and how, in their UI language.
+ */
+export function buildEmptyBrandHealthReport(bg: BrandGuideline): BrandHealthReport {
+  const pt = /[áàâãéêíóôõúç]/i.test(((bg as any).identity?.description as string) || '');
+  const name = (bg as any).identity?.name || (pt ? 'sua marca' : 'this brand');
+  return {
+    score: 0,
+    summary: pt
+      ? `${name} ainda não tem conteúdo pra auditar. Adicione cores, tipografia e tom de voz — ou use brand-guidelines-ingest com uma URL ou texto pra preencher tudo de uma vez.`
+      : `${name} has no content to audit yet. Add colors, typography and a tone of voice — or use brand-guidelines-ingest with a URL or text to populate it all at once.`,
+    insights: [
+      {
+        level: 'warn',
+        category: 'identity',
+        title: pt ? 'Marca vazia' : 'Empty brand',
+        detail: pt
+          ? 'Só o nome está preenchido. Os blocos visuais e de estratégia ainda estão em branco.'
+          : 'Only the name is filled in. The visual and strategy blocks are still empty.',
+      },
+    ],
+    recommendations: [
+      {
+        action: pt
+          ? 'Rodar brand-guidelines-ingest (source=url ou text)'
+          : 'Run brand-guidelines-ingest (source=url or text)',
+        reason: pt
+          ? 'Extrai cores, tipografia, tom e estratégia automaticamente a partir do site ou de um texto.'
+          : 'Auto-extracts colors, typography, voice and strategy from a website or pasted text.',
+      },
+      {
+        action: pt ? 'Adicionar a paleta de cores' : 'Add the color palette',
+        reason: pt
+          ? 'Cores com papéis (primary/background/text) são a base pra geração de imagem e tokens.'
+          : 'Colors with roles (primary/background/text) are the base for image generation and tokens.',
+      },
+      {
+        action: pt ? 'Definir o tom de voz' : 'Define the tone of voice',
+        reason: pt
+          ? 'Sem tom definido, a geração de copy sai genérica e fora da marca.'
+          : 'Without a defined tone, generated copy comes out generic and off-brand.',
+      },
+    ],
+    model: 'deterministic',
+    tokens: {},
+    generatedAt: new Date().toISOString(),
+  };
+}
 
 export async function runBrandHealth(
   guideline: BrandGuideline,
   options: { apiKey?: string } = {}
 ): Promise<BrandHealthReport> {
+  if (isBrandEmpty(guideline)) return buildEmptyBrandHealthReport(guideline);
+
   const context = buildBrandContextJSONString(guideline);
 
   const result = await chatWithAIContext(

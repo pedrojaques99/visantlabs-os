@@ -72,6 +72,16 @@ function buildGradientCSS(g: BrandGuidelineGradient): string {
     : `linear-gradient(${g.angle}deg, ${stops})`;
 }
 
+/** Pick a sensible generic CSS fallback from the font family / role. */
+function genericFallback(family: string, role?: string): string {
+  const f = `${family} ${role || ''}`.toLowerCase();
+  if (/(mono|code|consol|courier)/.test(f)) return 'monospace';
+  if (/sans/.test(f)) return 'sans-serif';
+  if (/(serif|times|georgia|garamond|playfair|fraunces|lora|merriweather|slab)/.test(f))
+    return 'serif';
+  return 'sans-serif';
+}
+
 // ─── CSS Variables Compiler ──────────────────────────────────
 
 function compileCSS(bg: BrandGuideline): string {
@@ -100,7 +110,7 @@ function compileCSS(bg: BrandGuideline): string {
     lines.push('  /* Typography */');
     for (const t of bg.typography) {
       const key = slugify(t.role);
-      lines.push(`  --font-${key}: '${t.family}', sans-serif;`);
+      lines.push(`  --font-${key}: '${t.family}', ${genericFallback(t.family, t.role)};`);
       if (t.size) lines.push(`  --font-${key}-size: ${t.size}px;`);
       if (t.lineHeight) lines.push(`  --font-${key}-line-height: ${t.lineHeight};`);
       if (t.letterSpacing) lines.push(`  --font-${key}-letter-spacing: ${t.letterSpacing};`);
@@ -199,9 +209,12 @@ function compileCSS(bg: BrandGuideline): string {
     lines.push('');
     for (const t of bg.typography) {
       const key = slugify(t.role);
-      lines.push(
-        `.font-${key} { font-family: var(--font-${key}); font-size: var(--font-${key}-size); line-height: var(--font-${key}-line-height); }`
-      );
+      // Only reference vars that were actually emitted in :root above —
+      // otherwise the utility class points at undefined custom properties.
+      const decls = [`font-family: var(--font-${key})`];
+      if (t.size) decls.push(`font-size: var(--font-${key}-size)`);
+      if (t.lineHeight) decls.push(`line-height: var(--font-${key}-line-height)`);
+      lines.push(`.font-${key} { ${decls.join('; ')}; }`);
     }
   }
 
@@ -234,7 +247,7 @@ function compileTailwind(bg: BrandGuideline): string {
   if (bg.typography?.length) {
     for (const t of bg.typography) {
       const key = slugify(t.role);
-      config.fontFamily[key] = [`'${t.family}'`, 'sans-serif'];
+      config.fontFamily[key] = [`'${t.family}'`, genericFallback(t.family, t.role)];
       if (t.size) {
         config.fontSize[key] = [
           `${t.size}px`,
