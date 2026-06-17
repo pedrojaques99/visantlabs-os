@@ -13,6 +13,7 @@
  */
 import { GoogleGenAI, Type } from '@google/genai';
 import { safeFetch } from '../../utils/securityValidation.js';
+import { shouldRetry } from '../ai-resilience.js';
 import type { BrandAssetAnalysis } from './visualSignature.js';
 
 export type { BrandAssetAnalysis, BrandAssetDimensions, BrandVisualSignature } from './visualSignature.js';
@@ -99,6 +100,27 @@ async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: str
 }
 
 /**
+ * Retry the Gemini call on transient errors (rate limits / 429) with exponential
+ * backoff + jitter. Bulk analysis bursts hit per-minute quotas; a plain call
+ * would return null and silently drop the asset. We retry rather than use the
+ * circuit breaker (which would open and skip the whole batch).
+ */
+async function generateWithRetry<T>(fn: () => Promise<T>, maxAttempts = 4): Promise<T> {
+  let attempt = 0;
+  for (;;) {
+    try {
+      return await fn();
+    } catch (err) {
+      attempt++;
+      if (attempt >= maxAttempts || !shouldRetry(err)) throw err;
+      // 3s, 6s, 12s … capped, with jitter to de-sync concurrent workers.
+      const delay = Math.min(3000 * 2 ** (attempt - 1), 24000) + Math.floor(Math.random() * 1500);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+}
+
+/**
  * Analyze a single asset image URL into visual dimensions (or null on failure).
  * Also returns the fetched image so callers can embed it without re-downloading.
  */
@@ -115,18 +137,20 @@ export async function analyzeAssetImage(url: string): Promise<{
 
   const ai = new GoogleGenAI({ apiKey: key });
   try {
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: [
-        {
-          parts: [
-            { inlineData: { data: img.data, mimeType: img.mimeType } },
-            { text: ANALYSIS_PROMPT },
-          ],
-        },
-      ],
-      config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
-    });
+    const response = await generateWithRetry(() =>
+      ai.models.generateContent({
+        model: MODEL,
+        contents: [
+          {
+            parts: [
+              { inlineData: { data: img.data, mimeType: img.mimeType } },
+              { text: ANALYSIS_PROMPT },
+            ],
+          },
+        ],
+        config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
+      })
+    );
     const parsed = JSON.parse((response.text || '').trim());
     const usage = (response as any).usageMetadata;
     return {
