@@ -13,7 +13,6 @@ import {
   Search,
   Palette,
   ChevronLeft,
-  ChevronDown,
   Sun,
   Moon,
   Home,
@@ -28,6 +27,7 @@ import {
   Check,
   ShieldCheck,
   MoreHorizontal,
+  FileInput,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -42,22 +42,9 @@ import {
 } from '@/components/brand/BrandReadOnlyView';
 import { PUBLIC_TABS, downloadBlob, safeFileName } from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
-import {
-  InstagramFeedMock,
-  LinkedInPostMock,
-  PosterMock,
-  StoriesMock,
-  WebsiteHeroMock,
-  BusinessCardMock,
-  EmailHeaderMock,
-} from '@/components/brand/guidelines/preview/BrandMocks';
-import {
-  exportMockElement,
-  EXPORT_FORMATS,
-  type ExportFormat,
-} from '@/components/brand/guidelines/preview/exportMock';
+import { BrandOverviewBento } from '@/components/brand/guidelines/preview/BrandOverviewBento';
+import { BrandPreviewGallery } from '@/components/brand/guidelines/preview/BrandPreviewGallery';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useLayout } from '@/hooks/useLayout';
 import { DEFAULT_SECTION_IDS } from '@/components/brand/guidelines/sections-manifest';
 import { InlineEditable } from '@/components/brand/InlineEditable';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
@@ -68,6 +55,8 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -127,18 +116,6 @@ const SECTION_LABELS: Record<BrandViewSection, string> = {
   guidelines: 'Guidelines',
 };
 
-// ─── Preview mocks ────────────────────────────────────────────────────────────
-
-const PREVIEW_MOCKS = [
-  { id: 'instagram', label: 'Instagram', Component: InstagramFeedMock },
-  { id: 'linkedin', label: 'LinkedIn', Component: LinkedInPostMock },
-  { id: 'website', label: 'Website', Component: WebsiteHeroMock },
-  { id: 'card', label: 'Card', Component: BusinessCardMock },
-  { id: 'email', label: 'Email', Component: EmailHeaderMock },
-  { id: 'poster', label: 'Poster', Component: PosterMock },
-  { id: 'stories', label: 'Stories', Component: StoriesMock },
-] as const;
-
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 // `idOverride` makes this the unified owner-editor: load a brand by id (auth) and
@@ -149,8 +126,6 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   onBack,
 }) => {
   const { t } = useTranslation();
-  const { user } = useLayout();
-  const isAdmin = !!user?.isAdmin;
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
@@ -160,81 +135,19 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>('brand');
-  const [activePreview, setActivePreview] = useState('instagram');
-  const [exporting, setExporting] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [advancedEdit, setAdvancedEdit] = useState(false);
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   // Owner action dialogs (ported from the admin editor)
   const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
   const [isMockupOpen, setIsMockupOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [figmaCopied, setFigmaCopied] = useState(false);
-  const publicMockRef = useRef<HTMLDivElement>(null);
-  const exportMenuRef = useRef<HTMLDivElement>(null);
-  const downloadMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!showExportMenu) return;
-    const handleClick = (e: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
-        setShowExportMenu(false);
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowExportMenu(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [showExportMenu]);
-
-  useEffect(() => {
-    if (!showDownloadMenu) return;
-    const handleClick = (e: MouseEvent) => {
-      if (downloadMenuRef.current && !downloadMenuRef.current.contains(e.target as Node)) {
-        setShowDownloadMenu(false);
-      }
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowDownloadMenu(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [showDownloadMenu]);
-
-  const handleExportMock = useCallback(
-    async (format: ExportFormat) => {
-      if (!publicMockRef.current || !guideline) return;
-      setExporting(true);
-      setShowExportMenu(false);
-      try {
-        await exportMockElement(
-          publicMockRef.current,
-          guideline.identity?.name || 'brand',
-          activePreview,
-          format
-        );
-        toast.success(`Exported ${activePreview} as ${format.toUpperCase()}`);
-      } catch {
-        toast.error(`Failed to export as ${format.toUpperCase()}`);
-      } finally {
-        setExporting(false);
-      }
-    },
-    [activePreview, guideline]
-  );
+  // Opens the (always-mounted, visually hidden) BrandIngestButton's drop-zone
+  // modal from the overflow menu — keeps ingest's stream state outside the menu.
+  const ingestOpenRef = useRef<(() => void) | null>(null);
 
   const fetchGuideline = useCallback(async () => {
     try {
@@ -250,8 +163,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       } else {
         return;
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load brand guidelines');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load brand guidelines');
     } finally {
       setIsLoading(false);
     }
@@ -329,16 +242,16 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
 
-  // Preview tab is WIP — only admins see it for now.
+  // Preview tab (gallery) + Overview's Mockups tile render from local mock
+  // tokens — available to anyone viewing the brand once there's enough to draw.
+  const hasPreviewData =
+    tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name;
   const visibleTabs = useMemo(
-    () => PUBLIC_TABS.filter((tab) => tab.id !== 'preview' || isAdmin),
-    [isAdmin]
+    () => PUBLIC_TABS.filter((tab) => tab.id !== 'preview' || hasPreviewData),
+    [hasPreviewData]
   );
   const currentTab = PUBLIC_TABS.find((t) => t.id === activeTab) || PUBLIC_TABS[0];
   const visibleSections = currentTab.sections;
-
-  const hasPreviewData =
-    isAdmin && (tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name);
 
   if (isLoading) {
     return (
@@ -376,7 +289,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             <Button
               variant="outline"
               className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
-              style={{ '--accent': guideline?.colors?.[0]?.hex || '#888888' } as any}
+              style={
+                { '--accent': guideline?.colors?.[0]?.hex || '#888888' } as React.CSSProperties
+              }
             >
               Return to Surface
             </Button>
@@ -420,7 +335,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           '--brand-text': brandTheme.text,
           backgroundColor: 'var(--brand-bg)',
           color: 'var(--brand-text)',
-        } as any
+        } as React.CSSProperties
       }
     >
       <SEO
@@ -434,7 +349,6 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4"
       >
         {visibleTabs.map((tab) => {
-          const Icon = tab.icon;
           return (
             <button
               key={tab.id}
@@ -505,195 +419,156 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           </div>
         )}
 
-        {/* Edit / View toggle — only for owners/editors */}
-        {canEdit && (
+        {/* Edit-mode primary tools: completeness status, the GENERATE CTA, and Share */}
+        {canEdit && editMode && (
           <>
-            {editMode && (
-              <Button
-                onClick={() => setAdvancedEdit((v) => !v)}
-                variant="ghost"
-                aria-pressed={advancedEdit}
-                className={cn(
-                  ctrlBtnClass,
-                  advancedEdit &&
-                    'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)]'
-                )}
-              >
-                <SlidersHorizontal size={13} />
-                <span className="hidden sm:inline">Advanced</span>
-              </Button>
-            )}
-            {editMode && (
-              <>
-                <BrandCompletenessPill guideline={guideline} />
-                <Button
-                  onClick={() => setIsAiPopulateOpen(true)}
-                  variant="ghost"
-                  className={ctrlBtnClass}
-                >
-                  <Zap size={13} />
-                  <span className="hidden sm:inline">Generate</span>
-                </Button>
-                <Button
-                  onClick={() => setIsShareOpen(true)}
-                  variant="ghost"
-                  className={ctrlBtnClass}
-                >
-                  <Share2 size={13} />
-                  <span className="hidden sm:inline">Share</span>
-                </Button>
-                {guideline.id && (
-                  <BrandIngestButton
-                    guideline={guideline}
-                    onSuccess={fetchGuideline}
-                    className={ctrlBtnClass}
-                  />
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className={ctrlBtnClass} aria-label="More actions">
-                      <MoreHorizontal size={14} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[180px]">
-                    <Button variant="menuItem" onClick={() => setIsMockupOpen(true)}>
-                      <ImageIcon size={13} /> Mockup
-                    </Button>
-                    <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
-                      <ShieldCheck size={13} /> Review
-                    </Button>
-                    <Button
-                      variant="menuItem"
-                      onClick={() => {
-                        if (guideline.id) copyToClipboard(guideline.id);
-                        setFigmaCopied(true);
-                        setTimeout(() => setFigmaCopied(false), 2000);
-                      }}
-                    >
-                      {figmaCopied ? (
-                        <Check size={13} className="text-success" />
-                      ) : (
-                        <Figma size={13} />
-                      )}
-                      {figmaCopied ? 'Copied!' : 'Use in Figma'}
-                    </Button>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
+            <BrandCompletenessPill guideline={guideline} />
             <Button
-              onClick={() => setEditMode((v) => !v)}
+              onClick={() => setIsAiPopulateOpen(true)}
               variant="ghost"
               className={cn(
                 ctrlBtnClass,
-                editMode && 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
+                // Primary CTA — uses the brand accent so it reads as the main action.
+                'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.25)]'
               )}
             >
-              {editMode ? <Eye size={13} /> : <Pencil size={13} />}
-              <span className="hidden sm:inline">
-                {editMode
-                  ? t('public.brand.guideline.viewing_mode')
-                  : t('public.brand.guideline.edit_mode')}
-              </span>
+              <Zap size={13} />
+              <span className="hidden sm:inline">Generate</span>
+            </Button>
+            <Button onClick={() => setIsShareOpen(true)} variant="ghost" className={ctrlBtnClass}>
+              <Share2 size={13} />
+              <span className="hidden sm:inline">Share</span>
             </Button>
           </>
         )}
 
-        <Button
-          onClick={() =>
-            setTheme((prev) => (prev === 'brand' ? 'light' : prev === 'light' ? 'dark' : 'brand'))
-          }
-          variant="ghost"
-          aria-label={`Switch theme, current: ${theme}`}
-          className={cn(
-            ctrlBtnClass,
-            theme === 'brand' &&
-              'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]'
-          )}
-        >
-          {theme === 'brand' ? (
-            <Palette size={14} className="animate-pulse" aria-hidden="true" />
-          ) : theme === 'light' ? (
-            <Sun size={14} aria-hidden="true" />
-          ) : (
-            <Moon size={14} aria-hidden="true" />
-          )}
-          <span className="hidden sm:inline">{theme}</span>
-        </Button>
-
-        <Button
-          onClick={handleConnect}
-          disabled={connecting}
-          variant="ghost"
-          aria-label={t('public.brand.guideline.connect_brand_aria')}
-          className={cn(ctrlBtnClass, connecting && 'opacity-60 cursor-not-allowed')}
-        >
-          <Plug size={14} aria-hidden="true" className={connecting ? 'animate-pulse' : ''} />
-          <span className="hidden sm:inline">
-            {connecting
-              ? t('public.brand.guideline.connecting')
-              : t('public.brand.guideline.connect')}
-          </span>
-        </Button>
-
-        {/* Unified download — single button, JSON / CSS in a dropdown */}
-        <div ref={downloadMenuRef} className="relative">
+        {/* View / Edit toggle — owners/editors */}
+        {canEdit && (
           <Button
-            onClick={() => setShowDownloadMenu((v) => !v)}
+            onClick={() => setEditMode((v) => !v)}
             variant="ghost"
-            aria-label={t('public.brand.guideline.download_brand_aria')}
-            aria-haspopup="menu"
-            aria-expanded={showDownloadMenu}
-            className={ctrlBtnClass}
+            className={cn(
+              ctrlBtnClass,
+              editMode && 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
+            )}
           >
-            <Download size={14} aria-hidden="true" />
-            <span className="hidden sm:inline">{t('public.brand.guideline.download')}</span>
-            <ChevronDown size={11} aria-hidden="true" />
+            {editMode ? <Eye size={13} /> : <Pencil size={13} />}
+            <span className="hidden sm:inline">
+              {editMode
+                ? t('public.brand.guideline.viewing_mode')
+                : t('public.brand.guideline.edit_mode')}
+            </span>
           </Button>
-          {showDownloadMenu && (
-            <div
-              role="menu"
-              aria-label={t('public.brand.guideline.download_brand_aria')}
-              className={cn(
-                'absolute right-0 top-full mt-1.5 z-50 rounded-xl border overflow-hidden min-w-[160px] backdrop-blur-md shadow-xl',
-                isLightBg ? 'bg-white/90 border-black/10' : 'bg-neutral-900/90 border-white/10'
-              )}
-            >
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  handleDownloadJSON();
-                  setShowDownloadMenu(false);
-                }}
-                className={cn(
-                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors focus:outline-none',
-                  isLightBg
-                    ? 'text-black/70 hover:text-black hover:bg-black/5 focus:bg-black/5'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/10'
+        )}
+
+        {/* Unified overflow — every secondary action, grouped by intent */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className={ctrlBtnClass} aria-label="More actions">
+              <MoreHorizontal size={14} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[210px]">
+            {/* Import / Create — edit mode only */}
+            {canEdit && editMode && (
+              <>
+                <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                  Import / Create
+                </DropdownMenuLabel>
+                {guideline.id && (
+                  <Button variant="menuItem" onClick={() => ingestOpenRef.current?.()}>
+                    <FileInput size={13} /> Ingest
+                  </Button>
                 )}
-              >
-                <Download size={12} /> JSON
-              </button>
-              <button
-                type="button"
-                role="menuitem"
+                <Button variant="menuItem" onClick={() => setIsMockupOpen(true)}>
+                  <ImageIcon size={13} /> Mockup
+                </Button>
+                <DropdownMenuSeparator />
+              </>
+            )}
+
+            {/* Export / Connect — always available */}
+            <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Export / Connect
+            </DropdownMenuLabel>
+            <Button variant="menuItem" onClick={handleDownloadJSON}>
+              <Download size={13} /> JSON
+            </Button>
+            <Button variant="menuItem" onClick={handleDownloadCSS}>
+              <Download size={13} /> {t('public.brand.guideline.css_variables')}
+            </Button>
+            {canEdit && guideline.id && (
+              <Button
+                variant="menuItem"
                 onClick={() => {
-                  handleDownloadCSS();
-                  setShowDownloadMenu(false);
+                  if (guideline.id) copyToClipboard(guideline.id);
+                  setFigmaCopied(true);
+                  setTimeout(() => setFigmaCopied(false), 2000);
                 }}
-                className={cn(
-                  'w-full text-left px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 transition-colors focus:outline-none',
-                  isLightBg
-                    ? 'text-black/70 hover:text-black hover:bg-black/5 focus:bg-black/5'
-                    : 'text-white/70 hover:text-white hover:bg-white/5 focus:bg-white/10'
-                )}
               >
-                <Download size={12} /> {t('public.brand.guideline.css_variables')}
-              </button>
-            </div>
-          )}
-        </div>
+                {figmaCopied ? <Check size={13} className="text-success" /> : <Figma size={13} />}
+                {figmaCopied ? 'Copied!' : 'Use in Figma'}
+              </Button>
+            )}
+            <Button variant="menuItem" onClick={handleConnect} disabled={connecting}>
+              <Plug size={13} className={connecting ? 'animate-pulse' : ''} />
+              {connecting
+                ? t('public.brand.guideline.connecting')
+                : t('public.brand.guideline.connect')}
+            </Button>
+
+            {/* Quality — edit mode only */}
+            {canEdit && editMode && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                  Quality
+                </DropdownMenuLabel>
+                <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
+                  <ShieldCheck size={13} /> Review
+                </Button>
+              </>
+            )}
+
+            {/* Display — theme (always) + advanced editor (edit mode) */}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              Display
+            </DropdownMenuLabel>
+            {canEdit && editMode && (
+              <Button
+                variant="menuItem"
+                onClick={() => setAdvancedEdit((v) => !v)}
+                aria-pressed={advancedEdit}
+              >
+                <SlidersHorizontal size={13} /> Advanced editor
+                {advancedEdit && <Check size={13} className="ml-auto text-success" />}
+              </Button>
+            )}
+            <Button variant="menuItem" onClick={() => setTheme('brand')}>
+              <Palette size={13} /> Brand theme
+              {theme === 'brand' && <Check size={13} className="ml-auto text-success" />}
+            </Button>
+            <Button variant="menuItem" onClick={() => setTheme('light')}>
+              <Sun size={13} /> Light
+              {theme === 'light' && <Check size={13} className="ml-auto text-success" />}
+            </Button>
+            <Button variant="menuItem" onClick={() => setTheme('dark')}>
+              <Moon size={13} /> Dark
+              {theme === 'dark' && <Check size={13} className="ml-auto text-success" />}
+            </Button>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Hidden ingest mount — its modal lives here; opened via ingestOpenRef from the menu */}
+        {canEdit && editMode && guideline.id && (
+          <BrandIngestButton
+            guideline={guideline}
+            onSuccess={fetchGuideline}
+            openRef={ingestOpenRef}
+            className="sr-only"
+          />
+        )}
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
@@ -796,104 +671,16 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           </GlassPanel>
         </div>
 
-        {/* Brand Preview Strip — shows mocks when Preview tab active or in Overview */}
-        {(activeTab === 'preview' || activeTab === 'all') && hasPreviewData && (
-          <motion.div
-            id="preview"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-16"
-          >
-            <div className="flex items-center justify-between mb-4 px-1">
-              <MicroTitle className="text-[var(--accent)] tracking-[0.15em] font-bold opacity-70">
-                Brand Preview
-              </MicroTitle>
-              <span className="text-[10px] font-mono uppercase tracking-widest opacity-30">
-                Live · local render
-              </span>
-            </div>
-
-            {/* Format selector + export */}
-            <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1 scrollbar-none [-webkit-mask-image:linear-gradient(to_right,transparent_0,black_16px,black_calc(100%-40px),transparent)]">
-              {PREVIEW_MOCKS.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setActivePreview(m.id)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all whitespace-nowrap',
-                    activePreview === m.id
-                      ? 'bg-[var(--accent)] text-[var(--accent-text)]'
-                      : 'opacity-40 hover:opacity-80 hover:bg-[var(--brand-text)]/5'
-                  )}
-                >
-                  {m.label}
-                </button>
-              ))}
-
-              {/* Export dropdown */}
-              <div ref={exportMenuRef} className="ml-auto relative">
-                <button
-                  type="button"
-                  onClick={() => setShowExportMenu((v) => !v)}
-                  disabled={exporting}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest opacity-50 hover:opacity-100 transition-all disabled:opacity-30"
-                >
-                  {exporting ? <GlitchLoader size={11} /> : <Download size={11} />}
-                  Export
-                  <ChevronDown size={9} />
-                </button>
-                {showExportMenu && (
-                  <div className="absolute right-0 top-full mt-1 z-50 bg-neutral-900 border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[100px]">
-                    {EXPORT_FORMATS.map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => handleExportMock(f.id)}
-                        className="w-full text-left px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Active mock */}
-            <GlassPanel
-              padding="md"
-              className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/5"
-            >
-              <div ref={publicMockRef} className="max-w-2xl mx-auto">
-                {PREVIEW_MOCKS.map(
-                  (m) => activePreview === m.id && <m.Component key={m.id} tokens={tokens} />
-                )}
-              </div>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--brand-text)]/5">
-                <div className="flex items-center gap-2">
-                  {tokens.palette.slice(0, 5).map((c, i) => (
-                    <span
-                      key={i}
-                      className="w-3 h-3 rounded-full border border-[var(--brand-text)]/10"
-                      style={{ background: c.hex }}
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest opacity-40">
-                  <span>{tokens.headingFamily.match(/^['"]?([^'",]+)/)?.[1] || 'Inter'}</span>
-                  <span>·</span>
-                  <span>{tokens.primaryColor}</span>
-                </div>
-              </div>
-            </GlassPanel>
-          </motion.div>
-        )}
-
-        {/* Brand content — single view. Owners edit inline (pencil per section);
-            the Advanced editor opens as a side panel (Sheet), not inline. */}
-        {activeTab !== 'preview' && (
+        {/* Content router:
+            · Preview tab → grouped mock gallery (BrandPreviewGallery)
+            · Overview (`all`) in view mode → compact bento snapshot
+            · Overview in edit mode + every other tab → BrandReadOnlyView sections
+              (kept for inline section editing / focused detail views) */}
+        {activeTab === 'preview' ? (
+          hasPreviewData && <BrandPreviewGallery tokens={tokens} brandName={brandName} />
+        ) : activeTab === 'all' && !(canEdit && editMode) ? (
+          <BrandOverviewBento guideline={guideline} tokens={tokens} onOpenTab={setActiveTab} />
+        ) : (
           <BrandReadOnlyView
             guideline={guideline}
             sections={visibleSections}
@@ -1000,7 +787,10 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       )}
 
       {/* Owner action dialogs (ported from admin editor) */}
-      {canEdit && (isAiPopulateOpen || isMockupOpen || isShareOpen || isReviewOpen) && (
+      {/* One stable Suspense boundary while editing — gating it on the OR of the
+          modal flags could unmount it mid-toggle and swallow a just-opened modal
+          (the "Generate modal sometimes doesn't appear" bug). */}
+      {canEdit && (
         <React.Suspense fallback={null}>
           {isAiPopulateOpen && (
             <BrandAiPopulateDialog
