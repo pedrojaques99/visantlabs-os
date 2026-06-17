@@ -1567,7 +1567,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             results.push({ step: stepNum, data: result.data });
           }
           const quota = await getQuotaMeta(currentUserId);
-          return jsonResponse({ brandingData: accumulatedData, steps: results, _meta: slimMeta(quota) });
+          return jsonResponse({
+            brandingData: accumulatedData,
+            steps: results,
+            _meta: slimMeta(quota),
+          });
         }
 
         const resolvedStep = visantStepMap[step] || step;
@@ -1816,7 +1820,12 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ url: result.url, id: result.id, size: result.size, _meta: slimMeta(quota) });
+        return jsonResponse({
+          url: result.url,
+          id: result.id,
+          size: result.size,
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1854,7 +1863,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
         const result = await describeImage(imageInput as any, userApiKey);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ description: result.description, title: result.title, _meta: slimMeta(quota) });
+        return jsonResponse({
+          description: result.description,
+          title: result.title,
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2598,7 +2611,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       preview: z
         .boolean()
         .optional()
-        .describe('Dry run: return the extraction without saving. Re-run without preview to merge.'),
+        .describe(
+          'Dry run: return the extraction without saving. Re-run without preview to merge.'
+        ),
     },
     { title: 'Ingest Brand from URL', destructiveHint: false },
     async ({ id, source, url, text, preview }) => {
@@ -2705,7 +2720,13 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const baseUrl = process.env.VITE_SITE_URL || 'https://visantlabs.com';
         const shareUrl = `${baseUrl}/brand/${publicSlug}`;
 
-        return jsonResponse({ success: true, isPublic: true, shareUrl, publicSlug, _meta: slimMeta(quota) });
+        return jsonResponse({
+          success: true,
+          isPublic: true,
+          shareUrl,
+          publicSlug,
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2870,7 +2891,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
-        return jsonResponse({ logo: result.logo, allLogos: result.allLogos, _meta: slimMeta(quota) });
+        return jsonResponse({
+          logo: result.logo,
+          allLogos: result.allLogos,
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -2946,7 +2971,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
-        return jsonResponse({ media: result.media, allMedia: result.allMedia, _meta: slimMeta(quota) });
+        return jsonResponse({
+          media: result.media,
+          allMedia: result.allMedia,
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }

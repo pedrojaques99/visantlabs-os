@@ -70,15 +70,15 @@ Rules for the audit:
 export function isBrandEmpty(bg: BrandGuideline): boolean {
   const g = bg as any;
   return (
-    !(g.colors?.length) &&
-    !(g.typography?.length) &&
+    !g.colors?.length &&
+    !g.typography?.length &&
     !g.guidelines?.voice &&
-    !(g.guidelines?.dos?.length) &&
-    !(g.guidelines?.donts?.length) &&
+    !g.guidelines?.dos?.length &&
+    !g.guidelines?.donts?.length &&
     !g.strategy?.manifesto &&
     !g.strategy?.coreMessage?.product &&
-    !(g.strategy?.positioning?.length) &&
-    !(g.logos?.length)
+    !g.strategy?.positioning?.length &&
+    !g.logos?.length
   );
 }
 

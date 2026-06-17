@@ -47,8 +47,20 @@ function vscodeLink() {
 
 // Collapsed under "For developers" (dev terms are universal — not localized).
 const DEV_PROVIDERS = [
-  { id: 'cursor', name: 'Cursor', sub: 'One-click install', href: cursorLink(), action: 'connect' as const },
-  { id: 'vscode', name: 'VS Code', sub: 'One-click install', href: vscodeLink(), action: 'connect' as const },
+  {
+    id: 'cursor',
+    name: 'Cursor',
+    sub: 'One-click install',
+    href: cursorLink(),
+    action: 'connect' as const,
+  },
+  {
+    id: 'vscode',
+    name: 'VS Code',
+    sub: 'One-click install',
+    href: vscodeLink(),
+    action: 'connect' as const,
+  },
   {
     id: 'cli',
     name: 'Terminal',

@@ -491,7 +491,10 @@ export async function uploadBrandMedia(
         uploadContentType = 'image/webp';
       }
     } catch (error: unknown) {
-      console.warn('[uploadBrandMedia] webp conversion failed, using original:', getErrorMessage(error));
+      console.warn(
+        '[uploadBrandMedia] webp conversion failed, using original:',
+        getErrorMessage(error)
+      );
     }
   }
 

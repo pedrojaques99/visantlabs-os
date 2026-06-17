@@ -49,11 +49,7 @@ function getStrategyItems(ext: any): Array<{ label: string; value: string }> {
 
 function getTagItems(ext: any): string[] {
   const t = ext?.tags || {};
-  return [
-    ...(t.brand_values || []),
-    ...(t.tone || []),
-    ...(t.aesthetic || []),
-  ];
+  return [...(t.brand_values || []), ...(t.tone || []), ...(t.aesthetic || [])];
 }
 
 function getAssetItems(ext: any): Array<{ category: string; label?: string }> {
@@ -112,7 +108,9 @@ const Section: React.FC<{
   const allChecked = selectedCount === count;
   const someChecked = selectedCount > 0;
   return (
-    <div className={`rounded-md border transition-colors ${someChecked ? 'border-white/10 bg-white/[0.02]' : 'border-neutral-800'}`}>
+    <div
+      className={`rounded-md border transition-colors ${someChecked ? 'border-white/10 bg-white/[0.02]' : 'border-neutral-800'}`}
+    >
       <div
         className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer select-none"
         onClick={onToggleAll}
@@ -129,7 +127,9 @@ const Section: React.FC<{
         <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 flex-1">
           {label}
         </span>
-        <span className="text-[9px] font-mono text-neutral-700">{selectedCount}/{count}</span>
+        <span className="text-[9px] font-mono text-neutral-700">
+          {selectedCount}/{count}
+        </span>
       </div>
       <div className="px-2 pb-2">{children}</div>
     </div>
@@ -165,7 +165,10 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
   const toggleAll = useCallback((cat: Category, total: number) => {
     setSel((prev) => {
       const allOn = prev[cat].size === total;
-      return { ...prev, [cat]: allOn ? new Set() : new Set(Array.from({ length: total }, (_, i) => i)) };
+      return {
+        ...prev,
+        [cat]: allOn ? new Set() : new Set(Array.from({ length: total }, (_, i) => i)),
+      };
     });
   }, []);
 
@@ -182,16 +185,24 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
-        <button onClick={onDismiss} className="text-neutral-600 hover:text-neutral-400 transition-colors">
+        <button
+          onClick={onDismiss}
+          className="text-neutral-600 hover:text-neutral-400 transition-colors"
+        >
           <ChevronLeft size={14} />
         </button>
         <div className="flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">Preview da Extração</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">
+            Preview da Extração
+          </p>
           <p className="text-[9px] text-neutral-600 font-mono">
             {preview.totalFrames} slides · {preview.pages} páginas
           </p>
         </div>
-        <button onClick={onDismiss} className="text-neutral-700 hover:text-neutral-500 transition-colors">
+        <button
+          onClick={onDismiss}
+          className="text-neutral-700 hover:text-neutral-500 transition-colors"
+        >
           <X size={12} />
         </button>
       </div>
@@ -207,7 +218,9 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
         >
           {identityItems.map((item, i) => (
             <ItemCheck key={i} checked={sel.identity.has(i)} onToggle={() => toggle('identity', i)}>
-              <span className="text-[9px] font-mono text-neutral-600 w-16 flex-shrink-0">{item.label}</span>
+              <span className="text-[9px] font-mono text-neutral-600 w-16 flex-shrink-0">
+                {item.label}
+              </span>
               <span className="text-[10px] text-neutral-300 truncate">{item.value}</span>
             </ItemCheck>
           ))}
@@ -227,7 +240,9 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
                   className="w-4 h-4 rounded border border-white/10 flex-shrink-0"
                   style={{ backgroundColor: c.hex }}
                 />
-                <span className="text-[10px] text-neutral-300 truncate flex-1">{c.name || c.hex}</span>
+                <span className="text-[10px] text-neutral-300 truncate flex-1">
+                  {c.name || c.hex}
+                </span>
                 <span className="text-[9px] font-mono text-neutral-700">{c.role}</span>
               </ItemCheck>
             ))}
@@ -242,9 +257,17 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
           onToggleAll={() => toggleAll('typography', typography.length)}
         >
           {typography.map((f, i) => (
-            <ItemCheck key={i} checked={sel.typography.has(i)} onToggle={() => toggle('typography', i)}>
-              <span className="text-[10px] text-neutral-200 flex-shrink-0 w-28 truncate">{f.family}</span>
-              <span className="text-[9px] font-mono text-neutral-600">{f.style} · {f.role}</span>
+            <ItemCheck
+              key={i}
+              checked={sel.typography.has(i)}
+              onToggle={() => toggle('typography', i)}
+            >
+              <span className="text-[10px] text-neutral-200 flex-shrink-0 w-28 truncate">
+                {f.family}
+              </span>
+              <span className="text-[9px] font-mono text-neutral-600">
+                {f.style} · {f.role}
+              </span>
             </ItemCheck>
           ))}
         </Section>
@@ -258,7 +281,9 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
         >
           {strategyItems.map((item, i) => (
             <ItemCheck key={i} checked={sel.strategy.has(i)} onToggle={() => toggle('strategy', i)}>
-              <span className="text-[9px] font-mono text-neutral-600 w-20 flex-shrink-0 truncate">{item.label}</span>
+              <span className="text-[9px] font-mono text-neutral-600 w-20 flex-shrink-0 truncate">
+                {item.label}
+              </span>
               <span className="text-[10px] text-neutral-400 truncate italic">"{item.value}"</span>
             </ItemCheck>
           ))}
@@ -294,12 +319,19 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
           <div className="space-y-0.5">
             {assetItems.map((a, i) => (
               <ItemCheck key={i} checked={sel.assets.has(i)} onToggle={() => toggle('assets', i)}>
-                <span className={`text-[9px] font-mono px-1 rounded ${
-                  a.category === 'logo' ? 'text-amber-400/80' :
-                  a.category === 'photo' ? 'text-blue-400/80' :
-                  a.category === 'mockup' ? 'text-purple-400/80' :
-                  'text-neutral-600'
-                }`}>{a.category}</span>
+                <span
+                  className={`text-[9px] font-mono px-1 rounded ${
+                    a.category === 'logo'
+                      ? 'text-amber-400/80'
+                      : a.category === 'photo'
+                        ? 'text-blue-400/80'
+                        : a.category === 'mockup'
+                          ? 'text-purple-400/80'
+                          : 'text-neutral-600'
+                  }`}
+                >
+                  {a.category}
+                </span>
                 <span className="text-[10px] text-neutral-400 truncate">{a.label}</span>
               </ItemCheck>
             ))}
@@ -325,7 +357,11 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
           disabled={isApplying || total === 0}
           className="flex-1 h-7 text-[10px] font-bold uppercase tracking-wider"
         >
-          {isApplying ? <GlitchLoader size={11} className="mr-1.5" /> : <Check size={11} className="mr-1.5" />}
+          {isApplying ? (
+            <GlitchLoader size={11} className="mr-1.5" />
+          ) : (
+            <Check size={11} className="mr-1.5" />
+          )}
           {isApplying ? 'Aplicando…' : `Aplicar (${total} itens)`}
         </Button>
       </div>

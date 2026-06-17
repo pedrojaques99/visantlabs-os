@@ -22,10 +22,7 @@ function collectText(node: BaseNode): string {
   if ('visible' in node && !(node as SceneNode).visible) return '';
   if (node.type === 'TEXT') return (node as TextNode).characters.trim();
   if ('children' in node) {
-    return (node as ChildrenMixin).children
-      .map(collectText)
-      .filter(Boolean)
-      .join('\n');
+    return (node as ChildrenMixin).children.map(collectText).filter(Boolean).join('\n');
   }
   return '';
 }

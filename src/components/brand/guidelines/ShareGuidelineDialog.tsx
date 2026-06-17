@@ -297,7 +297,12 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                 <GlitchLoader size={14} />
               </div>
             ) : list.length > 0 ? (
-              <motion.div variants={stagger} initial="initial" animate="animate" className="space-y-1.5">
+              <motion.div
+                variants={stagger}
+                initial="initial"
+                animate="animate"
+                className="space-y-1.5"
+              >
                 {list.map((c) => (
                   <motion.div
                     key={c.id}

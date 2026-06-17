@@ -40,11 +40,7 @@ import {
   toCSSVariables,
   type BrandViewSection,
 } from '@/components/brand/BrandReadOnlyView';
-import {
-  PUBLIC_TABS,
-  downloadBlob,
-  safeFileName,
-} from '@/components/brand/brand-shared-config';
+import { PUBLIC_TABS, downloadBlob, safeFileName } from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
 import {
   InstagramFeedMock,
@@ -342,8 +338,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const visibleSections = currentTab.sections;
 
   const hasPreviewData =
-    isAdmin &&
-    (tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name);
+    isAdmin && (tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name);
 
   if (isLoading) {
     return (

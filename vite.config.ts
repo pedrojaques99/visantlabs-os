@@ -69,10 +69,7 @@ export default defineConfig(({ mode }) => {
           'packages/print-fx/src/halftone/index.ts'
         ),
         '@visant/print-fx/presets': path.resolve(__dirname, 'packages/print-fx/src/presets.ts'),
-        '@visant/print-fx/riso': path.resolve(
-          __dirname,
-          'packages/print-fx/src/riso/index.ts'
-        ),
+        '@visant/print-fx/riso': path.resolve(__dirname, 'packages/print-fx/src/riso/index.ts'),
         '@visant/print-fx/gl': path.resolve(__dirname, 'packages/print-fx/src/gl/index.ts'),
         '@visant/print-fx/shaders': path.resolve(
           __dirname,

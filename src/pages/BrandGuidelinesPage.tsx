@@ -17,15 +17,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { Input } from '@/components/ui/input';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { computeBrandCompleteness, completenessStatus } from '@/lib/brandCompleteness';
-import {
-  Layers,
-  AlignLeft,
-  Plus,
-  Search,
-  Globe,
-  Folder,
-  ArrowUpDown,
-} from 'lucide-react';
+import { Layers, AlignLeft, Plus, Search, Globe, Folder, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
