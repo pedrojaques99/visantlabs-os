@@ -159,15 +159,20 @@ async function analyzeWithGemini(img: AssetImage): Promise<BrandAssetAnalysis> {
 function replicateToken(): string {
   return (process.env.REPLICATE_API_TOKEN || '').trim();
 }
-const REPLICATE_MODEL = () => process.env.REPLICATE_VISION_MODEL || 'yorickvp/llava-13b';
+// Default to gpt-4o-mini: cheap, reliable structured JSON, and a *different*
+// provider (OpenAI via Replicate's billing) so it bypasses a capped Google project.
+const REPLICATE_MODEL = () => process.env.REPLICATE_VISION_MODEL || 'openai/gpt-4o-mini';
 const REPLICATE_PROMPT =
   'You are tagging a brand visual asset. Output ONLY a JSON object, no prose. ' +
   'Schema: {"description":"one short sentence","dimensions":{"vibe":[],"aesthetic":[],"theme":[],"mood":[],"medium":[]}}. ' +
   'Use 1-3 lowercase single-word tags per dimension.';
 
+// Official models (openai/anthropic/google/meta) run via the model endpoint with
+// an `image_input` array; community models need a resolved version + `image` input.
+const isOfficialModel = (m: string) => /^(openai|anthropic|google|meta)\//.test(m);
+
 let cachedVersion: { model: string; version: string } | null = null;
-async function replicateVersion(): Promise<string | null> {
-  const model = REPLICATE_MODEL();
+async function replicateVersion(model: string): Promise<string | null> {
   if (cachedVersion?.model === model) return cachedVersion.version;
   const res = await safeFetch(`https://api.replicate.com/v1/models/${model}`, {
     headers: { Authorization: `Bearer ${replicateToken()}` },
@@ -211,25 +216,31 @@ function parseReplicateOutput(text: string): BrandAssetAnalysis {
   };
 }
 
-/** Replicate VLM path — weaker tags than Gemini, but provider-independent. */
+/** Replicate VLM path — provider-independent fallback when Gemini is unavailable. */
 async function analyzeWithReplicate(img: AssetImage): Promise<BrandAssetAnalysis | null> {
   const token = replicateToken();
   if (!token) return null;
+  const model = REPLICATE_MODEL();
+  const dataUri = `data:${img.mimeType};base64,${img.data}`;
   try {
-    const version = await replicateVersion();
-    if (!version) return null;
-    const res = await safeFetch('https://api.replicate.com/v1/predictions', {
+    let endpoint: string;
+    let body: Record<string, unknown>;
+    if (isOfficialModel(model)) {
+      endpoint = `https://api.replicate.com/v1/models/${model}/predictions`;
+      body = { input: { prompt: REPLICATE_PROMPT, image_input: [dataUri] } };
+    } else {
+      const version = await replicateVersion(model);
+      if (!version) return null;
+      endpoint = 'https://api.replicate.com/v1/predictions';
+      body = {
+        version,
+        input: { image: dataUri, prompt: REPLICATE_PROMPT, temperature: 0.1, max_tokens: 350 },
+      };
+    }
+    const res = await safeFetch(endpoint, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'wait' },
-      body: JSON.stringify({
-        version,
-        input: {
-          image: `data:${img.mimeType};base64,${img.data}`,
-          prompt: REPLICATE_PROMPT,
-          temperature: 0.1,
-          max_tokens: 350,
-        },
-      }),
+      body: JSON.stringify(body),
       timeoutMs: 90_000,
     } as any);
     if (!res.ok) return null;
