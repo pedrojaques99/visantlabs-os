@@ -65,7 +65,7 @@ function geminiKey(): string {
 
 /** True when a Gemini key is configured (lets callers fail fast with a clear error). */
 export function isAssetAnalysisConfigured(): boolean {
-  return geminiKey().length > 0;
+  return geminiKey().length > 0 || (process.env.REPLICATE_API_TOKEN || '').trim().length > 0;
 }
 
 async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: string } | null> {
@@ -112,7 +112,8 @@ async function generateWithRetry<T>(fn: () => Promise<T>, maxAttempts = 4): Prom
       return await fn();
     } catch (err) {
       attempt++;
-      if (attempt >= maxAttempts || !shouldRetry(err)) throw err;
+      // A spend cap won't recover on retry — fail fast so we fall back to Replicate.
+      if (attempt >= maxAttempts || isSpendCap(err) || !shouldRetry(err)) throw err;
       // 3s, 6s, 12s … capped, with jitter to de-sync concurrent workers.
       const delay = Math.min(3000 * 2 ** (attempt - 1), 24000) + Math.floor(Math.random() * 1500);
       await new Promise((r) => setTimeout(r, delay));
@@ -120,53 +121,162 @@ async function generateWithRetry<T>(fn: () => Promise<T>, maxAttempts = 4): Prom
   }
 }
 
+type AssetImage = { data: string; mimeType: string };
+
+// Once Gemini reports a hard spend cap, stop hammering it for the rest of the
+// batch and go straight to the fallback (a cap isn't transient — won't recover
+// on retry). Re-checked after the window so a raised cap is picked up.
+let geminiDisabledUntil = 0;
+function isSpendCap(err: unknown): boolean {
+  return /RESOURCE_EXHAUSTED|spending cap|exceeded its monthly|spend cap|quota/i.test(
+    String((err as any)?.message || err || '')
+  );
+}
+
+/** Gemini path — best structured output (native JSON schema). Throws on failure. */
+async function analyzeWithGemini(img: AssetImage): Promise<BrandAssetAnalysis> {
+  const ai = new GoogleGenAI({ apiKey: geminiKey() });
+  const response = await generateWithRetry(() =>
+    ai.models.generateContent({
+      model: MODEL,
+      contents: [
+        { parts: [{ inlineData: { data: img.data, mimeType: img.mimeType } }, { text: ANALYSIS_PROMPT }] },
+      ],
+      config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
+    })
+  );
+  const parsed = JSON.parse((response.text || '').trim());
+  return {
+    description: parsed.description || undefined,
+    dimensions: parsed.dimensions || {},
+    analyzedAt: new Date().toISOString(),
+    model: MODEL,
+  };
+}
+
+// ── Replicate fallback (provider-independent — survives a Gemini budget cap) ──
+
+function replicateToken(): string {
+  return (process.env.REPLICATE_API_TOKEN || '').trim();
+}
+const REPLICATE_MODEL = () => process.env.REPLICATE_VISION_MODEL || 'yorickvp/llava-13b';
+const REPLICATE_PROMPT =
+  'You are tagging a brand visual asset. Output ONLY a JSON object, no prose. ' +
+  'Schema: {"description":"one short sentence","dimensions":{"vibe":[],"aesthetic":[],"theme":[],"mood":[],"medium":[]}}. ' +
+  'Use 1-3 lowercase single-word tags per dimension.';
+
+let cachedVersion: { model: string; version: string } | null = null;
+async function replicateVersion(): Promise<string | null> {
+  const model = REPLICATE_MODEL();
+  if (cachedVersion?.model === model) return cachedVersion.version;
+  const res = await safeFetch(`https://api.replicate.com/v1/models/${model}`, {
+    headers: { Authorization: `Bearer ${replicateToken()}` },
+    timeoutMs: 15_000,
+  } as any);
+  if (!res.ok) return null;
+  const version = ((await res.json()) as any)?.latest_version?.id;
+  if (version) cachedVersion = { model, version };
+  return version || null;
+}
+
+function parseReplicateOutput(text: string): BrandAssetAnalysis {
+  const clean = (a: unknown): string[] | undefined =>
+    Array.isArray(a)
+      ? a.map((s) => String(s).toLowerCase().trim()).filter(Boolean).slice(0, 3)
+      : undefined;
+  let description: string | undefined;
+  let dims: any = {};
+  const match = text.match(/\{[\s\S]*\}/); // VLMs sometimes wrap JSON in prose/fences
+  if (match) {
+    try {
+      const j = JSON.parse(match[0]);
+      description = j.description;
+      dims = j.dimensions || {};
+    } catch {
+      /* not valid JSON — fall back to caption below */
+    }
+  }
+  if (!description) description = text.trim().slice(0, 200) || undefined;
+  return {
+    description,
+    dimensions: {
+      vibe: clean(dims.vibe),
+      aesthetic: clean(dims.aesthetic),
+      theme: clean(dims.theme),
+      mood: clean(dims.mood),
+      medium: clean(dims.medium),
+    },
+    analyzedAt: new Date().toISOString(),
+    model: `replicate:${REPLICATE_MODEL()}`,
+  };
+}
+
+/** Replicate VLM path — weaker tags than Gemini, but provider-independent. */
+async function analyzeWithReplicate(img: AssetImage): Promise<BrandAssetAnalysis | null> {
+  const token = replicateToken();
+  if (!token) return null;
+  try {
+    const version = await replicateVersion();
+    if (!version) return null;
+    const res = await safeFetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'wait' },
+      body: JSON.stringify({
+        version,
+        input: {
+          image: `data:${img.mimeType};base64,${img.data}`,
+          prompt: REPLICATE_PROMPT,
+          temperature: 0.1,
+          max_tokens: 350,
+        },
+      }),
+      timeoutMs: 90_000,
+    } as any);
+    if (!res.ok) return null;
+    const j = (await res.json()) as any;
+    if (j.status !== 'succeeded') return null;
+    const text = Array.isArray(j.output) ? j.output.join('') : String(j.output || '');
+    if (!text.trim()) return null;
+    return parseReplicateOutput(text);
+  } catch (err) {
+    console.warn('[assetAnalysis] replicate failed', (err as any)?.message || err);
+    return null;
+  }
+}
+
 /**
- * Analyze a single asset image URL into visual dimensions (or null on failure).
- * Also returns the fetched image so callers can embed it without re-downloading.
+ * Analyze a single asset image into visual dimensions (or null on failure).
+ * Gemini is primary (best structured output); on a spend cap / failure it falls
+ * back to Replicate so analysis never silently produces nothing. Returns the
+ * fetched image so callers can embed it without re-downloading.
  */
 export async function analyzeAssetImage(url: string): Promise<{
   analysis: BrandAssetAnalysis;
-  image: { data: string; mimeType: string };
+  image: AssetImage;
   inputTokens: number;
   outputTokens: number;
 } | null> {
-  const key = geminiKey();
-  if (!key) return null;
   const img = await fetchAsBase64(url);
   if (!img) return null;
 
-  const ai = new GoogleGenAI({ apiKey: key });
-  try {
-    const response = await generateWithRetry(() =>
-      ai.models.generateContent({
-        model: MODEL,
-        contents: [
-          {
-            parts: [
-              { inlineData: { data: img.data, mimeType: img.mimeType } },
-              { text: ANALYSIS_PROMPT },
-            ],
-          },
-        ],
-        config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
-      })
-    );
-    const parsed = JSON.parse((response.text || '').trim());
-    const usage = (response as any).usageMetadata;
-    return {
-      analysis: {
-        description: parsed.description || undefined,
-        dimensions: parsed.dimensions || {},
-        analyzedAt: new Date().toISOString(),
-        model: MODEL,
-      },
-      image: img,
-      inputTokens: usage?.promptTokenCount || 0,
-      outputTokens: usage?.candidatesTokenCount || 0,
-    };
-  } catch (err) {
-    console.warn('[assetAnalysis] analysis failed for', url, (err as any)?.message || err);
-    return null;
+  // Primary: Gemini, unless a recent spend cap took it offline for this batch.
+  if (geminiKey() && Date.now() >= geminiDisabledUntil) {
+    try {
+      return { analysis: await analyzeWithGemini(img), image: img, inputTokens: 0, outputTokens: 0 };
+    } catch (err) {
+      if (isSpendCap(err)) {
+        geminiDisabledUntil = Date.now() + 10 * 60 * 1000;
+        console.warn('[assetAnalysis] Gemini spend cap hit — falling back to Replicate');
+      } else {
+        console.warn('[assetAnalysis] gemini failed', (err as any)?.message || err);
+      }
+    }
   }
+
+  // Fallback: Replicate (provider-independent).
+  const rep = await analyzeWithReplicate(img);
+  if (rep) return { analysis: rep, image: img, inputTokens: 0, outputTokens: 0 };
+
+  return null;
 }
 
