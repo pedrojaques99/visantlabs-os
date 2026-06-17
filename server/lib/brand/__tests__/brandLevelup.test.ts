@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { hexToRgb, colorDistance, computeColorUsage, collectAssetSources } from '../colorUsage.js';
 import { inferGender, brandImageryHint } from '../personaPhotos.js';
 import { aggregateVisualSignature, hasSignature } from '../visualSignature.js';
+import { assetVectorId, isVectorSearchConfigured } from '../assetVectors.js';
 
 describe('colorUsage helpers', () => {
   it('parses 6- and 3-digit hex (with/without #)', () => {
@@ -94,6 +95,26 @@ describe('aggregateVisualSignature', () => {
 
   it('reports an empty signature as not present', () => {
     expect(hasSignature(aggregateVisualSignature([{}, { analysis: {} }]))).toBe(false);
+  });
+});
+
+describe('assetVectors helpers', () => {
+  it('builds a stable, brand-scoped vector id', () => {
+    expect(assetVectorId('g1', 'a1')).toBe('brand-asset:g1:a1');
+    // same inputs → same id (overwrite, not duplicate)
+    expect(assetVectorId('g1', 'a1')).toBe(assetVectorId('g1', 'a1'));
+  });
+
+  it('reports configuration from the Pinecone env keys', () => {
+    const orig = { a: process.env.PINECONE_API_KEY, b: process.env.PINECONE_KEY };
+    delete process.env.PINECONE_API_KEY;
+    delete process.env.PINECONE_KEY;
+    expect(isVectorSearchConfigured()).toBe(false);
+    process.env.PINECONE_API_KEY = 'x';
+    expect(isVectorSearchConfigured()).toBe(true);
+    if (orig.a) process.env.PINECONE_API_KEY = orig.a;
+    else delete process.env.PINECONE_API_KEY;
+    if (orig.b) process.env.PINECONE_KEY = orig.b;
   });
 });
 

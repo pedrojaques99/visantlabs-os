@@ -81,10 +81,16 @@ async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: str
   }
 }
 
-/** Analyze a single asset image URL into visual dimensions (or null on failure). */
-export async function analyzeAssetImage(
-  url: string
-): Promise<{ analysis: BrandAssetAnalysis; inputTokens: number; outputTokens: number } | null> {
+/**
+ * Analyze a single asset image URL into visual dimensions (or null on failure).
+ * Also returns the fetched image so callers can embed it without re-downloading.
+ */
+export async function analyzeAssetImage(url: string): Promise<{
+  analysis: BrandAssetAnalysis;
+  image: { data: string; mimeType: string };
+  inputTokens: number;
+  outputTokens: number;
+} | null> {
   const key = geminiKey();
   if (!key) return null;
   const img = await fetchAsBase64(url);
@@ -113,6 +119,7 @@ export async function analyzeAssetImage(
         analyzedAt: new Date().toISOString(),
         model: MODEL,
       },
+      image: img,
       inputTokens: usage?.promptTokenCount || 0,
       outputTokens: usage?.candidatesTokenCount || 0,
     };
