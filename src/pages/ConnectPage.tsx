@@ -44,33 +44,38 @@ function vscodeLink() {
   return `vscode://mcp/install?${encodeURIComponent(cfg)}`;
 }
 
-const PROVIDERS = [
-  {
-    id: 'cursor',
-    name: 'Cursor',
-    sub: 'One-click install',
-    href: cursorLink(),
-    action: 'connect' as const,
-  },
-  {
-    id: 'vscode',
-    name: 'VS Code',
-    sub: 'One-click install',
-    href: vscodeLink(),
-    action: 'connect' as const,
-  },
+// Primary, hand-held guides for non-technical clients (their most likely tools).
+const ASSISTANTS = [
   {
     id: 'claude',
     name: 'Claude',
-    sub: 'Settings → Connectors → Add connector',
-    action: 'copy' as const,
+    tag: 'Recommended',
+    open: 'https://claude.ai/settings/connectors',
+    steps: [
+      'Open Claude → Settings → Connectors',
+      'Click "Add custom connector"',
+      'Paste the link below',
+      'Sign in with your account when Claude asks',
+    ],
   },
   {
     id: 'chatgpt',
     name: 'ChatGPT',
-    sub: 'Settings → Apps → Developer Mode',
-    action: 'copy' as const,
+    tag: '',
+    open: 'https://chatgpt.com',
+    steps: [
+      'Open ChatGPT → Settings → Connectors',
+      'Add a connector',
+      'Paste the link below',
+      'Sign in with your account when ChatGPT asks',
+    ],
   },
+] as const;
+
+// Collapsed under "For developers".
+const DEV_PROVIDERS = [
+  { id: 'cursor', name: 'Cursor', sub: 'One-click install', href: cursorLink(), action: 'connect' as const },
+  { id: 'vscode', name: 'VS Code', sub: 'One-click install', href: vscodeLink(), action: 'connect' as const },
   {
     id: 'cli',
     name: 'Terminal',
@@ -79,6 +84,13 @@ const PROVIDERS = [
     cli: `claude mcp add --transport http visant ${MCP_URL}`,
   },
 ] as const;
+
+// Copy-ready first prompts so the client immediately feels the value.
+const examplePrompts = (brand: string) => [
+  `Create an on-brand Instagram post for ${brand}.`,
+  `Write a product description in ${brand}'s tone of voice.`,
+  `What are ${brand}'s colors, fonts and logos?`,
+];
 
 // ── Animations ──
 
@@ -213,7 +225,14 @@ export default function ConnectPage() {
             className="max-w-sm w-full text-center space-y-5"
           >
             <div className="text-5xl font-mono font-bold text-foreground/10 select-none">?</div>
-            <p className="text-sm text-muted-foreground">{error}</p>
+            <div className="space-y-1.5">
+              <p className="text-sm text-foreground/80">{error}</p>
+              <p className="text-[12px] text-muted-foreground leading-relaxed">
+                This connect link may have expired or already been used. Open your brand link again
+                and tap <span className="text-foreground/70">Connect</span> for a fresh one — or ask
+                the team that shared it to resend.
+              </p>
+            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -286,21 +305,27 @@ export default function ConnectPage() {
               variants={itemVariants}
               className="text-[13px] text-muted-foreground text-center leading-relaxed max-w-xs mx-auto"
             >
-              Accept to connect this brand to your AI tools. Colors, typography, logos and assets —
-              ready in your LLM.
+              Connect <span className="text-foreground/80 font-medium">{brandName}</span> to your AI
+              assistant (Claude, ChatGPT…). It will then design, write and create on-brand —
+              colors, fonts, logos and voice, automatically.
             </motion.p>
 
             {/* CTA */}
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="space-y-2">
               <Button
                 className="w-full h-11 text-sm font-medium relative overflow-hidden group"
                 onClick={handleConnect}
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Accept & Connect
+                  {isAuthenticated ? 'Accept & Connect' : 'Create free account & connect'}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Button>
+              {!isAuthenticated && (
+                <p className="text-[11px] text-muted-foreground/70 text-center">
+                  Free — sign in with Google in one click.
+                </p>
+              )}
             </motion.div>
 
             <Watermark />
@@ -354,39 +379,48 @@ export default function ConnectPage() {
               >
                 {brandName} is connected
               </motion.h1>
-              <motion.p variants={itemVariants} className="text-[13px] text-muted-foreground">
-                Choose how you want to work with it.
+              <motion.p
+                variants={itemVariants}
+                className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed"
+              >
+                Two quick steps and your AI assistant will design, write and create on-brand —
+                automatically.
               </motion.p>
             </motion.div>
 
-            {/* MCP URL */}
-            <motion.div
-              variants={itemVariants}
-              className="rounded-xl border border-border bg-muted/30 p-4 space-y-2"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-                  Server URL
-                </span>
-                <CopyBtn text={MCP_URL} id="url" copied={copied} onCopy={copy} />
-              </div>
-              <code className="block text-sm font-mono text-foreground/80 break-all select-all">
-                {MCP_URL}
-              </code>
+            {/* Step 1 — connect your assistant */}
+            <motion.div variants={itemVariants} className="space-y-3">
+              <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+                1 · Connect your assistant
+              </p>
+              {ASSISTANTS.map((a) => (
+                <AssistantCard key={a.id} assistant={a} copied={copied} onCopy={copy} />
+              ))}
+
+              {/* Developers — collapsed */}
+              <details className="group rounded-xl border border-border/50 overflow-hidden">
+                <summary className="flex items-center justify-between px-4 py-2.5 cursor-pointer list-none text-[12px] text-muted-foreground hover:text-foreground transition-colors">
+                  For developers (Cursor, VS Code, Terminal)
+                  <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="p-2 pt-0 space-y-1.5">
+                  {DEV_PROVIDERS.map((p) => (
+                    <ProviderRow key={p.id} provider={p} copied={copied} onCopy={copy} />
+                  ))}
+                </div>
+              </details>
             </motion.div>
 
-            {/* Providers */}
-            <motion.div
-              className="space-y-1.5"
-              variants={staggerVariants}
-              initial="initial"
-              animate="animate"
-            >
-              {PROVIDERS.map((p) => (
-                <motion.div key={p.id} variants={itemVariants}>
-                  <ProviderRow provider={p} copied={copied} onCopy={copy} />
-                </motion.div>
-              ))}
+            {/* Step 2 — try it now */}
+            <motion.div variants={itemVariants} className="space-y-3">
+              <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+                2 · Try it — open your assistant and ask
+              </p>
+              <div className="space-y-1.5">
+                {examplePrompts(brandName).map((p) => (
+                  <PromptChip key={p} text={p} copied={copied} onCopy={copy} />
+                ))}
+              </div>
             </motion.div>
 
             {/* Footer */}
@@ -501,12 +535,95 @@ function CopyBtn({
   );
 }
 
+function AssistantCard({
+  assistant,
+  copied,
+  onCopy,
+}: {
+  assistant: (typeof ASSISTANTS)[number];
+  copied: string | null;
+  onCopy: (t: string, id: string) => void;
+}) {
+  const a = assistant;
+  return (
+    <div className="rounded-xl border border-border/60 p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <ProviderIcon id={a.id} />
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-medium text-foreground">{a.name}</span>
+            {a.tag && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan font-medium shrink-0">
+                {a.tag}
+              </span>
+            )}
+          </div>
+        </div>
+        <a
+          href={a.open}
+          target="_blank"
+          rel="noopener"
+          className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
+        >
+          Open <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+      <ol className="space-y-1.5">
+        {a.steps.map((s, i) => (
+          <li key={i} className="flex gap-2 text-[12px] text-muted-foreground leading-snug">
+            <span className="text-foreground/40 font-mono shrink-0">{i + 1}.</span>
+            <span>{s}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-muted/40 border border-border/60">
+        <code className="flex-1 text-[11px] font-mono text-foreground/70 truncate select-all">
+          {MCP_URL}
+        </code>
+        <CopyBtn text={MCP_URL} id={`url-${a.id}`} copied={copied} onCopy={onCopy} />
+      </div>
+    </div>
+  );
+}
+
+function PromptChip({
+  text,
+  copied,
+  onCopy,
+}: {
+  text: string;
+  copied: string | null;
+  onCopy: (t: string, id: string) => void;
+}) {
+  const id = `prompt-${text}`;
+  const isCopied = copied === id;
+  return (
+    <button
+      type="button"
+      onClick={() => onCopy(text, id)}
+      className={cn(
+        'group w-full text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-all duration-200',
+        isCopied
+          ? 'border-success/30 bg-success/5'
+          : 'border-border/60 hover:border-border hover:bg-muted/20'
+      )}
+    >
+      <span className="text-[12px] text-foreground/80 leading-snug">{text}</span>
+      {isCopied ? (
+        <Check className="w-3.5 h-3.5 text-success shrink-0" />
+      ) : (
+        <Copy className="w-3.5 h-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+      )}
+    </button>
+  );
+}
+
 function ProviderRow({
   provider,
   copied,
   onCopy,
 }: {
-  provider: (typeof PROVIDERS)[number];
+  provider: (typeof DEV_PROVIDERS)[number];
   copied: string | null;
   onCopy: (t: string, id: string) => void;
 }) {
@@ -546,10 +663,8 @@ function ProviderRow({
             Connect
             <ExternalLink className="w-3 h-3" />
           </a>
-        ) : p.action === 'cli' ? (
-          <CopyBtn text={p.cli!} id={`cli-${p.id}`} copied={copied} onCopy={onCopy} />
         ) : (
-          <CopyBtn text={MCP_URL} id={`url-${p.id}`} copied={copied} onCopy={onCopy} />
+          <CopyBtn text={p.cli!} id={`cli-${p.id}`} copied={copied} onCopy={onCopy} />
         )}
       </div>
     </div>
