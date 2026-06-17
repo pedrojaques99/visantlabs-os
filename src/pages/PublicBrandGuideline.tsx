@@ -163,8 +163,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       } else {
         return;
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load brand guidelines');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load brand guidelines');
     } finally {
       setIsLoading(false);
     }
@@ -289,7 +289,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             <Button
               variant="outline"
               className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
-              style={{ '--accent': guideline?.colors?.[0]?.hex || '#888888' } as any}
+              style={
+                { '--accent': guideline?.colors?.[0]?.hex || '#888888' } as React.CSSProperties
+              }
             >
               Return to Surface
             </Button>
@@ -333,7 +335,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           '--brand-text': brandTheme.text,
           backgroundColor: 'var(--brand-bg)',
           color: 'var(--brand-text)',
-        } as any
+        } as React.CSSProperties
       }
     >
       <SEO
@@ -347,7 +349,6 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         className="fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4"
       >
         {visibleTabs.map((tab) => {
-          const Icon = tab.icon;
           return (
             <button
               key={tab.id}
