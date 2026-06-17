@@ -175,21 +175,42 @@ const WEIGHT_MEDIA_BY_CATEGORY: Record<string, number> = {
   graphic: 0.8,
 };
 
+interface AssetWithAnalysis {
+  url?: string;
+  type?: string;
+  category?: string;
+  analysis?: { dimensions?: { medium?: string[] } } | null;
+}
+
+/**
+ * Adjust an asset's weight by its LLM-detected `medium`: a photograph's colors
+ * are incidental (scene/lighting, not brand intent) → down-weight; vector / flat /
+ * illustration / 3d marks use color on purpose → up-weight. No analysis → ×1.
+ */
+function mediumFactor(asset: AssetWithAnalysis): number {
+  const medium = (asset.analysis?.dimensions?.medium || []).map((m) => String(m).toLowerCase());
+  if (medium.length === 0) return 1;
+  if (medium.some((m) => m.includes('photo'))) return 0.5;
+  if (medium.some((m) => /vector|flat|illustration|logo|3d|gradient|line/.test(m))) return 1.15;
+  return 1;
+}
+
 /** Collect weighted analysis sources from a guideline's media + logos. */
 export function collectAssetSources(guideline: {
-  media?: Array<{ url?: string; type?: string; category?: string }> | null;
-  logos?: Array<{ url?: string }> | null;
+  media?: AssetWithAnalysis[] | null;
+  logos?: AssetWithAnalysis[] | null;
 }): AssetSource[] {
   const sources: AssetSource[] = [];
+  const clamp = (w: number) => Math.max(0.1, Math.min(1, w));
   for (const l of guideline.logos || []) {
-    if (l?.url) sources.push({ url: l.url, weight: WEIGHT_LOGO });
+    if (l?.url) sources.push({ url: l.url, weight: clamp(WEIGHT_LOGO * mediumFactor(l)) });
   }
   for (const m of guideline.media || []) {
     if (m?.url && m.type !== 'pdf') {
-      const weight = m.category
+      const base = m.category
         ? (WEIGHT_MEDIA_BY_CATEGORY[m.category] ?? WEIGHT_MEDIA_DEFAULT)
         : WEIGHT_MEDIA_DEFAULT;
-      sources.push({ url: m.url, weight });
+      sources.push({ url: m.url, weight: clamp(base * mediumFactor(m)) });
     }
   }
   return sources;

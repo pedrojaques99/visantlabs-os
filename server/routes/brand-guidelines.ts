@@ -199,6 +199,8 @@ async function analyzeGuidelineAssets(
       data: { logos: logos as any, media: media as any },
     });
     await invalidateBrandCache(guidelineId);
+    // New `medium` tags change per-asset color weights → refresh the hierarchy.
+    scheduleColorUsageRecompute(guidelineId);
   }
 
   return { logos, media, signature, analyzed };

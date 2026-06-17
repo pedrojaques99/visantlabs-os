@@ -41,6 +41,22 @@ describe('colorUsage helpers', () => {
     expect(w['https://x/graphic.png']).toBeLessThanOrEqual(1.0);
   });
 
+  it('down-weights photographic assets and keeps vector marks intentional (analysis-aware)', () => {
+    const sources = collectAssetSources({
+      media: [
+        { url: 'https://x/photo.jpg', type: 'image', category: 'graphic',
+          analysis: { dimensions: { medium: ['Photography'] } } },
+        { url: 'https://x/vector.svg', type: 'image', category: 'graphic',
+          analysis: { dimensions: { medium: ['vector', 'flat'] } } },
+      ],
+    });
+    const w = Object.fromEntries(sources.map((s) => [s.url, s.weight]));
+    // same base category (graphic 0.8), but photo halved and vector boosted+clamped
+    expect(w['https://x/photo.jpg']).toBeCloseTo(0.4, 5);
+    expect(w['https://x/vector.svg']).toBeGreaterThan(w['https://x/photo.jpg']);
+    expect(w['https://x/vector.svg']).toBeLessThanOrEqual(1);
+  });
+
   it('computeColorUsage returns input unchanged when there are no assets', async () => {
     const colors = [{ hex: '#ff0000', name: 'Red' }];
     const out = await computeColorUsage(colors, []);

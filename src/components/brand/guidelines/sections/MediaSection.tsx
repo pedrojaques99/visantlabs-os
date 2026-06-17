@@ -36,11 +36,11 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       if (Array.isArray(res.logos)) onLogosChange(res.logos);
       toast.success(
         res.analyzed > 0
-          ? `${res.analyzed} asset(s) analisado(s) pela IA`
-          : 'Todos os assets já estavam analisados'
+          ? `${res.analyzed} asset(s) analyzed by AI`
+          : 'All assets were already analyzed'
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Falha ao analisar assets');
+      toast.error(e instanceof Error ? e.message : 'Failed to analyze assets');
     } finally {
       setAnalyzing(false);
     }
@@ -59,7 +59,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
             size="icon-sm"
             onClick={analyzeAssets}
             disabled={analyzing}
-            title="Analisar assets com IA (vibe, estética, tema, mood)"
+            title="Analyze assets with AI (vibe, aesthetic, theme, mood)"
             aria-label="Analyze assets with AI"
           >
             {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}

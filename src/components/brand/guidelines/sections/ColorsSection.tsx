@@ -47,11 +47,11 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       const ranked = (colors || []).filter((c) => (c as any)?.usage > 0).length;
       toast.success(
         ranked > 0
-          ? 'Hierarquia de cores atualizada pelo uso nas peças'
-          : 'Nenhuma cor da paleta encontrada nas peças'
+          ? 'Color hierarchy updated from asset usage'
+          : 'No palette colors found across the assets'
       );
     } catch {
-      toast.error('Falha ao analisar uso de cores');
+      toast.error('Failed to analyze color usage');
     } finally {
       setAnalyzing(false);
     }
@@ -160,7 +160,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               size="icon-sm"
               onClick={analyzeUsage}
               disabled={analyzing}
-              title="Analisar uso das cores nas peças (hierarquia por proporção)"
+              title="Analyze color usage across assets (proportional hierarchy)"
               aria-label="Analyze color usage across assets"
             >
               {analyzing ? <Loader2 size={12} className="animate-spin" /> : <BarChart3 size={12} />}
