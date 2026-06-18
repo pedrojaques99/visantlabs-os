@@ -127,6 +127,11 @@ type AssetImage = { data: string; mimeType: string };
 // batch and go straight to the fallback (a cap isn't transient — won't recover
 // on retry). Re-checked after the window so a raised cap is picked up.
 let geminiDisabledUntil = 0;
+// Replicate has its own circuit: if it's unreachable (e.g. blocked egress) it would
+// otherwise burn the full socket timeout on every asset. Trip it once → skip it for
+// the cooldown → which also restores Gemini's retries (it's no longer "the fallback").
+let replicateDisabledUntil = 0;
+const PROVIDER_COOLDOWN_MS = 10 * 60 * 1000;
 function isSpendCap(err: unknown): boolean {
   return /RESOURCE_EXHAUSTED|spending cap|exceeded its monthly|spend cap|quota/i.test(
     String((err as any)?.message || err || '')
@@ -245,16 +250,23 @@ async function analyzeWithReplicate(img: AssetImage): Promise<BrandAssetAnalysis
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'wait' },
       body: JSON.stringify(body),
-      timeoutMs: 90_000,
+      timeoutMs: 45_000,
     } as any);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Provider-level failure (auth/quota/5xx) → trip the circuit for the batch.
+      replicateDisabledUntil = Date.now() + PROVIDER_COOLDOWN_MS;
+      return null;
+    }
     const j = (await res.json()) as any;
-    if (j.status !== 'succeeded') return null;
+    if (j.status !== 'succeeded') return null; // per-prediction miss — don't trip
     const text = Array.isArray(j.output) ? j.output.join('') : String(j.output || '');
     if (!text.trim()) return null;
     return parseReplicateOutput(text);
   } catch (err) {
-    console.warn('[assetAnalysis] replicate failed', (err as any)?.message || err);
+    // Network / timeout (e.g. blocked egress) → trip so we don't burn the socket
+    // timeout on every asset; Gemini regains its retries while Replicate is down.
+    replicateDisabledUntil = Date.now() + PROVIDER_COOLDOWN_MS;
+    console.warn('[assetAnalysis] replicate failed — circuit open', (err as any)?.message || err);
     return null;
   }
 }
@@ -287,7 +299,7 @@ export async function analyzeAssetImage(url: string): Promise<{
   if (!img) return null;
 
   const geminiUp = !!geminiKey() && Date.now() >= geminiDisabledUntil;
-  const replicateUp = !!replicateToken();
+  const replicateUp = !!replicateToken() && Date.now() >= replicateDisabledUntil;
   const ok = (analysis: BrandAssetAnalysis) => ({ analysis, image: img, inputTokens: 0, outputTokens: 0 });
 
   const tryGemini = async () => {
