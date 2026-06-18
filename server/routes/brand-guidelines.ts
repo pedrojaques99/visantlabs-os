@@ -57,12 +57,26 @@ import {
   isVectorSearchConfigured,
 } from '../lib/brand/assetVectors.js';
 import {
+  completeCheapText,
+  parseJsonLoose,
+  isCheapTextConfigured,
+} from '../lib/ai-providers/cheapText.js';
+import {
+  getSeasonalContext,
+  seasonalPromptLine,
+  marketFromLanguage,
+} from '../lib/brand/seasonalContext.js';
+import {
   createAnalysisJob,
   saveAnalysisJob,
   loadAnalysisJob,
   reconcileIfOrphaned,
 } from '../lib/brandAssetAnalysisJobs.js';
-import { fingerprint, findDuplicate, type AssetFingerprint } from '../lib/brand/assetFingerprint.js';
+import {
+  fingerprint,
+  findDuplicate,
+  type AssetFingerprint,
+} from '../lib/brand/assetFingerprint.js';
 
 /** Existing assets reshaped for duplicate lookup. */
 function fingerprintIndex(g: { media?: any; logos?: any }) {
@@ -196,6 +210,7 @@ async function analyzeGuidelineAssets(
   media: any[];
   signature: any;
   analyzed: number;
+  failed: number;
   total: number;
   providers: Record<string, number>;
 } | null> {
@@ -208,7 +223,9 @@ async function analyzeGuidelineAssets(
 
   // Only analyzable image assets that are missing analysis (or all, when forced).
   const targets: Array<{ asset: any; kind: 'logo' | 'media' }> = [
-    ...logos.filter((l) => l?.url && (force || !l.analysis)).map((asset) => ({ asset, kind: 'logo' as const })),
+    ...logos
+      .filter((l) => l?.url && (force || !l.analysis))
+      .map((asset) => ({ asset, kind: 'logo' as const })),
     ...media
       .filter((m) => m?.url && m.type !== 'pdf' && (force || !m.analysis))
       .map((asset) => ({ asset, kind: 'media' as const })),
@@ -237,6 +254,7 @@ async function analyzeGuidelineAssets(
     ]);
 
   let analyzed = 0;
+  let failed = 0; // attempted but errored (timeout / provider down / capped) — distinct from "nothing to do"
   let processed = 0;
   let sinceSave = 0;
   const providers: Record<string, number> = {}; // observability: who served each asset
@@ -263,9 +281,13 @@ async function analyzeGuidelineAssets(
               indexAsset({ guidelineId, userId: g.userId, kind, asset, image: result.image }),
               ASSET_TIMEOUT_MS
             );
+          } else {
+            // analyzeAssetImage returned null — every provider failed/capped for this asset.
+            failed++;
           }
         } catch {
           /* timeout / failure on one asset — skip it, keep the job moving */
+          failed++;
         }
       })
     );
@@ -289,7 +311,7 @@ async function analyzeGuidelineAssets(
   if (Object.keys(providers).length > 0) {
     console.log(`[Brand Asset Analysis] ${guidelineId} providers:`, providers);
   }
-  return { logos, media, signature, analyzed, total, providers };
+  return { logos, media, signature, analyzed, failed, total, providers };
 }
 
 // Debounce asset-analysis triggers so a burst of uploads coalesces into one pass
@@ -687,13 +709,21 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         return res.status(400).json({ error: `Invalid source: ${source}` });
     }
 
-    await chargeCredits(req.userId!, 1);
+    // Charge AFTER extraction succeeds — a network/parse/quota failure throws out
+    // of extractBrandData and is caught below, so the user is never billed for a
+    // failed import (the "lost a credit, nothing happened" complaint).
     const extracted = await extractBrandData(chunks, imagesToExtract, req.userId);
+    await chargeCredits(req.userId!, 1);
     const merged = mergeBrandGuidelines(existing as any, extracted);
 
     // DRY RUN — return preview without saving anything
     if (dryRun) {
-      return res.json({ dryRun: true, extracted, preview: merged });
+      return res.json({
+        dryRun: true,
+        extracted,
+        preview: merged,
+        changed: Object.keys(extracted).length > 0,
+      });
     }
 
     // Classify and store uploaded images into logos/media
@@ -828,21 +858,44 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       },
     });
 
+    const changed = ingestChangedFields.length > 0;
     res.json({
       guideline: { ...guideline, _id: guideline.id },
       extracted, // what AI found — user can review
+      changed,
+      ...(changed
+        ? {}
+        : {
+            warning:
+              'No new brand data was found in this source. Try a richer source or add details manually.',
+          }),
     });
   } catch (error: any) {
+    const raw = String(error?.message || '');
     console.error('[Brand Ingest] CRITICAL ERROR:', {
-      message: error.message,
+      message: raw,
       stack: error.stack,
       guidelineId: req.params.id,
       userId: req.userId,
       source: req.body?.source,
     });
+    // Extraction failures throw a stable `extraction_*:` prefix — surface them as
+    // an actionable 502/503 instead of a raw 500 stack-leak.
+    if (raw.startsWith('extraction_unavailable')) {
+      return res.status(503).json({
+        error: 'extraction_unavailable',
+        message: raw.replace(/^extraction_unavailable:\s*/, ''),
+      });
+    }
+    if (raw.startsWith('extraction_failed')) {
+      return res.status(502).json({
+        error: 'extraction_failed',
+        message: raw.replace(/^extraction_failed:\s*/, ''),
+      });
+    }
     res.status(500).json({
       error: 'Ingestion failed',
-      message: error.message || 'Internal server error during brand ingestion',
+      message: raw || 'Internal server error during brand ingestion',
       code: error.code || 'UNKNOWN_ERROR',
     });
   }
@@ -1221,6 +1274,7 @@ router.post('/:id/assets/analyze', apiRateLimiter, authenticate, async (req: Aut
         job.total = result?.total ?? job.total;
         job.processed = result?.total ?? job.processed;
         job.analyzed = result?.analyzed ?? 0;
+        job.failed = result?.failed ?? 0;
         job.signature = result?.signature;
         job.providers = result?.providers;
         await saveAnalysisJob(job);
@@ -1257,6 +1311,7 @@ router.get(
         processed: reconciled.processed,
         total: reconciled.total,
         analyzed: reconciled.analyzed,
+        failed: reconciled.failed ?? 0,
         signature: reconciled.signature,
         providers: reconciled.providers,
         error: reconciled.error,
@@ -1333,7 +1388,8 @@ router.get(
       const hits = await similarAssets(guideline.id, req.params.assetId);
       const byId = new Map<string, any>();
       for (const l of (guideline.logos as any[]) || []) byId.set(l.id, { ...l, assetKind: 'logo' });
-      for (const m of (guideline.media as any[]) || []) byId.set(m.id, { ...m, assetKind: 'media' });
+      for (const m of (guideline.media as any[]) || [])
+        byId.set(m.id, { ...m, assetKind: 'media' });
       const results = hits
         .map((h) => {
           const asset = byId.get(h.assetId);
@@ -1406,7 +1462,11 @@ router.post(
       });
 
       await invalidateBrandCache(guideline.id);
-      res.json({ personas: updatedPersonas, resolved: resolvedCount, guideline: { ...updated, _id: updated.id } });
+      res.json({
+        personas: updatedPersonas,
+        resolved: resolvedCount,
+        guideline: { ...updated, _id: updated.id },
+      });
     } catch (error: any) {
       console.error('[Brand Persona Photos] Error:', error?.message || error);
       res.status(500).json({ error: 'Failed to resolve persona images', message: error?.message });
@@ -2362,6 +2422,127 @@ Return ONLY a JSON array:
   } catch (error: any) {
     console.error('[Brand Suggest Mockups] Error:', error);
     res.status(500).json({ error: 'Failed to suggest mockups', message: error?.message });
+  }
+});
+
+// GET /api/brand-guidelines/:id/suggestions — seasonal/contextual on-brand IDEAS.
+// Powers the interactive "make something" card. FREE: text comes from the cheap
+// cost-ordered router (Groq→…→Gemini), cached weekly. The expensive image gen only
+// fires when the user taps a suggestion. Owner-gated (never on the public view).
+router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    if (!isCheapTextConfigured()) {
+      return res.status(503).json({
+        error: 'suggestions_not_configured',
+        message: 'AI suggestions are not available right now.',
+      });
+    }
+
+    const count = Math.min(Math.max(parseInt(String(req.query.count || '4'), 10) || 4, 3), 6);
+    const force = req.query.force === 'true';
+    const now = new Date();
+    // Weekly cache bucket — seasonal context shifts slowly, so a brand's ideas are
+    // stable for ~a week and effectively free to serve.
+    const week = `${now.getUTCFullYear()}-${Math.floor(
+      (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
+        Date.UTC(now.getUTCFullYear(), 0, 1)) /
+        (7 * 24 * 60 * 60 * 1000)
+    )}`;
+    const cacheKey = `brand-suggestions:${guideline.id}:${week}:${count}`;
+
+    if (!force) {
+      const cached = await redisClient.get(cacheKey).catch(() => null);
+      if (cached) {
+        try {
+          return res.json({ ...JSON.parse(cached as string), cached: true });
+        } catch {
+          /* fall through and regenerate */
+        }
+      }
+    }
+
+    const market = marketFromLanguage((guideline.identity as any)?.language);
+    const seasonal = getSeasonalContext(now, market);
+    const seasonalLine = seasonalPromptLine(seasonal);
+    const brandContext = buildBrandContext(guideline as any);
+
+    const system = `You are a brand creative director. Propose ${count} concrete, on-brand content ideas the team could produce in the near term. Ground each in BOTH the brand's identity (archetype, voice, vibe) AND the upcoming commercial moment when one is relevant. Be specific and useful — no generic "make a post" filler.
+
+Return ONLY a JSON array (no prose, no code fences):
+[{
+  "title": "short punchy label in the brand's language (max 5 words)",
+  "rationale": "one line on why this fits the brand AND this moment",
+  "prompt": "an English image-generation prompt describing ONLY the physical scene/mockup/material/lighting/camera — NEVER the brand name, logo, or any text (the logo is composited automatically; describing it garbles output)",
+  "kind": "mockup|social|print",
+  "aspectRatio": "1:1|4:5|9:16|16:9"
+}]`;
+
+    const userMsg = `Brand context:\n${brandContext}\n\n${
+      seasonalLine || 'No major commercial moment is imminent — propose evergreen on-brand ideas.'
+    }\n\nReturn ${count} ideas as a JSON array.`;
+
+    const { text, provider } = await completeCheapText({
+      system,
+      user: userMsg,
+      userId: req.userId,
+      maxTokens: 1200,
+      temperature: 0.8,
+    });
+
+    const parsed = parseJsonLoose<any[]>(text);
+    if (!Array.isArray(parsed)) {
+      return res.status(502).json({
+        error: 'suggestions_unavailable',
+        message: 'Could not generate ideas right now — try again shortly.',
+      });
+    }
+
+    const ratios = ['1:1', '4:5', '9:16', '16:9'];
+    const kinds = ['mockup', 'social', 'print'];
+    const suggestions = parsed
+      .filter((s: any) => s && typeof s.prompt === 'string' && s.prompt.length > 5)
+      .slice(0, count)
+      .map((s: any) => ({
+        title: typeof s.title === 'string' ? s.title.slice(0, 60) : 'Idea',
+        rationale: typeof s.rationale === 'string' ? s.rationale.slice(0, 160) : '',
+        prompt: s.prompt,
+        kind: kinds.includes(s.kind) ? s.kind : 'mockup',
+        aspectRatio: ratios.includes(s.aspectRatio) ? s.aspectRatio : '1:1',
+      }));
+
+    const payload = {
+      suggestions,
+      seasonal: {
+        market,
+        upcoming: seasonal.upcoming.slice(0, 3).map((e) => ({
+          key: e.key,
+          label: e.label,
+          daysAway: e.daysAway,
+        })),
+      },
+      provider,
+      generatedAt: now.toISOString(),
+    };
+
+    // 8-day TTL so the weekly bucket always has a live entry.
+    await redisClient.setex(cacheKey, 8 * 24 * 60 * 60, JSON.stringify(payload)).catch(() => {});
+    res.json({ ...payload, cached: false });
+  } catch (error: any) {
+    const raw = String(error?.message || '');
+    if (raw.startsWith('cheaptext_unavailable')) {
+      return res.status(503).json({
+        error: 'suggestions_unavailable',
+        message: 'AI suggestions are temporarily unavailable — try again shortly.',
+      });
+    }
+    console.error('[Brand Suggestions] Error:', raw);
+    res.status(500).json({ error: 'Failed to generate suggestions', message: raw });
   }
 });
 
@@ -3672,9 +3853,19 @@ router.post(
           );
         } else {
           const { extractBrandData } = await import('../lib/brand-extract.js');
-          await chargeCredits(req.userId!, 1);
-          const extracted = await extractBrandData([], images, req.userId);
-          classifications = normalizeAssetClassifications(extracted.assetClassifications);
+          // Classification is best-effort: applying the .fig tokens is the user's
+          // primary action, so a failed (or quota-capped) image categorization must
+          // neither abort the token save nor bill a credit.
+          try {
+            const extracted = await extractBrandData([], images, req.userId);
+            await chargeCredits(req.userId!, 1);
+            classifications = normalizeAssetClassifications(extracted.assetClassifications);
+          } catch (e) {
+            console.warn(
+              '[apply-fig-tokens] image classification skipped:',
+              (e as any)?.message || e
+            );
+          }
         }
 
         if (classifications.length) {

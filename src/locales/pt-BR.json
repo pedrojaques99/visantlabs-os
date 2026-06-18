@@ -2536,6 +2536,8 @@
     "brandWizardFigExtractError": "Erro ao extrair arquivo Figma",
     "brandWizardFigmaTokensImported": "Tokens do Figma importados. Cores e tipografia extraídas.",
     "brandWizardFigmaNoToken": "Token do Figma não configurado. Vá em Perfil, depois Configuração.",
+    "brandWizardFigmaNoTokenHint": "Vincule um token do Figma em Configurações → Apps Conectados e tente de novo.",
+    "brandWizardInvalidUrl": "Isso não parece uma URL de site válida (ex: https://acme.com) — extração pulada.",
     "brandWizardFigmaLinkedTokensFailed": "Figma vinculado, mas a extração de tokens falhou.",
     "brandWizardImagesPasted": "Imagens coladas da área de transferência",
     "brandWizardPdfPasted": "PDF colado da área de transferência",
@@ -2667,7 +2669,11 @@
       "more": "more",
       "vaultEmpty": "Vault is empty",
       "bulkDeleteSuccess": "Bulk Delete Success",
-      "bulkDeleteError": "Bulk Delete Error"
+      "bulkDeleteError": "Bulk Delete Error",
+      "duplicateSkipped": "{count} duplicada ignorada — já na sua biblioteca",
+      "duplicatesSkipped": "{count} duplicadas ignoradas — já na sua biblioteca",
+      "nearDuplicate": "Parecida com \"{label}\" — adicionada mesmo assim",
+      "anExistingAsset": "um asset existente"
     },
     "modelSelection": "0. MODELO_",
     "modelSelectionDescription": "Escolha o modelo de IA para a geração.",

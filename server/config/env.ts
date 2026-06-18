@@ -44,6 +44,18 @@ const baseSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
 
+  // Cheap-text providers (OpenAI-compatible /chat/completions) — cost-ordered
+  // fallback chain for lightweight text suggestions. All optional: the router
+  // skips any without a key and cascades to the next available one.
+  GROQ_API_KEY: z.string().optional(),
+  CEREBRAS_API_KEY: z.string().optional(),
+  NVIDIA_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  /** Optional: bump one provider to the front of the cost-ordered chain. */
+  TEXT_GEN_PRIMARY: z
+    .enum(['groq', 'cerebras', 'nvidia', 'openrouter', 'gemini', 'openai'])
+    .optional(),
+
   // Ollama
   OLLAMA_BASE_URL: z.string().url().optional(),
   OLLAMA_MODEL: z.string().optional(),

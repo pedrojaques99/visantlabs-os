@@ -594,9 +594,9 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
  * Clicking a card reveals a single detail panel below with the running
  * description + examples. Nothing is expanded on first paint.
  */
-const ArchetypesInteractive: React.FC<{ archetypes: NonNullable<NonNullable<BrandGuideline['strategy']>['archetypes']> }> = ({
-  archetypes,
-}) => {
+const ArchetypesInteractive: React.FC<{
+  archetypes: NonNullable<NonNullable<BrandGuideline['strategy']>['archetypes']>;
+}> = ({ archetypes }) => {
   const [selected, setSelected] = useState<number | null>(null);
   const active = selected !== null ? archetypes[selected] : null;
 
@@ -658,10 +658,15 @@ const ArchetypesInteractive: React.FC<{ archetypes: NonNullable<NonNullable<Bran
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            <GlassPanel padding="lg" className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/10">
+            <GlassPanel
+              padding="lg"
+              className="bg-[var(--brand-surface)]/30 border-[var(--brand-text)]/10"
+            >
               <div className="space-y-6">
                 <h4 className="text-3xl font-bold tracking-tight opacity-90">{active.name}</h4>
-                <p className="text-lg font-light leading-relaxed opacity-60">{active.description}</p>
+                <p className="text-lg font-light leading-relaxed opacity-60">
+                  {active.description}
+                </p>
                 {active.examples && active.examples.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2">
                     {active.examples.map((ex, idx) => (
@@ -951,7 +956,9 @@ const ColorUsagePalette: React.FC<{
               </span>
               <span className="text-[10px] font-mono uppercase text-white/60 flex items-center gap-1.5">
                 {color.hex}
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">· copy</span>
+                <span className="opacity-70 can-hover:opacity-0 can-hover:group-hover:opacity-100 transition-opacity">
+                  · copy
+                </span>
               </span>
             </div>
           </motion.button>
@@ -1317,7 +1324,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                     onError={() => markFailed(logo.id)}
                     className="w-3/4 h-3/4 object-contain transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_15px_25px_rgba(0,0,0,0.2)]"
                   />
-                  <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <div className="absolute inset-x-0 bottom-0 p-3 opacity-100 translate-y-0 can-hover:opacity-0 can-hover:translate-y-2 can-hover:group-hover:opacity-100 can-hover:group-hover:translate-y-0 transition-all duration-300">
                     {onAssetClick ? (
                       <Button
                         className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
@@ -1515,7 +1522,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
 
                   <Button
                     size="icon"
-                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-all z-10"
+                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-100 can-hover:opacity-0 can-hover:group-hover:opacity-100 transition-all z-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDownload(item);

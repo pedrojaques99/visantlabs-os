@@ -19,6 +19,17 @@ const getAuthHeaders = () => {
   };
 };
 
+/**
+ * Build an Error that carries the server's machine-readable `error` code on a
+ * `.code` property, so callers can map codes (e.g. `vision_not_configured`) to
+ * friendly, user-facing copy instead of leaking raw "Set GEMINI_API_KEY…" text.
+ */
+const codedError = (body: any, fallback: string): Error & { code?: string } => {
+  const err = new Error(body?.message || body?.error || fallback) as Error & { code?: string };
+  if (typeof body?.error === 'string') err.code = body.error;
+  return err;
+};
+
 export const brandGuidelineApi = {
   async getAll(params?: { limit?: number; offset?: number }): Promise<BrandGuideline[]> {
     try {
@@ -167,6 +178,10 @@ export const brandGuidelineApi = {
     extracted: any;
     preview?: BrandGuideline;
     dryRun?: boolean;
+    /** False when the source yielded no new brand data (so the UI can say so honestly). */
+    changed?: boolean;
+    /** Present when `changed` is false — a user-facing explanation. */
+    warning?: string;
   }> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/ingest`, {
       method: 'POST',
@@ -198,6 +213,29 @@ export const brandGuidelineApi = {
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
       throw new Error(err.message || err.error || 'Failed to suggest mockups');
+    }
+    return response.json();
+  },
+
+  /** Seasonal/contextual on-brand IDEAS for the interactive panel (free, cached weekly). */
+  async getSuggestions(
+    id: string,
+    opts: { count?: number; force?: boolean } = {}
+  ): Promise<{
+    suggestions: BrandSuggestion[];
+    seasonal: { market: string; upcoming: Array<{ key: string; label: string; daysAway: number }> };
+    provider?: string;
+    cached?: boolean;
+  }> {
+    const qs = new URLSearchParams();
+    if (opts.count) qs.set('count', String(opts.count));
+    if (opts.force) qs.set('force', 'true');
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggestions?${qs}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to load suggestions');
     }
     return response.json();
   },
@@ -269,17 +307,14 @@ export const brandGuidelineApi = {
     guidelineId: string,
     force = false
   ): Promise<{ jobId: string; status: string }> {
-    const response = await fetch(
-      `${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/analyze`,
-      {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ force }),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${guidelineId}/assets/analyze`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ force }),
+    });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body?.message || body?.error || 'Failed to start asset analysis');
+      throw codedError(body, 'Failed to start asset analysis');
     }
     return response.json();
   },
@@ -293,6 +328,7 @@ export const brandGuidelineApi = {
     processed: number;
     total: number;
     analyzed: number;
+    failed?: number;
     signature?: any;
     error?: string;
   }> {
@@ -311,14 +347,20 @@ export const brandGuidelineApi = {
   async analyzeAssets(
     guidelineId: string,
     opts: { force?: boolean; onProgress?: (p: { processed: number; total: number }) => void } = {}
-  ): Promise<{ analyzed: number; signature: any }> {
+  ): Promise<{ analyzed: number; failed: number; total: number; signature: any }> {
     const { jobId } = await this.startAssetAnalysis(guidelineId, opts.force ?? false);
     const POLL_MS = 1500;
     const DEADLINE = Date.now() + 30 * 60 * 1000; // 30 min ceiling for huge brands
     for (;;) {
       const job = await this.getAssetAnalysisJob(guidelineId, jobId);
       opts.onProgress?.({ processed: job.processed, total: job.total });
-      if (job.status === 'done') return { analyzed: job.analyzed, signature: job.signature };
+      if (job.status === 'done')
+        return {
+          analyzed: job.analyzed,
+          failed: job.failed ?? 0,
+          total: job.total,
+          signature: job.signature,
+        };
       if (job.status === 'error') throw new Error(job.error || 'Analysis failed');
       if (Date.now() > DEADLINE) throw new Error('Analysis timed out');
       await new Promise((r) => setTimeout(r, POLL_MS));
@@ -338,7 +380,7 @@ export const brandGuidelineApi = {
     );
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body?.message || body?.error || 'Failed to search assets');
+      throw codedError(body, 'Failed to search assets');
     }
     return response.json();
   },
@@ -740,6 +782,14 @@ export const brandGuidelineApi = {
     if (!response.ok) throw new Error('Failed to remove collaborator');
   },
 };
+
+export interface BrandSuggestion {
+  title: string;
+  rationale: string;
+  prompt: string;
+  kind: 'mockup' | 'social' | 'print';
+  aspectRatio: string;
+}
 
 export interface BrandCollaborator {
   id: string;

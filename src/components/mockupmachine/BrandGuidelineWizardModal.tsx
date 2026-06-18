@@ -385,11 +385,30 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             setIsSubmitting(false);
             setIsIngesting(true);
             setIngestPhase(t('mockup.brandWizardExtracting') || 'Extraindo do site…');
-            try {
-              await brandGuidelineApi.ingest(workingId, { source: 'url', url: trimmedUrl });
-              toast.success(t('mockup.brandWizardSuccessWithExtraction'));
-            } catch {
-              toast.warning(t('mockup.brandWizardErrorIngest'));
+            // Validate before spending a round-trip + credit on a malformed URL.
+            const validUrl = /^https?:\/\/.+\..+/i.test(trimmedUrl);
+            if (!validUrl) {
+              toast.warning(
+                t('mockup.brandWizardInvalidUrl') ||
+                  'That doesn’t look like a valid website URL (e.g. https://acme.com) — skipped extraction.'
+              );
+            } else {
+              try {
+                const result = await brandGuidelineApi.ingest(workingId, {
+                  source: 'url',
+                  url: trimmedUrl,
+                });
+                if (result?.changed === false) {
+                  toast.info(result.warning || t('mockup.brandWizardErrorIngest'));
+                } else {
+                  toast.success(t('mockup.brandWizardSuccessWithExtraction'));
+                }
+              } catch (err) {
+                // Backend surfaces friendly extraction errors (over-quota / unreadable).
+                toast.warning(
+                  err instanceof Error ? err.message : t('mockup.brandWizardErrorIngest')
+                );
+              }
             }
             setIsIngesting(false);
           } else if (isEditMode) {
@@ -411,12 +430,16 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             inputFiles.push(...imageFiles);
             const payload = await buildBrandIngestPayload(inputFiles);
             if (payload) {
-              await brandGuidelineApi.ingest(workingId, payload);
-              toast.success(t('mockup.brandWizardSuccessWithExtraction'));
+              const result = await brandGuidelineApi.ingest(workingId, payload);
+              if (result?.changed === false) {
+                toast.info(result.warning || t('mockup.brandWizardErrorIngest'));
+              } else {
+                toast.success(t('mockup.brandWizardSuccessWithExtraction'));
+              }
             }
           } catch (err) {
             console.error('Ingestion error:', err);
-            toast.error(t('mockup.brandWizardErrorIngest'));
+            toast.error(err instanceof Error ? err.message : t('mockup.brandWizardErrorIngest'));
           }
           setIsIngesting(false);
         }
@@ -458,7 +481,11 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             toast.success(t('mockup.brandWizardFigmaTokensImported'));
           } catch (err: any) {
             if (err?.needsToken) {
-              toast.warning(t('mockup.brandWizardFigmaNoToken'));
+              toast.warning(t('mockup.brandWizardFigmaNoToken'), {
+                description:
+                  t('mockup.brandWizardFigmaNoTokenHint') ||
+                  'Link a Figma token in Settings → Connected Apps, then try again.',
+              });
             } else {
               toast.warning(t('mockup.brandWizardFigmaLinkedTokensFailed'));
             }

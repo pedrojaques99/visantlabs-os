@@ -94,6 +94,11 @@ const BrandMockupDialog = lazyWithRetry(() =>
     default: m.BrandMockupDialog,
   }))
 );
+const BrandInteractivePanel = lazyWithRetry(() =>
+  import('@/components/brand/BrandInteractivePanel').then((m) => ({
+    default: m.BrandInteractivePanel,
+  }))
+);
 const ShareGuidelineDialog = lazyWithRetry(() =>
   import('@/components/brand/guidelines/ShareGuidelineDialog').then((m) => ({
     default: m.ShareGuidelineDialog,
@@ -157,6 +162,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // Owner action dialogs (ported from the admin editor)
   const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
   const [isMockupOpen, setIsMockupOpen] = useState(false);
+  const [mockupPrompt, setMockupPrompt] = useState<string | undefined>(undefined);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [figmaCopied, setFigmaCopied] = useState(false);
@@ -728,6 +734,23 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           sectionsLabel={t('public.brand.guideline.brand_sections')}
         />
 
+        {/* Owner-only interactive band (seasonal ideas + connect-to-AI). Never on the
+            public/anonymous view; shown on the Overview tab for people who can edit. */}
+        {canEdit && activeTab === 'all' && guideline.id && (
+          <React.Suspense fallback={null}>
+            <BrandInteractivePanel
+              guidelineId={guideline.id}
+              isShared={!!(guideline.isPublic || guideline.publicSlug)}
+              connecting={connecting}
+              onConnect={handleConnect}
+              onGenerate={(p) => {
+                setMockupPrompt(p);
+                setIsMockupOpen(true);
+              }}
+            />
+          </React.Suspense>
+        )}
+
         {/* Content router:
             · Preview tab → grouped mock gallery (BrandPreviewGallery)
             · Overview (`all`) in view mode → compact bento snapshot
@@ -747,7 +770,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             renderSectionActions={
               editMode
                 ? (section) => (
-                    <div className="flex items-center gap-1.5 opacity-0 group-hover/section:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1.5 opacity-100 can-hover:opacity-0 can-hover:group-hover/section:opacity-100 transition-opacity">
                       <SectionPresenceDot section={section} />
                       <button
                         type="button"
@@ -860,8 +883,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           {isMockupOpen && (
             <BrandMockupDialog
               open={isMockupOpen}
-              onOpenChange={setIsMockupOpen}
+              onOpenChange={(o) => {
+                setIsMockupOpen(o);
+                if (!o) setMockupPrompt(undefined);
+              }}
               guideline={guideline}
+              initialPrompt={mockupPrompt}
             />
           )}
           {isShareOpen && (
