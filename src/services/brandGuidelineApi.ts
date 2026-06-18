@@ -240,6 +240,38 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  /** List the headless web preset templates available to render. */
+  async getWebPresets(
+    id: string
+  ): Promise<{ presets: Array<{ id: string; width: number; height: number }> }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/web-presets`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok)
+      throw codedError(await response.json().catch(() => ({})), 'Failed to list web presets');
+    return response.json();
+  },
+
+  /** Render a web preset to an on-brand PNG (headless, no Figma). */
+  async renderPreset(
+    id: string,
+    payload: {
+      template: string;
+      text?: Record<string, unknown>;
+      brief?: string;
+      effect?: { mode: 'halftone' | 'riso' | 'texture'; preset?: string };
+    }
+  ): Promise<{ url: string; template: string; width: number; height: number }> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/render-preset`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok)
+      throw codedError(await response.json().catch(() => ({})), 'Failed to render preset');
+    return response.json();
+  },
+
   async aiPopulate(
     id: string,
     sections?: string[]

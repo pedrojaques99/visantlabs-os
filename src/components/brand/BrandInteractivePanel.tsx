@@ -15,8 +15,10 @@ import {
   Video,
   FileText,
   Type,
+  Layout,
   type LucideIcon,
 } from 'lucide-react';
+import { BrandRenderDialog } from '@/components/brand/guidelines/BrandRenderDialog';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
@@ -141,6 +143,10 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   const [seasonal, setSeasonal] = useState<SeasonalMoment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null); // which connect action is running
+  const [renderOpen, setRenderOpen] = useState(false);
+  const [renderInitial, setRenderInitial] = useState<
+    { template?: string; h1?: string; brief?: string } | undefined
+  >(undefined);
 
   const load = useCallback(
     async (force = false) => {
@@ -308,6 +314,21 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                       </button>
                     )}
                     <button
+                      onClick={() => {
+                        setRenderInitial({
+                          h1: s.title,
+                          brief: `${s.title} — ${s.rationale}`,
+                          template: 'Post/Launch',
+                        });
+                        setRenderOpen(true);
+                      }}
+                      className={cn(ghostBtn, 'h-7 w-7')}
+                      aria-label="Render on-brand"
+                      title="Render on-brand (web — no Figma)"
+                    >
+                      <Layout size={11} />
+                    </button>
+                    <button
                       onClick={() => copyPrompt(s.prompt)}
                       className={cn(ghostBtn, 'h-7 w-7')}
                       aria-label="Copy prompt"
@@ -397,6 +418,15 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           </p>
         )}
       </GlassPanel>
+
+      {renderOpen && (
+        <BrandRenderDialog
+          open={renderOpen}
+          onOpenChange={setRenderOpen}
+          guidelineId={guidelineId}
+          initial={renderInitial}
+        />
+      )}
     </div>
   );
 };
