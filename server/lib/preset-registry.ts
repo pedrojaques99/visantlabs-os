@@ -4,7 +4,7 @@
  * its image slots (for the asset resolver), and how to map filled slots → HTML.
  * Add a layout = add an entry. The route stays generic.
  */
-import { postLaunchHtml, type PresetVars } from './preset-html.js';
+import { postLaunchHtml, storySaleHtml, obraDeArteHtml, type PresetVars } from './preset-html.js';
 import type { ImageSlotSpec } from './figma-asset-resolver.js';
 
 type Text = Record<string, string | string[] | null | undefined>;
@@ -43,6 +43,33 @@ export const WEB_PRESETS: Record<string, WebPreset> = {
         },
         fontCss
       ),
+  },
+
+  'story/sale': {
+    id: 'Story/Sale',
+    width: 1080,
+    height: 1920,
+    imageSlots: [{ id: 'photo1' }],
+    build: (vars, text, images, fontCss) =>
+      storySaleHtml(
+        vars,
+        {
+          h1: asStr(text.h1),
+          h2: text.h2 ? asStr(text.h2) : undefined,
+          cta: text.cta ? asStr(text.cta) : undefined,
+          photoUrl: images.photo1?.imageUrl,
+        },
+        fontCss
+      ),
+  },
+
+  'post/obra-de-arte': {
+    id: 'Post/Obra-de-Arte',
+    width: 1080,
+    height: 1350,
+    imageSlots: [{ id: 'logo', variant: 'accent' }],
+    build: (vars, text, images, fontCss) =>
+      obraDeArteHtml(vars, { h1: asStr(text.h1), logoUrl: images.logo?.imageUrl }, fontCss),
   },
 };
 

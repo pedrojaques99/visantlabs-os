@@ -90,3 +90,78 @@ export function postLaunchHtml(
 </div>`;
   return DOC(W, H, fontCss, body, vars);
 }
+
+export interface StorySaleContent {
+  h1: string;
+  h2?: string;
+  cta?: string;
+  photoUrl?: string;
+}
+
+/** Story/Sale (1080×1920, 9:16) — rounded photo card + centered headline + CTA. */
+export function storySaleHtml(
+  vars: PresetVars,
+  content: StorySaleContent,
+  fontCss: string
+): string {
+  const W = 1080,
+    H = 1920;
+  const photo = content.photoUrl ? `<img src="${esc(content.photoUrl)}" alt="">` : '';
+  const h2 = content.h2 ? `<p class="h2">${esc(content.h2)}</p>` : '';
+  const cta = content.cta ? `<div class="cta">${esc(content.cta)}</div>` : '';
+
+  const body = `<div class="frame">
+  <div class="photo">${photo}</div>
+  <h1 class="h1">${esc(content.h1)}</h1>
+  ${h2}
+  ${cta}
+  <style>
+    .photo{position:absolute;top:180px;left:100px;width:880px;height:880px;
+      border-radius:${vars.radius}px;background:${vars.surface};overflow:hidden}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .h1{position:absolute;top:1150px;left:100px;width:880px;text-align:center;
+      font-family:'${vars.headingFont}',serif;font-weight:600;font-size:84px;line-height:1.02;
+      letter-spacing:-0.03em;color:${vars.accent}}
+    .h2{position:absolute;top:1400px;left:100px;width:880px;text-align:center;
+      font-size:38px;color:${vars.text};opacity:.82}
+    .cta{position:absolute;top:1600px;left:50%;transform:translateX(-50%);
+      padding:22px 46px;border-radius:999px;background:${vars.accent};color:${vars.accentText};
+      font-weight:700;font-size:34px}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
+
+export interface ObraDeArteContent {
+  h1: string;
+  logoUrl?: string;
+}
+
+/** Obra-de-Arte (1080×1350) — branded gradient editorial: big headline + wordmark.
+ * The gradient themes off the brand accent (dark→accent via color-mix). */
+export function obraDeArteHtml(
+  vars: PresetVars,
+  content: ObraDeArteContent,
+  fontCss: string
+): string {
+  const W = 1080,
+    H = 1350;
+  const logo = content.logoUrl
+    ? `<img class="logo" src="${esc(content.logoUrl)}" alt="">`
+    : '';
+
+  const body = `<div class="frame">
+  <h1 class="h1">${esc(content.h1)}</h1>
+  ${logo}
+  <style>
+    .frame{background:linear-gradient(135deg,
+      color-mix(in srgb, ${vars.accent} 35%, #0b0612) 0%, ${vars.accent} 100%)}
+    .h1{position:absolute;top:110px;left:90px;width:760px;
+      font-family:'${vars.headingFont}',serif;font-weight:600;font-size:92px;line-height:1.0;
+      letter-spacing:-0.03em;color:#EFEFEF}
+    .logo{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);
+      height:120px;width:auto;object-fit:contain;filter:brightness(0) invert(1)}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
