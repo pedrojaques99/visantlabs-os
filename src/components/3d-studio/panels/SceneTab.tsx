@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -11,7 +11,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-media-query';
 import {
   useStudio3DStore,
-  SCENE_PRESETS,
   getSavedScenes,
   saveScene,
   loadScene,
@@ -32,7 +31,6 @@ import {
   Save,
   FolderOpen,
   Trash2,
-  Shuffle,
   Link,
   Palette,
   Globe,
@@ -46,12 +44,10 @@ import {
   ToolPanelRow,
   ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
-import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { FONT_OPTIONS } from './_shared';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
-import { usePresetPreviews } from '../usePresetPreviews';
-import { generateBrandScenes } from '@/lib/studio3d/brandScenes';
+import { ScenePresetsStrip } from '../ScenePresetsStrip';
 
 // Fine-grained subscription: the input / geometry / shape / chain slice this
 // tab renders (was a full-store subscription re-rendering on any store
@@ -97,11 +93,7 @@ const scenePanelSelector = (s: StoreState) => ({
   traceOptTolerance: s.traceOptTolerance,
   traceThreshold: s.traceThreshold,
   traceAlphaMax: s.traceAlphaMax,
-  applyScenePreset: s.applyScenePreset,
-  applyConfig: s.applyConfig,
-  _brandGuidelineId: s._brandGuidelineId,
   setBrandGuidelineId: s.setBrandGuidelineId,
-  randomize: s.randomize,
   setInputMode: s.setInputMode,
   setIsLoading: s.setIsLoading,
   setModelUrl: s.setModelUrl,
@@ -146,8 +138,6 @@ export const SceneTab: React.FC = React.memo(() => {
   const isMobile = useIsMobile();
   const store = useStudio3DStore(useShallow(scenePanelSelector));
   const [isDragging, setIsDragging] = useState(false);
-  const [hasRandomizedOnce, setHasRandomizedOnce] = useState(false);
-  const [showRandomizeConfirm, setShowRandomizeConfirm] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
@@ -179,17 +169,9 @@ export const SceneTab: React.FC = React.memo(() => {
   const [chainOff, setChainOff] = useDebouncedSlider(store.chainOffset, store.setChainOffset);
   const [reliefDepth, setReliefDepth] = useDebouncedSlider(store.reliefDepth, store.setReliefDepth);
 
-  const presetThumbs = usePresetPreviews();
   const [brandPickerOpen, setBrandPickerOpen] = useState(false);
   const { data: brandGuidelines = [], isLoading: brandLoading } = useBrandGuidelines(true);
   const hasBrandLogos = brandGuidelines.some((g) => g.logos && g.logos.length > 0);
-
-  // On-brand scene gallery: derived from the applied brand's colors/themes/mood tags.
-  const appliedBrand = useMemo(
-    () => brandGuidelines.find((g) => g.id === store._brandGuidelineId) ?? null,
-    [brandGuidelines, store._brandGuidelineId]
-  );
-  const brandScenes = useMemo(() => generateBrandScenes(appliedBrand), [appliedBrand]);
 
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
@@ -356,97 +338,8 @@ export const SceneTab: React.FC = React.memo(() => {
 
   return (
     <>
-      {/* Scene Presets — collapsible horizontal strip with 3D previews */}
-      <ToolPanelDisclosure
-        label={t('studio3d.scenePresets.title')}
-        icon={<Shuffle size={13} />}
-        defaultOpen
-      >
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
-          {Object.entries(SCENE_PRESETS).map(([name, preset]) => (
-            <button
-              key={name}
-              onClick={() => store.applyScenePreset(name)}
-              className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
-            >
-              <div
-                className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors"
-                style={{ background: preset.background }}
-              >
-                {presetThumbs[name] ? (
-                  <img
-                    src={presetThumbs[name]}
-                    alt={preset.label}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full animate-pulse bg-white/5" />
-                )}
-              </div>
-              <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
-                {preset.label}
-              </span>
-            </button>
-          ))}
-          <button
-            onClick={() => {
-              if (!hasRandomizedOnce) {
-                setShowRandomizeConfirm(true);
-              } else {
-                store.randomize();
-                toast.success('Surprise!');
-              }
-            }}
-            className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
-          >
-            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-cyan-500/30 group-hover:border-cyan-500/50 flex items-center justify-center transition-colors">
-              <Shuffle size={16} className="text-cyan-400" />
-            </div>
-            <span className="text-[8px] font-mono uppercase tracking-wider text-cyan-500 group-hover:text-cyan-300 transition-colors max-w-14 truncate">
-              Random
-            </span>
-          </button>
-        </div>
-      </ToolPanelDisclosure>
-
-      {/* Brand Scenes — on-brand looks generated from the applied brand's tokens */}
-      {brandScenes.length > 0 && (
-        <ToolPanelDisclosure
-          label={`${appliedBrand?.identity?.name || appliedBrand?.name || 'Brand'} Scenes`}
-          icon={<Palette size={13} />}
-          defaultOpen
-        >
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
-            {brandScenes.map((scene) => (
-              <button
-                key={scene.key}
-                onClick={() =>
-                  store.applyConfig(scene.config as Parameters<typeof store.applyConfig>[0])
-                }
-                className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
-                title={scene.label}
-              >
-                <div
-                  className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors flex items-center justify-center"
-                  style={{ background: scene.swatches[0] }}
-                >
-                  <div
-                    className="w-7 h-7 rounded-full transition-transform group-hover:scale-110"
-                    style={{
-                      background: scene.swatches[1],
-                      boxShadow: `0 0 0 2px ${scene.swatches[2]}`,
-                    }}
-                  />
-                </div>
-                <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
-                  {scene.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </ToolPanelDisclosure>
-      )}
+      {/* Quick-start: built-in scene presets + on-brand scenes + Random */}
+      <ScenePresetsStrip />
 
       {/* Input */}
       <ToolPanelDisclosure
@@ -1022,20 +915,6 @@ export const SceneTab: React.FC = React.memo(() => {
         )}
       </ToolPanelDisclosure>
 
-      <ConfirmationModal
-        isOpen={showRandomizeConfirm}
-        onClose={() => setShowRandomizeConfirm(false)}
-        onConfirm={() => {
-          setHasRandomizedOnce(true);
-          setShowRandomizeConfirm(false);
-          store.randomize();
-          toast.success('Surprise!');
-        }}
-        title={t('studio3d.randomizeTitle')}
-        message={t('studio3d.randomizeMessage')}
-        confirmText={t('studio3d.randomizeConfirm')}
-        variant="warning"
-      />
 
       <BrandLogoPickerModal
         isOpen={brandPickerOpen}
