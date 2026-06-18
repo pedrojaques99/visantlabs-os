@@ -132,6 +132,106 @@ export function storySaleHtml(
   return DOC(W, H, fontCss, body, vars);
 }
 
+export interface EditorialHeroContent {
+  h1: string;
+  /** small superscript annotation above the headline, e.g. "(mais)" */
+  note?: string;
+  /** top-left tag pill, e.g. a year "2025" */
+  tag?: string;
+  /** bottom-left studio/footer label, e.g. "VISANT BRAND STUDIO" */
+  footer?: string;
+  /** bottom-right region pill, e.g. "BR" */
+  region?: string;
+  photoUrl?: string;
+}
+
+/** Editorial/Hero (1080×1350) — dark editorial: tag pill + oversized lowercase
+ * headline (with a small superscript note) + a floating brand image + footer
+ * chrome (studio label · divider · region pill) + arrow. Token-driven. */
+export function editorialHeroHtml(
+  vars: PresetVars,
+  content: EditorialHeroContent,
+  fontCss: string
+): string {
+  const W = 1080,
+    H = 1350,
+    PAD = 80;
+  const note = content.note ? `<span class="note">${esc(content.note)}</span>` : '';
+  const tag = content.tag ? `<div class="tag">${esc(content.tag)}</div>` : '';
+  const photo = content.photoUrl ? `<img class="hero" src="${esc(content.photoUrl)}" alt="">` : '';
+  const footer = content.footer ? esc(content.footer) : '';
+  const region = content.region ? `<div class="region">${esc(content.region)}</div>` : '';
+
+  const body = `<div class="frame">
+  ${tag}
+  ${photo}
+  <div class="head">${note}<h1 class="h1">${esc(content.h1)}</h1></div>
+  <div class="foot">
+    <span class="brand">${footer}</span>
+    <span class="rule"></span>
+    ${region}
+  </div>
+  <style>
+    .tag{position:absolute;top:${PAD - 8}px;left:${PAD}px;padding:10px 24px;border-radius:999px;
+      border:1px solid ${vars.text}40;color:${vars.text};opacity:.7;font-size:24px}
+    .hero{position:absolute;top:300px;right:-30px;width:640px;height:auto;object-fit:contain}
+    .head{position:absolute;top:150px;left:${PAD}px;width:760px;z-index:2}
+    .note{display:block;margin-left:170px;margin-bottom:4px;font-size:30px;color:${vars.text};opacity:.6}
+    .h1{font-family:'${vars.headingFont}',serif;font-weight:600;font-size:150px;line-height:0.92;
+      letter-spacing:-0.04em;color:${vars.heading};text-transform:lowercase}
+    .foot{position:absolute;left:${PAD}px;right:${PAD}px;bottom:${PAD}px;display:flex;align-items:center;gap:24px}
+    .brand{font-size:22px;letter-spacing:0.12em;text-transform:uppercase;color:${vars.text};opacity:.55;white-space:nowrap}
+    .rule{flex:1;height:1px;background:${vars.text};opacity:.22}
+    .region{padding:8px 20px;border-radius:999px;border:1px solid ${vars.text}40;color:${vars.text};
+      opacity:.7;font-size:22px}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
+
+export interface EditorialManifestoContent {
+  h1: string;
+  /** left data list under the image */
+  infos?: string[];
+  /** right paragraph under the image */
+  body?: string;
+  photoUrl?: string;
+}
+
+/** Editorial/Manifesto (1080×1350) — light editorial: centered image + a
+ * two-column caption (data list · paragraph) + an oversized bottom headline. */
+export function editorialManifestoHtml(
+  vars: PresetVars,
+  content: EditorialManifestoContent,
+  fontCss: string
+): string {
+  const W = 1080,
+    H = 1350;
+  const photo = content.photoUrl ? `<img src="${esc(content.photoUrl)}" alt="">` : '';
+  const infos = content.infos?.length
+    ? `<p class="infos">${content.infos.map(esc).join('<br>')}</p>`
+    : '';
+  const para = content.body ? `<p class="para">${esc(content.body)}</p>` : '';
+
+  const body = `<div class="frame">
+  <div class="photo">${photo}</div>
+  <div class="cols">${infos}${para}</div>
+  <h1 class="h1">${esc(content.h1)}</h1>
+  <style>
+    .photo{position:absolute;top:60px;left:340px;width:400px;height:400px;
+      background:${vars.surface};overflow:hidden}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .cols{position:absolute;top:560px;left:170px;right:170px;display:flex;justify-content:space-between;gap:60px}
+    .infos{font-size:24px;line-height:1.55;color:${vars.text};opacity:.7;width:300px}
+    .para{font-size:24px;line-height:1.55;color:${vars.text};opacity:.7;width:300px;text-align:right}
+    .h1{position:absolute;left:60px;right:60px;bottom:70px;
+      font-family:'${vars.headingFont}',serif;font-weight:600;font-size:80px;line-height:1.05;
+      letter-spacing:-0.02em;color:${vars.heading}}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
+
 export interface ObraDeArteContent {
   h1: string;
   logoUrl?: string;

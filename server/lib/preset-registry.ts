@@ -4,7 +4,14 @@
  * its image slots (for the asset resolver), and how to map filled slots → HTML.
  * Add a layout = add an entry. The route stays generic.
  */
-import { postLaunchHtml, storySaleHtml, obraDeArteHtml, type PresetVars } from './preset-html.js';
+import {
+  postLaunchHtml,
+  storySaleHtml,
+  obraDeArteHtml,
+  editorialHeroHtml,
+  editorialManifestoHtml,
+  type PresetVars,
+} from './preset-html.js';
 import type { ImageSlotSpec } from './figma-asset-resolver.js';
 
 type Text = Record<string, string | string[] | null | undefined>;
@@ -70,6 +77,44 @@ export const WEB_PRESETS: Record<string, WebPreset> = {
     imageSlots: [{ id: 'logo', variant: 'accent' }],
     build: (vars, text, images, fontCss) =>
       obraDeArteHtml(vars, { h1: asStr(text.h1), logoUrl: images.logo?.imageUrl }, fontCss),
+  },
+
+  'editorial/hero': {
+    id: 'Editorial/Hero',
+    width: 1080,
+    height: 1350,
+    imageSlots: [{ id: 'photo1' }],
+    build: (vars, text, images, fontCss) =>
+      editorialHeroHtml(
+        vars,
+        {
+          h1: asStr(text.h1),
+          note: text.note ? asStr(text.note) : undefined,
+          tag: text.tag ? asStr(text.tag) : undefined,
+          footer: text.footer ? asStr(text.footer) : undefined,
+          region: text.region ? asStr(text.region) : undefined,
+          photoUrl: images.photo1?.imageUrl,
+        },
+        fontCss
+      ),
+  },
+
+  'editorial/manifesto': {
+    id: 'Editorial/Manifesto',
+    width: 1080,
+    height: 1350,
+    imageSlots: [{ id: 'photo1' }],
+    build: (vars, text, images, fontCss) =>
+      editorialManifestoHtml(
+        vars,
+        {
+          h1: asStr(text.h1),
+          infos: asList(text.infos),
+          body: text.body ? asStr(text.body) : undefined,
+          photoUrl: images.photo1?.imageUrl,
+        },
+        fontCss
+      ),
   },
 };
 
