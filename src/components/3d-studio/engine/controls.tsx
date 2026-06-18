@@ -134,8 +134,10 @@ export function LoopAnimation({ type, speed, reverse, easing, meshRef }: LoopAni
 
     switch (type) {
       case 'spin':
-        // For spin, we use the eased t directly for rotation
-        meshRef.current.rotation.y = t * 0.5 * dir;
+        // One eased cycle = a full 360° turn, so the ease rests with the logo
+        // facing front every loop (t advances 2π per cycle; ×1.0 keeps it a full
+        // revolution — ×0.5 would rest at 180°, i.e. facing backward).
+        meshRef.current.rotation.y = t * 1.0 * dir;
         break;
       case 'float':
         meshRef.current.position.y = initialY.current + Math.sin(t * 1.5) * 0.3;
