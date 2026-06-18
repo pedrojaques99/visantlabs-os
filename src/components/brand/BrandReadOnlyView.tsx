@@ -842,11 +842,11 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
   return (
     <div className="space-y-16">
       <FullSectionHeader label="Tone of Voice" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {voiceValues.map((v, i) => (
           <div
             key={i}
-            className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[400px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10"
+            className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[280px] sm:min-h-[340px] md:min-h-[400px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10"
           >
             <div className="absolute top-0 left-0 w-16 h-16 rounded-br-[32px] flex items-center justify-center text-xl font-bold bg-[var(--brand-text)]/5 opacity-20">
               {i + 1}
@@ -1607,7 +1607,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
       whileInView="visible"
       viewport={{ once: true }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
         <div className="space-y-8">
           <FullSectionHeader label="Guidelines" />
           {g.voice && (
@@ -1619,7 +1619,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           )}
         </div>
 
-        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {g.dos && g.dos.length > 0 && (
             <div className="space-y-6">
               <MicroTitle className="text-green-500/60 tracking-wider pt-12">Do</MicroTitle>

@@ -256,17 +256,28 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
           }
         });
 
-        const results = await Promise.all(uploadPromises);
-        const validResults = results.filter(Boolean);
+        const results = (await Promise.all(uploadPromises)).filter(Boolean) as any[];
 
-        if (validResults.length > 0) {
-          const latestResult = validResults[validResults.length - 1];
-          if (type === 'media' && latestResult && 'allMedia' in latestResult) {
-            onMediaChange(latestResult.allMedia);
-          } else if (type === 'logo' && latestResult && 'allLogos' in latestResult) {
-            onLogosChange(latestResult.allLogos);
+        if (results.length > 0) {
+          // Parallel uploads each return their own snapshot — use the most complete.
+          const key = type === 'media' ? 'allMedia' : 'allLogos';
+          const arrays = results.map((r) => r?.[key]).filter(Array.isArray) as any[][];
+          const best = arrays.sort((a, b) => b.length - a.length)[0];
+          if (best) (type === 'media' ? onMediaChange : onLogosChange)(best);
+
+          const skipped = results.filter((r) => r?.skipped).length;
+          const similar = results.find((r) => r?.similar);
+          const added = results.length - skipped;
+
+          if (added > 0) toast.success(t('mockup.mediaKit.uploadSuccess'));
+          if (skipped > 0) {
+            toast(`${skipped} ${skipped === 1 ? 'duplicata ignorada' : 'duplicatas ignoradas'} (já na biblioteca)`);
           }
-          toast.success(t('mockup.mediaKit.uploadSuccess'));
+          if (similar?.similar) {
+            toast.warning(
+              `Muito parecida com "${similar.similar.label || 'um asset existente'}" — adicionada mesmo assim`
+            );
+          }
         }
       } catch (error) {
         console.error('Upload error:', error);

@@ -175,6 +175,25 @@ export const PUBLIC_TABS: PublicTab[] = [
   },
 ];
 
+// ── Tab ↔ URL slug mapping ───────────────────────────────────────────────────
+// Drives the per-tab dynamic route (public: /brand/:slug/<seg>, admin: ?tab=<seg>).
+// `all` (Overview) is the base route — it has no segment. Slugs follow the tab
+// *label* where it differs from the internal id (logos→assets, media→library).
+export const TAB_SLUGS: Record<string, string> = {
+  all: 'overview',
+  identity: 'identity',
+  strategy: 'strategy',
+  colors: 'colors',
+  typography: 'typography',
+  logos: 'assets',
+  media: 'library',
+  preview: 'preview',
+};
+
+export const SLUG_TO_TAB: Record<string, string> = Object.fromEntries(
+  Object.entries(TAB_SLUGS).map(([id, slug]) => [slug, id])
+);
+
 // ── Download utilities ──────────────────────────────────────────────────────
 
 export function downloadBlob(content: string, filename: string, type: string) {

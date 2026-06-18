@@ -62,6 +62,17 @@ import {
   loadAnalysisJob,
   reconcileIfOrphaned,
 } from '../lib/brandAssetAnalysisJobs.js';
+import { fingerprint, findDuplicate, type AssetFingerprint } from '../lib/brand/assetFingerprint.js';
+
+/** Existing assets reshaped for duplicate lookup. */
+function fingerprintIndex(g: { media?: any; logos?: any }) {
+  return [...((g.media as any[]) || []), ...((g.logos as any[]) || [])].map((a) => ({
+    id: a.id,
+    label: a.label,
+    hash: a.hash,
+    phash: a.phash,
+  }));
+}
 import {
   BrandGuidelineSchema,
   BrandGuidelinePatchSchema,
@@ -679,10 +690,33 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       const existingLogos: BrandGuidelineLogo[] = (merged.logos as BrandGuidelineLogo[]) || [];
       const existingMedia: BrandGuidelineMedia[] = (merged.media as BrandGuidelineMedia[]) || [];
 
+      // Dedup ingested images by exact content hash — this is what stops a re-run
+      // of ingest from re-adding the same assets (the bloat we saw). Seeded with
+      // existing hashes; the synchronous add (before the upload await) also blocks
+      // identical images within the same batch.
+      const seenHashes = new Set<string>(
+        [...existingLogos, ...existingMedia]
+          .map((a) => (a as any).hash)
+          .filter((h): h is string => !!h)
+      );
+
       await Promise.allSettled(
         extracted.assetClassifications.map(async (cls) => {
           const imgData = imagesToExtract![cls.index];
           if (!imgData) return;
+
+          let fp: AssetFingerprint | undefined;
+          try {
+            const raw = Buffer.from(String(imgData).replace(/^data:[^;]+;base64,/, ''), 'base64');
+            if (raw.length > 0) fp = await fingerprint(raw);
+          } catch {
+            /* best-effort */
+          }
+          if (fp?.sha256) {
+            if (seenHashes.has(fp.sha256)) return; // exact duplicate — skip upload + add
+            seenHashes.add(fp.sha256);
+          }
+
           const assetId = crypto.randomUUID();
           const ct = imgData.match(/^data:([^;]+);/)?.[1] || 'image/png';
           const storedUrl = await uploadBrandMedia(
@@ -694,6 +728,9 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
             user?.subscriptionTier || undefined,
             user?.isAdmin || undefined
           );
+          const fpFields = fp
+            ? { hash: fp.sha256, size: fp.size, ...(fp.phash ? { phash: fp.phash } : {}) }
+            : {};
 
           if (cls.category === 'logo' || cls.category === 'icon') {
             existingLogos.push({
@@ -702,6 +739,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
               variant: cls.category === 'icon' ? 'icon' : cls.logoVariant || 'custom',
               label: cls.label,
               source: 'upload',
+              ...fpFields,
             } as BrandGuidelineLogo);
           } else {
             existingMedia.push({
@@ -709,6 +747,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
               url: storedUrl,
               type: 'image',
               label: cls.label,
+              ...fpFields,
             } as BrandGuidelineMedia);
           }
         })
@@ -1016,12 +1055,36 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
     const mediaId = crypto.randomUUID();
     let mediaUrl: string;
     let resolvedType: 'image' | 'pdf' = 'image';
+    let fp: AssetFingerprint | undefined;
+    let similarTo: { id: string; label?: string } | undefined;
 
     if (data) {
       // Base64 upload
       const contentType =
         ct || (data.startsWith('data:application/pdf') ? 'application/pdf' : 'image/png');
       resolvedType = contentType.includes('pdf') ? 'pdf' : 'image';
+
+      // Fingerprint for dedup BEFORE uploading — an exact duplicate skips both the
+      // R2 upload and the library add (no storage duplication). A near-duplicate
+      // still uploads but the response warns the client.
+      try {
+        const rawBytes = Buffer.from(String(data).replace(/^data:[^;]+;base64,/, ''), 'base64');
+        if (rawBytes.length > 0) fp = await fingerprint(rawBytes);
+      } catch {
+        /* fingerprint is best-effort */
+      }
+      if (fp) {
+        const dup = findDuplicate(fp, fingerprintIndex(guideline));
+        if (dup?.kind === 'exact') {
+          return res.status(200).json({
+            duplicate: 'exact',
+            existing: dup.asset,
+            skipped: true,
+            allMedia: (guideline.media as any[]) || [],
+          });
+        }
+        if (dup?.kind === 'similar') similarTo = dup.asset;
+      }
 
       const user = await prisma.user.findUnique({
         where: { id: req.userId },
@@ -1045,7 +1108,13 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
       return res.status(400).json({ error: 'Either data (base64) or url is required' });
     }
 
-    const newMedia: BrandGuidelineMedia = { id: mediaId, url: mediaUrl, type: resolvedType, label };
+    const newMedia: BrandGuidelineMedia = {
+      id: mediaId,
+      url: mediaUrl,
+      type: resolvedType,
+      label,
+      ...(fp ? { hash: fp.sha256, size: fp.size, ...(fp.phash ? { phash: fp.phash } : {}) } : {}),
+    };
     const existingMedia = (guideline.media as unknown as BrandGuidelineMedia[] | null) || [];
     const updatedMedia = [...existingMedia, newMedia];
 
@@ -1062,6 +1131,7 @@ router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest,
     res.status(201).json({
       media: newMedia,
       allMedia: updatedMedia,
+      ...(similarTo ? { similar: similarTo } : {}),
       guideline: { ...updated, _id: updated.id },
     });
   } catch (error: any) {
@@ -1403,6 +1473,7 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
     });
 
     // Primary media (uploaded file or explicit URL)
+    let fp: AssetFingerprint | undefined;
     if (data) {
       const ct = data.startsWith('data:image/svg')
         ? 'image/svg+xml'
@@ -1411,6 +1482,27 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
           : data.startsWith('data:image/jpeg')
             ? 'image/jpeg'
             : 'image/png';
+
+      // Exact-dedup only for logos (dark/light variants are intentionally similar,
+      // so near-dup phash matching would create false positives here).
+      try {
+        const rawBytes = Buffer.from(String(data).replace(/^data:[^;]+;base64,/, ''), 'base64');
+        if (rawBytes.length > 0) fp = await fingerprint(rawBytes);
+      } catch {
+        /* best-effort */
+      }
+      if (fp) {
+        const dup = findDuplicate(fp, fingerprintIndex(guideline));
+        if (dup?.kind === 'exact') {
+          return res.status(200).json({
+            duplicate: 'exact',
+            existing: dup.asset,
+            skipped: true,
+            allLogos: (guideline.logos as any[]) || [],
+          });
+        }
+      }
+
       logoUrl = await uploadBrandMedia(
         data,
         req.userId,
@@ -1458,6 +1550,7 @@ router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest,
       ...(figmaKey ? { figmaKey } : {}),
       ...(figmaNodeId ? { figmaNodeId } : {}),
       ...(figmaFileKey ? { figmaFileKey } : {}),
+      ...(fp ? { hash: fp.sha256, size: fp.size, ...(fp.phash ? { phash: fp.phash } : {}) } : {}),
     } as BrandGuidelineLogo;
     const existingLogos = (guideline.logos as unknown as BrandGuidelineLogo[] | null) || [];
     const updatedLogos = [...existingLogos, newLogo];

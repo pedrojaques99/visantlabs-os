@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { SEO } from '@/components/SEO';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -26,6 +26,7 @@ import {
   Check,
   ShieldCheck,
   MoreHorizontal,
+  Menu,
   FileInput,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -39,7 +40,13 @@ import {
   type BrandViewSection,
 } from '@/components/brand/BrandReadOnlyView';
 import { BrandSectionNav } from '@/components/brand/BrandSectionNav';
-import { PUBLIC_TABS, downloadBlob, safeFileName } from '@/components/brand/brand-shared-config';
+import {
+  PUBLIC_TABS,
+  TAB_SLUGS,
+  SLUG_TO_TAB,
+  downloadBlob,
+  safeFileName,
+} from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
 import { BrandOverviewBento } from '@/components/brand/guidelines/preview/BrandOverviewBento';
 import { BrandPreviewGallery } from '@/components/brand/guidelines/preview/BrandPreviewGallery';
@@ -125,14 +132,20 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   onBack,
 }) => {
   const { t } = useTranslation();
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, tab: tabParam } = useParams<{ slug: string; tab?: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+  // Tab is URL-driven: public uses the path segment (/brand/:slug/<seg>), admin
+  // uses a ?tab=<seg> query param (consistent with admin's existing ?id=).
+  const tabSlugFromUrl = idOverride ? searchParams.get('tab') : tabParam;
+  const [activeTab, setActiveTab] = useState(
+    () => (tabSlugFromUrl && SLUG_TO_TAB[tabSlugFromUrl]) || 'all'
+  );
   // Nav collapses from top-bar → sidebar once the hero scrolls out of view.
   const [navCollapsed, setNavCollapsed] = useState(false);
   const heroSentinelRef = useRef<HTMLDivElement>(null);
@@ -278,12 +291,37 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // tokens — available to anyone viewing the brand once there's enough to draw.
   const hasPreviewData =
     tokens.palette.length > 0 || !!tokens.primaryLogo || !!guideline?.identity?.name;
+  // Preview tab is owner/admin-only (idOverride). Hidden on the public-by-slug view.
   const visibleTabs = useMemo(
-    () => PUBLIC_TABS.filter((tab) => tab.id !== 'preview' || hasPreviewData),
-    [hasPreviewData]
+    () => PUBLIC_TABS.filter((tab) => tab.id !== 'preview' || (!!idOverride && hasPreviewData)),
+    [hasPreviewData, idOverride]
   );
   const currentTab = PUBLIC_TABS.find((t) => t.id === activeTab) || PUBLIC_TABS[0];
   const visibleSections = currentTab.sections;
+
+  // Keep activeTab in sync with the URL (browser back/forward, deep links).
+  useEffect(() => {
+    const fromUrl = idOverride ? searchParams.get('tab') : tabParam;
+    const next = (fromUrl && SLUG_TO_TAB[fromUrl]) || 'all';
+    setActiveTab((prev) => (prev === next ? prev : next));
+  }, [tabParam, searchParams, idOverride]);
+
+  // Switch tab + reflect it in the URL. `all` (Overview) is the base route.
+  const changeTab = useCallback(
+    (id: string) => {
+      setActiveTab(id);
+      const seg = TAB_SLUGS[id] ?? id;
+      if (idOverride) {
+        const next = new URLSearchParams(searchParams);
+        if (id === 'all') next.delete('tab');
+        else next.set('tab', seg);
+        setSearchParams(next);
+      } else if (slug) {
+        navigate(id === 'all' ? `/brand/${slug}` : `/brand/${slug}/${seg}`);
+      }
+    },
+    [idOverride, slug, searchParams, setSearchParams, navigate]
+  );
 
   // Collapse the top nav into the sidebar once the hero sentinel leaves the top.
   useEffect(() => {
@@ -424,60 +462,64 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           toolbarTop
         )}
       >
-        {/* Collaborator avatars — only visible in edit mode (inside room) */}
-        {editMode && (
-          <div className="mr-1">
-            <BrandCollaboratorAvatars />
-          </div>
-        )}
+        {/* Inline action cluster — hidden on mobile (collapses into the hamburger). */}
+        <div className="hidden sm:flex flex-wrap justify-end gap-2 items-center">
+          {/* Collaborator avatars — only visible in edit mode (inside room) */}
+          {editMode && (
+            <div className="mr-1">
+              <BrandCollaboratorAvatars />
+            </div>
+          )}
 
-        {/* Edit-mode primary tools: completeness status, the GENERATE CTA, and Share */}
-        {canEdit && editMode && (
-          <>
-            <BrandCompletenessPill guideline={guideline} />
+          {/* Edit-mode primary tools: completeness status, the GENERATE CTA, and Share */}
+          {canEdit && editMode && (
+            <>
+              <BrandCompletenessPill guideline={guideline} />
+              <Button
+                onClick={() => setIsAiPopulateOpen(true)}
+                variant="ghost"
+                className={cn(
+                  ctrlBtnClass,
+                  // Primary CTA — uses the brand accent so it reads as the main action.
+                  'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.25)]'
+                )}
+              >
+                <Zap size={13} />
+                <span className="hidden sm:inline">Generate</span>
+              </Button>
+              <Button onClick={() => setIsShareOpen(true)} variant="ghost" className={ctrlBtnClass}>
+                <Share2 size={13} />
+                <span className="hidden sm:inline">Share</span>
+              </Button>
+            </>
+          )}
+
+          {/* View / Edit toggle — owners/editors */}
+          {canEdit && (
             <Button
-              onClick={() => setIsAiPopulateOpen(true)}
+              onClick={() => setEditMode((v) => !v)}
               variant="ghost"
               className={cn(
                 ctrlBtnClass,
-                // Primary CTA — uses the brand accent so it reads as the main action.
-                'bg-[var(--accent)] text-[var(--accent-text)] border-transparent hover:bg-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.25)]'
+                editMode && 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
               )}
             >
-              <Zap size={13} />
-              <span className="hidden sm:inline">Generate</span>
+              {editMode ? <Eye size={13} /> : <Pencil size={13} />}
+              <span className="hidden sm:inline">
+                {editMode
+                  ? t('public.brand.guideline.viewing_mode')
+                  : t('public.brand.guideline.edit_mode')}
+              </span>
             </Button>
-            <Button onClick={() => setIsShareOpen(true)} variant="ghost" className={ctrlBtnClass}>
-              <Share2 size={13} />
-              <span className="hidden sm:inline">Share</span>
-            </Button>
-          </>
-        )}
+          )}
+        </div>
 
-        {/* View / Edit toggle — owners/editors */}
-        {canEdit && (
-          <Button
-            onClick={() => setEditMode((v) => !v)}
-            variant="ghost"
-            className={cn(
-              ctrlBtnClass,
-              editMode && 'bg-warning/20 border-warning/40 text-warning hover:bg-warning/30'
-            )}
-          >
-            {editMode ? <Eye size={13} /> : <Pencil size={13} />}
-            <span className="hidden sm:inline">
-              {editMode
-                ? t('public.brand.guideline.viewing_mode')
-                : t('public.brand.guideline.edit_mode')}
-            </span>
-          </Button>
-        )}
-
-        {/* Unified overflow — every secondary action, grouped by intent */}
+        {/* Unified overflow — the single mobile hamburger; ⋯ on larger screens. */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={ctrlBtnClass} aria-label="More actions">
-              <MoreHorizontal size={14} />
+            <Button variant="ghost" className={ctrlBtnClass} aria-label="Menu">
+              <Menu size={16} className="sm:hidden" />
+              <MoreHorizontal size={14} className="hidden sm:block" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -485,6 +527,29 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             style={themeVars}
             className="w-auto min-w-0 p-2 rounded-2xl border border-[var(--brand-text)]/10 bg-[var(--brand-bg)]/70 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.25)] text-[var(--brand-text)]"
           >
+            {/* Mobile-only: primary actions that live inline on ≥sm screens. */}
+            {canEdit && (
+              <div className="sm:hidden">
+                {editMode && (
+                  <>
+                    <Button variant="menuItem" onClick={() => setIsAiPopulateOpen(true)}>
+                      <Zap size={13} /> Generate
+                    </Button>
+                    <Button variant="menuItem" onClick={() => setIsShareOpen(true)}>
+                      <Share2 size={13} /> Share
+                    </Button>
+                  </>
+                )}
+                <Button variant="menuItem" onClick={() => setEditMode((v) => !v)}>
+                  {editMode ? <Eye size={13} /> : <Pencil size={13} />}
+                  {editMode
+                    ? t('public.brand.guideline.viewing_mode')
+                    : t('public.brand.guideline.edit_mode')}
+                </Button>
+                <DropdownMenuSeparator />
+              </div>
+            )}
+
             {/* Import / Create — edit mode only */}
             {canEdit && editMode && (
               <>
@@ -582,7 +647,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   aria-label={label}
                   aria-pressed={theme === k}
                   className={cn(
-                    'w-7 h-7 rounded-lg flex items-center justify-center transition-colors',
+                    'w-9 h-9 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center transition-colors',
                     theme === k
                       ? 'bg-[var(--accent)] text-[var(--accent-text)]'
                       : 'opacity-50 hover:opacity-100 hover:bg-[var(--brand-text)]/10'
@@ -633,7 +698,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               </MicroTitle>
               <InlineEditable
                 as="h1"
-                className="text-6xl md:text-8xl font-black font-manrope tracking-tight leading-[0.9]"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-manrope tracking-tight leading-[0.95] sm:leading-[0.9] break-words max-w-full"
                 value={guideline.identity?.name || ''}
                 editable={canEdit && editMode}
                 placeholder="Brand name"
@@ -653,7 +718,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           tabs={visibleTabs}
           activeTab={activeTab}
           onTabChange={(id) => {
-            setActiveTab(id);
+            changeTab(id);
             if (navCollapsed) window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           searchTerm={searchTerm}
@@ -671,7 +736,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         {activeTab === 'preview' ? (
           hasPreviewData && <BrandPreviewGallery tokens={tokens} brandName={brandName} />
         ) : activeTab === 'all' && !(canEdit && editMode) ? (
-          <BrandOverviewBento guideline={guideline} tokens={tokens} onOpenTab={setActiveTab} />
+          <BrandOverviewBento guideline={guideline} tokens={tokens} onOpenTab={changeTab} />
         ) : (
           <BrandReadOnlyView
             guideline={guideline}

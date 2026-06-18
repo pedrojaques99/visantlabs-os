@@ -4,6 +4,7 @@ import { inferGender, brandImageryHint } from '../personaPhotos.js';
 import { aggregateVisualSignature, hasSignature } from '../visualSignature.js';
 import { assetVectorId, isVectorSearchConfigured } from '../assetVectors.js';
 import { createAnalysisJob } from '../../brandAssetAnalysisJobs.js';
+import { sha256Of, hamming, findDuplicate, NEAR_DUP_THRESHOLD } from '../assetFingerprint.js';
 
 describe('colorUsage helpers', () => {
   it('parses 6- and 3-digit hex (with/without #)', () => {
@@ -116,6 +117,35 @@ describe('assetVectors helpers', () => {
     if (orig.a) process.env.PINECONE_API_KEY = orig.a;
     else delete process.env.PINECONE_API_KEY;
     if (orig.b) process.env.PINECONE_KEY = orig.b;
+  });
+});
+
+describe('assetFingerprint dedup', () => {
+  it('sha256Of is deterministic and content-sensitive', () => {
+    const a = sha256Of(Buffer.from('hello'));
+    expect(a).toBe(sha256Of(Buffer.from('hello')));
+    expect(a).not.toBe(sha256Of(Buffer.from('hellp')));
+  });
+
+  it('hamming: 0 for identical, counts bit diffs, 64 for mismatched length', () => {
+    expect(hamming('ffffffffffffffff', 'ffffffffffffffff')).toBe(0);
+    expect(hamming('0000000000000000', '0000000000000001')).toBe(1);
+    expect(hamming('00ff', '00ffffffffffffff')).toBe(64); // length mismatch
+  });
+
+  it('findDuplicate: exact by hash, near by phash, null when new', () => {
+    const existing = [
+      { id: 'a', label: 'Key Visual', hash: 'abc', phash: '0000000000000000' },
+      { id: 'b', label: 'Logo', hash: 'def', phash: 'ffffffffffffffff' },
+    ];
+    // exact hash match wins
+    expect(findDuplicate({ sha256: 'abc', size: 1 }, existing)).toMatchObject({ kind: 'exact' });
+    // near phash within threshold (1 bit off 'a')
+    const near = findDuplicate({ sha256: 'zzz', size: 1, phash: '0000000000000001' }, existing);
+    expect(near).toMatchObject({ kind: 'similar', asset: { id: 'a' } });
+    // brand-new asset
+    expect(findDuplicate({ sha256: 'zzz', size: 1, phash: '0f0f0f0f0f0f0f0f' }, existing)).toBeNull();
+    expect(NEAR_DUP_THRESHOLD).toBeGreaterThan(0);
   });
 });
 
