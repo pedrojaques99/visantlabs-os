@@ -690,10 +690,33 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       const existingLogos: BrandGuidelineLogo[] = (merged.logos as BrandGuidelineLogo[]) || [];
       const existingMedia: BrandGuidelineMedia[] = (merged.media as BrandGuidelineMedia[]) || [];
 
+      // Dedup ingested images by exact content hash — this is what stops a re-run
+      // of ingest from re-adding the same assets (the bloat we saw). Seeded with
+      // existing hashes; the synchronous add (before the upload await) also blocks
+      // identical images within the same batch.
+      const seenHashes = new Set<string>(
+        [...existingLogos, ...existingMedia]
+          .map((a) => (a as any).hash)
+          .filter((h): h is string => !!h)
+      );
+
       await Promise.allSettled(
         extracted.assetClassifications.map(async (cls) => {
           const imgData = imagesToExtract![cls.index];
           if (!imgData) return;
+
+          let fp: AssetFingerprint | undefined;
+          try {
+            const raw = Buffer.from(String(imgData).replace(/^data:[^;]+;base64,/, ''), 'base64');
+            if (raw.length > 0) fp = await fingerprint(raw);
+          } catch {
+            /* best-effort */
+          }
+          if (fp?.sha256) {
+            if (seenHashes.has(fp.sha256)) return; // exact duplicate — skip upload + add
+            seenHashes.add(fp.sha256);
+          }
+
           const assetId = crypto.randomUUID();
           const ct = imgData.match(/^data:([^;]+);/)?.[1] || 'image/png';
           const storedUrl = await uploadBrandMedia(
@@ -705,6 +728,9 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
             user?.subscriptionTier || undefined,
             user?.isAdmin || undefined
           );
+          const fpFields = fp
+            ? { hash: fp.sha256, size: fp.size, ...(fp.phash ? { phash: fp.phash } : {}) }
+            : {};
 
           if (cls.category === 'logo' || cls.category === 'icon') {
             existingLogos.push({
@@ -713,6 +739,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
               variant: cls.category === 'icon' ? 'icon' : cls.logoVariant || 'custom',
               label: cls.label,
               source: 'upload',
+              ...fpFields,
             } as BrandGuidelineLogo);
           } else {
             existingMedia.push({
@@ -720,6 +747,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
               url: storedUrl,
               type: 'image',
               label: cls.label,
+              ...fpFields,
             } as BrandGuidelineMedia);
           }
         })
