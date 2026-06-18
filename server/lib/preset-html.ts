@@ -265,3 +265,187 @@ export function obraDeArteHtml(
 </div>`;
   return DOC(W, H, fontCss, body, vars);
 }
+
+/* ─────────────────────────  Landscape deck slides (1920×1080)  ───────────────────────── */
+
+export interface SlideCoverContent {
+  /** caption under the logo, e.g. "APRESENTAÇÃO DE LOGOTIPOS & SUBMARCAS" */
+  subtitle?: string;
+  /** small footer line, e.g. "VISANT® // 2026" */
+  footer?: string;
+  /** right-side boxed agenda/nav list */
+  nav?: string[];
+  logoUrl?: string;
+}
+
+/** Slide/Cover (1920×1080) — deck opener: brand logo lockup + caption + footer,
+ * with a bordered nav/agenda list anchored bottom-right. */
+export function slideCoverHtml(
+  vars: PresetVars,
+  content: SlideCoverContent,
+  fontCss: string
+): string {
+  const W = 1920,
+    H = 1080,
+    PAD = 130;
+  const logo = content.logoUrl ? `<img class="logo" src="${esc(content.logoUrl)}" alt="">` : '';
+  const subtitle = content.subtitle ? `<p class="sub">${esc(content.subtitle)}</p>` : '';
+  const footer = content.footer ? `<p class="foot">${esc(content.footer)}</p>` : '';
+  const nav = content.nav?.length
+    ? `<div class="nav">${content.nav.map((n) => `<span>→ ${esc(n)}</span>`).join('')}</div>`
+    : '';
+
+  const body = `<div class="frame">
+  ${logo}
+  ${subtitle}
+  ${footer}
+  ${nav}
+  <style>
+    .logo{position:absolute;left:${PAD}px;top:430px;height:96px;width:auto;object-fit:contain;object-position:left}
+    .sub{position:absolute;left:${PAD}px;bottom:220px;width:620px;font-size:26px;line-height:1.45;
+      letter-spacing:0.06em;text-transform:uppercase;color:${vars.text};opacity:.6}
+    .foot{position:absolute;left:${PAD}px;bottom:150px;font-size:24px;letter-spacing:0.06em;
+      color:${vars.text};opacity:.45}
+    .nav{position:absolute;right:${PAD}px;bottom:200px;display:flex;flex-direction:column;gap:14px;
+      padding:34px 44px;border:1px solid ${vars.text}33;border-radius:${vars.radius}px}
+    .nav span{font-size:24px;letter-spacing:0.08em;text-transform:uppercase;color:${vars.text};opacity:.75}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
+
+export interface SlideAgendaContent {
+  h1: string;
+  /** numbered agenda items */
+  infos?: string[];
+  photoUrl?: string;
+}
+
+/** Slide/Agenda (1920×1080) — oversized headline + numbered arrow list (left),
+ * supporting photo (right). */
+export function slideAgendaHtml(
+  vars: PresetVars,
+  content: SlideAgendaContent,
+  fontCss: string
+): string {
+  const W = 1920,
+    H = 1080,
+    PAD = 120;
+  const photo = content.photoUrl ? `<img src="${esc(content.photoUrl)}" alt="">` : '';
+  const items = content.infos?.length
+    ? `<ol class="list">${content.infos
+        .map((it, i) => `<li><span class="n">${i + 1}</span><span class="ar">→</span>${esc(it)}</li>`)
+        .join('')}</ol>`
+    : '';
+
+  const body = `<div class="frame">
+  <h1 class="h1">${esc(content.h1)}</h1>
+  ${items}
+  <div class="photo">${photo}</div>
+  <style>
+    .h1{position:absolute;left:${PAD}px;top:150px;width:820px;
+      font-family:'${vars.headingFont}',serif;font-weight:600;font-size:118px;line-height:0.95;
+      letter-spacing:-0.03em;color:${vars.heading};text-transform:uppercase}
+    .list{position:absolute;left:${PAD}px;bottom:160px;list-style:none;display:flex;flex-direction:column;gap:14px}
+    .list li{font-size:26px;color:${vars.text};opacity:.85;display:flex;align-items:center;gap:16px}
+    .list .n{width:30px;color:${vars.text};opacity:.5}
+    .list .ar{color:${vars.accent}}
+    .photo{position:absolute;right:${PAD}px;top:250px;width:720px;height:580px;
+      border-radius:${vars.radius}px;background:${vars.surface};overflow:hidden}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
+
+export interface SlideSectionContent {
+  h1: string;
+  body?: string;
+  photoUrl?: string;
+}
+
+/** Slide/Section (1920×1080) — workhorse content slide: tracked eyebrow title +
+ * body paragraph + accent arrow (left), supporting image (right). */
+export function slideSectionHtml(
+  vars: PresetVars,
+  content: SlideSectionContent,
+  fontCss: string
+): string {
+  const W = 1920,
+    H = 1080,
+    PAD = 130;
+  const photo = content.photoUrl ? `<img src="${esc(content.photoUrl)}" alt="">` : '';
+  const para = content.body ? `<p class="body">${esc(content.body)}</p>` : '';
+
+  const body = `<div class="frame">
+  <h1 class="h1">${esc(content.h1)}</h1>
+  ${para}
+  <div class="arrow">→</div>
+  <div class="photo">${photo}</div>
+  <style>
+    .h1{position:absolute;left:${PAD}px;top:400px;width:560px;
+      font-family:'${vars.headingFont}',serif;font-weight:600;font-size:50px;line-height:1.1;
+      letter-spacing:0.12em;text-transform:uppercase;color:${vars.heading}}
+    .body{position:absolute;left:${PAD}px;top:510px;width:520px;font-size:25px;line-height:1.5;
+      color:${vars.text};opacity:.7}
+    .arrow{position:absolute;left:${PAD}px;top:720px;font-size:40px;color:${vars.accent}}
+    .photo{position:absolute;right:${PAD}px;top:260px;width:760px;height:560px;
+      border-radius:${vars.radius}px;background:${vars.surface};overflow:hidden}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}
+
+export interface SlideStepsContent {
+  h1: string;
+  body?: string;
+  /** each step is "Title — caption" (the em-dash splits title from caption) */
+  steps?: string[];
+}
+
+/** Slide/Steps (1920×1080) — process slide: title + intro body (top) + a row of
+ * numbered steps (bottom). Each step string splits on " — " into title · caption. */
+export function slideStepsHtml(
+  vars: PresetVars,
+  content: SlideStepsContent,
+  fontCss: string
+): string {
+  const W = 1920,
+    H = 1080,
+    PAD = 120;
+  const para = content.body ? `<p class="body">${esc(content.body)}</p>` : '';
+  const steps = content.steps?.length
+    ? `<div class="steps">${content.steps
+        .map((s, i) => {
+          const [title, ...rest] = s.split(' — ');
+          const cap = rest.join(' — ');
+          return `<div class="step">
+            <span class="num">${i + 1}</span>
+            <p class="st">${esc(title)}</p>
+            ${cap ? `<p class="sc">${esc(cap)}</p>` : ''}
+          </div>`;
+        })
+        .join('')}</div>`
+    : '';
+
+  const body = `<div class="frame">
+  <h1 class="h1">${esc(content.h1)}</h1>
+  ${para}
+  ${steps}
+  <style>
+    .h1{position:absolute;left:${PAD}px;top:300px;width:640px;
+      font-family:'${vars.headingFont}',serif;font-weight:600;font-size:66px;line-height:1.0;
+      letter-spacing:-0.02em;color:${vars.heading}}
+    .body{position:absolute;left:1140px;top:310px;width:660px;font-size:25px;line-height:1.5;
+      color:${vars.text};opacity:.7}
+    .steps{position:absolute;left:${PAD}px;right:${PAD}px;top:640px;display:flex;gap:36px}
+    .step{flex:1}
+    .num{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:999px;
+      border:1px solid ${vars.accent};color:${vars.accent};font-size:22px;margin-bottom:20px}
+    .st{font-size:24px;font-weight:600;color:${vars.heading};margin-bottom:10px}
+    .sc{font-size:20px;line-height:1.45;color:${vars.text};opacity:.6}
+  </style>
+</div>`;
+  return DOC(W, H, fontCss, body, vars);
+}

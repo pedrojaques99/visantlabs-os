@@ -10,6 +10,10 @@ import {
   obraDeArteHtml,
   editorialHeroHtml,
   editorialManifestoHtml,
+  slideCoverHtml,
+  slideAgendaHtml,
+  slideSectionHtml,
+  slideStepsHtml,
   type PresetVars,
 } from './preset-html.js';
 import type { ImageSlotSpec } from './figma-asset-resolver.js';
@@ -112,6 +116,76 @@ export const WEB_PRESETS: Record<string, WebPreset> = {
           infos: asList(text.infos),
           body: text.body ? asStr(text.body) : undefined,
           photoUrl: images.photo1?.imageUrl,
+        },
+        fontCss
+      ),
+  },
+
+  // ── Landscape deck slides (1920×1080) ──
+  'slide/cover': {
+    id: 'Slide/Cover',
+    width: 1920,
+    height: 1080,
+    imageSlots: [{ id: 'logo' }],
+    build: (vars, text, images, fontCss) =>
+      slideCoverHtml(
+        vars,
+        {
+          subtitle: text.subtitle ? asStr(text.subtitle) : undefined,
+          footer: text.footer ? asStr(text.footer) : undefined,
+          nav: asList(text.nav),
+          logoUrl: images.logo?.imageUrl,
+        },
+        fontCss
+      ),
+  },
+
+  'slide/agenda': {
+    id: 'Slide/Agenda',
+    width: 1920,
+    height: 1080,
+    imageSlots: [{ id: 'photo1' }],
+    build: (vars, text, images, fontCss) =>
+      slideAgendaHtml(
+        vars,
+        {
+          h1: asStr(text.h1),
+          infos: asList(text.infos),
+          photoUrl: images.photo1?.imageUrl,
+        },
+        fontCss
+      ),
+  },
+
+  'slide/section': {
+    id: 'Slide/Section',
+    width: 1920,
+    height: 1080,
+    imageSlots: [{ id: 'photo1' }],
+    build: (vars, text, images, fontCss) =>
+      slideSectionHtml(
+        vars,
+        {
+          h1: asStr(text.h1),
+          body: text.body ? asStr(text.body) : undefined,
+          photoUrl: images.photo1?.imageUrl,
+        },
+        fontCss
+      ),
+  },
+
+  'slide/steps': {
+    id: 'Slide/Steps',
+    width: 1920,
+    height: 1080,
+    imageSlots: [],
+    build: (vars, text, images, fontCss) =>
+      slideStepsHtml(
+        vars,
+        {
+          h1: asStr(text.h1),
+          body: text.body ? asStr(text.body) : undefined,
+          steps: asList(text.steps),
         },
         fontCss
       ),
