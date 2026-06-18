@@ -783,11 +783,15 @@ export const brandGuidelineApi = {
   },
 };
 
+export type BrandSuggestionKind = 'mockup' | 'social' | 'campaign' | 'video' | 'budget' | 'naming';
+
 export interface BrandSuggestion {
   title: string;
   rationale: string;
+  /** For 'mockup': an image-gen scene prompt (inline). Otherwise: a ready-to-run
+   *  instruction for the brand's connected AI assistant. */
   prompt: string;
-  kind: 'mockup' | 'social' | 'print';
+  kind: BrandSuggestionKind;
   aspectRatio: string;
 }
 
