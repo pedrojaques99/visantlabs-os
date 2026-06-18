@@ -57,6 +57,7 @@ import chatRoutes from './routes/chat.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
+import campaignsCrudRoutes from './routes/campaigns-crud.js';
 import contentStudioRoutes from './routes/contentStudio.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
@@ -240,6 +241,8 @@ export function createApp() {
         'Accept',
         'MCP-Session-Id',
         'MCP-Protocol-Version',
+        // Studio 3D video export streams frames with a chunk-offset header.
+        'X-Frame-Start',
       ],
       exposedHeaders: ['MCP-Session-Id'],
     })
@@ -340,6 +343,7 @@ export function createApp() {
     ['/pdf', pdfRoutes],
     ['/creative', creativeRoutes],
     ['/creative-projects', creativeProjectsRoutes],
+    ['/campaigns', campaignsCrudRoutes],
     ['/docs', docsRoutes],
     ['/surprise-me', surpriseMeRoutes],
     ['/brand-intelligence', brandIntelligenceRoutes],

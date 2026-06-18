@@ -6,6 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { Download } from 'lucide-react';
 import { ToolPanel, ToolPanelContent } from '@/components/shared/ToolPanel';
+import { EssentialsTab } from './panels/EssentialsTab';
 import { SceneTab } from './panels/SceneTab';
 import { LookTab } from './panels/LookTab';
 import { CameraTab } from './panels/CameraTab';
@@ -13,6 +14,7 @@ import { AnimationTab } from './panels/AnimationTab';
 import { EffectsTab } from './panels/EffectsTab';
 
 const TABS = [
+  { id: 'essentials', label: 'Basics' },
   { id: 'scene', label: 'Model' },
   { id: 'look', label: 'Object' },
   { id: 'camera', label: 'Scene' },
@@ -32,7 +34,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
   ({ onExport, getCanvasPng }) => {
     const { t } = useTranslation();
     const isMobile = useIsMobile();
-    const [activeTab, setActiveTab] = useState<TabId>('scene');
+    const [activeTab, setActiveTab] = useState<TabId>('essentials');
 
     return (
       <ToolPanel>
@@ -57,6 +59,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
 
         {/* Tab content */}
         <ToolPanelContent>
+          {activeTab === 'essentials' && <EssentialsTab />}
           {activeTab === 'scene' && <SceneTab />}
           {activeTab === 'look' && <LookTab />}
           {activeTab === 'camera' && <CameraTab />}

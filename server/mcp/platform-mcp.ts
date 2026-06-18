@@ -4057,6 +4057,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .optional()
         .describe('Project display name. Defaults to "Untitled Creative".'),
       brandId: z.string().nullable().optional().describe('Brand guideline ID to associate.'),
+      campaignId: z
+        .string()
+        .nullable()
+        .optional()
+        .describe('Campaign ID to link this creative to (groups creatives under a campaign).'),
       backgroundUrl: z.string().nullable().optional().describe('Background image URL.'),
       overlay: z
         .record(z.string(), z.any())
@@ -4066,7 +4071,17 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       thumbnailUrl: z.string().nullable().optional().describe('Thumbnail image URL.'),
     },
     { title: 'Create Creative Project', destructiveHint: false },
-    async ({ prompt, format, layers, name, brandId, backgroundUrl, overlay, thumbnailUrl }) => {
+    async ({
+      prompt,
+      format,
+      layers,
+      name,
+      brandId,
+      campaignId,
+      backgroundUrl,
+      overlay,
+      thumbnailUrl,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -4079,6 +4094,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             layers,
             name,
             brandId,
+            campaignId,
             backgroundUrl,
             overlay,
             thumbnailUrl,
@@ -5484,6 +5500,59 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       if (!currentUserId) return ERR.auth();
       try {
         const res = await fetch(`${INTERNAL_API_BASE}/api/canvas/generate-campaign/${jobId}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ─── Campaign: List persisted campaigns (brand-scoped) ─────────────────────
+  server.tool(
+    'campaign-list',
+    'List persisted campaigns owned by the authenticated user. Campaigns survive the 2h job TTL. Filter by brandGuidelineId to see all campaigns for one brand.',
+    {
+      brandId: z
+        .string()
+        .optional()
+        .describe('Brand guideline ID to filter campaigns by (brand cockpit view).'),
+      limit: z.number().int().min(1).max(200).default(60).describe('Max items to return.'),
+    },
+    { title: 'List Campaigns', readOnlyHint: true },
+    async ({ brandId, limit }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const qs = new URLSearchParams();
+        if (brandId) qs.set('brandId', brandId);
+        if (limit) qs.set('limit', String(limit));
+        const res = await fetch(`${INTERNAL_API_BASE}/api/campaigns?${qs.toString()}`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // ─── Campaign: Get one persisted campaign (with results) ───────────────────
+  server.tool(
+    'campaign-get',
+    'Get a single persisted campaign by id, including its full results (generated ad image URLs per format/angle).',
+    {
+      id: z.string().describe('Campaign id returned by campaign-generate or campaign-list.'),
+    },
+    { title: 'Get Campaign', readOnlyHint: true },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/campaigns/${id}`, {
           headers: { 'x-mcp-user-id': currentUserId },
         });
         if (!res.ok) return ERR.internal(await res.text());

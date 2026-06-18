@@ -17,7 +17,7 @@ interface BrandLogoPickerModalProps {
   onClose: () => void;
   guidelines: BrandGuideline[];
   isLoading: boolean;
-  onSelectLogo: (logoUrl: string, fileName: string) => void;
+  onSelectLogo: (logoUrl: string, fileName: string, guidelineId?: string) => void;
 }
 
 export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
@@ -51,7 +51,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
     const ext = (logo.url ?? '').split('.').pop()?.split('?')[0] || 'svg';
     const name =
       logo.label || `${selectedGuideline?.identity?.name || 'brand'}-${logo.variant}.${ext}`;
-    onSelectLogo(logo.url, name);
+    onSelectLogo(logo.url, name, selectedGuideline?.id);
     handleClose();
   };
 

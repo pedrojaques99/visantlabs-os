@@ -99,6 +99,11 @@ const BrandInteractivePanel = lazyWithRetry(() =>
     default: m.BrandInteractivePanel,
   }))
 );
+const BrandCreateShowcase = lazyWithRetry(() =>
+  import('@/components/brand/BrandCreateShowcase').then((m) => ({
+    default: m.BrandCreateShowcase,
+  }))
+);
 const ShareGuidelineDialog = lazyWithRetry(() =>
   import('@/components/brand/guidelines/ShareGuidelineDialog').then((m) => ({
     default: m.ShareGuidelineDialog,
@@ -748,6 +753,14 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 setIsMockupOpen(true);
               }}
             />
+          </React.Suspense>
+        )}
+
+        {/* Owner-only "Create" showcase — invites the owner to put this brand to
+            work across the apps, deep-linking pre-scoped to the brand. */}
+        {canEdit && activeTab === 'all' && guideline.id && (
+          <React.Suspense fallback={null}>
+            <BrandCreateShowcase brandId={guideline.id} />
           </React.Suspense>
         )}
 
