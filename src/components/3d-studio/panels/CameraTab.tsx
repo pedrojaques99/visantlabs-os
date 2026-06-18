@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { toast } from 'sonner';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
+import { Select, type SelectOption } from '@/components/ui/select';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
@@ -98,6 +99,31 @@ const cameraPanelSelector = (s: StoreState) => ({
   setShowGrid: s.setShowGrid,
 });
 
+// Static Select option lists derived from the existing store source-of-truth
+// arrays/records, so the picker stays in sync with the engine.
+const LIGHTING_PRESET_OPTIONS: SelectOption[] = Object.keys(LIGHTING_PRESETS).map((name) => ({
+  value: name,
+  label: LIGHTING_PRESETS[name].label,
+}));
+const ENVIRONMENT_OPTIONS: SelectOption[] = ENVIRONMENT_PRESETS.map((env) => ({
+  value: env.id,
+  label: env.label,
+}));
+const TONE_MAPPING_SELECT_OPTIONS: SelectOption[] = TONE_MAPPING_OPTIONS.map((tm) => ({
+  value: tm.id,
+  label: tm.label,
+}));
+const RENDER_QUALITY_OPTIONS: SelectOption[] = [
+  { value: 'performance', label: 'Performance' },
+  { value: 'balanced', label: 'Balanced' },
+  { value: 'quality', label: 'Quality' },
+];
+const SHADOW_QUALITY_OPTIONS: SelectOption[] = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+];
+
 export const CameraTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const store = useStudio3DStore(useShallow(cameraPanelSelector));
@@ -149,7 +175,7 @@ export const CameraTab: React.FC = React.memo(() => {
 
   return (
     <>
-      {/* Camera Views */}
+      {/* Camera Views — spatial quick-toggles kept as chips */}
       <ToolPanelDisclosure label={t('studio3d.camera.title')} defaultOpen>
         <ToolPanelGrid cols={3}>
           {(['front', 'top', 'right', 'back', 'iso'] as const).map((view) => (
@@ -185,15 +211,15 @@ export const CameraTab: React.FC = React.memo(() => {
         )}
       </ToolPanelDisclosure>
 
-      {/* Lighting */}
+      {/* Lighting — preset picker + intensities */}
       <ToolPanelDisclosure label={t('studio3d.lighting.title')} defaultOpen>
-        <ToolPanelGrid cols={3}>
-          {Object.keys(LIGHTING_PRESETS).map((name) => (
-            <ToolPanelChip key={name} onClick={() => store.applyLightingPreset(name)}>
-              {LIGHTING_PRESETS[name].label}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">Preset</span>
+        <Select
+          options={LIGHTING_PRESET_OPTIONS}
+          value=""
+          placeholder="Select preset…"
+          onChange={(v) => store.applyLightingPreset(v)}
+        />
         <div className="grid grid-cols-2 gap-1.5">
           <ScrubInput
             label="Key"
@@ -238,46 +264,14 @@ export const CameraTab: React.FC = React.memo(() => {
         />
       </ToolPanelDisclosure>
 
-      {/* Light Positions */}
-      <ToolPanelDisclosure
-        label={t('studio3d.panels.lightPositions')}
-        badge={<span className="text-[9px] font-mono text-neutral-600">4 lights</span>}
-      >
-        <LightPositionSliders
-          label="Key Position"
-          position={store.lightPosition}
-          onChange={store.setLightPosition}
-        />
-        <LightPositionSliders
-          label="Fill Position"
-          position={store.fillLightPosition}
-          onChange={store.setFillLightPosition}
-        />
-        <LightPositionSliders
-          label="Bounce Position"
-          position={store.bounceLightPosition}
-          onChange={store.setBounceLightPosition}
-        />
-        <LightPositionSliders
-          label="Top Position"
-          position={store.pointLightPosition}
-          onChange={store.setPointLightPosition}
-        />
-      </ToolPanelDisclosure>
-
-      {/* Rendering & Tone Mapping */}
+      {/* Rendering */}
       <ToolPanelDisclosure label={t('studio3d.panels.rendering')} defaultOpen>
-        <ToolPanelGrid cols={3}>
-          {(['performance', 'balanced', 'quality'] as const).map((q) => (
-            <ToolPanelChip
-              key={q}
-              active={store.renderQuality === q}
-              onClick={() => store.setRenderQuality(q)}
-            >
-              {t(`studio3d.geometry.quality${q.charAt(0).toUpperCase() + q.slice(1)}`)}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">Quality</span>
+        <Select
+          options={RENDER_QUALITY_OPTIONS}
+          value={store.renderQuality}
+          onChange={(v) => store.setRenderQuality(v as 'performance' | 'balanced' | 'quality')}
+        />
         <ScrubInput
           label="Exposure"
           value={toneMappingExposure}
@@ -287,131 +281,21 @@ export const CameraTab: React.FC = React.memo(() => {
           onChange={setToneMappingExposure}
           hint="Scene brightness — adjust to match your lighting"
         />
-        <ToolPanelGrid cols={3}>
-          {TONE_MAPPING_OPTIONS.map((tm) => (
-            <ToolPanelChip
-              key={tm.id}
-              active={store.toneMapping === tm.id}
-              onClick={() => store.setToneMapping(tm.id)}
-            >
-              {tm.label}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
       </ToolPanelDisclosure>
 
-      {/* Environment / HDRI — flattened to single disclosure */}
-      <ToolPanelDisclosure
-        label="HDRI"
-        badge={
-          <span className="text-[9px] font-mono text-neutral-500">
-            {store.customHdriUrl ? 'custom' : store.environment}
-          </span>
-        }
-      >
-        <ToolPanelGrid cols={3}>
-          {ENVIRONMENT_PRESETS.map((env) => (
-            <ToolPanelChip
-              key={env.id}
-              active={store.environment === env.id && !store.customHdriUrl}
-              onClick={() => store.setEnvironment(env.id)}
-            >
-              {env.label}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
-        <button
-          onClick={() => hdriInputRef.current?.click()}
-          className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
-        >
-          {store.customHdriUrl
-            ? t('studio3d.environment.customLoaded')
-            : t('studio3d.environment.uploadHdr')}
-        </button>
-        <input
-          ref={hdriInputRef}
-          type="file"
-          accept=".hdr,.exr"
-          aria-label="Upload custom HDRI"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              const maxSizeMB = 50;
-              if (file.size > maxSizeMB * 1024 * 1024) {
-                toast.error(
-                  `HDRI too large (${(file.size / 1024 / 1024).toFixed(0)}MB). Max ${maxSizeMB}MB.`
-                );
-                e.target.value = '';
-                return;
-              }
-              toast.loading('Loading HDRI...', { id: 'hdri-load', duration: 5000 });
-              const url = URL.createObjectURL(file);
-              store.setCustomHdriUrl(url);
-              toast.success('HDRI loaded', { id: 'hdri-load' });
-            }
-            e.target.value = '';
-          }}
-          className="hidden"
-        />
-        <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
-          <Switch
-            checked={store.hdriBackground}
-            onCheckedChange={store.setHdriBackground}
-            aria-label="HDRI as background"
-          />
-        </ToolPanelRow>
-        <ScrubInput
-          label="Rotation"
-          value={hdriRotation}
-          min={0}
-          max={360}
-          step={1}
-          suffix="°"
-          onChange={setHdriRotation}
-        />
-        {store.hdriBackground && (
-          <div className="grid grid-cols-2 gap-1.5">
-            <ScrubInput
-              label="Blur"
-              value={hdriBlur}
-              min={0}
-              max={1}
-              step={0.01}
-              onChange={setHdriBlur}
-            />
-            <ScrubInput
-              label="Intensity"
-              value={hdriIntensity}
-              min={0}
-              max={3}
-              step={0.05}
-              onChange={setHdriIntensity}
-            />
-          </div>
-        )}
-        {store.customHdriUrl && (
-          <button
-            onClick={() => store.setEnvironment('studio')}
-            className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
-          >
-            {t('studio3d.environment.removeCustom')}
-          </button>
-        )}
-      </ToolPanelDisclosure>
-
-      {/* Background — promoted to top-level for quick access */}
+      {/* Background */}
       <ToolPanelDisclosure label={t('studio3d.background.title')} defaultOpen>
-        <ToolPanelGrid cols={4}>
-          {(['solid', 'linear', 'radial', 'image'] as const).map((type) => (
-            <ToolPanelChip
-              key={type}
-              active={store.bgType === type}
-              onClick={() => store.setBgType(type)}
-            >
-              {type === 'image' ? 'Image' : t(`studio3d.background.types.${type}`)}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">Type</span>
+        <Select
+          options={[
+            { value: 'solid', label: t('studio3d.background.types.solid') },
+            { value: 'linear', label: t('studio3d.background.types.linear') },
+            { value: 'radial', label: t('studio3d.background.types.radial') },
+            { value: 'image', label: 'Image' },
+          ]}
+          value={store.bgType}
+          onChange={(v) => store.setBgType(v as 'solid' | 'linear' | 'radial' | 'image')}
+        />
         {store.bgType === 'solid' ? (
           <ExpandableColorPicker
             color={store.background}
@@ -504,7 +388,7 @@ export const CameraTab: React.FC = React.memo(() => {
         </ToolPanelRow>
       </ToolPanelDisclosure>
 
-      {/* Atmosphere */}
+      {/* Atmosphere / Fog */}
       <ToolPanelDisclosure label={t('studio3d.panels.atmosphere')}>
         <ToolPanelRow label={t('studio3d.panels.fog')}>
           <Switch
@@ -542,23 +426,22 @@ export const CameraTab: React.FC = React.memo(() => {
         )}
       </ToolPanelDisclosure>
 
-      {/* Scene Options */}
+      {/* Scene Options — essential toggles */}
       <ToolPanelDisclosure label={t('studio3d.panels.sceneOptions')} defaultOpen>
         <ToolPanelRow label={t('studio3d.lighting.shadows')}>
           <Switch checked={store.shadow} onCheckedChange={store.setShadow} aria-label="Shadow" />
         </ToolPanelRow>
         {store.shadow && (
-          <ToolPanelGrid cols={3}>
-            {(['low', 'medium', 'high'] as const).map((q) => (
-              <ToolPanelChip
-                key={q}
-                active={store.shadowQuality === q}
-                onClick={() => store.setShadowQuality(q)}
-              >
-                {q.charAt(0).toUpperCase() + q.slice(1)}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
+          <>
+            <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+              Shadow quality
+            </span>
+            <Select
+              options={SHADOW_QUALITY_OPTIONS}
+              value={store.shadowQuality}
+              onChange={(v) => store.setShadowQuality(v as 'low' | 'medium' | 'high')}
+            />
+          </>
         )}
         <ToolPanelRow label={t('studio3d.panels.groundPlane')}>
           <Switch
@@ -567,6 +450,132 @@ export const CameraTab: React.FC = React.memo(() => {
             aria-label="Ground plane"
           />
         </ToolPanelRow>
+      </ToolPanelDisclosure>
+
+      {/* Advanced — over-senior controls */}
+      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+        {/* Per-light XYZ positions */}
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+          {t('studio3d.panels.lightPositions')}
+        </span>
+        <LightPositionSliders
+          label="Key Position"
+          position={store.lightPosition}
+          onChange={store.setLightPosition}
+        />
+        <LightPositionSliders
+          label="Fill Position"
+          position={store.fillLightPosition}
+          onChange={store.setFillLightPosition}
+        />
+        <LightPositionSliders
+          label="Bounce Position"
+          position={store.bounceLightPosition}
+          onChange={store.setBounceLightPosition}
+        />
+        <LightPositionSliders
+          label="Top Position"
+          position={store.pointLightPosition}
+          onChange={store.setPointLightPosition}
+        />
+
+        {/* HDRI environment */}
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
+          HDRI {store.customHdriUrl ? '(custom)' : `(${store.environment})`}
+        </span>
+        <Select
+          options={ENVIRONMENT_OPTIONS}
+          value={store.customHdriUrl ? '' : store.environment}
+          placeholder="Select HDRI…"
+          onChange={(v) => store.setEnvironment(v)}
+        />
+        <button
+          onClick={() => hdriInputRef.current?.click()}
+          className="w-full px-2 py-1.5 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+        >
+          {store.customHdriUrl
+            ? t('studio3d.environment.customLoaded')
+            : t('studio3d.environment.uploadHdr')}
+        </button>
+        <input
+          ref={hdriInputRef}
+          type="file"
+          accept=".hdr,.exr"
+          aria-label="Upload custom HDRI"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const maxSizeMB = 50;
+              if (file.size > maxSizeMB * 1024 * 1024) {
+                toast.error(
+                  `HDRI too large (${(file.size / 1024 / 1024).toFixed(0)}MB). Max ${maxSizeMB}MB.`
+                );
+                e.target.value = '';
+                return;
+              }
+              toast.loading('Loading HDRI...', { id: 'hdri-load', duration: 5000 });
+              const url = URL.createObjectURL(file);
+              store.setCustomHdriUrl(url);
+              toast.success('HDRI loaded', { id: 'hdri-load' });
+            }
+            e.target.value = '';
+          }}
+          className="hidden"
+        />
+        <ToolPanelRow label={t('studio3d.environment.hdriBackground')}>
+          <Switch
+            checked={store.hdriBackground}
+            onCheckedChange={store.setHdriBackground}
+            aria-label="HDRI as background"
+          />
+        </ToolPanelRow>
+        <ScrubInput
+          label="Rotation"
+          value={hdriRotation}
+          min={0}
+          max={360}
+          step={1}
+          suffix="°"
+          onChange={setHdriRotation}
+        />
+        {store.hdriBackground && (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput
+              label="Blur"
+              value={hdriBlur}
+              min={0}
+              max={1}
+              step={0.01}
+              onChange={setHdriBlur}
+            />
+            <ScrubInput
+              label="Intensity"
+              value={hdriIntensity}
+              min={0}
+              max={3}
+              step={0.05}
+              onChange={setHdriIntensity}
+            />
+          </div>
+        )}
+        {store.customHdriUrl && (
+          <button
+            onClick={() => store.setEnvironment('studio')}
+            className="w-full py-1 rounded text-[10px] uppercase tracking-wider text-neutral-600 hover:text-red-400 transition-colors"
+          >
+            {t('studio3d.environment.removeCustom')}
+          </button>
+        )}
+
+        {/* Tone mapping algorithm */}
+        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">Tone mapping</span>
+        <Select
+          options={TONE_MAPPING_SELECT_OPTIONS}
+          value={store.toneMapping}
+          onChange={(v) => store.setToneMapping(v as (typeof TONE_MAPPING_OPTIONS)[number]['id'])}
+        />
+
+        {/* Ground reflection (only when ground plane is on) */}
         {store.groundPlane && (
           <ScrubInput
             label="Reflection"
@@ -577,6 +586,8 @@ export const CameraTab: React.FC = React.memo(() => {
             onChange={setGroundReflection}
           />
         )}
+
+        {/* Grid */}
         <ToolPanelRow label={t('studio3d.lighting.grid')}>
           <Switch checked={store.showGrid} onCheckedChange={store.setShowGrid} aria-label="Grid" />
         </ToolPanelRow>

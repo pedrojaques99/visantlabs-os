@@ -108,13 +108,6 @@ export const EffectsTab: React.FC = React.memo(() => {
     store.setCgSaturation
   );
 
-  const lensCount = [store.bloomEnabled, store.dofEnabled, store.chromaticAberrationEnabled].filter(
-    Boolean
-  ).length;
-  const filmCount = [store.ssaoEnabled, store.noiseEnabled, store.vignetteEnabled].filter(
-    Boolean
-  ).length;
-
   return (
     <>
       <ToolPanelRow label="Before / After">
@@ -125,178 +118,87 @@ export const EffectsTab: React.FC = React.memo(() => {
         />
       </ToolPanelRow>
 
-      {/* Lens — optical effects */}
-      <ToolPanelDisclosure
-        label="Lens"
-        defaultOpen
-        badge={
-          lensCount > 0 ? (
-            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-              {lensCount}
-            </span>
-          ) : undefined
-        }
-      >
-        <ToolPanelRow label={t('studio3d.panels.bloom')}>
-          <Switch
-            checked={store.bloomEnabled}
-            onCheckedChange={store.setBloomEnabled}
-            aria-label="Bloom"
-          />
-        </ToolPanelRow>
-        {store.bloomEnabled && (
-          <div className="grid grid-cols-2 gap-1.5">
-            <ScrubInput
-              label="Intensity"
-              value={bloomIntensity}
-              min={0}
-              max={5}
-              step={0.1}
-              onChange={setBloomIntensity}
-              hint="Bloom glow strength"
-            />
-            <ScrubInput
-              label="Threshold"
-              value={bloomThreshold}
-              min={0}
-              max={1}
-              step={0.01}
-              onChange={setBloomThreshold}
-              hint="Brightness cutoff — only pixels above this value glow"
-            />
-          </div>
-        )}
-
-        <ToolPanelRow label={t('studio3d.panels.depthOfField')}>
-          <Switch
-            checked={store.dofEnabled}
-            onCheckedChange={store.setDofEnabled}
-            aria-label="Depth of field"
-          />
-        </ToolPanelRow>
-        {store.dofEnabled && (
-          <div className="grid grid-cols-2 gap-1.5">
-            <ScrubInput
-              label="Focus"
-              value={dofFocusDistance}
-              min={0}
-              max={0.1}
-              step={0.001}
-              onChange={setDofFocusDistance}
-              hint="Focus distance — objects at this depth stay sharp"
-            />
-            <ScrubInput
-              label="Bokeh"
-              value={dofBokehScale}
-              min={0}
-              max={10}
-              step={0.1}
-              onChange={setDofBokehScale}
-              hint="Blur intensity for out-of-focus areas"
-            />
-          </div>
-        )}
-
-        <ToolPanelRow label={t('studio3d.panels.chromaticAberration')}>
-          <Switch
-            checked={store.chromaticAberrationEnabled}
-            onCheckedChange={store.setChromaticAberrationEnabled}
-            aria-label="Chromatic aberration"
-          />
-        </ToolPanelRow>
-        {store.chromaticAberrationEnabled && (
+      {/* Bloom */}
+      <ToolPanelRow label={t('studio3d.panels.bloom')}>
+        <Switch
+          checked={store.bloomEnabled}
+          onCheckedChange={store.setBloomEnabled}
+          aria-label="Bloom"
+        />
+      </ToolPanelRow>
+      {store.bloomEnabled && (
+        <div className="grid grid-cols-2 gap-1.5">
           <ScrubInput
-            label="Offset"
-            value={chromaticAberrationOffset}
+            label="Intensity"
+            value={bloomIntensity}
             min={0}
-            max={0.02}
-            step={0.0005}
-            onChange={setChromaticAberrationOffset}
-            hint="RGB color fringe at edges — simulates lens imperfection"
+            max={5}
+            step={0.1}
+            onChange={setBloomIntensity}
+            hint="Bloom glow strength"
           />
-        )}
-      </ToolPanelDisclosure>
-
-      {/* Film — texture & atmosphere */}
-      <ToolPanelDisclosure
-        label="Film"
-        defaultOpen
-        badge={
-          filmCount > 0 ? (
-            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-              {filmCount}
-            </span>
-          ) : undefined
-        }
-      >
-        <ToolPanelRow label={t('studio3d.panels.ambientOcclusion')}>
-          <Switch
-            checked={store.ssaoEnabled}
-            onCheckedChange={store.setSsaoEnabled}
-            aria-label="SSAO"
-          />
-        </ToolPanelRow>
-        {store.ssaoEnabled && (
           <ScrubInput
-            label="AO Intensity"
-            value={ssaoIntensity}
-            min={0}
-            max={2}
-            step={0.05}
-            onChange={setSsaoIntensity}
-            hint="Screen-space ambient occlusion — darkens crevices and contact areas"
-          />
-        )}
-
-        <ToolPanelRow label={t('studio3d.panels.filmGrain')}>
-          <Switch
-            checked={store.noiseEnabled}
-            onCheckedChange={store.setNoiseEnabled}
-            aria-label="Film grain"
-          />
-        </ToolPanelRow>
-        {store.noiseEnabled && (
-          <ScrubInput
-            label="Amount"
-            value={noiseOpacity}
-            min={0}
-            max={0.5}
-            step={0.01}
-            onChange={setNoiseOpacity}
-          />
-        )}
-
-        <ToolPanelRow label={t('studio3d.panels.vignette')}>
-          <Switch
-            checked={store.vignetteEnabled}
-            onCheckedChange={store.setVignetteEnabled}
-            aria-label="Vignette"
-          />
-        </ToolPanelRow>
-        {store.vignetteEnabled && (
-          <ScrubInput
-            label="Darkness"
-            value={vignetteIntensity}
+            label="Threshold"
+            value={bloomThreshold}
             min={0}
             max={1}
             step={0.01}
-            onChange={setVignetteIntensity}
+            onChange={setBloomThreshold}
+            hint="Brightness cutoff — only pixels above this value glow"
           />
-        )}
-      </ToolPanelDisclosure>
+        </div>
+      )}
 
-      {/* Color Grading */}
-      <ToolPanelDisclosure
-        label="Color"
-        badge={
-          store.colorGradingEnabled ? (
-            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-              on
-            </span>
-          ) : undefined
-        }
-      >
-        <ToolPanelRow label={t('studio3d.panels.colorGrading')}>
+      {/* Depth of Field — enable visible, numerics under Advanced */}
+      <ToolPanelRow label={t('studio3d.panels.depthOfField')}>
+        <Switch
+          checked={store.dofEnabled}
+          onCheckedChange={store.setDofEnabled}
+          aria-label="Depth of field"
+        />
+      </ToolPanelRow>
+
+      {/* Film Grain */}
+      <ToolPanelRow label={t('studio3d.panels.filmGrain')}>
+        <Switch
+          checked={store.noiseEnabled}
+          onCheckedChange={store.setNoiseEnabled}
+          aria-label="Film grain"
+        />
+      </ToolPanelRow>
+      {store.noiseEnabled && (
+        <ScrubInput
+          label="Amount"
+          value={noiseOpacity}
+          min={0}
+          max={0.5}
+          step={0.01}
+          onChange={setNoiseOpacity}
+        />
+      )}
+
+      {/* Vignette */}
+      <ToolPanelRow label={t('studio3d.panels.vignette')}>
+        <Switch
+          checked={store.vignetteEnabled}
+          onCheckedChange={store.setVignetteEnabled}
+          aria-label="Vignette"
+        />
+      </ToolPanelRow>
+      {store.vignetteEnabled && (
+        <ScrubInput
+          label="Darkness"
+          value={vignetteIntensity}
+          min={0}
+          max={1}
+          step={0.01}
+          onChange={setVignetteIntensity}
+        />
+      )}
+
+      {/* Color Grading — own top-level disclosure */}
+      <ToolPanelDisclosure label={t('studio3d.panels.colorGrading')}>
+        <ToolPanelRow label="Enable">
           <Switch
             checked={store.colorGradingEnabled}
             onCheckedChange={store.setColorGradingEnabled}
@@ -341,17 +243,8 @@ export const EffectsTab: React.FC = React.memo(() => {
         )}
       </ToolPanelDisclosure>
 
-      {/* Shader FX — standardized disclosure */}
-      <ToolPanelDisclosure
-        label={t('studio3d.panels.shaderFx')}
-        badge={
-          store.shaderEnabled ? (
-            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-              {store.shaderType}
-            </span>
-          ) : undefined
-        }
-      >
+      {/* Shader FX */}
+      <ToolPanelDisclosure label={t('studio3d.panels.shaderFx')}>
         <ToolPanelRow label="Enable">
           <Switch
             checked={store.shaderEnabled}
@@ -368,6 +261,70 @@ export const EffectsTab: React.FC = React.memo(() => {
             onTypeChange={store.setShaderType}
             onValueChange={store.setShaderValue}
             hideToggle
+          />
+        )}
+      </ToolPanelDisclosure>
+
+      {/* Advanced — over-senior controls */}
+      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+        {store.dofEnabled && (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput
+              label="DOF Focus"
+              value={dofFocusDistance}
+              min={0}
+              max={0.1}
+              step={0.001}
+              onChange={setDofFocusDistance}
+              hint="Focus distance — objects at this depth stay sharp"
+            />
+            <ScrubInput
+              label="DOF Bokeh"
+              value={dofBokehScale}
+              min={0}
+              max={10}
+              step={0.1}
+              onChange={setDofBokehScale}
+              hint="Blur intensity for out-of-focus areas"
+            />
+          </div>
+        )}
+
+        <ToolPanelRow label={t('studio3d.panels.chromaticAberration')}>
+          <Switch
+            checked={store.chromaticAberrationEnabled}
+            onCheckedChange={store.setChromaticAberrationEnabled}
+            aria-label="Chromatic aberration"
+          />
+        </ToolPanelRow>
+        {store.chromaticAberrationEnabled && (
+          <ScrubInput
+            label="Offset"
+            value={chromaticAberrationOffset}
+            min={0}
+            max={0.02}
+            step={0.0005}
+            onChange={setChromaticAberrationOffset}
+            hint="RGB color fringe at edges — simulates lens imperfection"
+          />
+        )}
+
+        <ToolPanelRow label={t('studio3d.panels.ambientOcclusion')}>
+          <Switch
+            checked={store.ssaoEnabled}
+            onCheckedChange={store.setSsaoEnabled}
+            aria-label="SSAO"
+          />
+        </ToolPanelRow>
+        {store.ssaoEnabled && (
+          <ScrubInput
+            label="AO Intensity"
+            value={ssaoIntensity}
+            min={0}
+            max={2}
+            step={0.05}
+            onChange={setSsaoIntensity}
+            hint="Screen-space ambient occlusion — darkens crevices and contact areas"
           />
         )}
       </ToolPanelDisclosure>

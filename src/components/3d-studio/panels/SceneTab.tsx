@@ -2,7 +2,6 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { NodeSlider } from '@/components/ui/NodeSlider';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -37,13 +36,12 @@ import {
   GitFork,
 } from 'lucide-react';
 import {
-  ToolPanelSection,
   ToolPanelDisclosure,
-  ToolPanelGrid,
   ToolPanelChip,
   ToolPanelRow,
   ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
+import { Select, type SelectOption } from '@/components/ui/select';
 import { FONT_OPTIONS } from './_shared';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
@@ -347,31 +345,20 @@ export const SceneTab: React.FC = React.memo(() => {
         icon={<Upload size={13} />}
         defaultOpen
       >
-        <ToolPanelGrid>
-          <ToolPanelChip
-            active={store.inputMode === 'svg'}
-            onClick={() => store.setInputMode('svg')}
-          >
-            <span className="flex items-center justify-center gap-1">
-              <FileText size={12} /> {t('studio3d.input.svgPng')}
-            </span>
-          </ToolPanelChip>
-          <ToolPanelChip
-            active={store.inputMode === 'text'}
-            onClick={() => store.setInputMode('text')}
-          >
-            <span className="flex items-center justify-center gap-1">
-              <Type size={12} /> {t('studio3d.input.text')}
-            </span>
-          </ToolPanelChip>
-          <ToolPanelChip
-            active={store.inputMode === 'model'}
-            onClick={() => store.setInputMode('model')}
-          >
-            <span className="flex items-center justify-center gap-1">
-              <Box size={12} /> 3D Model
-            </span>
-          </ToolPanelChip>
+        <div className="flex items-center gap-1.5">
+          <div className="flex-1">
+            <Select
+              value={store.inputMode}
+              onChange={(v) => store.setInputMode(v as 'svg' | 'text' | 'model')}
+              options={
+                [
+                  { value: 'svg', label: t('studio3d.input.svgPng'), icon: <FileText size={12} /> },
+                  { value: 'text', label: t('studio3d.input.text'), icon: <Type size={12} /> },
+                  { value: 'model', label: '3D Model', icon: <Box size={12} /> },
+                ] satisfies SelectOption[]
+              }
+            />
+          </div>
           {hasBrandLogos && (
             <ToolPanelChip onClick={() => setBrandPickerOpen(true)}>
               <span className="flex items-center justify-center gap-1">
@@ -379,7 +366,7 @@ export const SceneTab: React.FC = React.memo(() => {
               </span>
             </ToolPanelChip>
           )}
-        </ToolPanelGrid>
+        </div>
 
         {store.inputMode === 'model' ? (
           <div
@@ -569,68 +556,25 @@ export const SceneTab: React.FC = React.memo(() => {
             </span>
           }
         >
-          <div className="flex flex-wrap gap-1">
-            {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
-              <ToolPanelChip
-                key={p}
-                active={store.tracePreset === p}
-                onClick={() => {
-                  store.setTracePreset(p);
-                }}
-              >
-                {p === 'lineArt' ? 'Line Art' : p.charAt(0).toUpperCase() + p.slice(1)}
-              </ToolPanelChip>
-            ))}
-          </div>
-          {store.tracePreset === 'custom' && (
-            <>
-              <div className="grid grid-cols-2 gap-1.5">
-                <ScrubInput
-                  label="Noise"
-                  value={store.traceTurdSize}
-                  min={0}
-                  max={20}
-                  step={1}
-                  onChange={store.setTraceTurdSize}
-                />
-                <ScrubInput
-                  label="Simplify"
-                  value={store.traceOptTolerance}
-                  min={0}
-                  max={2}
-                  step={0.05}
-                  onChange={store.setTraceOptTolerance}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                <ScrubInput
-                  label="Threshold"
-                  value={typeof store.traceThreshold === 'number' ? store.traceThreshold : 128}
-                  min={0}
-                  max={255}
-                  step={1}
-                  onChange={store.setTraceThreshold}
-                />
-                <ScrubInput
-                  label="Corners"
-                  value={store.traceAlphaMax}
-                  min={0}
-                  max={1.334}
-                  step={0.05}
-                  onChange={store.setTraceAlphaMax}
-                />
-              </div>
-            </>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-[10px] uppercase tracking-wider h-8"
-            disabled={isRetracing}
-            onClick={handleRetrace}
-          >
-            {isRetracing ? <GlitchLoader size={12} /> : 'Re-trace'}
-          </Button>
+          <ToolPanelRow label="Preset">
+            <div className="w-40">
+              <Select
+                value={store.tracePreset}
+                onChange={(v) =>
+                  store.setTracePreset(v as import('@/services/svgPipeline').TracePreset)
+                }
+                options={
+                  [
+                    { value: 'logo', label: 'Logo' },
+                    { value: 'lettering', label: 'Lettering' },
+                    { value: 'lineArt', label: 'Line Art' },
+                    { value: 'stamp', label: 'Stamp' },
+                    { value: 'custom', label: 'Custom' },
+                  ] satisfies SelectOption[]
+                }
+              />
+            </div>
+          </ToolPanelRow>
         </ToolPanelDisclosure>
       )}
 
@@ -665,6 +609,160 @@ export const SceneTab: React.FC = React.memo(() => {
             aria-label="Bevel"
           />
         </ToolPanelRow>
+      </ToolPanelDisclosure>
+
+      {/* Shape */}
+      <ToolPanelDisclosure label={t('studio3d.geometry.shapeType')} defaultOpen>
+        <Select
+          value={store.shapeType}
+          onChange={(v) =>
+            store.setShapeType(
+              v as 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon'
+            )
+          }
+          options={
+            (['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => ({
+              value: type,
+              label: t(`studio3d.geometry.shape_${type}`),
+            })) satisfies SelectOption[]
+          }
+        />
+        {store.shapeType !== 'standard' && (
+          <>
+            <ToolPanelRow label={t('studio3d.geometry.shapeColor')}>
+              <Switch
+                checked={!!store.shapeColor}
+                onCheckedChange={(on) => store.setShapeColor(on ? '#888888' : '')}
+                aria-label="Custom shape color"
+              />
+            </ToolPanelRow>
+            {!!store.shapeColor && (
+              <ExpandableColorPicker
+                color={store.shapeColor}
+                onChange={store.setShapeColor}
+                label="Shape color"
+              />
+            )}
+          </>
+        )}
+      </ToolPanelDisclosure>
+
+      {/* Chain / Pendant */}
+      <ToolPanelDisclosure
+        label={t('studio3d.geometry.showChain')}
+        icon={<Link size={13} />}
+        badge={
+          store.showChain ? (
+            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+              on
+            </span>
+          ) : undefined
+        }
+      >
+        <ToolPanelRow label="Enable">
+          <Switch
+            checked={store.showChain}
+            onCheckedChange={store.setShowChain}
+            aria-label="Chain"
+          />
+        </ToolPanelRow>
+        {store.showChain && (
+          <>
+            <div className="grid grid-cols-2 gap-1.5">
+              <ScrubInput
+                label={t('studio3d.geometry.chainLinks')}
+                value={chainLinks}
+                min={2}
+                max={16}
+                step={1}
+                onChange={setChainLinks}
+              />
+              <ScrubInput
+                label={t('studio3d.geometry.chainScale')}
+                value={chainScale}
+                min={0.3}
+                max={3}
+                step={0.1}
+                onChange={setChainScale}
+              />
+            </div>
+            <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
+              <Switch
+                checked={!!store.chainColor}
+                onCheckedChange={(on) => store.setChainColor(on ? store.color : '')}
+                aria-label="Custom chain color"
+              />
+            </ToolPanelRow>
+            {!!store.chainColor && (
+              <ExpandableColorPicker
+                color={store.chainColor}
+                onChange={store.setChainColor}
+                label="Chain color"
+              />
+            )}
+          </>
+        )}
+      </ToolPanelDisclosure>
+
+
+      {/* Advanced — over-senior numerics, flat (never nested) */}
+      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
+        {/* SVG Trace refine (custom preset) + re-trace */}
+        {lastPngFile.current && store.inputMode === 'svg' && store.svgData && (
+          <>
+            {store.tracePreset === 'custom' && (
+              <>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <ScrubInput
+                    label="Noise"
+                    value={store.traceTurdSize}
+                    min={0}
+                    max={20}
+                    step={1}
+                    onChange={store.setTraceTurdSize}
+                  />
+                  <ScrubInput
+                    label="Simplify"
+                    value={store.traceOptTolerance}
+                    min={0}
+                    max={2}
+                    step={0.05}
+                    onChange={store.setTraceOptTolerance}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <ScrubInput
+                    label="Threshold"
+                    value={typeof store.traceThreshold === 'number' ? store.traceThreshold : 128}
+                    min={0}
+                    max={255}
+                    step={1}
+                    onChange={store.setTraceThreshold}
+                  />
+                  <ScrubInput
+                    label="Corners"
+                    value={store.traceAlphaMax}
+                    min={0}
+                    max={1.334}
+                    step={0.05}
+                    onChange={store.setTraceAlphaMax}
+                  />
+                </div>
+              </>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-[10px] uppercase tracking-wider h-8"
+              disabled={isRetracing}
+              onClick={handleRetrace}
+            >
+              {isRetracing ? <GlitchLoader size={12} /> : 'Re-trace'}
+            </Button>
+          </>
+        )}
+
+        {/* Bevel sub-params */}
         {store.bevelEnabled && (
           <div className="grid grid-cols-3 gap-1.5">
             <ScrubInput
@@ -693,21 +791,8 @@ export const SceneTab: React.FC = React.memo(() => {
             />
           </div>
         )}
-      </ToolPanelDisclosure>
 
-      {/* Shape */}
-      <ToolPanelDisclosure label={t('studio3d.geometry.shapeType')} defaultOpen>
-        <ToolPanelGrid cols={3}>
-          {(['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => (
-            <ToolPanelChip
-              key={type}
-              active={store.shapeType === type}
-              onClick={() => store.setShapeType(type)}
-            >
-              {t(`studio3d.geometry.shape_${type}`)}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
+        {/* Shape-specific sub-geometry */}
         {store.shapeType === 'coin' && (
           <ScrubInput
             label={t('studio3d.geometry.coinRadius')}
@@ -805,116 +890,46 @@ export const SceneTab: React.FC = React.memo(() => {
           />
         )}
         {store.shapeType !== 'standard' && (
-          <>
+          <ScrubInput
+            label={t('studio3d.geometry.reliefDepth')}
+            value={reliefDepth}
+            min={0.05}
+            max={1.5}
+            step={0.05}
+            onChange={setReliefDepth}
+          />
+        )}
+
+        {/* Chain bail / offsets */}
+        {store.showChain && (
+          <div className="grid grid-cols-3 gap-1.5">
             <ScrubInput
-              label={t('studio3d.geometry.reliefDepth')}
-              value={reliefDepth}
-              min={0.05}
+              label={t('studio3d.geometry.bailSize')}
+              value={bailSz}
+              min={0.1}
               max={1.5}
               step={0.05}
-              onChange={setReliefDepth}
+              onChange={setBailSz}
             />
-            <ToolPanelRow label={t('studio3d.geometry.shapeColor')}>
-              <Switch
-                checked={!!store.shapeColor}
-                onCheckedChange={(on) => store.setShapeColor(on ? '#888888' : '')}
-                aria-label="Custom shape color"
-              />
-            </ToolPanelRow>
-            {!!store.shapeColor && (
-              <ExpandableColorPicker
-                color={store.shapeColor}
-                onChange={store.setShapeColor}
-                label="Shape color"
-              />
-            )}
-          </>
+            <ScrubInput
+              label={t('studio3d.geometry.bailOffset')}
+              value={bailOff}
+              min={-3}
+              max={3}
+              step={0.05}
+              onChange={setBailOff}
+            />
+            <ScrubInput
+              label={t('studio3d.geometry.chainOffset')}
+              value={chainOff}
+              min={-3}
+              max={3}
+              step={0.05}
+              onChange={setChainOff}
+            />
+          </div>
         )}
       </ToolPanelDisclosure>
-
-      {/* Chain / Pendant */}
-      <ToolPanelDisclosure
-        label={t('studio3d.geometry.showChain')}
-        icon={<Link size={13} />}
-        badge={
-          store.showChain ? (
-            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-              on
-            </span>
-          ) : undefined
-        }
-      >
-        <ToolPanelRow label="Enable">
-          <Switch
-            checked={store.showChain}
-            onCheckedChange={store.setShowChain}
-            aria-label="Chain"
-          />
-        </ToolPanelRow>
-        {store.showChain && (
-          <>
-            <div className="grid grid-cols-2 gap-1.5">
-              <ScrubInput
-                label={t('studio3d.geometry.chainLinks')}
-                value={chainLinks}
-                min={2}
-                max={16}
-                step={1}
-                onChange={setChainLinks}
-              />
-              <ScrubInput
-                label={t('studio3d.geometry.chainScale')}
-                value={chainScale}
-                min={0.3}
-                max={3}
-                step={0.1}
-                onChange={setChainScale}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              <ScrubInput
-                label={t('studio3d.geometry.bailSize')}
-                value={bailSz}
-                min={0.1}
-                max={1.5}
-                step={0.05}
-                onChange={setBailSz}
-              />
-              <ScrubInput
-                label={t('studio3d.geometry.bailOffset')}
-                value={bailOff}
-                min={-3}
-                max={3}
-                step={0.05}
-                onChange={setBailOff}
-              />
-              <ScrubInput
-                label={t('studio3d.geometry.chainOffset')}
-                value={chainOff}
-                min={-3}
-                max={3}
-                step={0.05}
-                onChange={setChainOff}
-              />
-            </div>
-            <ToolPanelRow label={t('studio3d.geometry.chainColor')}>
-              <Switch
-                checked={!!store.chainColor}
-                onCheckedChange={(on) => store.setChainColor(on ? store.color : '')}
-                aria-label="Custom chain color"
-              />
-            </ToolPanelRow>
-            {!!store.chainColor && (
-              <ExpandableColorPicker
-                color={store.chainColor}
-                onChange={store.setChainColor}
-                label="Chain color"
-              />
-            )}
-          </>
-        )}
-      </ToolPanelDisclosure>
-
 
       <BrandLogoPickerModal
         isOpen={brandPickerOpen}
