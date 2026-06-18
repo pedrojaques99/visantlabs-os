@@ -22,6 +22,8 @@ export interface TemplateSlot {
   /** Stable id from the layer name after `#` (e.g. `h1`, `photo1`). */
   id: string;
   type: SlotType;
+  /** `#logo:dark` — an explicit asset variant hint (logo variant, etc.). */
+  variant?: string;
   /** `#name?` — may be omitted; the filler hides the layer when absent. */
   optional: boolean;
   /** `#name[]` — repeating/multi-line content (e.g. a list of infos). */
@@ -58,15 +60,16 @@ export type SlotFills = Record<string, SlotValue>;
 export const SLOT_PREFIX = '#';
 
 // Layer name → slot descriptor. Returns null for non-slot layers, so scanning is
-// a simple filter. `#h1`, `#h2?`, `#infos[]`, `#photo1[]?` all parse.
-const SLOT_RE = /^#([a-zA-Z][a-zA-Z0-9_-]*)(\[\])?(\?)?$/;
+// a simple filter. `#h1`, `#h2?`, `#infos[]`, `#photo1[]?`, `#logo:dark` all parse.
+// Optional `:variant` (e.g. `#logo:dark`) hints which asset variant to resolve.
+const SLOT_RE = /^#([a-zA-Z][a-zA-Z0-9_-]*)(?::([a-zA-Z][a-zA-Z0-9_-]*))?(\[\])?(\?)?$/;
 
 export function parseSlotName(
   layerName: string
-): { id: string; optional: boolean; list: boolean } | null {
+): { id: string; variant?: string; optional: boolean; list: boolean } | null {
   const m = SLOT_RE.exec((layerName || '').trim());
   if (!m) return null;
-  return { id: m[1], optional: !!m[3], list: !!m[2] };
+  return { id: m[1], variant: m[2] || undefined, optional: !!m[4], list: !!m[3] };
 }
 
 export function isSlotLayer(layerName: string): boolean {

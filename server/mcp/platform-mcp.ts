@@ -5191,6 +5191,64 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
     }
   );
 
+  // ─── Brand: Figma preset fill (deterministic) ──────────────────────────────
+  server.tool(
+    'figma-preset-fill',
+    "Build a complete, deterministic FILL_TEMPLATE operation for the Visant Figma plugin. The server resolves the brand's REAL colors (variable modes) AND images (logos by variant/contrast, photos by semantic relevance) into a [Template]'s #slots. You supply only the brand, the template name, the text content, and an optional brief — never URLs or geometry. Run the returned operation in the Visant Figma plugin to produce an on-brand design with zero hallucinated layout.",
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      templateName: z
+        .string()
+        .optional()
+        .describe(
+          'The [Template] frame name (e.g. "Post/Launch"). Provide this or templateNodeId.'
+        ),
+      templateNodeId: z
+        .string()
+        .optional()
+        .describe('The [Template] frame node id (alternative to templateName).'),
+      text: z
+        .record(z.string(), z.any())
+        .optional()
+        .describe('Text slot content keyed by slot id, e.g. { "h1": "...", "infos": ["a","b"] }.'),
+      imageSlots: z
+        .array(z.object({ id: z.string(), variant: z.string().optional() }))
+        .optional()
+        .describe(
+          'Image slots to resolve (default: logo, photo1, photo2, icon). variant picks a logo variant (e.g. "dark").'
+        ),
+      brief: z
+        .string()
+        .optional()
+        .describe(
+          'Short brief/vibe used to semantically pick the best photo from the brand media.'
+        ),
+      clone: z
+        .boolean()
+        .optional()
+        .describe('Fill a clone (default true) so the master template stays pristine.'),
+    },
+    { title: 'Fill Figma Preset', destructiveHint: false },
+    async ({ id, templateName, templateNodeId, text, imageSlots, brief, clone }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-preset-fill`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({ templateName, templateNodeId, text, imageSlots, brief, clone }),
+          }
+        );
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   // ─── Brand: Knowledge base ─────────────────────────────────────────────────
   server.tool(
     'brand-guidelines-knowledge-list',
