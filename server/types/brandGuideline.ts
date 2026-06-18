@@ -33,6 +33,9 @@ export interface BrandGuidelineLogo {
   figmaFileKey?: string;
   figmaNodeId?: string;
   analysis?: BrandAssetAnalysis;
+  hash?: string;
+  size?: number;
+  phash?: string;
 }
 
 export interface BrandGuidelineColor {
@@ -101,6 +104,10 @@ export interface BrandGuidelineMedia {
   label?: string;
   category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
   analysis?: BrandAssetAnalysis;
+  /** Dedup fingerprints: sha256 (exact) + byte size + dHash (near-dup). */
+  hash?: string;
+  size?: number;
+  phash?: string;
 }
 
 export interface BrandGuidelineTokens {

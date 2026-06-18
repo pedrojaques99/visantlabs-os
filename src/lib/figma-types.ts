@@ -930,6 +930,9 @@ export interface BrandGuideline {
     variant: 'primary' | 'dark' | 'light' | 'icon' | 'accent' | 'custom';
     label?: string;
     analysis?: BrandAssetAnalysis;
+    hash?: string;
+    size?: number;
+    phash?: string;
   }>;
   colors?: BrandGuidelineColor[];
   typography?: BrandGuidelineTypography[];
@@ -941,6 +944,9 @@ export interface BrandGuideline {
     label?: string;
     category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
     analysis?: BrandAssetAnalysis;
+    hash?: string;
+    size?: number;
+    phash?: string;
   }>;
   tokens?: {
     spacing?: Record<string, number>;
