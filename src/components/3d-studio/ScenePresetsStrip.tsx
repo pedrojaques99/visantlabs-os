@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Shuffle, Palette } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { useStudio3DStore, SCENE_PRESETS } from '@/stores/studio3dStore';
-import { ToolPanelDisclosure } from '@/components/shared/ToolPanel';
+import { ToolPanelDisclosure, ToolPanelSection } from '@/components/shared/ToolPanel';
 import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
@@ -23,7 +23,26 @@ const selector = (s: ReturnType<typeof useStudio3DStore.getState>) => ({
   _brandGuidelineId: s._brandGuidelineId,
 });
 
-export const ScenePresetsStrip: React.FC = React.memo(() => {
+/**
+ * One quick-start group. `flat` renders it as a loose section (label + divider,
+ * always open) for the essentialist Basics tab; otherwise a collapsible disclosure
+ * (the Model tab's denser layout).
+ */
+const PresetGroup: React.FC<{
+  flat: boolean;
+  label: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ flat, label, icon, children }) =>
+  flat ? (
+    <ToolPanelSection title={label}>{children}</ToolPanelSection>
+  ) : (
+    <ToolPanelDisclosure label={label} icon={icon} defaultOpen>
+      {children}
+    </ToolPanelDisclosure>
+  );
+
+export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ flat = false }) => {
   const { t } = useTranslation();
   const store = useStudio3DStore(useShallow(selector));
   const presetThumbs = usePresetPreviews();
@@ -39,12 +58,8 @@ export const ScenePresetsStrip: React.FC = React.memo(() => {
 
   return (
     <>
-      {/* Scene Presets — collapsible horizontal strip with 3D previews */}
-      <ToolPanelDisclosure
-        label={t('studio3d.scenePresets.title')}
-        icon={<Shuffle size={13} />}
-        defaultOpen
-      >
+      {/* Scene Presets — horizontal strip with 3D previews */}
+      <PresetGroup flat={flat} label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />}>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
           {Object.entries(SCENE_PRESETS).map(([name, preset]) => (
             <button
@@ -91,14 +106,14 @@ export const ScenePresetsStrip: React.FC = React.memo(() => {
             </span>
           </button>
         </div>
-      </ToolPanelDisclosure>
+      </PresetGroup>
 
       {/* Brand Scenes — on-brand looks generated from the applied brand's tokens */}
       {brandScenes.length > 0 && (
-        <ToolPanelDisclosure
+        <PresetGroup
+          flat={flat}
           label={`${appliedBrand?.identity?.name || appliedBrand?.name || 'Brand'} Scenes`}
           icon={<Palette size={13} />}
-          defaultOpen
         >
           <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
             {brandScenes.map((scene) => (
@@ -128,7 +143,7 @@ export const ScenePresetsStrip: React.FC = React.memo(() => {
               </button>
             ))}
           </div>
-        </ToolPanelDisclosure>
+        </PresetGroup>
       )}
 
       <ConfirmationModal

@@ -8,12 +8,12 @@
  */
 import React, { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Sparkles, Box, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { useStudio3DStore } from '@/stores/studio3dStore';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import {
-  ToolPanelDisclosure,
+  ToolPanelSection,
+  ToolPanelDivider,
   ToolPanelRow,
   ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
@@ -21,6 +21,7 @@ import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
 import { Select, type SelectOption } from '@/components/ui/select';
 import { SHADER_DEFINITIONS } from '@/utils/shaders/shaderParams';
+import { BrandSelector } from '@/components/canvas/BrandSelector';
 import type { StoreState } from './_shared';
 import { ScenePresetsStrip } from '../ScenePresetsStrip';
 
@@ -44,6 +45,7 @@ const essentialsSelector = (s: StoreState) => ({
   shaderType: s.shaderType,
   setShaderType: s.setShaderType,
   _brandGuidelineId: s._brandGuidelineId,
+  setBrandGuidelineId: s.setBrandGuidelineId,
 });
 
 const BG_TYPE_OPTIONS: SelectOption[] = [
@@ -74,18 +76,31 @@ export const EssentialsTab: React.FC = React.memo(() => {
 
   return (
     <>
+      {/* Brand — core: applying a brand flows its tokens into the pickers + on-brand scenes */}
+      <ToolPanelSection title="Brand">
+        <BrandSelector
+          value={store._brandGuidelineId || null}
+          onChange={(id) => store.setBrandGuidelineId(id ?? '')}
+          className="w-full"
+        />
+      </ToolPanelSection>
+
+      <ToolPanelDivider />
+
       {/* Quick-start presets (+ on-brand scenes when a brand is applied) */}
-      <ScenePresetsStrip />
+      <ScenePresetsStrip flat />
+
+      <ToolPanelDivider />
 
       {/* Object — color + size */}
-      <ToolPanelDisclosure label="Object" icon={<Box size={13} />} defaultOpen>
+      <ToolPanelSection title="Object">
         <ExpandableColorPicker
           label="Material color"
           color={store.color}
           onChange={store.setColor}
           presets={brandSwatches.length ? brandSwatches : undefined}
         />
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <ScrubInput
             label="Size"
             value={scale}
@@ -96,27 +111,29 @@ export const EssentialsTab: React.FC = React.memo(() => {
           />
           <ScrubInput label="Depth" value={depth} min={0.1} max={10} step={0.1} onChange={setDepth} />
         </div>
-      </ToolPanelDisclosure>
+      </ToolPanelSection>
+
+      <ToolPanelDivider />
 
       {/* Background — type select + color */}
-      <ToolPanelDisclosure label="Background" icon={<ImageIcon size={13} />} defaultOpen>
+      <ToolPanelSection title="Background">
         <Select
           options={BG_TYPE_OPTIONS}
           value={store.bgType}
           onChange={(v) => store.setBgType(v as StoreState['bgType'])}
         />
-        <div className="mt-2">
-          <ExpandableColorPicker
-            label="Background color"
-            color={store.background}
-            onChange={store.setBackground}
-            presets={brandSwatches.length ? brandSwatches : undefined}
-          />
-        </div>
-      </ToolPanelDisclosure>
+        <ExpandableColorPicker
+          label="Background color"
+          color={store.background}
+          onChange={store.setBackground}
+          presets={brandSwatches.length ? brandSwatches : undefined}
+        />
+      </ToolPanelSection>
+
+      <ToolPanelDivider />
 
       {/* Effects — the two the user reaches for first: bloom + shader */}
-      <ToolPanelDisclosure label="Effects" icon={<Sparkles size={13} />} defaultOpen>
+      <ToolPanelSection title="Effects">
         <ToolPanelRow label="Bloom">
           <Switch
             checked={store.bloomEnabled}
@@ -125,21 +142,21 @@ export const EssentialsTab: React.FC = React.memo(() => {
           />
         </ToolPanelRow>
         {store.bloomEnabled && (
-          <div className="mt-2">
-            <ScrubInput
-              label="Intensity"
-              value={bloom}
-              min={0}
-              max={5}
-              step={0.1}
-              onChange={setBloom}
-            />
-          </div>
+          <ScrubInput
+            label="Intensity"
+            value={bloom}
+            min={0}
+            max={5}
+            step={0.1}
+            onChange={setBloom}
+          />
         )}
-      </ToolPanelDisclosure>
+      </ToolPanelSection>
+
+      <ToolPanelDivider />
 
       {/* Shader */}
-      <ToolPanelDisclosure label="Shader" icon={<Wand2 size={13} />} defaultOpen>
+      <ToolPanelSection title="Shader">
         <ToolPanelRow label="Shader FX">
           <Switch
             checked={store.shaderEnabled}
@@ -148,18 +165,18 @@ export const EssentialsTab: React.FC = React.memo(() => {
           />
         </ToolPanelRow>
         {store.shaderEnabled && (
-          <div className="mt-2">
+          <div className="space-y-1.5">
             <Select
               options={SHADER_OPTIONS}
               value={store.shaderType}
               onChange={(v) => store.setShaderType(v as StoreState['shaderType'])}
             />
-            <p className="mt-1.5 text-[9px] text-neutral-500">
+            <p className="text-[9px] text-neutral-500">
               Fine-tune shader parameters in the FX tab.
             </p>
           </div>
         )}
-      </ToolPanelDisclosure>
+      </ToolPanelSection>
     </>
   );
 });

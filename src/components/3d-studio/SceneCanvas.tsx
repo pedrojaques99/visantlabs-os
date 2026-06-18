@@ -561,6 +561,23 @@ function EnvironmentContent() {
   );
 }
 
+// When postprocessing is on, @react-three/postprocessing's EffectComposer takes
+// over the render and sets gl.autoClear = false (it clears manually). If the
+// composer then unmounts (e.g. the last effect — bloom — is toggled off), the
+// renderer is left with autoClear = false, so r3f's default render no longer
+// clears the buffer and the frame appears frozen. Re-enabling an effect remounts
+// the composer and "fixes" it. Mounting this in place of the null branch restores
+// the renderer to a clean state whenever no composer is active.
+function RendererReset() {
+  const gl = useThree((st) => st.gl);
+  const invalidate = useThree((st) => st.invalidate);
+  useEffect(() => {
+    gl.autoClear = true;
+    invalidate();
+  }, [gl, invalidate]);
+  return null;
+}
+
 // EffectsContent = postprocessing / shader pass. Re-renders only on FX changes.
 function EffectsContent() {
   const s = useStudio3DStore(useShallow(effectsSelector));
@@ -592,7 +609,7 @@ function EffectsContent() {
       s.noiseEnabled ||
       s.colorGradingEnabled);
 
-  if (!anyEffect) return null;
+  if (!anyEffect) return <RendererReset />;
 
   return (
     <EffectComposer key={s.resetKey} multisampling={RENDER_QUALITY_CONFIG[s.renderQuality].msaa}>
