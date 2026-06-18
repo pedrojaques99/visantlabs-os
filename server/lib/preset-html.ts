@@ -29,7 +29,7 @@ export interface PostLaunchContent {
   logoUrl?: string;
 }
 
-function esc(s: string): string {
+export function esc(s: string): string {
   return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -37,7 +37,7 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-const DOC = (
+export const DOC = (
   width: number,
   height: number,
   fontCss: string,

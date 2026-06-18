@@ -2710,7 +2710,11 @@ router.post('/:id/render-preset', apiRateLimiter, authenticate, async (req: Auth
       }
     }
 
-    const html = preset.build(vars, text || {}, images, fontCss);
+    // Auto-generated presets derive content from the brand itself (palette,
+    // sections); slot-driven presets render the supplied text + resolved images.
+    const html = preset.autogen
+      ? preset.autogen(brand, vars, text || {}, fontCss)
+      : preset.build!(vars, text || {}, images, fontCss);
     const png = await renderHtmlToPng(html, { width: preset.width, height: preset.height });
     const url = await uploadEphemeralImage(
       `data:image/png;base64,${png.toString('base64')}`,

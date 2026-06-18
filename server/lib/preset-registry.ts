@@ -16,7 +16,9 @@ import {
   slideStepsHtml,
   type PresetVars,
 } from './preset-html.js';
+import { paletteSlideHtml, indexSlideHtml } from './preset-autogen.js';
 import type { ImageSlotSpec } from './figma-asset-resolver.js';
+import type { BrandGuideline } from '../types/brandGuideline.js';
 
 type Text = Record<string, string | string[] | null | undefined>;
 type Images = Record<string, { imageUrl: string } | undefined>;
@@ -27,8 +29,14 @@ export interface WebPreset {
   height: number;
   /** Image slots the resolver should fill from brand assets. */
   imageSlots: ImageSlotSpec[];
-  /** Map resolved text + images → final HTML. */
-  build: (vars: PresetVars, text: Text, images: Images, fontCss: string) => string;
+  /** Slot-driven render: map supplied text + images → HTML (most presets). */
+  build?: (vars: PresetVars, text: Text, images: Images, fontCss: string) => string;
+  /**
+   * Auto-generated render: derive content from the brand itself (palette, sections).
+   * When set, the route uses this instead of `build` — no slots to fill, just the
+   * brand. `text` may carry an optional title override.
+   */
+  autogen?: (brand: BrandGuideline, vars: PresetVars, text: Text, fontCss: string) => string;
 }
 
 const asList = (v: string | string[] | null | undefined): string[] | undefined =>
@@ -189,6 +197,23 @@ export const WEB_PRESETS: Record<string, WebPreset> = {
         },
         fontCss
       ),
+  },
+
+  // ── Auto-generated (brand-data driven; no slots to fill) ──
+  'slide/palette': {
+    id: 'Slide/Palette',
+    width: 1920,
+    height: 1080,
+    imageSlots: [],
+    autogen: (brand, vars, text, fontCss) => paletteSlideHtml(brand, vars, text, fontCss),
+  },
+
+  'slide/index': {
+    id: 'Slide/Index',
+    width: 1920,
+    height: 1080,
+    imageSlots: [],
+    autogen: (brand, vars, text, fontCss) => indexSlideHtml(brand, vars, text, fontCss),
   },
 };
 
