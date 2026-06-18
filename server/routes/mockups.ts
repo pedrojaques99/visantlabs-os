@@ -580,17 +580,35 @@ router.post(
               }
             }
 
-            // Inject media kit images as style reference images (up to 2, appended after logos)
-            const mediaItems: Array<{ url: string; type: string; label?: string }> =
-              guidelineData.media || [];
-            const styleMedia = mediaItems.filter((m) => m.type === 'image').slice(0, 2);
-            if (styleMedia.length > 0) {
+            // Style references: semantically retrieve the brand's OWN assets most
+            // relevant to THIS brief (Pinecone), bounded to a few — smarter and
+            // cheaper than dumping arbitrary media. Falls back to the first images
+            // when there's no vector index / no match. The agent only sends
+            // {brandGuidelineId, prompt}; this retrieval happens server-side.
+            const MAX_STYLE_REFS = 3;
+            const isSvgUrl = (u: string) => /\.svg(\?|$)/i.test(u) || /svg/i.test(u);
+            let styleMediaUrls: string[] = [];
+            try {
+              const { searchAssets } = await import('../lib/brand/assetVectors.js');
+              const hits = await searchAssets(brandGuidelineId, promptText || '', MAX_STYLE_REFS * 2);
+              styleMediaUrls = hits
+                .filter((h) => h.assetKind === 'media' && h.imageUrl && !isSvgUrl(h.imageUrl))
+                .map((h) => h.imageUrl as string)
+                .slice(0, MAX_STYLE_REFS);
+            } catch {
+              /* vector search unavailable — fall back below */
+            }
+            if (styleMediaUrls.length === 0) {
+              styleMediaUrls = ((guidelineData.media as any[]) || [])
+                .filter((m) => m?.type === 'image' && m.url && !isSvgUrl(m.url))
+                .slice(0, 2)
+                .map((m) => m.url as string);
+            }
+            if (styleMediaUrls.length > 0) {
               const mediaReferenceImages: Array<{ base64: string; mimeType: string }> = [];
-              for (const media of styleMedia) {
-                if (!media.url) continue;
-                if (media.url.toLowerCase().endsWith('.svg') || media.url.includes('svg')) continue;
+              for (const url of styleMediaUrls) {
                 try {
-                  const processed = (await processImageInput({ url: media.url })) as any;
+                  const processed = (await processImageInput({ url })) as any;
                   if (processed && processed.mimeType !== 'image/svg+xml') {
                     mediaReferenceImages.push(processed);
                   }
@@ -601,7 +619,7 @@ router.post(
               if (mediaReferenceImages.length > 0) {
                 finalReferenceImages = [...(finalReferenceImages || []), ...mediaReferenceImages];
                 console.log(
-                  `${logPrefix} [BRAND] Injected ${mediaReferenceImages.length} media kit image(s) as style references`
+                  `${logPrefix} [BRAND] Injected ${mediaReferenceImages.length} retrieved style reference(s)`
                 );
               }
             }
