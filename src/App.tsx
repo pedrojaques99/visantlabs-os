@@ -356,6 +356,7 @@ const App: React.FC = () => {
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
                   <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
                   <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
+                  <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
                   <Route path="/design-system" element={<DesignSystemPage />} />
                   <Route path="/docs" element={<DocsPage />} />
                   <Route path="/developer" element={<DeveloperPortalPage />} />

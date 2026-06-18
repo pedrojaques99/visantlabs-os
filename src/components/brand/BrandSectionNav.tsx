@@ -101,7 +101,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
       <nav
         aria-label={sectionsLabel}
         className={cn(
-          'fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-4 transition-all duration-500',
+          'fixed left-8 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col gap-4 transition-all duration-500',
           collapsed
             ? 'opacity-100 translate-x-0 pointer-events-auto'
             : 'opacity-0 -translate-x-4 pointer-events-none'

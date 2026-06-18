@@ -15,8 +15,6 @@ import {
   AppWindow,
   FileText,
   Presentation,
-  LayoutGrid,
-  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -214,7 +212,8 @@ const BentoCard = ({
 };
 
 export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>('bento');
+  // Always stacked — single-column card flow (no bento/grid toggle).
+  const viewMode: ViewMode = 'stacked';
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
 
   useEffect(() => {
@@ -254,42 +253,12 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
     }
   };
 
-  const actions = (
-    <div className="flex items-center bg-white/[0.02] border border-white/[0.05] rounded-md p-0.5">
-      <button
-        onClick={() => setViewMode('bento')}
-        className={cn(
-          'p-1 rounded transition-all',
-          viewMode === 'bento'
-            ? 'bg-white/10 text-neutral-200'
-            : 'text-neutral-600 hover:text-neutral-400'
-        )}
-        title="Bento View"
-      >
-        <LayoutGrid size={11} strokeWidth={1.5} />
-      </button>
-      <button
-        onClick={() => setViewMode('stacked')}
-        className={cn(
-          'p-1 rounded transition-all',
-          viewMode === 'stacked'
-            ? 'bg-white/10 text-neutral-200'
-            : 'text-neutral-600 hover:text-neutral-400'
-        )}
-        title="Stacked View"
-      >
-        <List size={11} strokeWidth={1.5} />
-      </button>
-    </div>
-  );
-
   return (
     <SectionBlock
       id="preview"
       span={span as any}
       icon={<LayoutTemplate size={14} />}
       title="Brand Preview"
-      actions={actions}
     >
       {!hasMinimum ? (
         <div className="flex flex-col items-center justify-center gap-3 py-12 px-6 text-center">
@@ -299,12 +268,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({ guideline, span 
           </p>
         </div>
       ) : (
-        <div
-          className={cn(
-            'grid gap-4 p-1',
-            viewMode === 'bento' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-12' : 'grid-cols-1'
-          )}
-        >
+        <div className="grid grid-cols-1 gap-4 p-1">
           <AnimatePresence>
             {FORMATS.map((f) => (
               <BentoCard

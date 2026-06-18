@@ -363,7 +363,7 @@ const BrandGrid = ({
 export const BrandGuidelinesPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated } = useLayout();
 
   const urlGuidelineId = searchParams.get('id');
@@ -380,9 +380,15 @@ export const BrandGuidelinesPage: React.FC = () => {
     if (isAuthenticated === false) setShowAuthModal(true);
   }, [isAuthenticated]);
 
-  const handleSelect = useCallback((g: BrandGuideline) => {
-    setSelectedId(g.id!);
-  }, []);
+  // Persist the open brand in the URL (?id=) so the per-tab routing inside the
+  // unified view is deep-linkable and survives refresh.
+  const handleSelect = useCallback(
+    (g: BrandGuideline) => {
+      setSelectedId(g.id!);
+      setSearchParams({ id: g.id! });
+    },
+    [setSearchParams]
+  );
 
   const handleWizardSuccess = useCallback((id: string) => {
     setIsWizardOpen(false);
@@ -404,7 +410,15 @@ export const BrandGuidelinesPage: React.FC = () => {
   // as the public page, with owner advanced edit). Replaces the old duplicated admin
   // editor shell. Wizard still mounts here for creation; the unified view handles edit.
   if (selectedId && !isWizardOpen) {
-    return <PublicBrandGuideline idOverride={selectedId} onBack={() => setSelectedId(null)} />;
+    return (
+      <PublicBrandGuideline
+        idOverride={selectedId}
+        onBack={() => {
+          setSelectedId(null);
+          setSearchParams({});
+        }}
+      />
+    );
   }
 
   return (
