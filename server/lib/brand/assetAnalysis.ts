@@ -150,7 +150,15 @@ async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<Bran
             parts: [{ inlineData: { data: img.data, mimeType: img.mimeType } }, { text: ANALYSIS_PROMPT }],
           },
         ],
-        config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: RESPONSE_SCHEMA as any,
+          // Disable thinking — this is a simple tagging task. With thinking ON,
+          // 2.5-flash spends the output budget reasoning and truncates the JSON
+          // mid-string (the "Unterminated string" failures). Off = faster + valid.
+          thinkingConfig: { thinkingBudget: 0 },
+          maxOutputTokens: 1024,
+        },
       }),
     maxAttempts
   );
