@@ -67,6 +67,7 @@ import {
   marketFromLanguage,
 } from '../lib/brand/seasonalContext.js';
 import { compileFigmaVariables } from '../lib/figma-variable-compiler.js';
+import { buildPresetFillOp } from '../lib/figma-asset-resolver.js';
 import {
   createAnalysisJob,
   saveAnalysisJob,
@@ -2569,6 +2570,43 @@ router.get('/:id/figma-variables', apiRateLimiter, authenticate, async (req: Aut
     res.status(500).json({ error: 'Failed to compile figma variables', message: error?.message });
   }
 });
+
+// POST /api/brand-guidelines/:id/figma-preset-fill — build a complete, deterministic
+// FILL_TEMPLATE op for the Visant Figma plugin: server resolves colors
+// (compileFigmaVariables) + REAL brand images (logos by variant/contrast, photos by
+// semantic search). The agent sends only text + a brief. Owner-gated.
+router.post(
+  '/:id/figma-preset-fill',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+      const { templateName, templateNodeId, text, imageSlots, brief, clone } = req.body || {};
+      if (!templateName && !templateNodeId) {
+        return res.status(400).json({ error: 'templateName or templateNodeId required' });
+      }
+      const operation = await buildPresetFillOp({
+        brand: guideline as any,
+        templateName,
+        templateNodeId,
+        text,
+        imageSlots,
+        brief,
+        clone,
+      });
+      res.json({ operation });
+    } catch (error: any) {
+      console.error('[Figma Preset Fill] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to build preset fill', message: error?.message });
+    }
+  }
+);
 
 // POST /api/brand-guidelines/:id/health-check — opt-in LLM coherence audit
 router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {

@@ -83,6 +83,7 @@ export async function getTemplates(requestId?: string) {
         slots.push({
           id: parsed.id,
           type,
+          variant: parsed.variant,
           optional: parsed.optional,
           list: parsed.list,
           nodeId: node.id,

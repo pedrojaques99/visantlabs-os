@@ -9,11 +9,51 @@ import {
 
 describe('parseSlotName', () => {
   it('parses plain, optional, list, and optional-list slots', () => {
-    expect(parseSlotName('#h1')).toEqual({ id: 'h1', optional: false, list: false });
-    expect(parseSlotName('#h2?')).toEqual({ id: 'h2', optional: true, list: false });
-    expect(parseSlotName('#infos[]')).toEqual({ id: 'infos', optional: false, list: true });
-    expect(parseSlotName('#photo1[]?')).toEqual({ id: 'photo1', optional: true, list: true });
-    expect(parseSlotName('  #cta  ')).toEqual({ id: 'cta', optional: false, list: false });
+    expect(parseSlotName('#h1')).toEqual({
+      id: 'h1',
+      variant: undefined,
+      optional: false,
+      list: false,
+    });
+    expect(parseSlotName('#h2?')).toEqual({
+      id: 'h2',
+      variant: undefined,
+      optional: true,
+      list: false,
+    });
+    expect(parseSlotName('#infos[]')).toEqual({
+      id: 'infos',
+      variant: undefined,
+      optional: false,
+      list: true,
+    });
+    expect(parseSlotName('#photo1[]?')).toEqual({
+      id: 'photo1',
+      variant: undefined,
+      optional: true,
+      list: true,
+    });
+    expect(parseSlotName('  #cta  ')).toEqual({
+      id: 'cta',
+      variant: undefined,
+      optional: false,
+      list: false,
+    });
+  });
+
+  it('parses an asset variant (#logo:dark)', () => {
+    expect(parseSlotName('#logo:dark')).toEqual({
+      id: 'logo',
+      variant: 'dark',
+      optional: false,
+      list: false,
+    });
+    expect(parseSlotName('#logo:light?')).toEqual({
+      id: 'logo',
+      variant: 'light',
+      optional: true,
+      list: false,
+    });
   });
 
   it('rejects non-slot layer names', () => {
