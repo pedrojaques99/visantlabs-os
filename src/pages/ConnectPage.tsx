@@ -119,7 +119,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         id: 'claude',
         name: 'Claude',
         tag: 'Recomendado',
-        open: 'https://claude.ai/settings/connectors',
+        open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
         steps: [
           'Abra o Claude → Configurações → Conectores',
           'Clique em "Adicionar conector personalizado"',
@@ -131,7 +131,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         id: 'chatgpt',
         name: 'ChatGPT',
         tag: '',
-        open: 'https://chatgpt.com',
+        open: 'https://chatgpt.com/apps#settings/Connectors',
         steps: [
           'Abra o ChatGPT → Configurações → Conectores',
           'Adicione um conector',
@@ -171,7 +171,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         id: 'claude',
         name: 'Claude',
         tag: 'Recommended',
-        open: 'https://claude.ai/settings/connectors',
+        open: 'https://claude.ai/customize/connectors?modal=add-custom-connector',
         steps: [
           'Open Claude → Settings → Connectors',
           'Click "Add custom connector"',
@@ -183,7 +183,7 @@ const COPY: Record<'pt' | 'en', ConnectCopy> = {
         id: 'chatgpt',
         name: 'ChatGPT',
         tag: '',
-        open: 'https://chatgpt.com',
+        open: 'https://chatgpt.com/apps#settings/Connectors',
         steps: [
           'Open ChatGPT → Settings → Connectors',
           'Add a connector',
