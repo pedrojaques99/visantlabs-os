@@ -1521,6 +1521,12 @@ const OPS_VARIABLES = `## VARIABLE OPERATIONS
 - CREATE_COLOR_VARIABLES_FROM_SELECTION: { type, ref?, collectionName? }
 - BIND_NEAREST_COLOR_VARIABLES: { type, ref?, threshold?, scope?: "selection"|"page", collectionName? }`;
 
+const OPS_PRESET = `## PRESET FILL (deterministic — PREFER this when a [Template] exists)
+A [Template] frame self-describes its fillable #slots (text/image) + Brand variables.
+Fill it with ONE op — NEVER rebuild the layout:
+- FILL_TEMPLATE: { type, templateName | templateNodeId, clone?: true, slots: { "<slotId>": "text" | ["line","line"] | { imageUrl } | null }, brandMode?: { collectionName, modeName, values: [{ name, type:"COLOR"|"STRING"|"FLOAT", value }] } }
+Rules: only use slot ids that exist in the template; null/omit an OPTIONAL slot to hide it; brandMode values come from the brand's compiled figma-variables. Describe NO geometry — the template owns layout.`;
+
 // ── Few-shot Examples by Intent ──
 
 const EXAMPLE_CREATE = `## EXAMPLE
@@ -1563,12 +1569,20 @@ ${enriched.reusableAssets
 
 function buildTemplatesSection(enriched: EnrichedContext): string {
   if (!enriched.templates?.length) return '';
-  return `\n## TEMPLATES (clone with textOverrides)
-${enriched.templates
-  .map(
-    (t) => `- "${t.name}" (${t.width}x${t.height}) - slots: ${t.textSlots?.join(', ') || 'none'}`
-  )
-  .join('\n')}`;
+  // Render the typed #slot manifest when present (preferred — drives FILL_TEMPLATE);
+  // fall back to the legacy textSlots list for older context payloads.
+  const describe = (t: any): string => {
+    const slots = Array.isArray(t.slots) ? t.slots : null;
+    if (slots?.length) {
+      const s = slots
+        .map((sl: any) => `${sl.id}:${sl.type}${sl.optional ? '?' : ''}${sl.list ? '[]' : ''}`)
+        .join(', ');
+      return `- "${t.name}" (${t.width}x${t.height}${t.aspect ? `, ${t.aspect}` : ''}) — #slots: ${s}`;
+    }
+    return `- "${t.name}" (${t.width}x${t.height}) - slots: ${t.textSlots?.join(', ') || 'none'}`;
+  };
+  return `\n## TEMPLATES (PREFER FILL_TEMPLATE — fill #slots, don't rebuild)
+${enriched.templates.map(describe).join('\n')}`;
 }
 
 function buildPagesSection(enriched: EnrichedContext): string {
@@ -1628,6 +1642,8 @@ function buildSystemPrompt(
   if (enriched.reusableAssets?.length || enriched.templates?.length) {
     if (!sections.includes(OPS_CLONE)) sections.push(OPS_CLONE);
     sections.push(OPS_VARIABLES);
+    // When presets exist, teach the deterministic fill op (preferred over rebuilding).
+    if (enriched.templates?.length) sections.push(OPS_PRESET);
   }
 
   sections.push(buildAssetsSection(enriched));
