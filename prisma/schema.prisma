@@ -75,6 +75,7 @@ model User {
   canvasProjects   CanvasProject[]
   canvasWorkflows  CanvasWorkflow[]
   creativeProjects CreativeProject[]
+  campaigns        Campaign[]
   customPdfPresets CustomPdfPreset[]
   surpriseMePresets SurpriseMePreset[]
   brandGuidelines BrandGuideline[]
@@ -101,6 +102,7 @@ model Mockup {
   seed         Int?     // Seed used for this generation (deterministic reproduction)
   modelUsed    String?  // Exact model version used (e.g. "seedream-4.5", "gemini-2.5-flash-image")
   isLiked      Boolean? // User's like status for this mockup
+  brandGuidelineId String? @db.ObjectId // linked brand guideline (enables brand-scoped library)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -109,6 +111,7 @@ model Mockup {
   @@index([userId])
   @@index([createdAt])
   @@index([userId, createdAt])
+  @@index([brandGuidelineId])
   @@map("mockups")
 }
 
@@ -215,6 +218,7 @@ model BudgetProject {
   brandLogo         String?   // base64 ou URL R2
   brandBackgroundColor String? // Cor de fundo da marca
   brandAccentColor  String?   // Cor de destaque da marca
+  brandGuidelineId  String?   @db.ObjectId // linked brand guideline (enables brand-scoped library)
   shareId           String?   // Handled by sparse index manually
   data              Json      // JSON completo para backup/flexibilidade
   // Campos para layout empresarial
@@ -232,7 +236,43 @@ model BudgetProject {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([brandGuidelineId])
   @@map("budget_projects")
+}
+
+/// Persisted ad/content campaign. Promotes the previously ephemeral (Redis, 2h TTL)
+/// campaign job into a durable, brand-scoped container that owns its generated creatives.
+/// Brand is the INPUT: a campaign is generated FROM a brand guideline.
+model Campaign {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @db.ObjectId
+  name             String   @default("Untitled Campaign")
+
+  // Inputs (the brief that produced the creatives)
+  brandGuidelineId String?  @db.ObjectId // brand used as generation context
+  brief            String   @default("")
+  productImageUrl  String?
+  formats          String[] // ['square','story','banner','portrait']
+  model            String?  // image model used
+
+  // Live job linkage (Redis job for in-flight polling) + persisted progress
+  jobId            String?  // campaign:<jobId> in Redis while generating
+  status           String   @default("planning") // planning | generating | done | error
+  totalCount       Int      @default(0)
+  completedCount   Int      @default(0)
+  results          Json?    // CampaignResult[] — persisted snapshot of outputs
+  error            String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([brandGuidelineId])
+  @@index([userId, createdAt])
+  @@index([jobId])
+  @@map("campaigns")
 }
 
 model Product {
@@ -289,6 +329,7 @@ model CreativeProject {
   prompt          String
   format          String   // '1:1' | '9:16' | '16:9' | '4:5'
   brandId         String?  @db.ObjectId // linked brand guideline
+  campaignId      String?  @db.ObjectId // linked campaign (creatives produced under a campaign)
 
   // AI output + editor state (single source of truth for reload)
   backgroundUrl   String?
@@ -308,6 +349,7 @@ model CreativeProject {
 
   @@index([userId])
   @@index([brandId])
+  @@index([campaignId])
   @@index([adminChatSessionId])
   @@index([createdAt])
   @@map("creative_projects")

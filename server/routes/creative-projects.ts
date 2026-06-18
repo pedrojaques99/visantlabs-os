@@ -30,6 +30,7 @@ interface CreativeProjectPayload {
   prompt: string;
   format: string;
   brandId?: string | null;
+  campaignId?: string | null;
   backgroundUrl?: string | null;
   overlay?: unknown;
   layers: unknown;
@@ -137,6 +138,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         prompt: body.prompt,
         format: body.format,
         brandId: body.brandId || null,
+        campaignId: body.campaignId || null,
         backgroundUrl: body.backgroundUrl || null,
         overlay: (body.overlay ?? null) as any,
         layers: body.layers as any,

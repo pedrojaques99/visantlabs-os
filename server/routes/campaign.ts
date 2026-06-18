@@ -81,6 +81,30 @@ async function loadJob(jobId: string): Promise<CampaignJob | null> {
   return raw ? (JSON.parse(raw) as CampaignJob) : null;
 }
 
+// ─── Durable persistence (survives Redis 2h TTL) ──────────────────────────────
+// Best-effort: campaign progress is mirrored to the Campaign Prisma model so the
+// work produced for a brand is not lost when the Redis job expires.
+
+async function persistCampaign(
+  campaignId: string | undefined,
+  patch: {
+    status?: string;
+    completedCount?: number;
+    results?: CampaignResult[];
+    error?: string;
+  }
+): Promise<void> {
+  if (!campaignId) return;
+  try {
+    await prisma.campaign.update({
+      where: { id: campaignId },
+      data: patch as any,
+    });
+  } catch (err) {
+    console.error('[campaign] Failed to persist campaign update:', err);
+  }
+}
+
 // ─── Prompt planning via GPT-4o ───────────────────────────────────────────────
 
 async function planPrompts(params: {
@@ -232,6 +256,7 @@ async function generateOneImage(params: {
 
 async function runCampaign(params: {
   job: CampaignJob;
+  campaignId?: string;
   brandGuidelineId?: string;
   productImageUrl: string;
   brief: string;
@@ -243,6 +268,7 @@ async function runCampaign(params: {
 }): Promise<void> {
   const {
     job,
+    campaignId,
     brandGuidelineId,
     productImageUrl,
     brief,
@@ -280,6 +306,7 @@ async function runCampaign(params: {
       status: 'pending' as const,
     }));
     await saveJob(job);
+    await persistCampaign(campaignId, { status: 'generating', results: job.results });
 
     // Step 3: Generate all images with bounded concurrency
     const queue = planned.map((_, i) => i);
@@ -315,6 +342,11 @@ async function runCampaign(params: {
 
     job.status = 'done';
     await saveJob(job);
+    await persistCampaign(campaignId, {
+      status: 'done',
+      completedCount: job.completedCount,
+      results: job.results,
+    });
 
     // Refund credits for images that failed — user only pays for delivered results
     const failedCount = job.results.filter((r) => r.status === 'error').length;
@@ -333,6 +365,12 @@ async function runCampaign(params: {
     job.status = 'error';
     job.error = err.message;
     await saveJob(job);
+    await persistCampaign(campaignId, {
+      status: 'error',
+      error: err.message,
+      completedCount: job.completedCount,
+      results: job.results,
+    });
 
     // Planning (or setup) failed before any image was delivered — refund everything
     // minus images already completed.
@@ -401,8 +439,36 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   };
 
   await saveJob(job);
+
+  // Persist a durable, brand-scoped campaign record. Survives the Redis 2h TTL so
+  // the user's campaign (and its creatives) remain queryable from the brand cockpit.
+  let campaignId: string | undefined;
+  try {
+    const campaign = await prisma.campaign.create({
+      data: {
+        userId: req.userId,
+        name: brief?.trim().slice(0, 80) || 'Untitled Campaign',
+        brandGuidelineId: brandGuidelineId || null,
+        brief: brief || '',
+        productImageUrl,
+        formats: safeFormats,
+        model,
+        jobId: job.jobId,
+        status: 'planning',
+        totalCount: safeCount,
+        completedCount: 0,
+        results: [],
+      },
+      select: { id: true },
+    });
+    campaignId = campaign.id;
+  } catch (err) {
+    console.error('[campaign] Failed to persist campaign record:', err);
+  }
+
   res.status(202).json({
     jobId: job.jobId,
+    campaignId,
     totalCount: safeCount,
     creditsCharged: chargeResult.creditsDeducted,
   });
@@ -410,6 +476,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
   // Run async — do not await (fire-and-forget with full error capture inside runCampaign)
   runCampaign({
     job,
+    campaignId,
     brandGuidelineId,
     productImageUrl,
     brief,
@@ -429,9 +496,24 @@ router.get('/:jobId', authenticate, async (req: AuthRequest, res) => {
   if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
 
   const job = await loadJob(req.params.jobId);
-  if (!job) return res.status(404).json({ error: 'Job not found or expired (TTL: 2h)' });
+  if (job) return res.json(job);
 
-  res.json(job);
+  // Redis miss (expired after 2h, or Redis down) — fall back to the persisted record.
+  const campaign = await prisma.campaign.findFirst({
+    where: { jobId: req.params.jobId, userId: req.userId },
+  });
+  if (!campaign) return res.status(404).json({ error: 'Job not found' });
+
+  return res.json({
+    jobId: campaign.jobId,
+    campaignId: campaign.id,
+    status: campaign.status,
+    createdAt: campaign.createdAt.getTime(),
+    totalCount: campaign.totalCount,
+    completedCount: campaign.completedCount,
+    results: (campaign.results as unknown as CampaignResult[]) ?? [],
+    error: campaign.error ?? undefined,
+  });
 });
 
 export default router;
