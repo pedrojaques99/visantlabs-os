@@ -36,7 +36,8 @@ describe('buildFontCss', () => {
     const lastImport = lines.map((l) => l.startsWith('@import')).lastIndexOf(true);
     const firstNonImport = lines.findIndex((l) => !l.startsWith('@import'));
     expect(firstNonImport === -1 || lastImport < firstNonImport).toBe(true);
-    expect(families).toEqual(['Open Sans', 'Geist']);
+    // @fontsource declares Geist as "Geist Sans" — families must be CSS-usable.
+    expect(families).toEqual(['Open Sans', 'Geist Sans']);
   });
 
   it('builds a Google Fonts href for non-uploaded families', () => {

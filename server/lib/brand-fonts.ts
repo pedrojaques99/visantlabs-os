@@ -25,10 +25,23 @@ const FONTSOURCE_SLUG: Record<string, string> = {
   'geist mono': 'geist-mono',
 };
 
+/** family → the font-family name @fontsource actually DECLARES (often differs). */
+const FONTSOURCE_FAMILY: Record<string, string> = {
+  geist: 'Geist Sans',
+  'geist mono': 'Geist Mono',
+};
+
 export function fontSlug(family: string): string {
   const key = family.trim().toLowerCase();
   if (FONTSOURCE_SLUG[key]) return FONTSOURCE_SLUG[key];
   return key.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+/** The font-family name to USE in CSS. With an uploaded WOFF2 we declare the brand
+ * name ourselves; via @fontsource we must use the name that package declares. */
+export function usableFamily(family: string, hasWoff2: boolean): string {
+  if (hasWoff2) return family;
+  return FONTSOURCE_FAMILY[family.trim().toLowerCase()] || family;
 }
 
 const DEFAULT_WEIGHTS = [400, 500, 700];
@@ -55,7 +68,7 @@ export function buildFontCss(fonts: BrandFontSpec[]): { css: string; families: s
   const families: string[] = [];
 
   for (const f of fonts) {
-    families.push(f.family);
+    families.push(usableFamily(f.family, !!f.woff2Url));
     if (f.woff2Url) {
       for (const w of f.weights?.length ? f.weights : DEFAULT_WEIGHTS) {
         parts.push(
