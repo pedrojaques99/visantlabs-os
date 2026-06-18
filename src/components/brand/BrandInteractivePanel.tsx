@@ -10,19 +10,22 @@ import {
   CalendarClock,
   Loader2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
 import { brandGuidelineApi, type BrandSuggestion } from '@/services/brandGuidelineApi';
 
 /**
  * Owner-only interactive band for the brand overview. Two jobs:
  *  (A) Seasonal/contextual on-brand IDEAS (free, cached) → one-tap into the mockup
- *      generator. This is the differentiator made tangible: the brand *makes* things.
- *  (B) "Connect to your AI" bento — surfaces the connect/context/compile actions
- *      that were buried in menus, for people allowed to generate.
+ *      generator. The differentiator made tangible: the brand *makes* things.
+ *  (B) "Connect to your AI" bento — surfaces connect/context/compile for people
+ *      allowed to generate.
  *
- * Composes existing primitives only. Renders nothing destructive: if AI text isn't
- * configured the ideas block degrades to a quiet note and the connect bento stays.
+ * Glass-minimal, themed off the brand CSS vars (`--brand-surface`, `--brand-text`,
+ * `--accent`) exactly like the sibling BrandOverviewBento — accent stays scarce
+ * (primary action + selected state only). Reuses GlassPanel + MicroTitle; adds no
+ * new primitives.
  */
 
 interface SeasonalMoment {
@@ -51,6 +54,44 @@ function friendlyError(e: unknown): { code?: string; message: string } {
     return { code, message: 'AI ideas are temporarily unavailable — try again shortly.' };
   return { code, message: e instanceof Error ? e.message : 'Could not load ideas.' };
 }
+
+// Shared ghost-button treatment: thin brand-tinted border, surface fill on hover.
+const ghostBtn =
+  'inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--brand-text)]/12 ' +
+  'text-[var(--brand-text)]/65 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.04] ' +
+  'hover:border-[var(--brand-text)]/20 transition-colors disabled:opacity-40';
+
+// Official assistant marks (reuse the same assets as the public connect page).
+const ASSISTANTS: Array<{ id: string; label: string; node: React.ReactNode }> = [
+  {
+    id: 'claude',
+    label: 'Claude',
+    node: <img src="/models/claude-color.svg" alt="Claude" className="w-5 h-5" />,
+  },
+  {
+    id: 'openai',
+    label: 'ChatGPT',
+    node: (
+      <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#10A37F]" fill="currentColor" aria-hidden>
+        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'cursor',
+    label: 'Cursor',
+    node: (
+      <svg
+        viewBox="0 0 24 24"
+        className="w-5 h-5 text-[var(--brand-text)]/80"
+        fill="currentColor"
+        aria-hidden
+      >
+        <path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23" />
+      </svg>
+    ),
+  },
+];
 
 export const BrandInteractivePanel: React.FC<Props> = ({
   guidelineId,
@@ -142,20 +183,23 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   return (
     <div
       className={cn(
-        'mx-auto w-full max-w-6xl px-4 sm:px-6 my-6 grid gap-4 lg:grid-cols-3',
+        'mx-auto w-full max-w-6xl px-4 sm:px-6 my-8 grid gap-4 lg:grid-cols-3',
         className
       )}
     >
       {/* ── (A) Seasonal ideas ── */}
-      <div className="lg:col-span-2 rounded-2xl border border-violet-500/15 bg-violet-500/[0.03] p-5">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2 min-w-0">
-            <Sparkles size={14} className="text-violet-400 shrink-0" />
-            <h3 className="text-[11px] font-mono uppercase tracking-[0.18em] text-neutral-300">
+      <GlassPanel
+        padding="md"
+        className="lg:col-span-2 bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
+      >
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Sparkles size={13} className="text-[var(--accent)] shrink-0" />
+            <MicroTitle className="text-[var(--brand-text)]/50 tracking-[0.15em]">
               Make something on-brand
-            </h3>
+            </MicroTitle>
             {seasonal && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-violet-300/80 bg-violet-500/10 px-2 py-0.5 rounded-full">
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-[var(--accent)]/80 bg-[var(--accent)]/8 px-2 py-0.5 rounded-full">
                 <CalendarClock size={10} />
                 {seasonal.label} · ~{seasonal.daysAway}d
               </span>
@@ -164,7 +208,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           <button
             onClick={() => load(true)}
             disabled={loading || refreshing}
-            className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/40 hover:text-[var(--accent)] transition-colors disabled:opacity-40"
             aria-label="Refresh ideas"
           >
             <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
@@ -173,39 +217,39 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 text-[11px] text-neutral-500 py-8 justify-center">
+          <div className="flex items-center gap-2 text-xs text-[var(--brand-text)]/45 py-10 justify-center">
             <Loader2 size={13} className="animate-spin" /> Reading the brand + what’s coming up…
           </div>
         ) : error && suggestions.length === 0 ? (
-          <p className="text-[11px] text-neutral-500 py-6 text-center">{error}</p>
+          <p className="text-xs text-[var(--brand-text)]/45 py-8 text-center">{error}</p>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-2.5">
+          <div className="grid sm:grid-cols-2 gap-3">
             {suggestions.map((s, i) => (
               <div
                 key={i}
-                className="group flex flex-col gap-2 rounded-xl border border-neutral-800 bg-white/[0.02] p-3.5 hover:border-violet-500/25 transition-colors"
+                className="group flex flex-col gap-2.5 rounded-xl border border-[var(--brand-text)]/10 bg-[var(--brand-surface)]/20 p-4 hover:border-[var(--brand-text)]/20 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-xs font-semibold text-neutral-200 leading-snug">
+                  <span className="text-sm font-medium text-[var(--brand-text)] leading-snug">
                     {s.title}
                   </span>
-                  <span className="shrink-0 text-[9px] font-mono uppercase text-neutral-600 bg-white/5 px-1.5 py-0.5 rounded">
+                  <span className="shrink-0 text-[9px] font-mono uppercase tracking-wider text-[var(--brand-text)]/35 mt-0.5">
                     {s.aspectRatio}
                   </span>
                 </div>
-                <p className="text-[11px] text-neutral-500 leading-relaxed line-clamp-2 flex-1">
+                <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed line-clamp-2 flex-1">
                   {s.rationale}
                 </p>
-                <div className="flex items-center gap-1.5 pt-1">
-                  <Button
+                <div className="flex items-center gap-2 pt-0.5">
+                  <button
                     onClick={() => onGenerate(s.prompt)}
-                    className="h-7 px-3 gap-1.5 text-[11px] bg-violet-500/20 border border-violet-500/30 text-violet-200 hover:bg-violet-500/30"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg text-[11px] font-medium text-[var(--accent)] border border-[var(--accent)]/25 hover:bg-[var(--accent)]/10 transition-colors"
                   >
                     <Wand2 size={11} /> Generate
-                  </Button>
+                  </button>
                   <button
                     onClick={() => copyPrompt(s.prompt)}
-                    className="h-7 w-7 flex items-center justify-center rounded-md border border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:border-neutral-700 transition-colors"
+                    className={cn(ghostBtn, 'h-7 w-7')}
                     aria-label="Copy prompt"
                     title="Copy prompt"
                   >
@@ -216,34 +260,50 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             ))}
           </div>
         )}
-      </div>
+      </GlassPanel>
 
       {/* ── (B) Connect to your AI ── */}
-      <div className="rounded-2xl border border-neutral-800 bg-white/[0.02] p-5 flex flex-col">
-        <div className="flex items-center gap-2 mb-2">
-          <Plug size={14} className="text-emerald-400" />
-          <h3 className="text-[11px] font-mono uppercase tracking-[0.18em] text-neutral-300">
+      <GlassPanel
+        padding="md"
+        className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10 flex flex-col"
+      >
+        <div className="flex items-center gap-2.5 mb-4">
+          <Plug size={13} className="text-[var(--accent)]" />
+          <MicroTitle className="text-[var(--brand-text)]/50 tracking-[0.15em]">
             Use as live AI context
-          </h3>
+          </MicroTitle>
         </div>
-        <p className="text-[11px] text-neutral-500 leading-relaxed mb-4">
-          Plug this brand into Claude, ChatGPT or Cursor so everything they make comes out on-brand.
+
+        {/* Visual hero: the assistants this brand plugs into. */}
+        <div className="inline-flex items-center gap-1 self-start p-1.5 mb-4 rounded-2xl bg-[var(--brand-text)]/[0.04] border border-[var(--brand-text)]/10">
+          {ASSISTANTS.map((a) => (
+            <div
+              key={a.id}
+              title={a.label}
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--brand-surface)]/30 border border-[var(--brand-text)]/[0.06]"
+            >
+              {a.node}
+            </div>
+          ))}
+        </div>
+
+        <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed mb-5">
+          On-brand by default — colors, fonts, logos & voice, automatically.
         </p>
 
         <div className="flex flex-col gap-2 mt-auto">
-          <Button
+          <button
             onClick={onConnect}
             disabled={connecting}
-            className="h-9 justify-start gap-2 text-xs bg-emerald-500/15 border border-emerald-500/25 text-emerald-200 hover:bg-emerald-500/25"
+            className="inline-flex items-center justify-start gap-2 h-9 px-3 rounded-lg text-xs font-medium text-[var(--accent)] bg-[var(--accent)]/12 border border-[var(--accent)]/25 hover:bg-[var(--accent)]/20 transition-colors disabled:opacity-40"
           >
             {connecting ? <Loader2 size={13} className="animate-spin" /> : <Plug size={13} />}
             {isShared ? 'Connect to your AI' : 'Share + connect to your AI'}
-          </Button>
-          <Button
-            variant="ghost"
+          </button>
+          <button
             onClick={copyContext}
             disabled={busy === 'context'}
-            className="h-9 justify-start gap-2 text-xs text-neutral-400 border border-neutral-800 hover:bg-white/5"
+            className={cn(ghostBtn, 'h-9 px-3 text-xs justify-start')}
           >
             {busy === 'context' ? (
               <Loader2 size={13} className="animate-spin" />
@@ -251,33 +311,31 @@ export const BrandInteractivePanel: React.FC<Props> = ({
               <Copy size={13} />
             )}
             Copy brand context
-          </Button>
+          </button>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
+            <button
               onClick={() => compileTokens('css')}
               disabled={busy === 'css'}
-              className="h-9 flex-1 justify-center gap-1.5 text-[11px] text-neutral-400 border border-neutral-800 hover:bg-white/5"
+              className={cn(ghostBtn, 'h-9 flex-1 text-[11px]')}
             >
               <FileCode size={12} /> CSS
-            </Button>
-            <Button
-              variant="ghost"
+            </button>
+            <button
               onClick={() => compileTokens('tailwind')}
               disabled={busy === 'tailwind'}
-              className="h-9 flex-1 justify-center gap-1.5 text-[11px] text-neutral-400 border border-neutral-800 hover:bg-white/5"
+              className={cn(ghostBtn, 'h-9 flex-1 text-[11px]')}
             >
               <FileCode size={12} /> Tailwind
-            </Button>
+            </button>
           </div>
         </div>
         {!aiConfigured && (
-          <p className="text-[10px] text-neutral-600 mt-3 leading-relaxed">
+          <p className="text-[10px] text-[var(--brand-text)]/40 mt-4 leading-relaxed">
             Tip: set a cheap text-provider key (Groq / NVIDIA NIM) to unlock seasonal idea
             suggestions.
           </p>
         )}
-      </div>
+      </GlassPanel>
     </div>
   );
 };
