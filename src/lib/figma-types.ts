@@ -505,6 +505,7 @@ export type FigmaOperation =
         opacity?: number;
       };
       textOverrides?: Array<{ name: string; content: string }>;
+      imageOverrides?: Array<{ layerName: string; sourceNodeName: string }>;
     }
   | {
       type: 'DUPLICATE_NODE';
@@ -568,6 +569,32 @@ export type FigmaOperation =
       threshold?: number;
       scope?: 'selection' | 'page';
       collectionName?: string;
+    }
+  // ═══ PRESET FILL (deterministic: clone a [Template], fill named #slots, apply
+  //     a per-brand variable MODE, hide omitted optionals). The AI only supplies
+  //     the slot content + brand token values — never geometry. See `figma-slots`. ═══
+  | {
+      type: 'FILL_TEMPLATE';
+      ref?: string;
+      /** The `[Template]` frame to fill, by id or name. */
+      templateNodeId?: string;
+      templateName?: string;
+      /** Fill a clone (default) so the master stays pristine. */
+      clone?: boolean;
+      /** Where to place the clone (default: next to the master). */
+      parentNodeId?: string;
+      /** `#slot` content keyed by slot id. `null`/omitted hides an optional slot. */
+      slots: Record<string, string | string[] | { imageUrl?: string; imageHash?: string } | null>;
+      /** Per-brand theme: add a mode to the collection, set values, switch the frame. */
+      brandMode?: {
+        collectionName: string;
+        modeName: string;
+        values: Array<{
+          name: string;
+          type: 'COLOR' | 'STRING' | 'FLOAT';
+          value: { r: number; g: number; b: number; a: number } | string | number;
+        }>;
+      };
     }
   | {
       type: 'REQUEST_SCAN';

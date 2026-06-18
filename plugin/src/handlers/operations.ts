@@ -1,6 +1,7 @@
 /// <reference types="@figma/plugin-typings" />
 
 import type { FigmaOperation } from '../../../src/lib/figma-types';
+import { parseSlotName } from '../../../src/lib/figma-slots';
 import { postToUI } from '../utils/postMessage';
 import { ensurePagesLoaded, setPagesLoaded, setCanUndo, DEFAULT_FONT } from '../state';
 import { serializeNode, serializeSelection } from '../utils/serialize';
@@ -592,6 +593,123 @@ async function processOperation(op: FigmaOperation, ctx: OperationContext) {
       mimeType: result.mimeType,
     });
     pushSummary(`Exportado ${result.frameCount} frames → ${result.filename} (${result.format})`);
+    return;
+  }
+
+  // ═══ FILL_TEMPLATE (deterministic preset fill: clone + #slots + per-brand mode) ═══
+  if (op.type === 'FILL_TEMPLATE') {
+    // 1. Resolve the [Template] master (by id or name).
+    let master: SceneNode | null = null;
+    if (op.templateNodeId) {
+      master = (await figma.getNodeByIdAsync(op.templateNodeId)) as SceneNode | null;
+    }
+    if (!master && op.templateName) {
+      const want = op.templateName.replace(/^\[Template\]\s*/, '');
+      master = figma.currentPage.findOne(
+        (n) =>
+          n.type === 'FRAME' &&
+          (n.name === op.templateName || n.name.replace(/^\[Template\]\s*/, '') === want)
+      );
+    }
+    if (!master || !('clone' in master)) {
+      pushSummary(
+        `FILL_TEMPLATE: template não encontrado (${op.templateName || op.templateNodeId})`
+      );
+      return;
+    }
+
+    // 2. Clone (default) so the master stays pristine.
+    const target = (op.clone === false ? master : (master as FrameNode).clone()) as FrameNode;
+    if (op.clone !== false) {
+      const parent = op.parentNodeId
+        ? ((await figma.getNodeByIdAsync(op.parentNodeId)) as (BaseNode & ChildrenMixin) | null)
+        : master.parent;
+      (parent || figma.currentPage).appendChild(target);
+      target.x = master.x + master.width + 80;
+      target.y = master.y;
+      target.name = `${master.name.replace(/^\[Template\]\s*/, '')} — filled`;
+    }
+
+    // 3. Index slot nodes in the clone by parsed slot id.
+    const slotNodes = new Map<string, SceneNode[]>();
+    const indexSlots = (node: SceneNode) => {
+      if (parseSlotName(node.name)) {
+        const id = parseSlotName(node.name)!.id;
+        const arr = slotNodes.get(id) || [];
+        arr.push(node);
+        slotNodes.set(id, arr);
+      }
+      if ('children' in node) for (const c of (node as FrameNode).children) indexSlots(c);
+    };
+    indexSlots(target);
+
+    // 4. Fill provided slots; hide omitted optional slots.
+    const slots = op.slots || {};
+    for (const [id, nodes] of slotNodes) {
+      const value = slots[id];
+      const provided = value !== null && value !== undefined;
+      for (const node of nodes) {
+        if (!provided) {
+          if (parseSlotName(node.name)?.optional) node.visible = false;
+          continue;
+        }
+        if (node.type === 'TEXT') {
+          const tn = node as TextNode;
+          const fontName = typeof tn.fontName !== 'symbol' ? tn.fontName : DEFAULT_FONT;
+          try {
+            await figma.loadFontAsync(fontName);
+          } catch {
+            await figma.loadFontAsync(DEFAULT_FONT);
+          }
+          tn.characters = Array.isArray(value) ? value.join('\n') : String(value);
+        } else if ('fills' in node) {
+          const img = value as { imageUrl?: string; imageHash?: string };
+          let hash = img.imageHash;
+          if (!hash && img.imageUrl) {
+            try {
+              hash = (await figma.createImageAsync(img.imageUrl)).hash;
+            } catch {
+              hash = undefined;
+            }
+          }
+          if (hash) {
+            (node as any).fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: hash }];
+          }
+        }
+      }
+    }
+
+    // 5. Apply the per-brand variable MODE — deterministic retheme, zero AI on layout.
+    if (op.brandMode) {
+      try {
+        const collections = await figma.variables.getLocalVariableCollectionsAsync();
+        const collection = collections.find((c) => c.name === op.brandMode!.collectionName);
+        if (collection) {
+          const existing = collection.modes.find((m) => m.name === op.brandMode!.modeName);
+          const modeId = existing ? existing.modeId : collection.addMode(op.brandMode!.modeName);
+          const localVars = await figma.variables.getLocalVariablesAsync();
+          for (const val of op.brandMode!.values) {
+            const variable = localVars.find(
+              (v) => v.variableCollectionId === collection.id && v.name === val.name
+            );
+            if (variable) {
+              try {
+                variable.setValueForMode(modeId, val.value as any);
+              } catch {
+                /* type mismatch — skip this token */
+              }
+            }
+          }
+          target.setExplicitVariableModeForCollection(collection, modeId);
+        }
+      } catch (e) {
+        pushSummary(`FILL_TEMPLATE: brand mode falhou (${(e as any)?.message || e})`);
+      }
+    }
+
+    if (op.ref) createdNodes.set(op.ref, target);
+    figma.currentPage.selection = [target];
+    pushSummary(`Preset preenchido: ${target.name}`, target);
     return;
   }
 
