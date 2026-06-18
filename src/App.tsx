@@ -112,6 +112,9 @@ const AboutPage = lazyWithRetry(() =>
 const PrivacyPolicyPage = lazyWithRetry(() =>
   import('./pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
 );
+const TermsOfServicePage = lazyWithRetry(() =>
+  import('./pages/TermsOfServicePage').then((m) => ({ default: m.TermsOfServicePage }))
+);
 const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
 const ConnectPage = lazyWithRetry(() => import('./pages/ConnectPage'));
 const AuthCallbackPage = lazyWithRetry(() =>
@@ -354,6 +357,7 @@ const App: React.FC = () => {
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/onboard" element={<OnboardPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms" element={<TermsOfServicePage />} />
                   <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
                   <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
                   <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
