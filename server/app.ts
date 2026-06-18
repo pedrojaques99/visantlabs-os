@@ -167,6 +167,9 @@ export function createApp() {
             'https://api.visantlabs.com',
             'https://www.visantlabs.com',
             'https://claude.ai',
+            // ChatGPT connector OAuth redirects the consent form to chatgpt.com.
+            'https://chatgpt.com',
+            'https://chat.openai.com',
             'http://localhost:*',
           ],
           objectSrc: ["'none'"],
@@ -189,6 +192,13 @@ export function createApp() {
     'https://api.anthropic.com',
   ];
 
+  // ChatGPT connector (MCP) — OAuth consent + MCP calls come from these origins.
+  const openaiOrigins = [
+    'https://chatgpt.com',
+    'https://chat.openai.com',
+    'https://platform.openai.com',
+  ];
+
   const devOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
@@ -202,7 +212,7 @@ export function createApp() {
 
   const selfOrigin = API_BASE_URL; // OAuth login page is served from the API domain
   const allAllowedOrigins = [
-    ...new Set([...envFrontendOrigins, ...claudeOrigins, ...devOrigins, selfOrigin]),
+    ...new Set([...envFrontendOrigins, ...claudeOrigins, ...openaiOrigins, ...devOrigins, selfOrigin]),
   ];
 
   app.use(
@@ -426,7 +436,7 @@ export function createApp() {
       .filter(Boolean)
       .flatMap((url) => (url as string).split(',').map((u) => u.trim()))
       .filter(Boolean);
-    const allowed = [...claudeDomains, ...visantDomains, ...envOrigins];
+    const allowed = [...claudeDomains, ...openaiOrigins, ...visantDomains, ...envOrigins];
     if (process.env.NODE_ENV !== 'production') {
       if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('ngrok'))
         return true;
