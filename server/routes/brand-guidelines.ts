@@ -68,6 +68,7 @@ import {
 } from '../lib/brand/seasonalContext.js';
 import { compileFigmaVariables } from '../lib/figma-variable-compiler.js';
 import { buildPresetFillOp } from '../lib/figma-asset-resolver.js';
+import { listFigmaTemplates } from '../lib/figma-template-scan.js';
 import {
   createAnalysisJob,
   saveAnalysisJob,
@@ -2607,6 +2608,39 @@ router.post(
     }
   }
 );
+
+// GET /api/brand-guidelines/:id/figma-templates — discover the [Template] presets
+// in the brand's linked Figma file (or ?fileKey=), with each template's #slots.
+// Read-only via Figma REST. Pairs with figma-preset-fill (discover → fill).
+router.get('/:id/figma-templates', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    const token = await getFigmaToken(req.userId);
+    if (!token) {
+      return res.status(400).json({
+        error: 'figma_token_not_configured',
+        message: 'Connect a Figma token in settings to read templates.',
+      });
+    }
+    const fileKey = String(req.query.fileKey || (guideline as any).figmaFileKey || '');
+    if (!fileKey) {
+      return res.status(400).json({
+        error: 'no_figma_file',
+        message: 'Link a Figma file to this brand or pass ?fileKey=.',
+      });
+    }
+    const templates = await listFigmaTemplates(fileKey, token);
+    res.json({ fileKey, templates });
+  } catch (error: any) {
+    console.error('[Figma Templates List] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to list figma templates', message: error?.message });
+  }
+});
 
 // POST /api/brand-guidelines/:id/health-check — opt-in LLM coherence audit
 router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {

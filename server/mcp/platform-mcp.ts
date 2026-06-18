@@ -5191,6 +5191,35 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
     }
   );
 
+  // ─── Brand: Figma preset discovery ─────────────────────────────────────────
+  server.tool(
+    'figma-templates-list',
+    "List the [Template] presets in a brand's Figma file (or a given fileKey), with each template's name, aspect, and #slots (id, type text/image, optional, variant). Use this to discover what exists and what to fill BEFORE calling figma-preset-fill. Read-only.",
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      fileKey: z
+        .string()
+        .optional()
+        .describe("Figma file key (defaults to the brand's linked file)."),
+    },
+    { title: 'List Figma Presets', readOnlyHint: true },
+    async ({ id, fileKey }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const qs = fileKey ? `?fileKey=${encodeURIComponent(fileKey)}` : '';
+        const res = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-templates${qs}`,
+          { headers: { 'x-mcp-user-id': currentUserId } }
+        );
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   // ─── Brand: Figma preset fill (deterministic) ──────────────────────────────
   server.tool(
     'figma-preset-fill',
