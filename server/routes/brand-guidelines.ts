@@ -66,6 +66,7 @@ import {
   seasonalPromptLine,
   marketFromLanguage,
 } from '../lib/brand/seasonalContext.js';
+import { compileFigmaVariables } from '../lib/figma-variable-compiler.js';
 import {
   createAnalysisJob,
   saveAnalysisJob,
@@ -2548,6 +2549,24 @@ Include at least one "mockup". Vary the rest across the other kinds.`;
     }
     console.error('[Brand Suggestions] Error:', raw);
     res.status(500).json({ error: 'Failed to generate suggestions', message: raw });
+  }
+});
+
+// GET /api/brand-guidelines/:id/figma-variables — the brand's tokens as Figma
+// variable VALUES (a per-brand MODE payload). Feeds the deterministic preset
+// theming: a plugin/agent applies these via FILL_TEMPLATE.brandMode. Owner-gated.
+router.get('/:id/figma-variables', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+    const compiled = compileFigmaVariables(guideline as any);
+    res.json(compiled);
+  } catch (error: any) {
+    console.error('[Brand Figma Variables] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to compile figma variables', message: error?.message });
   }
 });
 
