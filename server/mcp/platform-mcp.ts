@@ -5278,6 +5278,47 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
     }
   );
 
+  // ─── Brand: Web preset render (headless, no Figma) ─────────────────────────
+  server.tool(
+    'brand-render-preset',
+    'Render a web preset to a PNG image on the brand — fully headless, no Figma. The server resolves colors, fonts, and REAL assets (logo by contrast, photo by semantic relevance), optionally applies a Visant image effect (halftone/riso/texture) to the photo, and returns a ready image URL. You supply only the template id, the text content, and an optional brief. This is the CLIENT/web path (vs figma-preset-fill, which targets the Figma plugin).',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      template: z.string().describe('Web preset id, e.g. "Post/Launch".'),
+      text: z
+        .record(z.string(), z.any())
+        .optional()
+        .describe('Text slot content, e.g. { "h1": "...", "infos": ["a","b"] }.'),
+      brief: z
+        .string()
+        .optional()
+        .describe('Short brief/vibe to semantically pick the photo from brand media.'),
+      effect: z
+        .object({
+          mode: z.enum(['halftone', 'riso', 'texture']),
+          preset: z.string().optional(),
+        })
+        .optional()
+        .describe('Optional Visant image effect applied to the photo.'),
+    },
+    { title: 'Render Brand Preset', destructiveHint: false },
+    async ({ id, template, text, brief, effect }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/render-preset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ template, text, brief, effect }),
+        });
+        if (!res.ok) return ERR.internal(await res.text());
+        return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
   // ─── Brand: Knowledge base ─────────────────────────────────────────────────
   server.tool(
     'brand-guidelines-knowledge-list',

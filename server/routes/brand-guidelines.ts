@@ -18,7 +18,7 @@ import { renderBrandBookPdf } from '../services/brandBookRenderer.js';
 import { parseUrl, parsePdf, parseImage, parseJson, parseText } from '../lib/brand-parse.js';
 import { extractBrandData, type AssetClassification } from '../lib/brand-extract.js';
 import { mergeBrandGuidelines } from '../lib/brand-merge.js';
-import { uploadBrandMedia, deleteImage } from '../services/r2Service.js';
+import { uploadBrandMedia, deleteImage, uploadEphemeralImage } from '../services/r2Service.js';
 import { redisClient } from '../lib/redis.js';
 import { CacheInvalidation } from '../lib/cache-utils.js';
 import { brandSharedService } from '../services/brandSharedService.js';
@@ -67,8 +67,13 @@ import {
   marketFromLanguage,
 } from '../lib/brand/seasonalContext.js';
 import { compileFigmaVariables } from '../lib/figma-variable-compiler.js';
-import { buildPresetFillOp } from '../lib/figma-asset-resolver.js';
+import { buildPresetFillOp, resolveImageSlots } from '../lib/figma-asset-resolver.js';
 import { listFigmaTemplates } from '../lib/figma-template-scan.js';
+import { getWebPreset, listWebPresets } from '../lib/preset-registry.js';
+import { brandToPresetVars, brandToFonts } from '../lib/preset-vars.js';
+import { buildFontCss } from '../lib/brand-fonts.js';
+import { renderHtmlToPng } from '../services/presetRenderer.js';
+import { imageLabApplyEffect } from '../services/imageLab/index.js';
 import {
   createAnalysisJob,
   saveAnalysisJob,
@@ -2639,6 +2644,67 @@ router.get('/:id/figma-templates', apiRateLimiter, authenticate, async (req: Aut
   } catch (error: any) {
     console.error('[Figma Templates List] Error:', error?.message || error);
     res.status(500).json({ error: 'Failed to list figma templates', message: error?.message });
+  }
+});
+
+// POST /api/brand-guidelines/:id/render-preset — render a web preset to PNG, on
+// the brand, fully headless (no Figma). Resolves colors (compileBrandTokens), fonts
+// (@fontsource/R2), and REAL assets (logo by contrast, photo by semantic search),
+// optionally runs the photo through a Visant effect (halftone/riso/texture), then
+// Puppeteer → PNG → R2. The client/agent sends only { template, text, brief }.
+router.post('/:id/render-preset', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    const { template, text, brief, effect } = req.body || {};
+    const preset = getWebPreset(String(template || ''));
+    if (!preset) {
+      return res.status(400).json({
+        error: 'unknown_template',
+        message: 'No such web preset.',
+        available: listWebPresets(),
+      });
+    }
+
+    const brand = guideline as any;
+    const vars = brandToPresetVars(brand);
+    const { css: fontCss } = buildFontCss(brandToFonts(brand));
+    const images = await resolveImageSlots(brand, preset.imageSlots, { brief });
+
+    // Optional Visant effect on the photo (halftone/riso/texture) — real engine,
+    // applied to the brand's actual photo before compositing.
+    if (effect?.mode && images.photo1?.imageUrl) {
+      try {
+        const fx = await imageLabApplyEffect(
+          {
+            imageUrl: images.photo1.imageUrl,
+            mode: effect.mode,
+            preset: effect.preset,
+            settings: effect.settings,
+          },
+          req.userId
+        );
+        images.photo1 = { imageUrl: fx.imageUrl };
+      } catch (e: any) {
+        console.warn('[render-preset] effect skipped:', e?.message || e);
+      }
+    }
+
+    const html = preset.build(vars, text || {}, images, fontCss);
+    const png = await renderHtmlToPng(html, { width: preset.width, height: preset.height });
+    const url = await uploadEphemeralImage(
+      `data:image/png;base64,${png.toString('base64')}`,
+      req.userId,
+      'preset-render'
+    );
+    res.json({ url, template: preset.id, width: preset.width, height: preset.height });
+  } catch (error: any) {
+    console.error('[Render Preset] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to render preset', message: error?.message });
   }
 });
 
