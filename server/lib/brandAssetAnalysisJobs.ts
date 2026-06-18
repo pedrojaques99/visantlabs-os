@@ -26,6 +26,8 @@ export interface BrandAssetAnalysisJob {
   total: number;
   processed: number;
   analyzed: number;
+  /** Assets that were attempted but errored (timeout / provider down / spend-capped). */
+  failed?: number;
   signature?: unknown;
   /** Observability: how many assets each provider served, e.g. {gemini: 8, replicate: 24}. */
   providers?: Record<string, number>;
@@ -88,7 +90,8 @@ export async function reconcileIfOrphaned(
   if (Date.now() - job.updatedAt < STALE_MS) return job;
 
   job.status = 'error';
-  job.error = 'Analysis interrupted (server restarted). Re-run to finish — done assets are kept.';
+  job.error =
+    'Analysis was interrupted. Click Analyze again to finish — assets already analyzed are skipped.';
   await saveAnalysisJob(job);
   return job;
 }

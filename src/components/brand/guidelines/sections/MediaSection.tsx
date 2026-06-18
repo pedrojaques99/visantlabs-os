@@ -16,6 +16,23 @@ interface SearchHit {
   assetKind?: 'logo' | 'media';
 }
 
+/**
+ * Map server error codes to user-facing copy. The API surfaces admin-only
+ * config problems (missing keys) as machine codes; the end-user can't act on
+ * "Set GEMINI_API_KEY", so we translate to plain language.
+ */
+function friendlyAssetError(e: unknown, fallback: string): string {
+  const code = (e as { code?: string })?.code;
+  switch (code) {
+    case 'vision_not_configured':
+      return 'AI asset analysis isn’t available right now (admin setting).';
+    case 'vector_search_not_configured':
+      return 'Semantic search isn’t available right now (admin setting).';
+    default:
+      return e instanceof Error ? e.message : fallback;
+  }
+}
+
 interface MediaSectionProps {
   guidelineId: string;
   media: BrandGuideline['media'];
@@ -52,13 +69,24 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       const g = await brandGuidelineApi.getById(guidelineId);
       if (Array.isArray(g.media)) onMediaChange(g.media);
       if (Array.isArray(g.logos)) onLogosChange(g.logos);
-      toast.success(
-        res.analyzed > 0
-          ? `${res.analyzed} asset(s) analyzed by AI`
-          : 'All assets were already analyzed'
-      );
+
+      // Tell the truth about what happened — never show "success" when nothing
+      // was analyzed because the AI provider was down/over quota (the prod case).
+      if (res.total === 0) {
+        toast.info('All assets are already analyzed.');
+      } else if (res.analyzed === 0) {
+        toast.error(
+          `Couldn’t analyze ${res.total} asset${res.total === 1 ? '' : 's'} — the AI service is temporarily unavailable. Try again shortly.`
+        );
+      } else if (res.failed > 0) {
+        toast.warning(
+          `${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed · ${res.failed} couldn’t be processed (try again to retry those).`
+        );
+      } else {
+        toast.success(`${res.analyzed} asset${res.analyzed === 1 ? '' : 's'} analyzed by AI`);
+      }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to analyze assets');
+      toast.error(friendlyAssetError(e, 'Failed to analyze assets'));
     } finally {
       setAnalyzing(false);
       setProgress(null);
@@ -73,7 +101,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
       const res = await brandGuidelineApi.searchAssets(guidelineId, q);
       setHits((res.results || []) as SearchHit[]);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Search failed');
+      toast.error(friendlyAssetError(e, 'Search failed'));
     } finally {
       setSearching(false);
     }
@@ -97,7 +125,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
             size="icon-sm"
             onClick={analyzeAssets}
             disabled={analyzing}
-            title="Analyze assets with AI (vibe, aesthetic, theme, mood)"
+            title="Analyze assets with AI (vibe, aesthetic, theme, mood) — also powers semantic search below"
             aria-label="Analyze assets with AI"
           >
             {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -127,15 +155,25 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && runSearch()}
-                  placeholder="Search assets by vibe, theme, mood…"
+                  placeholder="Search by vibe, theme, mood… (run Analyze first)"
                   className="h-8 pl-8 text-xs"
                 />
               </div>
-              <Button variant="action" size="sm" onClick={runSearch} disabled={searching || !query.trim()}>
+              <Button
+                variant="action"
+                size="sm"
+                onClick={runSearch}
+                disabled={searching || !query.trim()}
+              >
                 {searching ? <Loader2 size={12} className="animate-spin" /> : 'Search'}
               </Button>
               {hits !== null && (
-                <Button variant="ghost" size="icon-sm" onClick={clearSearch} aria-label="Clear search">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={clearSearch}
+                  aria-label="Clear search"
+                >
                   <X size={12} />
                 </Button>
               )}
@@ -153,7 +191,11 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                         className="relative aspect-square rounded-md overflow-hidden border border-neutral-800 group"
                         title={`${h.label || ''} · ${Math.round(h.score * 100)}% match`}
                       >
-                        <img src={h.url} alt={h.label || ''} className="w-full h-full object-cover" />
+                        <img
+                          src={h.url}
+                          alt={h.label || ''}
+                          className="w-full h-full object-cover"
+                        />
                         <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-[9px] font-mono text-white/80">
                           {Math.round(h.score * 100)}%
                         </span>

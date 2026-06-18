@@ -16,7 +16,11 @@ import { safeFetch } from '../../utils/securityValidation.js';
 import { shouldRetry } from '../ai-resilience.js';
 import type { BrandAssetAnalysis } from './visualSignature.js';
 
-export type { BrandAssetAnalysis, BrandAssetDimensions, BrandVisualSignature } from './visualSignature.js';
+export type {
+  BrandAssetAnalysis,
+  BrandAssetDimensions,
+  BrandVisualSignature,
+} from './visualSignature.js';
 export { aggregateVisualSignature, hasSignature } from './visualSignature.js';
 
 const MODEL = 'gemini-2.5-flash';
@@ -65,7 +69,10 @@ function geminiKey(): string {
 
 /** True when a Gemini key is configured (lets callers fail fast with a clear error). */
 export function isAssetAnalysisConfigured(): boolean {
-  return geminiKey().length > 0 || (process.env.REPLICATE_API_TOKEN || '').trim().length > 0;
+  return (
+    geminiKey().length > 0 ||
+    (process.env.REPLICATE_API_TOKEN || process.env.REPLICATE_API_KEY || '').trim().length > 0
+  );
 }
 
 async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: string } | null> {
@@ -147,7 +154,10 @@ async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<Bran
         model: MODEL,
         contents: [
           {
-            parts: [{ inlineData: { data: img.data, mimeType: img.mimeType } }, { text: ANALYSIS_PROMPT }],
+            parts: [
+              { inlineData: { data: img.data, mimeType: img.mimeType } },
+              { text: ANALYSIS_PROMPT },
+            ],
           },
         ],
         config: {
@@ -174,7 +184,7 @@ async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<Bran
 // ── Replicate fallback (provider-independent — survives a Gemini budget cap) ──
 
 function replicateToken(): string {
-  return (process.env.REPLICATE_API_TOKEN || '').trim();
+  return (process.env.REPLICATE_API_TOKEN || process.env.REPLICATE_API_KEY || '').trim();
 }
 // Default to gpt-4o-mini: cheap, reliable structured JSON, and a *different*
 // provider (OpenAI via Replicate's billing) so it bypasses a capped Google project.
@@ -204,7 +214,10 @@ async function replicateVersion(model: string): Promise<string | null> {
 function parseReplicateOutput(text: string): BrandAssetAnalysis {
   const clean = (a: unknown): string[] | undefined =>
     Array.isArray(a)
-      ? a.map((s) => String(s).toLowerCase().trim()).filter(Boolean).slice(0, 3)
+      ? a
+          .map((s) => String(s).toLowerCase().trim())
+          .filter(Boolean)
+          .slice(0, 3)
       : undefined;
   let description: string | undefined;
   let dims: any = {};
@@ -256,7 +269,11 @@ async function analyzeWithReplicate(img: AssetImage): Promise<BrandAssetAnalysis
     }
     const res = await safeFetch(endpoint, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'wait' },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'wait',
+      },
       body: JSON.stringify(body),
       timeoutMs: 45_000,
     } as any);
@@ -308,7 +325,12 @@ export async function analyzeAssetImage(url: string): Promise<{
 
   const geminiUp = !!geminiKey() && Date.now() >= geminiDisabledUntil;
   const replicateUp = !!replicateToken() && Date.now() >= replicateDisabledUntil;
-  const ok = (analysis: BrandAssetAnalysis) => ({ analysis, image: img, inputTokens: 0, outputTokens: 0 });
+  const ok = (analysis: BrandAssetAnalysis) => ({
+    analysis,
+    image: img,
+    inputTokens: 0,
+    outputTokens: 0,
+  });
 
   const tryGemini = async () => {
     try {
@@ -332,8 +354,14 @@ export async function analyzeAssetImage(url: string): Promise<{
   // Run providers in primary-first order, skipping ones that are down.
   const order =
     visionPrimary() === 'replicate'
-      ? ([['replicate', replicateUp, tryReplicate], ['gemini', geminiUp, tryGemini]] as const)
-      : ([['gemini', geminiUp, tryGemini], ['replicate', replicateUp, tryReplicate]] as const);
+      ? ([
+          ['replicate', replicateUp, tryReplicate],
+          ['gemini', geminiUp, tryGemini],
+        ] as const)
+      : ([
+          ['gemini', geminiUp, tryGemini],
+          ['replicate', replicateUp, tryReplicate],
+        ] as const);
 
   for (const [, up, run] of order) {
     if (!up) continue;
@@ -342,4 +370,3 @@ export async function analyzeAssetImage(url: string): Promise<{
   }
   return null;
 }
-

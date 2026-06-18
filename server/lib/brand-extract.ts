@@ -97,14 +97,31 @@ export async function extractBrandData(
     }
   }
 
+  // NOTE: a *successful* call that legitimately finds no brand info returns `{}`
+  // (the LLM emits valid empty/minimal JSON → validateExtracted strips it). Only a
+  // genuine failure — network, parse, quota/spend-cap — throws here. We deliberately
+  // do NOT swallow exceptions into `{}`: that masqueraded a failed extraction as
+  // "found nothing", letting the caller charge a credit and report false success.
   try {
     const result = await model.generateContent(parts);
     const text = result.response.text();
     const jsonStr = extractJson(text);
     return validateExtracted(JSON.parse(jsonStr));
   } catch (error: any) {
-    console.error('[Brand Extract] LLM extraction failed:', error.message);
-    return {};
+    const raw = String(error?.message || error || '');
+    console.error('[Brand Extract] LLM extraction failed:', raw);
+    // Normalize the most common hard failures to a stable, mappable message.
+    if (/quota|RESOURCE_EXHAUSTED|rate.?limit|429/i.test(raw)) {
+      throw new Error(
+        'extraction_unavailable: AI extraction is temporarily over quota — try again shortly.'
+      );
+    }
+    if (/api[_ ]?key|permission|401|403/i.test(raw)) {
+      throw new Error('extraction_unavailable: AI extraction is not configured.');
+    }
+    throw new Error(
+      'extraction_failed: could not read brand data from this source. Try a simpler or smaller source, or add details manually.'
+    );
   }
 }
 

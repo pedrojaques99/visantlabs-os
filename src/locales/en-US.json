@@ -2537,6 +2537,8 @@
     "brandWizardFigExtractError": "Failed to extract Figma file",
     "brandWizardFigmaTokensImported": "Figma tokens imported. Colors and typography extracted.",
     "brandWizardFigmaNoToken": "Figma token not set. Go to Profile, then Configuration.",
+    "brandWizardFigmaNoTokenHint": "Link a Figma token in Settings → Connected Apps, then try again.",
+    "brandWizardInvalidUrl": "That doesn't look like a valid website URL (e.g. https://acme.com) — skipped extraction.",
     "brandWizardFigmaLinkedTokensFailed": "Figma linked, but token extraction failed.",
     "brandWizardImagesPasted": "Images pasted from clipboard",
     "brandWizardPdfPasted": "PDF pasted from clipboard",
@@ -2668,7 +2670,11 @@
       "uploadSuccess": "Media uploaded successfully",
       "vaultEmpty": "Vault is empty",
       "bulkDeleteSuccess": "Bulk Delete Success",
-      "bulkDeleteError": "Bulk Delete Error"
+      "bulkDeleteError": "Bulk Delete Error",
+      "duplicateSkipped": "{count} duplicate skipped — already in your library",
+      "duplicatesSkipped": "{count} duplicates skipped — already in your library",
+      "nearDuplicate": "Looks similar to \"{label}\" — added anyway",
+      "anExistingAsset": "an existing asset"
     },
     "modelSelection": "0. MODEL_SELECTION_",
     "modelSelectionDescription": "Choose your AI model for generation.",

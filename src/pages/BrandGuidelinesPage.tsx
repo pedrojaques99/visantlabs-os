@@ -17,7 +17,17 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { Input } from '@/components/ui/input';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { computeBrandCompleteness, completenessStatus } from '@/lib/brandCompleteness';
-import { Layers, AlignLeft, Plus, Search, Globe, Folder, ArrowUpDown } from 'lucide-react';
+import {
+  Layers,
+  AlignLeft,
+  Plus,
+  Search,
+  Globe,
+  Folder,
+  ArrowUpDown,
+  FileText,
+  Figma,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -51,6 +61,18 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
         <Plus size={15} />
         {t('brandGuidelines.createFirst')}
       </Button>
+      {/* Tell first-timers what a guideline can be built from — kills the "now what?" gap. */}
+      <div className="flex items-center gap-4 text-[11px] text-neutral-600">
+        <span className="inline-flex items-center gap-1.5">
+          <FileText size={13} strokeWidth={1.5} /> PDF
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Globe size={13} strokeWidth={1.5} /> Website
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Figma size={13} strokeWidth={1.5} /> Figma
+        </span>
+      </div>
     </motion.div>
   );
 };

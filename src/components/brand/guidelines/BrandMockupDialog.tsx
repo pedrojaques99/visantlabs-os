@@ -29,6 +29,8 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   guideline: BrandGuideline;
+  /** Seed the scene prompt (e.g. from an interactive suggestion → one-tap generate). */
+  initialPrompt?: string;
 }
 
 interface Suggestion {
@@ -51,8 +53,15 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 type View = 'form' | 'suggestions' | 'loading' | 'generating' | 'result';
 
-export const BrandMockupDialog: React.FC<Props> = ({ open, onOpenChange, guideline }) => {
-  const [prompt, setPrompt] = useState('');
+export const BrandMockupDialog: React.FC<Props> = ({
+  open,
+  onOpenChange,
+  guideline,
+  initialPrompt,
+}) => {
+  // Seeded from an interactive suggestion when provided. The dialog is mounted
+  // fresh on each open (conditionally rendered), so this initializer re-runs.
+  const [prompt, setPrompt] = useState(initialPrompt ?? '');
   const [model, setModel] = useState<string>(() => getPreferredImageModel());
   const [resolution, setResolution] = useState<Resolution>('1K');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');

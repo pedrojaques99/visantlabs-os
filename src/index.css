@@ -2,6 +2,10 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+/* `can-hover:` applies only on devices with a real hover pointer (mouse/trackpad).
+ * Pair with a touch-visible default so hover-reveal affordances (download/copy/edit
+ * overlays) don't become unreachable on phones/tablets. */
+@custom-variant can-hover (@media (hover: hover));
 
 @theme inline {
   /* 

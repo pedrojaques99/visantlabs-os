@@ -271,12 +271,15 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
 
           if (added > 0) toast.success(t('mockup.mediaKit.uploadSuccess'));
           if (skipped > 0) {
-            toast(`${skipped} ${skipped === 1 ? 'duplicata ignorada' : 'duplicatas ignoradas'} (já na biblioteca)`);
+            const tmpl =
+              skipped === 1
+                ? t('mockup.mediaKit.duplicateSkipped')
+                : t('mockup.mediaKit.duplicatesSkipped');
+            toast(tmpl.replace('{count}', String(skipped)));
           }
           if (similar?.similar) {
-            toast.warning(
-              `Muito parecida com "${similar.similar.label || 'um asset existente'}" — adicionada mesmo assim`
-            );
+            const label = similar.similar.label || t('mockup.mediaKit.anExistingAsset');
+            toast.warning(t('mockup.mediaKit.nearDuplicate').replace('{label}', label));
           }
         }
       } catch (error) {
