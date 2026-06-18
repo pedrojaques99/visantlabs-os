@@ -134,16 +134,20 @@ function isSpendCap(err: unknown): boolean {
 }
 
 /** Gemini path — best structured output (native JSON schema). Throws on failure. */
-async function analyzeWithGemini(img: AssetImage): Promise<BrandAssetAnalysis> {
+async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<BrandAssetAnalysis> {
   const ai = new GoogleGenAI({ apiKey: geminiKey() });
-  const response = await generateWithRetry(() =>
-    ai.models.generateContent({
-      model: MODEL,
-      contents: [
-        { parts: [{ inlineData: { data: img.data, mimeType: img.mimeType } }, { text: ANALYSIS_PROMPT }] },
-      ],
-      config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
-    })
+  const response = await generateWithRetry(
+    () =>
+      ai.models.generateContent({
+        model: MODEL,
+        contents: [
+          {
+            parts: [{ inlineData: { data: img.data, mimeType: img.mimeType } }, { text: ANALYSIS_PROMPT }],
+          },
+        ],
+        config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as any },
+      }),
+    maxAttempts
   );
   const parsed = JSON.parse((response.text || '').trim());
   return {
@@ -255,11 +259,23 @@ async function analyzeWithReplicate(img: AssetImage): Promise<BrandAssetAnalysis
   }
 }
 
+/** Which provider leads. Configurable so a capped Gemini can be sidelined without
+ *  a deploy: ASSET_VISION_PRIMARY=replicate makes gpt-4o-mini the primary. */
+function visionPrimary(): 'gemini' | 'replicate' {
+  return (process.env.ASSET_VISION_PRIMARY || 'gemini').toLowerCase() === 'replicate'
+    ? 'replicate'
+    : 'gemini';
+}
+
 /**
  * Analyze a single asset image into visual dimensions (or null on failure).
- * Gemini is primary (best structured output); on a spend cap / failure it falls
- * back to Replicate so analysis never silently produces nothing. Returns the
- * fetched image so callers can embed it without re-downloading.
+ *
+ * Provider routing (pro pattern): a configurable primary with a fallback. When a
+ * fallback is available, the primary fails FAST (1 attempt, no slow retry) — so
+ * one capped provider doesn't burn ~20s of backoff per asset before falling over.
+ * A Gemini spend cap also trips a shared circuit (`geminiDisabledUntil`) so the
+ * rest of the batch skips Gemini entirely. Returns the fetched image so callers
+ * can embed it without re-downloading.
  */
 export async function analyzeAssetImage(url: string): Promise<{
   analysis: BrandAssetAnalysis;
@@ -270,24 +286,40 @@ export async function analyzeAssetImage(url: string): Promise<{
   const img = await fetchAsBase64(url);
   if (!img) return null;
 
-  // Primary: Gemini, unless a recent spend cap took it offline for this batch.
-  if (geminiKey() && Date.now() >= geminiDisabledUntil) {
+  const geminiUp = !!geminiKey() && Date.now() >= geminiDisabledUntil;
+  const replicateUp = !!replicateToken();
+  const ok = (analysis: BrandAssetAnalysis) => ({ analysis, image: img, inputTokens: 0, outputTokens: 0 });
+
+  const tryGemini = async () => {
     try {
-      return { analysis: await analyzeWithGemini(img), image: img, inputTokens: 0, outputTokens: 0 };
+      // Fail fast (1 attempt) when Replicate can catch the failure — no 4× backoff.
+      return ok(await analyzeWithGemini(img, replicateUp ? 1 : 4));
     } catch (err) {
       if (isSpendCap(err)) {
-        geminiDisabledUntil = Date.now() + 10 * 60 * 1000;
-        console.warn('[assetAnalysis] Gemini spend cap hit — falling back to Replicate');
+        geminiDisabledUntil = Date.now() + 10 * 60 * 1000; // circuit: skip Gemini for the batch
+        console.warn('[assetAnalysis] Gemini spend cap — circuit open, routing to fallback');
       } else {
         console.warn('[assetAnalysis] gemini failed', (err as any)?.message || err);
       }
+      return null;
     }
+  };
+  const tryReplicate = async () => {
+    const rep = await analyzeWithReplicate(img);
+    return rep ? ok(rep) : null;
+  };
+
+  // Run providers in primary-first order, skipping ones that are down.
+  const order =
+    visionPrimary() === 'replicate'
+      ? ([['replicate', replicateUp, tryReplicate], ['gemini', geminiUp, tryGemini]] as const)
+      : ([['gemini', geminiUp, tryGemini], ['replicate', replicateUp, tryReplicate]] as const);
+
+  for (const [, up, run] of order) {
+    if (!up) continue;
+    const result = await run();
+    if (result) return result;
   }
-
-  // Fallback: Replicate (provider-independent).
-  const rep = await analyzeWithReplicate(img);
-  if (rep) return { analysis: rep, image: img, inputTokens: 0, outputTokens: 0 };
-
   return null;
 }
 

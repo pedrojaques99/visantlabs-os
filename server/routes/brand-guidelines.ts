@@ -191,7 +191,14 @@ async function analyzeGuidelineAssets(
     force?: boolean;
     onProgress?: (p: { processed: number; total: number }) => void | Promise<void>;
   } = {}
-): Promise<{ logos: any[]; media: any[]; signature: any; analyzed: number; total: number } | null> {
+): Promise<{
+  logos: any[];
+  media: any[];
+  signature: any;
+  analyzed: number;
+  total: number;
+  providers: Record<string, number>;
+} | null> {
   const { force = false, onProgress } = opts;
   const g = await prisma.brandGuideline.findUnique({ where: { id: guidelineId } });
   if (!g) return null;
@@ -232,9 +239,10 @@ async function analyzeGuidelineAssets(
   let analyzed = 0;
   let processed = 0;
   let sinceSave = 0;
-  // Gentle concurrency keeps bulk bursts under the Gemini per-minute quota; the
-  // per-call retry/backoff in analyzeAssetImage absorbs whatever still 429s.
-  const CONCURRENCY = 2;
+  const providers: Record<string, number> = {}; // observability: who served each asset
+  // Provider routing + circuit-break in analyzeAssetImage means a capped provider
+  // fails fast (no per-asset backoff), so we can parallelize harder.
+  const CONCURRENCY = 4;
   const PERSIST_EVERY = 12; // flush to DB every ~12 assets (bounded write amplification)
 
   for (let i = 0; i < targets.length; i += CONCURRENCY) {
@@ -246,6 +254,10 @@ async function analyzeGuidelineAssets(
           if (result) {
             asset.analysis = result.analysis;
             analyzed++;
+            const prov = String(result.analysis.model || '').startsWith('replicate')
+              ? 'replicate'
+              : 'gemini';
+            providers[prov] = (providers[prov] || 0) + 1;
             // Best-effort semantic indexing (no-op if Pinecone unconfigured).
             await withTimeout(
               indexAsset({ guidelineId, userId: g.userId, kind, asset, image: result.image }),
@@ -274,7 +286,10 @@ async function analyzeGuidelineAssets(
     scheduleColorUsageRecompute(guidelineId);
   }
 
-  return { logos, media, signature, analyzed, total };
+  if (Object.keys(providers).length > 0) {
+    console.log(`[Brand Asset Analysis] ${guidelineId} providers:`, providers);
+  }
+  return { logos, media, signature, analyzed, total, providers };
 }
 
 // Debounce asset-analysis triggers so a burst of uploads coalesces into one pass
@@ -1207,6 +1222,7 @@ router.post('/:id/assets/analyze', apiRateLimiter, authenticate, async (req: Aut
         job.processed = result?.total ?? job.processed;
         job.analyzed = result?.analyzed ?? 0;
         job.signature = result?.signature;
+        job.providers = result?.providers;
         await saveAnalysisJob(job);
       } catch (err: any) {
         job.status = 'error';
@@ -1242,6 +1258,7 @@ router.get(
         total: reconciled.total,
         analyzed: reconciled.analyzed,
         signature: reconciled.signature,
+        providers: reconciled.providers,
         error: reconciled.error,
       });
     } catch (error: any) {

@@ -27,6 +27,8 @@ export interface BrandAssetAnalysisJob {
   processed: number;
   analyzed: number;
   signature?: unknown;
+  /** Observability: how many assets each provider served, e.g. {gemini: 8, replicate: 24}. */
+  providers?: Record<string, number>;
   error?: string;
   createdAt: number;
   updatedAt: number;
