@@ -153,10 +153,11 @@ async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<Bran
         config: {
           responseMimeType: 'application/json',
           responseSchema: RESPONSE_SCHEMA as any,
-          // Cap output — the tag JSON is small; without this Gemini can occasionally
-          // run away to 100k+ chars of truncated JSON (slow + unparseable). 1536 is
-          // generous headroom for the real response while still killing the runaway.
-          maxOutputTokens: 1536,
+          // Disable thinking — this is a simple tagging task. With thinking ON,
+          // 2.5-flash spends the output budget reasoning and truncates the JSON
+          // mid-string (the "Unterminated string" failures). Off = faster + valid.
+          thinkingConfig: { thinkingBudget: 0 },
+          maxOutputTokens: 1024,
         },
       }),
     maxAttempts
