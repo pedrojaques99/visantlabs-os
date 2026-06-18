@@ -576,6 +576,10 @@ interface Studio3DState {
   _sceneName: string;
   _lastSavedAt: number;
 
+  // Brand guideline currently applied — drives the on-brand scene gallery.
+  // Persisted (not excluded below) so the gallery survives a reload.
+  _brandGuidelineId: string;
+
   // Actions
   setSvgData: (svg: string, fileName?: string) => void;
   setText: (text: string) => void;
@@ -712,6 +716,7 @@ interface Studio3DState {
   setSceneId: (v: string | null) => void;
   setSceneName: (v: string) => void;
   setLastSavedAt: (v: number) => void;
+  setBrandGuidelineId: (v: string) => void;
   applyScenePreset: (name: string) => void;
   applyConfig: (config: Partial<typeof INITIAL_STATE>) => void;
   resetScene: () => void;
@@ -864,6 +869,7 @@ const INITIAL_STATE = {
   _sceneId: null,
   _sceneName: '',
   _lastSavedAt: 0,
+  _brandGuidelineId: '',
 };
 
 export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
@@ -1091,6 +1097,7 @@ export const useStudio3DStore = create<Studio3DState & ShaderSlice>()(
         setSceneId: (_sceneId) => set({ _sceneId }),
         setSceneName: (_sceneName) => set({ _sceneName }),
         setLastSavedAt: (_lastSavedAt) => set({ _lastSavedAt }),
+        setBrandGuidelineId: (_brandGuidelineId) => set({ _brandGuidelineId }),
 
         applyScenePreset: (name) => {
           const preset = SCENE_PRESETS[name];

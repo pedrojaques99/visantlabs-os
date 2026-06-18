@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -51,6 +51,7 @@ import { FONT_OPTIONS } from './_shared';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandLogoPickerModal } from '../BrandLogoPickerModal';
 import { usePresetPreviews } from '../usePresetPreviews';
+import { generateBrandScenes } from '@/lib/studio3d/brandScenes';
 
 // Fine-grained subscription: the input / geometry / shape / chain slice this
 // tab renders (was a full-store subscription re-rendering on any store
@@ -97,6 +98,9 @@ const scenePanelSelector = (s: StoreState) => ({
   traceThreshold: s.traceThreshold,
   traceAlphaMax: s.traceAlphaMax,
   applyScenePreset: s.applyScenePreset,
+  applyConfig: s.applyConfig,
+  _brandGuidelineId: s._brandGuidelineId,
+  setBrandGuidelineId: s.setBrandGuidelineId,
   randomize: s.randomize,
   setInputMode: s.setInputMode,
   setIsLoading: s.setIsLoading,
@@ -180,6 +184,13 @@ export const SceneTab: React.FC = React.memo(() => {
   const { data: brandGuidelines = [], isLoading: brandLoading } = useBrandGuidelines(true);
   const hasBrandLogos = brandGuidelines.some((g) => g.logos && g.logos.length > 0);
 
+  // On-brand scene gallery: derived from the applied brand's colors/themes/mood tags.
+  const appliedBrand = useMemo(
+    () => brandGuidelines.find((g) => g.id === store._brandGuidelineId) ?? null,
+    [brandGuidelines, store._brandGuidelineId]
+  );
+  const brandScenes = useMemo(() => generateBrandScenes(appliedBrand), [appliedBrand]);
+
   const [savedScenes, setSavedScenes] = useState<SavedScene[]>([]);
   const [scenesLoading, setScenesLoading] = useState(false);
   const [sceneName, setSceneName] = useState(store._sceneName || '');
@@ -261,7 +272,9 @@ export const SceneTab: React.FC = React.memo(() => {
   }, [store, t]);
 
   const handleBrandLogoSelect = useCallback(
-    async (logoUrl: string, fileName: string) => {
+    async (logoUrl: string, fileName: string, guidelineId?: string) => {
+      // Record the brand so the on-brand scene gallery appears (and survives reload).
+      if (guidelineId) store.setBrandGuidelineId(guidelineId);
       store.setIsLoading(true);
       try {
         const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(logoUrl)}`;
@@ -396,6 +409,44 @@ export const SceneTab: React.FC = React.memo(() => {
           </button>
         </div>
       </ToolPanelDisclosure>
+
+      {/* Brand Scenes — on-brand looks generated from the applied brand's tokens */}
+      {brandScenes.length > 0 && (
+        <ToolPanelDisclosure
+          label={`${appliedBrand?.identity?.name || appliedBrand?.name || 'Brand'} Scenes`}
+          icon={<Palette size={13} />}
+          defaultOpen
+        >
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
+            {brandScenes.map((scene) => (
+              <button
+                key={scene.key}
+                onClick={() =>
+                  store.applyConfig(scene.config as Parameters<typeof store.applyConfig>[0])
+                }
+                className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+                title={scene.label}
+              >
+                <div
+                  className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors flex items-center justify-center"
+                  style={{ background: scene.swatches[0] }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-full transition-transform group-hover:scale-110"
+                    style={{
+                      background: scene.swatches[1],
+                      boxShadow: `0 0 0 2px ${scene.swatches[2]}`,
+                    }}
+                  />
+                </div>
+                <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                  {scene.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </ToolPanelDisclosure>
+      )}
 
       {/* Input */}
       <ToolPanelDisclosure
