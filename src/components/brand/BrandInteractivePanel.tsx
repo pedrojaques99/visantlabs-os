@@ -9,11 +9,38 @@ import {
   FileCode,
   CalendarClock,
   Loader2,
+  Image as ImageIcon,
+  Instagram,
+  Megaphone,
+  Video,
+  FileText,
+  Type,
+  type LucideIcon,
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
-import { brandGuidelineApi, type BrandSuggestion } from '@/services/brandGuidelineApi';
+import {
+  brandGuidelineApi,
+  type BrandSuggestion,
+  type BrandSuggestionKind,
+} from '@/services/brandGuidelineApi';
+
+// Each suggestion kind → its icon, label, and how it's executed:
+//  · 'inline'  = Visant generates it in-app (only mockups have a clean brand-aware path)
+//  · 'ai'      = handed to the brand's connected AI assistant (which has the full
+//                Visant MCP toolbelt: campaign/creative/budget/video/naming)
+const KIND_META: Record<
+  BrandSuggestionKind,
+  { label: string; Icon: LucideIcon; mode: 'inline' | 'ai' }
+> = {
+  mockup: { label: 'Mockup', Icon: ImageIcon, mode: 'inline' },
+  social: { label: 'Social', Icon: Instagram, mode: 'ai' },
+  campaign: { label: 'Campaign', Icon: Megaphone, mode: 'ai' },
+  video: { label: 'Video', Icon: Video, mode: 'ai' },
+  budget: { label: 'Budget', Icon: FileText, mode: 'ai' },
+  naming: { label: 'Naming', Icon: Type, mode: 'ai' },
+};
 
 /**
  * Owner-only interactive band for the brand overview. Two jobs:
@@ -55,10 +82,17 @@ function friendlyError(e: unknown): { code?: string; message: string } {
   return { code, message: e instanceof Error ? e.message : 'Could not load ideas.' };
 }
 
-// Shared ghost-button treatment: thin brand-tinted border, surface fill on hover.
+// Primary action: solid brand accent with the theme's computed contrast text
+// (`--accent-text`) — the page's contrast-safe pair, so it reads on any brand color
+// (no more dark-on-purple).
+const primaryBtn =
+  'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium ' +
+  'bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity disabled:opacity-40';
+
+// Secondary/ghost: readable brand text, thin border, surface fill on hover.
 const ghostBtn =
   'inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--brand-text)]/12 ' +
-  'text-[var(--brand-text)]/65 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.04] ' +
+  'text-[var(--brand-text)]/70 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.05] ' +
   'hover:border-[var(--brand-text)]/20 transition-colors disabled:opacity-40';
 
 // Official assistant marks (reuse the same assets as the public connect page).
@@ -136,6 +170,18 @@ export const BrandInteractivePanel: React.FC<Props> = ({
     try {
       await navigator.clipboard.writeText(prompt);
       toast.success('Prompt copied');
+    } catch {
+      toast.error('Couldn’t copy');
+    }
+  }, []);
+
+  // Non-mockup kinds: copy the ready-to-run brief and point the user at their
+  // connected AI (which executes it via the Visant MCP toolbelt).
+  const sendToAI = useCallback(async (s: BrandSuggestion) => {
+    try {
+      await navigator.clipboard.writeText(s.prompt);
+      const label = (KIND_META[s.kind]?.label || 'asset').toLowerCase();
+      toast.success(`Brief copied — run it in your connected AI to build the ${label}.`);
     } catch {
       toast.error('Couldn’t copy');
     }
@@ -224,40 +270,55 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           <p className="text-xs text-[var(--brand-text)]/45 py-8 text-center">{error}</p>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
-            {suggestions.map((s, i) => (
-              <div
-                key={i}
-                className="group flex flex-col gap-2.5 rounded-xl border border-[var(--brand-text)]/10 bg-[var(--brand-surface)]/20 p-4 hover:border-[var(--brand-text)]/20 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
+            {suggestions.map((s, i) => {
+              const meta = KIND_META[s.kind] || KIND_META.mockup;
+              const Icon = meta.Icon;
+              return (
+                <div
+                  key={i}
+                  className="group flex flex-col gap-2.5 rounded-xl bg-[var(--brand-text)]/[0.03] p-4 hover:bg-[var(--brand-text)]/[0.06] transition-colors"
+                >
+                  <div className="flex items-center gap-1.5 text-[var(--brand-text)]/40">
+                    <Icon size={12} className="shrink-0" />
+                    <span className="text-[9px] font-mono uppercase tracking-wider">
+                      {meta.label}
+                    </span>
+                  </div>
                   <span className="text-sm font-medium text-[var(--brand-text)] leading-snug">
                     {s.title}
                   </span>
-                  <span className="shrink-0 text-[9px] font-mono uppercase tracking-wider text-[var(--brand-text)]/35 mt-0.5">
-                    {s.aspectRatio}
-                  </span>
+                  <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed line-clamp-2 flex-1">
+                    {s.rationale}
+                  </p>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    {meta.mode === 'inline' ? (
+                      <button
+                        onClick={() => onGenerate(s.prompt)}
+                        className={cn(primaryBtn, 'h-7 px-3 text-[11px]')}
+                      >
+                        <Wand2 size={11} /> Generate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => sendToAI(s)}
+                        className={cn(primaryBtn, 'h-7 px-3 text-[11px]')}
+                        title="Copy the brief for your connected AI"
+                      >
+                        <Sparkles size={11} /> Use in AI
+                      </button>
+                    )}
+                    <button
+                      onClick={() => copyPrompt(s.prompt)}
+                      className={cn(ghostBtn, 'h-7 w-7')}
+                      aria-label="Copy prompt"
+                      title="Copy prompt"
+                    >
+                      <Copy size={11} />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed line-clamp-2 flex-1">
-                  {s.rationale}
-                </p>
-                <div className="flex items-center gap-2 pt-0.5">
-                  <button
-                    onClick={() => onGenerate(s.prompt)}
-                    className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg text-[11px] font-medium text-[var(--accent)] border border-[var(--accent)]/25 hover:bg-[var(--accent)]/10 transition-colors"
-                  >
-                    <Wand2 size={11} /> Generate
-                  </button>
-                  <button
-                    onClick={() => copyPrompt(s.prompt)}
-                    className={cn(ghostBtn, 'h-7 w-7')}
-                    aria-label="Copy prompt"
-                    title="Copy prompt"
-                  >
-                    <Copy size={11} />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </GlassPanel>
@@ -280,7 +341,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             <div
               key={a.id}
               title={a.label}
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--brand-surface)]/30 border border-[var(--brand-text)]/[0.06]"
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--brand-surface)]/40"
             >
               {a.node}
             </div>
@@ -295,7 +356,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           <button
             onClick={onConnect}
             disabled={connecting}
-            className="inline-flex items-center justify-start gap-2 h-9 px-3 rounded-lg text-xs font-medium text-[var(--accent)] bg-[var(--accent)]/12 border border-[var(--accent)]/25 hover:bg-[var(--accent)]/20 transition-colors disabled:opacity-40"
+            className={cn(primaryBtn, 'h-9 px-3 text-xs justify-start')}
           >
             {connecting ? <Loader2 size={13} className="animate-spin" /> : <Plug size={13} />}
             {isShared ? 'Connect to your AI' : 'Share + connect to your AI'}

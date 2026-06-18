@@ -2472,16 +2472,21 @@ router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthReq
     const seasonalLine = seasonalPromptLine(seasonal);
     const brandContext = buildBrandContext(guideline as any);
 
-    const system = `You are a brand creative director. Propose ${count} concrete, on-brand content ideas the team could produce in the near term. Ground each in BOTH the brand's identity (archetype, voice, vibe) AND the upcoming commercial moment when one is relevant. Be specific and useful — no generic "make a post" filler.
+    const system = `You are a brand creative director. Propose ${count} concrete, on-brand things the team could make in the near term — a MIX of formats, not all the same. Ground each in the brand's identity (archetype, voice, vibe) AND the upcoming commercial moment when relevant. Be specific — no generic filler.
+
+The "prompt" field depends on "kind":
+- "mockup": a photoreal product/mockup shot. The prompt describes ONLY the physical scene/material/lighting/camera — NEVER the brand name, logo, or any text (the logo is composited automatically; describing it garbles output). Write it in English.
+- "social" | "campaign" | "video" | "budget" | "naming": the prompt is a complete, ready-to-run INSTRUCTION that an AI assistant ALREADY loaded with this brand can execute — written in the brand's language, specific to the brand + moment (e.g. "Crie uma campanha de 3 posts de Volta às Aulas para a {marca}, com…").
 
 Return ONLY a JSON array (no prose, no code fences):
 [{
   "title": "short punchy label in the brand's language (max 5 words)",
-  "rationale": "one line on why this fits the brand AND this moment",
-  "prompt": "an English image-generation prompt describing ONLY the physical scene/mockup/material/lighting/camera — NEVER the brand name, logo, or any text (the logo is composited automatically; describing it garbles output)",
-  "kind": "mockup|social|print",
+  "rationale": "one line on why it fits the brand AND this moment",
+  "prompt": "see the kind rules above",
+  "kind": "mockup|social|campaign|video|budget|naming",
   "aspectRatio": "1:1|4:5|9:16|16:9"
-}]`;
+}]
+Include at least one "mockup". Vary the rest across the other kinds.`;
 
     const userMsg = `Brand context:\n${brandContext}\n\n${
       seasonalLine || 'No major commercial moment is imminent — propose evergreen on-brand ideas.'
@@ -2504,7 +2509,7 @@ Return ONLY a JSON array (no prose, no code fences):
     }
 
     const ratios = ['1:1', '4:5', '9:16', '16:9'];
-    const kinds = ['mockup', 'social', 'print'];
+    const kinds = ['mockup', 'social', 'campaign', 'video', 'budget', 'naming'];
     const suggestions = parsed
       .filter((s: any) => s && typeof s.prompt === 'string' && s.prompt.length > 5)
       .slice(0, count)
