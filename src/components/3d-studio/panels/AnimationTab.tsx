@@ -2,17 +2,21 @@ import React from 'react';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Select, type SelectOption } from '@/components/ui/select';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore, ANIMATION_PRESETS } from '@/stores/studio3dStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { StoreState } from './_shared';
-import {
-  ToolPanelDisclosure,
-  ToolPanelGrid,
-  ToolPanelChip,
-  ToolPanelRow,
-} from '@/components/shared/ToolPanel';
+import { ToolPanelDisclosure, ToolPanelRow } from '@/components/shared/ToolPanel';
+
+// Animation Type options for the shared <Select> (mapped from the store SSoT).
+const ANIMATION_TYPE_OPTIONS: SelectOption[] = ANIMATION_PRESETS.map((a) => ({
+  value: a.id,
+  label: a.label,
+}));
+
+const EASING_VALUES = ['linear', 'easeIn', 'easeOut', 'easeInOut'] as const;
 
 // Fine-grained subscription: only the animation/physics slice. Replaces the
 // full-store `useStudio3DStore()` which re-rendered this panel on every store
@@ -43,6 +47,12 @@ export const AnimationTab: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const store = useStudio3DStore(useShallow(animationPanelSelector));
 
+  // Easing options for the shared <Select> (translated labels).
+  const easingOptions: SelectOption[] = EASING_VALUES.map((e) => ({
+    value: e,
+    label: t(`studio3d.animation.easings.${e}`),
+  }));
+
   const [animateSpeed, setAnimateSpeed] = useDebouncedSlider(
     store.animateSpeed,
     store.setAnimateSpeed
@@ -69,26 +79,52 @@ export const AnimationTab: React.FC = React.memo(() => {
     if (store.physicsCount > maxCount) store.setPhysicsCount(maxCount);
   });
 
+  const isStandardAnim = store.animate !== 'none' && store.animate !== 'physicsFall';
+
   return (
     <>
-      {/* Animation Type — always visible */}
-      <ToolPanelDisclosure label={t('studio3d.animation.type')} defaultOpen>
-        <ToolPanelGrid>
-          {ANIMATION_PRESETS.map((a) => (
-            <ToolPanelChip
-              key={a.id}
-              active={store.animate === a.id}
-              onClick={() => store.setAnimate(a.id)}
-            >
-              {a.label}
-            </ToolPanelChip>
-          ))}
-        </ToolPanelGrid>
-      </ToolPanelDisclosure>
+      {/* Essentials — Animation Type */}
+      <span className="text-[11px] text-neutral-400">{t('studio3d.animation.type')}</span>
+      <Select
+        options={ANIMATION_TYPE_OPTIONS}
+        value={store.animate}
+        onChange={(v) => store.setAnimate(v as typeof store.animate)}
+      />
 
-      {/* Physics params */}
+      {/* Standard animation params — Speed / Easing / Reverse */}
+      {isStandardAnim && (
+        <>
+          <ScrubInput
+            label="Speed"
+            value={animateSpeed}
+            min={0.1}
+            max={5}
+            step={0.1}
+            onChange={setAnimateSpeed}
+          />
+
+          <span className="text-[11px] text-neutral-400">
+            {t('studio3d.animation.easing')}
+          </span>
+          <Select
+            options={easingOptions}
+            value={store.animateEasing}
+            onChange={(v) => store.setAnimateEasing(v as typeof store.animateEasing)}
+          />
+
+          <ToolPanelRow label={t('studio3d.animation.reverse')}>
+            <Switch
+              checked={store.animateReverse}
+              onCheckedChange={store.setAnimateReverse}
+              aria-label="Reverse animation"
+            />
+          </ToolPanelRow>
+        </>
+      )}
+
+      {/* Advanced — Physics parameters (only when physicsFall is selected) */}
       {store.animate === 'physicsFall' && (
-        <ToolPanelDisclosure label={t('studio3d.panels.physics')} defaultOpen>
+        <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
           <div className="grid grid-cols-2 gap-1.5">
             <ScrubInput
               label="Count"
@@ -139,38 +175,6 @@ export const AnimationTab: React.FC = React.memo(() => {
           >
             {t('studio3d.animation.physics.reset')}
           </Button>
-        </ToolPanelDisclosure>
-      )}
-
-      {/* Standard animation params */}
-      {store.animate !== 'none' && store.animate !== 'physicsFall' && (
-        <ToolPanelDisclosure label={t('studio3d.panels.controls')} defaultOpen>
-          <ScrubInput
-            label="Speed"
-            value={animateSpeed}
-            min={0.1}
-            max={5}
-            step={0.1}
-            onChange={setAnimateSpeed}
-          />
-          <ToolPanelGrid>
-            {(['linear', 'easeIn', 'easeOut', 'easeInOut'] as const).map((e) => (
-              <ToolPanelChip
-                key={e}
-                active={store.animateEasing === e}
-                onClick={() => store.setAnimateEasing(e)}
-              >
-                {t(`studio3d.animation.easings.${e}`)}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
-          <ToolPanelRow label={t('studio3d.animation.reverse')}>
-            <Switch
-              checked={store.animateReverse}
-              onCheckedChange={store.setAnimateReverse}
-              aria-label="Reverse animation"
-            />
-          </ToolPanelRow>
         </ToolPanelDisclosure>
       )}
     </>

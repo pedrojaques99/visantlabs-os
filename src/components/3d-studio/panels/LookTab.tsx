@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrubInput } from '@/components/ui/ScrubInput';
 import { Switch } from '@/components/ui/switch';
+import { Select, type SelectOption } from '@/components/ui/select';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useStudio3DStore, MATERIAL_PRESETS, BLEND_MODE_OPTIONS } from '@/stores/studio3dStore';
@@ -11,6 +12,12 @@ import {
   ExpandableColorPicker,
 } from '@/components/shared/ToolPanel';
 import { MaterialCategoryTabs, TextureControls, PbrMapUpload, type StoreState } from './_shared';
+
+// Blend Mode options for the shared <Select> (mapped from the store SSoT).
+const BLEND_MODE_SELECT_OPTIONS: SelectOption[] = BLEND_MODE_OPTIONS.map((o) => ({
+  value: o.id,
+  label: o.label,
+}));
 
 // Fine-grained subscription: only the material / surface / texture / PBR slice
 // (was a full-store subscription). Includes the fields the shared
@@ -78,6 +85,7 @@ export const LookTab: React.FC = React.memo(() => {
 
   return (
     <>
+      {/* Essentials — material + core surface controls, always visible */}
       <ToolPanelDisclosure label={t('studio3d.material.title')} defaultOpen>
         <MaterialCategoryTabs
           activeCat={MATERIAL_PRESETS.find((m) => m.id === store.material)?.category ?? 'basic'}
@@ -88,9 +96,6 @@ export const LookTab: React.FC = React.memo(() => {
           onChange={store.setColor}
           label="Material color"
         />
-      </ToolPanelDisclosure>
-
-      <ToolPanelDisclosure label={t('studio3d.panels.surface')} defaultOpen>
         <div className="grid grid-cols-3 gap-1.5">
           <ScrubInput
             label="Metal"
@@ -120,28 +125,21 @@ export const LookTab: React.FC = React.memo(() => {
             hint="Material opacity — 0 = transparent, 1 = solid"
           />
         </div>
-        <ToolPanelRow label="Blend Mode">
-          <select
-            value={store.blendMode}
-            onChange={(e) => store.setBlendMode(e.target.value as any)}
-            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-white/30 cursor-pointer"
-          >
-            {BLEND_MODE_OPTIONS.map((o) => (
-              <option key={o.id} value={o.id} className="bg-neutral-900">
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </ToolPanelRow>
-        <ScrubInput
-          label="Env Reflect"
-          value={envMapIntensity}
-          min={0}
-          max={5}
-          step={0.1}
-          onChange={setEnvMapIntensity}
-          hint="Environment map intensity — higher = more reflective/glossy"
+      </ToolPanelDisclosure>
+
+      {/* Texture — secondary, kept visible */}
+      <ToolPanelDisclosure label={t('studio3d.panels.texturePbr')}>
+        <TextureControls
+          store={store}
+          textureOpacity={textureOpacity}
+          setTextureOpacity={setTextureOpacity}
+          textureRotation={textureRotation}
+          setTextureRotation={setTextureRotation}
         />
+      </ToolPanelDisclosure>
+
+      {/* Advanced — over-senior controls, flat (no nesting), collapsed by default */}
+      <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
         <ToolPanelRow label={t('studio3d.properties.wireframe')}>
           <Switch
             checked={store.wireframe}
@@ -149,11 +147,9 @@ export const LookTab: React.FC = React.memo(() => {
             aria-label="Wireframe"
           />
         </ToolPanelRow>
-      </ToolPanelDisclosure>
 
-      <ToolPanelDisclosure label="Fresnel Gradient">
         <ScrubInput
-          label="Strength"
+          label="Fresnel"
           value={fresnelStrength}
           min={0}
           max={1}
@@ -168,16 +164,7 @@ export const LookTab: React.FC = React.memo(() => {
             label="Fresnel color"
           />
         )}
-      </ToolPanelDisclosure>
 
-      <ToolPanelDisclosure label={t('studio3d.panels.texturePbr')}>
-        <TextureControls
-          store={store}
-          textureOpacity={textureOpacity}
-          setTextureOpacity={setTextureOpacity}
-          textureRotation={textureRotation}
-          setTextureRotation={setTextureRotation}
-        />
         <PbrMapUpload
           label="Normal Map"
           value={store.normalMapUrl}
@@ -192,6 +179,23 @@ export const LookTab: React.FC = React.memo(() => {
           label="Metalness Map"
           value={store.metalnessMapUrl}
           onChange={store.setMetalnessMapUrl}
+        />
+
+        <ScrubInput
+          label="Env Reflect"
+          value={envMapIntensity}
+          min={0}
+          max={5}
+          step={0.1}
+          onChange={setEnvMapIntensity}
+          hint="Environment map intensity — higher = more reflective/glossy"
+        />
+
+        <span className="text-[11px] text-neutral-400">Blend Mode</span>
+        <Select
+          options={BLEND_MODE_SELECT_OPTIONS}
+          value={store.blendMode}
+          onChange={(v) => store.setBlendMode(v as typeof store.blendMode)}
         />
       </ToolPanelDisclosure>
     </>
