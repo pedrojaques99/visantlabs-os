@@ -24,6 +24,7 @@ import { SHADER_DEFINITIONS } from '@/utils/shaders/shaderParams';
 import { BrandSelector } from '@/components/canvas/BrandSelector';
 import type { StoreState } from './_shared';
 import { ScenePresetsStrip } from '../ScenePresetsStrip';
+import { useBrandLogoLoader } from '../useBrandLogoLoader';
 
 const essentialsSelector = (s: StoreState) => ({
   color: s.color,
@@ -74,13 +75,22 @@ export const EssentialsTab: React.FC = React.memo(() => {
     return (g?.colors ?? []).map((c) => c.hex).filter(Boolean).slice(0, 8);
   }, [brandGuidelines, store._brandGuidelineId]);
 
+  const { loadPrimaryBrandLogo } = useBrandLogoLoader();
+
+  // Selecting a brand records it (drives swatches + on-brand scenes) and auto-loads
+  // its primary logo straight into the 3D model.
+  const handleBrandChange = (id: string | null) => {
+    store.setBrandGuidelineId(id ?? '');
+    if (id) loadPrimaryBrandLogo(brandGuidelines.find((b) => b.id === id));
+  };
+
   return (
     <>
       {/* Brand — core: applying a brand flows its tokens into the pickers + on-brand scenes */}
       <ToolPanelSection title="Brand">
         <BrandSelector
           value={store._brandGuidelineId || null}
-          onChange={(id) => store.setBrandGuidelineId(id ?? '')}
+          onChange={handleBrandChange}
           className="w-full"
         />
       </ToolPanelSection>
