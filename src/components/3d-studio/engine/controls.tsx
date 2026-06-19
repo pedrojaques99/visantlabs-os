@@ -226,6 +226,25 @@ export function SmoothControls({
     targetZoom.current = zoom;
   }, [zoom]);
 
+  // Double-click resets the view to its default rotation, zoom and pan. Just
+  // points every target back at the defaults — the useFrame damping animates the
+  // snap-back smoothly (same path the idle-reset uses).
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const onDoubleClick = () => {
+      baseRotation.current = { x: rotationX, y: rotationY };
+      targetRotation.current = { x: rotationX, y: rotationY };
+      velocity.current = { x: 0, y: 0 };
+      cursorOffset.current = { x: 0, y: 0 };
+      targetZoom.current = zoom;
+      targetPan.current = { x: 0, y: 0 };
+      markActive();
+    };
+    canvas.addEventListener('dblclick', onDoubleClick);
+    return () => canvas.removeEventListener('dblclick', onDoubleClick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gl, rotationX, rotationY, zoom]);
+
   useFrame(() => {
     if (!meshRef.current) return;
 
