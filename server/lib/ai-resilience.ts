@@ -63,6 +63,11 @@ const createRetryPolicy = (provider: string) => {
   return policy;
 };
 
+// Live circuit state per provider, tracked off the breaker's onStateChange so
+// callers (e.g. the image fallback router) can skip a provider whose circuit is
+// open without paying a failed attempt to discover it.
+const circuitStateByProvider: Map<string, CircuitState> = new Map();
+
 // Circuit breaker: opens after 3 consecutive failures, half-open after 30s
 const createBreakerPolicy = (provider: string) => {
   const policy = circuitBreaker(handleAll, {
@@ -71,6 +76,7 @@ const createBreakerPolicy = (provider: string) => {
   });
 
   policy.onStateChange((state) => {
+    circuitStateByProvider.set(provider, state);
     if (state === CircuitState.Open) {
       emit({ type: 'circuit-open', provider });
     } else if (state === CircuitState.Closed) {
@@ -111,12 +117,10 @@ export async function withResilience<T>(provider: string, fn: () => Promise<T>):
 
 /**
  * Check if a provider's circuit is currently open (unavailable).
+ * Half-open counts as available — cockatiel will let a probe through.
  */
 export function isCircuitOpen(provider: string): boolean {
-  const policy = policies.get(provider);
-  if (!policy) return false;
-  // cockatiel doesn't expose state directly, but we track via events
-  return false; // TODO: track state internally if needed
+  return circuitStateByProvider.get(provider) === CircuitState.Open;
 }
 
 /**
@@ -125,7 +129,8 @@ export function isCircuitOpen(provider: string): boolean {
 export function getResilienceStats(): Record<string, { state: string }> {
   const stats: Record<string, { state: string }> = {};
   for (const [provider] of policies) {
-    stats[provider] = { state: 'unknown' }; // Would need internal tracking
+    const state = circuitStateByProvider.get(provider);
+    stats[provider] = { state: state ? CircuitState[state] : 'closed' };
   }
   return stats;
 }

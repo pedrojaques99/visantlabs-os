@@ -296,7 +296,9 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                   <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed line-clamp-2 flex-1">
                     {s.rationale}
                   </p>
-                  <div className="flex items-center gap-2 pt-0.5">
+                  {/* One primary action leads; secondary tools reveal on hover so
+                      the card reads clean at rest. */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
                     {meta.mode === 'inline' ? (
                       <button
                         onClick={() => onGenerate(s.prompt)}
@@ -313,29 +315,31 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                         <Sparkles size={11} /> Use in AI
                       </button>
                     )}
-                    <button
-                      onClick={() => {
-                        setRenderInitial({
-                          h1: s.title,
-                          brief: `${s.title} — ${s.rationale}`,
-                          template: 'Post/Launch',
-                        });
-                        setRenderOpen(true);
-                      }}
-                      className={cn(ghostBtn, 'h-7 w-7')}
-                      aria-label="Render on-brand"
-                      title="Render on-brand (web — no Figma)"
-                    >
-                      <Layout size={11} />
-                    </button>
-                    <button
-                      onClick={() => copyPrompt(s.prompt)}
-                      className={cn(ghostBtn, 'h-7 w-7')}
-                      aria-label="Copy prompt"
-                      title="Copy prompt"
-                    >
-                      <Copy size={11} />
-                    </button>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => {
+                          setRenderInitial({
+                            h1: s.title,
+                            brief: `${s.title} — ${s.rationale}`,
+                            template: 'Post/Launch',
+                          });
+                          setRenderOpen(true);
+                        }}
+                        className={cn(ghostBtn, 'h-7 w-7')}
+                        aria-label="Render on-brand"
+                        title="Render on-brand (web — no Figma)"
+                      >
+                        <Layout size={11} />
+                      </button>
+                      <button
+                        onClick={() => copyPrompt(s.prompt)}
+                        className={cn(ghostBtn, 'h-7 w-7')}
+                        aria-label="Copy prompt"
+                        title="Copy prompt"
+                      >
+                        <Copy size={11} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

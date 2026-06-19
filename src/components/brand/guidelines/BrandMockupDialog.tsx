@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,21 @@ import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSe
 import { mockupApi } from '@/services/mockupApi';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { getModelPreference, setModelPreference } from '@/utils/modelPreferences';
+import { IMAGE_MODEL_REGISTRY } from '@/constants/imageModelRegistry';
 import { downloadImage } from '@/utils/imageUtils';
-import { Image, Download, RotateCcw, Save, Zap, Check, Square } from 'lucide-react';
+import {
+  Image,
+  Download,
+  RotateCcw,
+  Save,
+  Zap,
+  Check,
+  Square,
+  Gauge,
+  Sparkles,
+  AlertCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -51,7 +64,38 @@ const CATEGORY_EMOJI: Record<string, string> = {
   editorial: '📰',
 };
 
-type View = 'form' | 'suggestions' | 'loading' | 'generating' | 'result';
+type View = 'form' | 'suggestions' | 'loading' | 'generating' | 'result' | 'error';
+
+const STRATEGY_COPY: Record<'cost' | 'quality', string> = {
+  cost: 'Se o modelo escolhido falhar, tentamos outro pelo menor custo.',
+  quality: 'Se o modelo escolhido falhar, tentamos outro pela melhor qualidade.',
+};
+
+// Map a backend error code/message to clean, actionable copy. The router only
+// surfaces an error when EVERY provider failed (or the prompt itself was
+// rejected) — so the message is about the prompt or a transient outage, never a
+// raw 500 / model id.
+function friendlyMockupError(err: any): { title: string; detail: string; refunded: boolean } {
+  const code = err?.errorData?.error || err?.code;
+  const msg = String(err?.message || '').toLowerCase();
+  if (code === 'image_generation_unavailable')
+    return {
+      title: 'Geração indisponível agora',
+      detail: 'Todos os modelos estão fora no momento. Tente de novo em instantes.',
+      refunded: true,
+    };
+  if (code === 'safety_blocked' || msg.includes('safety') || msg.includes('blocked') || msg.includes('422'))
+    return {
+      title: 'Cena bloqueada',
+      detail: 'O conteúdo foi sinalizado pela política de uso. Ajuste a descrição e tente de novo.',
+      refunded: true,
+    };
+  return {
+    title: 'Não consegui gerar',
+    detail: err?.message || 'Erro inesperado. Tente novamente.',
+    refunded: true,
+  };
+}
 
 export const BrandMockupDialog: React.FC<Props> = ({
   open,
@@ -65,12 +109,36 @@ export const BrandMockupDialog: React.FC<Props> = ({
   const [model, setModel] = useState<string>(() => getPreferredImageModel());
   const [resolution, setResolution] = useState<Resolution>('1K');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
+  const [strategy, setStrategy] = useState<'cost' | 'quality'>(
+    () => getModelPreference('fallbackStrategy') || 'quality'
+  );
   const [view, setView] = useState<View>('form');
+  const [errorInfo, setErrorInfo] = useState<ReturnType<typeof friendlyMockupError> | null>(null);
   const [result, setResult] = useState<{
     url: string;
     creditsDeducted: number;
     creditsRemaining: number;
+    fellBack?: boolean;
+    providerUsed?: string;
   } | null>(null);
+
+  const chooseStrategy = useCallback((s: 'cost' | 'quality') => {
+    setStrategy(s);
+    setModelPreference('fallbackStrategy', s);
+  }, []);
+
+  // When a single generation runs long, it's usually because the chosen model is
+  // down and the router is cascading to a backup. Reassure instead of leaving a
+  // silent spinner — surfaces only after ~6s so the common fast path stays clean.
+  const [slowHint, setSlowHint] = useState(false);
+  useEffect(() => {
+    if (view !== 'generating') {
+      setSlowHint(false);
+      return;
+    }
+    const t = setTimeout(() => setSlowHint(true), 6000);
+    return () => clearTimeout(t);
+  }, [view]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -85,9 +153,35 @@ export const BrandMockupDialog: React.FC<Props> = ({
 
   const credits = useMemo(() => getCreditsRequired(model, resolution), [model, resolution]);
 
+  const modelLabel = useMemo(
+    () => IMAGE_MODEL_REGISTRY.find((m) => m.id === model)?.label || model,
+    [model]
+  );
+
+  // What the brand injects — shown so the user sees *what comes out* before generating.
+  const brandPreview = useMemo(() => {
+    const colors = (guideline.colors || [])
+      .slice()
+      .sort((a, b) => (a.usageRank ?? 99) - (b.usageRank ?? 99));
+    return {
+      colors: colors.slice(0, 5),
+      font: guideline.typography?.[0]?.family,
+      logo: guideline.logos?.find((l) => l.variant === 'primary') || guideline.logos?.[0],
+    };
+  }, [guideline.colors, guideline.typography, guideline.logos]);
+
+  const ratioCss = aspectRatio.replace(':', ' / ');
+  // Fit the preview inside a fixed square so the modal height stays stable as
+  // the aspect ratio changes (no layout jank when toggling 16:9 ↔ 9:16).
+  const previewLandscape = (() => {
+    const [w, h] = aspectRatio.split(':').map(Number);
+    return !w || !h ? true : w >= h;
+  })();
+
   const resetToForm = useCallback(() => {
     setView('form');
     setResult(null);
+    setErrorInfo(null);
     setSaved(false);
     setBatchResults([]);
     setBatchProgress(0);
@@ -121,6 +215,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
         model,
         resolution,
         aspectRatio,
+        strategy,
         brandGuidelineId: guideline.id,
         provider: model.startsWith('seedream')
           ? 'seedream'
@@ -137,6 +232,8 @@ export const BrandMockupDialog: React.FC<Props> = ({
           url,
           creditsDeducted: res.creditsDeducted,
           creditsRemaining: res.creditsRemaining,
+          fellBack: res.fellBack,
+          providerUsed: res.providerUsed,
         });
         setView('result');
         toast.success(
@@ -154,15 +251,19 @@ export const BrandMockupDialog: React.FC<Props> = ({
           } as any)
           .catch(() => {});
       } else {
-        toast.error('Nenhuma imagem retornada');
-        setView('form');
+        setErrorInfo({
+          title: 'Nenhuma imagem retornada',
+          detail: 'Tente novamente em instantes.',
+          refunded: true,
+        });
+        setView('error');
       }
     } catch (err: any) {
       if (cancelledRef.current) return;
-      toast.error(err.message || 'Erro ao gerar mockup');
-      setView('form');
+      setErrorInfo(friendlyMockupError(err));
+      setView('error');
     }
-  }, [prompt, model, resolution, aspectRatio, guideline.id]);
+  }, [prompt, model, resolution, aspectRatio, strategy, guideline.id]);
 
   const handleSurpriseMe = useCallback(async () => {
     setView('loading');
@@ -224,6 +325,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
           model,
           resolution,
           aspectRatio: ar,
+          strategy,
           brandGuidelineId: guideline.id,
           provider: model.startsWith('seedream')
             ? 'seedream'
@@ -275,7 +377,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
       toast.error('Nenhum mockup gerado');
       setView('suggestions');
     }
-  }, [selectedSuggestions, suggestions, model, resolution, guideline.id]);
+  }, [selectedSuggestions, suggestions, model, resolution, strategy, guideline.id]);
 
   const handleSaveToMedia = useCallback(
     async (url: string, label: string) => {
@@ -357,6 +459,59 @@ export const BrandMockupDialog: React.FC<Props> = ({
           {/* ── FORM ── */}
           {view === 'form' && (
             <div className="space-y-4">
+              {/* Brand chip + live preview: what the generation will carry. The
+                  swatch sits in a fixed square so the layout doesn't jump when
+                  the aspect ratio changes. */}
+              <div className="flex items-stretch gap-3">
+                <div className="shrink-0 w-24 h-24 rounded-lg border border-neutral-800 bg-neutral-950 flex items-center justify-center overflow-hidden">
+                  <div
+                    className="relative flex items-center justify-center overflow-hidden"
+                    style={{
+                      aspectRatio: ratioCss,
+                      width: previewLandscape ? '100%' : 'auto',
+                      height: previewLandscape ? 'auto' : '100%',
+                      background:
+                        brandPreview.colors.length > 1
+                          ? `linear-gradient(135deg, ${brandPreview.colors[0].hex}, ${brandPreview.colors[1].hex})`
+                          : brandPreview.colors[0]?.hex || '#0a0a0a',
+                    }}
+                    title={`Prévia da marca — ${aspectRatio} · ${resolution}`}
+                  >
+                    {brandPreview.logo ? (
+                      <img
+                        src={brandPreview.logo.url}
+                        alt=""
+                        className="max-w-[60%] max-h-[60%] object-contain opacity-90"
+                      />
+                    ) : (
+                      <span className="text-[8px] font-mono uppercase tracking-wider text-white/70 px-1 text-center">
+                        {brandName}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1 flex flex-col justify-center gap-2">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                    Injetado da marca · {aspectRatio}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    {brandPreview.colors.map((c) => (
+                      <span
+                        key={c.hex}
+                        className="w-4 h-4 rounded-full border border-white/10"
+                        style={{ backgroundColor: c.hex }}
+                        title={`${c.name} ${c.hex}`}
+                      />
+                    ))}
+                  </div>
+                  {brandPreview.font && (
+                    <p className="text-[11px] text-neutral-400 truncate" style={{ fontFamily: brandPreview.font }}>
+                      {brandPreview.font}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <MicroTitle className="text-neutral-500">Cena</MicroTitle>
@@ -403,9 +558,38 @@ export const BrandMockupDialog: React.FC<Props> = ({
                 <AspectRatioSelector value={aspectRatio} onChange={setAspectRatio} compact />
               </div>
 
+              {/* Fallback strategy — the user decides how we pick a backup model. */}
+              <div className="space-y-1.5">
+                <MicroTitle className="text-neutral-500">Se indisponível</MicroTitle>
+                <div className="inline-flex rounded-lg border border-neutral-800 p-0.5">
+                  {(
+                    [
+                      { id: 'quality', label: 'Qualidade', Icon: Sparkles },
+                      { id: 'cost', label: 'Custo', Icon: Gauge },
+                    ] as const
+                  ).map(({ id, label, Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => chooseStrategy(id)}
+                      className={cn(
+                        'flex items-center gap-1.5 px-3 h-7 rounded-md text-[11px] font-medium transition-colors',
+                        strategy === id
+                          ? 'bg-violet-500/20 text-violet-200'
+                          : 'text-neutral-500 hover:text-neutral-300'
+                      )}
+                    >
+                      <Icon size={11} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-neutral-600 leading-relaxed">{STRATEGY_COPY[strategy]}</p>
+              </div>
+
               <div className="flex items-center justify-between pt-2">
                 <span className="text-[10px] font-mono text-neutral-600">
-                  {credits} crédito{credits !== 1 ? 's' : ''}
+                  {modelLabel} · {resolution} · {aspectRatio} · {credits} crédito
+                  {credits !== 1 ? 's' : ''}
                 </span>
                 <Button
                   onClick={handleGenerate}
@@ -414,6 +598,41 @@ export const BrandMockupDialog: React.FC<Props> = ({
                 >
                   <Image size={12} />
                   Gerar Mockup
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ── ERROR (only when all providers failed / prompt rejected) ── */}
+          {view === 'error' && errorInfo && (
+            <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+              <AlertCircle size={22} className="text-neutral-500" />
+              <p className="text-sm font-medium text-neutral-200">{errorInfo.title}</p>
+              <p className="text-[12px] text-neutral-500 max-w-xs leading-relaxed">
+                {errorInfo.detail}
+              </p>
+              {errorInfo.refunded && (
+                <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                  Nenhum crédito cobrado
+                </p>
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  onClick={() => setView('form')}
+                  variant="ghost"
+                  className="h-8 px-3 text-xs text-neutral-400"
+                >
+                  Voltar
+                </Button>
+                <Button
+                  onClick={() => {
+                    setErrorInfo(null);
+                    handleGenerate();
+                  }}
+                  className="h-8 px-4 gap-2 text-xs bg-violet-500/20 border border-violet-500/30 text-violet-200 hover:bg-violet-500/30"
+                >
+                  <RotateCcw size={12} />
+                  Tentar de novo
                 </Button>
               </div>
             </div>
@@ -513,6 +732,11 @@ export const BrandMockupDialog: React.FC<Props> = ({
               <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
                 Gerando mockup…
               </p>
+              {slowHint && (
+                <p className="text-[10px] text-neutral-600 max-w-[16rem] text-center leading-relaxed animate-in fade-in duration-500">
+                  Buscando o melhor modelo disponível por {strategy === 'cost' ? 'custo' : 'qualidade'}…
+                </p>
+              )}
             </div>
           )}
 
@@ -611,6 +835,11 @@ export const BrandMockupDialog: React.FC<Props> = ({
               <div className="rounded-lg border border-neutral-800 overflow-hidden bg-neutral-950">
                 <img src={result.url} alt="Generated mockup" className="w-full" />
               </div>
+              {result.fellBack && result.providerUsed && (
+                <p className="text-[10px] text-neutral-600 leading-relaxed">
+                  Gerado com {result.providerUsed} — o modelo escolhido estava indisponível.
+                </p>
+              )}
               <div className="flex items-center justify-between">
                 <button
                   onClick={resetToForm}

@@ -13,6 +13,10 @@ import {
 } from '../../src/services/geminiService.js';
 import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
 import { withResilience } from '../lib/ai-resilience.js';
+import {
+  generateImageWithFallback,
+  type ImageCandidate,
+} from '../lib/ai-providers/imageRouter.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
@@ -409,6 +413,9 @@ router.post(
     let lockKey: string | null = null;
     let requestId: string = 'no-request-id';
     let deductionSource: { fromEarned: number; fromMonthly: number } | undefined = undefined;
+    // Credits the cost-cap already refunded after a cheaper fallback — subtracted
+    // from the catch-block refund so a post-success error can't double-refund.
+    let creditsRefundedByCap = 0;
 
     try {
       await connectToMongoDB();
@@ -431,7 +438,12 @@ router.post(
         height, // Optional: custom height in pixels (for Figma plugin)
         brandGuidelineId, // Optional: brand guideline ID for context injection
         seed: rawSeed, // Optional: seed for deterministic generation
+        strategy: rawStrategy, // Optional: 'cost' | 'quality' — fallback ordering when the chosen model is unavailable
       } = req.body;
+
+      // Fallback strategy governs ONLY the order other providers are tried in if
+      // the requested model fails; the requested model is always attempted first.
+      const fallbackStrategy: 'cost' | 'quality' = rawStrategy === 'cost' ? 'cost' : 'quality';
 
       // Auto-infer provider from model when caller omits it
       let provider = rawProvider;
@@ -1017,199 +1029,269 @@ router.post(
         }
       }
 
-      // Generate mockup image using selected provider
-      // Note: We only generate one image per request
-      let imageBase64: string;
-      let usedSeed: number | undefined;
+      // Generate mockup image with automatic provider fallback.
+      //
+      // The requested model is always tried first; if it fails for a
+      // provider-side reason (auth/billing/rate/overload/5xx — e.g. gpt-image-2
+      // on an unverified OpenAI org), the router cascades through the other
+      // *configured* providers (ordered by the caller's cost|quality strategy)
+      // instead of surfacing a raw 500. Payload/safety errors (400/422) stop
+      // immediately — switching provider can't fix the prompt. See imageRouter.ts.
 
-      if (provider === 'imagen') {
-        const hasImagenRefs = finalReferenceImages && finalReferenceImages.length > 0;
-        console.log(`${logPrefix} [GENERATION] Using Imagen provider`, {
-          model,
-          aspectRatio,
-          hasBaseImage: !!finalBaseImage,
-          referenceImagesCount: finalReferenceImages?.length ?? 0,
-          willUseEditImage: hasImagenRefs,
-        });
+      // Providers usable right now = system env key present OR user BYOK present.
+      const envHas = (k: string) => {
+        const v = process.env[k];
+        return !!v && v !== 'undefined' && v.trim().length > 0;
+      };
+      const u: any = userBeforeDeduction || {};
+      const usableProviders = new Set<string>();
+      if (
+        envHas('GEMINI_API_KEY') ||
+        envHas('VITE_GEMINI_API_KEY') ||
+        envHas('VITE_API_KEY') ||
+        u.encryptedGeminiApiKey
+      ) {
+        usableProviders.add('gemini');
+        usableProviders.add('imagen');
+      }
+      if (
+        envHas('OPENAI_KEY') ||
+        envHas('OPENAI_API_KEY') ||
+        (provider === 'openai' && usingUserKey)
+      ) {
+        usableProviders.add('openai');
+      }
+      if (envHas('BYTEPLUS_API_KEY') || u.encryptedSeedreamApiKey) usableProviders.add('seedream');
+      if (envHas('IDEOGRAM_API_KEY') || u.encryptedIdeogramApiKey) usableProviders.add('ideogram');
+      if (envHas('REVE_API_KEY') || u.encryptedReveApiKey) usableProviders.add('reve');
 
-        const imagenResult = await generateImagenImage({
-          prompt: finalPromptText,
-          model: model as any,
-          aspectRatio: aspectRatio as any,
-          apiKey: userApiKey,
-          referenceImages: hasImagenRefs
-            ? finalReferenceImages.map((img: any) => ({
-                base64: img.base64,
-                mimeType: img.mimeType || 'image/png',
-              }))
-            : undefined,
-          subjectDescription: brandGuidelineId ? 'brand logo' : undefined,
-        });
-        imageBase64 = imagenResult.base64;
-      } else if (provider === 'seedream') {
-        // Use Seedream via BytePlus API
-        let seedreamModel = model;
-        if (!isSeedreamModel(seedreamModel)) {
-          console.warn(
-            `${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`
-          );
-          seedreamModel = SEEDREAM_MODELS.SD_4_5;
-        }
-
-        console.log(`${logPrefix} [GENERATION] Using Seedream provider`, {
-          originalModel: model,
-          effectiveModel: seedreamModel,
-          resolution,
-          aspectRatio,
-          hasBaseImage: !!finalBaseImage,
-          referenceImagesCount: finalReferenceImages?.length ?? 0,
-          seed: validSeed ?? 'random',
-        });
-
-        const seedreamResult = await generateSeedreamImage({
-          prompt: finalPromptText,
-          baseImage: finalBaseImage as any,
-          referenceImages: finalReferenceImages as any,
-          model: seedreamModel as any,
-          resolution: resolution as any,
-          aspectRatio: aspectRatio as any,
-          apiKey: userApiKey,
-          seed: validSeed,
-        });
-        imageBase64 = seedreamResult.base64;
-        usedSeed = seedreamResult.seed;
-      } else if (provider === 'reve' || isReveModel(model)) {
-        const hasBaseImage = !!finalBaseImage;
-        const hasRefs = !!finalReferenceImages?.length;
-        console.log(`${logPrefix} [GENERATION] Using REVE provider`, {
-          model,
-          aspectRatio,
-          seed: validSeed ?? 'random',
-          mode: hasBaseImage ? 'edit' : hasRefs ? 'remix' : 'generate',
-        });
-
-        if (hasBaseImage && hasRefs) {
-          const allImages = [finalBaseImage, ...finalReferenceImages!] as any;
-          const remixResult = await remixReveImage({
-            prompt: finalPromptText,
-            referenceImages: allImages,
-            aspectRatio: aspectRatio as any,
-            apiKey: userApiKey,
-          });
-          imageBase64 = remixResult.base64;
-        } else if (hasBaseImage) {
-          const editResult = await editReveImage({
-            editInstruction: finalPromptText,
-            baseImage: finalBaseImage as any,
-            aspectRatio: aspectRatio as any,
-            apiKey: userApiKey,
-          });
-          imageBase64 = editResult.base64;
-        } else if (hasRefs) {
-          const remixResult = await remixReveImage({
-            prompt: finalPromptText,
-            referenceImages: finalReferenceImages as any,
-            aspectRatio: aspectRatio as any,
-            apiKey: userApiKey,
-          });
-          imageBase64 = remixResult.base64;
-        } else {
-          const reveResult = await generateReveImage({
-            prompt: finalPromptText,
-            model: model as any,
-            aspectRatio: aspectRatio as any,
-            apiKey: userApiKey,
-            seed: validSeed,
-          });
-          imageBase64 = reveResult.base64;
-          usedSeed = reveResult.seed;
-        }
-      } else if (provider === 'ideogram' || isIdeogramModel(model)) {
-        const ideogramModel = isIdeogramModel(model) ? model : IDEOGRAM_MODELS.V4;
-        const hasBaseImage = !!finalBaseImage;
-        const hasRefs = !!finalReferenceImages?.length;
-        console.log(`${logPrefix} [GENERATION] Using Ideogram provider`, {
-          model: ideogramModel,
-          resolution,
-          aspectRatio,
-          seed: validSeed ?? 'random',
-          mode: hasBaseImage ? 'remix' : hasRefs ? 'remix-refs' : 'generate',
-        });
-
-        if (hasBaseImage) {
-          if (ideogramModel === IDEOGRAM_MODELS.V4) {
-            console.log(
-              `${logPrefix} [GENERATION] Ideogram V4 does not support i2i — falling back to V3 remix`
-            );
+      // Resolve the user BYOK for a candidate provider. The requested provider's
+      // key was already resolved above (userApiKey); others are decrypted on
+      // demand. Returns undefined → the provider service uses the system env key.
+      const resolveUserKey = async (candidateProvider: string): Promise<string | undefined> => {
+        if (candidateProvider === provider) return userApiKey;
+        try {
+          if (candidateProvider === 'openai') {
+            const { getOpenAiApiKey } = await import('../utils/openAiApiKey.js');
+            return await getOpenAiApiKey(req.userId!, { skipFallback: true });
           }
-          const remixResult = await remixIdeogramImage({
+          const fieldByProvider: Record<string, string> = {
+            seedream: 'encryptedSeedreamApiKey',
+            ideogram: 'encryptedIdeogramApiKey',
+            reve: 'encryptedReveApiKey',
+            gemini: '',
+            imagen: '',
+          };
+          if (candidateProvider === 'gemini' || candidateProvider === 'imagen') {
+            const { getGeminiApiKey } = await import('../utils/geminiApiKey.js');
+            return await getGeminiApiKey(req.userId!, { skipFallback: true });
+          }
+          const field = fieldByProvider[candidateProvider];
+          if (field && u[field]) {
+            const { decryptApiKey } = await import('../utils/encryption.js');
+            return decryptApiKey(u[field]);
+          }
+        } catch (e: any) {
+          console.warn(`${logPrefix} [API KEY] resolveUserKey(${candidateProvider}) failed:`, e?.message);
+        }
+        return undefined;
+      };
+
+      // Dispatch ONE candidate to its provider service. Mirrors the previous
+      // per-provider branches, parameterized by the candidate model/provider.
+      const dispatchProvider = async (
+        candidate: ImageCandidate,
+        apiKey: string | undefined
+      ): Promise<{ base64: string; seed?: number }> => {
+        const cModel = candidate.model;
+        const cProvider = candidate.provider;
+        const hasBaseImage = !!finalBaseImage;
+        const hasRefs = !!finalReferenceImages?.length;
+        console.log(`${logPrefix} [GENERATION] Attempting ${cProvider} (${cModel})`, {
+          resolution,
+          aspectRatio,
+          hasBaseImage,
+          referenceImagesCount: finalReferenceImages?.length ?? 0,
+        });
+
+        if (cProvider === 'imagen') {
+          const imagenResult = await generateImagenImage({
+            prompt: finalPromptText,
+            model: cModel as any,
+            aspectRatio: aspectRatio as any,
+            apiKey,
+            referenceImages: hasRefs
+              ? finalReferenceImages.map((img: any) => ({
+                  base64: img.base64,
+                  mimeType: img.mimeType || 'image/png',
+                }))
+              : undefined,
+            subjectDescription: brandGuidelineId ? 'brand logo' : undefined,
+          });
+          return { base64: imagenResult.base64 };
+        }
+
+        if (cProvider === 'seedream') {
+          const seedreamModel = isSeedreamModel(cModel) ? cModel : SEEDREAM_MODELS.SD_4_5;
+          const seedreamResult = await generateSeedreamImage({
             prompt: finalPromptText,
             baseImage: finalBaseImage as any,
             referenceImages: finalReferenceImages as any,
+            model: seedreamModel as any,
+            resolution: resolution as any,
             aspectRatio: aspectRatio as any,
-            apiKey: userApiKey,
+            apiKey,
             seed: validSeed,
           });
-          imageBase64 = remixResult.base64;
-          usedSeed = remixResult.seed;
-        } else {
-          const ideogramResult = await generateIdeogramImage({
+          return { base64: seedreamResult.base64, seed: seedreamResult.seed };
+        }
+
+        if (cProvider === 'reve') {
+          if (hasBaseImage && hasRefs) {
+            const r = await remixReveImage({
+              prompt: finalPromptText,
+              referenceImages: [finalBaseImage, ...finalReferenceImages!] as any,
+              aspectRatio: aspectRatio as any,
+              apiKey,
+            });
+            return { base64: r.base64 };
+          } else if (hasBaseImage) {
+            const r = await editReveImage({
+              editInstruction: finalPromptText,
+              baseImage: finalBaseImage as any,
+              aspectRatio: aspectRatio as any,
+              apiKey,
+            });
+            return { base64: r.base64 };
+          } else if (hasRefs) {
+            const r = await remixReveImage({
+              prompt: finalPromptText,
+              referenceImages: finalReferenceImages as any,
+              aspectRatio: aspectRatio as any,
+              apiKey,
+            });
+            return { base64: r.base64 };
+          }
+          const r = await generateReveImage({
+            prompt: finalPromptText,
+            model: cModel as any,
+            aspectRatio: aspectRatio as any,
+            apiKey,
+            seed: validSeed,
+          });
+          return { base64: r.base64, seed: r.seed };
+        }
+
+        if (cProvider === 'ideogram') {
+          const ideogramModel = isIdeogramModel(cModel) ? cModel : IDEOGRAM_MODELS.V4;
+          if (hasBaseImage) {
+            const r = await remixIdeogramImage({
+              prompt: finalPromptText,
+              baseImage: finalBaseImage as any,
+              referenceImages: finalReferenceImages as any,
+              aspectRatio: aspectRatio as any,
+              apiKey,
+              seed: validSeed,
+            });
+            return { base64: r.base64, seed: r.seed };
+          }
+          const r = await generateIdeogramImage({
             prompt: finalPromptText,
             model: ideogramModel as any,
             resolution: resolution as any,
             aspectRatio: aspectRatio as any,
-            apiKey: userApiKey,
+            apiKey,
             seed: validSeed,
             referenceImages: hasRefs ? (finalReferenceImages as any) : undefined,
           });
-          imageBase64 = ideogramResult.base64;
-          usedSeed = ideogramResult.seed;
+          return { base64: r.base64, seed: r.seed };
         }
-      } else if (provider === 'openai' || isOpenAIImageModel(model)) {
-        // Use OpenAI image generation
-        const openaiModel = isOpenAIImageModel(model) ? model : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
-        console.log(`${logPrefix} [GENERATION] Using OpenAI provider`, {
-          model: openaiModel,
-          resolution,
-          hasBaseImage: !!finalBaseImage,
-          referenceImagesCount: finalReferenceImages?.length ?? 0,
-        });
 
-        const openaiResult = await generateOpenAIImage({
-          prompt: finalPromptText,
-          baseImage: finalBaseImage as any,
-          referenceImages: finalReferenceImages as any,
-          model: openaiModel,
-          resolution: resolution as any,
-          aspectRatio: aspectRatio as any,
-          apiKey: userApiKey,
-        });
-        imageBase64 = openaiResult.base64;
-        // OpenAI doesn't support seed — leave usedSeed undefined
-      } else {
-        // Use Gemini (default). Wrap with withResilience for parity with the
-        // other providers (ideogram/reve/openai/seedream wrap their HTTP calls).
-        // generateMockup lives in src/services (frontend-shared) and already has
-        // its own inner withRetry (503 backoff + 429 fail-fast); we deliberately
-        // do NOT touch it to avoid pulling the server-only resilience lib into
-        // the frontend bundle. Wrapping here at the server call site gives gemini
-        // the circuit breaker without a double-retry loop: shouldRetry()
-        // classifies the terminal errors that escape generateMockup's withRetry
-        // (RateLimitError "rate limit", ModelOverloadedError "overloaded",
-        // safety/blocked) as non-retryable, so withResilience only counts the
-        // failure toward the breaker. (Decision: G4, 0-gaps round.)
-        imageBase64 = await withResilience('gemini', () =>
-          generateMockup(
-            finalPromptText,
-            finalBaseImage as any,
-            model as any,
-            resolution as any,
-            aspectRatio as any,
-            finalReferenceImages as any,
-            undefined,
-            userApiKey
-          )
+        if (cProvider === 'openai') {
+          const openaiModel = isOpenAIImageModel(cModel) ? cModel : OPENAI_IMAGE_MODELS.GPT_IMAGE_2;
+          const r = await generateOpenAIImage({
+            prompt: finalPromptText,
+            baseImage: finalBaseImage as any,
+            referenceImages: finalReferenceImages as any,
+            model: openaiModel,
+            resolution: resolution as any,
+            aspectRatio: aspectRatio as any,
+            apiKey,
+          });
+          return { base64: r.base64 }; // OpenAI has no seed
+        }
+
+        // Gemini (default). generateMockup has its own inner withRetry; the
+        // router wraps this call in withResilience('gemini', …) for the breaker.
+        const base64 = await generateMockup(
+          finalPromptText,
+          finalBaseImage as any,
+          cModel as any,
+          resolution as any,
+          aspectRatio as any,
+          finalReferenceImages as any,
+          undefined,
+          apiKey
         );
+        return { base64 };
+      };
+
+      const routed = await generateImageWithFallback({
+        requestedModel: model,
+        requestedProvider: provider,
+        resolution: resolution as any,
+        strategy: fallbackStrategy,
+        usableProviders,
+        log: (msg, meta) => console.log(`${logPrefix} ${msg}`, meta || {}),
+        run: async (candidate) => {
+          const key = await resolveUserKey(candidate.provider);
+          return withResilience(candidate.provider, () => dispatchProvider(candidate, key));
+        },
+      });
+
+      let imageBase64: string = routed.base64;
+      const usedSeed: number | undefined = routed.seed;
+      const effectiveModel = routed.modelUsed;
+      const effectiveProvider = routed.providerUsed;
+      if (routed.fellBack) {
+        console.log(`${logPrefix} [GENERATION] Fell back to ${effectiveProvider} (${effectiveModel})`, {
+          requested: `${provider}/${model}`,
+          failedAttempts: routed.failedAttempts,
+        });
+      }
+
+      // Cost-cap + reconciliation: the user is charged for the model they CHOSE.
+      // If the automatic fallback landed on a cheaper model, refund the
+      // difference; we never silently charge MORE than the requested model.
+      // (Total-failure refund is handled by the catch block below — the router
+      // throws image_generation_unavailable, which flows into the existing refund.)
+      if (creditsDeducted && actualCreditsDeducted > 0 && routed.fellBack && deductionSource) {
+        const winnerCost = getCreditsRequired(effectiveModel as GeminiModel, resolution);
+        const cappedCost = Math.min(winnerCost, actualCreditsDeducted);
+        const diff = actualCreditsDeducted - cappedCost;
+        if (diff > 0) {
+          const refundFromMonthly = Math.min(diff, deductionSource.fromMonthly);
+          const refundFromEarned = diff - refundFromMonthly;
+          try {
+            await refundCredits(req.userId!, diff, {
+              fromEarned: refundFromEarned,
+              fromMonthly: refundFromMonthly,
+            });
+            creditsRefundedByCap = diff;
+            actualCreditsDeducted = cappedCost;
+            console.log(`${logPrefix} [Credit Cost-Cap] Refunded ${diff} after cheaper fallback`, {
+              requestedCost: creditsToDeduct,
+              winnerCost,
+              cappedCost,
+              effectiveModel,
+            });
+          } catch (capErr: any) {
+            console.warn(
+              `${logPrefix} [Credit Cost-Cap] Refund failed (non-fatal):`,
+              capErr?.message
+            );
+          }
+        }
       }
 
       // Try to upload to R2 if configured to avoid large payloads
@@ -1380,7 +1462,11 @@ router.post(
         (userForCalculation.monthlyCredits ?? 20) - (userForCalculation.creditsUsed ?? 0)
       );
       const totalCreditsRemaining =
-        (userForCalculation.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
+        (userForCalculation.totalCreditsEarned ?? 0) +
+        monthlyCreditsRemaining +
+        // updatedUser is the snapshot from the pre-cap deduction; add back any
+        // credits the cost-cap refunded after a cheaper fallback.
+        creditsRefundedByCap;
 
       console.log(`${logPrefix} [Credit Calculation] Final credits after deduction`, {
         userId: req.userId,
@@ -1397,14 +1483,24 @@ router.post(
         calculation: `${userForCalculation.totalCreditsEarned} + ${monthlyCreditsRemaining} = ${totalCreditsRemaining}`,
       });
 
-      // Release lock after successful generation
+      // Release lock after successful generation. Wrapped so a transient lock
+      // delete failure can't throw into the catch block and trigger a spurious
+      // refund of an already-successful (and possibly cost-capped) generation —
+      // the lock carries an expiresAt and self-heals regardless.
       if (lockKey) {
-        await db.collection('credit_locks').deleteOne({ lockKey, requestId });
-        console.log(`${logPrefix} [LOCK] Released lock after successful generation`, {
-          userId: req.userId,
-          requestId,
-          lockKey,
-        });
+        try {
+          await db.collection('credit_locks').deleteOne({ lockKey, requestId });
+          console.log(`${logPrefix} [LOCK] Released lock after successful generation`, {
+            userId: req.userId,
+            requestId,
+            lockKey,
+          });
+        } catch (lockReleaseErr: any) {
+          console.warn(
+            `${logPrefix} [LOCK] Failed to release lock after success (non-fatal):`,
+            lockReleaseErr?.message
+          );
+        }
       }
 
       // Cache the result before sending
@@ -1412,7 +1508,9 @@ router.post(
         imageBase64: imageUrl ? undefined : imageBase64,
         imageUrl,
         seed: usedSeed,
-        modelUsed: model,
+        modelUsed: effectiveModel,
+        providerUsed: effectiveProvider,
+        fellBack: routed.fellBack,
         creditsDeducted: actualCreditsDeducted,
         creditsRemaining: totalCreditsRemaining,
         isAdmin,

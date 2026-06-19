@@ -83,7 +83,7 @@ export const OPENAI_QUALITY_MAP: Record<Resolution, 'low' | 'medium' | 'high'> =
 
 export const OPENAI_IMAGE_MODEL_CONFIG: Record<OpenAIImageModelId, OpenAIImageModelConfig> = {
   [OPENAI_IMAGE_MODELS.GPT_IMAGE_1]: {
-    label: 'GPT-1',
+    label: 'GPT Image 1',
     description: 'OpenAI GPT Image 1 — high-quality t2i and image editing',
     supportedResolutions: ['1K', '2K', '4K'],
     defaultResolution: '1K',
@@ -91,7 +91,7 @@ export const OPENAI_IMAGE_MODEL_CONFIG: Record<OpenAIImageModelId, OpenAIImageMo
     providerDomain: 'openai.com',
   },
   [OPENAI_IMAGE_MODELS.GPT_IMAGE_2]: {
-    label: 'GPT-2',
+    label: 'GPT Image 2',
     badge: 'latest' as const,
     description:
       'OpenAI GPT Image 2 — high-quality t2i and image editing (requires org verification)',
