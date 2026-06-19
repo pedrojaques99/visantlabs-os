@@ -308,12 +308,15 @@ export const mockupApi = {
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
     brandGuidelineId?: string; // Optional brand guideline ID for context injection
     seed?: number; // Optional seed for deterministic generation
+    strategy?: 'cost' | 'quality'; // Optional fallback ordering when the chosen model is unavailable
   }): Promise<{
     imageBase64?: string;
     imageUrl?: string;
     requestId?: string;
     seed?: number;
     modelUsed?: string;
+    providerUsed?: string;
+    fellBack?: boolean;
     creditsDeducted: number;
     creditsRemaining: number;
     isAdmin: boolean;

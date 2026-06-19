@@ -7,6 +7,8 @@ export interface ModelPreferences {
   imageProvider?: ImageProvider;
   chatModel?: string;
   videoModel?: string;
+  /** Fallback ordering when the chosen image model is unavailable. */
+  fallbackStrategy?: 'cost' | 'quality';
 }
 
 let cache: ModelPreferences | null = null;
