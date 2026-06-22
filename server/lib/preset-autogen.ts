@@ -18,9 +18,7 @@ const asStr = (v: string | string[] | null | undefined): string =>
 
 /** Pick #000/#fff for legible text on a given hex (WCAG, mirrors the brand page). */
 function readableHex(hex: string): string {
-  const m = hex
-    .replace('#', '')
-    .match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  const m = hex.replace('#', '').match(/^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   if (!m) return '#0B0B0C';
   const [r, g, b] = [m[1], m[2], m[3]].map((h) => parseInt(h, 16) / 255);
   const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);

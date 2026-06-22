@@ -212,7 +212,10 @@ async function ensureFonts(fonts?: { family: string; url?: string }[]) {
         registeredFamilies.add('Inter');
       } catch {}
     }
-    if (!registeredFamilies.has('Inter') && (await registerFontsource(GlobalFonts, 'inter', 'Inter'))) {
+    if (
+      !registeredFamilies.has('Inter') &&
+      (await registerFontsource(GlobalFonts, 'inter', 'Inter'))
+    ) {
       registeredFamilies.add('Inter');
     }
   }
@@ -249,7 +252,10 @@ async function ensureFonts(fonts?: { family: string; url?: string }[]) {
 /** Resolve a usable, registered family for ctx.font — never falls through to serif. */
 function pickFamily(GlobalFonts: any, requested?: string, fallback?: string): string {
   const stripped = requested
-    ?.replace(/\s+(thin|extra ?light|light|regular|book|medium|semi ?bold|bold|extra ?bold|black|heavy|italic|oblique)\b/gi, '')
+    ?.replace(
+      /\s+(thin|extra ?light|light|regular|book|medium|semi ?bold|bold|extra ?bold|black|heavy|italic|oblique)\b/gi,
+      ''
+    )
     .trim();
   for (const cand of [requested, stripped, fallback]) {
     if (cand && GlobalFonts.has(cand)) return cand;

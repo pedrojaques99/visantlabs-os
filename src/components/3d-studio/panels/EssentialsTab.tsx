@@ -72,7 +72,10 @@ export const EssentialsTab: React.FC = React.memo(() => {
   const { data: brandGuidelines = [] } = useBrandGuidelines(true);
   const brandSwatches = useMemo(() => {
     const g = brandGuidelines.find((b) => b.id === store._brandGuidelineId);
-    return (g?.colors ?? []).map((c) => c.hex).filter(Boolean).slice(0, 8);
+    return (g?.colors ?? [])
+      .map((c) => c.hex)
+      .filter(Boolean)
+      .slice(0, 8);
   }, [brandGuidelines, store._brandGuidelineId]);
 
   const { loadPrimaryBrandLogo } = useBrandLogoLoader();
@@ -119,7 +122,14 @@ export const EssentialsTab: React.FC = React.memo(() => {
             step={0.05}
             onChange={setScale}
           />
-          <ScrubInput label="Depth" value={depth} min={0.1} max={10} step={0.1} onChange={setDepth} />
+          <ScrubInput
+            label="Depth"
+            value={depth}
+            min={0.1}
+            max={10}
+            step={0.1}
+            onChange={setDepth}
+          />
         </div>
       </ToolPanelSection>
 

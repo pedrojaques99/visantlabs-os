@@ -80,10 +80,10 @@ export function usePluginOpsChannel() {
         }
         try {
           controller = new AbortController();
-          const res = await fetch(
-            apiUrl(`/plugin/pending?fileId=${encodeURIComponent(fileId)}`),
-            { headers: { Authorization: `Bearer ${authToken}` }, signal: controller.signal }
-          );
+          const res = await fetch(apiUrl(`/plugin/pending?fileId=${encodeURIComponent(fileId)}`), {
+            headers: { Authorization: `Bearer ${authToken}` },
+            signal: controller.signal,
+          });
           if (!res.ok) {
             await sleep(3000);
             continue;

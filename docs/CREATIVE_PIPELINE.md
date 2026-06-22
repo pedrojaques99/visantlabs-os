@@ -7,13 +7,13 @@ arquitetura, não repete os passos.
 
 ## Dois caminhos de render (mesma identidade, saídas diferentes)
 
-| | Server-side (headless) | Figma (editável) |
-|---|---|---|
-| Engine | `@napi-rs/canvas` | Figma Plugin API |
-| Entrada | plan JSON (camadas) | nós/instâncias |
-| Saída | PNG (R2) | nó editável no arquivo |
-| Uso | volume, white-label, PNG pronto | curadoria, peça editável |
-| Fonte | registro via `GlobalFonts` (ver gap) | fontes do Figma (Noto Sans fallback) |
+|         | Server-side (headless)               | Figma (editável)                     |
+| ------- | ------------------------------------ | ------------------------------------ |
+| Engine  | `@napi-rs/canvas`                    | Figma Plugin API                     |
+| Entrada | plan JSON (camadas)                  | nós/instâncias                       |
+| Saída   | PNG (R2)                             | nó editável no arquivo               |
+| Uso     | volume, white-label, PNG pronto      | curadoria, peça editável             |
+| Fonte   | registro via `GlobalFonts` (ver gap) | fontes do Figma (Noto Sans fallback) |
 
 São **caminhos distintos** — não compartilham loader de fonte. O que compartilham é a
 **fonte-da-verdade da identidade**: `BrandGuideline` (cores, `typography`, logos, voz).
@@ -34,6 +34,7 @@ São **caminhos distintos** — não compartilham loader de fonte. O que compart
 **Sintoma:** criativos server-side saem em **serif**, fora da marca (que é grotesca).
 
 **Causa-raiz** — `server/lib/creative-renderer.ts`:
+
 - `ensureFonts()` (~:134) só tenta registrar **"Inter"** em 3 paths fixos
   (`/usr/share/fonts/...`, `assets/fonts/Inter-Regular.ttf`). **Nenhum existe** no repo/container,
   não há `@fontsource` instalado → `GlobalFonts` não registra nada.
@@ -46,6 +47,7 @@ São **caminhos distintos** — não compartilham loader de fonte. O que compart
 `server/lib/creative-renderer.ts` não bundla fonte; resolve do **@fontsource via jsDelivr**
 (`cdn.jsdelivr.net/npm/@fontsource/<slug>@5/files/<slug>-latin-<weight>-normal.woff2`), que cobre
 todo o Google Fonts (1500+ famílias). Reusa `fontSlug()` de `brand-fonts.ts` (SSoT do slug).
+
 1. `RenderOptions` ganha `fonts?: { family; url? }[]` + `defaultFontFamily?`.
 2. `ensureFonts(fonts)`: base garante **Inter** (CDN) p/ fallback grotesco; por família da marca,
    ordem — (a) `url` de WOFF2 enviado → `GlobalFonts.register(buffer, family)` (fidelidade total);
@@ -59,10 +61,11 @@ Requer **Node 18+** (usa `fetch` global). Sem rede/cold-start sem CDN, cai em In
 se presente, senão fallback do canvas.
 
 **Fidelidade máxima** ainda vem de um **WOFF2 próprio** no guideline (ex. Helvetica real, não o
-substituto métrico Arimo). Marcas com fonte só *citada* (ex. Days n' Days → "Helvetica Neue LT")
+substituto métrico Arimo). Marcas com fonte só _citada_ (ex. Days n' Days → "Helvetica Neue LT")
 caem no substituto — documente e prefira subir o WOFF2 via `brand-guidelines-upload-media`.
 
 ## Notas operacionais
+
 - `creative-render` pode retornar `uploadError: "Storage limit exceeded"` e **ainda** um `imageUrl` válido.
 - Formato IG feed = `4:5` (1080×1350).
 - Gerar consome créditos (`account-profile._meta.credits_remaining`).
