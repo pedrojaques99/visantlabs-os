@@ -18,14 +18,24 @@ This is the production path for on-brand, **SSoT** output: real components + ins
 brand variables — not cloned copies. Contrast with raw `use_figma` (MCP): no network/fetch, raw
 JS, good only for prototyping when no plugin session exists.
 
-## Prerequisites (check first)
+> **Status: VERIFIED LIVE end-to-end** (Jun 2026, Comunicart file). agent → `/agent-command`
+> → Redis queue → open plugin long-polls `/pending` → applies → `/ack`. Prod is HTTP poll-drain,
+> NOT the legacy WebSocket bridge (that's orphaned — see `docs/PLUGIN_OPS_CHANNEL.md`).
 
-1. **Plugin open & connected** in the target file. Session is keyed by `fileId` (the Figma file
-   key from `figma.com/design/<fileId>/...`). If offline, ops **queue in Redis** and drain on
-   reconnect — so a push can "succeed-later". Verify live sessions: `GET /api/plugin/debug/sessions` (auth).
-2. **Auth**: Bearer token or an API key — create one with the Visant MCP tool `api-key-create`
-   (list with `api-key-list`). Base URL `https://api.visantlabs.com`.
-3. **Brand context** comes from the guideline (SSoT) — see [[visant-creative]] / [[visant-mcp-connect]].
+## Prerequisites (check first — these are the real failure points)
+
+1. **Plugin must be running the NEW build with the ops-channel client.** The _published_ Visant
+   Copilot does NOT have it until republished — for now run the **Development** build (Figma →
+   Plugins → Development → Import manifest `plugin/manifest.json` → Run). Rebuild: `npm --prefix plugin run build`.
+2. **Keep the plugin window OPEN** — the poll loop runs in the plugin UI; closing it stops draining.
+3. **Logged in inside the plugin** — the loop is gated on `authToken` (`if (!authToken) return`); if
+   not authed it never polls. On Figma **desktop** the UI origin is `null`; if you see a CORS block on
+   `/api/plugin/auth/status`, **fully restart the plugin** (the server already allows `null` origin).
+4. **Server toggle = Production** (`api.visantlabs.com`) in the plugin Dev tab, not Local.
+5. **Auth for YOUR pushes**: Bearer JWT or an API key — `mcp__visant__api-key-create`. Base `https://api.visantlabs.com`.
+6. **Brand context** = the guideline (SSoT) — see [[visant-creative]] / [[visant-mcp-connect]].
+
+If the plugin isn't connected, ops **stay queued in Redis** and apply when it reconnects (at-least-once).
 
 ## Channel A — HTTP (any agent)
 
@@ -33,11 +43,14 @@ JS, good only for prototyping when no plugin session exists.
 POST https://api.visantlabs.com/api/plugin/agent-command
 Authorization: Bearer <token-or-api-key>
 { "fileId": "<figma file key>", "operations": [ <FigmaOperation>, ... ] }
-→ { success, appliedCount }   // 400 if validation fails, 500 if plugin didn't ACK
+→ { success:true, queued:true, batchId, pending }   // enqueued (no WS session in prod)
 ```
 
-Ops are validated (`operationValidator.validateBatch`) then `pluginBridge.push(fileId, ops)` →
-WS `AGENT_OPS` → plugin applies → `OPERATION_ACK`. Keep batches small; one batch = one undo step.
+The open plugin drains it: `GET /api/plugin/pending?fileId=…` (long-poll) → applies each batch via
+its `AGENT_OPS` handler → `POST /api/plugin/ack {fileId, appliedIds}` removes it. Verify a push landed
+by polling `/pending` until `batches:[]` (drained) — or just check the canvas. Keep batches small (one
+batch = one undo). **Edge:** if `/pending` keeps returning the same batch, the plugin applied it but its
+`/ack` didn't stick — the client dedupes (won't double-draw); clean up by calling `/ack` yourself.
 
 ## Channel B — Figma MCP tools (if the figma-mcp server is connected)
 
@@ -80,7 +93,11 @@ colors/fonts as local variables/styles) · `brand.importLogos` · `components.ge
 1. **Reuse before create:** `GET_AGENT_COMPONENTS` / `SEARCH_DESIGN_SYSTEM` to find an existing
    logo/component; if present, instance it.
 2. **Componentize once:** if none, `CREATE_COMPONENT` from the asset, then place
-   `CREATE_COMPONENT_INSTANCE` everywhere (resize/scale per use) — one edit propagates.
+   `CREATE_COMPONENT_INSTANCE` everywhere — one edit propagates.
+   - **NEVER flatten/squash the logo.** Scale instances **uniformly only** (`rescale(factor)`, or set
+     width and let height follow proportionally). Do NOT set width & height independently / non-uniform
+     `RESIZE` — it distorts. NEVER `DETACH_INSTANCE` or flatten a component to vectors. (Client rule:
+     "não achatar o logo/componentes".) After placing a logo, screenshot and confirm aspect ratio intact.
 3. **Brand color as variables:** `brand.applyLocal` (or CREATE_COLOR_VARIABLES_FROM_SELECTION) +
    `APPLY_VARIABLE`/`BIND_NEAREST_COLOR_VARIABLES` — never hardcode hex on copies.
 4. **Bulk:** design one master, then `CLONE_NODE` + `textOverrides`/`imageOverrides` per data row.
@@ -91,7 +108,8 @@ colors/fonts as local variables/styles) · `brand.importLogos` · `components.ge
 
 ## Gotchas
 
-- Plugin offline → push returns queued/late; check `debug/sessions` and tell the user to open the plugin.
+- Plugin offline → `/agent-command` returns `queued:true`; ops apply when the plugin reconnects.
+  (`debug/sessions` is disabled in prod.) Tell the user to open the Development build (logged in, window open).
 - Batches are atomic-ish per ACK and map to one undo (`UNDO_LAST_BATCH`). Keep them focused.
 - `ref` only resolves within the same batch; across batches, capture returned node IDs / re-query.
 - Don't recreate brand tokens that exist — discover via `variables.getColors` / `GET_AGENT_COMPONENTS` first.
