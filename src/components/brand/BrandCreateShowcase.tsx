@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Box, LayoutGrid, Layers, Megaphone, Wand2, Sparkles } from 'lucide-react';
+import { ArrowRight, Box, LayoutGrid, Layers, Megaphone, Pencil, Zap } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
@@ -45,7 +45,7 @@ const SLIDES: CreateSlide[] = [
     name: 'Creative Studio',
     path: '/create',
     brandScoped: true,
-    Icon: Wand2,
+    Icon: Pencil,
     image: null,
     invite: 'Generate a post that already looks like you.',
   },
@@ -155,7 +155,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
 
         {/* Top label */}
         <div className="absolute top-4 left-5 flex items-center gap-2">
-          <Sparkles size={12} className="text-[var(--accent)]" />
+          <Zap size={12} className="text-[var(--accent)]" />
           <MicroTitle className="text-[var(--brand-text)]/60 tracking-[0.18em]">
             Create with this brand
           </MicroTitle>

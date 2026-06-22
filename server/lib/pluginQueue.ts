@@ -54,6 +54,26 @@ export const pluginQueue = {
     await redisClient.del(CacheKey.figmaOpQueue(fileId));
   },
 
+  /**
+   * Remove specific batches by id (called by the plugin's /ack after applying).
+   * Read-filter-rewrite; preserves the LPUSH/peek ordering convention
+   * (re-LPUSHing the kept batches oldest→newest yields a newest-first list,
+   * which peek() reverses back to chronological order). Not atomic — fine for
+   * the low per-file contention here.
+   */
+  async removeByIds(fileId: string, ids: string[]): Promise<number> {
+    if (!ids?.length) return 0;
+    const key = CacheKey.figmaOpQueue(fileId);
+    const all = await this.peek(fileId); // oldest-first
+    const idSet = new Set(ids);
+    const keep = all.filter((b) => !idSet.has(b.id));
+    const removed = all.length - keep.length;
+    await redisClient.del(key);
+    for (const b of keep) await redisClient.lpush(key, JSON.stringify(b));
+    if (keep.length) await redisClient.expire(key, TTL);
+    return removed;
+  },
+
   /** How many batches are pending. */
   async size(fileId: string): Promise<number> {
     return redisClient.llen(CacheKey.figmaOpQueue(fileId));

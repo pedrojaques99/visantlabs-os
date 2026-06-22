@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Layout, Download, Save, RotateCcw, Sparkles, Wand2 } from 'lucide-react';
+import { Layout, Download, Save, RotateCcw, Zap, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
@@ -197,7 +197,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
                   checked={halftone}
                   onChange={(e) => setHalftone(e.target.checked)}
                 />
-                <Sparkles size={12} className="text-violet-400" /> Efeito halftone na foto
+                <Zap size={12} className="text-violet-400" /> Efeito halftone na foto
               </label>
               <div className="flex justify-end pt-1">
                 <Button
@@ -205,7 +205,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
                   disabled={!h1.trim() || !template}
                   className="h-8 px-4 gap-2 text-xs bg-violet-500/20 border border-violet-500/30 text-violet-200 hover:bg-violet-500/30"
                 >
-                  <Wand2 size={12} /> Renderizar
+                  <Pencil size={12} /> Renderizar
                 </Button>
               </div>
             </div>

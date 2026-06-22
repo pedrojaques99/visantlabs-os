@@ -68,7 +68,14 @@ describe('generateBrandScenes', () => {
     const scenes = generateBrandScenes(
       brand({
         colorThemes: [
-          { id: 't1', name: 'Midnight', bg: '#0b1020', text: '#ffffff', primary: '#22d3ee', accent: '#f43f5e' },
+          {
+            id: 't1',
+            name: 'Midnight',
+            bg: '#0b1020',
+            text: '#ffffff',
+            primary: '#22d3ee',
+            accent: '#f43f5e',
+          },
         ],
       }) as any
     );
@@ -95,7 +102,14 @@ describe('generateBrandScenes', () => {
   it('mood tags from logo analysis re-rank the looks (luxury surfaces metallic first)', () => {
     const luxe = generateBrandScenes(
       brand({
-        logos: [{ id: 'l1', url: 'x.png', variant: 'primary', analysis: { aesthetic: 'luxury premium elegant' } }],
+        logos: [
+          {
+            id: 'l1',
+            url: 'x.png',
+            variant: 'primary',
+            analysis: { aesthetic: 'luxury premium elegant' },
+          },
+        ],
       }) as any
     ).filter((s) => s.key.startsWith('look:'));
     const plain = generateBrandScenes(brand() as any).filter((s) => s.key.startsWith('look:'));

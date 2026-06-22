@@ -616,9 +616,7 @@ export const SceneTab: React.FC = React.memo(() => {
         <Select
           value={store.shapeType}
           onChange={(v) =>
-            store.setShapeType(
-              v as 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon'
-            )
+            store.setShapeType(v as 'standard' | 'coin' | 'badge' | 'stamp' | 'shield' | 'hexagon')
           }
           options={
             (['standard', 'coin', 'badge', 'stamp', 'shield', 'hexagon'] as const).map((type) => ({
@@ -703,7 +701,6 @@ export const SceneTab: React.FC = React.memo(() => {
           </>
         )}
       </ToolPanelDisclosure>
-
 
       {/* Advanced — over-senior numerics, flat (never nested) */}
       <ToolPanelDisclosure label="Advanced" defaultOpen={false}>
