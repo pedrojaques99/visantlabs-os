@@ -192,6 +192,9 @@ const fontsourceUrl = (slug: string, weight: number) =>
 
 /** Register a @fontsource family (400 + 700) under `alias`. True if any face registered. */
 async function registerFontsource(GlobalFonts: any, slug: string, alias: string): Promise<boolean> {
+  // Slug is derived from a brand-provided family name; constrain it to a safe
+  // charset before it reaches the request URL (sanitizes the request-forgery path).
+  if (!/^[a-z0-9-]+$/.test(slug)) return false;
   let ok = false;
   for (const w of [400, 700]) {
     const buf = await fetchBuf(fontsourceUrl(slug, w));

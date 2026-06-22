@@ -1259,7 +1259,10 @@ router.post(
       const effectiveProvider = routed.providerUsed;
       if (routed.fellBack) {
         console.log(
-          `${logPrefix} [GENERATION] Fell back to ${effectiveProvider} (${effectiveModel})`,
+          '%s [GENERATION] Fell back to %s (%s)',
+          logPrefix,
+          effectiveProvider,
+          effectiveModel,
           {
             requested: `${provider}/${model}`,
             failedAttempts: routed.failedAttempts,
