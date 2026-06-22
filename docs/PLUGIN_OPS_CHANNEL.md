@@ -36,12 +36,16 @@ plugin ─POST /api/plugin/ack {fileId, appliedIds, failed?}─▶ removes appli
 - `GET /pending` — long-poll peek loop.
 - `POST /ack` — remove applied ids.
 
-## Plugin changes (next step — requires plugin rebuild + reinstall in Figma)
-- `code.ts`: emit `figma.fileKey` to the UI on startup (already used internally at code.ts:616).
-- New UI hook `usePluginOpsChannel`: when authenticated + fileId known, loop `GET /pending` →
-  for each batch `postMessage({type:'AGENT_OPS', operations, opId:batchId})` → collect OPERATION_ACK/
-  ERROR (already emitted by code.ts) → `POST /ack`. Backoff on network error. Dedupe applied batchIds.
-- Wire the hook in `App.tsx` behind auth.
+## Plugin client (implemented — needs `npm run build` + reinstall in Figma to go live)
+- `code.ts`: emits `{type:'FILE_INFO', fileId: figma.fileKey}` on startup + answers `GET_FILE_INFO`.
+- `usePluginOpsChannel` (`plugin/src/ui/hooks/`): when authenticated + fileId known, long-polls
+  `GET /pending` → for each batch `postMessage({type:'AGENT_OPS', operations, opId:batchId})` →
+  awaits the OPERATION_ACK/ERROR `code.ts` already emits → `POST /ack` with applied ids. Dedupes
+  applied batchIds (idempotent), 30s per-batch timeout, 3s backoff on network error, aborts on unmount.
+- Wired in `App.tsx` (mounted once).
+- **Build note:** `npm --prefix plugin run build` is gated by a banned-icon lint that currently trips on
+  pre-existing files; run `npm --prefix plugin run build -- --fix` (or clear the icons) to produce `dist/`,
+  then reinstall the plugin in Figma. Server side must also be deployed.
 
 ## Notes / trade-offs
 - Long-poll is fine here (Node long-running server: `CMD npx tsx server/index.ts`, not serverless).

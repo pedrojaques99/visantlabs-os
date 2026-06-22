@@ -97,6 +97,10 @@ if (currentUser) {
   });
 }
 
+// Send the file key to the UI so it can poll the HTTP ops channel
+// (external agent → POST /agent-command → Redis queue → GET /pending).
+postToUI({ type: 'FILE_INFO', fileId: figma.fileKey || null });
+
 // ═══ Selection change listener (Debounced) ═══
 let selectionTimeout: number | undefined;
 figma.on('selectionchange', () => {
@@ -132,6 +136,12 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       });
       console.error(`[Agent] Operation failed (opId=${opId}):`, err);
     }
+    return;
+  }
+
+  // ── File info request (UI ops-channel hook asks for the file key) ──
+  if ((msg as any).type === 'GET_FILE_INFO') {
+    postToUI({ type: 'FILE_INFO', fileId: figma.fileKey || null });
     return;
   }
 
