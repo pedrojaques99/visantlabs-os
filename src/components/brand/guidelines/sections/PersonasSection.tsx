@@ -158,9 +158,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
         guideline.id
       );
       if (Array.isArray(next)) persist(next as BrandPersona[]);
-      toast.success(
-        resolved > 0 ? `${resolved} stock photo(s) added` : 'No new photos found'
-      );
+      toast.success(resolved > 0 ? `${resolved} stock photo(s) added` : 'No new photos found');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to fetch stock photos');
     } finally {

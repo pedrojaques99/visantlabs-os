@@ -2049,9 +2049,7 @@ router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response)
     // Domain allowlist for security (exact host or true subdomain — avoids the
     // `endsWith` bypass where e.g. "evil-cloudinary.com" matches "cloudinary.com").
     const host = parsed.hostname.toLowerCase();
-    const allowed = ALLOWED_IMAGE_DOMAINS.some(
-      (d) => host === d || host.endsWith('.' + d)
-    );
+    const allowed = ALLOWED_IMAGE_DOMAINS.some((d) => host === d || host.endsWith('.' + d));
     if (parsed.protocol !== 'https:' || !allowed) {
       return res.status(403).json({
         error: 'Domain not allowed',

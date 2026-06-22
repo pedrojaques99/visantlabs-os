@@ -33,8 +33,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
 
-    const brandId =
-      typeof req.query.brandId === 'string' ? req.query.brandId : undefined;
+    const brandId = typeof req.query.brandId === 'string' ? req.query.brandId : undefined;
     const limit = Math.min(Number(req.query.limit) || 60, 200);
 
     const campaigns = await prisma.campaign.findMany({
@@ -92,44 +91,39 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
 });
 
 // List creatives produced under a campaign (CreativeProject.campaignId).
-router.get(
-  '/:id/creatives',
-  apiRateLimiter,
-  authenticate,
-  async (req: AuthRequest, res) => {
-    try {
-      if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
+router.get('/:id/creatives', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthenticated' });
 
-      const owns = await prisma.campaign.findFirst({
-        where: { id: req.params.id, userId: req.userId },
-        select: { id: true },
-      });
-      if (!owns) return res.status(404).json({ error: 'Not found' });
+    const owns = await prisma.campaign.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true },
+    });
+    if (!owns) return res.status(404).json({ error: 'Not found' });
 
-      const projects = await prisma.creativeProject.findMany({
-        where: { userId: req.userId, campaignId: req.params.id },
-        orderBy: { updatedAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          prompt: true,
-          format: true,
-          brandId: true,
-          campaignId: true,
-          backgroundUrl: true,
-          thumbnailUrl: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
+    const projects = await prisma.creativeProject.findMany({
+      where: { userId: req.userId, campaignId: req.params.id },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        prompt: true,
+        format: true,
+        brandId: true,
+        campaignId: true,
+        backgroundUrl: true,
+        thumbnailUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-      res.json({ projects: projects.map(mapId) });
-    } catch (err) {
-      console.error('[campaigns GET /:id/creatives] error:', err);
-      res.status(500).json({ error: 'Failed to list campaign creatives' });
-    }
+    res.json({ projects: projects.map(mapId) });
+  } catch (err) {
+    console.error('[campaigns GET /:id/creatives] error:', err);
+    res.status(500).json({ error: 'Failed to list campaign creatives' });
   }
-);
+});
 
 // Update — rename / re-link brand.
 router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {

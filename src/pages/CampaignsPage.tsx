@@ -81,9 +81,7 @@ export const CampaignsPage: React.FC = () => {
 
           {/* Create from brand */}
           <button
-            onClick={() =>
-              navigate(brandId ? `/create?brandId=${brandId}` : '/create')
-            }
+            onClick={() => navigate(brandId ? `/create?brandId=${brandId}` : '/create')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-mono text-neutral-400 border border-white/10 bg-neutral-900/50 hover:border-neutral-600 hover:text-neutral-200 transition-all"
           >
             <Wand2 size={12} />
@@ -152,9 +150,7 @@ function StatusBadge({ status }: { status: CampaignSummary['status'] }) {
     error: ['text-red-400', 'error'],
   };
   const [color, label] = map[status] ?? map.planning;
-  return (
-    <span className={cn('text-[10px] font-mono tracking-wide', color)}>{label}</span>
-  );
+  return <span className={cn('text-[10px] font-mono tracking-wide', color)}>{label}</span>;
 }
 
 function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void }) {

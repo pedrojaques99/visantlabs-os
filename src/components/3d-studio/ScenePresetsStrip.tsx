@@ -59,7 +59,11 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
   return (
     <>
       {/* Scene Presets — horizontal strip with 3D previews */}
-      <PresetGroup flat={flat} label={t('studio3d.scenePresets.title')} icon={<Shuffle size={13} />}>
+      <PresetGroup
+        flat={flat}
+        label={t('studio3d.scenePresets.title')}
+        icon={<Shuffle size={13} />}
+      >
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-0.5 px-0.5 pb-0.5">
           {Object.entries(SCENE_PRESETS).map(([name, preset]) => (
             <button

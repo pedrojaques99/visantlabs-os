@@ -13,10 +13,7 @@ import {
 } from '../../src/services/geminiService.js';
 import { enrichWithCuratedReferences } from '../lib/mockup/referenceEnricher.js';
 import { withResilience } from '../lib/ai-resilience.js';
-import {
-  generateImageWithFallback,
-  type ImageCandidate,
-} from '../lib/ai-providers/imageRouter.js';
+import { generateImageWithFallback, type ImageCandidate } from '../lib/ai-providers/imageRouter.js';
 import { generateSeedreamImage } from '../services/seedreamService.js';
 import { generateOpenAIImage } from '../services/openaiImageService.js';
 import { generateImagenImage } from '../services/imagenService.js';
@@ -602,7 +599,11 @@ router.post(
             let styleMediaUrls: string[] = [];
             try {
               const { searchAssets } = await import('../lib/brand/assetVectors.js');
-              const hits = await searchAssets(brandGuidelineId, promptText || '', MAX_STYLE_REFS * 2);
+              const hits = await searchAssets(
+                brandGuidelineId,
+                promptText || '',
+                MAX_STYLE_REFS * 2
+              );
               styleMediaUrls = hits
                 .filter((h) => h.assetKind === 'media' && h.imageUrl && !isSvgUrl(h.imageUrl))
                 .map((h) => h.imageUrl as string)
@@ -1092,7 +1093,10 @@ router.post(
             return decryptApiKey(u[field]);
           }
         } catch (e: any) {
-          console.warn(`${logPrefix} [API KEY] resolveUserKey(${candidateProvider}) failed:`, e?.message);
+          console.warn(
+            `${logPrefix} [API KEY] resolveUserKey(${candidateProvider}) failed:`,
+            e?.message
+          );
         }
         return undefined;
       };
@@ -1242,7 +1246,7 @@ router.post(
         resolution: resolution as any,
         strategy: fallbackStrategy,
         usableProviders,
-        log: (msg, meta) => console.log(`${logPrefix} ${msg}`, meta || {}),
+        log: (msg, meta) => console.log(logPrefix, msg, meta || {}),
         run: async (candidate) => {
           const key = await resolveUserKey(candidate.provider);
           return withResilience(candidate.provider, () => dispatchProvider(candidate, key));
@@ -1254,10 +1258,13 @@ router.post(
       const effectiveModel = routed.modelUsed;
       const effectiveProvider = routed.providerUsed;
       if (routed.fellBack) {
-        console.log(`${logPrefix} [GENERATION] Fell back to ${effectiveProvider} (${effectiveModel})`, {
-          requested: `${provider}/${model}`,
-          failedAttempts: routed.failedAttempts,
-        });
+        console.log(
+          `${logPrefix} [GENERATION] Fell back to ${effectiveProvider} (${effectiveModel})`,
+          {
+            requested: `${provider}/${model}`,
+            failedAttempts: routed.failedAttempts,
+          }
+        );
       }
 
       // Cost-cap + reconciliation: the user is charged for the model they CHOSE.

@@ -30,7 +30,10 @@ export interface IndexableAsset {
   analysis?: BrandAssetAnalysis | null;
 }
 
-function flatTags(analysis?: BrandAssetAnalysis | null): { text: string; meta: Record<string, string[]> } {
+function flatTags(analysis?: BrandAssetAnalysis | null): {
+  text: string;
+  meta: Record<string, string[]>;
+} {
   const dims = analysis?.dimensions || {};
   const meta: Record<string, string[]> = {};
   const all: string[] = [];
@@ -129,7 +132,9 @@ export async function similarAssets(
     feature: BRAND_ASSET_FEATURE,
     guidelineId,
   });
-  return toHits(matches).filter((h) => h.assetId !== assetId).slice(0, topK);
+  return toHits(matches)
+    .filter((h) => h.assetId !== assetId)
+    .slice(0, topK);
 }
 
 /** Remove a single asset's vector (call when one logo/media is deleted). */
