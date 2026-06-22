@@ -4,6 +4,7 @@ import { chooseProvider } from '../lib/ai-providers/router.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
+import { pluginQueue } from '../lib/pluginQueue.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import path from 'path';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth.js';
@@ -334,20 +335,26 @@ router.post(
         });
       }
 
-      // Push to plugin
-      const result = await pluginBridge.push(fileId, validation.valid);
-
-      if (!result.success) {
-        return res.status(500).json({
-          error: 'Plugin did not acknowledge operations',
-          errors: result.errors,
-        });
+      // Deliver. If a live WS session exists (local dev), push directly.
+      // Otherwise enqueue to Redis — the plugin drains it via GET /pending
+      // (HTTP ops channel). See docs/PLUGIN_OPS_CHANNEL.md.
+      if (pluginBridge.isConnected(fileId)) {
+        const result = await pluginBridge.push(fileId, validation.valid);
+        if (result.success) {
+          return res.json({ success: true, appliedCount: result.appliedCount, delivery: 'ws' });
+        }
+        // fall through to enqueue if the live push failed
       }
 
-      res.json({
-        success: true,
-        appliedCount: result.appliedCount,
-      });
+      const batch = {
+        id: `batch-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        operations: validation.valid,
+        enqueuedAt: new Date().toISOString(),
+        userId: userId || 'system',
+      };
+      await pluginQueue.enqueue(fileId, batch);
+      const pending = await pluginQueue.size(fileId);
+      res.json({ success: true, queued: true, batchId: batch.id, pending, delivery: 'queue' });
     } catch (err) {
       console.error('[Plugin Agent] Error:', err);
       res.status(500).json({
@@ -356,6 +363,52 @@ router.post(
     }
   }
 );
+
+/**
+ * GET /api/plugin/pending?fileId=...
+ * HTTP ops channel: the plugin long-polls this to drain queued operation batches.
+ * Peeks the Redis queue every ~1s for up to ~25s; returns as soon as batches exist.
+ * Does NOT clear — the plugin removes applied batches via POST /ack (at-least-once).
+ */
+const PENDING_WAIT_MS = parseInt(process.env.PLUGIN_PENDING_WAIT_MS || '25000');
+const PENDING_STEP_MS = 1000;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+router.get('/pending', authenticate, async (req: AuthRequest, res: Response) => {
+  const fileId = req.query.fileId as string;
+  if (!fileId) return res.status(400).json({ error: 'fileId is required' });
+
+  const deadline = Date.now() + PENDING_WAIT_MS;
+  try {
+    do {
+      const batches = await pluginQueue.peek(fileId);
+      if (batches.length > 0) return res.json({ batches });
+      if (res.writableEnded || req.destroyed) return; // client hung up
+      await sleep(PENDING_STEP_MS);
+    } while (Date.now() < deadline);
+    return res.json({ batches: [] });
+  } catch (err) {
+    console.error('[Plugin pending] Error:', err);
+    return res.status(500).json({ error: err instanceof Error ? err.message : 'pending failed' });
+  }
+});
+
+/**
+ * POST /api/plugin/ack  { fileId, appliedIds: string[] }
+ * Remove batches the plugin applied. Un-acked batches stay queued and are
+ * re-delivered on the next /pending poll (automatic retry).
+ */
+router.post('/ack', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { fileId, appliedIds } = req.body as { fileId?: string; appliedIds?: string[] };
+    if (!fileId) return res.status(400).json({ error: 'fileId is required' });
+    const removed = await pluginQueue.removeByIds(fileId, appliedIds || []);
+    return res.json({ ok: true, removed, pending: await pluginQueue.size(fileId) });
+  } catch (err) {
+    console.error('[Plugin ack] Error:', err);
+    return res.status(500).json({ error: err instanceof Error ? err.message : 'ack failed' });
+  }
+});
 
 // ============ Debug Endpoint (Secured) ============
 
