@@ -11,6 +11,7 @@
 // Vercel Lambda at cold-start (native binary not available in sandbox).
 import * as path from 'path';
 import * as fs from 'fs';
+import { fontSlug } from './brand-fonts.js';
 
 async function getCanvas() {
   return import('@napi-rs/canvas');
@@ -86,6 +87,15 @@ export interface RenderOptions {
   format?: '1:1' | '16:9' | '9:16' | '4:5';
   accentColor?: string;
   quality?: number; // 0-100, default 92
+  /**
+   * Brand fonts to register before rendering (SSoT: derived from
+   * BrandGuideline.typography). Each `url` (WOFF2/TTF/OTF) is fetched and
+   * registered under `family` so `layer.fontFamily`/`defaultFontFamily` resolve
+   * to the real brand grotesque instead of the canvas serif fallback.
+   */
+  fonts?: { family: string; url?: string }[];
+  /** Fallback family applied when a text layer has no fontFamily. */
+  defaultFontFamily?: string;
 }
 
 // ─── Format dimensions ─────────────────────────────────────────────────────────
@@ -129,27 +139,122 @@ function parseAccentSegments(content: string): TextSegment[] {
 // Try to register system fonts once. Failures are non-fatal — canvas falls back
 // to the default sans-serif.
 
-let fontsRegistered = false;
+// Fonts are pulled from the @fontsource CDN on jsDelivr (covers all Google Fonts,
+// 1500+ families) — same source `brand-fonts.ts` uses for the Puppeteer path. No
+// font files are bundled; @napi-rs/canvas registers the fetched woff2 buffers.
+const FONTSOURCE_VER = '5';
 
-async function ensureFonts() {
-  if (fontsRegistered) return;
-  fontsRegistered = true;
+// Common non-Google families → metric-compatible Google substitute (so brands whose
+// typography names a licensed font, e.g. "Helvetica Neue LT", still render on-brand).
+const METRIC_SUB: Record<string, string> = {
+  helvetica: 'arimo',
+  'helvetica neue': 'arimo',
+  'helvetica neue lt': 'arimo',
+  arial: 'arimo',
+  times: 'tinos',
+  'times new roman': 'tinos',
+  georgia: 'gelasio',
+  courier: 'cousine',
+  'courier new': 'cousine',
+};
 
-  const { GlobalFonts } = await getCanvas();
-  const candidates = [
-    '/usr/share/fonts/truetype/inter/Inter-Regular.ttf',
-    '/usr/share/fonts/inter/Inter-Regular.ttf',
-    path.join(process.cwd(), 'assets/fonts/Inter-Regular.ttf'),
-  ];
+let baseFontsRegistered = false;
+const registeredFamilies = new Set<string>(); // family names available to ctx.font
+const attemptedFamilies = new Set<string>();
 
-  for (const p of candidates) {
-    if (fs.existsSync(p)) {
+async function fetchBuf(url: string): Promise<Buffer | null> {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    return Buffer.from(await r.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+const fontsourceUrl = (slug: string, weight: number) =>
+  `https://cdn.jsdelivr.net/npm/@fontsource/${slug}@${FONTSOURCE_VER}/files/${slug}-latin-${weight}-normal.woff2`;
+
+/** Register a @fontsource family (400 + 700) under `alias`. True if any face registered. */
+async function registerFontsource(GlobalFonts: any, slug: string, alias: string): Promise<boolean> {
+  let ok = false;
+  for (const w of [400, 700]) {
+    const buf = await fetchBuf(fontsourceUrl(slug, w));
+    if (buf) {
       try {
-        GlobalFonts.registerFromPath(p, 'Inter');
+        GlobalFonts.register(buf, alias);
+        ok = true;
       } catch {}
-      break;
     }
   }
+  return ok;
+}
+
+async function ensureFonts(fonts?: { family: string; url?: string }[]) {
+  const { GlobalFonts } = await getCanvas();
+
+  // Base (once): guarantee a grotesque ("Inter") so any fallback is sans, never serif.
+  if (!baseFontsRegistered) {
+    baseFontsRegistered = true;
+    const local = [
+      '/usr/share/fonts/truetype/inter/Inter-Regular.ttf',
+      path.join(process.cwd(), 'assets/fonts/Inter-Regular.ttf'),
+    ].find((p) => {
+      try {
+        return fs.existsSync(p);
+      } catch {
+        return false;
+      }
+    });
+    if (local) {
+      try {
+        GlobalFonts.registerFromPath(local, 'Inter');
+        registeredFamilies.add('Inter');
+      } catch {}
+    }
+    if (!registeredFamilies.has('Inter') && (await registerFontsource(GlobalFonts, 'inter', 'Inter'))) {
+      registeredFamilies.add('Inter');
+    }
+  }
+
+  // Brand fonts (SSoT: BrandGuideline.typography). Per family, in order:
+  //   1) uploaded woff2 url → register as-is (true fidelity);
+  //   2) @fontsource slug → covers any Google Font;
+  //   3) metric-compatible substitute for common non-Google families.
+  for (const f of fonts ?? []) {
+    const family = f?.family?.trim();
+    if (!family || registeredFamilies.has(family) || attemptedFamilies.has(family)) continue;
+    attemptedFamilies.add(family);
+    try {
+      if (f.url) {
+        const buf = await fetchBuf(f.url);
+        if (buf) {
+          GlobalFonts.register(buf, family);
+          registeredFamilies.add(family);
+          continue;
+        }
+      }
+      if (await registerFontsource(GlobalFonts, fontSlug(family), family)) {
+        registeredFamilies.add(family);
+        continue;
+      }
+      const sub = METRIC_SUB[family.toLowerCase()];
+      if (sub && (await registerFontsource(GlobalFonts, sub, family))) {
+        registeredFamilies.add(family);
+      }
+    } catch {}
+  }
+}
+
+/** Resolve a usable, registered family for ctx.font — never falls through to serif. */
+function pickFamily(GlobalFonts: any, requested?: string, fallback?: string): string {
+  const stripped = requested
+    ?.replace(/\s+(thin|extra ?light|light|regular|book|medium|semi ?bold|bold|extra ?bold|black|heavy|italic|oblique)\b/gi, '')
+    .trim();
+  for (const cand of [requested, stripped, fallback]) {
+    if (cand && GlobalFonts.has(cand)) return cand;
+  }
+  return 'Inter';
 }
 
 // ─── Main render function ──────────────────────────────────────────────────────
@@ -158,10 +263,10 @@ export async function renderCreativePlan(
   plan: CreativePlan,
   options: RenderOptions = {}
 ): Promise<Buffer> {
-  const { createCanvas, loadImage } = await getCanvas();
-  await ensureFonts();
+  const { createCanvas, loadImage, GlobalFonts } = await getCanvas();
+  await ensureFonts(options.fonts);
 
-  const { format = '1:1', accentColor = '#ffffff', quality = 92 } = options;
+  const { format = '1:1', accentColor = '#ffffff', quality = 92, defaultFontFamily } = options;
   const dims = FORMAT_DIMS[format] ?? FORMAT_DIMS['1:1'];
   const { w, h } = dims;
 
@@ -284,7 +389,7 @@ export async function renderCreativePlan(
       } catch {}
     } else if (layer.type === 'text') {
       const scaledSize = (layer.fontSize / 1080) * h;
-      const fontFamily = layer.fontFamily ?? 'Inter, sans-serif';
+      const fontFamily = pickFamily(GlobalFonts, layer.fontFamily, defaultFontFamily);
       const weight = layer.bold ? 'bold' : 'normal';
       ctx.font = `${weight} ${scaledSize}px ${fontFamily}`;
       ctx.textBaseline = 'top';

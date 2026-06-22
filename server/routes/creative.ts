@@ -159,12 +159,15 @@ const renderLimiter = rateLimit({
 
 router.post('/render', renderLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
-    const { plan, format, accentColor, backgroundImageUrl } = req.body as {
-      plan: Record<string, any>;
-      format?: string;
-      accentColor?: string;
-      backgroundImageUrl?: string;
-    };
+    const { plan, format, accentColor, backgroundImageUrl, fonts, defaultFontFamily } =
+      req.body as {
+        plan: Record<string, any>;
+        format?: string;
+        accentColor?: string;
+        backgroundImageUrl?: string;
+        fonts?: { family: string; url?: string }[];
+        defaultFontFamily?: string;
+      };
 
     if (!plan || !plan.layers) {
       return res.status(400).json({ error: 'plan with layers is required' });
@@ -178,6 +181,8 @@ router.post('/render', renderLimiter, authenticate, async (req: AuthRequest, res
     const pngBuffer = await renderCreativePlan(resolvedPlan as any, {
       format: (format as any) ?? '1:1',
       accentColor: accentColor ?? '#ffffff',
+      fonts,
+      defaultFontFamily,
     });
 
     const base64Str = pngBuffer.toString('base64');
@@ -308,9 +313,18 @@ router.post(
         colors[0]?.hex ??
         '#00e5ff';
 
+      // Brand fonts (SSoT: BrandGuideline.typography) → register in the renderer
+      // so text uses the real brand grotesque instead of the serif fallback.
+      const typography = ((brand.typography as any[]) ?? []).filter(Boolean);
+      const brandFonts = typography
+        .map((t: any) => ({ family: t.family, url: t.woff2Url ?? t.url ?? t.fontUrl }))
+        .filter((f: any) => f.family);
+      const defaultFontFamily =
+        typography.find((t: any) => t.role === 'heading')?.family ?? typography[0]?.family;
+
       const pngBuffer = await renderCreativePlan(
         { ...plan, backgroundImageUrl: pickedMedia?.url } as any,
-        { format, accentColor }
+        { format, accentColor, fonts: brandFonts, defaultFontFamily }
       );
 
       const base64Str = pngBuffer.toString('base64');
