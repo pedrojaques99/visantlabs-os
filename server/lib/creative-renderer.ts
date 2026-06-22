@@ -162,9 +162,24 @@ let baseFontsRegistered = false;
 const registeredFamilies = new Set<string>(); // family names available to ctx.font
 const attemptedFamilies = new Set<string>();
 
+// SSRF guard: font URLs may come from brand data (woff2Url), so only https + a
+// fixed host allowlist is fetched (the @fontsource CDN + Visant/R2 asset hosts).
+const FONT_HOST_ALLOWLIST = ['cdn.jsdelivr.net', 'assets.visantlabs.com', 'r2.dev'];
+
 async function fetchBuf(url: string): Promise<Buffer | null> {
+  let parsed: URL;
   try {
-    const r = await fetch(url);
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  const host = parsed.hostname.toLowerCase();
+  const allowed =
+    parsed.protocol === 'https:' &&
+    FONT_HOST_ALLOWLIST.some((d) => host === d || host.endsWith('.' + d));
+  if (!allowed) return null;
+  try {
+    const r = await fetch(parsed.href);
     if (!r.ok) return null;
     return Buffer.from(await r.arrayBuffer());
   } catch {
@@ -251,8 +266,11 @@ async function ensureFonts(fonts?: { family: string; url?: string }[]) {
 
 /** Resolve a usable, registered family for ctx.font — never falls through to serif. */
 function pickFamily(GlobalFonts: any, requested?: string, fallback?: string): string {
+  // Bound the input before the regex (font family names are short) to avoid
+  // polynomial-ReDoS on attacker-controlled fontFamily values.
   const stripped = requested
-    ?.replace(
+    ?.slice(0, 64)
+    .replace(
       /\s+(thin|extra ?light|light|regular|book|medium|semi ?bold|bold|extra ?bold|black|heavy|italic|oblique)\b/gi,
       ''
     )

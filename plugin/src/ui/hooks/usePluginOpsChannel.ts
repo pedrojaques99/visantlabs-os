@@ -35,11 +35,12 @@ export function usePluginOpsChannel() {
       if (!m?.type) return;
       if (m.type === 'FILE_INFO') {
         fileIdRef.current = m.fileId || null;
-      } else if (m.type === 'OPERATION_ACK' && m.opId) {
-        acksRef.current.get(m.opId)?.(true);
-        acksRef.current.delete(m.opId);
-      } else if (m.type === 'OPERATION_ERROR' && m.opId) {
-        acksRef.current.get(m.opId)?.(false);
+      } else if (
+        (m.type === 'OPERATION_ACK' || m.type === 'OPERATION_ERROR') &&
+        typeof m.opId === 'string'
+      ) {
+        const cb = acksRef.current.get(m.opId);
+        if (typeof cb === 'function') cb(m.type === 'OPERATION_ACK');
         acksRef.current.delete(m.opId);
       }
     };
