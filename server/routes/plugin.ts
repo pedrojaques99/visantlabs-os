@@ -69,6 +69,17 @@ const opsChannelLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Router-wide baseline rate limit applied to every plugin route (generous; route
+// specific limiters above still apply on top). Bounds abuse on routes that
+// perform auth/DB work and would otherwise be unthrottled.
+const pluginGlobalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 600,
+  message: { error: 'Too many requests. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Rate limiter for image analysis (expensive AI calls - 10 req/min)
 const imageAnalysisLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -127,6 +138,9 @@ import { chatWithLLM } from '../services/llmRouter.js';
 import { getChatTools, executeChatTool } from '../services/chat/toolRegistry.js';
 
 const router = express.Router();
+
+// Baseline rate limiting for all plugin routes (js/missing-rate-limiting).
+router.use(pluginGlobalLimiter);
 
 // ============ WebSocket Server (will be initialized in server/index.ts) ============
 
@@ -2032,8 +2046,13 @@ router.get('/proxy-image', proxyRateLimiter, async (req: Request, res: Response)
       return res.status(400).json({ error: 'Invalid URL' });
     }
 
-    // Domain allowlist for security
-    if (!ALLOWED_IMAGE_DOMAINS.some((d) => parsed.hostname.endsWith(d))) {
+    // Domain allowlist for security (exact host or true subdomain — avoids the
+    // `endsWith` bypass where e.g. "evil-cloudinary.com" matches "cloudinary.com").
+    const host = parsed.hostname.toLowerCase();
+    const allowed = ALLOWED_IMAGE_DOMAINS.some(
+      (d) => host === d || host.endsWith('.' + d)
+    );
+    if (parsed.protocol !== 'https:' || !allowed) {
       return res.status(403).json({
         error: 'Domain not allowed',
         allowed: ALLOWED_IMAGE_DOMAINS,
