@@ -236,22 +236,16 @@ async function ensureFonts(fonts?: { family: string; url?: string }[]) {
   }
 
   // Brand fonts (SSoT: BrandGuideline.typography). Per family, in order:
-  //   1) uploaded woff2 url → register as-is (true fidelity);
-  //   2) @fontsource slug → covers any Google Font;
-  //   3) metric-compatible substitute for common non-Google families.
+  //   1) @fontsource slug → covers any Google Font;
+  //   2) metric-compatible substitute for common non-Google families.
+  // (Fetching an arbitrary brand-uploaded woff2 URL server-side is an SSRF vector,
+  // so it's intentionally not done here — fidelity for non-Google brand fonts is
+  // handled via the metric substitute. A future SSRF-safe asset proxy can restore it.)
   for (const f of fonts ?? []) {
     const family = f?.family?.trim();
     if (!family || registeredFamilies.has(family) || attemptedFamilies.has(family)) continue;
     attemptedFamilies.add(family);
     try {
-      if (f.url) {
-        const buf = await fetchBuf(f.url);
-        if (buf) {
-          GlobalFonts.register(buf, family);
-          registeredFamilies.add(family);
-          continue;
-        }
-      }
       if (await registerFontsource(GlobalFonts, fontSlug(family), family)) {
         registeredFamilies.add(family);
         continue;
