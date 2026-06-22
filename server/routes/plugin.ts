@@ -59,6 +59,16 @@ const agentCommandLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Ops-channel poll/ack: the plugin long-polls continuously, so the cap is
+// generous but still bounds abuse.
+const opsChannelLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: { error: 'Too many ops-channel requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Rate limiter for image analysis (expensive AI calls - 10 req/min)
 const imageAnalysisLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -374,7 +384,7 @@ const PENDING_WAIT_MS = parseInt(process.env.PLUGIN_PENDING_WAIT_MS || '25000');
 const PENDING_STEP_MS = 1000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-router.get('/pending', authenticate, async (req: AuthRequest, res: Response) => {
+router.get('/pending', opsChannelLimiter, authenticate, async (req: AuthRequest, res: Response) => {
   const fileId = req.query.fileId as string;
   if (!fileId) return res.status(400).json({ error: 'fileId is required' });
 
@@ -398,7 +408,7 @@ router.get('/pending', authenticate, async (req: AuthRequest, res: Response) => 
  * Remove batches the plugin applied. Un-acked batches stay queued and are
  * re-delivered on the next /pending poll (automatic retry).
  */
-router.post('/ack', authenticate, async (req: AuthRequest, res: Response) => {
+router.post('/ack', opsChannelLimiter, authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { fileId, appliedIds } = req.body as { fileId?: string; appliedIds?: string[] };
     if (!fileId) return res.status(400).json({ error: 'fileId is required' });
