@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
-import { Image as ImageIcon, Plus, Trash2, Star } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';
@@ -167,7 +167,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                         : 'text-neutral-600 hover:text-brand-cyan opacity-0 group-hover/logo:opacity-100'
                     )}
                   >
-                    <Star size={11} className={isPrimary ? 'fill-brand-cyan' : ''} />
+                    <Gem size={11} className={isPrimary ? 'fill-brand-cyan' : ''} />
                   </button>
 
                   {/* Delete (top-right) */}
