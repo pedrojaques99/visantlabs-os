@@ -84,12 +84,7 @@ function friendlyMockupError(err: any): { title: string; detail: string; refunde
       detail: 'Todos os modelos estão fora no momento. Tente de novo em instantes.',
       refunded: true,
     };
-  if (
-    code === 'safety_blocked' ||
-    msg.includes('safety') ||
-    msg.includes('blocked') ||
-    msg.includes('422')
-  )
+  if (code === 'safety_blocked' || msg.includes('safety') || msg.includes('blocked') || msg.includes('422'))
     return {
       title: 'Cena bloqueada',
       detail: 'O conteúdo foi sinalizado pela política de uso. Ajuste a descrição e tente de novo.',
@@ -510,10 +505,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                     ))}
                   </div>
                   {brandPreview.font && (
-                    <p
-                      className="text-[11px] text-neutral-400 truncate"
-                      style={{ fontFamily: brandPreview.font }}
-                    >
+                    <p className="text-[11px] text-neutral-400 truncate" style={{ fontFamily: brandPreview.font }}>
                       {brandPreview.font}
                     </p>
                   )}
@@ -591,9 +583,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-neutral-600 leading-relaxed">
-                  {STRATEGY_COPY[strategy]}
-                </p>
+                <p className="text-[10px] text-neutral-600 leading-relaxed">{STRATEGY_COPY[strategy]}</p>
               </div>
 
               <div className="flex items-center justify-between pt-2">
@@ -744,8 +734,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
               </p>
               {slowHint && (
                 <p className="text-[10px] text-neutral-600 max-w-[16rem] text-center leading-relaxed animate-in fade-in duration-500">
-                  Buscando o melhor modelo disponível por{' '}
-                  {strategy === 'cost' ? 'custo' : 'qualidade'}…
+                  Buscando o melhor modelo disponível por {strategy === 'cost' ? 'custo' : 'qualidade'}…
                 </p>
               )}
             </div>

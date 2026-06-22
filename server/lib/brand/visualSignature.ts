@@ -59,10 +59,7 @@ export function aggregateVisualSignature(
   }
 
   const top = (key: string) =>
-    [...counts[key].entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([tag]) => tag);
+    [...counts[key].entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag);
 
   return {
     vibe: top('vibe'),
@@ -75,8 +72,5 @@ export function aggregateVisualSignature(
 
 /** True when a signature has at least one tag (worth exposing). */
 export function hasSignature(sig: BrandVisualSignature | undefined | null): boolean {
-  return (
-    !!sig &&
-    SIGNATURE_KEYS.some((k) => Array.isArray((sig as any)[k]) && (sig as any)[k].length > 0)
-  );
+  return !!sig && SIGNATURE_KEYS.some((k) => Array.isArray((sig as any)[k]) && (sig as any)[k].length > 0);
 }

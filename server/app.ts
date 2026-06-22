@@ -213,13 +213,7 @@ export function createApp() {
 
   const selfOrigin = API_BASE_URL; // OAuth login page is served from the API domain
   const allAllowedOrigins = [
-    ...new Set([
-      ...envFrontendOrigins,
-      ...claudeOrigins,
-      ...openaiOrigins,
-      ...devOrigins,
-      selfOrigin,
-    ]),
+    ...new Set([...envFrontendOrigins, ...claudeOrigins, ...openaiOrigins, ...devOrigins, selfOrigin]),
   ];
 
   app.use(

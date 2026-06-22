@@ -246,7 +246,9 @@ export function obraDeArteHtml(
 ): string {
   const W = 1080,
     H = 1350;
-  const logo = content.logoUrl ? `<img class="logo" src="${esc(content.logoUrl)}" alt="">` : '';
+  const logo = content.logoUrl
+    ? `<img class="logo" src="${esc(content.logoUrl)}" alt="">`
+    : '';
 
   const body = `<div class="frame">
   <h1 class="h1">${esc(content.h1)}</h1>
@@ -332,9 +334,7 @@ export function slideAgendaHtml(
   const photo = content.photoUrl ? `<img src="${esc(content.photoUrl)}" alt="">` : '';
   const items = content.infos?.length
     ? `<ol class="list">${content.infos
-        .map(
-          (it, i) => `<li><span class="n">${i + 1}</span><span class="ar">→</span>${esc(it)}</li>`
-        )
+        .map((it, i) => `<li><span class="n">${i + 1}</span><span class="ar">→</span>${esc(it)}</li>`)
         .join('')}</ol>`
     : '';
 

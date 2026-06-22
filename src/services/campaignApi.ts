@@ -64,7 +64,9 @@ export const campaignApi = {
   /** List persisted campaigns, optionally scoped to one brand (cockpit view). */
   list(brandId?: string): Promise<CampaignSummary[]> {
     const qs = brandId ? `?brandId=${encodeURIComponent(brandId)}` : '';
-    return request<{ campaigns: CampaignSummary[] }>(`/campaigns${qs}`).then((r) => r.campaigns);
+    return request<{ campaigns: CampaignSummary[] }>(`/campaigns${qs}`).then(
+      (r) => r.campaigns
+    );
   },
   get(id: string): Promise<Campaign> {
     return request<{ campaign: Campaign }>(`/campaigns/${id}`).then((r) => r.campaign);
@@ -76,6 +78,8 @@ export const campaignApi = {
     }).then((r) => r.campaign);
   },
   remove(id: string): Promise<void> {
-    return request<{ ok: true }>(`/campaigns/${id}`, { method: 'DELETE' }).then(() => undefined);
+    return request<{ ok: true }>(`/campaigns/${id}`, { method: 'DELETE' }).then(
+      () => undefined
+    );
   },
 };

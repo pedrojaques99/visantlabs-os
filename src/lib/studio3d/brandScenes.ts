@@ -120,8 +120,7 @@ function buildPalette(g: BrandGuideline): Palette | null {
   const declaredBg = colorByRole(g, 'background', 'bg', 'surface');
   const darkest = [...hexes].sort((a, b) => luminance(a) - luminance(b))[0];
   const lightest = [...hexes].sort((a, b) => luminance(b) - luminance(a))[0];
-  const darkBg =
-    declaredBg && isDark(declaredBg) ? declaredBg : isDark(darkest) ? darkest : FALLBACK_DARK;
+  const darkBg = declaredBg && isDark(declaredBg) ? declaredBg : isDark(darkest) ? darkest : FALLBACK_DARK;
   const lightBg =
     declaredBg && isLight(declaredBg) ? declaredBg : isLight(lightest) ? lightest : FALLBACK_LIGHT;
 
@@ -160,51 +159,13 @@ interface LookDef {
 }
 
 const LOOKS: LookDef[] = [
-  {
-    base: 'Product Shot',
-    color: 'primary',
-    tone: 'dark',
-    moods: ['minimal', 'clean', 'simple', 'corporate'],
-  },
-  {
-    base: 'Hero Banner',
-    color: 'accent',
-    tone: 'dark',
-    rim: 'secondary',
-    moods: ['luxur', 'premium', 'elegant', 'bold', 'tech'],
-  },
-  {
-    base: 'Liquid Metal',
-    color: 'primary',
-    tone: 'dark',
-    rim: 'accent',
-    moods: ['luxur', 'premium', 'futur', 'tech', 'metal'],
-  },
-  {
-    base: 'Dark Studio',
-    color: 'accent',
-    tone: 'dark',
-    moods: ['tech', 'futur', 'cyber', 'elegant', 'mysterious'],
-  },
-  {
-    base: 'Neon',
-    color: 'accent',
-    tone: 'dark',
-    moods: ['vibrant', 'bold', 'cyber', 'play', 'energetic', 'tech'],
-  },
-  {
-    base: 'Clay Render',
-    color: 'neutral',
-    tone: 'light',
-    moods: ['minimal', 'soft', 'organic', 'calm', 'natural'],
-  },
-  {
-    base: 'Y2K',
-    color: 'accent',
-    tone: 'dark',
-    rim: 'secondary',
-    moods: ['play', 'fun', 'vibrant', 'retro', 'bold'],
-  },
+  { base: 'Product Shot', color: 'primary', tone: 'dark', moods: ['minimal', 'clean', 'simple', 'corporate'] },
+  { base: 'Hero Banner', color: 'accent', tone: 'dark', rim: 'secondary', moods: ['luxur', 'premium', 'elegant', 'bold', 'tech'] },
+  { base: 'Liquid Metal', color: 'primary', tone: 'dark', rim: 'accent', moods: ['luxur', 'premium', 'futur', 'tech', 'metal'] },
+  { base: 'Dark Studio', color: 'accent', tone: 'dark', moods: ['tech', 'futur', 'cyber', 'elegant', 'mysterious'] },
+  { base: 'Neon', color: 'accent', tone: 'dark', moods: ['vibrant', 'bold', 'cyber', 'play', 'energetic', 'tech'] },
+  { base: 'Clay Render', color: 'neutral', tone: 'light', moods: ['minimal', 'soft', 'organic', 'calm', 'natural'] },
+  { base: 'Y2K', color: 'accent', tone: 'dark', rim: 'secondary', moods: ['play', 'fun', 'vibrant', 'retro', 'bold'] },
 ];
 
 /** Lowercased blob of every logo's visual analysis — robust to field-name drift. */
@@ -223,7 +184,7 @@ function recolorLook(look: LookDef, palette: Palette): BrandScene {
   const preset = SCENE_PRESETS[look.base];
   const background = look.tone === 'light' ? palette.lightBg : palette.darkBg;
   const material = ensureContrast(palette[look.color], background, palette);
-  const fresnelColor = look.rim ? palette[look.rim] : (preset.fresnelColor ?? '');
+  const fresnelColor = look.rim ? palette[look.rim] : preset.fresnelColor ?? '';
 
   return {
     key: `look:${look.base}`,

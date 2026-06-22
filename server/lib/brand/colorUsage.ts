@@ -153,7 +153,9 @@ export async function computeColorUsage<T extends UsageColor>(
 
   const withUsage = colors.map((c, i) => ({ ...c, usage: weighted[i] / total }));
   // Rank by usage descending (1 = most used).
-  const order = withUsage.map((c, i) => ({ i, usage: c.usage })).sort((a, b) => b.usage - a.usage);
+  const order = withUsage
+    .map((c, i) => ({ i, usage: c.usage }))
+    .sort((a, b) => b.usage - a.usage);
   order.forEach((o, rank) => {
     (withUsage[o.i] as any).usageRank = rank + 1;
   });

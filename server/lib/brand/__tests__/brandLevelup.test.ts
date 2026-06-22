@@ -18,9 +18,7 @@ describe('colorUsage helpers', () => {
     const black = { r: 0, g: 0, b: 0 };
     const white = { r: 255, g: 255, b: 255 };
     expect(colorDistance(black, black)).toBe(0);
-    expect(colorDistance(black, white)).toBeGreaterThan(
-      colorDistance(black, { r: 10, g: 10, b: 10 })
-    );
+    expect(colorDistance(black, white)).toBeGreaterThan(colorDistance(black, { r: 10, g: 10, b: 10 }));
   });
 
   it('collectAssetSources weights logos > designed media > stock, skips pdfs', () => {
@@ -49,18 +47,10 @@ describe('colorUsage helpers', () => {
   it('down-weights photographic assets and keeps vector marks intentional (analysis-aware)', () => {
     const sources = collectAssetSources({
       media: [
-        {
-          url: 'https://x/photo.jpg',
-          type: 'image',
-          category: 'graphic',
-          analysis: { dimensions: { medium: ['Photography'] } },
-        },
-        {
-          url: 'https://x/vector.svg',
-          type: 'image',
-          category: 'graphic',
-          analysis: { dimensions: { medium: ['vector', 'flat'] } },
-        },
+        { url: 'https://x/photo.jpg', type: 'image', category: 'graphic',
+          analysis: { dimensions: { medium: ['Photography'] } } },
+        { url: 'https://x/vector.svg', type: 'image', category: 'graphic',
+          analysis: { dimensions: { medium: ['vector', 'flat'] } } },
       ],
     });
     const w = Object.fromEntries(sources.map((s) => [s.url, s.weight]));
@@ -154,9 +144,7 @@ describe('assetFingerprint dedup', () => {
     const near = findDuplicate({ sha256: 'zzz', size: 1, phash: '0000000000000001' }, existing);
     expect(near).toMatchObject({ kind: 'similar', asset: { id: 'a' } });
     // brand-new asset
-    expect(
-      findDuplicate({ sha256: 'zzz', size: 1, phash: '0f0f0f0f0f0f0f0f' }, existing)
-    ).toBeNull();
+    expect(findDuplicate({ sha256: 'zzz', size: 1, phash: '0f0f0f0f0f0f0f0f' }, existing)).toBeNull();
     expect(NEAR_DUP_THRESHOLD).toBeGreaterThan(0);
   });
 });
