@@ -6,6 +6,7 @@
   "ui": "ui.html",
   "documentAccess": "dynamic-page",
   "editorType": ["figma", "slides"],
+  "enablePrivatePluginApi": true,
   "permissions": ["currentuser", "teamlibrary"],
   "networkAccess": {
     "allowedDomains": [
