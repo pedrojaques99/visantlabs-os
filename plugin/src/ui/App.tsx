@@ -3,6 +3,7 @@ import { usePluginStore } from './store';
 import { useFigmaMessages } from './hooks/useFigmaMessages';
 import { useAuth } from './hooks/useAuth';
 import { useIllustratorExport } from './hooks/useIllustratorExport';
+import { usePluginOpsChannel } from './hooks/usePluginOpsChannel';
 import { useClient } from './lib/ClientProvider';
 import { AppShell } from './components/layout/AppShell';
 import { loadChatHistory, setChatPersistClient } from './store';
@@ -13,6 +14,7 @@ export function App() {
   const { checkStatus } = useAuth();
   const client = useClient();
   useIllustratorExport();
+  usePluginOpsChannel(); // HTTP ops channel: external agent → this open plugin
 
   useEffect(() => {
     setChatPersistClient(client);

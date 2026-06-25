@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { SectionBlock } from '../SectionBlock';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
-import { Image as ImageIcon, Sparkles, Loader2, Search, X } from 'lucide-react';
+import { Image as ImageIcon, Zap, Loader2, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -128,7 +128,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
             title="Analyze assets with AI (vibe, aesthetic, theme, mood) — also powers semantic search below"
             aria-label="Analyze assets with AI"
           >
-            {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+            {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
           </Button>
         ) : undefined
       }
