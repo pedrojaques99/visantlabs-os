@@ -181,3 +181,6 @@ maison-london-storefront.b64.txt
 maison-beauty-card.b64.txt
 ZCursorvisantlabs-os.env
 .server-log.txt
+
+# VSN Exporter: .reg local com caminhos absolutos da maquina (nao versionar)
+public/vsn-exporter/*.local.reg

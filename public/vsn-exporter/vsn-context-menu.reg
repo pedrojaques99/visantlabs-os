@@ -1,0 +1,29 @@
+Windows Registry Editor Version 5.00
+
+; ============================================================
+;  VSN Exporter - menu de contexto (botao direito em pastas)
+;
+;  EDITE OS CAMINHOS ABAIXO antes de aplicar (duplo-clique):
+;   - Troque  C:\\PATH\\TO\\vsn-exporter  pelo caminho REAL
+;     onde voce colocou esta pasta.
+;   - "Icon" e opcional: aponte para um .ico seu, ou apague
+;     a linha "Icon" para usar o icone padrao.
+;
+;  Em .reg as barras invertidas sao DUPLAS (\\).
+; ============================================================
+
+; Botao direito no fundo da pasta
+[HKEY_CLASSES_ROOT\Directory\Background\shell\VSNExporter]
+@="VSN Exporter"
+"Icon"="C:\\PATH\\TO\\vsn-exporter\\visant.ico"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\VSNExporter\command]
+@="powershell.exe -NoExit -ExecutionPolicy Bypass -File \"C:\\PATH\\TO\\vsn-exporter\\vsn-exporter.ps1\" -Path \"%V\""
+
+; Botao direito em cima de uma pasta
+[HKEY_CLASSES_ROOT\Directory\shell\VSNExporter]
+@="VSN Exporter"
+"Icon"="C:\\PATH\\TO\\vsn-exporter\\visant.ico"
+
+[HKEY_CLASSES_ROOT\Directory\shell\VSNExporter\command]
+@="powershell.exe -NoExit -ExecutionPolicy Bypass -File \"C:\\PATH\\TO\\vsn-exporter\\vsn-exporter.ps1\" -Path \"%1\""

@@ -1,4 +1,5 @@
-# Visant Exporter - Workspace Mirror
-# Source of Truth: Z:\VISANT\Copilot®\VSN Exporter\vsn-exporter.ps1
+﻿# Visant Exporter - Launcher
+# Canonical source now lives in-repo: public/vsn-exporter/vsn-exporter.ps1
+# (was a proxy to Z:\VISANT\Copilot®\VSN Exporter — superseded)
 
-& "Z:\VISANT\Copilot®\VSN Exporter\vsn-exporter.ps1" @args
+& (Join-Path $PSScriptRoot "vsn-exporter\vsn-exporter.ps1") @args

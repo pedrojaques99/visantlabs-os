@@ -44,6 +44,8 @@ function luminance(r: number, g: number, b: number): number {
 
 function safeName(name: string): string {
   return name
+    .normalize('NFD') // separa letra + acento (c-cedilha -> c + diacritico)
+    .replace(/[̀-ͯ]/g, '') // remove so os diacriticos, mantem a letra base
     .replace(/[^\w\s\-]/g, '')
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_');
@@ -397,148 +399,175 @@ export async function generateLogoMatrix(payload: LogoMatrixPayload) {
     return;
   }
 
-  figma.notify(`Gerando Logo Matrix: ${colors.length} variações…`);
-
-  const source = selection[0];
-  const srcW = 'width' in source ? source.width : 200;
-  const srcH = 'height' in source ? source.height : 200;
-  const srcName = safeName(source.name);
+  // Batch: one matrix block per selected node, stacked vertically.
+  const sources = selection.slice();
+  figma.notify(
+    sources.length > 1
+      ? `Gerando Logo Matrix: ${sources.length} logos × ${colors.length} variações…`
+      : `Gerando Logo Matrix: ${colors.length} variações…`
+  );
 
   const FRAME_W = 1920;
   const FRAME_H = 1080;
   const GAP = 60;
   const ROW_GAP = 60;
+  const BLOCK_GAP = 160;
   const BREATHE = 0.45;
+  const ISO_PAD = 80;
+  const SECTION_PAD = 40;
   const maxLogoW = FRAME_W * BREATHE;
   const maxLogoH = FRAME_H * BREATHE;
-  let scale = Math.min(maxLogoW / srcW, maxLogoH / srcH);
-  if (scale > 1) scale = 1;
-  const cloneW = srcW * scale;
-  const cloneH = srcH * scale;
+  const totalW = colors.length * (FRAME_W + GAP) - GAP;
 
-  const ISO_PAD = 80;
-
-  const startX = source.x + srcW + GAP * 2;
-  const startY = source.y;
+  // Anchor the whole batch to the right of the first selected node.
+  const anchor = sources[0];
+  const anchorW = 'width' in anchor ? anchor.width : 200;
+  const startX = anchor.x + anchorW + GAP * 2;
+  let blockY = anchor.y;
 
   const ops: any[] = [];
-  const SECTION_PAD = 40;
-  const totalW = colors.length * (FRAME_W + GAP) - GAP;
-  const isoEstH = srcH + ISO_PAD * 2;
 
-  if (useSections) {
-    ops.push({
-      type: 'CREATE_SECTION',
-      ref: 'lm_sec_bg',
-      props: {
-        name: `${srcName}_Background/`,
-        width: totalW + SECTION_PAD * 2,
-        height: FRAME_H + SECTION_PAD * 2,
-        x: startX,
-        y: startY,
-      },
-    });
-    ops.push({
-      type: 'CREATE_SECTION',
-      ref: 'lm_sec_iso',
-      props: {
-        name: `${srcName}_Isolated/`,
-        width: totalW + SECTION_PAD * 2,
-        height: isoEstH + SECTION_PAD * 2,
-        x: startX,
-        y: startY + FRAME_H + SECTION_PAD * 2 + ROW_GAP,
-      },
-    });
-  }
+  for (let si = 0; si < sources.length; si++) {
+    const source = sources[si];
+    const srcW = 'width' in source ? source.width : 200;
+    const srcH = 'height' in source ? source.height : 200;
+    const srcName = safeName(source.name);
 
-  const bgBaseX = useSections ? SECTION_PAD : 0;
-  const bgBaseY = useSections ? SECTION_PAD : 0;
-  const isoBaseX = useSections ? SECTION_PAD : 0;
-  const isoBaseY = useSections ? SECTION_PAD : 0;
+    let scale = Math.min(maxLogoW / srcW, maxLogoH / srcH);
+    if (scale > 1) scale = 1;
+    const cloneW = srcW * scale;
+    const cloneH = srcH * scale;
+    const isoEstH = srcH + ISO_PAD * 2;
 
-  for (let ci = 0; ci < colors.length; ci++) {
-    const color = colors[ci];
-    const hexColor = hexFromRGB(color.r, color.g, color.b);
-    const isDark = luminance(color.r, color.g, color.b) < 0.5;
-    const sColor = safeName(color.name);
+    const bgSecRef = `lm_sec_bg_${si}`;
+    const isoSecRef = `lm_sec_iso_${si}`;
+    const bgSecH = FRAME_H + SECTION_PAD * 2;
+    const isoSecY = blockY + bgSecH + ROW_GAP;
 
-    const bgRef = `lm_bg_${ci}`;
-    ops.push({
-      type: 'CREATE_FRAME',
-      ref: bgRef,
-      ...(useSections && { parentRef: 'lm_sec_bg' }),
-      props: {
-        name: `${srcName}_On_${sColor}`,
-        width: FRAME_W,
-        height: FRAME_H,
-        x: (useSections ? bgBaseX : startX) + ci * (FRAME_W + GAP),
-        y: useSections ? bgBaseY : startY,
-        fills: [{ type: 'SOLID', color: hexColor }],
-        clipsContent: true,
-      },
-    });
+    if (useSections) {
+      ops.push({
+        type: 'CREATE_SECTION',
+        ref: bgSecRef,
+        props: {
+          name: `${srcName}_Background/`,
+          width: totalW + SECTION_PAD * 2,
+          height: bgSecH,
+          x: startX,
+          y: blockY,
+        },
+      });
+      ops.push({
+        type: 'CREATE_SECTION',
+        ref: isoSecRef,
+        props: {
+          name: `${srcName}_Isolated/`,
+          width: totalW + SECTION_PAD * 2,
+          height: isoEstH + SECTION_PAD * 2,
+          x: startX,
+          y: isoSecY,
+        },
+      });
+    }
 
-    const cloneRef = `lm_clone_${ci}`;
-    ops.push({
-      type: 'CLONE_NODE',
-      ref: cloneRef,
-      sourceNodeId: source.id,
-      parentRef: bgRef,
-      props: {
-        rescale: scale,
-        x: (FRAME_W - cloneW) / 2,
-        y: (FRAME_H - cloneH) / 2,
-      },
-    });
+    const bgBaseX = useSections ? SECTION_PAD : startX;
+    const bgBaseY = useSections ? SECTION_PAD : blockY;
+    const isoBaseX = useSections ? SECTION_PAD : startX;
+    const isoBaseY = useSections ? SECTION_PAD : blockY + FRAME_H + ROW_GAP;
 
-    ops.push({
-      type: 'RECOLOR_NODE',
-      ref: cloneRef,
-      props: { fills: [{ type: 'SOLID', color: isDark ? '#FFFFFF' : '#000000' }] },
-    });
+    for (let ci = 0; ci < colors.length; ci++) {
+      const color = colors[ci];
+      const hexColor = hexFromRGB(color.r, color.g, color.b);
+      const isDark = luminance(color.r, color.g, color.b) < 0.5;
+      const sColor = safeName(color.name);
 
-    ops.push({ type: 'SET_EXPORT_SETTINGS', ref: bgRef, exportSettings: EXPORT_PRESETS.print });
+      const bgRef = `lm_bg_${si}_${ci}`;
+      ops.push({
+        type: 'CREATE_FRAME',
+        ref: bgRef,
+        ...(useSections && { parentRef: bgSecRef }),
+        props: {
+          name: `${srcName}_On_${sColor}`,
+          width: FRAME_W,
+          height: FRAME_H,
+          x: bgBaseX + ci * (FRAME_W + GAP),
+          y: bgBaseY,
+          fills: [{ type: 'SOLID', color: hexColor }],
+          clipsContent: true,
+        },
+      });
 
-    const isoRef = `lm_iso_${ci}`;
-    ops.push({
-      type: 'CREATE_FRAME',
-      ref: isoRef,
-      ...(useSections && { parentRef: 'lm_sec_iso' }),
-      props: {
-        name: `${srcName}_${sColor}_Isolated`,
-        x: (useSections ? isoBaseX : startX) + ci * (FRAME_W + GAP),
-        y: useSections ? isoBaseY : startY + FRAME_H + ROW_GAP,
-        fills: [],
-        layoutMode: 'HORIZONTAL',
-        primaryAxisSizingMode: 'AUTO',
-        counterAxisSizingMode: 'AUTO',
-        primaryAxisAlignItems: 'CENTER',
-        counterAxisAlignItems: 'CENTER',
-        paddingTop: ISO_PAD,
-        paddingRight: ISO_PAD,
-        paddingBottom: ISO_PAD,
-        paddingLeft: ISO_PAD,
-      },
-    });
+      const cloneRef = `lm_clone_${si}_${ci}`;
+      ops.push({
+        type: 'CLONE_NODE',
+        ref: cloneRef,
+        sourceNodeId: source.id,
+        parentRef: bgRef,
+        props: {
+          rescale: scale,
+          x: (FRAME_W - cloneW) / 2,
+          y: (FRAME_H - cloneH) / 2,
+        },
+      });
 
-    const isoCloneRef = `lm_iso_clone_${ci}`;
-    ops.push({
-      type: 'CLONE_NODE',
-      ref: isoCloneRef,
-      sourceNodeId: source.id,
-      parentRef: isoRef,
-    });
+      ops.push({
+        type: 'RECOLOR_NODE',
+        ref: cloneRef,
+        props: { fills: [{ type: 'SOLID', color: isDark ? '#FFFFFF' : '#000000' }] },
+      });
 
-    ops.push({
-      type: 'RECOLOR_NODE',
-      ref: isoCloneRef,
-      props: { fills: [{ type: 'SOLID', color: hexColor }] },
-    });
+      ops.push({ type: 'SET_EXPORT_SETTINGS', ref: bgRef, exportSettings: EXPORT_PRESETS.print });
 
-    ops.push({ type: 'SET_EXPORT_SETTINGS', ref: isoRef, exportSettings: EXPORT_PRESETS.print });
+      const isoRef = `lm_iso_${si}_${ci}`;
+      ops.push({
+        type: 'CREATE_FRAME',
+        ref: isoRef,
+        ...(useSections && { parentRef: isoSecRef }),
+        props: {
+          name: `${srcName}_${sColor}_Isolated`,
+          x: isoBaseX + ci * (FRAME_W + GAP),
+          y: isoBaseY,
+          fills: [],
+          layoutMode: 'HORIZONTAL',
+          primaryAxisSizingMode: 'AUTO',
+          counterAxisSizingMode: 'AUTO',
+          primaryAxisAlignItems: 'CENTER',
+          counterAxisAlignItems: 'CENTER',
+          paddingTop: ISO_PAD,
+          paddingRight: ISO_PAD,
+          paddingBottom: ISO_PAD,
+          paddingLeft: ISO_PAD,
+        },
+      });
+
+      const isoCloneRef = `lm_iso_clone_${si}_${ci}`;
+      ops.push({
+        type: 'CLONE_NODE',
+        ref: isoCloneRef,
+        sourceNodeId: source.id,
+        parentRef: isoRef,
+      });
+
+      ops.push({
+        type: 'RECOLOR_NODE',
+        ref: isoCloneRef,
+        props: { fills: [{ type: 'SOLID', color: hexColor }] },
+      });
+
+      ops.push({ type: 'SET_EXPORT_SETTINGS', ref: isoRef, exportSettings: EXPORT_PRESETS.print });
+    }
+
+    // Advance Y for the next source block.
+    const blockH = useSections
+      ? bgSecH + ROW_GAP + (isoEstH + SECTION_PAD * 2)
+      : FRAME_H + ROW_GAP + isoEstH;
+    blockY += blockH + BLOCK_GAP;
   }
 
   await applyOperations(ops);
-  figma.notify(`Logo Matrix: ${colors.length} variações ✓`);
+  figma.notify(
+    sources.length > 1
+      ? `Logo Matrix: ${sources.length} logos × ${colors.length} variações ✓`
+      : `Logo Matrix: ${colors.length} variações ✓`
+  );
   postToUI({ type: 'OPERATIONS_DONE' });
 }
