@@ -10,6 +10,7 @@
 
 import { randomUUID } from 'crypto';
 import { GoogleGenAI, Type } from '@google/genai';
+import { computeThumbHash } from '../thumbHash.js';
 import { describeImage, getMultimodalEmbedding } from '../../services/geminiService.js';
 import { vectorService } from '../../services/vectorService.js';
 import { connectToMongoDB, getDb } from '../../db/mongodb.js';
@@ -27,6 +28,10 @@ export interface ReferenceDimensions {
   angle?: string[];
   color_mood?: string[];
   mockup_type?: string[];
+  // Branding/logo dimensions — populated only for logo/identity/brand-system refs
+  brand_artifact?: string[];
+  logo_construction?: string[];
+  type_style?: string[];
 }
 
 /**
@@ -86,7 +91,14 @@ export interface IngestReferenceResult {
   cost: IngestCostMetrics;
 }
 
-const DIMENSION_PROMPT = `Analyze this mockup/product photography reference image.
+const DIMENSION_PROMPT = `Analyze this design reference image. It may be a product/mockup photo, a logo, or a full brand identity / guideline layout.
+
+FIRST classify the image into one of:
+  (a) product/mockup photo  → fill the photographic dims (lighting, texture, material, angle, mockup_type)
+  (b) logo / logotype       → fill logo_construction + type_style + brand_artifact:["logo"]
+  (c) brand identity system / guideline / editorial layout → fill brand_artifact + (type_style when type is shown)
+ALWAYS fill the shared dims (niche, aesthetic, vibe, color_mood) for any image.
+Leave irrelevant dims as EMPTY arrays — do NOT invent lighting/material/angle for a flat logo.
 
 Return JSON with:
 {
@@ -96,12 +108,15 @@ Return JSON with:
     "niche": ["industry/market niche, e.g. luxury, tech, food, fashion, beauty, sports"],
     "aesthetic": ["visual style, e.g. minimalist, brutalist, organic, retro, editorial, swiss"],
     "vibe": ["mood/feeling, e.g. premium, playful, corporate, edgy, warm, serene"],
-    "lighting": ["lighting technique, e.g. soft studio, golden hour, neon, flat, dramatic, rim"],
-    "texture": ["surface textures visible, e.g. marble, concrete, wood, fabric, glossy, matte"],
-    "material": ["physical materials, e.g. vinyl, metal, glass, paper, cardboard, ceramic"],
-    "angle": ["camera angle, e.g. top-down, isometric, hero, close-up, eye-level, 45-degree"],
+    "lighting": ["mockup only — lighting technique, e.g. soft studio, golden hour, neon, flat, dramatic, rim"],
+    "texture": ["mockup only — surface textures, e.g. marble, concrete, wood, fabric, glossy, matte"],
+    "material": ["mockup only — physical materials, e.g. vinyl, metal, glass, paper, cardboard, ceramic"],
+    "angle": ["mockup only — camera angle, e.g. top-down, isometric, hero, close-up, eye-level, 45-degree"],
     "color_mood": ["color feeling, e.g. warm, cold, monochrome, vibrant, pastel, earth-tones"],
-    "mockup_type": ["what is being mocked up, e.g. packaging, stationery, apparel, signage, device, bottle"]
+    "mockup_type": ["mockup only — what is mocked up, e.g. packaging, stationery, apparel, signage, device, bottle"],
+    "brand_artifact": ["branding only — what this is, e.g. logo, brand-system, typography-spec, color-palette, iconography, pattern, editorial-layout, stationery, guideline"],
+    "logo_construction": ["logo only — mark structure, e.g. wordmark, lettermark, monogram, pictorial-mark, abstract-mark, emblem, combination-mark, mascot"],
+    "type_style": ["logo/branding only — typography, e.g. serif, grotesque-sans, geometric-sans, humanist-sans, display, script, mono, custom-lettering"]
   },
   "geoHint": {
     "country": "Best guess of the country/design-culture of origin based on visual cues (script, language on artwork, typographic tradition, e.g. Japan, Switzerland, Russia). Empty string if no confident signal.",
@@ -109,7 +124,7 @@ Return JSON with:
   }
 }
 
-Each dimension array should have 1-3 values. Be precise and specific. Only fill geoHint.country when there is a real visual signal (visible script, language, culturally distinctive style); otherwise leave it empty.`;
+Each filled dimension array should have 1-3 values. Be precise and specific. Only fill geoHint.country when there is a real visual signal (visible script, language, culturally distinctive style); otherwise leave it empty.`;
 
 interface GeoHint {
   country?: string;
@@ -179,6 +194,9 @@ export async function ingestReference(
                 angle: { type: Type.ARRAY, items: { type: Type.STRING } },
                 color_mood: { type: Type.ARRAY, items: { type: Type.STRING } },
                 mockup_type: { type: Type.ARRAY, items: { type: Type.STRING } },
+                brand_artifact: { type: Type.ARRAY, items: { type: Type.STRING } },
+                logo_construction: { type: Type.ARRAY, items: { type: Type.STRING } },
+                type_style: { type: Type.ARRAY, items: { type: Type.STRING } },
               },
             },
             geoHint: {
@@ -244,6 +262,9 @@ export async function ingestReference(
     console.warn('[referenceIngestor] thumbnail generation failed, using full image:', err);
   }
 
+  // 3c. Compute a thumbhash for an instant LQIP placeholder on the client.
+  const thumbHash = await computeThumbHash(Buffer.from(rawBase64, 'base64'));
+
   // 4. Pinecone upsert — flat metadata for Pinecone compatibility
   const flatDimensions: Record<string, string[]> = {};
   for (const [key, val] of Object.entries(dimensions)) {
@@ -280,6 +301,7 @@ export async function ingestReference(
     prompt: prompt || '',
     referenceImageUrl: imageUrl,
     thumbnailUrl,
+    ...(thumbHash ? { thumbHash } : {}),
     category: 'reference',
     ...(studio ? { studio } : {}),
     isAdminCurated: params.isAdminCurated !== false,

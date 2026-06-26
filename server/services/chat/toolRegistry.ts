@@ -301,9 +301,10 @@ REGISTRY['search_reference_library'] = {
   declaration: {
     name: 'search_reference_library',
     description:
-      'Search the curated mockup reference library — world-class mockup examples categorized by 9 dimensions. ' +
-      'Use BEFORE suggesting or generating mockups to find proven visual techniques that match the brand/niche. ' +
-      'Returns reference images with dimension tags (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type).',
+      'Search the curated design reference library — world-class mockup AND logo/branding examples categorized by dimensions. ' +
+      'Use BEFORE suggesting or generating mockups, logos, or identities to find proven visual techniques that match the brand/niche. ' +
+      'Returns reference images with dimension tags. Mockup dims: niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type. ' +
+      'Branding/logo dims: brand_artifact (logo, brand-system, guideline...), logo_construction (wordmark, monogram, emblem...), type_style (grotesque-sans, serif...).',
     parameters: {
       type: 'object',
       properties: {
@@ -331,6 +332,18 @@ REGISTRY['search_reference_library'] = {
           type: 'string',
           description: 'Type: packaging, stationery, apparel, signage, device, bottle, etc.',
         },
+        brand_artifact: {
+          type: 'string',
+          description: 'Branding refs: logo, brand-system, typography-spec, guideline, pattern, etc.',
+        },
+        logo_construction: {
+          type: 'string',
+          description: 'Logo mark: wordmark, lettermark, monogram, emblem, combination-mark, etc.',
+        },
+        type_style: {
+          type: 'string',
+          description: 'Typography: serif, grotesque-sans, geometric-sans, script, mono, etc.',
+        },
         limit: { type: 'number', description: 'Max results (default 5).' },
       },
     },
@@ -345,7 +358,16 @@ REGISTRY['search_reference_library'] = {
         { name: { $regex: args.query, $options: 'i' } },
         { description: { $regex: args.query, $options: 'i' } },
       ];
-    for (const key of ['niche', 'aesthetic', 'vibe', 'lighting', 'mockup_type']) {
+    for (const key of [
+      'niche',
+      'aesthetic',
+      'vibe',
+      'lighting',
+      'mockup_type',
+      'brand_artifact',
+      'logo_construction',
+      'type_style',
+    ]) {
       if (args[key]) filter[`dimensions.${key}`] = { $in: [args[key]] };
     }
     const refs = await db

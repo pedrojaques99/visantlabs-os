@@ -234,6 +234,7 @@
     "tailwindcss": "^4.1.17",
     "temporary-email-address-validator": "^1.0.3",
     "three": "^0.182.0",
+    "thumbhash": "^0.1.1",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.7.0",
     "use-image": "^1.1.4",
