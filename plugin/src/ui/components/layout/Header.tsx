@@ -39,48 +39,45 @@ export function Header() {
 
   return (
     <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-between">
-      <span
-        className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground select-none cursor-default"
-        onClick={handleTitleClick}
-      >
-        Visant Copilot{devMode ? ' ⚡' : ''}
-      </span>
-
-      <div className="flex items-center gap-3">
-        {/* Server Status Indicator */}
-        <div
-          className="w-2 h-2 rounded-full"
-          role="status"
-          aria-label={
-            isConnected === true
-              ? 'Server connected'
-              : isConnected === false
-                ? 'Server disconnected'
-                : 'Checking connection'
-          }
-          style={{
-            backgroundColor:
-              isConnected === true ? '#00ff00' : isConnected === false ? '#ff4444' : '#888888',
-            transition: 'background-color 0.3s',
-          }}
-          title={
-            isConnected === true
-              ? 'Server connected'
-              : isConnected === false
-                ? 'Server disconnected'
-                : 'Checking...'
-          }
-        />
+      {/* Left: status/info. Title is dropped (Figma's window title bar already shows it). */}
+      <div className="flex items-center gap-2 min-h-[28px]">
+        {/* Only surface the status dot when the server is DOWN — silent when healthy. */}
+        {isConnected === false && (
+          <div
+            className="w-2 h-2 rounded-full shrink-0"
+            role="status"
+            aria-label="Servidor desconectado"
+            style={{ backgroundColor: '#ff4444' }}
+            title="Servidor desconectado"
+          />
+        )}
 
         {credits && (
           <Button
             variant="ghost"
+            onClick={handleTitleClick}
             className="flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[10px] text-brand-cyan font-mono bg-neutral-900/50 border border-brand-cyan/20 hover:bg-neutral-800 hover:border-brand-cyan/40 transition-all cursor-default shadow-sm"
+            title="Créditos disponíveis"
           >
             <Pickaxe size={12} className="text-brand-cyan" />
             <span>{Math.max(0, credits.limit - credits.used)}</span>
+            {devMode && <span className="ml-0.5">⚡</span>}
           </Button>
         )}
+      </div>
+
+      {/* Right: actions — views grouped, window control (collapse) last. */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setActiveView(activeView === 'sessions' ? 'main' : 'sessions')}
+          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
+          title="Sessões"
+          aria-label={activeView === 'sessions' ? 'Fechar sessões' : 'Ver sessões'}
+        >
+          <History size={14} className="text-neutral-400" />
+        </Button>
 
         <button
           onClick={() => setActiveView(activeView === 'profile' ? 'main' : 'profile')}
@@ -110,12 +107,12 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setActiveView(activeView === 'sessions' ? 'main' : 'sessions')}
+          onClick={() => setActiveView(activeView === 'settings' ? 'main' : 'settings')}
           className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
-          title="Sessões"
-          aria-label={activeView === 'sessions' ? 'Fechar sessões' : 'Ver sessões'}
+          title="Settings"
+          aria-label={activeView === 'settings' ? 'Close settings' : 'Open settings'}
         >
-          <History size={14} className="text-neutral-400" />
+          <Settings size={14} className="text-neutral-400" />
         </Button>
 
         <Button
@@ -127,17 +124,6 @@ export function Header() {
           aria-label="Colapsar painel"
         >
           <Minimize2 size={14} className="text-neutral-400" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setActiveView(activeView === 'settings' ? 'main' : 'settings')}
-          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
-          title="Settings"
-          aria-label={activeView === 'settings' ? 'Close settings' : 'Open settings'}
-        >
-          <Settings size={14} className="text-neutral-400" />
         </Button>
       </div>
     </header>
