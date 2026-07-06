@@ -2,11 +2,19 @@ import React, { useRef, useCallback } from 'react';
 import { usePluginStore } from '../../store';
 import { useServerStatus } from '../../hooks/useServerStatus';
 import { Button } from '@/components/ui/button';
-import { Settings, Pickaxe, User as UserIcon } from 'lucide-react';
+import { Settings, Pickaxe, User as UserIcon, History, Minimize2 } from 'lucide-react';
 
 export function Header() {
-  const { setActiveView, credits, activeView, userInfo, authEmail, toggleDevMode, devMode } =
-    usePluginStore();
+  const {
+    setActiveView,
+    credits,
+    activeView,
+    userInfo,
+    authEmail,
+    toggleDevMode,
+    devMode,
+    setCollapsed,
+  } = usePluginStore();
   const { isConnected } = useServerStatus();
   const clickCount = useRef(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -23,6 +31,11 @@ export function Header() {
       }, 800);
     }
   }, [toggleDevMode]);
+
+  const collapse = useCallback(() => {
+    setCollapsed(true);
+    parent.postMessage({ pluginMessage: { type: 'COLLAPSE_WINDOW' } }, '*');
+  }, [setCollapsed]);
 
   return (
     <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-between">
@@ -93,6 +106,28 @@ export function Header() {
             </div>
           )}
         </button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setActiveView(activeView === 'sessions' ? 'main' : 'sessions')}
+          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
+          title="Sessões"
+          aria-label={activeView === 'sessions' ? 'Fechar sessões' : 'Ver sessões'}
+        >
+          <History size={14} className="text-neutral-400" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={collapse}
+          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
+          title="Colapsar"
+          aria-label="Colapsar painel"
+        >
+          <Minimize2 size={14} className="text-neutral-400" />
+        </Button>
 
         <Button
           variant="ghost"

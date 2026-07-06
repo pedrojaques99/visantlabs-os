@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import type {
   PluginStore,
   ChatMessage,
+  ChatSessionMeta,
   SelectionDetail,
   ColorEntry,
   Component,
@@ -42,6 +43,7 @@ export const usePluginStore = create<PluginStore>()(
           (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))
         ).toString(16)
       ),
+    sessions: [],
     sessionContext: null,
     pendingAttachments: [],
     thinkMode: false,
@@ -94,6 +96,7 @@ export const usePluginStore = create<PluginStore>()(
 
     // UI State
     activeView: 'main',
+    collapsed: false,
     openPanel: null,
     devMode: false,
     toastMessage: undefined,
@@ -118,17 +121,80 @@ export const usePluginStore = create<PluginStore>()(
     clearChatHistory: () => {
       set((state) => {
         state.chatHistory = [];
-        state.sessionId =
-          crypto.randomUUID?.() ??
-          (() => {
-            const buf = new Uint8Array(16);
-            crypto.getRandomValues(buf);
-            return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
-          })();
+        state.sessionId = newSessionId();
         state.sessionContext = null;
       });
       scheduleChatPersist();
     },
+
+    // Archive the current session (if it has messages) and start a blank one,
+    // keeping previous sessions navigable — the primary "New conversation" action.
+    newSession: () => {
+      flushChatPersist();
+      set((state) => {
+        state.chatHistory = [];
+        state.sessionId = newSessionId();
+        state.sessionContext = null;
+        state.activeView = 'main';
+      });
+      // Persist the fresh (empty) active-session pointer so a reload restores it.
+      persistActiveSessionPointer();
+    },
+
+    switchSession: (id) => {
+      const state = usePluginStore.getState();
+      if (id === state.sessionId) {
+        set((s) => {
+          s.activeView = 'main';
+        });
+        return;
+      }
+      flushChatPersist();
+      void loadSession(id);
+    },
+
+    deleteSession: (id) => {
+      const state = usePluginStore.getState();
+      const isActive = id === state.sessionId;
+      const remaining = state.sessions.filter((s) => s.id !== id);
+      set((s) => {
+        s.sessions = remaining;
+      });
+      if (_client) {
+        _client.request('storage.delete', { key: sessionKey(id) }).catch(() => {});
+        _client
+          .request('storage.set', { key: SESSIONS_INDEX_KEY, value: JSON.stringify(remaining) })
+          .catch(() => {});
+      }
+      if (isActive) {
+        set((s) => {
+          s.chatHistory = [];
+          s.sessionId = newSessionId();
+          s.sessionContext = null;
+        });
+        persistActiveSessionPointer();
+      }
+    },
+
+    renameSession: (id, title) => {
+      const clean = title.trim().slice(0, 80) || 'Nova conversa';
+      const sessions = usePluginStore
+        .getState()
+        .sessions.map((s) => (s.id === id ? { ...s, title: clean } : s));
+      set((s) => {
+        s.sessions = sessions;
+      });
+      if (_client) {
+        _client
+          .request('storage.set', { key: SESSIONS_INDEX_KEY, value: JSON.stringify(sessions) })
+          .catch(() => {});
+      }
+    },
+
+    setCollapsed: (collapsed) =>
+      set((state) => {
+        state.collapsed = collapsed;
+      }),
 
     setServerUrl: (url) =>
       set((state) => {
@@ -284,8 +350,24 @@ export const usePluginStore = create<PluginStore>()(
 
 // ── Chat persistence via figma.clientStorage (through postMessage RPC) ──
 
-const CHAT_STORAGE_KEY = 'chatHistory';
-const SESSION_ID_KEY = 'chatSessionId';
+const CHAT_STORAGE_KEY = 'chatHistory'; // active-session messages (fast boot cache)
+const SESSION_ID_KEY = 'chatSessionId'; // active-session id
+const SESSIONS_INDEX_KEY = 'chatSessions'; // ChatSessionMeta[] index of all sessions
+const MAX_SESSIONS = 20; // cap stored sessions (clientStorage quota safety)
+
+const sessionKey = (id: string) => `chatSession:${id}`;
+
+function newSessionId(): string {
+  return (
+    crypto.randomUUID?.() ??
+    (() => {
+      const buf = new Uint8Array(16);
+      crypto.getRandomValues(buf);
+      return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+    })()
+  );
+}
+
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 type RpcClient = { request: (op: any, params: any) => Promise<any> };
 
@@ -295,41 +377,160 @@ export function setChatPersistClient(client: RpcClient) {
   _client = client;
 }
 
+/** Trim + strip messages down to the persisted shape (last 50). */
+function serializeMessages(chatHistory: ChatMessage[]) {
+  return chatHistory
+    .slice(-50)
+    .map(
+      ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError, metadata }) => ({
+        id,
+        role,
+        content,
+        timestamp,
+        operations,
+        toolCalls,
+        summaryItems,
+        isError,
+        metadata,
+      })
+    );
+}
+
+function deriveTitle(chatHistory: ChatMessage[]): string {
+  const firstUser = chatHistory.find((m) => m.role === 'user');
+  const text = (firstUser?.content ?? '').trim().replace(/\s+/g, ' ');
+  return text ? text.slice(0, 48) : 'Nova conversa';
+}
+
+/** Upsert the active session into the in-memory + persisted index. */
+function upsertActiveInIndex(sessionId: string, chatHistory: ChatMessage[]): ChatSessionMeta[] {
+  const existing = usePluginStore.getState().sessions;
+  const prev = existing.find((s) => s.id === sessionId);
+  const entry: ChatSessionMeta = {
+    id: sessionId,
+    title: deriveTitle(chatHistory),
+    createdAt: prev?.createdAt ?? Date.now(),
+    updatedAt: Date.now(),
+    messageCount: chatHistory.length,
+  };
+  const next = [entry, ...existing.filter((s) => s.id !== sessionId)]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, MAX_SESSIONS);
+  usePluginStore.setState({ sessions: next });
+  return next;
+}
+
+/** Write the active session (messages + pointer + index). No-op without a client. */
+function doPersist() {
+  if (!_client) return;
+  const { chatHistory, sessionId } = usePluginStore.getState();
+  const toSave = serializeMessages(chatHistory);
+  const payload = JSON.stringify(toSave);
+
+  _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: payload }).catch(() => {});
+  _client.request('storage.set', { key: SESSION_ID_KEY, value: sessionId }).catch(() => {});
+
+  if (chatHistory.length > 0) {
+    _client.request('storage.set', { key: sessionKey(sessionId), value: payload }).catch(() => {});
+    const index = upsertActiveInIndex(sessionId, chatHistory);
+    _client
+      .request('storage.set', { key: SESSIONS_INDEX_KEY, value: JSON.stringify(index) })
+      .catch(() => {});
+  }
+}
+
 function scheduleChatPersist() {
   if (persistTimer) clearTimeout(persistTimer);
-  persistTimer = setTimeout(() => {
-    if (!_client) return;
-    const { chatHistory, sessionId } = usePluginStore.getState();
-    const toSave = chatHistory
-      .slice(-50)
-      .map(
-        ({
-          id,
-          role,
-          content,
-          timestamp,
-          operations,
-          toolCalls,
-          summaryItems,
-          isError,
-          metadata,
-        }) => ({
-          id,
-          role,
-          content,
-          timestamp,
-          operations,
-          toolCalls,
-          summaryItems,
-          isError,
-          metadata,
-        })
-      );
+  persistTimer = setTimeout(doPersist, 1500);
+}
+
+/** Flush any pending debounced write immediately (used before switching sessions). */
+export function flushChatPersist() {
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  doPersist();
+}
+
+/** Persist just the active-session pointer + fast-boot cache (for empty new sessions). */
+function persistActiveSessionPointer() {
+  if (!_client) return;
+  const { sessionId } = usePluginStore.getState();
+  _client.request('storage.set', { key: SESSION_ID_KEY, value: sessionId }).catch(() => {});
+  _client.request('storage.set', { key: CHAT_STORAGE_KEY, value: '[]' }).catch(() => {});
+}
+
+function fetchServerSessionContext(sid: string) {
+  const { serverUrl, authToken } = usePluginStore.getState();
+  fetch(`${serverUrl}/api/plugin/session/${sid}/messages`, {
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      if (data?.sessionContext) {
+        usePluginStore.setState({ sessionContext: data.sessionContext });
+      }
+    })
+    .catch(() => {});
+}
+
+/** Load a stored session by id and make it the active one. */
+async function loadSession(id: string) {
+  if (!_client) return;
+  try {
+    const { value } = await _client.request('storage.get', { key: sessionKey(id) });
+    const messages = value ? JSON.parse(value as string) : [];
+    usePluginStore.setState({
+      sessionId: id,
+      chatHistory: Array.isArray(messages) ? messages : [],
+      sessionContext: null,
+      activeView: 'main',
+    });
+    // Make this the active session in the fast-boot cache too.
+    _client.request('storage.set', { key: SESSION_ID_KEY, value: id }).catch(() => {});
     _client
-      .request('storage.set', { key: CHAT_STORAGE_KEY, value: JSON.stringify(toSave) })
+      .request('storage.set', {
+        key: CHAT_STORAGE_KEY,
+        value: JSON.stringify(serializeMessages(usePluginStore.getState().chatHistory)),
+      })
       .catch(() => {});
-    _client.request('storage.set', { key: SESSION_ID_KEY, value: sessionId }).catch(() => {});
-  }, 1500);
+    fetchServerSessionContext(id);
+  } catch {
+    /* corrupt/missing session */
+  }
+}
+
+/** Load the sessions index; synthesize an entry for a pre-existing active session. */
+export async function loadSessions(client: RpcClient) {
+  try {
+    const { value } = await client.request('storage.get', { key: SESSIONS_INDEX_KEY });
+    let sessions: ChatSessionMeta[] = [];
+    if (value) {
+      const parsed = JSON.parse(value as string);
+      if (Array.isArray(parsed)) sessions = parsed;
+    }
+    // Migration: a pre-existing chat has no index entry yet — synthesize one.
+    const { sessionId, chatHistory } = usePluginStore.getState();
+    if (chatHistory.length > 0 && !sessions.some((s) => s.id === sessionId)) {
+      sessions = [
+        {
+          id: sessionId,
+          title: deriveTitle(chatHistory),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          messageCount: chatHistory.length,
+        },
+        ...sessions,
+      ];
+      client
+        .request('storage.set', { key: SESSIONS_INDEX_KEY, value: JSON.stringify(sessions) })
+        .catch(() => {});
+    }
+    usePluginStore.setState({ sessions: sessions.sort((a, b) => b.updatedAt - a.updatedAt) });
+  } catch {
+    /* first run, no sessions */
+  }
 }
 
 export async function loadChatHistory(client: RpcClient) {
@@ -349,21 +550,12 @@ export async function loadChatHistory(client: RpcClient) {
       }
     }
 
+    // Populate the sessions index (after history is restored, for migration).
+    await loadSessions(client);
+
     // Fetch server-side session context (non-blocking)
     const sid = usePluginStore.getState().sessionId;
-    if (sid) {
-      const { serverUrl, authToken } = usePluginStore.getState();
-      fetch(`${serverUrl}/api/plugin/session/${sid}/messages`, {
-        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
-      })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (data?.sessionContext) {
-            usePluginStore.setState({ sessionContext: data.sessionContext });
-          }
-        })
-        .catch(() => {});
-    }
+    if (sid) fetchServerSessionContext(sid);
   } catch {
     /* first run, no history */
   }

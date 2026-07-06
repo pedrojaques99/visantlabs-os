@@ -154,6 +154,25 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
+  // ── Collapse to a small logo bubble (does NOT overwrite the saved window size) ──
+  if ((msg as any).type === 'COLLAPSE_WINDOW') {
+    figma.ui.resize(72, 72);
+    return;
+  }
+
+  // ── Expand back to the last saved window size (fallback to default) ──
+  if ((msg as any).type === 'EXPAND_WINDOW') {
+    figma.clientStorage
+      .getAsync('windowSize')
+      .then((size: any) => {
+        const width = size?.width ? Math.max(320, size.width) : 420;
+        const height = size?.height ? Math.max(400, size.height) : 680;
+        figma.ui.resize(width, height);
+      })
+      .catch(() => figma.ui.resize(420, 680));
+    return;
+  }
+
   // ── WebSocket initialization ──
   if (msg.type === 'INIT_WS') {
     // WebSocket init acknowledged
