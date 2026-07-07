@@ -106,30 +106,36 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             </>
           )}
 
-          {/* Território */}
-          <span className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-            {card.territory}
-          </span>
+          {/* Conteúdo só no card ativo — o GlassPanel é translúcido e o texto
+              do preview vazaria por baixo; o card de trás fica como moldura vazia. */}
+          {active && (
+            <>
+              {/* Território */}
+              <span className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                {card.territory}
+              </span>
 
-          {/* Nome */}
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
-            {card.name}
-          </h2>
+              {/* Nome */}
+              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
+                {card.name}
+              </h2>
 
-          {/* Defesa */}
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-400">{card.rationale}</p>
+              {/* Defesa */}
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-400">{card.rationale}</p>
 
-          {/* Técnica */}
-          <span className="mt-5 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-            {card.technique}
-          </span>
+              {/* Técnica */}
+              <span className="mt-5 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                {card.technique}
+              </span>
 
-          {/* Flag de risco */}
-          {card.riskFlag && (
-            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
-              <AlertTriangle size={11} />
-              {card.riskFlag}
-            </span>
+              {/* Flag de risco */}
+              {card.riskFlag && (
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
+                  <AlertTriangle size={11} />
+                  {card.riskFlag}
+                </span>
+              )}
+            </>
           )}
         </GlassPanel>
       </motion.div>
