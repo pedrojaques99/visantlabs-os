@@ -593,6 +593,16 @@ export const AppsPage: React.FC = () => {
         category: 'pro',
         free: false,
       },
+      {
+        id: 'naming-machine',
+        name: 'Naming Machine',
+        desc: 'Dê match no nome da sua marca',
+        link: '/naming',
+        badge: 'NEW',
+        badgeVariant: 'free',
+        category: 'pro',
+        free: false,
+      },
 
       // Creative Lab
       {
