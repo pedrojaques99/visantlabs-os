@@ -17,6 +17,7 @@ import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import paymentRoutes from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
+import adminAnalyticsRoutes from './routes/adminAnalytics.js';
 import brandingRoutes from './routes/branding.js';
 import feedbackRoutes from './routes/feedback.js';
 import canvasRoutes from './routes/canvas.js';
@@ -322,6 +323,7 @@ export function createApp() {
     ['/payments', paymentRoutes],
     ['/health', healthRoutes],
     ['/admin', adminRoutes],
+    ['/admin', adminAnalyticsRoutes],
     ['/branding', brandingRoutes],
     ['/feedback', feedbackRoutes],
     ['/canvas', canvasRoutes],

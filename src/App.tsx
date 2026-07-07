@@ -229,6 +229,9 @@ const FaviconPage = lazyWithRetry(() =>
 const ColorConverterPage = lazyWithRetry(() =>
   import('./pages/ColorConverterPage').then((m) => ({ default: m.ColorConverterPage }))
 );
+const NamingMachinePage = lazyWithRetry(() =>
+  import('./pages/NamingMachinePage').then((m) => ({ default: m.NamingMachinePage }))
+);
 const CompressPage = lazyWithRetry(() =>
   import('./pages/CompressPage').then((m) => ({ default: m.CompressPage }))
 );
@@ -319,6 +322,7 @@ const App: React.FC = () => {
                   <Route path="/upscale" element={<UpscalePage />} />
                   <Route path="/favicon" element={<FaviconPage />} />
                   <Route path="/color-converter" element={<ColorConverterPage />} />
+                  <Route path="/naming" element={<NamingMachinePage />} />
                   <Route path="/compress" element={<CompressPage />} />
                   <Route path="/pdf-compress" element={<PdfCompressPage />} />
                   <Route path="/color-palette" element={<ColorPalettePage />} />

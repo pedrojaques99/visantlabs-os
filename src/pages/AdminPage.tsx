@@ -99,6 +99,7 @@ import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { formatDate } from '@/utils/localeUtils';
 import { AdminReferenceLibrary } from '../components/admin/AdminReferenceLibrary';
+import { AdminProductAnalytics } from '../components/admin/AdminProductAnalytics';
 
 interface AdminUser {
   id: string;
@@ -339,6 +340,7 @@ export const AdminPage: React.FC = () => {
       ...(data?.generationStats
         ? [{ id: 'generations', label: t('admin.generations') || 'Generations', icon: TrendingUp }]
         : []),
+      { id: 'product-analytics', label: 'Product Analytics', icon: BarChart2 },
       { id: 'users', label: t('admin.users') || 'Users', icon: Users },
       { id: 'financial', label: t('admin.financial') || 'Financial', icon: DollarSign },
       { id: 'presets', label: t('common.presets') || 'Presets', icon: Settings },
@@ -3427,6 +3429,8 @@ export const AdminPage: React.FC = () => {
                     )}
                   </div>
                 )}
+
+                {activeTab === 'product-analytics' && <AdminProductAnalytics />}
 
                 {activeTab === 'mcp-usage' && (
                   <div className="space-y-6 admin-tab-enter">

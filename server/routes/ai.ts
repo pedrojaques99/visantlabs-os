@@ -35,6 +35,7 @@ import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { chargeCredits } from '../lib/credits.js';
+import { completeCheapText, parseJsonLoose } from '../lib/ai-providers/cheapText.js';
 
 const router = express.Router();
 
@@ -1063,10 +1064,64 @@ router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
 /**
  * POST /ai/generate-naming
  * Generate brand/product name suggestions from a brief.
+ *
+ * Naming Machine additions (all optional, appended at the end of the body —
+ * additive/retrocompatible, see .agent/plans/NAMING-MACHINE.md):
+ *   seen, liked, superliked, rejected — string[] of names from prior rounds
+ *   tasteReading — qualitative read of the user's taste (from naming-insight)
+ *   territories — symbolic territories to distribute this round across
  */
 router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  const { brief, count = 10, style, brandGuidelineId } = req.body;
-  if (!brief) return res.status(400).json({ error: 'brief is required' });
+  const {
+    brief,
+    count = 10,
+    style,
+    brandGuidelineId,
+    seen,
+    liked,
+    superliked,
+    rejected,
+    tasteReading,
+    territories,
+  } = req.body;
+  if (!brief || typeof brief !== 'string') {
+    return res.status(400).json({ error: 'brief is required' });
+  }
+  if (count !== undefined && (typeof count !== 'number' || count < 1 || count > 50)) {
+    return res.status(400).json({ error: 'count must be a number between 1 and 50' });
+  }
+
+  const MAX_LIST = 200;
+  const MAX_ITEM_LEN = 120;
+  const validStringArray = (val: unknown, name: string): string[] | undefined => {
+    if (val === undefined) return undefined;
+    if (!Array.isArray(val) || val.length > MAX_LIST) {
+      throw Object.assign(new Error(`${name} must be an array of at most ${MAX_LIST} strings`), {
+        status: 400,
+      });
+    }
+    return val
+      .filter((v) => typeof v === 'string')
+      .map((v) => sanitizeForPrompt(v, MAX_ITEM_LEN));
+  };
+
+  let seenArr: string[] | undefined;
+  let likedArr: string[] | undefined;
+  let superlikedArr: string[] | undefined;
+  let rejectedArr: string[] | undefined;
+  let territoriesArr: string[] | undefined;
+  try {
+    seenArr = validStringArray(seen, 'seen');
+    likedArr = validStringArray(liked, 'liked');
+    superlikedArr = validStringArray(superliked, 'superliked');
+    rejectedArr = validStringArray(rejected, 'rejected');
+    territoriesArr = validStringArray(territories, 'territories');
+  } catch (err: any) {
+    return res.status(err.status || 400).json({ error: err.message });
+  }
+  if (tasteReading !== undefined && typeof tasteReading !== 'string') {
+    return res.status(400).json({ error: 'tasteReading must be a string' });
+  }
 
   try {
     const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
@@ -1083,27 +1138,251 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       if (g) brandContext = buildBrandContextForImageGen(g as any);
     }
 
-    const styleHint = style ? `Style preference: ${sanitizeForPrompt(style, 200)}.` : '';
-    const prompt = `${
-      brandContext ? `Brand context:\n${brandContext}\n\n` : ''
-    }You are a professional brand naming strategist.
-Generate exactly ${count} creative and memorable name suggestions for the following brief.
-${styleHint}
-Brief: ${sanitizeForPrompt(brief, 2000)}
-
-Rules:
-- Mix different naming approaches: invented words, compound words, metaphors, real words repurposed
-- Each name should be unique, pronounceable, and brand-able
-- Avoid generic or overused words
-- Respond ONLY with valid JSON: { "names": [{ "name": string, "rationale": string }] }`;
+    const { buildNamingPrompt } = await import('../lib/prompts/namingPrompt.js');
+    const prompt = buildNamingPrompt({
+      brief: sanitizeForPrompt(brief, 2000),
+      count,
+      style: style ? sanitizeForPrompt(style, 200) : undefined,
+      brandContext: brandContext || undefined,
+      seen: seenArr,
+      liked: likedArr,
+      superliked: superlikedArr,
+      rejected: rejectedArr,
+      tasteReading: tasteReading ? sanitizeForPrompt(tasteReading, 800) : undefined,
+      territories: territoriesArr,
+    });
 
     const result = await model.generateContent(prompt);
     const text = result.response.text().trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse naming response' });
-    res.json(JSON.parse(jsonMatch[0]));
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // Server-side dedupe against `seen` — belt and suspenders on top of the prompt instruction.
+    if (Array.isArray(parsed?.names) && seenArr?.length) {
+      const seenLower = new Set(seenArr.map((s) => s.toLowerCase().trim()));
+      parsed.names = parsed.names.filter(
+        (n: any) => !seenLower.has(String(n?.name || '').toLowerCase().trim())
+      );
+    }
+
+    res.json(parsed);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /ai/naming-briefing
+ * Naming Machine — conversational briefing extraction (Imersão step of the
+ * naming methodology). No credit charge — runs on completeCheapText.
+ * Body: { concept: string, answers?: Array<{ id: string, value: string }>,
+ *          brief?: object|null, imageUrl?: string }
+ */
+router.post('/naming-briefing', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { concept, answers, brief, imageUrl } = req.body;
+  if (!concept || typeof concept !== 'string' || !concept.trim()) {
+    return res.status(400).json({ error: 'concept is required' });
+  }
+  if (concept.length > 4000) {
+    return res.status(400).json({ error: 'concept is too long (max 4000 chars)' });
+  }
+  if (answers !== undefined) {
+    if (!Array.isArray(answers) || answers.length > 20) {
+      return res.status(400).json({ error: 'answers must be an array of at most 20 items' });
+    }
+    for (const a of answers) {
+      if (!a || typeof a.id !== 'string' || typeof a.value !== 'string') {
+        return res.status(400).json({ error: 'each answer needs { id: string, value: string }' });
+      }
+    }
+  }
+  if (imageUrl !== undefined && typeof imageUrl !== 'string') {
+    return res.status(400).json({ error: 'imageUrl must be a string' });
+  }
+
+  const conceptSafe = sanitizeForPrompt(concept, 4000);
+  const answersSafe = Array.isArray(answers)
+    ? answers.map((a: any) => ({
+        id: sanitizeForPrompt(String(a.id), 60),
+        value: sanitizeForPrompt(String(a.value), 300),
+      }))
+    : [];
+
+  // Best-effort image description — only if a describe-image path is available
+  // AND free. describeImage() in geminiService.ts charges credits, which would
+  // break this endpoint's "no credit charge" contract, so we deliberately skip
+  // it rather than silently billing the user. Kept as a documented decision.
+  const imageNote = '';
+
+  const fallback = () => {
+    res.json({
+      brief: null,
+      nextQuestion: null,
+      done: true,
+      briefText: conceptSafe,
+    });
+  };
+
+  try {
+    const system = `You are conducting the "Imersão" (immersion) step of the Visant naming methodology: extracting the essence of a brand/product before generating names.
+
+Extract from the concept (and any prior answers) a structured brief:
+{ "produto": string, "diferencial": string, "eloEmocional": string, "atributos": string[] (3-5 essence attributes), "decisor": string (who signs off / the buying decision-maker), "territorios": string[] (symbolic territories to explore, e.g. "solidez", "energia", "guardião"), "proibidos": string[] (forbidden territories/associations, business-driven — semantics before aesthetics), "estilos": string[] (naming technique/style leanings), "geografia": string|null, "idioma": "pt"|"en"|other }
+
+Also return "faltando": string[] — which of the above fields are still missing or too vague to use, and "confianca": an object mapping each field name to a 0-1 confidence score.
+
+Ask ONLY about what's missing. Maximum 4 questions total across the whole session (track via the answers already given). Vary the question format — never the same kind twice in a row: "chips" (multi-select suggestions), "binary" (a forced pair, e.g. "Pertencer ⟷ Vencer"), "cards" (named technique examples to pick from), "text" (short open field), "toggle" (yes/no). Respond in the same language as the concept.
+
+Respond ONLY with strict JSON: { "brief": {...fields above...}, "faltando": string[], "confianca": {...}, "nextQuestion": { "id": string, "kind": "chips"|"binary"|"cards"|"text"|"toggle", "prompt": string, "options"?: string[] } | null, "done": boolean, "briefText": string }
+"briefText" is a rich prose paragraph of the brief so far, ready to be used verbatim as the naming brief. "done" is true when nothing essential is missing, or when the answers already cover everything (max 4 questions reached).`;
+
+    const userParts = [`Concept: ${conceptSafe}`];
+    if (brief && typeof brief === 'object') {
+      userParts.push(`Prior extracted brief: ${JSON.stringify(brief).slice(0, 3000)}`);
+    }
+    if (answersSafe.length) {
+      userParts.push(
+        `Answers so far:\n${answersSafe.map((a) => `- ${a.id}: ${a.value}`).join('\n')}`
+      );
+    }
+    if (imageNote) userParts.push(imageNote);
+
+    const { text } = await completeCheapText({
+      system,
+      user: userParts.join('\n\n'),
+      userId: req.userId,
+      json: true,
+      maxTokens: 900,
+      temperature: 0.6,
+    });
+
+    const parsed = parseJsonLoose<any>(text);
+    if (!parsed || typeof parsed !== 'object') return fallback();
+
+    const kinds = ['chips', 'binary', 'cards', 'text', 'toggle'];
+    let nextQuestion = null;
+    if (parsed.nextQuestion && typeof parsed.nextQuestion === 'object') {
+      const nq = parsed.nextQuestion;
+      if (kinds.includes(nq.kind) && typeof nq.prompt === 'string') {
+        nextQuestion = {
+          id: typeof nq.id === 'string' ? nq.id : 'q',
+          kind: nq.kind,
+          prompt: nq.prompt,
+          ...(Array.isArray(nq.options) ? { options: nq.options.slice(0, 8) } : {}),
+        };
+      }
+    }
+
+    res.json({
+      brief: parsed.brief && typeof parsed.brief === 'object' ? parsed.brief : null,
+      nextQuestion: answersSafe.length >= 4 ? null : nextQuestion,
+      done: !!parsed.done || answersSafe.length >= 4 || !nextQuestion,
+      briefText: typeof parsed.briefText === 'string' ? parsed.briefText : conceptSafe,
+    });
+  } catch (error: any) {
+    console.warn('[naming-briefing] falling back:', error?.message || error);
+    fallback();
+  }
+});
+
+/**
+ * POST /ai/naming-insight
+ * Naming Machine — qualitative taste-pattern reading (self-learning loop
+ * layer 2) and full finalist defense. No credit charge — completeCheapText.
+ */
+router.post('/naming-insight', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { mode } = req.body;
+  if (mode !== 'pattern' && mode !== 'defense') {
+    return res.status(400).json({ error: 'mode must be "pattern" or "defense"' });
+  }
+
+  const MAX_LIST = 200;
+  const asStringArray = (val: unknown, name: string): string[] => {
+    if (val === undefined) return [];
+    if (!Array.isArray(val) || val.length > MAX_LIST) {
+      throw Object.assign(new Error(`${name} must be an array of at most ${MAX_LIST} strings`), {
+        status: 400,
+      });
+    }
+    return val.filter((v) => typeof v === 'string').map((v) => sanitizeForPrompt(v, 120));
+  };
+
+  try {
+    if (mode === 'pattern') {
+      const liked = asStringArray(req.body.liked, 'liked');
+      const superliked = asStringArray(req.body.superliked, 'superliked');
+      const rejected = asStringArray(req.body.rejected, 'rejected');
+      const stats =
+        req.body.stats && typeof req.body.stats === 'object' ? req.body.stats : undefined;
+
+      const fallback = () => res.json({ reading: '' });
+      try {
+        const system = `You read taste patterns for a brand-naming swipe deck. Given liked/superliked/rejected name lists (and optional stats by territory/technique), produce a 1-2 sentence qualitative reading of the user's taste — phonetic pattern, symbolic territory, naming technique. Weight rejection heavily: "rejeição clara é presente" — a clear rejection pattern is worth more than ten positive references, so lead with what's being avoided when it's clear. Respond in the same language as the input names (default Portuguese). Respond ONLY with JSON: { "reading": string }`;
+        const user = [
+          `Liked: ${liked.join(', ') || '(none)'}`,
+          `Superliked: ${superliked.join(', ') || '(none)'}`,
+          `Rejected: ${rejected.join(', ') || '(none)'}`,
+          stats ? `Stats: ${JSON.stringify(stats).slice(0, 1500)}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        const { text } = await completeCheapText({
+          system,
+          user,
+          userId: req.userId,
+          json: true,
+          maxTokens: 300,
+          temperature: 0.5,
+        });
+        const parsed = parseJsonLoose<any>(text);
+        const reading = typeof parsed?.reading === 'string' ? parsed.reading : '';
+        return res.json({ reading });
+      } catch (err: any) {
+        console.warn('[naming-insight:pattern] falling back:', err?.message || err);
+        return fallback();
+      }
+    }
+
+    // mode === 'defense'
+    const { name, briefText } = req.body;
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ error: 'name is required' });
+    }
+    if (briefText !== undefined && typeof briefText !== 'string') {
+      return res.status(400).json({ error: 'briefText must be a string' });
+    }
+    const nameSafe = sanitizeForPrompt(name, 60);
+    const briefSafe = sanitizeForPrompt(briefText || '', 3000);
+
+    const fallback = () =>
+      res.json({ concept: nameSafe, layers: [], risks: [] });
+    try {
+      const system = `You write the "full finalist defense" of a brand name, following the Visant naming methodology's presentation format (section 7): a name is consequence of a concept, never the other way around. Produce 3-6 GENUINE layers only (linguistic roots, cultural resonance, symbolic associations, brand-architecture fit, practical advantages) — never force a layer that doesn't exist. Also list honest risks (famous homonyms, pronunciation ambiguity, cultural traps, domain availability) — never promise legal/trademark clearance. Respond in the same language as the brief (default Portuguese). Respond ONLY with JSON: { "concept": string, "layers": string[], "risks": string[] }`;
+      const user = `Name: ${nameSafe}\nBrief: ${briefSafe || '(no brief provided)'}`;
+
+      const { text } = await completeCheapText({
+        system,
+        user,
+        userId: req.userId,
+        json: true,
+        maxTokens: 700,
+        temperature: 0.6,
+      });
+      const parsed = parseJsonLoose<any>(text);
+      if (!parsed || typeof parsed !== 'object') return fallback();
+      res.json({
+        concept: typeof parsed.concept === 'string' ? parsed.concept : nameSafe,
+        layers: Array.isArray(parsed.layers) ? parsed.layers.filter((l: any) => typeof l === 'string').slice(0, 6) : [],
+        risks: Array.isArray(parsed.risks) ? parsed.risks.filter((r: any) => typeof r === 'string').slice(0, 6) : [],
+      });
+    } catch (err: any) {
+      console.warn('[naming-insight:defense] falling back:', err?.message || err);
+      fallback();
+    }
+  } catch (error: any) {
+    res.status(error.status || 500).json({ error: error.message });
   }
 });
 

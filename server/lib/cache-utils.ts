@@ -23,6 +23,7 @@ export const CACHE_TTL = {
   FIGMA_OP_QUEUE: 7 * 24 * 60 * 60, // 7d — pending ops survive server restarts
   ASSET_PIPELINE: 24 * 60 * 60, // 24h — cross-tool asset queue per user
   LETTER_CROP: 30 * 24 * 60 * 60, // 30d — processed letter crops (stable)
+  ADMIN_ANALYTICS: 5 * 60, // 5min — admin product analytics aggregates
 } as const;
 
 export function hashQuery(text: string, extra?: string): string {
@@ -89,6 +90,9 @@ export const CacheKey = {
   visualSearch: (hash: string) => `vsearch:${hash}`,
 
   letterCrop: (letter: string, sourceId: string) => `lcrop:${letter}:${sourceId}`,
+
+  // Admin product analytics (windowed aggregates)
+  adminAnalytics: (days: number) => `admin:analytics:${days}`,
 } as const;
 
 export const CacheInvalidation = {

@@ -4956,16 +4956,63 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .string()
         .optional()
         .describe('Brand guideline ID for tone/voice consistency.'),
+      seen: z
+        .array(z.string())
+        .max(200)
+        .optional()
+        .describe('Names already shown in prior rounds — never repeated.'),
+      liked: z.array(z.string()).max(200).optional().describe('Names the user liked so far.'),
+      superliked: z
+        .array(z.string())
+        .max(200)
+        .optional()
+        .describe('Names the user superliked — treated as the north star for this round.'),
+      rejected: z
+        .array(z.string())
+        .max(200)
+        .optional()
+        .describe('Names the user rejected — their pattern is avoided.'),
+      tasteReading: z
+        .string()
+        .optional()
+        .describe('Qualitative taste-pattern reading from a prior round (naming-insight).'),
+      territories: z
+        .array(z.string())
+        .max(20)
+        .optional()
+        .describe('Symbolic territories to distribute this round across.'),
     },
     { title: 'Generate Brand Names', destructiveHint: false },
-    async ({ brief, count, style, brandGuidelineId }) => {
+    async ({
+      brief,
+      count,
+      style,
+      brandGuidelineId,
+      seen,
+      liked,
+      superliked,
+      rejected,
+      tasteReading,
+      territories,
+    }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
         const res = await fetch(`${INTERNAL_API_BASE}/api/ai/generate-naming`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ brief, count, style, brandGuidelineId }),
+          body: JSON.stringify({
+            brief,
+            count,
+            style,
+            brandGuidelineId,
+            seen,
+            liked,
+            superliked,
+            rejected,
+            tasteReading,
+            territories,
+          }),
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());

@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { trackEvent } from '../utils/analytics';
 import type { BrandingData, BrandingProject } from '../types/branding';
 export type { BrandingProject };
 
@@ -148,6 +149,7 @@ export const brandingApi = {
     }
 
     const result = await response.json();
+    if (!projectId) trackEvent('brand_created', { source: 'branding_project' });
     return result.project;
   },
 

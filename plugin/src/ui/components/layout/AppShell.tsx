@@ -2,6 +2,7 @@ import React from 'react';
 import { usePluginStore } from '../../store';
 import { Header } from './Header';
 import { ChatView } from '../chat/ChatView';
+import { SessionsView } from '../chat/SessionsView';
 import { SettingsView } from '../settings/SettingsView';
 import { ProfileTab } from '../settings/ProfileTab';
 import { ToastProvider } from './ToastProvider';
@@ -55,8 +56,43 @@ function ResizeHandle() {
   );
 }
 
+/** Collapsed state: a single round Visant Copilot logo bubble that expands on click. */
+function CollapsedBubble() {
+  const setCollapsed = usePluginStore((s) => s.setCollapsed);
+  const isGenerating = usePluginStore((s) => s.isGenerating);
+
+  const expand = () => {
+    setCollapsed(false);
+    parent.postMessage({ pluginMessage: { type: 'EXPAND_WINDOW' } }, '*');
+  };
+
+  return (
+    <div className="flex items-center justify-center w-full h-screen bg-background">
+      <button
+        onClick={expand}
+        title="Expandir Visant Copilot"
+        aria-label="Expandir Visant Copilot"
+        className="relative w-12 h-12 rounded-full bg-neutral-900 border border-brand-cyan/40 flex items-center justify-center shadow-lg hover:border-brand-cyan hover:scale-105 transition-all focus:outline-none"
+      >
+        <span className="text-brand-cyan font-bold text-lg leading-none select-none">V</span>
+        {isGenerating && (
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-brand-cyan animate-pulse ring-2 ring-background" />
+        )}
+      </button>
+    </div>
+  );
+}
+
 export function AppShell() {
-  const { activeView } = usePluginStore();
+  const { activeView, collapsed } = usePluginStore();
+
+  if (collapsed) {
+    return (
+      <ToastProvider>
+        <CollapsedBubble />
+      </ToastProvider>
+    );
+  }
 
   return (
     <ToastProvider>
@@ -64,6 +100,7 @@ export function AppShell() {
         <Header />
         <main className="flex-1 overflow-hidden overflow-y-auto">
           {activeView === 'main' && <ChatView />}
+          {activeView === 'sessions' && <SessionsView />}
           {activeView === 'settings' && <SettingsView />}
           {activeView === 'profile' && (
             <div className="p-4">

@@ -1001,6 +1001,69 @@ export const TOOLS = [
       required: ['jobId'],
     },
   },
+  // ---- Figma Visant Copilot ops-channel tools ----
+  // Wraps POST/GET /api/plugin/{agent-command,pending,ack} so the model never
+  // has to shell out with a bearer token — visantFetch attaches API_TOKEN server-side.
+  {
+    name: 'figma_agent_command',
+    description:
+      'Queue a batch of Figma operations (e.g. CLONE_NODE, SET_IMAGE_FILL) for the open Visant Copilot ' +
+      'plugin to apply. The plugin must be running and logged into this same Visant account with the ' +
+      'target Figma file open — it long-polls and drains the queue automatically. Returns {success, ' +
+      'queued, batchId, pending}. Do not poll figma_agent_pending while a batch is draining; check the ' +
+      'result via the Figma MCP tools instead, and only use figma_agent_pending/figma_agent_ack for ' +
+      'diagnosing a stuck queue.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        fileId: { type: 'string', description: 'Figma file key.' },
+        operations: {
+          type: 'array',
+          description:
+            'Array of FigmaOperation objects, e.g. {type:"CLONE_NODE", sourceNodeId, parentNodeId, ' +
+            'name, x, y, textOverrides:[{name,content}]} or {type:"SET_IMAGE_FILL", nodeId, imageHash, ' +
+            'scaleMode}. Keep batches small (~10-20 ops) — large batches without a confirm step in ' +
+            'between risk at-least-once redelivery duplicating clones.',
+          items: { type: 'object' },
+        },
+      },
+      required: ['fileId', 'operations'],
+    },
+  },
+  {
+    name: 'figma_agent_pending',
+    description:
+      'Inspect the Visant Copilot ops-channel queue for a Figma file — diagnostic only. Do NOT poll this ' +
+      'repeatedly while a batch should be draining; that competes with the plugin\'s own long-poll and can ' +
+      'amplify at-least-once redelivery. Use it once to check whether a batch is stuck (e.g. plugin not ' +
+      'open/focused/logged into the right account).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        fileId: { type: 'string', description: 'Figma file key.' },
+      },
+      required: ['fileId'],
+    },
+  },
+  {
+    name: 'figma_agent_ack',
+    description:
+      'Manually remove batch ids from the Visant Copilot queue for a Figma file. Normally unnecessary — ' +
+      'the plugin self-acks after applying a batch. Use this only to clear a stuck/stale batch you have ' +
+      'confirmed (via the Figma MCP tools) either already applied or should be abandoned.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        fileId: { type: 'string', description: 'Figma file key.' },
+        appliedIds: {
+          type: 'array',
+          description: 'Batch ids to remove from the queue (from figma_agent_command\'s batchId or figma_agent_pending).',
+          items: { type: 'string' },
+        },
+      },
+      required: ['fileId', 'appliedIds'],
+    },
+  },
 ];
 
 // ---------- Tool handlers ----------
@@ -1479,6 +1542,24 @@ export async function handleTool(name: string, args: ToolArgs) {
     case 'mockup_store_get_job': {
       const qs = args.format === 'base64' ? '?format=base64' : '';
       const data = await mockupStoreFetch(`/jobs/${args.jobId}${qs}`);
+      return toolResult(data);
+    }
+    case 'figma_agent_command': {
+      const data = await visantFetch('/plugin/agent-command', {
+        method: 'POST',
+        body: JSON.stringify({ fileId: args.fileId, operations: args.operations }),
+      });
+      return toolResult(data);
+    }
+    case 'figma_agent_pending': {
+      const data = await visantFetch(`/plugin/pending?fileId=${encodeURIComponent(String(args.fileId))}`);
+      return toolResult(data);
+    }
+    case 'figma_agent_ack': {
+      const data = await visantFetch('/plugin/ack', {
+        method: 'POST',
+        body: JSON.stringify({ fileId: args.fileId, appliedIds: args.appliedIds }),
+      });
       return toolResult(data);
     }
     default:

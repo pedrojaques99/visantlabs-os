@@ -109,6 +109,14 @@ export interface ChatMessage {
 
 export type { ToolCallRecord };
 
+export interface ChatSessionMeta {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number;
+}
+
 export interface PluginStore {
   // Selection & Canvas
   selectionDetails: SelectionDetail[];
@@ -126,6 +134,7 @@ export interface PluginStore {
   // Chat
   chatHistory: ChatMessage[];
   sessionId: string;
+  sessions: ChatSessionMeta[];
   sessionContext: { messageCount: number; tokenEstimate: number; contextLimit: number } | null;
   pendingAttachments: Attachment[];
   thinkMode: boolean;
@@ -177,7 +186,8 @@ export interface PluginStore {
   brandHydrationAtMs: number;
 
   // UI State
-  activeView: 'main' | 'settings' | 'profile';
+  activeView: 'main' | 'settings' | 'profile' | 'sessions';
+  collapsed: boolean;
   openPanel: string | null;
   devMode: boolean;
   toastMessage?: string;
@@ -187,6 +197,11 @@ export interface PluginStore {
   updateSelection: (selection: SelectionDetail[]) => void;
   addChatMessage: (message: ChatMessage) => void;
   clearChatHistory: () => void;
+  newSession: () => void;
+  switchSession: (id: string) => void;
+  deleteSession: (id: string) => void;
+  renameSession: (id: string, title: string) => void;
+  setCollapsed: (collapsed: boolean) => void;
   setServerUrl: (url: string) => void;
   setAuthToken: (token: string | null) => void;
   setAuthEmail: (email: string | null) => void;
@@ -194,7 +209,7 @@ export interface PluginStore {
   setThinkMode: (enabled: boolean) => void;
   setUseBrand: (enabled: boolean) => void;
   setScanPage: (enabled: boolean) => void;
-  setActiveView: (view: 'main' | 'settings' | 'profile') => void;
+  setActiveView: (view: 'main' | 'settings' | 'profile' | 'sessions') => void;
   updateTypography: (slot: 'primary' | 'secondary', data: Partial<TypographySlot>) => void;
   addSelectedColor: (role: string, color: ColorEntry) => void;
   setAllComponents: (components: Component[]) => void;

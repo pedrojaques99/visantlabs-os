@@ -10,6 +10,10 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { BotIdProvider } from './components/BotIdProvider';
 import { getCurrentLocale, translate } from './utils/localeUtils';
+import { initAnalytics } from './utils/analytics';
+
+// PostHog product analytics (no-op without VITE_POSTHOG_KEY)
+initAnalytics();
 
 // Global error handler to suppress browser extension errors and BotID script loading errors
 window.addEventListener('error', (event) => {

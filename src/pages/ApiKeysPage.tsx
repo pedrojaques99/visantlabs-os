@@ -18,6 +18,7 @@ import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { useLayout } from '@/hooks/useLayout';
+import { trackEvent } from '@/utils/analytics';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
 import { SEO } from '../components/SEO';
@@ -164,6 +165,7 @@ export const ApiKeysPage: React.FC = () => {
       setNewKeyName('');
       setNewKeyScopes(['read']);
       setNewKeyExpiry('');
+      trackEvent('api_key_created', { scopes: newKeyScopes });
       toast.success('API key created successfully');
     } catch (err: any) {
       toast.error(err.message || 'Failed to create API key');
