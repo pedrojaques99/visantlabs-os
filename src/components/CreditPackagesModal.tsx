@@ -27,6 +27,7 @@ import {
   getCreditPackagePrice,
 } from '@/utils/creditPackages';
 import { getCreditYieldRows } from '@/utils/creditCalculator';
+import { trackEvent } from '@/utils/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradientBackground } from './ui/LinearGradientBackground';
 import type { SubscriptionStatus } from '../services/subscriptionService';
@@ -215,6 +216,11 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
     }
 
     // Redireciona para o Payment Link do Stripe
+    trackEvent('checkout_started', {
+      type: 'credits',
+      credits: currentPackage.credits,
+      currency: currencyInfo.currency,
+    });
     window.location.href = paymentLink;
   };
 
@@ -240,6 +246,12 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
         })
       );
 
+      trackEvent('checkout_started', {
+        type: 'credits',
+        method: 'pix',
+        credits: currentPackage.credits,
+        currency: 'BRL',
+      });
       window.open(pixLink, '_blank');
     }
   };
@@ -607,7 +619,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       currencyInfo?.currency === 'USD'
                                         ? plan.paymentLinkUSD
                                         : plan.paymentLinkBRL;
-                                    if (link) window.location.href = link;
+                                    if (link) {
+                                      trackEvent('checkout_started', {
+                                        type: 'subscription',
+                                        plan: plan.name,
+                                        currency: currencyInfo?.currency,
+                                      });
+                                      window.location.href = link;
+                                    }
                                   }}
                                   className={`w-full text-xs font-mono font-semibold rounded-md transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 ${
                                     isPopular

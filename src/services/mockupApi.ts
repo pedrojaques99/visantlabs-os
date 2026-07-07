@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { trackEvent } from '../utils/analytics';
 import { RateLimitError } from './geminiService';
 import { toast } from 'sonner';
 import { hasGeminiApiKey } from './userSettingsService';
@@ -477,6 +478,12 @@ export const mockupApi = {
     // Create the request promise
     const requestPromise = (async () => {
       try {
+        trackEvent('generation_started', {
+          model: params.model,
+          feature: params.feature || 'mockupmachine',
+          provider: params.provider,
+          hasBrand: !!params.brandGuidelineId,
+        });
         const headers = {
           ...getAuthHeaders(),
         };
@@ -578,6 +585,13 @@ export const mockupApi = {
           resolution: params.resolution,
         });
 
+        trackEvent('generation_completed', {
+          model: params.model,
+          modelUsed: result.modelUsed,
+          feature: params.feature || 'mockupmachine',
+          fellBack: !!result.fellBack,
+          creditsDeducted: result.creditsDeducted,
+        });
         return { ...result, requestId: result.requestId || requestId };
       } finally {
         // Remove from in-flight requests when done (success or error)

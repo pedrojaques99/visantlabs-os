@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { trackEvent } from '../utils/analytics';
 import type { BrandGuideline } from '../lib/figma-types';
 
 const getApiBaseUrl = () => {
@@ -73,6 +74,7 @@ export const brandGuidelineApi = {
 
     if (!response.ok) throw new Error('Failed to create brand guideline');
     const result = await response.json();
+    trackEvent('brand_created', { source: 'guideline' });
     return result.guideline;
   },
 

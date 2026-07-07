@@ -205,6 +205,7 @@
     "pdf-parse": "^2.4.5",
     "perfect-freehand": "^1.2.2",
     "pino": "^9.5.0",
+    "posthog-js": "^1.398.0",
     "postprocessing": "^6.39.1",
     "potrace": "^2.1.8",
     "prisma": "^6.19.0",

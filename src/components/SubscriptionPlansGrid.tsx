@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { productService, type Product } from '../services/productService';
 import { formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
+import { trackEvent } from '@/utils/analytics';
 import { Card, CardHeader, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
@@ -204,7 +205,14 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                           currencyInfo?.currency === 'USD'
                             ? plan.paymentLinkUSD
                             : plan.paymentLinkBRL;
-                        if (link) window.location.href = link;
+                        if (link) {
+                          trackEvent('checkout_started', {
+                            type: 'subscription',
+                            plan: plan.name,
+                            currency: currencyInfo?.currency,
+                          });
+                          window.location.href = link;
+                        }
                       }}
                       className="w-full h-11"
                       icon={CreditCard}
