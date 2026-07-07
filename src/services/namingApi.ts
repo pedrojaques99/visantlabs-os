@@ -1,6 +1,7 @@
 import { authService } from './authService';
 import { API_BASE } from '@/config/api';
-import type { NamingCard } from '@/lib/naming/tasteProfile';
+import type { NamingCard, Verdict } from '@/lib/naming/tasteProfile';
+import type { NamingRuler, NamingLanguage } from '@/lib/naming/constants';
 
 /* ── Shared request helper (padrão contentStudioApi) ─────────────────────── */
 
@@ -33,9 +34,20 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 /* ── generate-naming (custa 1 crédito) ───────────────────────────────────── */
 
+/**
+ * Configurações avançadas enviadas ao generate-naming. Apenas os campos que
+ * afetam a régua/geração; `model` e `count` vão no topo do body (não aqui).
+ */
+export interface NamingSettingsPayload {
+  ruler?: NamingRuler;
+  maxLength?: number; // 0 = sem limite
+  techniques?: string[]; // vazio/ausente = todas
+  language?: NamingLanguage;
+}
+
 export interface GenerateNamingParams {
   brief: string;
-  count?: number; // <= 20
+  count?: number; // <= 30
   style?: string;
   brandGuidelineId?: string;
   seen?: string[];
@@ -44,6 +56,10 @@ export interface GenerateNamingParams {
   rejected?: string[];
   tasteReading?: string;
   territories?: string[];
+  /** Configurações avançadas — só os campos ≠ default são enviados. */
+  settings?: NamingSettingsPayload;
+  /** Chat model (Gemini) escolhido no seletor de configurações. */
+  model?: string;
 }
 
 export interface GenerateNamingResponse {
@@ -52,6 +68,30 @@ export interface GenerateNamingResponse {
 
 export function generateNaming(params: GenerateNamingParams): Promise<GenerateNamingResponse> {
   return post<GenerateNamingResponse>('/ai/generate-naming', params);
+}
+
+/* ── naming-event (beacon de swipe, fire-and-forget → 204) ───────────────── */
+
+/**
+ * Registra um swipe de forma fire-and-forget. Nunca lança nem afeta a UX —
+ * o backend responde 204 (sem corpo), então não parseamos JSON.
+ *
+ * Nota: por design NÃO é chamado no undo — a leve imprecisão de contagem é
+ * aceitável e evita duplicar lógica de compensação por um beacon analítico.
+ */
+export function namingEvent(verdict: Verdict): void {
+  try {
+    void fetch(`${API_BASE}/ai/naming-event`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify({ verdict }),
+      keepalive: true,
+    }).catch(() => {
+      /* silencioso — beacon analítico, nunca bloqueia o swipe */
+    });
+  } catch {
+    /* silencioso */
+  }
 }
 
 /* ── naming-briefing (grátis) ────────────────────────────────────────────── */

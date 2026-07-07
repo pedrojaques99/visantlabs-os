@@ -66,6 +66,115 @@ describe('GET /api/admin/analytics — payload shape', () => {
       'paying',
     ]);
     expect(res.body.retention).toMatchObject({ dau: 0, wau: 0, mau: 0 });
+    expect(res.body.naming).toMatchObject({
+      batches: 0,
+      namesGenerated: 0,
+      tokensSpent: 0,
+      uniqueUsers: 0,
+      swipes: { nope: 0, like: 0, superlike: 0 },
+      likeRate: 0,
+      byModel: [],
+    });
+  });
+});
+
+describe('GET /api/admin/analytics — naming section', () => {
+  it('aggregates naming_events batches, tokens, swipes and byModel', async () => {
+    const { connectToMongoDB, getDb } = await import('../../server/db/mongodb.js');
+
+    const { user: admin } = await createAdmin();
+    const token = signTestToken({ userId: admin.id, email: admin.email });
+    const { user: userA } = await createUser();
+    const { user: userB } = await createUser();
+
+    await connectToMongoDB();
+    const db = getDb();
+    const now = new Date();
+    await db.collection('naming_events').insertMany([
+      {
+        type: 'generate',
+        userId: userA.id,
+        model: 'gemini-3-flash-preview',
+        requested: 10,
+        returned: 8,
+        tokens: 500,
+        ruler: 'strict',
+        createdAt: now,
+      },
+      {
+        type: 'generate',
+        userId: userB.id,
+        model: 'gemini-3-flash-preview',
+        requested: 10,
+        returned: 6,
+        tokens: 300,
+        ruler: 'balanced',
+        createdAt: now,
+      },
+      {
+        type: 'generate',
+        userId: userA.id,
+        model: 'gemini-3.5-flash',
+        requested: 5,
+        returned: 5,
+        tokens: 200,
+        ruler: 'strict',
+        createdAt: now,
+      },
+      { type: 'swipe', userId: userA.id, verdict: 'like', createdAt: now },
+      { type: 'swipe', userId: userA.id, verdict: 'like', createdAt: now },
+      { type: 'swipe', userId: userA.id, verdict: 'superlike', createdAt: now },
+      { type: 'swipe', userId: userA.id, verdict: 'nope', createdAt: now },
+    ]);
+
+    const agent = await request();
+    const res = await agent
+      .get('/api/admin/analytics?days=30&refresh=1')
+      .set('Authorization', bearer(token));
+
+    expect(res.status).toBe(200);
+    expect(res.body.naming.batches).toBe(3);
+    expect(res.body.naming.namesGenerated).toBe(19);
+    expect(res.body.naming.tokensSpent).toBe(1000);
+    expect(res.body.naming.uniqueUsers).toBe(2);
+    expect(res.body.naming.swipes).toEqual({ nope: 1, like: 2, superlike: 1 });
+    expect(res.body.naming.likeRate).toBeCloseTo(0.75, 2);
+    expect(res.body.naming.byModel).toEqual(
+      expect.arrayContaining([
+        { model: 'gemini-3-flash-preview', batches: 2, tokens: 800 },
+        { model: 'gemini-3.5-flash', batches: 1, tokens: 200 },
+      ])
+    );
+  });
+
+  it('excludes naming_events outside the days window', async () => {
+    const { connectToMongoDB, getDb } = await import('../../server/db/mongodb.js');
+    const { user: admin } = await createAdmin();
+    const token = signTestToken({ userId: admin.id, email: admin.email });
+    const { user: userA } = await createUser();
+
+    await connectToMongoDB();
+    const db = getDb();
+    const old = new Date(Date.now() - 60 * 24 * 3_600_000); // 60 days ago
+    await db.collection('naming_events').insertOne({
+      type: 'generate',
+      userId: userA.id,
+      model: 'gemini-3-flash-preview',
+      requested: 10,
+      returned: 10,
+      tokens: 999,
+      ruler: 'strict',
+      createdAt: old,
+    });
+
+    const agent = await request();
+    const res = await agent
+      .get('/api/admin/analytics?days=30&refresh=1')
+      .set('Authorization', bearer(token));
+
+    expect(res.status).toBe(200);
+    expect(res.body.naming.batches).toBe(0);
+    expect(res.body.naming.tokensSpent).toBe(0);
   });
 });
 

@@ -174,8 +174,57 @@ router.get(
           .toArray(),
       ]);
 
-      const [features, [activeKeys, refreshTokens, oauthClients, mcpCallerIds], cohort, [dauIds, wauIds, mauIds, weeklyActive]] =
-        await Promise.all([featurePromise, mcpPromise, cohortPromise, retentionPromise]);
+      // ── F. Naming Machine adoption (naming_events) ──────────────────────
+      const namingCol = db.collection('naming_events');
+      const namingPromise = namingCol
+        .aggregate([
+          { $match: { createdAt: { $gte: since } } },
+          {
+            $facet: {
+              generate: [
+                { $match: { type: 'generate' } },
+                {
+                  $group: {
+                    _id: null,
+                    batches: { $sum: 1 },
+                    namesGenerated: { $sum: { $ifNull: ['$returned', 0] } },
+                    tokensSpent: { $sum: { $ifNull: ['$tokens', 0] } },
+                    users: { $addToSet: '$userId' },
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    batches: 1,
+                    namesGenerated: 1,
+                    tokensSpent: 1,
+                    uniqueUsers: { $size: '$users' },
+                  },
+                },
+              ],
+              byModel: [
+                { $match: { type: 'generate' } },
+                {
+                  $group: {
+                    _id: '$model',
+                    batches: { $sum: 1 },
+                    tokens: { $sum: { $ifNull: ['$tokens', 0] } },
+                  },
+                },
+                { $sort: { batches: -1 } },
+                { $project: { _id: 0, model: '$_id', batches: 1, tokens: 1 } },
+              ],
+              swipes: [
+                { $match: { type: 'swipe' } },
+                { $group: { _id: '$verdict', count: { $sum: 1 } } },
+              ],
+            },
+          },
+        ])
+        .toArray();
+
+      const [features, [activeKeys, refreshTokens, oauthClients, mcpCallerIds], cohort, [dauIds, wauIds, mauIds, weeklyActive], [namingFacet]] =
+        await Promise.all([featurePromise, mcpPromise, cohortPromise, retentionPromise, namingPromise]);
 
       // MCP sets
       const apiKeyUsers = new Set(activeKeys.map((k) => k.userId));
@@ -328,10 +377,33 @@ router.get(
         .map((g) => ({ category: g.userCategory || 'none', count: g._count._all }))
         .sort((a, b) => b.count - a.count);
 
+      const namingGenerate = namingFacet?.generate?.[0] || {
+        batches: 0,
+        namesGenerated: 0,
+        tokensSpent: 0,
+        uniqueUsers: 0,
+      };
+      const swipeCounts: Record<string, number> = { nope: 0, like: 0, superlike: 0 };
+      for (const s of namingFacet?.swipes || []) {
+        if (s?._id && swipeCounts[s._id] !== undefined) swipeCounts[s._id] = s.count;
+      }
+      const totalSwipes = swipeCounts.nope + swipeCounts.like + swipeCounts.superlike;
+      const likeRate =
+        totalSwipes > 0 ? Math.round(((swipeCounts.like + swipeCounts.superlike) / totalSwipes) * 1000) / 1000 : 0;
+
       const payload = {
         days,
         generatedAt: now.toISOString(),
         cached: false,
+        naming: {
+          batches: namingGenerate.batches || 0,
+          namesGenerated: namingGenerate.namesGenerated || 0,
+          tokensSpent: namingGenerate.tokensSpent || 0,
+          uniqueUsers: namingGenerate.uniqueUsers || 0,
+          swipes: swipeCounts,
+          likeRate,
+          byModel: namingFacet?.byModel || [],
+        },
         features: Object.fromEntries(
           features.map((f) => [
             f.key,

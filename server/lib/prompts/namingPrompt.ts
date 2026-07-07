@@ -10,6 +10,32 @@
  * survivors — never leak the wide/rejected pool into the response.
  */
 
+/** Ruler strictness — how eliminatory the phonetic ruler is. */
+export type NamingRuler = 'strict' | 'balanced' | 'free';
+
+/** Which language(s) to mine for candidates. */
+export type NamingLanguage = 'auto' | 'pt' | 'en' | 'multi';
+
+export interface NamingSettings {
+  /**
+   * 'strict' (default) — phonetic ruler is ELIMINATORY, same as today.
+   * 'balanced' — ruler becomes a strong PREFERENCE, not eliminatory: an
+   *   exceptional concept may violate a rule.
+   * 'free' — ruler is off; keep only basic pronounceability + anti-patterns.
+   */
+  ruler?: NamingRuler;
+  /** Overrides the "max 10, ideal <=7" length guidance. 0/undefined = default. */
+  maxLength?: number;
+  /** Restrict generation to these technique slugs. Empty/undefined = all 9. */
+  techniques?: string[];
+  /**
+   * 'auto' (default) — language of the brief.
+   * 'pt' | 'en' — mine that language explicitly.
+   * 'multi' — mine 2-3 language families explicitly.
+   */
+  language?: NamingLanguage;
+}
+
 export interface NamingPromptOptions {
   /** Free-form brief (or the rich `briefText` produced by naming-briefing). */
   brief: string;
@@ -31,9 +57,24 @@ export interface NamingPromptOptions {
   tasteReading?: string;
   /** Symbolic territories to distribute the round across (~70/30 rule). */
   territories?: string[];
+  /** Generation settings — loosen/tighten the rules. Default = current strict behavior. */
+  settings?: NamingSettings;
 }
 
 const MAX_LIST_ITEMS = 200;
+
+/** Human-readable technique labels keyed by the slugs accepted in `settings.techniques`. */
+const TECHNIQUE_LABELS: Record<string, string> = {
+  blend: 'Morpheme blend (Pinterest = pin + interest).',
+  invencao: 'Phonetic invention — a word that does not exist but sounds right (Kodak).',
+  metafora: 'Metaphor from another domain (Apple, Nest).',
+  truncamento: 'Truncation — cut to the essence (Canva from canvas).',
+  raizes: 'Foreign roots — Latin/Greek/other roots for resonance without literalness. Root yes, Latin ENDING no (still obeys the phonetic ruler).',
+  contrabando: 'Letter smuggling — a real word hiding another inside it (AÇOR hides aço/steel; VIGOR hides viga/beam).',
+  jargao: 'Tribe jargon — backstage technical terms elevated to brand names, a password of belonging for a technical B2B decision-maker (TRAFO, PLENUM, PRUMADA).',
+  'costura-invisivel': 'Invisible seam (signature technique) — fusion where the seam disappears (AMPARA, GALVA, MONTRIZ).',
+  afixos: 'Affix families — a shared prefix/suffix that builds a naming system across a group of brands (SUPRA-, -MONT).',
+};
 
 function clip(list: string[] | undefined, max = MAX_LIST_ITEMS): string[] {
   if (!Array.isArray(list)) return [];
@@ -51,6 +92,14 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
   const superliked = clip(opts.superliked);
   const rejected = clip(opts.rejected);
   const territories = clip(opts.territories, 20);
+
+  const ruler: NamingRuler = opts.settings?.ruler || 'strict';
+  const maxLength =
+    opts.settings?.maxLength && opts.settings.maxLength > 0
+      ? Math.min(opts.settings.maxLength, 20)
+      : undefined;
+  const techniqueSlugs = clip(opts.settings?.techniques, 9).filter((s) => TECHNIQUE_LABELS[s]);
+  const language: NamingLanguage = opts.settings?.language || 'auto';
 
   const sections: string[] = [];
 
@@ -75,32 +124,67 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
     ].join('\n')
   );
 
-  sections.push(
-    [
-      '## Phonetic ruler — ELIMINATORY (apply after generating wide internally; return ONLY survivors)',
-      '- Pattern: CVCV-style consonant/vowel alternation.',
-      '- Paroxytone (stress on penultimate syllable), 2-3 syllables.',
-      '- Max 10 characters, ideal ≤7.',
-      '- Clean endings: open vowel (-a/-o/-e) OR a single strong final consonant (R or Z).',
-      '- The "shop floor test": must work shouted on a factory floor AND written on a spreadsheet.',
-      '- REJECT: hiatus and -io/-ia endings; Latin -us/-um endings; long proparoxytones (stress 3+ syllables back); clogged consonant clusters; foreign words outside the brand\'s symbolic universe.',
-      '- Read each candidate aloud fast, three times. If it trips once, discard it.',
-      '- Generate broad internally (30-50 candidates), filter hard by this ruler, and surface only the survivors — never mention the discarded pool.',
-    ].join('\n')
-  );
+  const lengthLine = maxLength
+    ? `- Max ${maxLength} characters.`
+    : '- Max 10 characters, ideal ≤7.';
+
+  if (ruler === 'strict') {
+    sections.push(
+      [
+        '## Phonetic ruler — ELIMINATORY (apply after generating wide internally; return ONLY survivors)',
+        '- Pattern: CVCV-style consonant/vowel alternation.',
+        '- Paroxytone (stress on penultimate syllable), 2-3 syllables.',
+        lengthLine,
+        '- Clean endings: open vowel (-a/-o/-e) OR a single strong final consonant (R or Z).',
+        '- The "shop floor test": must work shouted on a factory floor AND written on a spreadsheet.',
+        '- REJECT: hiatus and -io/-ia endings; Latin -us/-um endings; long proparoxytones (stress 3+ syllables back); clogged consonant clusters; foreign words outside the brand\'s symbolic universe.',
+        '- Read each candidate aloud fast, three times. If it trips once, discard it.',
+        '- Generate broad internally (30-50 candidates), filter hard by this ruler, and surface only the survivors — never mention the discarded pool.',
+      ].join('\n')
+    );
+  } else if (ruler === 'balanced') {
+    sections.push(
+      [
+        '## Phonetic ruler — PREFERENCE, not eliminatory',
+        'Prefer names that follow this ruler, but an exceptional concept is allowed to violate a rule when the payoff is worth it — craft over compliance.',
+        '- Pattern: CVCV-style consonant/vowel alternation (preferred).',
+        '- Paroxytone (stress on penultimate syllable), 2-3 syllables (preferred).',
+        lengthLine.replace('Max', 'Preferred max'),
+        '- Clean endings: open vowel (-a/-o/-e) OR a single strong final consonant (R or Z) (preferred).',
+        '- The "shop floor test" is a good tie-breaker, not a hard gate.',
+        '- Hiatus, -io/-ia endings, Latin -us/-um endings, proparoxytones and consonant clusters are DISCOURAGED, not banned — allow them only when the name is genuinely excellent.',
+      ].join('\n')
+    );
+  } else {
+    sections.push(
+      [
+        '## Phonetic ruler — OFF',
+        'The strict phonetic ruler is disabled. Keep only basic pronounceability (a fluent native speaker can say it on first read) and the anti-patterns below — no CVCV/paroxytone/length constraints.',
+      ].join('\n')
+    );
+  }
+
+  const allTechniques: Array<[string, string]> = [
+    ['blend', TECHNIQUE_LABELS.blend],
+    ['invencao', TECHNIQUE_LABELS.invencao],
+    ['metafora', TECHNIQUE_LABELS.metafora],
+    ['truncamento', TECHNIQUE_LABELS.truncamento],
+    ['raizes', TECHNIQUE_LABELS.raizes],
+    ['contrabando', TECHNIQUE_LABELS.contrabando],
+    ['jargao', TECHNIQUE_LABELS.jargao],
+    ['costura-invisivel', TECHNIQUE_LABELS['costura-invisivel']],
+    ['afixos', TECHNIQUE_LABELS.afixos],
+  ];
+  const activeTechniques = techniqueSlugs.length
+    ? allTechniques.filter(([slug]) => techniqueSlugs.includes(slug))
+    : allTechniques;
 
   sections.push(
     [
-      '## Techniques — vary across the round; at least 1/3 of names should use high-craft techniques',
-      '1. Morpheme blend (Pinterest = pin + interest).',
-      '2. Phonetic invention — a word that does not exist but sounds right (Kodak).',
-      '3. Metaphor from another domain (Apple, Nest).',
-      '4. Truncation — cut to the essence (Canva from canvas).',
-      '5. Foreign roots — Latin/Greek/other roots for resonance without literalness. Root yes, Latin ENDING no (still obeys the phonetic ruler).',
-      '6. Letter smuggling — a real word hiding another inside it (AÇOR hides aço/steel; VIGOR hides viga/beam).',
-      '7. Tribe jargon — backstage technical terms elevated to brand names, a password of belonging for a technical B2B decision-maker (TRAFO, PLENUM, PRUMADA).',
-      '8. Invisible seam (signature technique) — fusion where the seam disappears (AMPARA, GALVA, MONTRIZ).',
-      '9. Affix families — a shared prefix/suffix that builds a naming system across a group of brands (SUPRA-, -MONT).',
+      techniqueSlugs.length
+        ? '## Techniques — RESTRICTED to the following (do not use any other technique)'
+        : '## Techniques — vary across the round; at least 1/3 of names should use high-craft techniques',
+      ...activeTechniques.map(([, label], i) => `${i + 1}. ${label}`),
       'Distribute the round across symbolic territories — never 20 variations of the same territory.',
     ].join('\n')
   );
@@ -116,6 +200,14 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
       '- Promising availability/trademark clearance — that is not this tool\'s job.',
     ].join('\n')
   );
+
+  if (language === 'pt') {
+    sections.push('## Language\nMine Portuguese explicitly — candidates should read as Portuguese (or Portuguese-rooted) words.');
+  } else if (language === 'en') {
+    sections.push('## Language\nMine English explicitly — candidates should read as English (or English-rooted) words.');
+  } else if (language === 'multi') {
+    sections.push('## Language\nMine 2-3 distinct language families explicitly (e.g. Latin, Greek, Tupi-Guarani, Germanic, Japanese) and label diversity across the round — do not collapse into a single language.');
+  }
 
   if (seen.length) {
     sections.push(
@@ -162,7 +254,7 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
       '{ "names": [{ "name": string, "rationale": string, "riskFlag"?: string, "technique": string, "territory": string }] }',
       '- "rationale": the 1-3 line defense of the name (why it works, what layer it hides). Every name needs one — a name with no defense is an anti-pattern.',
       '- "riskFlag": only when honestly warranted (e.g. an obvious famous homonym in another category) — omit otherwise, never fabricate a risk.',
-      '- "technique": which of the 9 techniques above was used.',
+      `- "technique": which of the ${activeTechniques.length} technique(s) above was used.`,
       '- "territory": the symbolic territory this name belongs to.',
     ].join('\n')
   );
