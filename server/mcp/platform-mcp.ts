@@ -3497,7 +3497,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'reference-search',
-    'Search curated mockup reference library by dimensions (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) or free text. Returns world-class mockup references with AI-extracted dimensions.',
+    'Search the curated design reference library by dimensions or free text. Covers BOTH mockups (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) AND logo/branding refs (brand_artifact, logo_construction, type_style). Returns world-class references with AI-extracted dimensions.',
     {
       search: z.string().optional().describe('Free text search across name and description.'),
       niche: z.string().optional().describe('Filter by niche (e.g. "luxury", "tech", "food").'),
@@ -3515,6 +3515,18 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .string()
         .optional()
         .describe('Filter by mockup type (e.g. "packaging", "stationery").'),
+      brand_artifact: z
+        .string()
+        .optional()
+        .describe('Branding refs — filter by artifact (e.g. "logo", "brand-system", "guideline").'),
+      logo_construction: z
+        .string()
+        .optional()
+        .describe('Logo refs — filter by mark structure (e.g. "wordmark", "monogram", "emblem").'),
+      type_style: z
+        .string()
+        .optional()
+        .describe('Logo/branding refs — filter by typography (e.g. "grotesque-sans", "serif").'),
       country: z
         .string()
         .optional()
@@ -3534,6 +3546,9 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       lighting,
       texture,
       mockup_type,
+      brand_artifact,
+      logo_construction,
+      type_style,
       country,
       region,
       limit,
@@ -3553,6 +3568,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (lighting) filter['dimensions.lighting'] = { $in: [lighting] };
         if (texture) filter['dimensions.texture'] = { $in: [texture] };
         if (mockup_type) filter['dimensions.mockup_type'] = { $in: [mockup_type] };
+        if (brand_artifact) filter['dimensions.brand_artifact'] = { $in: [brand_artifact] };
+        if (logo_construction)
+          filter['dimensions.logo_construction'] = { $in: [logo_construction] };
+        if (type_style) filter['dimensions.type_style'] = { $in: [type_style] };
         if (country) filter.country = country;
         if (region) filter.region = region;
 

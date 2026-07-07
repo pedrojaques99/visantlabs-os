@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { thumbHashToDataURL } from 'thumbhash';
 import {
   Upload,
   Search,
@@ -10,10 +12,20 @@ import {
   Loader2,
   ExternalLink,
   Sparkles,
+  Images,
+  ScanSearch,
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  Bookmark,
+  FolderPlus,
+  Folder,
+  Plus,
+  Check,
+  Trash2,
+  ArrowLeft,
+  Lock,
 } from 'lucide-react';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
@@ -26,10 +38,19 @@ import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
 import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryFlag } from '@/lib/references/taxonomy';
 import {
+  FACET_DIMENSION_KEYS,
+  DIMENSION_LABELS,
+  DIMENSION_GROUPS_BY_KIND,
+} from '@/constants/referenceDimensions';
+import {
   referencesApi,
   type ReferenceItem,
   type ReferenceFacets,
   type ReferenceUploadInput,
+  collectionsApi,
+  type ReferenceCollection,
+  type CollectionDetail,
+  type TasteHint,
 } from '@/services/referencesApi';
 
 const PAGE_SIZE = 30;
@@ -42,6 +63,12 @@ const COUNTRY_OPTIONS = [
   { value: '', label: 'Todos os países' },
   ...DESIGN_COUNTRIES.map((c) => ({ value: c, label: `${countryFlag(c)} ${c}`.trim() })),
 ];
+
+// Dimension filter SSoT — keys/labels/groups shared with the backend.
+// (kept as local aliases so the JSX below reads unchanged)
+const DIMENSION_FILTER_KEYS = FACET_DIMENSION_KEYS;
+const DIM_LABELS = DIMENSION_LABELS;
+const DIM_GROUPS_BY_KIND = DIMENSION_GROUPS_BY_KIND;
 
 function fileToBase64(file: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -58,6 +85,35 @@ function fileToBase64(file: File | Blob): Promise<string> {
 interface SimilarView {
   label: string;
   items: ReferenceItem[];
+  source?: ReferenceItem;
+}
+
+/** Dimension values two references share — powers the "why it matches" explanation. */
+function sharedDimensions(a?: ReferenceItem, b?: ReferenceItem): string[] {
+  if (!a || !b) return [];
+  const da = a.dimensions || {};
+  const db = b.dimensions || {};
+  const out: string[] = [];
+  for (const key of Object.keys(da)) {
+    const set = new Set(da[key] || []);
+    for (const v of db[key] || []) if (set.has(v)) out.push(v);
+  }
+  return [...new Set(out)].slice(0, 6);
+}
+
+/** Decode a base64 thumbhash into a tiny data-URL placeholder (memoized). */
+function useThumbPlaceholder(hash?: string): string | null {
+  return useMemo(() => {
+    if (!hash) return null;
+    try {
+      const bin = atob(hash);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return thumbHashToDataURL(bytes);
+    } catch {
+      return null;
+    }
+  }, [hash]);
 }
 
 /** Responsive column count for the JS masonry (stable on append — no reflow). */
@@ -80,6 +136,14 @@ function useColumns(): number {
 }
 
 export const ReferencesPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Read initial filter state from the URL once (shareable / back-button friendly).
+  const initialDims: Record<string, string> = {};
+  for (const k of DIMENSION_FILTER_KEYS) {
+    const v = searchParams.get(k);
+    if (v) initialDims[k] = v;
+  }
+
   const [items, setItems] = useState<ReferenceItem[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -88,13 +152,24 @@ export const ReferencesPage: React.FC = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(false);
 
-  const [scope, setScope] = useState<'library' | 'mine'>('library');
+  const [scope, setScope] = useState<'library' | 'collections' | 'mine'>(
+    (searchParams.get('scope') as 'library' | 'collections' | 'mine') || 'library'
+  );
   const [reloadNonce, setReloadNonce] = useState(0);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [country, setCountry] = useState('');
-  const [region, setRegion] = useState('');
-  const [activeTag, setActiveTag] = useState('');
+  const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('q') || '');
+  const [country, setCountry] = useState(searchParams.get('country') || '');
+  const [region, setRegion] = useState(searchParams.get('region') || '');
+  const [activeTag, setActiveTag] = useState(searchParams.get('tag') || '');
+  const [kind, setKind] = useState<'all' | 'branding' | 'mockup'>(
+    (searchParams.get('kind') as 'all' | 'branding' | 'mockup') || 'all'
+  );
+  const [dims, setDims] = useState<Record<string, string>>(initialDims);
+  const [collections, setCollections] = useState<ReferenceCollection[]>([]);
+  const [collectionView, setCollectionView] = useState<CollectionDetail | null>(null);
+  const [saveTarget, setSaveTarget] = useState<ReferenceItem | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [taste, setTaste] = useState<TasteHint[]>([]);
 
   const [facets, setFacets] = useState<ReferenceFacets | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -110,8 +185,33 @@ export const ReferencesPage: React.FC = () => {
   const pageRef = useRef(1);
 
   const cols = useColumns();
-  const hasActiveFilters = !!(debouncedSearch || country || region || activeTag);
-  const grid = similar ? similar.items : items;
+  const activeDimEntries = Object.entries(dims).filter(([, v]) => v);
+  const hasActiveFilters = !!(
+    debouncedSearch ||
+    country ||
+    region ||
+    activeTag ||
+    kind !== 'all' ||
+    activeDimEntries.length
+  );
+
+  const setDim = (key: string, value: string) =>
+    setDims((prev) => {
+      const next = { ...prev };
+      if (!value || next[key] === value) delete next[key];
+      else next[key] = value;
+      return next;
+    });
+
+  const clearAllFilters = () => {
+    setSearch('');
+    setCountry('');
+    setRegion('');
+    setActiveTag('');
+    setKind('all');
+    setDims({});
+  };
+  const grid = collectionView ? collectionView.items : similar ? similar.items : items;
 
   // Round-robin distribution → each item keeps a fixed column, so appending
   // pages never reflows existing cards (Apple-smooth infinite feed).
@@ -143,6 +243,8 @@ export const ReferencesPage: React.FC = () => {
                 country: country || undefined,
                 region: region || undefined,
                 tag: activeTag || undefined,
+                kind,
+                dimensions: dims,
               });
         setItems((prev) => {
           if (!append) return data.references;
@@ -160,7 +262,7 @@ export const ReferencesPage: React.FC = () => {
         setIsLoadingMore(false);
       }
     },
-    [scope, debouncedSearch, country, region, activeTag]
+    [scope, debouncedSearch, country, region, activeTag, kind, dims]
   );
 
   // facets once
@@ -168,6 +270,15 @@ export const ReferencesPage: React.FC = () => {
     referencesApi
       .facets()
       .then(setFacets)
+      .catch(() => {});
+  }, []);
+
+  // taste hints from the user's saved items (semantic suggestion)
+  useEffect(() => {
+    if (!authService.isAuthenticated()) return;
+    collectionsApi
+      .taste()
+      .then((d) => setTaste(d.taste))
       .catch(() => {});
   }, []);
 
@@ -179,25 +290,38 @@ export const ReferencesPage: React.FC = () => {
 
   // re-query on any filter/scope change (unless in similarity mode)
   useEffect(() => {
-    if (similar) return;
+    if (similar || collectionView || scope === 'collections') return;
     loadList(1, false);
-  }, [scope, debouncedSearch, country, region, activeTag, similar, reloadNonce]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scope, debouncedSearch, country, region, activeTag, kind, dims, similar, collectionView, reloadNonce]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── URL sync — serialize filter state into the querystring (shareable views) ──
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (debouncedSearch) p.set('q', debouncedSearch);
+    if (country) p.set('country', country);
+    if (region) p.set('region', region);
+    if (activeTag) p.set('tag', activeTag);
+    if (kind !== 'all') p.set('kind', kind);
+    if (scope !== 'library') p.set('scope', scope);
+    for (const k of DIMENSION_FILTER_KEYS) if (dims[k]) p.set(k, dims[k]);
+    setSearchParams(p, { replace: true });
+  }, [debouncedSearch, country, region, activeTag, kind, scope, dims]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // infinite scroll
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el || similar) return;
+    if (!el || similar || collectionView || scope === 'collections') return;
     const obs = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isLoading && !isLoadingMore && pageRef.current < pages) {
           loadList(pageRef.current + 1, true);
         }
       },
-      { rootMargin: '600px' }
+      { rootMargin: '900px' }
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [pages, isLoading, isLoadingMore, similar, loadList]);
+  }, [pages, isLoading, isLoadingMore, similar, collectionView, scope, loadList]);
 
   // ── Auth gate ──────────────────────────────────────────────────
   const requireAuth = (): boolean => {
@@ -212,6 +336,7 @@ export const ReferencesPage: React.FC = () => {
   const runSearchByImage = useCallback(async (file: File | Blob) => {
     if (!requireAuth()) return;
     setLightboxIndex(null);
+    setCollectionView(null);
     setSimilarLoading(true);
     setSimilar({ label: 'busca por imagem', items: [] });
     try {
@@ -229,11 +354,12 @@ export const ReferencesPage: React.FC = () => {
 
   const runSimilarTo = useCallback(async (ref: ReferenceItem) => {
     setLightboxIndex(null);
+    setCollectionView(null);
     setSimilarLoading(true);
-    setSimilar({ label: `parecidas com "${ref.name}"`, items: [] });
+    setSimilar({ label: `parecidas com "${ref.name}"`, items: [], source: ref });
     try {
       const data = await referencesApi.similarTo(ref.id, 40);
-      setSimilar({ label: `parecidas com "${ref.name}"`, items: data.references });
+      setSimilar({ label: `parecidas com "${ref.name}"`, items: data.references, source: ref });
       if (data.references.length === 0)
         toast.info('Sem parecidas ainda — popule mais a biblioteca');
     } catch (e: any) {
@@ -245,6 +371,44 @@ export const ReferencesPage: React.FC = () => {
   }, []);
 
   const clearSimilar = () => setSimilar(null);
+
+  // ── Collections ────────────────────────────────────────────────
+  const loadCollections = useCallback(async () => {
+    if (!authService.isAuthenticated()) return;
+    try {
+      const data = await collectionsApi.list();
+      setCollections(data.collections);
+    } catch {
+      /* non-fatal */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (scope === 'collections') {
+      setCollectionView(null);
+      loadCollections();
+    }
+  }, [scope, loadCollections]);
+
+  const openBoard = useCallback(async (id: string) => {
+    setSimilar(null);
+    setLightboxIndex(null);
+    try {
+      const detail = await collectionsApi.get(id);
+      setCollectionView(detail);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao abrir coleção');
+    }
+  }, []);
+
+  const refreshBoard = useCallback(async () => {
+    if (!collectionView) return;
+    try {
+      setCollectionView(await collectionsApi.get(collectionView.collection.id));
+    } catch {
+      /* non-fatal */
+    }
+  }, [collectionView]);
 
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
@@ -282,6 +446,52 @@ export const ReferencesPage: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxIndex, grid.length]);
+
+  // ── Grid keyboard navigation (vim + arrows) ────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable;
+      // "/" focuses the search box from anywhere
+      if (e.key === '/' && !typing) {
+        e.preventDefault();
+        document.getElementById('ref-search')?.focus();
+        return;
+      }
+      if (typing || lightboxIndex !== null || saveTarget) return;
+      if (scope === 'collections' && !collectionView) return;
+      const n = grid.length;
+      if (!n) return;
+      const move = (delta: number) => {
+        e.preventDefault();
+        setFocusedIndex((i) => Math.max(0, Math.min(n - 1, (i < 0 ? 0 : i) + delta)));
+      };
+      if (e.key === 'ArrowRight' || e.key === 'l') move(1);
+      else if (e.key === 'ArrowLeft' || e.key === 'h') move(-1);
+      else if (e.key === 'ArrowDown' || e.key === 'j') move(cols);
+      else if (e.key === 'ArrowUp' || e.key === 'k') move(-cols);
+      else if (e.key === 'Enter' && focusedIndex >= 0) setLightboxIndex(focusedIndex);
+      else if (e.key.toLowerCase() === 's' && focusedIndex >= 0) {
+        if (requireAuth()) setSaveTarget(grid[focusedIndex]);
+      } else if (e.key === 'Escape') setFocusedIndex(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [grid, cols, focusedIndex, lightboxIndex, saveTarget, scope, collectionView]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset grid focus whenever the result set changes.
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [scope, debouncedSearch, country, region, activeTag, kind, dims, similar, collectionView]);
+
+  // Restore grid focus to the card you were viewing when the lightbox closes.
+  const prevLightbox = useRef<number | null>(null);
+  useEffect(() => {
+    if (prevLightbox.current !== null && lightboxIndex === null) {
+      setFocusedIndex(prevLightbox.current);
+    }
+    prevLightbox.current = lightboxIndex;
+  }, [lightboxIndex]);
 
   const filterControls = (
     <FilterControls
@@ -338,7 +548,7 @@ export const ReferencesPage: React.FC = () => {
               className="bg-neutral-900 border-neutral-700 text-xs"
               onClick={() => requireAuth() && searchByImageInput.current?.click()}
             >
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              <ScanSearch className="h-3.5 w-3.5 mr-1.5" />
               Buscar por imagem
             </Button>
             <Button
@@ -362,7 +572,7 @@ export const ReferencesPage: React.FC = () => {
               className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2.5"
             >
               <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
-                <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                <ScanSearch className="h-3.5 w-3.5 shrink-0" />
                 {similarLoading
                   ? 'Buscando parecidas...'
                   : `${similar.items.length} · ${similar.label}`}
@@ -380,17 +590,58 @@ export const ReferencesPage: React.FC = () => {
           )}
         </AnimatePresence>
 
+        {/* Collection (board) banner */}
+        {collectionView && (
+          <div className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2.5">
+            <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
+              <Folder className="h-3.5 w-3.5 shrink-0" />
+              {collectionView.collection.name} · {collectionView.items.length}
+            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              {collectionView.collection.isOwner && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-neutral-400 hover:text-red-400"
+                  onClick={async () => {
+                    if (!window.confirm('Apagar esta coleção?')) return;
+                    try {
+                      await collectionsApi.remove(collectionView.collection.id);
+                      setCollectionView(null);
+                      loadCollections();
+                      toast.success('Coleção apagada');
+                    } catch (e: any) {
+                      toast.error(e.message || 'Erro ao apagar');
+                    }
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-neutral-400 hover:text-neutral-200"
+                onClick={() => setCollectionView(null)}
+              >
+                <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+                Coleções
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Scope toggle + filters */}
-        {!similar && (
+        {!similar && !collectionView && (
           <div className="space-y-3 mb-6">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
-                {(['library', 'mine'] as const).map((s) => (
+                {(['library', 'collections', 'mine'] as const).map((s) => (
                   <button
                     key={s}
                     onClick={() => {
-                      if (s === 'mine' && !authService.isAuthenticated()) {
-                        toast.error('Faça login para ver suas referências');
+                      if (s !== 'library' && !authService.isAuthenticated()) {
+                        toast.error('Faça login para ver isso');
                         return;
                       }
                       setScope(s);
@@ -402,9 +653,28 @@ export const ReferencesPage: React.FC = () => {
                         : 'text-neutral-500 hover:text-neutral-300'
                     )}
                   >
-                    {s === 'library' ? 'Biblioteca' : 'Minhas refs'}
+                    {s === 'library' ? 'Biblioteca' : s === 'collections' ? 'Coleções' : 'Minhas refs'}
                   </button>
                 ))}
+                {/* Kind filter — logos vs mockups */}
+                {scope === 'library' && (
+                  <div className="ml-2 flex items-center gap-1 border-l border-neutral-800 pl-2">
+                    {(['all', 'branding', 'mockup'] as const).map((k) => (
+                      <button
+                        key={k}
+                        onClick={() => setKind(k)}
+                        className={cn(
+                          'px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
+                          kind === k
+                            ? 'bg-neutral-800 text-neutral-100'
+                            : 'text-neutral-500 hover:text-neutral-300'
+                        )}
+                      >
+                        {k === 'all' ? 'Tudo' : k === 'branding' ? 'Logos' : 'Mockups'}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               {/* Mobile filter trigger */}
               {scope === 'library' && (
@@ -422,6 +692,99 @@ export const ReferencesPage: React.FC = () => {
 
             {/* Desktop inline filters */}
             {scope === 'library' && <div className="hidden md:block">{filterControls}</div>}
+
+            {/* Semantic suggestion — based on what the user has saved */}
+            {scope === 'library' && !hasActiveFilters && taste.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                  Pra você
+                </span>
+                {taste.map((t) => (
+                  <Badge
+                    key={t.key + t.value}
+                    variant="outline"
+                    className="cursor-pointer border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10 text-[10px]"
+                    onClick={() => setDim(t.key, t.value)}
+                  >
+                    {t.value}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Active filters summary + result count */}
+            {scope === 'library' && hasActiveFilters && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 text-[11px] font-mono text-neutral-500">
+                  {total.toLocaleString('pt-BR')} {total === 1 ? 'ref' : 'refs'}
+                </span>
+                {kind !== 'all' && (
+                  <FilterChip
+                    label={kind === 'branding' ? 'Logos' : 'Mockups'}
+                    onRemove={() => setKind('all')}
+                  />
+                )}
+                {country && <FilterChip label={country} onRemove={() => setCountry('')} />}
+                {region && (
+                  <FilterChip
+                    label={REGION_LABELS[region] || region}
+                    onRemove={() => setRegion('')}
+                  />
+                )}
+                {debouncedSearch && (
+                  <FilterChip label={`"${debouncedSearch}"`} onRemove={() => setSearch('')} />
+                )}
+                {activeDimEntries.map(([k, v]) => (
+                  <FilterChip key={k} label={v} onRemove={() => setDim(k, '')} />
+                ))}
+                <button
+                  onClick={clearAllFilters}
+                  className="ml-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-brand-cyan transition-colors"
+                >
+                  Limpar tudo
+                </button>
+              </div>
+            )}
+
+            {/* Structured dimension facets — designer-friendly groups (additive) */}
+            {scope === 'library' && facets?.dimensions && (
+              <div className="hidden md:flex flex-col gap-1.5">
+                {DIM_GROUPS_BY_KIND[kind].map((dk) => {
+                  const vals = facets.dimensions?.[dk];
+                  if (!vals || !vals.length) return null;
+                  return (
+                    <div key={dk} className="flex flex-wrap items-center gap-1.5">
+                      <span className="w-[88px] shrink-0 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                        {DIM_LABELS[dk]}
+                      </span>
+                      {vals.slice(0, 10).map((v) => {
+                        const active = dims[dk] === v.value;
+                        return (
+                          <Badge
+                            key={v.value}
+                            variant={active ? 'secondary' : 'outline'}
+                            className={cn(
+                              'cursor-pointer text-[10px]',
+                              active
+                                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30'
+                                : 'border-neutral-800 text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan'
+                            )}
+                            onClick={() => setDim(dk, v.value)}
+                          >
+                            {v.value}
+                            {active ? (
+                              <X className="h-2.5 w-2.5 ml-1" />
+                            ) : (
+                              <span className="ml-1 text-neutral-600">{v.count}</span>
+                            )}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Tag facets */}
             {scope === 'library' && facets && facets.tags.length > 0 && (
@@ -456,20 +819,27 @@ export const ReferencesPage: React.FC = () => {
         )}
 
         {/* Content */}
-        {error ? (
+        {scope === 'collections' && !collectionView ? (
+          <CollectionsGrid
+            collections={collections}
+            onOpen={openBoard}
+            onCreate={async (name) => {
+              try {
+                const { collection } = await collectionsApi.create(name);
+                setCollections((prev) => [collection, ...prev]);
+                toast.success('Coleção criada');
+              } catch (e: any) {
+                toast.error(e.message || 'Erro ao criar coleção');
+              }
+            }}
+          />
+        ) : error ? (
           <ErrorState onRetry={() => loadList(1, false)} />
         ) : (isLoading || similarLoading) && grid.length === 0 ? (
           <MasonrySkeleton cols={cols} />
         ) : grid.length === 0 ? (
           hasActiveFilters ? (
-            <NoResults
-              onClear={() => {
-                setSearch('');
-                setCountry('');
-                setRegion('');
-                setActiveTag('');
-              }}
-            />
+            <NoResults onClear={clearAllFilters} />
           ) : (
             <FirstRun onUpload={() => requireAuth() && setUploadOpen(true)} />
           )
@@ -481,8 +851,22 @@ export const ReferencesPage: React.FC = () => {
                   <MasonryCard
                     key={item.id}
                     item={item}
+                    focused={idx === focusedIndex}
                     onOpen={() => setLightboxIndex(idx)}
                     onSimilar={() => runSimilarTo(item)}
+                    onSave={() => requireAuth() && setSaveTarget(item)}
+                    onRemove={
+                      collectionView?.collection.isOwner
+                        ? async () => {
+                            try {
+                              await collectionsApi.removeItem(collectionView.collection.id, item.id);
+                              refreshBoard();
+                            } catch (e: any) {
+                              toast.error(e.message || 'Erro ao remover');
+                            }
+                          }
+                        : undefined
+                    }
                   />
                 ))}
               </div>
@@ -491,14 +875,16 @@ export const ReferencesPage: React.FC = () => {
         )}
 
         {/* Infinite-scroll sentinel */}
-        {!similar && <div ref={sentinelRef} className="h-1" />}
+        {!similar && !collectionView && scope !== 'collections' && (
+          <div ref={sentinelRef} className="h-1" />
+        )}
         {isLoadingMore && (
           <div className="flex items-center justify-center py-6 gap-2 text-neutral-500">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span className="text-xs">Carregando mais...</span>
           </div>
         )}
-        {!similar && grid.length > 0 && page >= pages && (
+        {!similar && !collectionView && scope !== 'collections' && grid.length > 0 && page >= pages && (
           <p className="text-center text-[10px] text-neutral-600 py-6">
             {grid.length} de {total} referências
           </p>
@@ -544,7 +930,7 @@ export const ReferencesPage: React.FC = () => {
             className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
           >
             <div className="flex flex-col items-center gap-3 text-brand-cyan border-2 border-dashed border-brand-cyan/50 rounded-2xl px-12 py-10">
-              <Sparkles className="h-8 w-8" />
+              <ImageIcon className="h-8 w-8" />
               <p className="text-sm font-medium">Solte a imagem para achar parecidas</p>
             </div>
           </motion.div>
@@ -560,12 +946,247 @@ export const ReferencesPage: React.FC = () => {
           setLightboxIndex((i) => (i === null ? i : Math.max(0, Math.min(grid.length - 1, i + d))))
         }
         onSimilar={(ref) => runSimilarTo(ref)}
+        onSave={(ref) => requireAuth() && setSaveTarget(ref)}
+        similarSource={similar?.source}
       />
+
+      {/* Save-to-collection dialog */}
+      {saveTarget && (
+        <SaveToCollectionDialog
+          item={saveTarget}
+          onClose={() => setSaveTarget(null)}
+        />
+      )}
     </div>
   );
 };
 
 // ─── Filter controls (shared desktop/mobile) ─────────────────────
+
+// ─── Collections (Are.na-like boards) ────────────────────────────
+
+const CollectionsGrid: React.FC<{
+  collections: ReferenceCollection[];
+  onOpen: (id: string) => void;
+  onCreate: (name: string) => void;
+}> = ({ collections, onOpen, onCreate }) => {
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState('');
+  const submit = () => {
+    const n = name.trim();
+    if (!n) return;
+    onCreate(n);
+    setName('');
+    setCreating(false);
+  };
+
+  if (!authService.isAuthenticated()) {
+    return (
+      <div className="text-center py-20 text-sm text-neutral-500">
+        Faça login para criar e ver suas coleções.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {creating ? (
+        <div className="aspect-[4/3] rounded-xl border border-brand-cyan/30 bg-neutral-900 p-3 flex flex-col justify-center gap-2">
+          <Input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') submit();
+              if (e.key === 'Escape') setCreating(false);
+            }}
+            placeholder="Nome da coleção"
+            className="bg-neutral-950 border-neutral-700 text-sm h-9"
+          />
+          <div className="flex gap-1.5">
+            <Button
+              size="sm"
+              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs flex-1"
+              onClick={submit}
+            >
+              <Check className="h-3.5 w-3.5 mr-1" />
+              Criar
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs text-neutral-400"
+              onClick={() => setCreating(false)}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setCreating(true)}
+          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-brand-cyan/50 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
+        >
+          <FolderPlus className="h-6 w-6" />
+          <span className="text-xs font-mono uppercase tracking-wider">Nova coleção</span>
+        </button>
+      )}
+
+      {collections.map((c) => (
+        <button
+          key={c.id}
+          onClick={() => onOpen(c.id)}
+          className="group text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 ring-white/5 hover:ring-white/15 transition-all hover:-translate-y-0.5"
+        >
+          <div className="aspect-[4/3] relative bg-neutral-800">
+            {c.covers && c.covers.length > 1 ? (
+              <div className="grid grid-cols-2 grid-rows-2 w-full h-full gap-px">
+                {c.covers.slice(0, 4).map((u, i) => (
+                  <img key={i} src={u} alt="" loading="lazy" className="w-full h-full object-cover" />
+                ))}
+              </div>
+            ) : c.coverUrl || c.covers?.[0] ? (
+              <img
+                src={c.coverUrl || c.covers?.[0]}
+                alt={c.name}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-neutral-700">
+                <Folder className="h-8 w-8" />
+              </div>
+            )}
+          </div>
+          <div className="p-2.5">
+            <p className="text-xs font-medium text-neutral-200 truncate flex items-center gap-1">
+              {!c.isPublic && <Lock className="h-3 w-3 text-neutral-500 shrink-0" />}
+              {c.name}
+            </p>
+            <p className="text-[10px] font-mono text-neutral-500">
+              {c.count} {c.count === 1 ? 'item' : 'itens'}
+            </p>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => void }> = ({
+  item,
+  onClose,
+}) => {
+  const [cols, setCols] = useState<ReferenceCollection[] | null>(null);
+  const [creating, setCreating] = useState('');
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    collectionsApi
+      .list()
+      .then((d) => setCols(d.collections))
+      .catch(() => setCols([]));
+  }, []);
+
+  const addTo = async (id: string) => {
+    if (savedIds.has(id)) return;
+    // Optimistic — reflect instantly, roll back only on failure.
+    setSavedIds((s) => new Set(s).add(id));
+    setCols((p) => p?.map((c) => (c.id === id ? { ...c, count: c.count + 1 } : c)) ?? p);
+    try {
+      await collectionsApi.addItem(id, item.id);
+    } catch (e: any) {
+      setSavedIds((s) => {
+        const n = new Set(s);
+        n.delete(id);
+        return n;
+      });
+      setCols((p) => p?.map((c) => (c.id === id ? { ...c, count: Math.max(0, c.count - 1) } : c)) ?? p);
+      toast.error(e.message || 'Erro ao salvar');
+    }
+  };
+
+  const createAndAdd = async () => {
+    const n = creating.trim();
+    if (!n) return;
+    try {
+      const { collection } = await collectionsApi.create(n);
+      setCols((p) => [collection, ...(p || [])]);
+      setCreating('');
+      await addTo(collection.id);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao criar coleção');
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-sm bg-neutral-950 border-neutral-800">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-mono text-neutral-300">Salvar em coleção</DialogTitle>
+        </DialogHeader>
+        <div className="flex items-center gap-1.5 pt-1">
+          <Input
+            value={creating}
+            onChange={(e) => setCreating(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') createAndAdd();
+            }}
+            placeholder="Nova coleção..."
+            className="bg-neutral-900 border-neutral-700 text-sm h-9"
+          />
+          <Button
+            size="sm"
+            className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs h-9"
+            onClick={createAndAdd}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        <div className="max-h-64 overflow-y-auto flex flex-col gap-1 mt-1">
+          {cols === null ? (
+            <p className="text-xs text-neutral-500 py-4 text-center">Carregando...</p>
+          ) : cols.length === 0 ? (
+            <p className="text-xs text-neutral-500 py-4 text-center">
+              Nenhuma coleção ainda — crie a primeira acima.
+            </p>
+          ) : (
+            cols.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => addTo(c.id)}
+                disabled={savedIds.has(c.id)}
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-neutral-900 text-left transition-colors"
+              >
+                <span className="flex items-center gap-2 text-sm text-neutral-200 truncate">
+                  <Folder className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
+                  {c.name}
+                </span>
+                {savedIds.has(c.id) ? (
+                  <Check className="h-4 w-4 text-brand-cyan shrink-0" />
+                ) : (
+                  <span className="text-[10px] font-mono text-neutral-600">{c.count}</span>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Removable active-filter pill used in the summary bar.
+const FilterChip: React.FC<{ label: string; onRemove: () => void }> = ({ label, onRemove }) => (
+  <Badge
+    variant="secondary"
+    className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px]"
+    onClick={onRemove}
+  >
+    {label}
+    <X className="h-2.5 w-2.5 ml-1" />
+  </Badge>
+);
 
 const FilterControls: React.FC<{
   search: string;
@@ -579,9 +1200,10 @@ const FilterControls: React.FC<{
     <div className="relative flex-1 min-w-[200px]">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
       <Input
+        id="ref-search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Buscar por nome, estúdio, descrição..."
+        placeholder="Buscar por nome, estúdio, descrição...  ( / )"
         className="pl-9 bg-neutral-900 border-neutral-700 text-sm h-9"
       />
     </div>
@@ -600,34 +1222,60 @@ const MasonryCard: React.FC<{
   item: ReferenceItem;
   onOpen: () => void;
   onSimilar: () => void;
-}> = ({ item, onOpen, onSimilar }) => {
+  onSave?: () => void;
+  onRemove?: () => void;
+  focused?: boolean;
+}> = ({ item, onOpen, onSimilar, onSave, onRemove, focused }) => {
   const [loaded, setLoaded] = useState(false);
+  const reduce = useReducedMotion();
+  const cardRef = useRef<HTMLDivElement>(null);
   const flag = countryFlag(item.country);
   const src = item.thumbnailUrl || item.referenceImageUrl;
+  const placeholder = useThumbPlaceholder(item.thumbHash);
+
+  useEffect(() => {
+    if (focused)
+      cardRef.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }, [focused, reduce]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={reduce ? false : { opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '120px' }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="group relative">
+      <div className="group relative" ref={cardRef}>
         <button
           onClick={onOpen}
-          className="block w-full text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 ring-white/5 hover:ring-white/15 transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+          className={cn(
+            'block w-full text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] focus:outline-none',
+            focused
+              ? 'ring-2 ring-brand-cyan'
+              : 'ring-white/5 hover:ring-white/15 focus-visible:ring-2 focus-visible:ring-brand-cyan/60'
+          )}
         >
           <div className="relative" style={{ aspectRatio: loaded ? undefined : '4 / 5' }}>
-            {!loaded && <div className="absolute inset-0 animate-pulse bg-neutral-800/50" />}
-            <img
+            {/* LQIP: thumbhash if available, else a soft shimmer */}
+            {!loaded &&
+              (placeholder ? (
+                <img src={placeholder} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <div className="absolute inset-0 animate-pulse bg-neutral-800/50" />
+              ))}
+            <motion.img
+              layoutId={`card-${item.id}`}
+              transition={
+                reduce ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 34 }
+              }
               src={src}
               alt={item.name}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoaded(true)}
               className={cn(
-                'w-full h-auto block transition-all duration-700 ease-out',
-                loaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-md scale-105'
+                'w-full h-auto block transition-[opacity,filter] duration-700 ease-out',
+                loaded ? 'opacity-100 blur-0' : 'opacity-0 blur-md'
               )}
             />
             {/* gradient + meta on hover */}
@@ -652,15 +1300,36 @@ const MasonryCard: React.FC<{
             )}
           </div>
         </button>
-        {/* "Parecidas" quick action */}
-        <button
-          onClick={onSimilar}
-          title="Ver parecidas"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+        {/* Quick actions */}
+        <div
+          className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ display: typeof item.score === 'number' ? 'none' : undefined }}
         >
-          <Sparkles className="h-3.5 w-3.5" />
-        </button>
+          <button
+            onClick={onSimilar}
+            title="Ver parecidas"
+            className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+          >
+            <Images className="h-3.5 w-3.5" />
+          </button>
+          {onRemove ? (
+            <button
+              onClick={onRemove}
+              title="Remover da coleção"
+              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-red-400"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : onSave ? (
+            <button
+              onClick={onSave}
+              title="Salvar em coleção"
+              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+            >
+              <Bookmark className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
+        </div>
       </div>
     </motion.div>
   );
@@ -674,10 +1343,25 @@ const Lightbox: React.FC<{
   onClose: () => void;
   onNav: (delta: number) => void;
   onSimilar: (ref: ReferenceItem) => void;
-}> = ({ items, index, onClose, onNav, onSimilar }) => {
+  onSave?: (ref: ReferenceItem) => void;
+  similarSource?: ReferenceItem;
+}> = ({ items, index, onClose, onNav, onSimilar, onSave, similarSource }) => {
   const item = index !== null ? items[index] : null;
   const prov = item?.provenance || {};
   const flag = item ? countryFlag(item.country) : '';
+  const reduce = useReducedMotion();
+
+  // Prefetch neighbours so arrow-nav is instant.
+  useEffect(() => {
+    if (index === null) return;
+    for (const n of [index - 1, index + 1]) {
+      const url = items[n]?.referenceImageUrl;
+      if (url) {
+        const img = new Image();
+        img.src = url;
+      }
+    }
+  }, [index, items]);
 
   return (
     <AnimatePresence>
@@ -729,9 +1413,10 @@ const Lightbox: React.FC<{
             <div className="flex-1 min-h-0 flex items-center justify-center p-4 sm:p-8">
               <motion.img
                 key={item.id}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                layoutId={`card-${item.id}`}
+                transition={
+                  reduce ? { duration: 0 } : { type: 'spring', stiffness: 280, damping: 32 }
+                }
                 src={item.referenceImageUrl}
                 alt={item.name}
                 className="max-h-full max-w-full object-contain rounded-lg"
@@ -746,6 +1431,31 @@ const Lightbox: React.FC<{
                   <p className="text-xs font-mono text-neutral-400 mt-0.5">{item.studio}</p>
                 )}
               </div>
+
+              {/* Why it matches — shared dimensions with the similarity source */}
+              {typeof item.score === 'number' &&
+                similarSource &&
+                (() => {
+                  const shared = sharedDimensions(similarSource, item);
+                  return shared.length ? (
+                    <div className="rounded-lg border border-brand-cyan/20 bg-brand-cyan/5 p-3">
+                      <p className="text-[10px] font-mono uppercase tracking-wider text-brand-cyan/70 mb-1.5">
+                        Por que combina
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {shared.map((s) => (
+                          <Badge
+                            key={s}
+                            variant="outline"
+                            className="border-brand-cyan/30 text-brand-cyan text-[10px]"
+                          >
+                            {s}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
 
               <div className="flex flex-wrap gap-1.5">
                 {item.country && (
@@ -827,9 +1537,20 @@ const Lightbox: React.FC<{
                   className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
                   onClick={() => onSimilar(item)}
                 >
-                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  <Images className="h-3.5 w-3.5 mr-1.5" />
                   Ver parecidas
                 </Button>
+                {onSave && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-neutral-900 border-neutral-700 text-xs"
+                    onClick={() => onSave(item)}
+                  >
+                    <Bookmark className="h-3.5 w-3.5 mr-1.5" />
+                    Salvar em coleção
+                  </Button>
+                )}
                 {(item.sourceUrl || prov.sourceUrl) && (
                   <a
                     href={item.sourceUrl || prov.sourceUrl}

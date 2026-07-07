@@ -984,7 +984,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   {
     name: 'reference-search',
     description:
-      'Search curated mockup reference library by dimensions (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) or free text. Returns world-class mockup references with AI-extracted dimensions.',
+      'Search the curated design reference library by dimensions or free text. Covers BOTH mockups (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) AND logo/branding refs (brand_artifact, logo_construction, type_style). Returns world-class references with AI-extracted dimensions.',
     required: [],
     properties: {
       search: { type: 'string' },
@@ -994,6 +994,9 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       lighting: { type: 'string' },
       texture: { type: 'string' },
       mockup_type: { type: 'string' },
+      brand_artifact: { type: 'string' },
+      logo_construction: { type: 'string' },
+      type_style: { type: 'string' },
       limit: { type: 'integer', default: 20 },
     },
     cost: 'free',

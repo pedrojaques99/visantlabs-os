@@ -21,6 +21,8 @@ export interface ReferenceItem {
   description: string;
   referenceImageUrl: string;
   thumbnailUrl?: string;
+  /** Base64 thumbhash for an instant LQIP placeholder. */
+  thumbHash?: string;
   dimensions: Record<string, string[]>;
   provenance?: ReferenceProvenance;
   country?: string;
@@ -40,10 +42,40 @@ export interface ReferenceListResponse {
   pages: number;
 }
 
+export interface FacetValue {
+  value: string;
+  count: number;
+}
+
 export interface ReferenceFacets {
   countries: string[];
   regions: string[];
-  tags: Array<{ value: string; count: number }>;
+  tags: FacetValue[];
+  /** Structured dimension facets keyed by dimension (brand_artifact, type_style, ...). */
+  dimensions?: Record<string, FacetValue[]>;
+}
+
+export interface ReferenceCollection {
+  id: string;
+  name: string;
+  coverUrl?: string;
+  /** First up to 4 thumbnails, for a mosaic cover. */
+  covers?: string[];
+  isPublic?: boolean;
+  count: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TasteHint {
+  key: string;
+  value: string;
+  count: number;
+}
+
+export interface CollectionDetail {
+  collection: ReferenceCollection & { isOwner: boolean };
+  items: ReferenceItem[];
 }
 
 export interface ReferenceUploadInput {
@@ -67,6 +99,10 @@ export interface ReferenceListParams {
   country?: string;
   region?: string;
   tag?: string;
+  /** Coarse content filter for the page toggle. */
+  kind?: 'all' | 'branding' | 'mockup';
+  /** Structured dimension filters, e.g. { type_style: 'serif', vibe: 'premium' }. */
+  dimensions?: Record<string, string>;
 }
 
 const BASE = '/api/references';
@@ -88,6 +124,12 @@ export const referencesApi = {
     if (params.country) qs.set('country', params.country);
     if (params.region) qs.set('region', params.region);
     if (params.tag) qs.set('tag', params.tag);
+    if (params.kind && params.kind !== 'all') qs.set('kind', params.kind);
+    if (params.dimensions) {
+      for (const [k, v] of Object.entries(params.dimensions)) {
+        if (v) qs.set(k, v);
+      }
+    }
     const resp = await fetch(`${BASE}?${qs}`, { headers: authHeaders() });
     if (!resp.ok) throw new Error('Failed to load references');
     return resp.json();
@@ -145,5 +187,78 @@ export const referencesApi = {
     const resp = await fetch(`${BASE}/mine?${qs}`, { headers: authHeaders() });
     if (!resp.ok) throw new Error('Failed to load your references');
     return resp.json();
+  },
+};
+
+// ── Collections (Are.na-like per-user boards) ──────────────────────────────────
+export const collectionsApi = {
+  async list(): Promise<{ collections: ReferenceCollection[] }> {
+    const resp = await fetch(`${BASE}/collections`, { headers: authHeaders() });
+    if (!resp.ok) throw new Error('Failed to load collections');
+    return resp.json();
+  },
+
+  async taste(): Promise<{ taste: TasteHint[] }> {
+    const resp = await fetch(`${BASE}/collections/taste`, { headers: authHeaders() });
+    if (!resp.ok) throw new Error('Failed to load taste');
+    return resp.json();
+  },
+
+  async create(name: string): Promise<{ collection: ReferenceCollection }> {
+    const resp = await fetch(`${BASE}/collections`, {
+      method: 'POST',
+      headers: authHeaders(true),
+      body: JSON.stringify({ name }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to create collection');
+    }
+    return resp.json();
+  },
+
+  async get(id: string): Promise<CollectionDetail> {
+    const resp = await fetch(`${BASE}/collections/${encodeURIComponent(id)}`, {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Failed to load collection');
+    return resp.json();
+  },
+
+  async update(id: string, patch: { name?: string; isPublic?: boolean }): Promise<void> {
+    const resp = await fetch(`${BASE}/collections/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: authHeaders(true),
+      body: JSON.stringify(patch),
+    });
+    if (!resp.ok) throw new Error('Failed to update collection');
+  },
+
+  async remove(id: string): Promise<void> {
+    const resp = await fetch(`${BASE}/collections/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Failed to delete collection');
+  },
+
+  async addItem(id: string, refId: string): Promise<void> {
+    const resp = await fetch(`${BASE}/collections/${encodeURIComponent(id)}/items`, {
+      method: 'POST',
+      headers: authHeaders(true),
+      body: JSON.stringify({ refId }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to add to collection');
+    }
+  },
+
+  async removeItem(id: string, refId: string): Promise<void> {
+    const resp = await fetch(
+      `${BASE}/collections/${encodeURIComponent(id)}/items/${encodeURIComponent(refId)}`,
+      { method: 'DELETE', headers: authHeaders() }
+    );
+    if (!resp.ok) throw new Error('Failed to remove from collection');
   },
 };

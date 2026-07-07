@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { REFERENCE_DIMENSION_KEYS } from '../../src/constants/referenceDimensions.js';
 import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
@@ -2931,19 +2932,8 @@ router.get('/references', validateAdmin, async (req: Request, res: Response) => 
 
     const filter: any = { category: 'reference', isAdminCurated: true };
 
-    // Dimension filters
-    const dimensionKeys = [
-      'niche',
-      'aesthetic',
-      'vibe',
-      'lighting',
-      'texture',
-      'material',
-      'angle',
-      'color_mood',
-      'mockup_type',
-    ];
-    for (const key of dimensionKeys) {
+    // Dimension filters (SSoT)
+    for (const key of REFERENCE_DIMENSION_KEYS) {
       const val = req.query[key];
       if (val && typeof val === 'string') {
         filter[`dimensions.${key}`] = { $in: val.split(',').map((v) => v.trim()) };
@@ -2957,6 +2947,15 @@ router.get('/references', validateAdmin, async (req: Request, res: Response) => 
     if (req.query.region && typeof req.query.region === 'string') {
       filter.region = { $in: req.query.region.split(',').map((v) => v.trim()) };
     }
+
+    // Studio filter — manage a whole third-party studio at once
+    if (req.query.studio && typeof req.query.studio === 'string') {
+      filter.studio = { $in: req.query.studio.split(',').map((v) => v.trim()) };
+    }
+
+    // Visibility filter — admin sees everything by default; narrow to hidden/visible
+    if (req.query.hidden === 'only') filter.hiddenFromPublic = true;
+    else if (req.query.hidden === 'visible') filter.hiddenFromPublic = { $ne: true };
 
     if (req.query.search && typeof req.query.search === 'string') {
       filter.$or = [
@@ -3054,6 +3053,8 @@ router.put('/references/:id', validateAdmin, async (req: Request, res: Response)
       nextProvenance.awardSource = ensureString(req.body.awardSource, 200);
     if (typeof req.body.year === 'number') nextProvenance.year = req.body.year;
     if (typeof req.body.isPublic === 'boolean') updates.isPublic = req.body.isPublic;
+    if (typeof req.body.hiddenFromPublic === 'boolean')
+      updates.hiddenFromPublic = req.body.hiddenFromPublic;
     if (
       req.body.country != null ||
       req.body.region != null ||
@@ -3073,6 +3074,34 @@ router.put('/references/:id', validateAdmin, async (req: Request, res: Response)
   } catch (error: any) {
     console.error('[admin] reference update error:', error);
     return res.status(500).json({ error: 'Failed to update reference' });
+  }
+});
+
+// Bulk visibility — hide/show every reference of given studios from the PUBLIC library.
+// Third-party studio mockups (Mockups Maison, Hazard, Boxy) stay usable in admin + agents.
+router.post('/references/visibility', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { studios, hiddenFromPublic } = req.body;
+    if (!Array.isArray(studios) || studios.length === 0) {
+      return res.status(400).json({ error: 'studios array is required' });
+    }
+    if (typeof hiddenFromPublic !== 'boolean') {
+      return res.status(400).json({ error: 'hiddenFromPublic boolean is required' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+    const result = await db.collection('community_presets').updateMany(
+      { category: 'reference', studio: { $in: studios.map((s: any) => String(s)) } },
+      { $set: { hiddenFromPublic, updatedAt: new Date() } }
+    );
+    return res.json({
+      success: true,
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+    });
+  } catch (error: any) {
+    console.error('[admin] reference visibility error:', error);
+    return res.status(500).json({ error: 'Failed to update visibility' });
   }
 });
 
