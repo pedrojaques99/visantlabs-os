@@ -10,6 +10,9 @@ import type { NamingDefenseInsightResponse } from '@/services/namingApi';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
+/** Slugs do backend (ex. "foreign-roots") viram labels legíveis. */
+const formatTag = (s: string) => s.replace(/[-_]/g, ' ').trim();
+
 export interface ShortlistPanelProps {
   superliked: NamingCard[];
   liked: NamingCard[];
@@ -172,8 +175,7 @@ function ShortlistRow({
 }) {
   const [expanded, setExpanded] = useState(false);
 
-  const copyName = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const copyName = async () => {
     const ok = await copyToClipboard(card.name);
     if (ok) toast.success(`"${card.name}" copiado.`);
   };
@@ -240,55 +242,78 @@ function ShortlistRow({
                 <p className="text-xs leading-relaxed text-neutral-400">{card.rationale}</p>
               )}
 
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-                  {card.territory} · {card.technique}
-                </span>
-              </div>
+              <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                {formatTag(card.territory)}
+              </span>
 
-              {/* Ações */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMoreLikeThis(card);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan transition-colors"
-                >
-                  <Zap size={11} /> mais 5 como este
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+              {/* Ações — uma linha, estilo uniforme */}
+              <div className="flex items-center gap-1">
+                <ActionChip
+                  icon={<Zap size={11} />}
+                  label="variações"
+                  title="Gerar mais 5 nomes nesta direção"
+                  onClick={() => onMoreLikeThis(card)}
+                />
+                <ActionChip
+                  icon={<SearchCheck size={11} />}
+                  label="checar"
+                  title="Triagem rápida de conflitos (não substitui o INPI)"
+                  onClick={() =>
                     window.open(
                       `https://www.google.com/search?q=${encodeURIComponent(`"${card.name}" marca Brasil CNPJ`)}`,
                       '_blank',
                       'noopener'
-                    );
-                  }}
-                  title="Triagem rápida de conflitos (não substitui o INPI)"
-                  className="inline-flex items-center gap-1 rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan transition-colors"
-                >
-                  <SearchCheck size={11} /> checar
-                </button>
-                <Button variant="action" onClick={copyName} title="Copiar nome">
-                  <Copy size={13} />
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove(card);
-                  }}
+                    )
+                  }
+                />
+                <ActionChip icon={<Copy size={11} />} title="Copiar nome" onClick={copyName} />
+                <ActionChip
+                  icon={<Trash2 size={11} />}
                   title="Remover"
-                >
-                  <Trash2 size={13} />
-                </Button>
+                  destructive
+                  onClick={() => onRemove(card)}
+                />
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* ── Chip de ação compacto (uma linha, sem quebra) ──────────────────────── */
+
+function ActionChip({
+  icon,
+  label,
+  title,
+  destructive = false,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label?: string;
+  title: string;
+  destructive?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      title={title}
+      aria-label={title}
+      className={cn(
+        'inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 transition-colors',
+        destructive
+          ? 'hover:border-destructive/40 hover:text-destructive'
+          : 'hover:border-brand-cyan/40 hover:text-brand-cyan'
+      )}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }

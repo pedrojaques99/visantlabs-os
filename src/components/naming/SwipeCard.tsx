@@ -19,6 +19,9 @@ interface SwipeCardProps {
 
 const THRESHOLD = 100;
 
+/** Slugs do backend (ex. "foreign-roots") viram labels legíveis. */
+const formatTag = (s: string) => s.replace(/[-_]/g, ' ').trim();
+
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
   ({ card, onVerdict, active = true }, ref) => {
     const x = useMotionValue(0);
@@ -112,7 +115,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             <>
               {/* Território */}
               <span className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-                {card.territory}
+                {formatTag(card.territory)}
               </span>
 
               {/* Nome */}
@@ -125,7 +128,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
               {/* Técnica */}
               <span className="mt-5 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-                {card.technique}
+                {formatTag(card.technique)}
               </span>
 
               {/* Flag de risco */}
