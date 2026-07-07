@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useAnimationControls, type PanInfo } from 'framer-motion';
-import { X, Heart, Star, AlertTriangle } from 'lucide-react';
+import { X, Heart, Gem, AlertTriangle } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import type { NamingCard, Verdict } from '@/lib/naming/tasteProfile';
@@ -100,7 +100,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 style={{ opacity: superOpacity }}
                 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-brand-cyan"
               >
-                <Star size={18} />
+                <Gem size={18} />
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Superlike</span>
               </motion.div>
             </>

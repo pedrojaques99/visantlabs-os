@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Sparkles, X, Heart, Star } from 'lucide-react';
+import { Zap, X, Heart, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -402,7 +402,7 @@ export const NamingMachinePage: React.FC = () => {
       </span>
       {prefetching && (
         <span className="flex items-center gap-1 text-brand-cyan/80">
-          <Sparkles size={10} className="animate-pulse" /> calibrando pelo seu gosto
+          <Zap size={10} className="animate-pulse" /> calibrando pelo seu gosto
         </span>
       )}
     </div>
@@ -410,7 +410,7 @@ export const NamingMachinePage: React.FC = () => {
 
   return (
     <MiniAppShell
-      icon={Sparkles}
+      icon={Zap}
       title="Naming Machine"
       documentTitle="Naming Machine"
       onReset={handleReset}
@@ -463,7 +463,7 @@ export const NamingMachinePage: React.FC = () => {
                 className="flex h-12 w-12 items-center justify-center rounded-full border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors"
                 aria-label="Superlike (↑)"
               >
-                <Star size={18} />
+                <Gem size={18} />
               </button>
               <button
                 onClick={() => triggerVerdict('like')}

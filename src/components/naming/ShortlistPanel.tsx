@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Copy, Trash2, Sparkles, ChevronDown, ArrowRight, Loader2, Wand2, SearchCheck, BookmarkPlus } from 'lucide-react';
+import { Gem, Copy, Trash2, Zap, ChevronDown, ArrowRight, Loader2, Pencil, SearchCheck, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
@@ -79,7 +79,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
                 onClick={onShowFinalists}
                 className="mb-2 flex w-full items-center gap-2 rounded-lg border border-brand-cyan/20 bg-brand-cyan/[0.06] px-3 py-2 text-left text-xs text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
               >
-                <Sparkles size={13} className="shrink-0" />
+                <Zap size={13} className="shrink-0" />
                 Seu gosto está claro — ver 3 finalistas?
               </motion.button>
             )}
@@ -140,7 +140,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
               onClick={() => onTransformToBrand(topPick)}
               className="w-full justify-center gap-2"
             >
-              <Wand2 size={14} /> Transformar em marca
+              <Pencil size={14} /> Transformar em marca
               <ArrowRight size={14} />
             </Button>
           )}
@@ -189,7 +189,7 @@ function ShortlistRow({
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-center gap-2 px-3 py-2 text-left"
       >
-        {isSuper && <Star size={12} className="shrink-0 text-brand-cyan" />}
+        {isSuper && <Gem size={12} className="shrink-0 text-brand-cyan" />}
         <span className="flex-1 truncate text-sm font-medium text-neutral-200">{card.name}</span>
         <ChevronDown
           size={13}
@@ -255,7 +255,7 @@ function ShortlistRow({
                   }}
                   className="inline-flex items-center gap-1 rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan transition-colors"
                 >
-                  <Sparkles size={11} /> mais 5 como este
+                  <Zap size={11} /> mais 5 como este
                 </button>
                 <button
                   onClick={(e) => {
