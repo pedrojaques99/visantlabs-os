@@ -49,6 +49,23 @@ describe('Fase 3 — onboarding brand-first (backend)', () => {
     expect((fresh?.metadata as any)?.onboardingBrandGuidelineId).toBeUndefined();
   });
 
+  it('complete-onboarding preserves a privileged userCategory (tester) but always records the persona', async () => {
+    const { user } = await createUser();
+    const { prisma } = await import('../../../server/db/prisma.js');
+    await prisma.user.update({ where: { id: user.id }, data: { userCategory: 'tester' } });
+    const agent = await request();
+
+    const res = await agent
+      .post('/api/auth/complete-onboarding')
+      .set('Authorization', tokenFor(user))
+      .send({ userCategory: 'designer' });
+    expect(res.status).toBe(200);
+
+    const fresh = await prisma.user.findUnique({ where: { id: user.id } });
+    expect(fresh?.userCategory).toBe('tester'); // NOT overwritten by the persona
+    expect((fresh?.metadata as any)?.onboardingPersona).toBe('designer'); // persona still recorded
+  });
+
   it("complete-onboarding rejects someone else's brand → 400", async () => {
     const { user: owner } = await createUser();
     const { user: intruder } = await createUser();

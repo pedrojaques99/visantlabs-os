@@ -1,3 +1,10 @@
+// TODO: dívidas herdadas do AdminChat original (não corrigidas nesta passada
+// de tokens para não expandir o escopo):
+// 1. O backdrop do modal (~linha 666) é feito à mão (`fixed inset-0 ... bg-black/40`)
+//    em vez do componente `Modal` canônico — precisa migrar sem perder o modo
+//    'panel' (não-modal) que este shell também suporta.
+// 2. Várias strings estão em PT hardcoded (ex.: "Nova sessão", "Recentes",
+//    "Deletar sessão") em vez de passar por `t()` — falta i18n completo do arquivo.
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { getPreferredImageModel } from '@/utils/modelPreferences';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
@@ -802,7 +809,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
               {/* Main Chat Area */}
               <div
-                className="flex flex-col flex-1 min-w-0 bg-[#080808] relative"
+                className="flex flex-col flex-1 min-w-0 bg-neutral-950 relative"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}

@@ -389,6 +389,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
           figmaFileKey: true,
           activeSections: true,
           status: true,
+          isDemo: true,
           archivedAt: true,
           createdAt: true,
           updatedAt: true,

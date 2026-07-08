@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 import { ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { OnboardingWizardV2 } from '@/components/onboarding/OnboardingWizardV2';
+import { PersonaGrid } from '@/components/onboarding/PersonaGrid';
 import { SEGMENTS, DEFAULT_ROUTE } from '@/components/onboarding/onboardingSegments';
 
 // Legacy wizard (flag off): 2 passos por persona, sem passo de marca.
@@ -53,24 +53,7 @@ const OnboardingWizardV1: React.FC = () => {
                 Isso nos leva direto a ferramenta certa pra voce.
               </p>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {SEGMENTS.map((seg) => (
-                  <button
-                    key={seg.id}
-                    onClick={() => setSelectedId(seg.id)}
-                    className={cn(
-                      'flex flex-col items-center gap-2 p-4 rounded-lg border transition-all text-center',
-                      selectedId === seg.id
-                        ? 'border-brand-cyan/40 bg-brand-cyan/5 text-white'
-                        : 'border-neutral-700/50 bg-neutral-800/30 text-neutral-400 hover:border-neutral-600'
-                    )}
-                  >
-                    <seg.icon className="w-6 h-6" />
-                    <span className="text-sm font-mono font-medium">{seg.label}</span>
-                    <span className="text-xs text-neutral-500">{seg.desc}</span>
-                  </button>
-                ))}
-              </div>
+              <PersonaGrid selectedId={selectedId} onSelect={setSelectedId} />
 
               <div className="flex gap-3">
                 <Button

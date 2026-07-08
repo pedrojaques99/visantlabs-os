@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Compass } from 'lucide-react';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuidelines, hasRealBrand } from '@/hooks/queries/useBrandGuidelines';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -26,8 +26,7 @@ export const DemoBrandBanner: React.FC<DemoBrandBannerProps> = ({ brandId, onCta
 
   const isDemoActive = brandId
     ? guidelines.some((g) => g.id === brandId && g.isDemo)
-    : guidelines.some((g) => g.isDemo) &&
-      !guidelines.some((g) => !g.isDemo && g.status !== 'archived');
+    : guidelines.some((g) => g.isDemo) && !hasRealBrand(guidelines);
 
   if (!isDemoActive) return null;
 

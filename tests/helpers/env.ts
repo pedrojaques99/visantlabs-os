@@ -32,4 +32,12 @@ export function applyTestEnv(): void {
   // (not delete): server modules re-run dotenv.config() at import time, which
   // would refill a deleted var but never overrides an existing one.
   process.env.HCAPTCHA_SECRET_KEY = '';
+  // server/lib/featureFlags.ts defaults an unset flag to ON outside production
+  // (dev convenience) — tests run with NODE_ENV=test, so without an explicit
+  // default here every integration test would suddenly get FEATURE_COPILOT /
+  // FEATURE_BRAND_BILLING mounted/enforced. Default both OFF for determinism;
+  // specific test files (brand-quota, brand-seats, copilot, onboarding-brand-first)
+  // set their own explicit 'true' after this runs, which wins.
+  process.env.FEATURE_COPILOT = process.env.FEATURE_COPILOT ?? 'false';
+  process.env.FEATURE_BRAND_BILLING = process.env.FEATURE_BRAND_BILLING ?? 'false';
 }

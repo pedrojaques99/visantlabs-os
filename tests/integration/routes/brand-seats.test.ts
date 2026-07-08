@@ -251,7 +251,7 @@ describe('Seats — editor seats per brand (Fase 4 money gates)', () => {
     expect(res.body.seatQuota).toEqual({ used: 1, max: 3 });
   });
 
-  it('subscription-status exposes seatQuota {used, maxPerBrand, tier}', async () => {
+  it('subscription-status exposes seatQuota {totalEditors, maxPerBrand, tier}', async () => {
     const user = await createTierUser('premium');
     const { user: editor } = await createUser();
     await createBrandGuideline({ userId: user.id, name: 'S1', canEdit: [editor.id] });
@@ -262,7 +262,7 @@ describe('Seats — editor seats per brand (Fase 4 money gates)', () => {
       .get('/api/payments/subscription-status')
       .set('Authorization', tokenFor(user));
     expect(res.status).toBe(200);
-    expect(res.body.seatQuota).toEqual({ used: 1, maxPerBrand: 1, tier: 'premium' });
+    expect(res.body.seatQuota).toEqual({ totalEditors: 1, maxPerBrand: 1, tier: 'premium' });
   });
 });
 

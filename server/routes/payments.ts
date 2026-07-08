@@ -543,23 +543,19 @@ router.get(
         }
       }
 
-      // Brand billing: expose the active-brand quota so the frontend mirrors
-      // the backend gate without any logic of its own (plan task 2.9).
-      let brandQuota: { used: number; max: number | null; tier: string } | null = null;
-      try {
-        brandQuota = await getBrandQuota(user);
-      } catch {
-        /* advisory — never break subscription-status over a quota lookup */
-      }
-
-      // Seats (Fase 4 task 4.5): total editor seats in use across owned brands
-      // vs the per-brand policy. Per-brand usage lives on GET /brand-guidelines/:id.
-      let seatQuota: { used: number; maxPerBrand: number | null; tier: string } | null = null;
-      try {
-        seatQuota = await getSeatOverview(user);
-      } catch {
-        /* advisory — never break subscription-status over a quota lookup */
-      }
+      // Brand billing + seats (plan task 2.9 / Fase 4 task 4.5): both are
+      // independent quota lookups (advisory — must never break
+      // subscription-status), so run them concurrently instead of serially.
+      // getBrandQuota/getSeatOverview also share brandQuota.ts's in-memory
+      // Product cache (60s TTL), so this doesn't re-hit Mongo for products.
+      const [brandQuotaResult, seatQuotaResult] = await Promise.allSettled([
+        getBrandQuota(user),
+        getSeatOverview(user),
+      ]);
+      const brandQuota: { used: number; max: number | null; tier: string } | null =
+        brandQuotaResult.status === 'fulfilled' ? brandQuotaResult.value : null;
+      const seatQuota: { totalEditors: number; maxPerBrand: number | null; tier: string } | null =
+        seatQuotaResult.status === 'fulfilled' ? seatQuotaResult.value : null;
 
       res.json({
         subscriptionStatus,
@@ -1885,7 +1881,7 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 creditsResetDate: creditsResetDate,
               };
               // Agency tier: Stripe quantity = contracted active brands (brand quota).
-              if (tier === 'agency' && planInfo?.quantity && planInfo.quantity > 1) {
+              if (tier === 'agency' && planInfo?.quantity && planInfo.quantity >= 1) {
                 checkoutSetData['metadata.agencyBrandQuantity'] = planInfo.quantity;
               }
 

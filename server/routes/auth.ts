@@ -1369,14 +1369,37 @@ router.post(
 // Complete onboarding — Fase 3 (brand-first): also persists the brand chosen
 // during the wizard. `brandGuidelineId` is the NEW optional param (added at the
 // end of the payload contract, repo rule) — real, minimal or demo brand id.
+// userCategory values that grant privileges beyond the normal persona-based
+// gates (e.g. 'tester' unlocks premium-gated tools — see canvasAuth.ts,
+// canvas.ts). Onboarding must NEVER downgrade a privileged category back to
+// a plain persona string.
+const PRIVILEGED_USER_CATEGORIES = new Set(['tester']);
+
 router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId;
     const { userCategory, brandGuidelineId } = req.body;
 
+    // Single read for both the current userCategory (privilege check) and the
+    // existing metadata bag (brandGuidelineId + persona persistence below).
+    const current = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { metadata: true, userCategory: true },
+    });
+    const currentMeta = (current?.metadata as Record<string, any> | null) || {};
+    const newMeta: Record<string, any> = { ...currentMeta };
+
     const updateData: Record<string, unknown> = { onboardingCompleted: true };
     if (userCategory && typeof userCategory === 'string') {
-      updateData.userCategory = userCategory;
+      // Persona is always recorded — analytics/onboarding needs it regardless
+      // of whether it's allowed to overwrite the billing-relevant userCategory.
+      newMeta.onboardingPersona = userCategory;
+      const isPrivilegedCurrent =
+        typeof current?.userCategory === 'string' &&
+        PRIVILEGED_USER_CATEGORIES.has(current.userCategory);
+      if (!isPrivilegedCurrent) {
+        updateData.userCategory = userCategory;
+      }
     }
 
     if (brandGuidelineId !== undefined) {
@@ -1391,15 +1414,11 @@ router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: Au
       if (!brand) {
         return res.status(400).json({ error: 'Invalid brandGuidelineId' });
       }
-      // Persist in the existing metadata bag (no new column).
-      const current = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { metadata: true },
-      });
-      updateData.metadata = {
-        ...((current?.metadata as Record<string, any> | null) || {}),
-        onboardingBrandGuidelineId: brandGuidelineId,
-      };
+      newMeta.onboardingBrandGuidelineId = brandGuidelineId;
+    }
+
+    if (Object.keys(newMeta).length > 0) {
+      updateData.metadata = newMeta;
     }
 
     await prisma.user.update({

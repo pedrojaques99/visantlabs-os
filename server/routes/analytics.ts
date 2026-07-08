@@ -11,7 +11,8 @@
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
-import { isFunnelEvent } from '../lib/funnelEvents.js';
+import { isFunnelEvent, ensureEventIndexes } from '../lib/funnelEvents.js';
+import { getJwtSecret } from '../utils/jwtSecret.js';
 
 const router = express.Router();
 
@@ -42,10 +43,7 @@ router.post('/events', eventsRateLimiter, async (req, res) => {
     if (authHeader?.startsWith('Bearer ')) {
       try {
         const jwt = await import('jsonwebtoken');
-        const decoded = jwt.default.verify(
-          authHeader.slice(7),
-          process.env.JWT_SECRET || 'dev-secret'
-        ) as any;
+        const decoded = jwt.default.verify(authHeader.slice(7), getJwtSecret()) as any;
         userId = decoded.userId;
       } catch {
         /* invalid token → anonymous event */
@@ -54,6 +52,7 @@ router.post('/events', eventsRateLimiter, async (req, res) => {
 
     await connectToMongoDB();
     const db = getDb();
+    await ensureEventIndexes(db);
     const docs = events.map((e: any) => ({
       event: String(e.event).slice(0, 50),
       meta: e.meta && typeof e.meta === 'object' ? e.meta : undefined,

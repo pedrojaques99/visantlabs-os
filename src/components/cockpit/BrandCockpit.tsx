@@ -352,9 +352,9 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                       {t('cockpit.suggestions.title')}
                     </MicroTitle>
                     {seasonal && (
-                      <span className="hidden sm:inline text-[10px] font-mono text-neutral-500">
+                      <MicroTitle className="hidden sm:inline text-[10px] text-neutral-500">
                         {seasonal.label} · ~{seasonal.daysAway}d
-                      </span>
+                      </MicroTitle>
                     )}
                   </div>
                   <button
@@ -384,7 +384,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                         <div key={i} className={cn(cardCls, 'flex flex-col gap-2.5 p-4')}>
                           <div className="flex items-center gap-1.5 text-neutral-500">
                             <Icon size={12} className="shrink-0" />
-                            <span className="text-[9px] font-mono uppercase tracking-wider">
+                            <span className="text-[10px] font-mono uppercase tracking-wider">
                               {meta.label}
                             </span>
                           </div>

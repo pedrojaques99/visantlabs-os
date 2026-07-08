@@ -4,6 +4,9 @@
  * env VITE_* explícita vence; sem valor definido, liga apenas em dev para
  * o time iterar localmente sem expor a feature em produção.
  */
+// Semântica espelhada no backend (mesmo helper, mesma regra): env explícita
+// ('true'/'false') sempre vence; sem valor definido, liga em dev e desliga
+// em produção — em ambos os lados (frontend Vite `DEV`, backend `NODE_ENV`).
 const readFlag = (value: string | undefined): boolean => {
   if (value === 'true') return true;
   if (value === 'false') return false;

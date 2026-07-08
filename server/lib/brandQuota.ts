@@ -13,6 +13,7 @@
 
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
+import { flagEnabled } from './featureFlags.js';
 
 export interface BrandQuota {
   /** Active (non-archived) brands OWNED by the user. Shared brands count on the owner. */
@@ -37,7 +38,7 @@ const FALLBACK_MAX_BRANDS: Record<string, number | null> = {
 };
 
 export function brandBillingEnabled(): boolean {
-  return process.env.FEATURE_BRAND_BILLING === 'true';
+  return flagEnabled('FEATURE_BRAND_BILLING');
 }
 
 /**
@@ -50,20 +51,51 @@ export const ACTIVE_BRAND_WHERE = {
   isDemo: { not: true },
 } as const;
 
-async function tierMaxBrandsFromProduct(tier: string): Promise<number | null | undefined> {
+// In-memory cache for the subscription_plan product list — shared by both the
+// brand and seat limit lookups (tierLimitFromProduct below). 60s TTL: admin
+// edits to Product.metadata (maxBrands/maxEditorsPerBrand) don't need to be
+// instant, and this collection is tiny/rarely-changing but read on every
+// quota check (creation, invite, subscription-status).
+let productCache: {
+  at: number;
+  products: Awaited<ReturnType<typeof prisma.product.findMany>>;
+} | null = null;
+const PRODUCT_CACHE_TTL_MS = 60_000;
+
+async function getSubscriptionProducts() {
+  if (productCache && Date.now() - productCache.at < PRODUCT_CACHE_TTL_MS) {
+    return productCache.products;
+  }
+  const products = await prisma.product.findMany({
+    where: { type: 'subscription_plan', isActive: true },
+  });
+  productCache = { at: Date.now(), products };
+  return products;
+}
+
+/**
+ * Shared resolver for both Product.metadata.maxBrands and
+ * .maxEditorsPerBrand — same lookup/parsing rules, only the metadata key and
+ * the "0 is valid" rule differ (seats allow 0 = no editors on that tier;
+ * brands never allow 0 — everyone gets at least one brand).
+ */
+async function tierLimitFromProduct(
+  tier: string,
+  metadataKey: 'maxBrands' | 'maxEditorsPerBrand',
+  { allowZero = false }: { allowZero?: boolean } = {}
+): Promise<number | null | undefined> {
   try {
-    const products = await prisma.product.findMany({
-      where: { type: 'subscription_plan', isActive: true },
-    });
+    const products = await getSubscriptionProducts();
     // Match manually to avoid JSON filtering issues on MongoDB (payments.ts pattern).
     const product = products.find(
       (p) => (p.metadata as any)?.tier === tier || p.productId.includes(tier)
     );
-    const raw = (product?.metadata as Record<string, any> | null)?.maxBrands;
+    const raw = (product?.metadata as Record<string, any> | null)?.[metadataKey];
     if (raw === undefined || raw === null) return undefined;
     if (raw === 'unlimited' || raw === -1 || raw === '-1') return null;
     const n = parseInt(String(raw), 10);
-    return Number.isFinite(n) && n > 0 ? n : undefined;
+    if (!Number.isFinite(n)) return undefined;
+    return n > 0 || (allowZero && n === 0) ? n : undefined;
   } catch {
     return undefined; // DB hiccup → hardcoded fallback
   }
@@ -96,9 +128,7 @@ export async function getBrandQuota(user: QuotaUserShape): Promise<BrandQuota> {
     ? await prisma.brandGuideline.count({ where: { userId, ...ACTIVE_BRAND_WHERE } })
     : 0;
 
-  const status = user.subscriptionStatus || 'free';
-  const rawTier = user.subscriptionTier || 'free';
-  const tier = status === 'active' && rawTier !== 'free' ? rawTier : 'free';
+  const tier = effectiveTier(user);
 
   if (user.isAdmin === true) {
     return { used, max: null, tier };
@@ -107,7 +137,7 @@ export async function getBrandQuota(user: QuotaUserShape): Promise<BrandQuota> {
   const meta = (user.metadata as Record<string, any> | null) || {};
 
   let max: number | null;
-  const fromProduct = await tierMaxBrandsFromProduct(tier);
+  const fromProduct = await tierLimitFromProduct(tier, 'maxBrands');
   // NOTE: `null` means unlimited, so `??` would wrongly coerce agency to the
   // free fallback — use an explicit key check instead.
   const tierLimit =
@@ -203,24 +233,6 @@ const FALLBACK_MAX_EDITORS: Record<string, number | null> = {
   agency: null,
 };
 
-async function tierMaxEditorsFromProduct(tier: string): Promise<number | null | undefined> {
-  try {
-    const products = await prisma.product.findMany({
-      where: { type: 'subscription_plan', isActive: true },
-    });
-    const product = products.find(
-      (p) => (p.metadata as any)?.tier === tier || p.productId.includes(tier)
-    );
-    const raw = (product?.metadata as Record<string, any> | null)?.maxEditorsPerBrand;
-    if (raw === undefined || raw === null) return undefined;
-    if (raw === 'unlimited' || raw === -1 || raw === '-1') return null;
-    const n = parseInt(String(raw), 10);
-    return Number.isFinite(n) && n >= 0 ? n : undefined;
-  } catch {
-    return undefined; // DB hiccup → hardcoded fallback
-  }
-}
-
 function effectiveTier(user: QuotaUserShape): string {
   const status = user.subscriptionStatus || 'free';
   const rawTier = user.subscriptionTier || 'free';
@@ -266,11 +278,9 @@ async function countEditorSeats(brandGuidelineId: string): Promise<number> {
 /**
  * Seat quota for a user (the brand OWNER). When `brandGuidelineId` is given,
  * `used` reflects that brand; without it, `used` is 0 (policy lookup only).
+ * Not exported — external callers go through getSeatQuotaForUserId.
  */
-export async function getSeatQuota(
-  user: QuotaUserShape,
-  brandGuidelineId?: string
-): Promise<SeatQuota> {
+async function getSeatQuota(user: QuotaUserShape, brandGuidelineId?: string): Promise<SeatQuota> {
   const tier = effectiveTier(user);
   const used = brandGuidelineId ? await countEditorSeats(brandGuidelineId) : 0;
 
@@ -278,7 +288,7 @@ export async function getSeatQuota(
     return { used, max: null, tier };
   }
 
-  const fromProduct = await tierMaxEditorsFromProduct(tier);
+  const fromProduct = await tierLimitFromProduct(tier, 'maxEditorsPerBrand', { allowZero: true });
   // `null` means unlimited — explicit key check, same rationale as maxBrands.
   const max =
     fromProduct !== undefined
@@ -362,11 +372,11 @@ export async function checkCopilotShare(
  */
 export async function getSeatOverview(
   user: QuotaUserShape
-): Promise<{ used: number; maxPerBrand: number | null; tier: string }> {
+): Promise<{ totalEditors: number; maxPerBrand: number | null; tier: string }> {
   const userId = String(user.id ?? user._id ?? '');
   const policy = await getSeatQuota(user); // no brand → policy only
 
-  let used = 0;
+  let totalEditors = 0;
   if (userId) {
     const brands = await prisma.brandGuideline.findMany({
       where: { userId },
@@ -378,9 +388,9 @@ export async function getSeatOverview(
           (id) => typeof id === 'string' && id !== userId
         )
       );
-      used += ids.size;
+      totalEditors += ids.size;
     }
-    used += await prisma.brandInvite.count({
+    totalEditors += await prisma.brandInvite.count({
       where: {
         createdByUserId: userId,
         role: 'editor',
@@ -390,7 +400,7 @@ export async function getSeatOverview(
     });
   }
 
-  return { used, maxPerBrand: policy.max, tier: policy.tier };
+  return { totalEditors, maxPerBrand: policy.max, tier: policy.tier };
 }
 
 const GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days (plan §2.7)
@@ -423,9 +433,14 @@ export async function enforceBrandQuotaOnDowngrade(
   const meta = { ...((user.metadata as Record<string, any> | null) || {}) };
 
   if (excess > 0) {
-    // Keep an existing grace window (don't restart the clock on repeated webhooks).
+    // Keep an existing grace window (don't restart the clock on repeated
+    // webhooks for the SAME excess) — but a NEW downgrade that increases the
+    // excess (e.g. another Stripe quantity cut while already in grace) gets a
+    // fresh 7-day window on the larger number, so the user isn't shortchanged.
+    const storedExcess = Number(meta.brandQuotaExcess);
+    const hasLargerExcess = Number.isFinite(storedExcess) && excess > storedExcess;
     const graceUntil =
-      typeof meta.brandQuotaGraceUntil === 'string' && meta.brandQuotaGraceUntil
+      typeof meta.brandQuotaGraceUntil === 'string' && meta.brandQuotaGraceUntil && !hasLargerExcess
         ? meta.brandQuotaGraceUntil
         : new Date(Date.now() + GRACE_PERIOD_MS).toISOString();
     meta.brandQuotaGraceUntil = graceUntil;

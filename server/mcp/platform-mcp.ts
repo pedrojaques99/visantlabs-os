@@ -16,6 +16,12 @@ import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { getCurrentUserId, runWithContext } from '../lib/request-context.js';
 import { trackMcpToolCall } from './mcp-tracking.js';
 import {
+  checkBrandActivation,
+  brandLimitPayload,
+  checkEditorSeat,
+  seatLimitPayload,
+} from '../lib/brandQuota.js';
+import {
   buildBrandContext,
   BRAND_SECTION_PRESETS,
   type BrandContextSection,
@@ -41,6 +47,10 @@ const ERR = {
   credits: () => mcpError('INSUFFICIENT_CREDITS', 'Not enough credits to perform this operation'),
   validation: (msg: string) => mcpError('VALIDATION_ERROR', msg),
   internal: (msg: string) => mcpError('INTERNAL_ERROR', msg),
+  // Mirrors the HTTP 402 semantics used by the REST paywall routes (brandQuota.ts
+  // brandLimitPayload/seatLimitPayload) — same fields, MCP error envelope.
+  paymentRequired: (payload: Record<string, any>) =>
+    mcpError('PAYMENT_REQUIRED', 'Upgrade required to continue', payload),
 };
 
 // ─── Hex color validation ─────────────────────────────────────────────────────
@@ -163,16 +173,22 @@ async function computeQuotaMeta(userId: string) {
     : totalCreditsEarned > 0 ||
       (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && credits_remaining > 0);
 
-  // Storage info from Prisma (SQL)
-  const storageUser = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      storageUsedBytes: true,
-      storageLimitBytes: true,
-      subscriptionTier: true,
-      isAdmin: true,
-    },
-  });
+  // Storage info (Prisma) and brand billing (Fase 2) are independent lookups
+  // off the same `user` — run them concurrently instead of serially.
+  const [storageUser, brand_quota] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        storageUsedBytes: true,
+        storageLimitBytes: true,
+        subscriptionTier: true,
+        isAdmin: true,
+      },
+    }),
+    getBrandQuota(user).catch(
+      () => null as { used: number; max: number | null; tier: string } | null
+    ),
+  ]);
 
   const storageTier = storageUser?.subscriptionTier || 'free';
   const storageLimit = getUserStorageLimit(
@@ -192,14 +208,6 @@ async function computeQuotaMeta(userId: string) {
     const i = Math.min(Math.floor(Math.log(b) / Math.log(k)), units.length - 1);
     return `${parseFloat((b / Math.pow(k, i)).toFixed(2))} ${units[i]}`;
   };
-
-  // Brand billing (Fase 2): active-brand quota rides along with credits.
-  let brand_quota: { used: number; max: number | null; tier: string } | null = null;
-  try {
-    brand_quota = await getBrandQuota(user);
-  } catch {
-    /* advisory — never fail quota meta over a brand count */
-  }
 
   return {
     credits_remaining,
@@ -2186,6 +2194,8 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
       const colorErr = validateColors(input.colors);
       if (colorErr) return ERR.validation(colorErr);
       try {
+        const activation = await checkBrandActivation(currentUserId);
+        if (!activation.allowed) return ERR.paymentRequired(brandLimitPayload(activation.quota));
         const quota = await getQuotaMeta(currentUserId);
         const guideline = await prisma.brandGuideline.create({
           data: {
@@ -2777,6 +2787,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           where: { id, userId: currentUserId },
         });
         if (!existing) return ERR.notFound('Brand guideline');
+
+        if (role === 'editor') {
+          const seat = await checkEditorSeat(currentUserId, existing.id);
+          if (!seat.allowed) return ERR.paymentRequired(seatLimitPayload(seat.quota));
+        }
 
         const { nanoid } = await import('nanoid');
         const token = nanoid(16);

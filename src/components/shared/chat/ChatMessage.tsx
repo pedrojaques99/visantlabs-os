@@ -111,7 +111,7 @@ const CreativeProjectCard: React.FC<{
   );
 };
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({
+const ChatMessageComponent: React.FC<ChatMessageProps> = ({
   id,
   role,
   content,
@@ -446,3 +446,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     </div>
   );
 };
+
+// Memoized: message lists can be long, and the parent re-renders on every
+// composer keystroke (input state lives alongside `messages`). Callback
+// props (onAddPrompt/onCreateNode) aren't passed by ChatShell's list render,
+// so identity is stable there; callers that DO pass callbacks should wrap
+// them in useCallback to keep this memo effective.
+export const ChatMessage = React.memo(ChatMessageComponent);

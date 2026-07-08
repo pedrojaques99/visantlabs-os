@@ -522,7 +522,8 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
           'branding', // feature
           'system',
           result.inputTokens,
-          result.outputTokens
+          result.outputTokens,
+          userContext?.brandGuidelineId ?? undefined
         );
         // Add specific type for admin stats
         (usageRecord as any).type = 'branding';
@@ -1025,7 +1026,8 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
           'branding',
           'system',
           Math.ceil(prompt.length / 4), // estimate input tokens
-          Math.ceil(totalText.length / 4) // estimate output tokens
+          Math.ceil(totalText.length / 4), // estimate output tokens
+          typeof brandGuidelineId === 'string' ? brandGuidelineId : undefined
         );
         await db.collection('usage_records').insertOne(usageRecord);
       } catch (err) {

@@ -25,6 +25,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../../utils/jwtSecret.js';
 import { rateLimit } from 'express-rate-limit';
 import { env } from '../../config/env.js';
+import { isActiveSubscriberOrAdmin } from '../../middleware/adminAuth.js';
 import { formatGeminiHistory } from '../../lib/chat/history.js';
 import { resolveRagScope } from '../../lib/chat/ragScope.js';
 import { withRetry } from '../../lib/chat/executor.js';
@@ -144,10 +145,10 @@ export interface ChatRouterOptions {
   guard: RequestHandler | RequestHandler[];
   /** Resolves the toolset visible to this request's user (tier-aware). */
   resolveTools: (req: AuthRequest) => Array<{ functionDeclarations: any[] }>;
-  /** System prompt variant. Default 'admin'. */
-  promptVariant?: ChatPromptVariant;
-  /** Console log prefix. Default '[AdminChat]'. */
-  logPrefix?: string;
+  /** System prompt variant — both callers (adminChat.ts, copilot.ts) pass this explicitly. */
+  promptVariant: ChatPromptVariant;
+  /** Console log prefix — both callers pass this explicitly. */
+  logPrefix: string;
 }
 
 function sessionOwnerId(s: AdminChatSession): string {
@@ -508,8 +509,8 @@ async function executeToolCalls(
 
 export function createChatSessionRouter(opts: ChatRouterOptions): express.Router {
   const guard = opts.guard;
-  const promptVariant: ChatPromptVariant = opts.promptVariant ?? 'admin';
-  const logPrefix = opts.logPrefix ?? '[AdminChat]';
+  const promptVariant: ChatPromptVariant = opts.promptVariant;
+  const logPrefix = opts.logPrefix;
 
   // Rate limiter for chat mutation endpoints — own bucket per surface.
   // TODO(fase-1.7): tier-based limits (premium: N msg/dia, pro: 3N) read from
@@ -1255,9 +1256,10 @@ export function initAdminChatWebSocket(server: any) {
   wss = new WebSocketServer({ noServer: true });
 
   server.on('upgrade', (req: any, socket: any, head: any) => {
-    if (req.url?.startsWith('/api/admin-chat/ws') || req.url?.startsWith('/api/copilot/ws')) {
+    const isCopilotPath = req.url?.startsWith('/api/copilot/ws');
+    if (req.url?.startsWith('/api/admin-chat/ws') || isCopilotPath) {
       wss!.handleUpgrade(req, socket, head, (ws: any) => {
-        handleChatConnection(ws, req);
+        handleChatConnection(ws, req, { requireSubscriber: isCopilotPath });
       });
     }
   });
@@ -1265,7 +1267,11 @@ export function initAdminChatWebSocket(server: any) {
   console.log('[AdminChatWS] WebSocket server initialized');
 }
 
-async function handleChatConnection(ws: WebSocket, req: any) {
+async function handleChatConnection(
+  ws: WebSocket,
+  req: any,
+  opts: { requireSubscriber: boolean } = { requireSubscriber: false }
+) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const token = url.searchParams.get('token');
   const sessionId = url.searchParams.get('sessionId');
@@ -1283,6 +1289,20 @@ async function handleChatConnection(ws: WebSocket, req: any) {
   } catch {
     ws.close(4001, 'Invalid token');
     return;
+  }
+
+  // Brand Copilot (/api/copilot/ws) is a paid tier — mirror the HTTP
+  // validateSubscriber gate (admin-chat/ws stays as-is: internal tool, no
+  // subscription gate).
+  if (opts.requireSubscriber) {
+    const { isSubscriber } = await isActiveSubscriberOrAdmin(userId!).catch(() => ({
+      isAdmin: false,
+      isSubscriber: false,
+    }));
+    if (!isSubscriber) {
+      ws.close(4003, 'subscription_required');
+      return;
+    }
   }
 
   // Verify session access (owner OR shared)

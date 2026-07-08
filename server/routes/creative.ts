@@ -255,6 +255,9 @@ router.post(
       if (!brand) {
         return res.status(404).json({ error: 'Brand guideline not found' });
       }
+      if (brand.status === 'archived') {
+        return res.status(403).json({ error: 'brand_archived', reason: 'brand_archived' });
+      }
 
       // Stitch intent + feedback into the prompt; engine handles brand context.
       const promptParts = [

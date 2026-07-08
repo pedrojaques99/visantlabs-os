@@ -176,6 +176,15 @@ export function isSeatLimitError(err: unknown): err is CodedError {
   return err instanceof Error && (err as CodedError).code === 'seat_limit';
 }
 
+/**
+ * True quando a lista tem ao menos uma marca real ativa (não-demo, não-arquivada).
+ * Predicado compartilhado por DemoBrandBanner e BrandFunnelBanner — ambos
+ * escondem seu CTA de "conecte sua marca" quando isso já é verdade.
+ */
+export function hasRealBrand(guidelines: BrandGuideline[]): boolean {
+  return guidelines.some((g) => !g.isDemo && g.status !== 'archived');
+}
+
 export function useDuplicateGuideline() {
   const qc = useQueryClient();
   return useMutation({

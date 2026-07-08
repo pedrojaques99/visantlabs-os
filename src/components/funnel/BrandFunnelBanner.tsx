@@ -5,7 +5,7 @@ import { Compass, X } from 'lucide-react';
 import { FEATURE_FUNNEL_BANNER } from '@/config/featureFlags';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '@/services/authService';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuidelines, hasRealBrand } from '@/hooks/queries/useBrandGuidelines';
 import { trackEvent } from '@/utils/analytics';
 
 // Higiene de funil (plano Revenue-Centric §Fase 5, task 5.1): banner de 1 linha
@@ -44,8 +44,7 @@ export const BrandFunnelBanner: React.FC<BrandFunnelBannerProps> = ({ toolId, cl
   if (!FEATURE_FUNNEL_BANNER || dismissed) return null;
 
   // Quem já conectou uma marca real não precisa do funil.
-  const hasRealBrand = guidelines.some((g) => !g.isDemo && g.status !== 'archived');
-  if (hasRealBrand) return null;
+  if (hasRealBrand(guidelines)) return null;
 
   const handleDismiss = () => {
     try {

@@ -94,6 +94,7 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from './utils/jwtSecret.js';
+import { flagEnabled } from './lib/featureFlags.js';
 import {
   API_BASE_URL,
   FRONTEND_BASE_URL,
@@ -392,7 +393,7 @@ export function createApp() {
 
   // Brand Copilot — Fase 1 do revenue realignment, atrás de flag (default OFF).
   // Kill-switch: desligar FEATURE_COPILOT e o comportamento antigo volta.
-  if (process.env.FEATURE_COPILOT === 'true') {
+  if (flagEnabled('FEATURE_COPILOT')) {
     app.use(`${routePrefix}/copilot`, copilotRoutes);
     app.use(`${routePrefix}/v1/copilot`, copilotRoutes);
   }
