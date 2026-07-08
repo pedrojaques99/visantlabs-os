@@ -1682,6 +1682,13 @@
     "connectAI": "Conectar AI",
     "settings": "Configurações",
     "title": "Cockpit da marca",
+    "connect": {
+      "subtitle": "On-brand por padrão — cores, fontes, logos e voz, automaticamente.",
+      "title": "Conecte seu AI"
+    },
+    "hero": {
+      "palette": "Paleta da marca"
+    },
     "empty": {
       "cta": "Trazer minha marca",
       "secondary": "Explorar brand guidelines",
@@ -1700,9 +1707,11 @@
     "suggestions": {
       "briefCopied": "Brief copiado — rode na sua AI conectada.",
       "copyFailed": "Não foi possível copiar",
+      "errorTitle": "As sugestões não carregaram",
       "generate": "Gerar",
       "loading": "Lendo a marca + o que vem por aí…",
       "refresh": "Atualizar",
+      "retry": "Tentar de novo",
       "title": "Sugestões da marca",
       "useInAI": "Usar na AI"
     },
@@ -1713,7 +1722,13 @@
     "work": {
       "campaign": "Campanha",
       "creative": "Criativo",
+      "ctaCampaign": "Criar campanha",
+      "ctaCopilot": "Abrir Copilot",
+      "ctaCreative": "Criar criativo",
+      "ctaMockups": "Gerar kit de mockups",
       "empty": "Nada em andamento ainda — comece algo novo.",
+      "emptySubtitle": "Sua marca já está pronta pra trabalhar. Escolha por onde começar:",
+      "emptyTitle": "Comece o primeiro trabalho da marca",
       "new": "Novo",
       "title": "Em andamento"
     }

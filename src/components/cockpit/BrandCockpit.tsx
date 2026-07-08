@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Sparkles,
-  Plug,
   Settings,
   Plus,
   RefreshCw,
@@ -14,6 +13,8 @@ import {
   Palette,
   Compass,
   ArrowRight,
+  AlertCircle,
+  Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -21,7 +22,9 @@ import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { ConnectAICard } from '@/components/cockpit/ConnectAICard';
+import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { useBrandGuideline, useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { useCampaigns } from '@/hooks/queries/useCampaigns';
 import { useCreativeProjects } from '@/hooks/queries/useCreativeProjects';
 import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
@@ -46,9 +49,11 @@ const BrandMockupDialog = lazyWithRetry(() =>
  * Composes EXISTING data only — brand list, campaigns, creative projects and
  * the shared seasonal-suggestions hook. Zero new endpoints.
  *
- * Card visuals follow the AppsPage/CopilotPage card pattern
- * (`rounded-2xl border-neutral-800 bg-white/[0.03]`); empty state follows
- * DESIGN.md §4 and doubles as onboarding step 1 (ingest your brand).
+ * Layout: brand hero header (avatar + name + palette strip) over a dense
+ * bento grid — work-in-progress (2 cols, rich empty state with concrete CTAs),
+ * connect-your-AI bento (visual sibling of BrandInteractivePanel §B), and a
+ * suggestions card whose loading/error states stay inside the card frame.
+ * Shortcuts collapse into a compact footer row.
  */
 
 const ACTIVE_BRAND_LS_KEY = 'vsn_active_brand';
@@ -70,6 +75,10 @@ interface BrandCockpitProps {
 
 const cardCls =
   'rounded-2xl border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors';
+
+/** Inner tile inside a bento card (one radius step down from the card). */
+const tileCls =
+  'rounded-xl border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors';
 
 export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp }) => {
   const { t } = useTranslation();
@@ -102,6 +111,27 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
     [activeBrands, activeBrandId]
   );
   const hasBrand = !!activeBrand?.id;
+
+  // Full guideline detail (colors, logos) for the hero — list rows are the
+  // placeholder, so the header renders instantly and enriches when it lands.
+  const { data: brandDetail } = useBrandGuideline(activeBrand?.id);
+  const heroBrand = brandDetail ?? activeBrand;
+  const brandName = heroBrand?.identity?.name || heroBrand?.name || '';
+
+  // Palette strip — the brand's real colors, most-used first (guideline data).
+  const paletteColors = useMemo(() => {
+    const colors = heroBrand?.colors ?? [];
+    const seen = new Set<string>();
+    return [...colors]
+      .sort((a, b) => (a.usageRank ?? 99) - (b.usageRank ?? 99))
+      .filter((c) => {
+        const hex = c.hex?.toLowerCase();
+        if (!hex || seen.has(hex)) return false;
+        seen.add(hex);
+        return true;
+      })
+      .slice(0, 6);
+  }, [heroBrand]);
 
   // ── Work in progress (existing lists, brand-scoped, limit 5) ──
   const { data: campaigns = [] } = useCampaigns(activeBrand?.id, hasBrand);
@@ -179,6 +209,39 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
     );
   }, [activeBrand, connect, navigate]);
 
+  // Concrete first steps when nothing is in progress — sell what IS possible.
+  const emptyWorkActions = useMemo(
+    () => [
+      {
+        key: 'mockups',
+        label: t('cockpit.work.ctaMockups'),
+        Icon: Wand2,
+        onClick: () => setIsMockupOpen(true),
+      },
+      {
+        key: 'campaign',
+        label: t('cockpit.work.ctaCampaign'),
+        Icon: Megaphone,
+        onClick: () =>
+          navigate(activeBrand?.id ? `/campaigns?brandId=${activeBrand.id}` : '/campaigns'),
+      },
+      FEATURE_COPILOT
+        ? {
+            key: 'copilot',
+            label: t('cockpit.work.ctaCopilot'),
+            Icon: Bot,
+            onClick: () => navigate('/copilot'),
+          }
+        : {
+            key: 'creative',
+            label: t('cockpit.work.ctaCreative'),
+            Icon: Palette,
+            onClick: () => navigate('/create'),
+          },
+    ],
+    [t, navigate, activeBrand]
+  );
+
   // ── Render ──
   return (
     <div
@@ -190,7 +253,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
       <DemoBrandBanner brandId={activeBrand?.id} />
 
       <main
-        className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 pt-24 pb-16"
+        className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-12 min-h-full flex flex-col"
         data-vsn-region="content"
       >
         <h1 className="sr-only">{t('cockpit.title')}</h1>
@@ -250,30 +313,51 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="space-y-10"
+              className="flex flex-col gap-5 flex-1"
             >
-              {/* ── Header: brand switcher · connect AI · settings ── */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <BrandSwitcher
-                  brands={activeBrands}
-                  value={activeBrand?.id ?? null}
-                  onChange={selectBrand}
-                />
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="surface"
-                    size="sm"
-                    onClick={handleConnect}
-                    disabled={connecting || !hasBrand}
-                    data-vsn-component="CockpitConnectAI"
-                  >
-                    {connecting ? (
-                      <Loader2 size={13} className="animate-spin" />
-                    ) : (
-                      <Plug size={13} />
+              {/* ── Hero: the brand is the protagonist ── */}
+              <header
+                className="flex items-end justify-between gap-4 flex-wrap"
+                data-vsn-region="brand-hero"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <BrandAvatar
+                    brand={heroBrand}
+                    size={56}
+                    rounded="md"
+                    className="border-neutral-800 bg-neutral-900"
+                  />
+                  <div className="min-w-0">
+                    <MicroTitle className="text-neutral-600 tracking-[0.15em]">
+                      {t('cockpit.title')}
+                    </MicroTitle>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate mt-0.5">
+                      {brandName}
+                    </h2>
+                    {paletteColors.length > 0 && (
+                      <div
+                        className="flex items-center gap-1.5 mt-2"
+                        role="img"
+                        aria-label={t('cockpit.hero.palette')}
+                      >
+                        {paletteColors.map((c) => (
+                          <span
+                            key={c.hex}
+                            title={c.name || c.hex}
+                            className="w-4 h-4 rounded-full border border-white/10 shrink-0"
+                            style={{ backgroundColor: c.hex }}
+                          />
+                        ))}
+                      </div>
                     )}
-                    {t('cockpit.connectAI')}
-                  </Button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BrandSwitcher
+                    brands={activeBrands}
+                    value={activeBrand?.id ?? null}
+                    onChange={selectBrand}
+                  />
                   <Button
                     variant="ghost"
                     size="icon-md"
@@ -284,164 +368,240 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                     <Settings size={15} />
                   </Button>
                 </div>
+              </header>
+
+              {/* ── Bento grid ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 content-start">
+                {/* ── In progress (2 cols) ── */}
+                <section
+                  aria-label={t('cockpit.work.title')}
+                  data-vsn-region="in-progress"
+                  className={cn(cardCls, 'lg:col-span-2 p-5 flex flex-col')}
+                >
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <MicroTitle className="text-neutral-500 tracking-[0.15em]">
+                      {t('cockpit.work.title')}
+                    </MicroTitle>
+                    <Button
+                      variant="surface"
+                      size="xs"
+                      onClick={() => navigate(FEATURE_COPILOT ? '/copilot' : '/mockupmachine')}
+                      className="gap-1.5"
+                      data-vsn-component="CockpitNewWork"
+                    >
+                      <Plus size={11} />
+                      {t('cockpit.work.new')}
+                    </Button>
+                  </div>
+
+                  {workItems.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {workItems.map((item) => (
+                        <button
+                          key={`${item.kind}-${item.id}`}
+                          onClick={() => openWorkItem(item)}
+                          className={cn(tileCls, 'group text-left overflow-hidden flex flex-col')}
+                        >
+                          <div className="aspect-square w-full bg-neutral-900 flex items-center justify-center overflow-hidden">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt=""
+                                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                                loading="lazy"
+                              />
+                            ) : item.kind === 'campaign' ? (
+                              <Megaphone size={20} className="text-neutral-700" strokeWidth={1.2} />
+                            ) : (
+                              <Palette size={20} className="text-neutral-700" strokeWidth={1.2} />
+                            )}
+                          </div>
+                          <div className="p-3 space-y-0.5 min-w-0">
+                            <p className="text-xs font-medium text-neutral-200 truncate">
+                              {item.title}
+                            </p>
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 truncate">
+                              {item.meta}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Rich empty state — sell what IS possible with this brand. */
+                    <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 py-10">
+                      <div className="p-5 rounded-2xl bg-neutral-950/50 border border-white/10">
+                        <Wand2 size={28} className="text-neutral-400" strokeWidth={1.2} />
+                      </div>
+                      <div className="space-y-1.5 max-w-sm">
+                        <h3 className="text-sm font-semibold text-neutral-200">
+                          {t('cockpit.work.emptyTitle')}
+                        </h3>
+                        <p className="text-xs text-neutral-500 leading-relaxed">
+                          {t('cockpit.work.emptySubtitle')}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        {emptyWorkActions.map(({ key, label, Icon, onClick }, i) => (
+                          <Button
+                            key={key}
+                            variant={i === 0 ? 'brand' : 'surface'}
+                            size="sm"
+                            onClick={onClick}
+                            className="gap-2"
+                          >
+                            <Icon size={13} />
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
+
+                {/* ── Connect your AI (1 col) ── */}
+                <ConnectAICard
+                  onConnect={handleConnect}
+                  connecting={connecting}
+                  disabled={!hasBrand}
+                />
+
+                {/* ── Brand suggestions (full width) ── */}
+                <section
+                  aria-label={t('cockpit.suggestions.title')}
+                  data-vsn-region="suggestions"
+                  className={cn(cardCls, 'lg:col-span-3 p-5')}
+                >
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Sparkles size={13} className="text-brand-cyan shrink-0" />
+                      <MicroTitle className="text-neutral-500 tracking-[0.15em]">
+                        {t('cockpit.suggestions.title')}
+                      </MicroTitle>
+                      {seasonal && (
+                        <MicroTitle className="hidden sm:inline text-[10px] text-neutral-500">
+                          {seasonal.label} · ~{seasonal.daysAway}d
+                        </MicroTitle>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => load(true)}
+                      disabled={loading || refreshing}
+                      className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors disabled:opacity-40"
+                      aria-label={t('cockpit.suggestions.refresh')}
+                    >
+                      <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
+                      {t('cockpit.suggestions.refresh')}
+                    </button>
+                  </div>
+
+                  {loading ? (
+                    /* Skeleton tiles — keep the card structure while thinking. */
+                    <div className="grid sm:grid-cols-3 gap-3" aria-hidden="true">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className={cn(tileCls, 'p-4 space-y-3 animate-pulse')}>
+                          <div className="h-2.5 w-16 rounded bg-white/5" />
+                          <div className="h-3.5 w-3/4 rounded bg-white/10" />
+                          <div className="space-y-1.5">
+                            <div className="h-2.5 w-full rounded bg-white/5" />
+                            <div className="h-2.5 w-2/3 rounded bg-white/5" />
+                          </div>
+                          <div className="h-7 w-20 rounded-md bg-white/5" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : error && suggestions.length === 0 ? (
+                    /* Inline error — short message + retry, inside the frame. */
+                    <div
+                      className={cn(
+                        tileCls,
+                        'flex flex-col sm:flex-row items-center justify-center gap-3 px-5 py-6 text-center'
+                      )}
+                    >
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 min-w-0">
+                        <AlertCircle size={13} className="text-warning shrink-0" />
+                        <span className="truncate">{t('cockpit.suggestions.errorTitle')}</span>
+                      </div>
+                      <Button
+                        variant="surface"
+                        size="xs"
+                        onClick={() => load(true)}
+                        className="gap-1.5"
+                      >
+                        <RefreshCw size={11} />
+                        {t('cockpit.suggestions.retry')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      {suggestions.slice(0, 3).map((s, i) => {
+                        const meta = SUGGESTION_KIND_META[s.kind] || SUGGESTION_KIND_META.mockup;
+                        const Icon = meta.Icon;
+                        return (
+                          <div key={i} className={cn(tileCls, 'flex flex-col gap-2.5 p-4')}>
+                            <div className="flex items-center gap-1.5 text-neutral-500">
+                              <Icon size={12} className="shrink-0" />
+                              <span className="text-[10px] font-mono uppercase tracking-wider">
+                                {meta.label}
+                              </span>
+                            </div>
+                            <span className="text-sm font-medium text-neutral-200 leading-snug">
+                              {s.title}
+                            </span>
+                            <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 flex-1">
+                              {s.rationale}
+                            </p>
+                            <div className="pt-0.5">
+                              <Button
+                                variant="brand"
+                                size="xs"
+                                onClick={() => runSuggestion(s)}
+                                className="gap-1.5"
+                              >
+                                {meta.mode === 'inline' ? (
+                                  <Wand2 size={11} />
+                                ) : (
+                                  <Sparkles size={11} />
+                                )}
+                                {meta.mode === 'inline'
+                                  ? t('cockpit.suggestions.generate')
+                                  : t('cockpit.suggestions.useInAI')}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
               </div>
 
-              {/* ── In progress ── */}
-              <section aria-label={t('cockpit.work.title')} data-vsn-region="in-progress">
-                <MicroTitle className="text-neutral-500 tracking-[0.15em] mb-4">
-                  {t('cockpit.work.title')}
-                </MicroTitle>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  {workItems.map((item) => (
-                    <button
-                      key={`${item.kind}-${item.id}`}
-                      onClick={() => openWorkItem(item)}
-                      className={cn(cardCls, 'group text-left overflow-hidden flex flex-col')}
-                    >
-                      <div className="aspect-square w-full bg-neutral-900 flex items-center justify-center overflow-hidden">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt=""
-                            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                            loading="lazy"
-                          />
-                        ) : item.kind === 'campaign' ? (
-                          <Megaphone size={20} className="text-neutral-700" strokeWidth={1.2} />
-                        ) : (
-                          <Palette size={20} className="text-neutral-700" strokeWidth={1.2} />
-                        )}
-                      </div>
-                      <div className="p-3 space-y-0.5 min-w-0">
-                        <p className="text-xs font-medium text-neutral-200 truncate">
-                          {item.title}
-                        </p>
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 truncate">
-                          {item.meta}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-
-                  {/* + New — always last */}
-                  <button
-                    onClick={() => navigate(FEATURE_COPILOT ? '/copilot' : '/mockupmachine')}
-                    className={cn(
-                      cardCls,
-                      'flex flex-col items-center justify-center gap-2 min-h-[120px] text-neutral-500 hover:text-neutral-200'
-                    )}
-                    data-vsn-component="CockpitNewWork"
-                  >
-                    <Plus size={18} strokeWidth={1.5} />
-                    <span className="text-[10px] font-mono uppercase tracking-widest">
-                      {t('cockpit.work.new')}
-                    </span>
-                  </button>
-                </div>
-                {workItems.length === 0 && (
-                  <p className="text-xs text-neutral-600 mt-3">{t('cockpit.work.empty')}</p>
-                )}
-              </section>
-
-              {/* ── Brand suggestions (seasonal) ── */}
-              <section aria-label={t('cockpit.suggestions.title')} data-vsn-region="suggestions">
-                <div className="flex items-center justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Sparkles size={13} className="text-brand-cyan shrink-0" />
-                    <MicroTitle className="text-neutral-500 tracking-[0.15em]">
-                      {t('cockpit.suggestions.title')}
-                    </MicroTitle>
-                    {seasonal && (
-                      <MicroTitle className="hidden sm:inline text-[10px] text-neutral-500">
-                        {seasonal.label} · ~{seasonal.daysAway}d
-                      </MicroTitle>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => load(true)}
-                    disabled={loading || refreshing}
-                    className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors disabled:opacity-40"
-                    aria-label={t('cockpit.suggestions.refresh')}
-                  >
-                    <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
-                    {t('cockpit.suggestions.refresh')}
-                  </button>
-                </div>
-
-                {loading ? (
-                  <div className="flex items-center gap-2 text-xs text-neutral-500 py-8 justify-center">
-                    <Loader2 size={13} className="animate-spin" />
-                    {t('cockpit.suggestions.loading')}
-                  </div>
-                ) : error && suggestions.length === 0 ? (
-                  <p className="text-xs text-neutral-600 py-6 text-center">{error}</p>
-                ) : (
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    {suggestions.slice(0, 3).map((s, i) => {
-                      const meta = SUGGESTION_KIND_META[s.kind] || SUGGESTION_KIND_META.mockup;
-                      const Icon = meta.Icon;
-                      return (
-                        <div key={i} className={cn(cardCls, 'flex flex-col gap-2.5 p-4')}>
-                          <div className="flex items-center gap-1.5 text-neutral-500">
-                            <Icon size={12} className="shrink-0" />
-                            <span className="text-[10px] font-mono uppercase tracking-wider">
-                              {meta.label}
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-neutral-200 leading-snug">
-                            {s.title}
-                          </span>
-                          <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 flex-1">
-                            {s.rationale}
-                          </p>
-                          <div className="pt-0.5">
-                            <Button
-                              variant="brand"
-                              size="xs"
-                              onClick={() => runSuggestion(s)}
-                              className="gap-1.5"
-                            >
-                              {meta.mode === 'inline' ? (
-                                <Wand2 size={11} />
-                              ) : (
-                                <Sparkles size={11} />
-                              )}
-                              {meta.mode === 'inline'
-                                ? t('cockpit.suggestions.generate')
-                                : t('cockpit.suggestions.useInAI')}
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-
-              {/* ── Shortcuts: the TUI launcher, shrunk to one row ── */}
-              <section aria-label={t('cockpit.shortcuts.title')} data-vsn-region="shortcuts">
-                <MicroTitle className="text-neutral-500 tracking-[0.15em] mb-4">
+              {/* ── Shortcuts: the TUI launcher, shrunk to a footer row ── */}
+              <section
+                aria-label={t('cockpit.shortcuts.title')}
+                data-vsn-region="shortcuts"
+                className="flex items-center gap-2 flex-wrap pt-4 border-t border-neutral-800"
+              >
+                <MicroTitle className="text-neutral-600 tracking-[0.15em] mr-1">
                   {t('cockpit.shortcuts.title')}
                 </MicroTitle>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {apps.map((app) => (
-                    <button
-                      key={app.appId}
-                      onClick={() => onSelectApp(app)}
-                      disabled={app.badgeVariant === 'comingSoon'}
-                      className="px-3.5 py-2 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {app.name}
-                    </button>
-                  ))}
+                {apps.map((app) => (
                   <button
-                    onClick={() => navigate('/apps')}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest text-neutral-600 hover:text-neutral-300 transition-colors"
+                    key={app.appId}
+                    onClick={() => onSelectApp(app)}
+                    disabled={app.badgeVariant === 'comingSoon'}
+                    className="px-3.5 py-2 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {t('cockpit.shortcuts.allApps')}
-                    <ArrowRight size={11} />
+                    {app.name}
                   </button>
-                </div>
+                ))}
+                <button
+                  onClick={() => navigate('/apps')}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest text-neutral-600 hover:text-neutral-300 transition-colors"
+                >
+                  {t('cockpit.shortcuts.allApps')}
+                  <ArrowRight size={11} />
+                </button>
               </section>
             </motion.div>
           )}

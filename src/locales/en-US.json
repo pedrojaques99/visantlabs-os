@@ -1682,6 +1682,13 @@
     "connectAI": "Connect AI",
     "settings": "Settings",
     "title": "Brand cockpit",
+    "connect": {
+      "subtitle": "On-brand by default — colors, fonts, logos & voice, automatically.",
+      "title": "Connect your AI"
+    },
+    "hero": {
+      "palette": "Brand palette"
+    },
     "empty": {
       "cta": "Bring your brand",
       "secondary": "Explore brand guidelines",
@@ -1700,9 +1707,11 @@
     "suggestions": {
       "briefCopied": "Brief copied — run it in your connected AI.",
       "copyFailed": "Couldn't copy",
+      "errorTitle": "Suggestions didn't load",
       "generate": "Generate",
       "loading": "Reading the brand + what's coming up…",
       "refresh": "Refresh",
+      "retry": "Try again",
       "title": "Brand suggestions",
       "useInAI": "Use in AI"
     },
@@ -1713,7 +1722,13 @@
     "work": {
       "campaign": "Campaign",
       "creative": "Creative",
+      "ctaCampaign": "Create campaign",
+      "ctaCopilot": "Open Copilot",
+      "ctaCreative": "Create creative",
+      "ctaMockups": "Generate mockup kit",
       "empty": "Nothing in progress yet — start something new.",
+      "emptySubtitle": "Your brand is ready to work. Pick where to start:",
+      "emptyTitle": "Start the brand's first piece of work",
       "new": "New",
       "title": "In progress"
     }
