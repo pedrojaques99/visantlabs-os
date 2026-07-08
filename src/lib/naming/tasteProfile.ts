@@ -7,6 +7,8 @@
  * Ver .agent/plans/NAMING-MACHINE.md → "O Self-Learning Loop".
  */
 
+import type { NamingSettings } from './constants';
+
 export interface NamingCard {
   name: string;
   rationale: string;
@@ -219,6 +221,8 @@ export interface NamingSession {
   deck?: NamingCard[];
   /** Marca existente escolhida no briefing — injeta contexto de marca em toda geração. */
   brandGuidelineId?: string | null;
+  /** Configurações avançadas do deck (opcionais). Ausente = defaults inteligentes. */
+  settings?: NamingSettings;
 }
 
 export function loadSession(): NamingSession | null {
@@ -238,6 +242,7 @@ export function loadSession(): NamingSession | null {
       tasteReading: parsed.tasteReading,
       deck: Array.isArray(parsed.deck) ? parsed.deck : [],
       brandGuidelineId: parsed.brandGuidelineId ?? null,
+      settings: parsed.settings,
     };
   } catch {
     return null;

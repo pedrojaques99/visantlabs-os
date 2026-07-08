@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BrandingWelcomeScreen } from '../components/branding/BrandingWelcomeScreen';
 import { BrandingMoodboard } from '../components/branding/BrandingMoodboard';
 import { BrandingExpertChat } from '../components/branding/BrandingExpertChat';
@@ -93,6 +93,18 @@ export const BrandingMachinePage: React.FC = () => {
       navigate('/waitlist', { replace: true });
     }
   }, [hasAccess, isLoadingAccess, navigate]);
+
+  // Handoff da Naming Machine: nome escolhido + brief pré-preenchem o prompt inicial
+  const location = useLocation();
+  useEffect(() => {
+    const s = location.state as { name?: string; brief?: string } | null;
+    if (!s?.name || searchParams.get('projectId')) return;
+    setPrompt(`Nome da marca: ${s.name}\n\n${s.brief || ''}`.trim());
+    // Limpa o state para não re-aplicar em navegações futuras
+    navigate('/branding-machine', { replace: true, state: null });
+    toast.success(`"${s.name}" carregado — briefing do naming aplicado ao prompt.`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load project from URL if projectId is present
   useEffect(() => {

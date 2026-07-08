@@ -6,6 +6,7 @@ import {
   Layers,
   Plug,
   RefreshCw,
+  Sparkles,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -20,14 +21,7 @@ import {
 } from 'recharts';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '../ui/table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui/table';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { SkeletonLoader } from '../ui/SkeletonLoader';
@@ -75,6 +69,16 @@ interface AnalyticsPayload {
     wau: number;
     mau: number;
     weeklyActive: { week: string; users: number }[];
+  };
+  /** Naming Machine — opcional (backend pode ainda não expor a seção). */
+  naming?: {
+    batches: number;
+    namesGenerated: number;
+    tokensSpent: number;
+    uniqueUsers: number;
+    swipes: { nope: number; like: number; superlike: number };
+    likeRate: number;
+    byModel: { model: string; batches: number; tokens: number }[];
   };
 }
 
@@ -165,10 +169,7 @@ export function AdminProductAnalytics() {
               variant={days === d ? 'secondary' : 'outline'}
               size="sm"
               onClick={() => setDays(d)}
-              className={cn(
-                'text-xs border-neutral-800',
-                days !== d && 'hover:bg-neutral-800/50'
-              )}
+              className={cn('text-xs border-neutral-800', days !== d && 'hover:bg-neutral-800/50')}
             >
               {d}d
             </Button>
@@ -216,9 +217,7 @@ export function AdminProductAnalytics() {
             label: 'Signup → Paying',
             value: `${
               data.funnel.steps[0].count > 0
-                ? Math.round(
-                    (data.funnel.steps[3].count / data.funnel.steps[0].count) * 1000
-                  ) / 10
+                ? Math.round((data.funnel.steps[3].count / data.funnel.steps[0].count) * 1000) / 10
                 : 0
             }%`,
             icon: CreditCard,
@@ -241,9 +240,7 @@ export function AdminProductAnalytics() {
       {/* Activation Funnel */}
       <Card className="bg-neutral-900 border border-white/10">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-neutral-300">
-            Activation Funnel
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-neutral-300">Activation Funnel</CardTitle>
           <CardDescription className="text-xs text-neutral-600 font-mono">
             Users who signed up in the last {data.days} days
           </CardDescription>
@@ -327,6 +324,107 @@ export function AdminProductAnalytics() {
         </div>
       </div>
 
+      {/* Naming Machine */}
+      {data.naming && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-3.5 w-3.5 text-neutral-600" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+              Naming Machine
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {[
+              { label: `Batches (${data.days}d)`, value: data.naming.batches },
+              { label: 'Names Generated', value: data.naming.namesGenerated },
+              { label: 'Tokens Spent', value: data.naming.tokensSpent },
+              { label: 'Unique Users', value: data.naming.uniqueUsers },
+            ].map((kpi) => (
+              <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
+                <CardContent className="p-5">
+                  <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-500 mb-2">
+                    {kpi.label}
+                  </span>
+                  <span className="text-2xl font-semibold text-neutral-200">
+                    {kpi.value.toLocaleString()}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Swipe breakdown */}
+            <Card className="bg-neutral-900 border border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-neutral-300">Swipes</CardTitle>
+                <CardDescription className="text-xs text-neutral-600 font-mono">
+                  Like rate: {Math.round((data.naming.likeRate ?? 0) * 1000) / 10}%
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-3 gap-4">
+                {[
+                  { label: 'Nope', value: data.naming.swipes.nope },
+                  { label: 'Like', value: data.naming.swipes.like },
+                  { label: 'Superlike', value: data.naming.swipes.superlike },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-500 mb-1">
+                      {s.label}
+                    </span>
+                    <span className="text-xl font-semibold text-neutral-200">
+                      {s.value.toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+            {/* Top models */}
+            <Card className="bg-neutral-900 border border-white/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-neutral-300">Top Models</CardTitle>
+                <CardDescription className="text-xs text-neutral-600 font-mono">
+                  Batches and tokens per chat model
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {data.naming.byModel.length === 0 ? (
+                  <p className="px-6 pb-4 text-xs text-neutral-600">No naming activity in window</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-neutral-800 hover:bg-transparent">
+                        <TableHead className="text-neutral-500 text-[10px] font-mono">
+                          Model
+                        </TableHead>
+                        <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                          Batches
+                        </TableHead>
+                        <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                          Tokens
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.naming.byModel.map((m) => (
+                        <TableRow key={m.model} className="border-neutral-800">
+                          <TableCell className="text-xs text-neutral-300">{m.model}</TableCell>
+                          <TableCell className="text-xs text-neutral-400 text-right">
+                            {m.batches.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-xs text-neutral-400 text-right">
+                            {m.tokens.toLocaleString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       {/* MCP Adoption */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -357,9 +455,7 @@ export function AdminProductAnalytics() {
           </div>
           <Card className="bg-neutral-900 border border-white/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-300">
-                Connected Apps
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-neutral-300">Connected Apps</CardTitle>
               <CardDescription className="text-xs text-neutral-600 font-mono">
                 Users per OAuth client
               </CardDescription>

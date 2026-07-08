@@ -3,7 +3,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
-import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { GEMINI_MODELS, CHAT_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { redisClient, isRedisHealthy } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
@@ -1061,6 +1061,15 @@ router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// Naming Machine — allowlist of text/chat models accepted by `model` on
+// generate-naming. CHAT_MODELS is the SSoT (src/constants/geminiModels.ts);
+// GEMINI_MODELS.FLASH is kept for back-compat since it's the endpoint's
+// existing default.
+const NAMING_TEXT_MODELS = new Set<string>([...CHAT_MODELS, GEMINI_MODELS.FLASH]);
+
+const NAMING_RULERS = new Set(['strict', 'balanced', 'free']);
+const NAMING_LANGUAGES = new Set(['auto', 'pt', 'en', 'multi']);
+
 /**
  * POST /ai/generate-naming
  * Generate brand/product name suggestions from a brief.
@@ -1070,6 +1079,8 @@ router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
  *   seen, liked, superliked, rejected — string[] of names from prior rounds
  *   tasteReading — qualitative read of the user's taste (from naming-insight)
  *   territories — symbolic territories to distribute this round across
+ *   settings — { ruler?, maxLength?, techniques?, language? } generation knobs
+ *   model — override the Gemini text model (validated against NAMING_TEXT_MODELS)
  */
 router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   const {
@@ -1083,6 +1094,8 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     rejected,
     tasteReading,
     territories,
+    settings,
+    model: modelOverride,
   } = req.body;
   if (!brief || typeof brief !== 'string') {
     return res.status(400).json({ error: 'brief is required' });
@@ -1100,9 +1113,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
         status: 400,
       });
     }
-    return val
-      .filter((v) => typeof v === 'string')
-      .map((v) => sanitizeForPrompt(v, MAX_ITEM_LEN));
+    return val.filter((v) => typeof v === 'string').map((v) => sanitizeForPrompt(v, MAX_ITEM_LEN));
   };
 
   let seenArr: string[] | undefined;
@@ -1110,18 +1121,78 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
   let superlikedArr: string[] | undefined;
   let rejectedArr: string[] | undefined;
   let territoriesArr: string[] | undefined;
+  let settingsValidated:
+    | {
+        ruler?: 'strict' | 'balanced' | 'free';
+        maxLength?: number;
+        techniques?: string[];
+        language?: 'auto' | 'pt' | 'en' | 'multi';
+      }
+    | undefined;
   try {
     seenArr = validStringArray(seen, 'seen');
     likedArr = validStringArray(liked, 'liked');
     superlikedArr = validStringArray(superliked, 'superliked');
     rejectedArr = validStringArray(rejected, 'rejected');
     territoriesArr = validStringArray(territories, 'territories');
+
+    if (settings !== undefined) {
+      if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) {
+        throw Object.assign(new Error('settings must be an object'), { status: 400 });
+      }
+      if (settings.ruler !== undefined && !NAMING_RULERS.has(settings.ruler)) {
+        throw Object.assign(new Error('settings.ruler must be "strict", "balanced" or "free"'), {
+          status: 400,
+        });
+      }
+      if (
+        settings.maxLength !== undefined &&
+        (typeof settings.maxLength !== 'number' ||
+          settings.maxLength < 0 ||
+          settings.maxLength > 20)
+      ) {
+        throw Object.assign(new Error('settings.maxLength must be a number between 0 and 20'), {
+          status: 400,
+        });
+      }
+      let techniquesArr: string[] | undefined;
+      if (settings.techniques !== undefined) {
+        if (!Array.isArray(settings.techniques) || settings.techniques.length > 9) {
+          throw Object.assign(
+            new Error('settings.techniques must be an array of at most 9 strings'),
+            { status: 400 }
+          );
+        }
+        techniquesArr = settings.techniques
+          .filter((t: unknown) => typeof t === 'string')
+          .map((t: string) => sanitizeForPrompt(t, 60));
+      }
+      if (settings.language !== undefined && !NAMING_LANGUAGES.has(settings.language)) {
+        throw Object.assign(new Error('settings.language must be "auto", "pt", "en" or "multi"'), {
+          status: 400,
+        });
+      }
+      settingsValidated = {
+        ruler: settings.ruler,
+        maxLength: settings.maxLength,
+        techniques: techniquesArr,
+        language: settings.language,
+      };
+    }
   } catch (err: any) {
     return res.status(err.status || 400).json({ error: err.message });
   }
   if (tasteReading !== undefined && typeof tasteReading !== 'string') {
     return res.status(400).json({ error: 'tasteReading must be a string' });
   }
+  if (modelOverride !== undefined) {
+    if (typeof modelOverride !== 'string' || !NAMING_TEXT_MODELS.has(modelOverride)) {
+      return res
+        .status(400)
+        .json({ error: 'model must be one of: ' + [...NAMING_TEXT_MODELS].join(', ') });
+    }
+  }
+  const resolvedModel = modelOverride || GEMINI_MODELS.FLASH;
 
   try {
     const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
@@ -1130,7 +1201,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.FLASH });
+    const model = genAI.getGenerativeModel({ model: resolvedModel });
 
     let brandContext = '';
     if (brandGuidelineId) {
@@ -1150,6 +1221,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       rejected: rejectedArr,
       tasteReading: tasteReading ? sanitizeForPrompt(tasteReading, 800) : undefined,
       territories: territoriesArr,
+      settings: settingsValidated,
     });
 
     const result = await model.generateContent(prompt);
@@ -1162,11 +1234,39 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     if (Array.isArray(parsed?.names) && seenArr?.length) {
       const seenLower = new Set(seenArr.map((s) => s.toLowerCase().trim()));
       parsed.names = parsed.names.filter(
-        (n: any) => !seenLower.has(String(n?.name || '').toLowerCase().trim())
+        (n: any) =>
+          !seenLower.has(
+            String(n?.name || '')
+              .toLowerCase()
+              .trim()
+          )
       );
     }
 
     res.json(parsed);
+
+    // Fire-and-forget usage tracking for the naming admin analytics section
+    // (server/routes/adminAnalytics.ts). Never blocks/affects the response.
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        ensureNamingEventsIndex(db);
+        await db.collection('naming_events').insertOne({
+          type: 'generate',
+          userId: req.userId!,
+          model: resolvedModel,
+          requested: typeof count === 'number' ? count : 10,
+          returned: Array.isArray(parsed?.names) ? parsed.names.length : 0,
+          tokens: result.response.usageMetadata?.totalTokenCount ?? null,
+          brandGuidelineId: brandGuidelineId || undefined,
+          ruler: settingsValidated?.ruler || 'strict',
+          createdAt: new Date(),
+        });
+      } catch (err: any) {
+        console.warn('[generate-naming] naming_events tracking failed:', err?.message || err);
+      }
+    })();
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -1356,8 +1456,7 @@ router.post('/naming-insight', apiRateLimiter, authenticate, async (req: AuthReq
     const nameSafe = sanitizeForPrompt(name, 60);
     const briefSafe = sanitizeForPrompt(briefText || '', 3000);
 
-    const fallback = () =>
-      res.json({ concept: nameSafe, layers: [], risks: [] });
+    const fallback = () => res.json({ concept: nameSafe, layers: [], risks: [] });
     try {
       const system = `You write the "full finalist defense" of a brand name, following the Visant naming methodology's presentation format (section 7): a name is consequence of a concept, never the other way around. Produce 3-6 GENUINE layers only (linguistic roots, cultural resonance, symbolic associations, brand-architecture fit, practical advantages) — never force a layer that doesn't exist. Also list honest risks (famous homonyms, pronunciation ambiguity, cultural traps, domain availability) — never promise legal/trademark clearance. Respond in the same language as the brief (default Portuguese). Respond ONLY with JSON: { "concept": string, "layers": string[], "risks": string[] }`;
       const user = `Name: ${nameSafe}\nBrief: ${briefSafe || '(no brief provided)'}`;
@@ -1374,8 +1473,12 @@ router.post('/naming-insight', apiRateLimiter, authenticate, async (req: AuthReq
       if (!parsed || typeof parsed !== 'object') return fallback();
       res.json({
         concept: typeof parsed.concept === 'string' ? parsed.concept : nameSafe,
-        layers: Array.isArray(parsed.layers) ? parsed.layers.filter((l: any) => typeof l === 'string').slice(0, 6) : [],
-        risks: Array.isArray(parsed.risks) ? parsed.risks.filter((r: any) => typeof r === 'string').slice(0, 6) : [],
+        layers: Array.isArray(parsed.layers)
+          ? parsed.layers.filter((l: any) => typeof l === 'string').slice(0, 6)
+          : [],
+        risks: Array.isArray(parsed.risks)
+          ? parsed.risks.filter((r: any) => typeof r === 'string').slice(0, 6)
+          : [],
       });
     } catch (err: any) {
       console.warn('[naming-insight:defense] falling back:', err?.message || err);
@@ -1383,6 +1486,46 @@ router.post('/naming-insight', apiRateLimiter, authenticate, async (req: AuthReq
     }
   } catch (error: any) {
     res.status(error.status || 500).json({ error: error.message });
+  }
+});
+
+const NAMING_EVENT_VERDICTS = new Set(['nope', 'like', 'superlike']);
+let namingEventsIndexEnsured = false;
+
+/** Idempotent, fire-and-forget index for naming_events — safe to call repeatedly. */
+function ensureNamingEventsIndex(db: ReturnType<typeof getDb>): void {
+  if (namingEventsIndexEnsured) return;
+  namingEventsIndexEnsured = true;
+  db.collection('naming_events')
+    .createIndex({ type: 1, createdAt: -1 }, { background: true })
+    .catch(() => {});
+}
+
+/**
+ * POST /ai/naming-event
+ * Naming Machine — lightweight swipe tracking for the admin analytics
+ * `naming` section (server/routes/adminAnalytics.ts). No credit charge.
+ * Body: { verdict: 'nope' | 'like' | 'superlike' }
+ */
+router.post('/naming-event', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  const { verdict } = req.body;
+  if (typeof verdict !== 'string' || !NAMING_EVENT_VERDICTS.has(verdict)) {
+    return res.status(400).json({ error: 'verdict must be "nope", "like" or "superlike"' });
+  }
+
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    ensureNamingEventsIndex(db);
+    await db.collection('naming_events').insertOne({
+      type: 'swipe',
+      userId: req.userId!,
+      verdict,
+      createdAt: new Date(),
+    });
+    res.status(204).send();
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 

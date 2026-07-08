@@ -1,5 +1,11 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { motion, useMotionValue, useTransform, useAnimationControls, type PanInfo } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  useAnimationControls,
+  type PanInfo,
+} from 'framer-motion';
 import { X, Heart, Gem, AlertTriangle } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
@@ -18,6 +24,9 @@ interface SwipeCardProps {
 }
 
 const THRESHOLD = 100;
+
+/** Slugs do backend (ex. "foreign-roots") viram labels legíveis. */
+const formatTag = (s: string) => s.replace(/[-_]/g, ' ').trim();
 
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
   ({ card, onVerdict, active = true }, ref) => {
@@ -57,13 +66,21 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
       } else if (offX < -THRESHOLD) {
         void fly('nope');
       } else {
-        controls.start({ x: 0, y: 0, rotate: 0, transition: { type: 'spring', stiffness: 300, damping: 26 } });
+        controls.start({
+          x: 0,
+          y: 0,
+          rotate: 0,
+          transition: { type: 'spring', stiffness: 300, damping: 26 },
+        });
       }
     };
 
     return (
       <motion.div
-        className={cn('absolute inset-0 flex items-center justify-center', active ? 'z-20' : 'z-10')}
+        className={cn(
+          'absolute inset-0 flex items-center justify-center',
+          active ? 'z-20' : 'z-10'
+        )}
         style={active ? { x, y, rotate } : undefined}
         animate={active ? controls : { scale: 0.94, y: 14, opacity: 0.6 }}
         initial={active ? false : { scale: 0.94, y: 14, opacity: 0.6 }}
@@ -87,49 +104,63 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-lg border border-destructive/60 px-2.5 py-1 text-destructive"
               >
                 <X size={16} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Nope</span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                  Nope
+                </span>
               </motion.div>
               <motion.div
                 style={{ opacity: likeOpacity }}
                 className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-lg border border-success/60 px-2.5 py-1 text-success"
               >
                 <Heart size={16} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Curti</span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                  Curti
+                </span>
               </motion.div>
               <motion.div
                 style={{ opacity: superOpacity }}
                 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-brand-cyan"
               >
                 <Gem size={18} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Superlike</span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                  Superlike
+                </span>
               </motion.div>
             </>
           )}
 
-          {/* Território */}
-          <span className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-            {card.territory}
-          </span>
+          {/* Conteúdo só no card ativo — o GlassPanel é translúcido e o texto
+              do preview vazaria por baixo; o card de trás fica como moldura vazia. */}
+          {active && (
+            <>
+              {/* Território */}
+              <span className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                {formatTag(card.territory)}
+              </span>
 
-          {/* Nome */}
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
-            {card.name}
-          </h2>
+              {/* Nome */}
+              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
+                {card.name}
+              </h2>
 
-          {/* Defesa */}
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-400">{card.rationale}</p>
+              {/* Defesa */}
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-400">
+                {card.rationale}
+              </p>
 
-          {/* Técnica */}
-          <span className="mt-5 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-            {card.technique}
-          </span>
+              {/* Técnica */}
+              <span className="mt-5 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                {formatTag(card.technique)}
+              </span>
 
-          {/* Flag de risco */}
-          {card.riskFlag && (
-            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
-              <AlertTriangle size={11} />
-              {card.riskFlag}
-            </span>
+              {/* Flag de risco */}
+              {card.riskFlag && (
+                <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
+                  <AlertTriangle size={11} />
+                  {card.riskFlag}
+                </span>
+              )}
+            </>
           )}
         </GlassPanel>
       </motion.div>

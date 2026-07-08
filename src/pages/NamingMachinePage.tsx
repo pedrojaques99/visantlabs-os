@@ -12,6 +12,7 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { BriefingFlow } from '@/components/naming/BriefingFlow';
 import { SwipeCard, type SwipeCardHandle } from '@/components/naming/SwipeCard';
 import { ShortlistPanel } from '@/components/naming/ShortlistPanel';
+import { NamingSettingsPopover } from '@/components/naming/NamingSettingsPopover';
 import {
   emptyProfile,
   updateProfile,
@@ -25,13 +26,29 @@ import {
   type Verdict,
   type NamingPhase,
 } from '@/lib/naming/tasteProfile';
+import { DEFAULT_NAMING_SETTINGS, type NamingSettings } from '@/lib/naming/constants';
 import {
   generateNaming,
+  namingEvent,
   namingPatternInsight,
   namingDefenseInsight,
+  type NamingSettingsPayload,
   type NamingDefenseInsightResponse,
 } from '@/services/namingApi';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+
+/**
+ * Extrai só os campos ≠ default para enviar ao generate-naming (request lean,
+ * retrocompatível). Retorna undefined quando tudo está no padrão.
+ */
+function buildSettingsPayload(s: NamingSettings): NamingSettingsPayload | undefined {
+  const p: NamingSettingsPayload = {};
+  if (s.ruler !== DEFAULT_NAMING_SETTINGS.ruler) p.ruler = s.ruler;
+  if (s.maxLength !== DEFAULT_NAMING_SETTINGS.maxLength) p.maxLength = s.maxLength;
+  if (s.language !== DEFAULT_NAMING_SETTINGS.language) p.language = s.language;
+  if (s.techniques.length > 0) p.techniques = s.techniques; // vazio = todas (default)
+  return Object.keys(p).length > 0 ? p : undefined;
+}
 
 export const NamingMachinePage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,6 +60,7 @@ export const NamingMachinePage: React.FC = () => {
   const [briefObj, setBriefObj] = useState<Record<string, unknown> | null>(null);
   const [brandGuidelineId, setBrandGuidelineId] = useState<string | null>(null);
   const [profile, setProfile] = useState<TasteProfile>(emptyProfile);
+  const [settings, setSettings] = useState<NamingSettings>(DEFAULT_NAMING_SETTINGS);
   const [deck, setDeck] = useState<NamingCard[]>([]);
   const [generating, setGenerating] = useState(false);
   const [prefetching, setPrefetching] = useState(false);
@@ -76,6 +94,7 @@ export const NamingMachinePage: React.FC = () => {
       setPhase(s.phase);
       setTasteReading(s.tasteReading);
       setBrandGuidelineId(s.brandGuidelineId ?? null);
+      if (s.settings) setSettings({ ...DEFAULT_NAMING_SETTINGS, ...s.settings });
       if (s.deck?.length) setDeck(s.deck);
       const set = new Set<string>();
       [...s.profile.superliked, ...s.profile.liked, ...s.profile.rejected].forEach((c) =>
@@ -99,8 +118,9 @@ export const NamingMachinePage: React.FC = () => {
       tasteReading,
       deck,
       brandGuidelineId,
+      settings,
     });
-  }, [profile, brief, briefObj, phase, tasteReading, deck, brandGuidelineId]);
+  }, [profile, brief, briefObj, phase, tasteReading, deck, brandGuidelineId, settings]);
 
   /* ── Erro de API ────────────────────────────────────────────────────── */
   const handleApiError = useCallback(
@@ -137,8 +157,7 @@ export const NamingMachinePage: React.FC = () => {
         if (!isPrefetch && !(await requireAuth())) return;
 
         let reading = tasteReading;
-        const swipes =
-          profile.liked.length + profile.superliked.length + profile.rejected.length;
+        const swipes = profile.liked.length + profile.superliked.length + profile.rejected.length;
         if (isPrefetch && swipes > 0) {
           try {
             const r = await namingPatternInsight({
@@ -162,7 +181,7 @@ export const NamingMachinePage: React.FC = () => {
         const territories = pickTerritories(profile, Array.from(territoriesRef.current));
         const resp = await generateNaming({
           brief: brief || '',
-          count: 20,
+          count: settings.batchSize,
           seen: profile.seen,
           liked: profile.liked.map((c) => c.name),
           superliked: profile.superliked.map((c) => c.name),
@@ -170,6 +189,8 @@ export const NamingMachinePage: React.FC = () => {
           tasteReading: reading || undefined,
           territories: territories.length ? territories : undefined,
           brandGuidelineId: brandGuidelineId || undefined,
+          settings: buildSettingsPayload(settings),
+          model: settings.model || undefined,
         });
 
         const existing = new Set([...profile.seen, ...deckRef.current.map((c) => c.name)]);
@@ -196,7 +217,7 @@ export const NamingMachinePage: React.FC = () => {
         }
       }
     },
-    [brief, profile, tasteReading, brandGuidelineId, requireAuth, handleApiError]
+    [brief, profile, tasteReading, brandGuidelineId, settings, requireAuth, handleApiError]
   );
 
   /* ── Dispara primeira leva + prefetch ≤5 ────────────────────────────── */
@@ -204,7 +225,12 @@ export const NamingMachinePage: React.FC = () => {
     if (phase !== 'deck') return;
     if (deck.length === 0 && !generatingRef.current) {
       void fetchBatch(false);
-    } else if (deck.length > 0 && deck.length <= 5 && !prefetchingRef.current && !generatingRef.current) {
+    } else if (
+      deck.length > 0 &&
+      deck.length <= 5 &&
+      !prefetchingRef.current &&
+      !generatingRef.current
+    ) {
       void fetchBatch(true);
     }
   }, [phase, deck.length, fetchBatch]);
@@ -240,6 +266,9 @@ export const NamingMachinePage: React.FC = () => {
       setProfile((p) => updateProfile(p, card, verdict));
       setDeck((d) => d.filter((c) => c.name !== card.name));
       setLastSwiped(card);
+      // Beacon analítico fire-and-forget (nunca afeta a UX). Não é enviado no
+      // undo — a leve imprecisão de contagem é aceitável por design.
+      namingEvent(verdict);
       if (verdict === 'superlike') void loadDefense(card);
 
       toast(
@@ -348,6 +377,7 @@ export const NamingMachinePage: React.FC = () => {
   const handleReset = useCallback(() => {
     clearSession();
     setProfile(emptyProfile());
+    setSettings(DEFAULT_NAMING_SETTINGS);
     setDeck([]);
     setBrief(null);
     setBriefObj(null);
@@ -371,6 +401,13 @@ export const NamingMachinePage: React.FC = () => {
     },
     []
   );
+
+  /* ── Configurações avançadas (aplicam na próxima leva) ──────────────── */
+  const updateSettings = useCallback(
+    (patch: Partial<NamingSettings>) => setSettings((s) => ({ ...s, ...patch })),
+    []
+  );
+  const resetSettings = useCallback(() => setSettings(DEFAULT_NAMING_SETTINGS), []);
 
   /* ── Derivados de UI ────────────────────────────────────────────────── */
   const seenCount = profile.seen.length;
@@ -423,6 +460,15 @@ export const NamingMachinePage: React.FC = () => {
         <BriefingFlow onComplete={onBriefingComplete} />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-8 px-4 py-8">
+          {/* Config avançada — engrenagem discreta alinhada ao topo do deck */}
+          <div className="flex w-full max-w-md justify-end">
+            <NamingSettingsPopover
+              settings={settings}
+              onChange={updateSettings}
+              onReset={resetSettings}
+            />
+          </div>
+
           {/* Deck */}
           <div className="relative h-[440px] w-full max-w-md">
             {activeCard ? (

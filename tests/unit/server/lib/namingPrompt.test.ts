@@ -81,4 +81,49 @@ describe('buildNamingPrompt', () => {
     });
     expect(prompt).toMatch(/Valid/);
   });
+
+  it('defaults to the strict, eliminatory ruler with no settings', () => {
+    const prompt = buildNamingPrompt({ brief: 'brief' });
+    expect(prompt).toMatch(/ELIMINATORY/);
+    expect(prompt).not.toMatch(/PREFERENCE, not eliminatory/);
+  });
+
+  describe('settings.ruler', () => {
+    it('balanced: ruler becomes a preference, not eliminatory', () => {
+      const prompt = buildNamingPrompt({ brief: 'brief', settings: { ruler: 'balanced' } });
+      expect(prompt).toMatch(/PREFERENCE, not eliminatory/);
+      expect(prompt).toMatch(/exceptional concept is allowed to violate a rule/);
+      expect(prompt).not.toMatch(/## Phonetic ruler — ELIMINATORY/);
+    });
+
+    it('free: ruler is disabled entirely', () => {
+      const prompt = buildNamingPrompt({ brief: 'brief', settings: { ruler: 'free' } });
+      expect(prompt).toMatch(/## Phonetic ruler — OFF/);
+      expect(prompt).not.toMatch(/CVCV-style consonant/);
+      expect(prompt).not.toMatch(/ELIMINATORY/);
+    });
+  });
+
+  it('settings.maxLength overrides the default length guidance', () => {
+    const prompt = buildNamingPrompt({ brief: 'brief', settings: { maxLength: 5 } });
+    expect(prompt).toMatch(/Max 5 characters/);
+    expect(prompt).not.toMatch(/Max 10 characters/);
+  });
+
+  it('settings.techniques restricts generation to only the given techniques', () => {
+    const prompt = buildNamingPrompt({
+      brief: 'brief',
+      settings: { techniques: ['costura-invisivel', 'blend'] },
+    });
+    expect(prompt).toMatch(/RESTRICTED to the following/);
+    expect(prompt).toMatch(/Invisible seam/);
+    expect(prompt).toMatch(/Morpheme blend/);
+    expect(prompt).not.toMatch(/Phonetic invention/);
+    expect(prompt).not.toMatch(/Tribe jargon/);
+  });
+
+  it('settings.language multi mines 2-3 language families explicitly', () => {
+    const prompt = buildNamingPrompt({ brief: 'brief', settings: { language: 'multi' } });
+    expect(prompt).toMatch(/Mine 2-3 distinct language families/);
+  });
 });
