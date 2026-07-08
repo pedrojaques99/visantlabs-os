@@ -1034,7 +1034,7 @@ export const TOOLS = [
     name: 'figma_agent_pending',
     description:
       'Inspect the Visant Copilot ops-channel queue for a Figma file — diagnostic only. Do NOT poll this ' +
-      'repeatedly while a batch should be draining; that competes with the plugin\'s own long-poll and can ' +
+      "repeatedly while a batch should be draining; that competes with the plugin's own long-poll and can " +
       'amplify at-least-once redelivery. Use it once to check whether a batch is stuck (e.g. plugin not ' +
       'open/focused/logged into the right account).',
     inputSchema: {
@@ -1057,7 +1057,8 @@ export const TOOLS = [
         fileId: { type: 'string', description: 'Figma file key.' },
         appliedIds: {
           type: 'array',
-          description: 'Batch ids to remove from the queue (from figma_agent_command\'s batchId or figma_agent_pending).',
+          description:
+            "Batch ids to remove from the queue (from figma_agent_command's batchId or figma_agent_pending).",
           items: { type: 'string' },
         },
       },
@@ -1552,7 +1553,9 @@ export async function handleTool(name: string, args: ToolArgs) {
       return toolResult(data);
     }
     case 'figma_agent_pending': {
-      const data = await visantFetch(`/plugin/pending?fileId=${encodeURIComponent(String(args.fileId))}`);
+      const data = await visantFetch(
+        `/plugin/pending?fileId=${encodeURIComponent(String(args.fileId))}`
+      );
       return toolResult(data);
     }
     case 'figma_agent_ack': {

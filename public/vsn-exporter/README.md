@@ -8,16 +8,16 @@ Roda no **Windows + PowerShell**. Menu navegável por setas — sem decorar coma
 
 ## 1. Requisitos
 
-| Item | Obrigatório | Para quê |
-|------|-------------|----------|
-| **Windows 10/11** | ✅ | Sistema |
-| **PowerShell 5.1+** (já vem no Windows) | ✅ | Roda o script |
-| ImageMagick (`magick`) | opcional | Imagens, WebP, PDF→PNG |
-| Ghostscript (`gswin64c`) | opcional | Comprimir / rasterizar / CMYK |
-| qpdf | opcional | Merge / split / páginas de PDF |
-| Inkscape | opcional | AI/EPS→SVG e raster de alta fidelidade |
-| ocrmypdf + Tesseract | opcional | OCR (PDF pesquisável) |
-| Python 3 | opcional | Arte final CMYK (PDF/X-1a) |
+| Item                                    | Obrigatório | Para quê                               |
+| --------------------------------------- | ----------- | -------------------------------------- |
+| **Windows 10/11**                       | ✅          | Sistema                                |
+| **PowerShell 5.1+** (já vem no Windows) | ✅          | Roda o script                          |
+| ImageMagick (`magick`)                  | opcional    | Imagens, WebP, PDF→PNG                 |
+| Ghostscript (`gswin64c`)                | opcional    | Comprimir / rasterizar / CMYK          |
+| qpdf                                    | opcional    | Merge / split / páginas de PDF         |
+| Inkscape                                | opcional    | AI/EPS→SVG e raster de alta fidelidade |
+| ocrmypdf + Tesseract                    | opcional    | OCR (PDF pesquisável)                  |
+| Python 3                                | opcional    | Arte final CMYK (PDF/X-1a)             |
 
 > As ferramentas externas são **opcionais**: cada função só pede a sua. Se faltar algo, o menu avisa exatamente o que instalar e segue funcionando no resto.
 
@@ -69,6 +69,7 @@ powershell -ExecutionPolicy Bypass -File "C:\caminho\vsn-exporter\vsn-exporter.p
 > `-ExecutionPolicy Bypass` é necessário porque scripts baixados ficam bloqueados por padrão. Não altera a política do sistema — só dessa execução.
 
 ### Navegação no menu
+
 - **↑ / ↓** — navegar · **Enter** — abrir/executar · **Esc** — voltar/sair
 - **1–9** — atalho direto para o item
 - O menu é em dois níveis: **grupo** (Organização, PDF & Vetor, Imagem, Entrega, Sistema) → **ação**.
@@ -119,12 +120,12 @@ Exemplo: `... vsn-exporter.ps1 -Path "D:\Entrega" -Merge`
 
 ## Estrutura interna
 
-| Arquivo | Responsável por |
-|---------|-----------------|
-| `vsn-exporter.ps1` | TUI, menu, roteamento, tratamento de erro |
-| `lib/tools.ps1` | localizar ferramentas externas (magick, gs, qpdf, inkscape) |
-| `lib/log.ps1` | logging de sessão |
-| `lib/organize.ps1` | organização de pastas/arquivos |
-| `lib/pdf.ps1` | todas as operações de PDF + OCR + metadados |
-| `lib/image.ps1` | JPG, WebP, EXIF, ICO |
-| `lib/delivery.ps1` | INDEX e empacotamento |
+| Arquivo            | Responsável por                                             |
+| ------------------ | ----------------------------------------------------------- |
+| `vsn-exporter.ps1` | TUI, menu, roteamento, tratamento de erro                   |
+| `lib/tools.ps1`    | localizar ferramentas externas (magick, gs, qpdf, inkscape) |
+| `lib/log.ps1`      | logging de sessão                                           |
+| `lib/organize.ps1` | organização de pastas/arquivos                              |
+| `lib/pdf.ps1`      | todas as operações de PDF + OCR + metadados                 |
+| `lib/image.ps1`    | JPG, WebP, EXIF, ICO                                        |
+| `lib/delivery.ps1` | INDEX e empacotamento                                       |

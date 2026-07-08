@@ -431,124 +431,143 @@ const isSafeRefId = (id: unknown): id is string =>
   typeof id === 'string' && /^[a-zA-Z0-9_-]{6,64}$/.test(id);
 
 // GET /collections — the authenticated user's boards (with item counts)
-router.get('/collections', apiRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
-    await connectToMongoDB();
-    const db = getDb();
-    const cols = await db
-      .collection('reference_collections')
-      .find({ userId: String(userId) })
-      .sort({ updatedAt: -1 })
-      .project(COLLECTION_PROJECTION)
-      .toArray();
+router.get(
+  '/collections',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+      await connectToMongoDB();
+      const db = getDb();
+      const cols = await db
+        .collection('reference_collections')
+        .find({ userId: String(userId) })
+        .sort({ updatedAt: -1 })
+        .project(COLLECTION_PROJECTION)
+        .toArray();
 
-    // Mosaic covers — first up to 4 thumbnails per board (one batched lookup).
-    const firstIds = [...new Set(cols.flatMap((c: any) => (c.refIds || []).slice(0, 4)))];
-    const thumbs = firstIds.length
-      ? await db
-          .collection('community_presets')
-          .find({ id: { $in: firstIds } })
-          .project({ _id: 0, id: 1, thumbnailUrl: 1, referenceImageUrl: 1 })
-          .toArray()
-      : [];
-    const thumbById = new Map(
-      thumbs.map((t: any) => [t.id, t.thumbnailUrl || t.referenceImageUrl])
-    );
+      // Mosaic covers — first up to 4 thumbnails per board (one batched lookup).
+      const firstIds = [...new Set(cols.flatMap((c: any) => (c.refIds || []).slice(0, 4)))];
+      const thumbs = firstIds.length
+        ? await db
+            .collection('community_presets')
+            .find({ id: { $in: firstIds } })
+            .project({ _id: 0, id: 1, thumbnailUrl: 1, referenceImageUrl: 1 })
+            .toArray()
+        : [];
+      const thumbById = new Map(
+        thumbs.map((t: any) => [t.id, t.thumbnailUrl || t.referenceImageUrl])
+      );
 
-    return res.json({
-      collections: cols.map((c: any) => ({
-        ...c,
-        count: (c.refIds || []).length,
-        covers: (c.refIds || [])
-          .slice(0, 4)
-          .map((id: string) => thumbById.get(id))
-          .filter(Boolean),
-      })),
-    });
-  } catch (error: any) {
-    console.error('[references] collections list error:', error);
-    return res.status(500).json({ error: 'Failed to list collections' });
+      return res.json({
+        collections: cols.map((c: any) => ({
+          ...c,
+          count: (c.refIds || []).length,
+          covers: (c.refIds || [])
+            .slice(0, 4)
+            .map((id: string) => thumbById.get(id))
+            .filter(Boolean),
+        })),
+      });
+    } catch (error: any) {
+      console.error('[references] collections list error:', error);
+      return res.status(500).json({ error: 'Failed to list collections' });
+    }
   }
-});
+);
 
 // POST /collections — create a board
-router.post('/collections', ingestRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
-    const name = typeof req.body.name === 'string' ? req.body.name.trim().slice(0, 120) : '';
-    if (!name) return res.status(400).json({ error: 'name is required' });
+router.post(
+  '/collections',
+  ingestRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+      const name = typeof req.body.name === 'string' ? req.body.name.trim().slice(0, 120) : '';
+      if (!name) return res.status(400).json({ error: 'name is required' });
 
-    await connectToMongoDB();
-    const db = getDb();
-    const now = new Date();
-    const doc = {
-      id: randomUUID(),
-      userId: String(userId),
-      name,
-      refIds: [] as string[],
-      coverUrl: '',
-      isPublic: req.body.isPublic === true,
-      createdAt: now,
-      updatedAt: now,
-    };
-    await db.collection('reference_collections').insertOne(doc);
-    const { _id, userId: _u, ...pub } = doc as any;
-    return res.json({ collection: { ...pub, count: 0 } });
-  } catch (error: any) {
-    console.error('[references] collection create error:', error);
-    return res.status(500).json({ error: 'Failed to create collection' });
+      await connectToMongoDB();
+      const db = getDb();
+      const now = new Date();
+      const doc = {
+        id: randomUUID(),
+        userId: String(userId),
+        name,
+        refIds: [] as string[],
+        coverUrl: '',
+        isPublic: req.body.isPublic === true,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await db.collection('reference_collections').insertOne(doc);
+      const { _id, userId: _u, ...pub } = doc as any;
+      return res.json({ collection: { ...pub, count: 0 } });
+    } catch (error: any) {
+      console.error('[references] collection create error:', error);
+      return res.status(500).json({ error: 'Failed to create collection' });
+    }
   }
-});
+);
 
 // GET /collections/taste — infer the user's taste from saved items (semantic suggestion)
-router.get('/collections/taste', apiRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
-    await connectToMongoDB();
-    const db = getDb();
-    const cols = await db
-      .collection('reference_collections')
-      .find({ userId: String(userId) })
-      .project({ refIds: 1 })
-      .toArray();
-    const refIds = [...new Set(cols.flatMap((c: any) => c.refIds || []))];
-    if (!refIds.length) return res.json({ taste: [] });
+router.get(
+  '/collections/taste',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+      await connectToMongoDB();
+      const db = getDb();
+      const cols = await db
+        .collection('reference_collections')
+        .find({ userId: String(userId) })
+        .project({ refIds: 1 })
+        .toArray();
+      const refIds = [...new Set(cols.flatMap((c: any) => c.refIds || []))];
+      if (!refIds.length) return res.json({ taste: [] });
 
-    const KEYS = ['type_style', 'aesthetic', 'vibe', 'brand_artifact'];
-    const facetStages: Record<string, any[]> = {};
-    for (const k of KEYS)
-      facetStages[k] = [
-        { $unwind: { path: `$dimensions.${k}`, preserveNullAndEmptyArrays: false } },
-        { $group: { _id: `$dimensions.${k}`, count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 1 },
-      ];
-    const [agg] = await db
-      .collection('community_presets')
-      .aggregate([{ $match: { id: { $in: refIds }, category: 'reference' } }, { $facet: facetStages }])
-      .toArray();
+      const KEYS = ['type_style', 'aesthetic', 'vibe', 'brand_artifact'];
+      const facetStages: Record<string, any[]> = {};
+      for (const k of KEYS)
+        facetStages[k] = [
+          { $unwind: { path: `$dimensions.${k}`, preserveNullAndEmptyArrays: false } },
+          { $group: { _id: `$dimensions.${k}`, count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+          { $limit: 1 },
+        ];
+      const [agg] = await db
+        .collection('community_presets')
+        .aggregate([
+          { $match: { id: { $in: refIds }, category: 'reference' } },
+          { $facet: facetStages },
+        ])
+        .toArray();
 
-    const taste: Array<{ key: string; value: string; count: number }> = [];
-    for (const k of KEYS) {
-      const top = ((agg as any)?.[k] || [])[0];
-      if (top?._id) taste.push({ key: k, value: top._id, count: top.count });
+      const taste: Array<{ key: string; value: string; count: number }> = [];
+      for (const k of KEYS) {
+        const top = ((agg as any)?.[k] || [])[0];
+        if (top?._id) taste.push({ key: k, value: top._id, count: top.count });
+      }
+      taste.sort((a, b) => b.count - a.count);
+      return res.json({ taste: taste.slice(0, 3) });
+    } catch (error: any) {
+      console.error('[references] taste error:', error);
+      return res.status(500).json({ error: 'Failed to infer taste' });
     }
-    taste.sort((a, b) => b.count - a.count);
-    return res.json({ taste: taste.slice(0, 3) });
-  } catch (error: any) {
-    console.error('[references] taste error:', error);
-    return res.status(500).json({ error: 'Failed to infer taste' });
   }
-});
+);
 
 // GET /collections/:id — board detail + hydrated reference items (owner, or public)
 router.get('/collections/:id', apiRateLimiter, async (req: AuthRequest, res: Response) => {
   try {
-    if (!isSafeRefId(req.params.id)) return res.status(400).json({ error: 'Invalid collection id' });
+    if (!isSafeRefId(req.params.id))
+      return res.status(400).json({ error: 'Invalid collection id' });
     await connectToMongoDB();
     const db = getDb();
     const col = await db.collection('reference_collections').findOne({ id: req.params.id });
@@ -585,79 +604,100 @@ router.get('/collections/:id', apiRateLimiter, async (req: AuthRequest, res: Res
 });
 
 // PATCH /collections/:id — rename / toggle public
-router.patch('/collections/:id', ingestRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
-    if (!isSafeRefId(req.params.id)) return res.status(400).json({ error: 'Invalid collection id' });
-    await connectToMongoDB();
-    const db = getDb();
-    const updates: Record<string, any> = { updatedAt: new Date() };
-    if (typeof req.body.name === 'string' && req.body.name.trim())
-      updates.name = req.body.name.trim().slice(0, 120);
-    if (typeof req.body.isPublic === 'boolean') updates.isPublic = req.body.isPublic;
-    const result = await db
-      .collection('reference_collections')
-      .updateOne({ id: req.params.id, userId: String(userId) }, { $set: updates });
-    if (!result.matchedCount) return res.status(404).json({ error: 'Collection not found' });
-    return res.json({ success: true });
-  } catch (error: any) {
-    console.error('[references] collection update error:', error);
-    return res.status(500).json({ error: 'Failed to update collection' });
+router.patch(
+  '/collections/:id',
+  ingestRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+      if (!isSafeRefId(req.params.id))
+        return res.status(400).json({ error: 'Invalid collection id' });
+      await connectToMongoDB();
+      const db = getDb();
+      const updates: Record<string, any> = { updatedAt: new Date() };
+      if (typeof req.body.name === 'string' && req.body.name.trim())
+        updates.name = req.body.name.trim().slice(0, 120);
+      if (typeof req.body.isPublic === 'boolean') updates.isPublic = req.body.isPublic;
+      const result = await db
+        .collection('reference_collections')
+        .updateOne({ id: req.params.id, userId: String(userId) }, { $set: updates });
+      if (!result.matchedCount) return res.status(404).json({ error: 'Collection not found' });
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error('[references] collection update error:', error);
+      return res.status(500).json({ error: 'Failed to update collection' });
+    }
   }
-});
+);
 
 // DELETE /collections/:id
-router.delete('/collections/:id', ingestRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
-    if (!isSafeRefId(req.params.id)) return res.status(400).json({ error: 'Invalid collection id' });
-    await connectToMongoDB();
-    const db = getDb();
-    const result = await db
-      .collection('reference_collections')
-      .deleteOne({ id: req.params.id, userId: String(userId) });
-    if (!result.deletedCount) return res.status(404).json({ error: 'Collection not found' });
-    return res.json({ success: true });
-  } catch (error: any) {
-    console.error('[references] collection delete error:', error);
-    return res.status(500).json({ error: 'Failed to delete collection' });
+router.delete(
+  '/collections/:id',
+  ingestRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+      if (!isSafeRefId(req.params.id))
+        return res.status(400).json({ error: 'Invalid collection id' });
+      await connectToMongoDB();
+      const db = getDb();
+      const result = await db
+        .collection('reference_collections')
+        .deleteOne({ id: req.params.id, userId: String(userId) });
+      if (!result.deletedCount) return res.status(404).json({ error: 'Collection not found' });
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error('[references] collection delete error:', error);
+      return res.status(500).json({ error: 'Failed to delete collection' });
+    }
   }
-});
+);
 
 // POST /collections/:id/items — add a reference (sets cover if first)
-router.post('/collections/:id/items', ingestRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId;
-    if (!userId) return res.status(401).json({ error: 'Authentication required' });
-    if (!isSafeRefId(req.params.id)) return res.status(400).json({ error: 'Invalid collection id' });
-    const refId = req.body.refId;
-    if (!isSafeRefId(refId)) return res.status(400).json({ error: 'Valid refId is required' });
+router.post(
+  '/collections/:id/items',
+  ingestRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Authentication required' });
+      if (!isSafeRefId(req.params.id))
+        return res.status(400).json({ error: 'Invalid collection id' });
+      const refId = req.body.refId;
+      if (!isSafeRefId(refId)) return res.status(400).json({ error: 'Valid refId is required' });
 
-    await connectToMongoDB();
-    const db = getDb();
-    const col = await db
-      .collection('reference_collections')
-      .findOne({ id: req.params.id, userId: String(userId) });
-    if (!col) return res.status(404).json({ error: 'Collection not found' });
+      await connectToMongoDB();
+      const db = getDb();
+      const col = await db
+        .collection('reference_collections')
+        .findOne({ id: req.params.id, userId: String(userId) });
+      if (!col) return res.status(404).json({ error: 'Collection not found' });
 
-    const ref = await db
-      .collection('community_presets')
-      .findOne({ id: refId, category: 'reference' }, { projection: { thumbnailUrl: 1, referenceImageUrl: 1 } });
-    if (!ref) return res.status(404).json({ error: 'Reference not found' });
+      const ref = await db
+        .collection('community_presets')
+        .findOne(
+          { id: refId, category: 'reference' },
+          { projection: { thumbnailUrl: 1, referenceImageUrl: 1 } }
+        );
+      if (!ref) return res.status(404).json({ error: 'Reference not found' });
 
-    const updates: Record<string, any> = { updatedAt: new Date() };
-    if (!col.coverUrl) updates.coverUrl = ref.thumbnailUrl || ref.referenceImageUrl || '';
-    await db
-      .collection('reference_collections')
-      .updateOne({ id: req.params.id }, { $addToSet: { refIds: refId }, $set: updates });
-    return res.json({ success: true });
-  } catch (error: any) {
-    console.error('[references] collection add item error:', error);
-    return res.status(500).json({ error: 'Failed to add to collection' });
+      const updates: Record<string, any> = { updatedAt: new Date() };
+      if (!col.coverUrl) updates.coverUrl = ref.thumbnailUrl || ref.referenceImageUrl || '';
+      await db
+        .collection('reference_collections')
+        .updateOne({ id: req.params.id }, { $addToSet: { refIds: refId }, $set: updates });
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error('[references] collection add item error:', error);
+      return res.status(500).json({ error: 'Failed to add to collection' });
+    }
   }
-});
+);
 
 // DELETE /collections/:id/items/:refId — remove a reference
 router.delete(

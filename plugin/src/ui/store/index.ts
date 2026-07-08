@@ -382,7 +382,17 @@ function serializeMessages(chatHistory: ChatMessage[]) {
   return chatHistory
     .slice(-50)
     .map(
-      ({ id, role, content, timestamp, operations, toolCalls, summaryItems, isError, metadata }) => ({
+      ({
+        id,
+        role,
+        content,
+        timestamp,
+        operations,
+        toolCalls,
+        summaryItems,
+        isError,
+        metadata,
+      }) => ({
         id,
         role,
         content,

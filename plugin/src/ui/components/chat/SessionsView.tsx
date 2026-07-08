@@ -70,7 +70,9 @@ export function SessionsView() {
               >
                 <MessageSquare
                   size={13}
-                  className={isActive ? 'text-brand-cyan shrink-0' : 'text-muted-foreground shrink-0'}
+                  className={
+                    isActive ? 'text-brand-cyan shrink-0' : 'text-muted-foreground shrink-0'
+                  }
                 />
 
                 {isEditing ? (

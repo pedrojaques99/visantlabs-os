@@ -3090,10 +3090,12 @@ router.post('/references/visibility', validateAdmin, async (req: Request, res: R
     }
     await connectToMongoDB();
     const db = getDb();
-    const result = await db.collection('community_presets').updateMany(
-      { category: 'reference', studio: { $in: studios.map((s: any) => String(s)) } },
-      { $set: { hiddenFromPublic, updatedAt: new Date() } }
-    );
+    const result = await db
+      .collection('community_presets')
+      .updateMany(
+        { category: 'reference', studio: { $in: studios.map((s: any) => String(s)) } },
+        { $set: { hiddenFromPublic, updatedAt: new Date() } }
+      );
     return res.json({
       success: true,
       matched: result.matchedCount,

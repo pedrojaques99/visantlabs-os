@@ -88,6 +88,13 @@ export const DIMENSION_LABELS: Record<FacetDimensionKey, string> = {
 export const DIMENSION_GROUPS_BY_KIND: Record<'all' | 'branding' | 'mockup', FacetDimensionKey[]> =
   {
     all: ['aesthetic', 'vibe', 'color_mood', 'type_style', 'brand_artifact', 'niche'],
-    branding: ['brand_artifact', 'logo_construction', 'type_style', 'aesthetic', 'vibe', 'color_mood'],
+    branding: [
+      'brand_artifact',
+      'logo_construction',
+      'type_style',
+      'aesthetic',
+      'vibe',
+      'color_mood',
+    ],
     mockup: ['mockup_type', 'material', 'aesthetic', 'vibe', 'color_mood'],
   };
