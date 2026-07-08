@@ -23,6 +23,7 @@ import {
   VALID_ASPECT_RATIOS,
 } from '../utils/validation.js';
 import { vectorService } from '../services/vectorService.js';
+import { ensureCoreIndexes } from '../db/ensureIndexes.js';
 
 const router = express.Router();
 
@@ -143,11 +144,163 @@ router.get('/status', validateAdmin, async (req: AuthRequest, res: Response) => 
   }
 });
 
-router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res: Response) => {
+// ---------------------------------------------------------------------------
+// Admin dashboard endpoints (split for progressive loading).
+//
+// The old monolithic `GET /users` fanned out 4 DB queries PER user (N+1) and
+// bundled KPIs + charts + the full user table into one blocking response. It is
+// now three focused endpoints:
+//   GET /summary  — cheap global aggregations (KPI cards). Paints instantly.
+//   GET /users    — user list with per-user cost computed via ~4 batched
+//                   group-by aggregations (N+1 eliminated, scales flat).
+//   GET /charts   — heavy $facet + time-series aggregations.
+// ---------------------------------------------------------------------------
+
+type UsageAggRow = {
+  _id: { model?: string | null; resolution?: string | null; type?: string | null };
+  totalImages?: number;
+  totalVideos?: number;
+  totalCost?: number;
+};
+
+// Compute USD API cost from grouped usage_records rows.
+// Prefers the stored `cost`; falls back to centralized pricing when absent.
+function computeApiCostUSD(items: UsageAggRow[]): number {
+  let cost = 0;
+  for (const item of items) {
+    const model = item._id.model || '';
+    const resolution = item._id.resolution || '';
+    const type = item._id.type || '';
+    const imageCount = item.totalImages || 0;
+    const videoCount = item.totalVideos || 0;
+
+    if (item.totalCost && item.totalCost > 0) {
+      cost += item.totalCost;
+    } else {
+      if (type === 'video' || videoCount > 0) {
+        cost += calculateVideoCost(videoCount || 1);
+      }
+      if (imageCount > 0) {
+        cost += calculateImageCost(imageCount, model, normalizeResolution(resolution));
+      }
+    }
+  }
+  return cost;
+}
+
+// GET /summary — global KPI aggregations only (no per-user loop).
+router.get('/summary', adminUsersLimiter, validateAdmin, async (_req: Request, res: Response) => {
   try {
-    // Connect to MongoDB for direct collection queries
     await connectToMongoDB();
     const db = getDb();
+    void ensureCoreIndexes(db);
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalUsers,
+      activeSubscriptions,
+      newUsers30d,
+      userAgg,
+      totalReferredUsers,
+      usersWithReferralCode,
+      totalTransactions,
+      totalMockupsSaved,
+      globalRevenue,
+      globalUsageAgg,
+      mockupsGeneratedAgg,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { subscriptionStatus: { in: ['active', 'trialing'] } } }),
+      prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+      prisma.user.aggregate({
+        _sum: {
+          creditsUsed: true,
+          monthlyCredits: true,
+          totalCreditsEarned: true,
+          storageUsedBytes: true,
+          referralCount: true,
+        },
+      }),
+      prisma.user.count({ where: { referredBy: { not: null } } }),
+      prisma.user.count({ where: { referralCode: { not: null } } }),
+      prisma.transaction.count(),
+      db.collection('mockups').countDocuments({}),
+      prisma.transaction.groupBy({
+        by: ['currency'],
+        where: { status: 'completed' },
+        _sum: { amount: true },
+      }),
+      db
+        .collection('usage_records')
+        .aggregate([
+          {
+            $group: {
+              _id: { model: '$model', resolution: '$resolution', type: '$type' },
+              totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+              totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+              totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+            },
+          },
+        ])
+        .toArray(),
+      db
+        .collection('usage_records')
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+            },
+          },
+        ])
+        .toArray(),
+    ]);
+
+    const totalCreditsUsed = userAgg._sum.creditsUsed || 0;
+
+    // Prefer usage_records; fall back to a credits-based estimate when empty.
+    let totalMockupsGenerated = mockupsGeneratedAgg[0]?.totalImages || 0;
+    if (!totalMockupsGenerated) {
+      totalMockupsGenerated = totalCreditsUsed > 0 ? Math.round(totalCreditsUsed / 1.2) : 0;
+    }
+
+    const totalRevenueBRL = globalRevenue.find((r) => r.currency === 'BRL')?._sum.amount || 0;
+    const totalRevenueUSD = globalRevenue.find((r) => r.currency === 'USD')?._sum.amount || 0;
+    const totalApiCostUSD = computeApiCostUSD(globalUsageAgg as UsageAggRow[]);
+
+    return res.json({
+      totalUsers,
+      activeSubscriptions,
+      newUsers30d,
+      totalMockupsGenerated,
+      totalMockupsSaved,
+      totalCreditsUsed,
+      totalMonthlyCredits: userAgg._sum.monthlyCredits || 0,
+      totalManualCredits: userAgg._sum.totalCreditsEarned || 0,
+      totalStorageUsed: userAgg._sum.storageUsedBytes || 0,
+      totalTransactions,
+      totalRevenueBRL,
+      totalRevenueUSD,
+      totalApiCostUSD,
+      referralStats: {
+        totalReferralCount: userAgg._sum.referralCount || 0,
+        totalReferredUsers,
+        usersWithReferralCode,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to load admin summary:', error);
+    return res.status(500).json({ error: 'Failed to load summary' });
+  }
+});
+
+// GET /users — full user list with per-user metrics via batched aggregations.
+router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    void ensureCoreIndexes(db);
 
     const users = await prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
@@ -175,294 +328,244 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       },
     });
 
-    // Get counts for all users efficiently using Promise.all
-    // Use MongoDB driver directly for mockups since they're saved directly to MongoDB
-    const formattedUsers = await Promise.all(
-      users.map(async (user) => {
-        const monthlyCredits = user.monthlyCredits ?? 0;
-        const creditsUsed = user.creditsUsed ?? 0;
-        const totalCreditsEarned = user.totalCreditsEarned ?? 0;
-        const creditsRemaining = Math.max(0, monthlyCredits - creditsUsed);
+    const userIds = users.map((u) => u.id);
 
-        // Count mockups using MongoDB driver directly (mockups are saved as strings, not ObjectIds)
-        // Try both string userId and ObjectId userId to handle both cases
-        const userIdString = user.id;
-        const userIdObjectId = new ObjectId(userIdString);
+    // mockups are stored with userId as either a string or an ObjectId — match both.
+    const objectIdVariants: ObjectId[] = [];
+    for (const id of userIds) {
+      try {
+        objectIdVariants.push(new ObjectId(id));
+      } catch {
+        /* non-ObjectId id, skip */
+      }
+    }
 
-        const [mockupCount, transactionCount, spendingByUser, userUsageAgg] = await Promise.all([
-          db.collection('mockups').countDocuments({
-            $or: [{ userId: userIdString }, { userId: userIdObjectId }],
-          }),
-          prisma.transaction.count({
-            where: { userId: user.id },
-          }),
-          prisma.transaction.groupBy({
-            by: ['currency'],
-            where: {
-              userId: user.id,
-              status: 'completed',
-            },
-            _sum: { amount: true },
-          }),
-          // Aggregate usage by model/resolution for correct cost calculation
-          db
-            .collection('usage_records')
-            .aggregate([
-              { $match: { userId: userIdString } },
-              {
-                $group: {
-                  _id: { model: '$model', resolution: '$resolution', type: '$type' },
-                  totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-                  totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
-                  totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-                },
+    // ~4 batched queries total, regardless of user count (N+1 eliminated).
+    const [mockupCounts, txCounts, txSpend, usageRows] = await Promise.all([
+      db
+        .collection('mockups')
+        .aggregate([
+          { $match: { userId: { $in: [...userIds, ...objectIdVariants] } } },
+          { $group: { _id: { $toString: '$userId' }, count: { $sum: 1 } } },
+        ])
+        .toArray(),
+      prisma.transaction.groupBy({
+        by: ['userId'],
+        where: { userId: { in: userIds } },
+        _count: { _all: true },
+      }),
+      prisma.transaction.groupBy({
+        by: ['userId', 'currency'],
+        where: { userId: { in: userIds }, status: 'completed' },
+        _sum: { amount: true },
+      }),
+      db
+        .collection('usage_records')
+        .aggregate([
+          { $match: { userId: { $in: userIds } } },
+          {
+            $group: {
+              _id: {
+                userId: '$userId',
+                model: '$model',
+                resolution: '$resolution',
+                type: '$type',
               },
-            ])
-            .toArray(),
-        ]);
-
-        const totalSpentBRL = spendingByUser.find((s) => s.currency === 'BRL')?._sum.amount || 0;
-        const totalSpentUSD = spendingByUser.find((s) => s.currency === 'USD')?._sum.amount || 0;
-
-        // Calculate API cost using centralized pricing
-        let apiCostUSD = 0;
-        for (const item of userUsageAgg) {
-          const model = item._id.model || '';
-          const resolution = item._id.resolution || '';
-          const type = item._id.type || '';
-          const imageCount = item.totalImages || 0;
-          const videoCount = item.totalVideos || 0;
-
-          // Calculate API cost
-          // Prefer stored cost if available, otherwise fallback to calculation
-          if (item.totalCost && item.totalCost > 0) {
-            apiCostUSD += item.totalCost;
-          } else {
-            // Fallback calculation
-            // Video cost
-            if (type === 'video' || videoCount > 0) {
-              apiCostUSD += calculateVideoCost(videoCount || 1);
-            }
-
-            // Image cost based on model and resolution
-            if (imageCount > 0) {
-              const normalizedRes = normalizeResolution(resolution);
-              apiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
-            }
-          }
-        }
-
-        return {
-          ...user,
-          creditsRemaining,
-          manualCredits: totalCreditsEarned,
-          mockupCount,
-          transactionCount,
-          totalSpentBRL,
-          totalSpentUSD,
-          apiCostUSD,
-          byok: {
-            gemini: !!user.encryptedGeminiApiKey,
-            seedream: !!user.encryptedSeedreamApiKey,
-            openai: !!user.encryptedOpenAiApiKey,
+              totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+              totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+              totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+            },
           },
-          encryptedGeminiApiKey: undefined,
-          encryptedSeedreamApiKey: undefined,
-          encryptedOpenAiApiKey: undefined,
-        };
-      })
-    );
+        ])
+        .toArray(),
+    ]);
 
-    // Calculate total statistics
-    const totalCreditsUsed = formattedUsers.reduce((sum, user) => sum + (user.creditsUsed || 0), 0);
-    const totalStorageUsed = formattedUsers.reduce(
-      (sum, user) => sum + (user.storageUsedBytes || 0),
-      0
-    );
-    const totalReferralCount = formattedUsers.reduce(
-      (sum, user) => sum + (user.referralCount || 0),
-      0
-    );
-    const totalReferredUsers = formattedUsers.filter((user) => Boolean(user.referredBy)).length;
-    const usersWithReferralCode = formattedUsers.filter((user) =>
-      Boolean(user.referralCode)
-    ).length;
-    const totalMockupsSaved = await db.collection('mockups').countDocuments({});
+    // Index batched results by userId for O(1) assembly.
+    const mockupCountByUser = new Map<string, number>();
+    for (const row of mockupCounts) mockupCountByUser.set(String(row._id), row.count);
 
-    // Calculate total mockups generated
-    // Use usage_records collection (most accurate), with fallback to creditsUsed if needed
-    let totalMockupsGenerated = 0;
-    let localDevelopmentImages = 0;
-    try {
-      // Use MongoDB aggregation for efficient calculation
-      // Sum imagesGenerated field from all usage_records
-      const aggregationResult = await db
+    const txCountByUser = new Map<string, number>();
+    for (const row of txCounts) txCountByUser.set(row.userId, row._count._all);
+
+    const spendByUser = new Map<string, { brl: number; usd: number }>();
+    for (const row of txSpend) {
+      const entry = spendByUser.get(row.userId) || { brl: 0, usd: 0 };
+      if (row.currency === 'BRL') entry.brl += row._sum.amount || 0;
+      else if (row.currency === 'USD') entry.usd += row._sum.amount || 0;
+      spendByUser.set(row.userId, entry);
+    }
+
+    const usageByUser = new Map<string, UsageAggRow[]>();
+    for (const row of usageRows) {
+      const uid = row._id.userId;
+      const list = usageByUser.get(uid) || [];
+      list.push({
+        _id: { model: row._id.model, resolution: row._id.resolution, type: row._id.type },
+        totalImages: row.totalImages,
+        totalVideos: row.totalVideos,
+        totalCost: row.totalCost,
+      });
+      usageByUser.set(uid, list);
+    }
+
+    const formattedUsers = users.map((user) => {
+      const monthlyCredits = user.monthlyCredits ?? 0;
+      const creditsUsed = user.creditsUsed ?? 0;
+      const totalCreditsEarned = user.totalCreditsEarned ?? 0;
+      const creditsRemaining = Math.max(0, monthlyCredits - creditsUsed);
+      const spend = spendByUser.get(user.id) || { brl: 0, usd: 0 };
+
+      return {
+        ...user,
+        creditsRemaining,
+        manualCredits: totalCreditsEarned,
+        mockupCount: mockupCountByUser.get(user.id) || 0,
+        transactionCount: txCountByUser.get(user.id) || 0,
+        totalSpentBRL: spend.brl,
+        totalSpentUSD: spend.usd,
+        apiCostUSD: computeApiCostUSD(usageByUser.get(user.id) || []),
+        byok: {
+          gemini: !!user.encryptedGeminiApiKey,
+          seedream: !!user.encryptedSeedreamApiKey,
+          openai: !!user.encryptedOpenAiApiKey,
+        },
+        encryptedGeminiApiKey: undefined,
+        encryptedSeedreamApiKey: undefined,
+        encryptedOpenAiApiKey: undefined,
+      };
+    });
+
+    return res.json({ users: formattedUsers });
+  } catch (error) {
+    console.error('Failed to load admin users:', error);
+    return res.status(500).json({ error: 'Failed to load users' });
+  }
+});
+
+// GET /charts — generation stats ($facet) + revenue/cost/generation time series.
+router.get('/charts', adminUsersLimiter, validateAdmin, async (_req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    void ensureCoreIndexes(db);
+
+    const [generationStatsAgg, revenueByDate, costByDateAgg] = await Promise.all([
+      db
+        .collection('usage_records')
+        .aggregate([
+          {
+            $facet: {
+              imagesByModel: [
+                { $match: { imagesGenerated: { $exists: true, $gt: 0 } } },
+                {
+                  $group: {
+                    _id: '$model',
+                    total: { $sum: '$imagesGenerated' },
+                    byResolution: {
+                      $push: {
+                        resolution: { $ifNull: ['$resolution', 'unknown'] },
+                        count: '$imagesGenerated',
+                      },
+                    },
+                  },
+                },
+              ],
+              videos: [
+                { $match: { type: 'video' } },
+                {
+                  $group: {
+                    _id: null,
+                    total: { $sum: { $ifNull: ['$videosGenerated', 1] } },
+                    byModel: {
+                      $push: {
+                        model: { $ifNull: ['$model', 'unknown'] },
+                        count: { $ifNull: ['$videosGenerated', 1] },
+                      },
+                    },
+                  },
+                },
+              ],
+              textTokens: [
+                { $match: { type: 'branding' } },
+                {
+                  $group: {
+                    _id: null,
+                    totalSteps: { $sum: 1 },
+                    totalPromptLength: { $sum: { $ifNull: ['$promptLength', 0] } },
+                    estimatedTokens: {
+                      $sum: { $ceil: { $divide: [{ $ifNull: ['$promptLength', 0] }, 4] } },
+                    },
+                    inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+                    outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
+                    totalCost: { $sum: { $ifNull: ['$cost', 0] } },
+                  },
+                },
+              ],
+              promptGenerations: [
+                { $match: { type: 'prompt-generation' } },
+                {
+                  $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
+                    outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
+                  },
+                },
+              ],
+              byFeature: [
+                {
+                  $group: {
+                    _id: '$feature',
+                    images: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+                    videos: {
+                      $sum: {
+                        $cond: [
+                          { $eq: ['$type', 'video'] },
+                          { $ifNull: ['$videosGenerated', 1] },
+                          0,
+                        ],
+                      },
+                    },
+                    textSteps: { $sum: { $cond: [{ $eq: ['$type', 'branding'] }, 1, 0] } },
+                    promptGenerations: {
+                      $sum: { $cond: [{ $eq: ['$type', 'prompt-generation'] }, 1, 0] },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ])
+        .toArray(),
+      prisma.transaction.groupBy({
+        by: ['createdAt', 'currency'],
+        where: { status: 'completed' },
+        _sum: { amount: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      db
         .collection('usage_records')
         .aggregate([
           {
             $group: {
-              _id: null,
-              totalImages: {
-                $sum: {
-                  $ifNull: ['$imagesGenerated', 0], // Use imagesGenerated (correct field name from UsageRecord interface)
-                },
+              _id: {
+                date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+                model: '$model',
+                resolution: '$resolution',
+                type: '$type',
               },
-              localDevImages: {
-                $sum: {
-                  $cond: [
-                    { $ifNull: ['$isLocalDevelopment', false] },
-                    { $ifNull: ['$imagesGenerated', 0] },
-                    0,
-                  ],
-                },
-              },
-              recordCount: { $sum: 1 },
+              totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+              totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+              totalCost: { $sum: { $ifNull: ['$cost', 0] } },
             },
           },
+          { $sort: { '_id.date': 1 } },
         ])
-        .toArray();
+        .toArray(),
+    ]);
 
-      if (aggregationResult.length > 0 && aggregationResult[0].totalImages > 0) {
-        totalMockupsGenerated = aggregationResult[0].totalImages;
-        localDevelopmentImages = aggregationResult[0].localDevImages || 0;
-        console.log(
-          `[Admin] Total mockups from usage_records: ${totalMockupsGenerated} (from ${aggregationResult[0].recordCount} records)`
-        );
-        if (localDevelopmentImages > 0) {
-          console.log(
-            `[Admin] Local development images: ${localDevelopmentImages} (included in total)`
-          );
-        }
-      } else {
-        // Collection exists but is empty or has no data, use creditsUsed as estimate
-        // Most common: gemini-2.5-flash-image uses 1 credit per image
-        // Conservative estimate: divide by 1.2 to account for some higher credit usage
-        totalMockupsGenerated = totalCreditsUsed > 0 ? Math.round(totalCreditsUsed / 1.2) : 0;
-        console.log(
-          `[Admin] usage_records empty or no data, using creditsUsed estimate: ${totalMockupsGenerated} (from ${totalCreditsUsed} credits)`
-        );
-      }
-    } catch (error: any) {
-      // If usage_records doesn't exist or fails, use creditsUsed as fallback estimate
-      console.log(`[Admin] usage_records error, using creditsUsed fallback: ${error.message}`);
-      // Most common: gemini-2.5-flash-image uses 1 credit per image
-      // Conservative estimate: divide by 1.2 to account for some higher credit usage
-      totalMockupsGenerated = totalCreditsUsed > 0 ? Math.round(totalCreditsUsed / 1.2) : 0;
-      console.log(
-        `[Admin] Fallback calculation: ${totalMockupsGenerated} mockups from ${totalCreditsUsed} credits`
-      );
-    }
+    const stats = generationStatsAgg[0] || {};
 
-    // Ensure we have at least 0 (not negative or NaN)
-    if (isNaN(totalMockupsGenerated) || totalMockupsGenerated < 0) {
-      console.warn(
-        `[Admin] Invalid totalMockupsGenerated value: ${totalMockupsGenerated}, setting to 0`
-      );
-      totalMockupsGenerated = 0;
-    }
-
-    console.log(
-      `[Admin] Final stats - Users: ${
-        formattedUsers.length
-      }, Mockups Generated: ${totalMockupsGenerated}${
-        localDevelopmentImages > 0 ? ` (${localDevelopmentImages} from local dev)` : ''
-      }, Mockups Saved: ${totalMockupsSaved}, Credits Used: ${totalCreditsUsed}`
-    );
-
-    // Calculate detailed generation statistics
-    const generationStats = await db
-      .collection('usage_records')
-      .aggregate([
-        {
-          $facet: {
-            // Images by model
-            imagesByModel: [
-              { $match: { imagesGenerated: { $exists: true, $gt: 0 } } },
-              {
-                $group: {
-                  _id: '$model',
-                  total: { $sum: '$imagesGenerated' },
-                  byResolution: {
-                    $push: {
-                      resolution: { $ifNull: ['$resolution', 'unknown'] },
-                      count: '$imagesGenerated',
-                    },
-                  },
-                },
-              },
-            ],
-            // Videos
-            videos: [
-              { $match: { type: 'video' } },
-              {
-                $group: {
-                  _id: null,
-                  total: { $sum: { $ifNull: ['$videosGenerated', 1] } },
-                  byModel: {
-                    $push: {
-                      model: { $ifNull: ['$model', 'unknown'] },
-                      count: { $ifNull: ['$videosGenerated', 1] },
-                    },
-                  },
-                },
-              },
-            ],
-            // Text tokens (branding)
-            textTokens: [
-              { $match: { type: 'branding' } },
-              {
-                $group: {
-                  _id: null,
-                  totalSteps: { $sum: 1 },
-                  totalPromptLength: { $sum: { $ifNull: ['$promptLength', 0] } },
-                  estimatedTokens: {
-                    $sum: { $ceil: { $divide: [{ $ifNull: ['$promptLength', 0] }, 4] } },
-                  },
-                  inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
-                  outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
-                  totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-                },
-              },
-            ],
-            // Prompt generations
-            promptGenerations: [
-              { $match: { type: 'prompt-generation' } },
-              {
-                $group: {
-                  _id: null,
-                  total: { $sum: 1 },
-                  inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
-                  outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
-                },
-              },
-            ],
-            // By feature
-            byFeature: [
-              {
-                $group: {
-                  _id: '$feature',
-                  images: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-                  videos: {
-                    $sum: {
-                      $cond: [{ $eq: ['$type', 'video'] }, { $ifNull: ['$videosGenerated', 1] }, 0],
-                    },
-                  },
-                  textSteps: { $sum: { $cond: [{ $eq: ['$type', 'branding'] }, 1, 0] } },
-                  promptGenerations: {
-                    $sum: { $cond: [{ $eq: ['$type', 'prompt-generation'] }, 1, 0] },
-                  },
-                },
-              },
-            ],
-          },
-        },
-      ])
-      .toArray();
-
-    // Process aggregation results
-    const stats = generationStats[0] || {};
-
-    // Process images by model
     const imagesByModel: any = {};
     for (const item of stats.imagesByModel || []) {
       const model = item._id || 'unknown';
@@ -471,21 +574,16 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         const resolution = res.resolution || 'unknown';
         byResolution[resolution] = (byResolution[resolution] || 0) + (res.count || 0);
       }
-      imagesByModel[model] = {
-        total: item.total || 0,
-        byResolution,
-      };
+      imagesByModel[model] = { total: item.total || 0, byResolution };
     }
 
-    // Process videos
-    const videos = stats.videos?.[0] || { total: 0, byModel: {} };
+    const videos = stats.videos?.[0] || { total: 0, byModel: [] };
     const videosByModel: { [key: string]: number } = {};
     for (const item of videos.byModel || []) {
       const model = item.model || 'unknown';
       videosByModel[model] = (videosByModel[model] || 0) + (item.count || 0);
     }
 
-    // Process text tokens
     const textTokens = stats.textTokens?.[0] || {
       totalSteps: 0,
       estimatedTokens: 0,
@@ -495,14 +593,12 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       totalCost: 0,
     };
 
-    // Process prompt generations
     const promptGenerations = stats.promptGenerations?.[0] || {
       total: 0,
       inputTokens: 0,
       outputTokens: 0,
     };
 
-    // Process by feature
     const byFeature: any = {
       mockupmachine: { images: 0, videos: 0, textSteps: 0, promptGenerations: 0 },
       canvas: { images: 0, videos: 0, textSteps: 0, promptGenerations: 0 },
@@ -526,210 +622,81 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
         };
       }
     }
-
-    // Add prompt generation tokens to the feature
     byFeature['prompt-generation'].inputTokens = promptGenerations.inputTokens || 0;
     byFeature['prompt-generation'].outputTokens = promptGenerations.outputTokens || 0;
 
-    // Aggregate global revenue by currency
-    const globalRevenue = await prisma.transaction.groupBy({
-      by: ['currency'],
-      where: { status: 'completed' },
-      _sum: { amount: true },
-    });
-
-    const totalRevenueBRL = globalRevenue.find((r) => r.currency === 'BRL')?._sum.amount || 0;
-    const totalRevenueUSD = globalRevenue.find((r) => r.currency === 'USD')?._sum.amount || 0;
-
-    // Aggregate revenue time series (transactions by date)
-    const revenueByDate = await prisma.transaction.groupBy({
-      by: ['createdAt', 'currency'],
-      where: { status: 'completed' },
-      _sum: { amount: true },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    // Process revenue time series - group by date and sum BRL + USD (converted to cents)
+    // Revenue time series (cumulative by date).
     const revenueByDateMap: Record<string, { brl: number; usd: number }> = {};
     for (const item of revenueByDate) {
-      const date = new Date(item.createdAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
-      if (!revenueByDateMap[date]) {
-        revenueByDateMap[date] = { brl: 0, usd: 0 };
-      }
-      if (item.currency === 'BRL') {
-        revenueByDateMap[date].brl += item._sum.amount || 0;
-      } else if (item.currency === 'USD') {
-        revenueByDateMap[date].usd += item._sum.amount || 0;
-      }
+      const date = new Date(item.createdAt).toLocaleDateString('en-CA');
+      if (!revenueByDateMap[date]) revenueByDateMap[date] = { brl: 0, usd: 0 };
+      if (item.currency === 'BRL') revenueByDateMap[date].brl += item._sum.amount || 0;
+      else if (item.currency === 'USD') revenueByDateMap[date].usd += item._sum.amount || 0;
     }
-
-    // Convert to cumulative array
-    const sortedRevenueDates = Object.keys(revenueByDateMap).sort();
     let cumulativeBRL = 0;
     let cumulativeUSD = 0;
-    const revenueTimeSeries = sortedRevenueDates.map((date) => {
-      cumulativeBRL += revenueByDateMap[date].brl;
-      cumulativeUSD += revenueByDateMap[date].usd;
-      return {
-        date,
-        revenueBRL: revenueByDateMap[date].brl,
-        revenueUSD: revenueByDateMap[date].usd,
-        cumulativeBRL,
-        cumulativeUSD,
-      };
-    });
+    const revenueTimeSeries = Object.keys(revenueByDateMap)
+      .sort()
+      .map((date) => {
+        cumulativeBRL += revenueByDateMap[date].brl;
+        cumulativeUSD += revenueByDateMap[date].usd;
+        return {
+          date,
+          revenueBRL: revenueByDateMap[date].brl,
+          revenueUSD: revenueByDateMap[date].usd,
+          cumulativeBRL,
+          cumulativeUSD,
+        };
+      });
 
-    // Aggregate global API cost with correct Gemini pricing
-    const globalUsageAgg = await db
-      .collection('usage_records')
-      .aggregate([
-        {
-          $group: {
-            _id: { model: '$model', resolution: '$resolution', type: '$type' },
-            totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-            totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
-            totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-          },
-        },
-      ])
-      .toArray();
-
-    // Calculate total API cost using centralized pricing
-    let totalApiCostUSD = 0;
-    for (const item of globalUsageAgg) {
-      const model = item._id.model || '';
-      const resolution = item._id.resolution || '';
-      const type = item._id.type || '';
-      const imageCount = item.totalImages || 0;
-      const videoCount = item.totalVideos || 0;
-
-      const totalCost = item.totalCost || 0;
-
-      if (totalCost > 0) {
-        totalApiCostUSD += totalCost;
-      } else {
-        // Fallback calculation
-        // Video cost
-        if (type === 'video' || videoCount > 0) {
-          totalApiCostUSD += calculateVideoCost(videoCount || 1);
-        }
-
-        // Image cost based on model and resolution
-        if (imageCount > 0) {
-          const normalizedRes = normalizeResolution(resolution);
-          totalApiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
-        }
-      }
-    }
-
-    // Aggregate cost time series (usage_records by date with cost calculation)
-    const costByDateAgg = await db
-      .collection('usage_records')
-      .aggregate([
-        {
-          $group: {
-            _id: {
-              date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-              model: '$model',
-              resolution: '$resolution',
-              type: '$type',
-            },
-            totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-            totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
-            totalCost: { $sum: { $ifNull: ['$cost', 0] } },
-          },
-        },
-        { $sort: { '_id.date': 1 } },
-      ])
-      .toArray();
-
-    // Calculate cost per date and generations per date/model
+    // Cost + generations time series.
     const costByDateMap: Record<string, number> = {};
     const generationsByDateMap: Record<string, Record<string, number>> = {};
-
     for (const item of costByDateAgg) {
-      const date = item._id.date;
-      const model = item._id.model || 'unknown';
-      const resolution = item._id.resolution || '';
-      const type = item._id.type || '';
-      const imageCount = item.totalImages || 0;
-      const videoCount = item.totalVideos || 0;
+      const date = (item as any)._id.date;
+      const model = (item as any)._id.model || 'unknown';
+      const resolution = (item as any)._id.resolution || '';
+      const type = (item as any)._id.type || '';
+      const imageCount = (item as any).totalImages || 0;
+      const videoCount = (item as any).totalVideos || 0;
       const totalGenerations = imageCount + videoCount;
 
-      // 1. Calculate Generations Map
       if (totalGenerations > 0) {
-        if (!generationsByDateMap[date]) {
-          generationsByDateMap[date] = {};
-        }
+        if (!generationsByDateMap[date]) generationsByDateMap[date] = {};
         generationsByDateMap[date][model] =
           (generationsByDateMap[date][model] || 0) + totalGenerations;
       }
 
-      // 2. Calculate Cost Map
-      if (!costByDateMap[date]) {
-        costByDateMap[date] = 0;
-      }
-
+      if (!costByDateMap[date]) costByDateMap[date] = 0;
       const totalCost = (item as any).totalCost || 0;
-
       if (totalCost > 0) {
         costByDateMap[date] += totalCost;
       } else {
-        // Fallback calculation
-        // Video cost
         if (type === 'video' || videoCount > 0) {
           costByDateMap[date] += calculateVideoCost(videoCount || 1);
         }
-
-        // Image cost based on model and resolution
         if (imageCount > 0) {
-          const normalizedRes = normalizeResolution(resolution);
-          costByDateMap[date] += calculateImageCost(imageCount, model, normalizedRes);
+          costByDateMap[date] += calculateImageCost(imageCount, model, normalizeResolution(resolution));
         }
       }
     }
 
-    // Convert to cumulative array for costs
-    const sortedDates = Object.keys(costByDateMap).sort();
     let cumulativeCost = 0;
-    const costTimeSeries = sortedDates.map((date) => {
-      cumulativeCost += costByDateMap[date];
-      return {
-        date,
-        cost: costByDateMap[date],
-        cumulative: cumulativeCost,
-      };
-    });
+    const costTimeSeries = Object.keys(costByDateMap)
+      .sort()
+      .map((date) => {
+        cumulativeCost += costByDateMap[date];
+        return { date, cost: costByDateMap[date], cumulative: cumulativeCost };
+      });
 
-    // Convert to array format for generations (for Recharts)
     const generationsTimeSeries = Object.entries(generationsByDateMap)
       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-      .map(([date, models]) => ({
-        date,
-        ...models,
-      }));
+      .map(([date, models]) => ({ date, ...models }));
 
     return res.json({
-      totalUsers: formattedUsers.length,
-      totalMockupsGenerated,
-      totalMockupsSaved,
-      totalCreditsUsed,
-      totalStorageUsed,
-      totalRevenueBRL,
-      totalRevenueUSD,
-      totalApiCostUSD,
-      referralStats: {
-        totalReferralCount,
-        totalReferredUsers,
-        usersWithReferralCode,
-      },
-      users: formattedUsers,
       generationStats: {
         imagesByModel,
-        videos: {
-          total: videos.total || 0,
-          byModel: videosByModel,
-        },
+        videos: { total: videos.total || 0, byModel: videosByModel },
         textTokens: {
           totalSteps: textTokens.totalSteps || 0,
           estimatedTokens: textTokens.estimatedTokens || 0,
@@ -745,8 +712,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req: Request, res
       generationsTimeSeries,
     });
   } catch (error) {
-    console.error('Failed to load admin users:', error);
-    return res.status(500).json({ error: 'Failed to load users' });
+    console.error('Failed to load admin charts:', error);
+    return res.status(500).json({ error: 'Failed to load charts' });
   }
 });
 

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
-import { brandingApi, type BrandingProject } from '../services/brandingApi';
+import { type BrandingProject } from '../services/brandingApi';
+import { useBrandings, useDeleteBranding } from '@/hooks/queries/useBrandings';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
@@ -27,39 +28,20 @@ export const MyBrandingsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useLayout();
-  const [projects, setProjects] = useState<BrandingProject[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
+  // List via React Query — cached/deduped/retried, refreshed after mutations.
+  const { data: projects = [], isLoading } = useBrandings(isAuthenticated === true);
+  const deleteBranding = useDeleteBranding();
+
   useEffect(() => {
     if (isAuthenticated === false) {
       setShowAuthModal(true);
-    } else if (isAuthenticated === true) {
-      loadProjects();
     }
   }, [isAuthenticated]);
-
-  const loadProjects = async () => {
-    setIsLoading(true);
-    try {
-      const data = await brandingApi.getAll();
-      setProjects(data);
-    } catch (error: any) {
-      console.error('Error loading branding projects:', error);
-      if (error?.status === 401) {
-        setShowAuthModal(true);
-      } else {
-        toast.error(
-          t('branding.myBrandings.errors.failedToLoad') || 'Failed to load branding projects'
-        );
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleView = (project: BrandingProject) => {
     if (project._id && project._id.trim() !== '') {
@@ -80,12 +62,11 @@ export const MyBrandingsPage: React.FC = () => {
 
     setDeletingId(projectToDelete);
     try {
-      await brandingApi.delete(projectToDelete);
-      setProjects((prev) => prev.filter((p) => p._id !== projectToDelete));
+      await deleteBranding.mutateAsync(projectToDelete);
       toast.success(t('branding.myBrandings.deleted') || 'Project deleted successfully');
     } catch (error: any) {
       console.error('Error deleting project:', error);
-      toast.error(t('branding.myBrandings.errors.failedToDelete') || 'Failed to delete project');
+      // error toast handled by the mutation
     } finally {
       setDeletingId(null);
       setProjectToDelete(null);
@@ -253,9 +234,9 @@ export const MyBrandingsPage: React.FC = () => {
           <AuthModal
             isOpen={showAuthModal}
             onClose={() => setShowAuthModal(false)}
-            onSuccess={async () => {
+            onSuccess={() => {
+              // The list query auto-enables once authenticated and fetches itself.
               setShowAuthModal(false);
-              await loadProjects();
             }}
             isSignUp={false}
           />

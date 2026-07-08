@@ -274,7 +274,8 @@
     "chat": {
       "assistente_estratgico_exclusivo_para_ad": "Assistente estratégico exclusivo para administradores da Visant Labs.",
       "admin_strategic_chat_visant_labs": "Admin Strategic Chat | Visant Labs"
-    }
+    },
+    "pages": "Páginas"
   },
   "adminPresets": {
     "batchPasteLabel": "Cole o JSON com os presets (array de objetos)",

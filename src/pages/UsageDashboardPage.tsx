@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart2, TrendingUp, Zap, Clock, Activity } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { useLayout } from '@/hooks/useLayout';
-import { authService } from '../services/authService';
-import { toast } from 'sonner';
+import { useUsageStats, useDailyUsage } from '@/hooks/queries/useUsage';
 import { SEO } from '../components/SEO';
 import {
   BreadcrumbWithBack,
@@ -18,7 +17,6 @@ import {
 } from '../components/ui/BreadcrumbWithBack';
 import { BackButton } from '../components/ui/BackButton';
 import { Button } from '@/components/ui/button';
-import { API_BASE } from '@/config/api';
 
 interface UsageStats {
   totalRecords: number;
@@ -40,15 +38,6 @@ interface DailyPoint {
 
 type ChartMetric = 'calls' | 'credits';
 type FeatureFilter = 'all' | 'mockupmachine' | 'brandingmachine' | 'canvas';
-
-function getAuthHeaders(): Record<string, string> {
-  const token = authService.getToken();
-  if (!token) return {};
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
-}
 
 // Simple inline SVG bar chart
 function BarChart({ data, metric }: { data: DailyPoint[]; metric: ChartMetric }) {
@@ -112,55 +101,19 @@ const FEATURE_OPTIONS: { value: FeatureFilter; label: string }[] = [
 export const UsageDashboardPage: React.FC = () => {
   const { isAuthenticated, isCheckingAuth } = useLayout();
 
-  const [stats, setStats] = useState<UsageStats | null>(null);
-  const [daily, setDaily] = useState<DailyPoint[]>([]);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isLoadingDaily, setIsLoadingDaily] = useState(true);
   const [chartMetric, setChartMetric] = useState<ChartMetric>('calls');
   const [featureFilter, setFeatureFilter] = useState<FeatureFilter>('all');
 
-  // Fetch summary stats
-  const fetchStats = useCallback(async () => {
-    try {
-      setIsLoadingStats(true);
-      const res = await fetch(`${API_BASE}/usage/history?limit=1`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Failed to fetch usage stats');
-      const data = await res.json();
-      setStats(data.stats);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load usage stats');
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, []);
+  // Data via React Query — cached/deduped/retried. Changing featureFilter
+  // switches the daily query key, so the chart refetches automatically.
+  const enabled = isAuthenticated === true && !isCheckingAuth;
+  const statsQuery = useUsageStats(enabled);
+  const dailyQuery = useDailyUsage(featureFilter, enabled);
 
-  // Fetch daily chart data
-  const fetchDaily = useCallback(async (feature: FeatureFilter) => {
-    try {
-      setIsLoadingDaily(true);
-      const params = new URLSearchParams({ days: '30' });
-      if (feature !== 'all') params.set('feature', feature);
-      const res = await fetch(`${API_BASE}/usage/daily?${params.toString()}`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Failed to fetch daily usage');
-      const data = await res.json();
-      setDaily(data.daily || []);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load chart data');
-    } finally {
-      setIsLoadingDaily(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated && !isCheckingAuth) {
-      fetchStats();
-      fetchDaily(featureFilter);
-    }
-  }, [isAuthenticated, isCheckingAuth, fetchStats, fetchDaily, featureFilter]);
+  const stats = statsQuery.data ?? null;
+  const daily: DailyPoint[] = dailyQuery.data ?? [];
+  const isLoadingStats = statsQuery.isLoading;
+  const isLoadingDaily = dailyQuery.isLoading;
 
   const handleFeatureChange = (f: FeatureFilter) => {
     setFeatureFilter(f);

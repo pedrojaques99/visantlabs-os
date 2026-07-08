@@ -121,17 +121,13 @@ router.get('/:identifier', publicProfileLimiter, async (req, res) => {
     const db = getDb();
     const userObjectId = getUserObjectId(user.id);
 
-    // Count mockups (only blank mockups for public display)
-    const mockupCount = await db.collection('mockups').countDocuments({
-      userId: userObjectId,
-      designType: 'blank',
-    });
-
-    // Count approved community presets
-    const presetCount = await db.collection('community_presets').countDocuments({
-      userId: userObjectId,
-      isApproved: true,
-    });
+    // Independent counts run in parallel (hot public-profile route).
+    const [mockupCount, presetCount] = await Promise.all([
+      // Only blank mockups for public display.
+      db.collection('mockups').countDocuments({ userId: userObjectId, designType: 'blank' }),
+      // Approved community presets.
+      db.collection('community_presets').countDocuments({ userId: userObjectId, isApproved: true }),
+    ]);
 
     // Return public profile data
     res.json({

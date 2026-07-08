@@ -2,11 +2,15 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Menu, X, ChevronRight, ChevronDown, LucideIcon, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { useResizable } from '@/hooks/useResizable';
 
 export interface NavigationItem {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Navigates to a separate route rather than switching an in-page tab.
+   *  External items are visually grouped below a divider. */
+  external?: boolean;
   sections?: Array<{
     id: string;
     label: string;
@@ -25,6 +29,8 @@ interface NavigationSidebarProps {
   width?: number;
   onWidthChange?: (width: number) => void;
   storageKey?: string;
+  /** Optional heading shown above the group of `external` items. */
+  externalGroupLabel?: string;
 }
 
 export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
@@ -39,23 +45,32 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   width: controlledWidth,
   onWidthChange,
   storageKey = 'navigation-sidebar-width',
+  externalGroupLabel,
 }) => {
+  const firstExternalIndex = items.findIndex((i) => i.external);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const resizerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set([activeItemId]));
 
-  // Initialize width from localStorage or default
-  const [internalWidth, setInternalWidth] = useState(() => {
-    if (controlledWidth !== undefined) return controlledWidth;
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? parseInt(saved, 10) : 256; // 256px = w-64
-    }
-    return 256;
+  // Drag-to-resize via the shared SSoT hook (clamp/persist/rAF/controlled).
+  const { width: sidebarWidth, handleProps: resizeHandleProps } = useResizable({
+    min: 200,
+    max: 500,
+    initial: 256, // 256px = w-64
+    edge: 'right',
+    storageKey,
+    value: controlledWidth,
+    onChange: onWidthChange,
   });
 
-  const sidebarWidth = controlledWidth ?? internalWidth;
+  // Report the restored width up to a controlling parent once on mount, so the
+  // page's content padding matches the persisted sidebar width without a drag.
+  const onWidthChangeRef = useRef(onWidthChange);
+  onWidthChangeRef.current = onWidthChange;
+  useEffect(() => {
+    onWidthChangeRef.current?.(sidebarWidth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useClickOutside(sidebarRef, () => onToggleOpen(false), { enabled: isOpen, escape: false });
 
@@ -83,55 +98,6 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     }
   }, [activeSectionId]);
 
-  // Resize functionality
-  useEffect(() => {
-    if (!resizerRef.current || !sidebarRef.current) return;
-
-    const resizer = resizerRef.current;
-    const sidebar = sidebarRef.current;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const startX = e.clientX;
-      const startWidth = sidebarWidth;
-
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        const dx = moveEvent.clientX - startX;
-        const newWidth = startWidth + dx;
-        const minWidth = 200;
-        const maxWidth = 500;
-
-        if (newWidth >= minWidth && newWidth <= maxWidth) {
-          if (onWidthChange) {
-            onWidthChange(newWidth);
-          } else {
-            setInternalWidth(newWidth);
-            localStorage.setItem(storageKey, newWidth.toString());
-          }
-        }
-      };
-
-      const handleMouseUp = () => {
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    };
-
-    resizer.addEventListener('mousedown', handleMouseDown);
-
-    return () => {
-      resizer.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, [sidebarWidth, onWidthChange, storageKey]);
 
   const toggleItem = (itemId: string) => {
     setExpandedItems((prev) => {
@@ -174,28 +140,31 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
           className
         )}
       >
-        {/* Resize Handle */}
-        <div
-          ref={resizerRef}
-          className="hidden lg:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-neutral-600/50 transition-colors group z-50"
-          style={{ touchAction: 'none' }}
-        >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-8 bg-neutral-700/50 rounded-full group-hover:bg-neutral-500/70 transition-colors" />
-        </div>
         <div className="p-4 pt-24 md:pt-28 space-y-2">
           {title && (
             <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase  mb-4 px-2">
               {title}
             </h2>
           )}
-          {items.map((item) => {
+          {items.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeItemId === item.id;
             const isExpanded = expandedItems.has(item.id);
             const hasSections = item.sections && item.sections.length > 0;
+            const showDivider = firstExternalIndex > 0 && index === firstExternalIndex;
 
             return (
-              <div key={item.id} className="space-y-1">
+              <React.Fragment key={item.id}>
+                {showDivider && (
+                  <div className="pt-3 mt-2 border-t border-sidebar-border/50">
+                    {externalGroupLabel && (
+                      <h3 className="text-[10px] font-semibold font-mono text-neutral-500 uppercase tracking-wider px-2 pt-2 pb-1">
+                        {externalGroupLabel}
+                      </h3>
+                    )}
+                  </div>
+                )}
+                <div className="space-y-1">
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => {
@@ -236,6 +205,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 {isExpanded && hasSections && (
                   <div className="ml-6 space-y-1 mt-1">
                     {item.sections?.map((section) => {
+                      /* section rendering */
                       const isSectionActive =
                         activeSectionId === section.id && activeItemId === item.id;
                       return (
@@ -268,11 +238,26 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                     })}
                   </div>
                 )}
-              </div>
+                </div>
+              </React.Fragment>
             );
           })}
         </div>
       </aside>
+
+      {/* Resize handle (desktop) — fixed on the sidebar's right edge, outside the
+          scroll area so it never clips, scrolls, or blocks nav items. */}
+      <div
+        {...resizeHandleProps}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+        style={{ left: `${sidebarWidth}px`, touchAction: 'none' }}
+        className="group hidden lg:flex fixed top-0 z-50 h-screen w-2.5 -translate-x-1/2 cursor-col-resize items-center justify-center"
+      >
+        <div className="h-full w-px bg-sidebar-border/50 group-hover:bg-neutral-500/60 group-active:bg-neutral-400 transition-colors" />
+        <div className="absolute top-1/2 -translate-y-1/2 h-10 w-1 rounded-full bg-neutral-700/50 group-hover:bg-neutral-400/80 group-active:bg-neutral-300 transition-colors" />
+      </div>
     </>
   );
 };

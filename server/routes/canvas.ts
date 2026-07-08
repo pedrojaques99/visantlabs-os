@@ -58,36 +58,34 @@ async function convertEmailsToUserIds(identifiers: string[]): Promise<string[]> 
     return [];
   }
 
+  // Partition into already-resolved ObjectIds and emails to look up.
   const userIds: string[] = [];
-  const invalidEmails: string[] = [];
-
+  const emails: string[] = [];
   for (const identifier of identifiers) {
-    // Check if it's already a valid MongoDB ObjectId format (24 hex characters)
-    if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
-      userIds.push(identifier);
-      continue;
-    }
-
-    // Try to find user by email
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: identifier },
-        select: { id: true },
-      });
-
-      if (user) {
-        userIds.push(user.id);
-      } else {
-        invalidEmails.push(identifier);
-      }
-    } catch (error) {
-      console.error(`Error finding user by email ${identifier}:`, error);
-      invalidEmails.push(identifier);
-    }
+    if (/^[0-9a-fA-F]{24}$/.test(identifier)) userIds.push(identifier);
+    else emails.push(identifier);
   }
 
-  if (invalidEmails.length > 0) {
-    console.warn(`Could not find users for emails: ${invalidEmails.join(', ')}`);
+  if (emails.length > 0) {
+    // Single batched query instead of one findUnique per email (N+1).
+    try {
+      const users = await prisma.user.findMany({
+        where: { email: { in: emails } },
+        select: { id: true, email: true },
+      });
+      const idByEmail = new Map(users.map((u) => [u.email, u.id]));
+      const invalidEmails: string[] = [];
+      for (const email of emails) {
+        const id = idByEmail.get(email);
+        if (id) userIds.push(id);
+        else invalidEmails.push(email);
+      }
+      if (invalidEmails.length > 0) {
+        console.warn(`Could not find users for emails: ${invalidEmails.join(', ')}`);
+      }
+    } catch (error) {
+      console.error('Error resolving users by email:', error);
+    }
   }
 
   return userIds;
@@ -2136,9 +2134,11 @@ router.post(
         return res.status(404).json({ error: 'Project not found' });
       }
 
-      // Convert emails to user IDs
-      const canEditUserIds = await convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []);
-      const canViewUserIds = await convertEmailsToUserIds(Array.isArray(canView) ? canView : []);
+      // Convert emails to user IDs (both lists in parallel)
+      const [canEditUserIds, canViewUserIds] = await Promise.all([
+        convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []),
+        convertEmailsToUserIds(Array.isArray(canView) ? canView : []),
+      ]);
 
       // Generate new shareId if doesn't exist
       let shareId = project.shareId;
