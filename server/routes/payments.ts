@@ -312,7 +312,11 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
     const product = await stripe.products.retrieve(productId);
     const metadata = product.metadata || {};
 
-    // Extract tier and monthlyCredits from metadata
+    // Extract tier and monthlyCredits from metadata.
+    // Legacy tiers (premium/pro/agency) coexist with the v3 pricing tiers
+    // (starter/pro/vision) — 'pro' is shared by both generations and is
+    // numerically compatible (500 credits either way; only maxBrands differs,
+    // see FALLBACK_MAX_BRANDS in brandQuota.ts for that reconciliation).
     const tier = metadata.tier || 'premium';
     const monthlyCredits = metadata.monthlyCredits
       ? parseInt(metadata.monthlyCredits, 10)
@@ -322,7 +326,11 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
           ? 500
           : tier === 'agency'
             ? 1000
-            : 3;
+            : tier === 'starter'
+              ? 50
+              : tier === 'vision'
+                ? 1000
+                : 3;
 
     return { tier, monthlyCredits, quantity };
   } catch (error) {
@@ -639,6 +647,7 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
         const productId = typeof price.product === 'string' ? price.product : price.product?.id;
         const product = productId ? await stripe.products.retrieve(productId) : null;
         const metadata = product?.metadata || {};
+        // Same reconciled fallback ladder as getStripePlanInfo above.
         const tier = metadata.tier || 'premium';
         const monthlyCredits = metadata.monthlyCredits
           ? parseInt(metadata.monthlyCredits, 10)
@@ -648,7 +657,11 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
               ? 500
               : tier === 'agency'
                 ? 1000
-                : 3;
+                : tier === 'starter'
+                  ? 50
+                  : tier === 'vision'
+                    ? 1000
+                    : 3;
         return res.json({
           priceId,
           tier,

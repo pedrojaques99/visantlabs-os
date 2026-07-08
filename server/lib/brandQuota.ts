@@ -29,12 +29,27 @@ export interface BrandQuota {
  * Product.metadata.maxBrands (admin-managed) overrides these when present.
  * Agency is unlimited by default — the Stripe subscription `quantity`
  * (user.metadata.agencyBrandQuantity) is what caps it.
+ *
+ * Pricing v3 (starter/pro/vision) reuses the storage tier names but the
+ * `pro` KEY is shared with the legacy tier — there is no separate namespace.
+ * CONFLICT: legacy `pro` capped maxBrands at 10; the v3 spec defines the new
+ * Pro tier as unlimited brands (null). Since both generations share the same
+ * `tier` string, this fallback now resolves to `null` for ALL `pro` accounts,
+ * legacy included, unless a Product.metadata.maxBrands override exists for
+ * that specific product (tierLimitFromProduct is checked first, above this
+ * fallback). If any legacy `pro` Stripe product still needs the old 10-brand
+ * cap, set `maxBrands: 10` on its Product.metadata explicitly — no data
+ * migration was performed here per the "no invented migration" constraint.
+ * `starter` (v3 free-equivalent) and `vision` (v3 top tier) are new aliases
+ * with no legacy collision.
  */
 const FALLBACK_MAX_BRANDS: Record<string, number | null> = {
   free: 1,
   premium: 3,
-  pro: 10,
+  pro: null, // v3 Pro = unlimited brands (was 10 under the legacy-only tier)
   agency: null,
+  starter: 1,
+  vision: null,
 };
 
 export function brandBillingEnabled(): boolean {
@@ -225,12 +240,24 @@ export interface SeatQuota {
 /**
  * Hardcoded fallbacks (plan §Fase 2 table: seats/marca). Product.metadata
  * .maxEditorsPerBrand (admin-managed) overrides these when present.
+ *
+ * `used` here excludes the owner (see SeatQuota docstring), so these numbers
+ * are "seats" MINUS ONE vs. the v3 pricing table (Starter 1 seat total = 0
+ * extra editors, Pro 5 seats total = 4 extra editors, Vision unlimited seats
+ * = null). Same `pro` KEY collision as FALLBACK_MAX_BRANDS: legacy `pro`
+ * allowed 3 extra editors (4 seats total); v3 Pro allows 4 (5 seats total).
+ * Resolved by bumping the shared `pro` fallback to the v3 value (4) — legacy
+ * `pro` subscribers gain one extra editor seat unless their Product.metadata
+ * .maxEditorsPerBrand pins the old value. `vision` mirrors `agency`
+ * (unlimited); `starter` mirrors `free` (owner only).
  */
 const FALLBACK_MAX_EDITORS: Record<string, number | null> = {
   free: 0,
   premium: 1,
-  pro: 3,
+  pro: 4, // v3 Pro = 5 seats total (was 3 extra editors / 4 seats under legacy)
   agency: null,
+  starter: 0,
+  vision: null,
 };
 
 function effectiveTier(user: QuotaUserShape): string {

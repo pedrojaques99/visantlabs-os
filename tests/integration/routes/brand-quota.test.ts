@@ -317,6 +317,49 @@ describe('Brand billing — active brand quota (money gates)', () => {
     expect(res.body.brandQuota).toEqual({ used: 1, max: 1, tier: 'free' });
   });
 
+  it('pricing v3 tiers: starter/pro/vision resolve maxBrands via getBrandQuota fallbacks', async () => {
+    const { getBrandQuota } = await import('../../../server/lib/brandQuota.js');
+    const { user: starterUser } = await createUser();
+    const { user: proUser } = await createUser();
+    const { user: visionUser } = await createUser();
+
+    await setUserFields(starterUser.id, {
+      subscriptionStatus: 'active',
+      subscriptionTier: 'starter',
+    });
+    await setUserFields(proUser.id, { subscriptionStatus: 'active', subscriptionTier: 'pro' });
+    await setUserFields(visionUser.id, {
+      subscriptionStatus: 'active',
+      subscriptionTier: 'vision',
+    });
+
+    const starterQuota = await getBrandQuota({
+      ...starterUser,
+      subscriptionStatus: 'active',
+      subscriptionTier: 'starter',
+    } as any);
+    expect(starterQuota.max).toBe(1);
+    expect(starterQuota.tier).toBe('starter');
+
+    // v3 Pro = unlimited brands (shared `pro` key with the legacy tier —
+    // see FALLBACK_MAX_BRANDS comment in brandQuota.ts for the reconciliation).
+    const proQuota = await getBrandQuota({
+      ...proUser,
+      subscriptionStatus: 'active',
+      subscriptionTier: 'pro',
+    } as any);
+    expect(proQuota.max).toBeNull();
+    expect(proQuota.tier).toBe('pro');
+
+    const visionQuota = await getBrandQuota({
+      ...visionUser,
+      subscriptionStatus: 'active',
+      subscriptionTier: 'vision',
+    } as any);
+    expect(visionQuota.max).toBeNull();
+    expect(visionQuota.tier).toBe('vision');
+  });
+
   it('duplicate counts as creation: blocked at the limit with 402 brand_limit', async () => {
     const { user } = await createUser();
     const agent = await request();

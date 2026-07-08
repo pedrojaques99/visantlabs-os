@@ -215,10 +215,12 @@ export function getVideoCreditsRequired(model?: string, mode?: string): number {
     return isPro ? 25 : 20;
   }
 
-  // Veo
+  // Veo — Fast/Standard bumped (15→20, 40→50) to match the corrected
+  // server-side cost in server/utils/usageTracking.ts (both were sold below
+  // Google's per-second cost).
   if (model.includes('lite')) return 8;
-  if (model.includes('fast')) return 15;
-  return 40;
+  if (model.includes('fast')) return 20;
+  return 50;
 }
 
 /**

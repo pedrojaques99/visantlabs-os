@@ -161,24 +161,27 @@ describe('Seats — editor seats per brand (Fase 4 money gates)', () => {
     expect(addViewer.status).toBe(200);
   });
 
-  it('pro tier allows 3 editors; agency is unlimited', async () => {
+  it('pro tier allows 4 editors (v3 Pro = 5 seats total, owner + 4); agency is unlimited', async () => {
+    // The `pro` tier key is shared between the legacy plan and the v3 pricing
+    // spec (starter/pro/vision) — reconciled to the v3 value (4 extra editors
+    // = 5 seats total) in FALLBACK_MAX_EDITORS (server/lib/brandQuota.ts).
     const pro = await createTierUser('pro');
     const { guideline: proBrand } = await createBrandGuideline({ userId: pro.id, name: 'Pro' });
     const agent = await request();
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       const res = await agent
         .post(`/api/brand-guidelines/${proBrand.id}/invite`)
         .set('Authorization', tokenFor(pro))
         .send({ role: 'editor' });
       expect(res.status).toBe(201);
     }
-    const fourth = await agent
+    const fifth = await agent
       .post(`/api/brand-guidelines/${proBrand.id}/invite`)
       .set('Authorization', tokenFor(pro))
       .send({ role: 'editor' });
-    expect(fourth.status).toBe(402);
-    expect(fourth.body.max).toBe(3);
+    expect(fifth.status).toBe(402);
+    expect(fifth.body.max).toBe(4);
 
     const agency = await createTierUser('agency');
     const { guideline: agencyBrand } = await createBrandGuideline({
@@ -248,7 +251,7 @@ describe('Seats — editor seats per brand (Fase 4 money gates)', () => {
       .get(`/api/brand-guidelines/${guideline.id}`)
       .set('Authorization', tokenFor(user));
     expect(res.status).toBe(200);
-    expect(res.body.seatQuota).toEqual({ used: 1, max: 3 });
+    expect(res.body.seatQuota).toEqual({ used: 1, max: 4 });
   });
 
   it('subscription-status exposes seatQuota {totalEditors, maxPerBrand, tier}', async () => {

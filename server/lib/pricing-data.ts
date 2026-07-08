@@ -378,7 +378,7 @@ export const CREDIT_COSTS: PricingTier[] = [
     modelId: 'veo-3.1-fast-generate-preview',
     resolution: '720p/1080p (8s)',
     googlePriceUSD: 1.2,
-    creditsRequired: 15,
+    creditsRequired: 20,
     category: 'video',
   },
   {
@@ -386,7 +386,7 @@ export const CREDIT_COSTS: PricingTier[] = [
     modelId: 'veo-3.1-generate-preview',
     resolution: '720p/1080p (8s)',
     googlePriceUSD: 3.2,
-    creditsRequired: 40,
+    creditsRequired: 50,
     category: 'video',
   },
   // ── Seedance Video (ByteDance) ──
