@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -24,7 +24,8 @@ import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
 import { ConnectAICard } from '@/components/cockpit/ConnectAICard';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
-import { useBrandGuideline, useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuideline } from '@/hooks/queries/useBrandGuidelines';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useCampaigns } from '@/hooks/queries/useCampaigns';
 import { useCreativeProjects } from '@/hooks/queries/useCreativeProjects';
 import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
@@ -57,8 +58,6 @@ const BrandMockupDialog = lazyWithRetry(() =>
  * Shortcuts collapse into a compact footer row.
  */
 
-const ACTIVE_BRAND_LS_KEY = 'vsn_active_brand';
-
 interface WorkItem {
   id: string;
   kind: 'campaign' | 'creative';
@@ -83,32 +82,15 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { data: brands = [], isLoading: brandsLoading } = useBrandGuidelines(true);
-  const activeBrands = useMemo(() => brands.filter((g) => g.status !== 'archived'), [brands]);
-
-  // Active brand — last one used persists in localStorage (multi-brand agencies).
-  const [activeBrandId, setActiveBrandId] = useState<string | null>(
-    () => localStorage.getItem(ACTIVE_BRAND_LS_KEY) || null
-  );
-  useEffect(() => {
-    if (activeBrands.length === 0) return;
-    const valid = activeBrandId && activeBrands.some((g) => g.id === activeBrandId);
-    if (!valid) {
-      // Prefer a real brand over the demo one when both exist.
-      const fallback = activeBrands.find((g) => !g.isDemo) ?? activeBrands[0];
-      if (fallback?.id) setActiveBrandId(fallback.id);
-    }
-  }, [activeBrands, activeBrandId]);
-
-  const selectBrand = useCallback((id: string) => {
-    setActiveBrandId(id);
-    localStorage.setItem(ACTIVE_BRAND_LS_KEY, id);
-  }, []);
-
-  const activeBrand = useMemo(
-    () => activeBrands.find((g) => g.id === activeBrandId) ?? null,
-    [activeBrands, activeBrandId]
-  );
+  // Marca ativa vem do SSoT global (ActiveBrandContext) — o cockpit não gere
+  // mais o estado/localStorage localmente. O rail e o hero ficam em sincronia.
+  const {
+    brands: activeBrands,
+    activeBrandId,
+    setActiveBrand: selectBrand,
+    activeBrand,
+    isLoading: brandsLoading,
+  } = useActiveBrand();
   const hasBrand = !!activeBrand?.id;
 
   // Full guideline detail (colors, logos) for the hero — list rows are the
