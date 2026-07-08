@@ -20,10 +20,12 @@ import { useTheme } from '@/hooks/useTheme';
 import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
+import { resolveShell, routeMode } from '@/config/navConfig';
+import { AppShell } from './shell/AppShell';
 
-/** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. */
+/** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. `insufficient_credits` (free user no muro de crédito) abre o modal de upgrade de plano — Pro dá 10× créditos. */
 export type SubscriptionModalContext = {
-  reason?: 'brand_limit' | 'seat_limit';
+  reason?: 'brand_limit' | 'seat_limit' | 'insufficient_credits';
   message?: string;
 };
 
@@ -520,8 +522,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const onSubscriptionModalOpen = useCallback((context?: SubscriptionModalContext) => {
     setSubscriptionModalContext(context ?? null);
-    if (context?.reason === 'brand_limit' || context?.reason === 'seat_limit') {
-      // Limite de marcas/seats se resolve com upgrade de plano, não com pacote de créditos.
+    if (
+      context?.reason === 'brand_limit' ||
+      context?.reason === 'seat_limit' ||
+      context?.reason === 'insufficient_credits'
+    ) {
+      // Limite de marcas/seats/créditos: o upgrade de plano é a alavanca (Pro dá
+      // 10× créditos). Abre na aba de assinatura com a mensagem de contexto; o
+      // pacote avulso fica a um clique na aba de créditos.
       setCreditPackagesModalTab('assinatura');
       setIsCreditPackagesModalOpen(true);
       return;
@@ -574,6 +582,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       registerResetHandler,
     ]
   );
+
+  // Shell switcher (plano APP-SHELL-REALIGNMENT, F1): o SSoT decide o chrome.
+  // App logado + rota dashboard → AppShell (rail + top bar). Marketing e
+  // editores (focus) seguem o chrome atual; F3 migra os editores.
+  const useAppShell =
+    resolveShell(location.pathname, isAuthenticated) === 'app' &&
+    routeMode(location.pathname) === 'full';
 
   return (
     <LayoutContext.Provider value={contextValue}>
@@ -647,7 +662,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClose={handleCloseUsagePolicy}
         />
 
-        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && (
+        {!useAppShell &&
+          !location.pathname.startsWith('/canvas/') &&
+          !location.pathname.startsWith('/brand/') && (
           <Header
             subscriptionStatus={subscriptionStatus}
             onPricingClick={() => navigate('/pricing')}
@@ -674,7 +691,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           />
         )}
 
-        {location.pathname.startsWith('/canvas/') && (
+        {!useAppShell && location.pathname.startsWith('/canvas/') && (
           <CanvasHeader onBack={() => navigate('/canvas')} />
         )}
 
@@ -735,20 +752,25 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           )}
 
-        <div
-          className={cn(
-            'flex-1 relative',
-            location.pathname.startsWith('/canvas/') ||
-              location.pathname.startsWith('/mockupmachine') ||
-              location.pathname.startsWith('/playground')
-              ? 'overflow-hidden'
-              : ''
-          )}
-        >
-          {children}
-        </div>
+        {useAppShell ? (
+          <AppShell>{children}</AppShell>
+        ) : (
+          <div
+            className={cn(
+              'flex-1 relative',
+              location.pathname.startsWith('/canvas/') ||
+                location.pathname.startsWith('/mockupmachine') ||
+                location.pathname.startsWith('/playground')
+                ? 'overflow-hidden'
+                : ''
+            )}
+          >
+            {children}
+          </div>
+        )}
 
-        {!location.pathname.startsWith('/canvas/') &&
+        {!useAppShell &&
+          !location.pathname.startsWith('/canvas/') &&
           !location.pathname.startsWith('/brand/') &&
           !location.pathname.startsWith('/admin/chat') &&
           !location.pathname.startsWith('/3d-studio') &&

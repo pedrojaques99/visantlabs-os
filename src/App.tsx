@@ -6,6 +6,7 @@ import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
+import { ActiveBrandProvider } from './contexts/ActiveBrandContext';
 import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 import { PremiumGate } from './components/shared/PremiumGate';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from './config/featureFlags';
@@ -296,7 +297,8 @@ const App: React.FC = () => {
     <ErrorBoundaryWrapper>
       <CanvasHeaderProvider>
         <ActiveBrandKitProvider>
-          <Layout>
+          <ActiveBrandProvider>
+            <Layout>
             <ErrorBoundaryWrapper>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
@@ -456,7 +458,8 @@ const App: React.FC = () => {
                 </Routes>
               </Suspense>
             </ErrorBoundaryWrapper>
-          </Layout>
+            </Layout>
+          </ActiveBrandProvider>
         </ActiveBrandKitProvider>
       </CanvasHeaderProvider>
     </ErrorBoundaryWrapper>

@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "context": "CONTEXTO",
+    "cockpit": { "label": "Cockpit", "overview": "Visão geral", "campaigns": "Campanhas", "work": "Trabalhos" },
+    "brands": { "label": "Marcas", "all": "Todas as marcas", "guideline": "Diretrizes", "machine": "Branding machine", "mine": "Minhas marcas" },
+    "copilot": { "label": "Copilot" },
+    "apps": { "label": "Apps", "all": "Todos os apps" },
+    "profile": { "label": "Perfil", "account": "Conta", "usage": "Uso e créditos", "apiKeys": "Chaves de API", "connectedApps": "Apps conectados" }
+  },
   "about": {
     "description": {
       "text": "Agência brasileira independente. Laboratório de experimentos criando soluções personalizadas para designers gráficos e empreendedores.",
@@ -443,6 +451,8 @@
     "requiresPro": "Requer Pro",
     "hidden": "Oculto",
     "featuredLabel": "Destaque",
+    "quickTools": "Ferramentas rápidas",
+    "quickToolsDesc": "Conversores, geradores, imagem e experimentos — a um clique.",
     "access": {
       "all": "Todos",
       "free": "Gratuitos",
@@ -638,6 +648,8 @@
     "meterUnlimited": "{used} marcas ativas · ilimitado",
     "upgrade": "Upgrade",
     "limitMessage": "Limite de marcas ativas atingido, {used}/{max}. Faça upgrade do plano para ativar mais marcas.",
+    "graceMessage": "Você passou do limite de marcas do novo plano. Em {days} dia{plural} as marcas em excesso são arquivadas. Faça upgrade para manter todas ativas.",
+    "graceCta": "Manter minhas marcas",
     "archive": "Arquivar",
     "unarchive": "Reativar",
     "archivedBadge": "Arquivada",
@@ -2241,6 +2253,8 @@
     "freeGenerationsUsed": "Gerações Grátis Usadas",
     "manualCredits": "Créditos",
     "monthlyUsage": "Uso Mensal",
+    "noneAvailable": "Sem créditos disponíveis",
+    "upgradeCta": "Fazer upgrade pra continuar",
     "notificationRemaining": "{remaining} crédito{plural} restante{plural}",
     "notificationUsed": "{count} crédito{plural} usado{plural}",
     "notificationUsedAdmin": "Nenhum crédito deduzido (administrador)",
@@ -5189,6 +5203,7 @@
       "titleLine1": "Pare de corrigir outputs",
       "titleLine2": "que ignoram sua marca.",
       "subtitle": "Suas brand guidelines viram contexto estruturado para qualquer modelo. O que sai sempre parece seu.",
+      "icp": "Para designers, agências e times de marketing que geram com IA.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver os apps"
     },

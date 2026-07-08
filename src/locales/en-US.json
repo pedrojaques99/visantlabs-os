@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "context": "CONTEXT",
+    "cockpit": { "label": "Cockpit", "overview": "Overview", "campaigns": "Campaigns", "work": "Work" },
+    "brands": { "label": "Brands", "all": "All brands", "guideline": "Guidelines", "machine": "Branding machine", "mine": "My brandings" },
+    "copilot": { "label": "Copilot" },
+    "apps": { "label": "Apps", "all": "All apps" },
+    "profile": { "label": "Profile", "account": "Account", "usage": "Usage & credits", "apiKeys": "API keys", "connectedApps": "Connected apps" }
+  },
   "about": {
     "description": {
       "text": "Independent Brazilian agency. Experimentation laboratory creating personalized solutions for graphic designers and entrepreneurs.",
@@ -443,6 +451,8 @@
     "requiresPro": "Requires Pro",
     "hidden": "Hidden",
     "featuredLabel": "Featured",
+    "quickTools": "Quick tools",
+    "quickToolsDesc": "Converters, generators, image and experiments — one click away.",
     "access": {
       "all": "All",
       "free": "Free",
@@ -638,6 +648,8 @@
     "meterUnlimited": "{used} active brands · unlimited",
     "upgrade": "Upgrade",
     "limitMessage": "Active brand limit reached, {used}/{max}. Upgrade your plan to activate more brands.",
+    "graceMessage": "You're over your new plan's brand limit. In {days} day{plural} the excess brands get archived. Upgrade to keep them all active.",
+    "graceCta": "Keep my brands",
     "archive": "Archive",
     "unarchive": "Reactivate",
     "archivedBadge": "Archived",
@@ -2241,6 +2253,8 @@
     "freeGenerationsUsed": "Free Generations Used",
     "manualCredits": "Manual Credits",
     "monthlyUsage": "Monthly Usage",
+    "noneAvailable": "No credits available",
+    "upgradeCta": "Upgrade to keep going",
     "notificationRemaining": "{remaining} credit{plural} remaining",
     "notificationUsed": "{count} credit{plural} used",
     "notificationUsedAdmin": "No credits deducted (administrator)",
@@ -5185,6 +5199,7 @@
       "titleLine1": "Stop correcting outputs",
       "titleLine2": "that ignore your brand.",
       "subtitle": "Your brand guidelines become structured context for any model. Everything generated always looks like you.",
+      "icp": "For designers, agencies and marketing teams that generate with AI.",
       "ctaPrimary": "Start free",
       "ctaSecondary": "See the apps"
     },

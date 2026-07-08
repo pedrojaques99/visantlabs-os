@@ -260,7 +260,7 @@ const profileNav = (): ContextNavItem[] => [
 export const NAV_SECTIONS: NavSection[] = [
   {
     id: 'cockpit',
-    labelKey: 'nav.cockpit',
+    labelKey: 'nav.cockpit.label',
     icon: Home,
     to: '/cockpit',
     visibleWhen: (ctx) => ctx.flags.cockpit,
@@ -268,7 +268,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     id: 'brands',
-    labelKey: 'nav.brands',
+    labelKey: 'nav.brands.label',
     icon: Palette,
     to: '/brand-guidelines',
     visibleWhen: () => true,
@@ -276,7 +276,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     id: 'copilot',
-    labelKey: 'nav.copilot',
+    labelKey: 'nav.copilot.label',
     icon: Bot,
     to: '/copilot',
     visibleWhen: (ctx) => ctx.flags.copilot,
@@ -284,7 +284,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     id: 'apps',
-    labelKey: 'nav.apps',
+    labelKey: 'nav.apps.label',
     icon: LayoutGrid,
     to: '/apps',
     visibleWhen: () => true,
@@ -295,7 +295,7 @@ export const NAV_SECTIONS: NavSection[] = [
 /** Seção do footer do rail (perfil/settings) — separada dos destinos primários. */
 export const PROFILE_SECTION: NavSection = {
   id: 'profile',
-  labelKey: 'nav.profile',
+  labelKey: 'nav.profile.label',
   icon: User,
   to: '/profile',
   visibleWhen: () => true,
