@@ -345,7 +345,12 @@
       "featured": "Destaque",
       "free": "Gratuito",
       "moreTools": "Mais Ferramentas",
-      "premium": "Somente Premium"
+      "premium": "Somente Premium",
+      "pro": "Pro",
+      "new": "Novo",
+      "alpha": "Alpha",
+      "admin": "Admin",
+      "soon": "Em breve"
     },
     "brandGuidelines": {
       "description": "Gerencie sua biblioteca de marcas e media kit",
@@ -425,8 +430,136 @@
       "description": "Conecte múltiplos vídeos simultaneamente e crie mixes",
       "name": "YouTube Mixer"
     },
-    "edit_app": "Edit App",
-    "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode"
+    "edit_app": "Editar App",
+    "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode",
+    "microTitle": "Plataforma // Ferramentas",
+    "headerDescription": "Seu kit criativo — ferramentas pro de design e experimentos gratuitos.",
+    "addApp": "Adicionar App",
+    "allApps": "Todos",
+    "categoriesLabel": "Categorias",
+    "open": "Abrir",
+    "launch": "Abrir",
+    "requiresPro": "Requer Pro",
+    "hidden": "Oculto",
+    "featuredLabel": "Destaque",
+    "access": {
+      "all": "Todos",
+      "free": "Gratuitos",
+      "premium": "Pro"
+    },
+    "sort": {
+      "label": "Ordenar",
+      "recent": "Mais usados",
+      "name": "A–Z",
+      "hintDefault": "Ordenar",
+      "hintRecent": "Mais usados primeiro",
+      "hintName": "Ordenado A–Z"
+    },
+    "empty": {
+      "noResultsTitle": "Nenhum resultado",
+      "noResultsDesc": "Não encontramos nada para “{query}”. Tente outro termo.",
+      "noCategoryTitle": "Nenhum app nesta categoria",
+      "noCategoryDesc": "Tente selecionar outra categoria ou limpar os filtros.",
+      "clearFilters": "Limpar filtros"
+    },
+    "categories": {
+      "pro": {
+        "label": "Ferramentas Pro",
+        "description": "Suíte profissional de design e branding"
+      },
+      "creative": {
+        "label": "Lab Criativo",
+        "description": "Ferramentas criativas gratuitas para experimentar"
+      },
+      "image": {
+        "label": "Ferramentas de Imagem",
+        "description": "Processe, melhore e transforme imagens"
+      },
+      "converters": {
+        "label": "Conversores",
+        "description": "Converta formatos, cores e otimize arquivos"
+      },
+      "generators": {
+        "label": "Geradores",
+        "description": "Crie QR codes, favicons e imagens OG"
+      },
+      "audio": {
+        "label": "Áudio",
+        "description": "Ferramentas de som e música"
+      },
+      "community": {
+        "label": "Comunidade",
+        "description": "Experimentos open-source e ferramentas externas"
+      },
+      "admin": {
+        "label": "Admin",
+        "description": "Ferramentas internas"
+      }
+    },
+    "contentStudio": {
+      "name": "Content Studio",
+      "description": "1 briefing → todos os assets de social com copy, imagens e consistência de marca"
+    },
+    "namingMachine": {
+      "name": "Naming Machine",
+      "description": "Dê match no nome perfeito para a sua marca"
+    },
+    "imageLab": {
+      "name": "Image Lab",
+      "description": "Efeitos de halftone, textura e risografia em um editor unificado. Troque de modo na hora, sem recarregar."
+    },
+    "imageCompressor": {
+      "name": "Compressor de Imagem",
+      "description": "Comprima imagens com controle de qualidade e formato. Suporta lote."
+    },
+    "bicubicUpscale": {
+      "name": "Upscale Bicúbico",
+      "description": "Amplie imagens de 2x a 4x com controle de nitidez."
+    },
+    "backgroundRemover": {
+      "name": "Removedor de Fundo",
+      "description": "Remova fundos com IA ou modo simples. Suporta lote."
+    },
+    "watermark": {
+      "name": "Marca d’água",
+      "description": "Adicione marca d’água de texto ou logo com posição, opacidade e modo ladrilho."
+    },
+    "visualSearch": {
+      "name": "Busca Visual",
+      "description": "Busca reversa de imagem em múltiplas fontes."
+    },
+    "fileConverter": {
+      "name": "Conversor de Arquivos",
+      "description": "Converta imagens entre PNG, JPG, WebP, PDF e ICO."
+    },
+    "svgOptimizer": {
+      "name": "Otimizador de SVG",
+      "description": "Otimize e minifique arquivos SVG. Remova metadados, comentários e grupos vazios."
+    },
+    "colorConverter": {
+      "name": "Conversor de Cores",
+      "description": "Converta cores entre HEX, RGB, CMYK, HSL com verificação de contraste WCAG."
+    },
+    "qrCode": {
+      "name": "Gerador de QR Code",
+      "description": "Gere QR codes com tamanho, cores e correção de erro personalizados."
+    },
+    "faviconGenerator": {
+      "name": "Gerador de Favicon",
+      "description": "Gere todos os tamanhos de favicon, apple-touch-icon e web manifest de uma imagem."
+    },
+    "ogImage": {
+      "name": "Gerador de Imagem OG",
+      "description": "Crie imagens Open Graph com templates, texto e cores personalizados."
+    },
+    "labs": {
+      "name": "Labs",
+      "description": "Experimentos de design generativo e mini-ferramentas. Túneis de vento, difusão-reação e mais."
+    },
+    "smartAnalyzer": {
+      "name": "Smart Analyzer",
+      "description": "Análise de imagem com IA. Detecta o tipo da imagem e gera prompts otimizados para o plugin do Figma ou geração de imagem."
+    }
   },
   "auth": {
     "accountCreatedSuccess": "Conta criada com sucesso!",

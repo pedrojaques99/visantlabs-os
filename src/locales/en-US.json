@@ -345,7 +345,12 @@
       "featured": "Featured",
       "free": "Free",
       "moreTools": "More Tools",
-      "premium": "Premium Only"
+      "premium": "Premium Only",
+      "pro": "Pro",
+      "new": "New",
+      "alpha": "Alpha",
+      "admin": "Admin",
+      "soon": "Soon"
     },
     "brandGuidelines": {
       "description": "Manage your brand library & media kit",
@@ -426,7 +431,135 @@
       "name": "YouTube Mixer"
     },
     "edit_app": "Edit App",
-    "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode"
+    "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode",
+    "microTitle": "Platform // Tools",
+    "headerDescription": "Your creative toolkit — pro design tools and free experiments.",
+    "addApp": "Add App",
+    "allApps": "All",
+    "categoriesLabel": "Categories",
+    "open": "Open",
+    "launch": "Launch",
+    "requiresPro": "Requires Pro",
+    "hidden": "Hidden",
+    "featuredLabel": "Featured",
+    "access": {
+      "all": "All",
+      "free": "Free",
+      "premium": "Pro"
+    },
+    "sort": {
+      "label": "Sort",
+      "recent": "Most used",
+      "name": "A–Z",
+      "hintDefault": "Sort",
+      "hintRecent": "Most used first",
+      "hintName": "Sorted A–Z"
+    },
+    "empty": {
+      "noResultsTitle": "No results found",
+      "noResultsDesc": "We couldn't find anything matching “{query}”. Try a different term.",
+      "noCategoryTitle": "No apps in this category",
+      "noCategoryDesc": "Try selecting a different category or clearing your filters.",
+      "clearFilters": "Clear all filters"
+    },
+    "categories": {
+      "pro": {
+        "label": "Pro Tools",
+        "description": "Professional design & branding suite"
+      },
+      "creative": {
+        "label": "Creative Lab",
+        "description": "Free creative tools to experiment with"
+      },
+      "image": {
+        "label": "Image Tools",
+        "description": "Process, enhance & transform images"
+      },
+      "converters": {
+        "label": "Converters",
+        "description": "Convert formats, colors & optimize files"
+      },
+      "generators": {
+        "label": "Generators",
+        "description": "Create QR codes, favicons & OG images"
+      },
+      "audio": {
+        "label": "Audio",
+        "description": "Sound & music tools"
+      },
+      "community": {
+        "label": "Community",
+        "description": "Open-source experiments & external tools"
+      },
+      "admin": {
+        "label": "Admin",
+        "description": "Internal tools"
+      }
+    },
+    "contentStudio": {
+      "name": "Content Studio",
+      "description": "1 brief → all social media assets with copy, images & brand consistency"
+    },
+    "namingMachine": {
+      "name": "Naming Machine",
+      "description": "Swipe your way to the perfect brand name"
+    },
+    "imageLab": {
+      "name": "Image Lab",
+      "description": "Halftone, texture overlay and risograph effects in one unified editor. Switch modes instantly without reloading."
+    },
+    "imageCompressor": {
+      "name": "Image Compressor",
+      "description": "Compress images with quality and format control. Batch supported."
+    },
+    "bicubicUpscale": {
+      "name": "Bicubic Upscale",
+      "description": "Upscale images 2x–4x with sharpening control."
+    },
+    "backgroundRemover": {
+      "name": "Background Remover",
+      "description": "Remove backgrounds with AI or simple mode. Batch supported."
+    },
+    "watermark": {
+      "name": "Watermark",
+      "description": "Add text or logo watermarks with position, opacity and tile mode."
+    },
+    "visualSearch": {
+      "name": "Visual Search",
+      "description": "Reverse image search across multiple sources."
+    },
+    "fileConverter": {
+      "name": "File Converter",
+      "description": "Convert images between PNG, JPG, WebP, PDF and ICO."
+    },
+    "svgOptimizer": {
+      "name": "SVG Optimizer",
+      "description": "Optimize and minify SVG files. Remove metadata, comments and empty groups."
+    },
+    "colorConverter": {
+      "name": "Color Converter",
+      "description": "Convert colors between HEX, RGB, CMYK, HSL with WCAG contrast check."
+    },
+    "qrCode": {
+      "name": "QR Code Generator",
+      "description": "Generate QR codes with custom size, colors and error correction."
+    },
+    "faviconGenerator": {
+      "name": "Favicon Generator",
+      "description": "Generate all favicon sizes, apple-touch-icon and web manifest from one image."
+    },
+    "ogImage": {
+      "name": "OG Image Generator",
+      "description": "Create Open Graph images with templates, custom text and colors."
+    },
+    "labs": {
+      "name": "Labs",
+      "description": "Generative design experiments and mini-tools. Wind tunnels, reaction diffusion and more."
+    },
+    "smartAnalyzer": {
+      "name": "Smart Analyzer",
+      "description": "AI-powered image analysis. Auto-detects image type and generates optimized prompts for the Figma plugin or image generation."
+    }
   },
   "auth": {
     "accountCreatedSuccess": "Account created successfully!",
