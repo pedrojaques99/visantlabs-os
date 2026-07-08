@@ -35,10 +35,13 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
 
     const brandId = typeof req.query.brandId === 'string' ? req.query.brandId : undefined;
     const limit = Math.min(Number(req.query.limit) || 60, 200);
+    // Cockpit (Fase 4 task 4.2): "EM ANDAMENTO" wants most-recently-touched
+    // first — ?sort=updatedAt. Default stays createdAt (existing grid behavior).
+    const sort = req.query.sort === 'updatedAt' ? 'updatedAt' : 'createdAt';
 
     const campaigns = await prisma.campaign.findMany({
       where: { userId: req.userId, ...(brandId ? { brandGuidelineId: brandId } : {}) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [sort]: 'desc' },
       take: limit,
       select: {
         id: true,

@@ -864,8 +864,10 @@ export const brandGuidelineApi = {
       body: JSON.stringify({ email, role }),
     });
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Failed to add collaborator' }));
-      throw new Error(err.error || 'Failed to add collaborator');
+      // 402 seat_limit carrega {error, used, max, upgradeUrl} — codedError expõe
+      // isso pro fluxo de share abrir o paywall com contexto (Fase 4 §4.5).
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to add collaborator');
     }
     const data = await response.json();
     return data.collaborator;

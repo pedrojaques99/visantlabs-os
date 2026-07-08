@@ -1678,6 +1678,46 @@
     "title": "Tools",
     "toggleDrawingMode": "Toggle Drawing Mode"
   },
+  "cockpit": {
+    "connectAI": "Connect AI",
+    "settings": "Settings",
+    "title": "Brand cockpit",
+    "empty": {
+      "cta": "Bring your brand",
+      "secondary": "Explore brand guidelines",
+      "subtitle": "Ingest your brand once — colors, logos, voice — and every tool, campaign and connected AI starts from it.",
+      "title": "Your brand is the starting point"
+    },
+    "seats": {
+      "limitMessage": "Editor seat limit reached ({used} of {max}). Upgrade your plan to invite more editors — viewers are always free.",
+      "limitMessageGeneric": "Editor seat limit reached. Upgrade your plan to invite more editors — viewers are always free.",
+      "usage": "{used} of {max} editors"
+    },
+    "shortcuts": {
+      "allApps": "All apps",
+      "title": "Shortcuts"
+    },
+    "suggestions": {
+      "briefCopied": "Brief copied — run it in your connected AI.",
+      "copyFailed": "Couldn't copy",
+      "generate": "Generate",
+      "loading": "Reading the brand + what's coming up…",
+      "refresh": "Refresh",
+      "title": "Brand suggestions",
+      "useInAI": "Use in AI"
+    },
+    "switcher": {
+      "manageBrands": "Manage brands…",
+      "placeholder": "Select brand"
+    },
+    "work": {
+      "campaign": "Campaign",
+      "creative": "Creative",
+      "empty": "Nothing in progress yet — start something new.",
+      "new": "New",
+      "title": "In progress"
+    }
+  },
   "common": {
     "add": "ADD",
     "analysing": "Analysing...",

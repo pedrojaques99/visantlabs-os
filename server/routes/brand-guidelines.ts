@@ -85,7 +85,13 @@ import {
   findDuplicate,
   type AssetFingerprint,
 } from '../lib/brand/assetFingerprint.js';
-import { checkBrandActivation, brandLimitPayload } from '../lib/brandQuota.js';
+import {
+  checkBrandActivation,
+  brandLimitPayload,
+  checkEditorSeat,
+  seatLimitPayload,
+  getSeatQuotaForUserId,
+} from '../lib/brandQuota.js';
 
 /** 403 payload for writes against an archived (read-only) brand. */
 const BRAND_ARCHIVED_PAYLOAD = {
@@ -478,7 +484,19 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     });
 
     if (!guideline) return res.status(404).json({ error: 'Not found' });
-    res.json({ guideline: { ...guideline, _id: guideline.id } });
+
+    // Seats (Fase 4): expose per-brand editor usage vs tier policy so the
+    // frontend mirrors the invite gate without logic of its own. Advisory —
+    // never break the detail fetch over a quota lookup.
+    let seatQuota: { used: number; max: number | null } | null = null;
+    try {
+      const q = await getSeatQuotaForUserId(req.userId, guideline.id);
+      seatQuota = { used: q.used, max: q.max };
+    } catch {
+      /* advisory */
+    }
+
+    res.json({ guideline: { ...guideline, _id: guideline.id }, seatQuota });
   } catch (error: any) {
     console.error('Error fetching brand guideline:', error);
     res.status(500).json({ error: 'Failed to fetch brand guideline' });
@@ -2120,6 +2138,16 @@ router.post('/:id/invite', apiRateLimiter, authenticate, async (req: AuthRequest
       label?: string;
       expiresInDays?: number;
     };
+
+    // Seat gate (Fase 4 task 4.5): an editor invite HOLDS a seat from creation
+    // (pending invites count as used) — no race window on accept. Viewer
+    // invites always pass: viewer = end client approving work, always free.
+    if (role === 'editor') {
+      const seat = await checkEditorSeat(req.userId, guideline.id);
+      if (!seat.allowed) {
+        return res.status(402).json(seatLimitPayload(seat.quota));
+      }
+    }
 
     const token = nanoid(16);
     const brandName = (guideline.identity as any)?.name || 'Brand Kit';
@@ -3989,6 +4017,16 @@ router.post('/:id/collaborators', apiRateLimiter, authenticate, async (req: Auth
 
     let canEdit = Array.isArray(guideline.canEdit) ? [...(guideline.canEdit as string[])] : [];
     let canView = Array.isArray(guideline.canView) ? [...(guideline.canView as string[])] : [];
+
+    // Seat gate (Fase 4 task 4.5): direct add / viewer→editor promotion also
+    // consumes a seat. Skip when the user is ALREADY an editor (no-op keeps
+    // working even at the limit). Viewer role always passes.
+    if (role === 'editor' && !canEdit.includes(invitee.id)) {
+      const seat = await checkEditorSeat(req.userId, guideline.id);
+      if (!seat.allowed) {
+        return res.status(402).json(seatLimitPayload(seat.quota));
+      }
+    }
 
     // Remove from both arrays first (role change support)
     canEdit = canEdit.filter((id) => id !== invitee.id);

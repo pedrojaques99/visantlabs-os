@@ -171,6 +171,11 @@ export function isBrandLimitError(err: unknown): err is CodedError {
   return err instanceof Error && (err as CodedError).code === 'brand_limit';
 }
 
+/** True quando o erro é o 402 de limite de seats (editores) por marca (Fase 4). */
+export function isSeatLimitError(err: unknown): err is CodedError {
+  return err instanceof Error && (err as CodedError).code === 'seat_limit';
+}
+
 export function useDuplicateGuideline() {
   const qc = useQueryClient();
   return useMutation({

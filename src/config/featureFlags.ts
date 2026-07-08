@@ -18,3 +18,6 @@ export const FEATURE_BRAND_BILLING = readFlag(import.meta.env.VITE_FEATURE_BRAND
 
 /** Gate do onboarding brand-first (Fase 3): wizard v2, checklist v2 e banner de marca demo. */
 export const FEATURE_ONBOARDING_V2 = readFlag(import.meta.env.VITE_FEATURE_ONBOARDING_V2);
+
+/** Gate do cockpit de marca na home logada (Fase 4) — launcher TUI vira fallback. */
+export const FEATURE_COCKPIT = readFlag(import.meta.env.VITE_FEATURE_COCKPIT);

@@ -1678,6 +1678,46 @@
     "title": "Ferramentas",
     "toggleDrawingMode": "Alternar Modo de Desenho"
   },
+  "cockpit": {
+    "connectAI": "Conectar AI",
+    "settings": "Configurações",
+    "title": "Cockpit da marca",
+    "empty": {
+      "cta": "Trazer minha marca",
+      "secondary": "Explorar brand guidelines",
+      "subtitle": "Ingira sua marca uma vez — cores, logos, voz — e toda ferramenta, campanha e AI conectada parte dela.",
+      "title": "Sua marca é o ponto de partida"
+    },
+    "seats": {
+      "limitMessage": "Limite de editores atingido ({used} de {max}). Faça upgrade do plano para convidar mais editores — viewers são sempre grátis.",
+      "limitMessageGeneric": "Limite de editores atingido. Faça upgrade do plano para convidar mais editores — viewers são sempre grátis.",
+      "usage": "{used} de {max} editores"
+    },
+    "shortcuts": {
+      "allApps": "Todos os apps",
+      "title": "Atalhos"
+    },
+    "suggestions": {
+      "briefCopied": "Brief copiado — rode na sua AI conectada.",
+      "copyFailed": "Não foi possível copiar",
+      "generate": "Gerar",
+      "loading": "Lendo a marca + o que vem por aí…",
+      "refresh": "Atualizar",
+      "title": "Sugestões da marca",
+      "useInAI": "Usar na AI"
+    },
+    "switcher": {
+      "manageBrands": "Gerenciar marcas…",
+      "placeholder": "Selecionar marca"
+    },
+    "work": {
+      "campaign": "Campanha",
+      "creative": "Criativo",
+      "empty": "Nada em andamento ainda — comece algo novo.",
+      "new": "Novo",
+      "title": "Em andamento"
+    }
+  },
   "common": {
     "add": "ADICIONAR",
     "analysing": "Analisando...",

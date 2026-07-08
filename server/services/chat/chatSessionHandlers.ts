@@ -29,6 +29,7 @@ import { formatGeminiHistory } from '../../lib/chat/history.js';
 import { resolveRagScope } from '../../lib/chat/ragScope.js';
 import { withRetry } from '../../lib/chat/executor.js';
 import { pluginBridgeEvents } from '../../lib/pluginBridge.js';
+import { checkCopilotShare, seatLimitPayload } from '../../lib/brandQuota.js';
 import type {
   ChatMessage as SharedChatMessage,
   ToolCallRecord as SharedToolCallRecord,
@@ -528,6 +529,16 @@ export function createChatSessionRouter(opts: ChatRouterOptions): express.Router
   router.post('/sessions', guard, async (req: AuthRequest, res: Response) => {
     try {
       const { brandGuidelineId, isShared, sharedWithUserIds } = req.body;
+
+      // Seats gate (Fase 4 task 4.6): creating a session ALREADY shared is
+      // sharing — requires a tier with seats > 0 (free doesn't share).
+      if (isShared || (Array.isArray(sharedWithUserIds) && sharedWithUserIds.length > 0)) {
+        const share = await checkCopilotShare(req.userId!);
+        if (!share.allowed) {
+          return res.status(402).json(seatLimitPayload(share.quota));
+        }
+      }
+
       const session: AdminChatSession = {
         _id: uuidv4(),
         userId: req.userId!,
@@ -581,6 +592,19 @@ export function createChatSessionRouter(opts: ChatRouterOptions): express.Router
         return res.status(403).json({ error: 'Apenas o dono pode alterar o compartilhamento' });
       }
       const { isShared, sharedWithUserIds } = req.body;
+
+      // Seats gate (Fase 4 task 4.6): ENABLING sharing requires a tier with
+      // seats > 0. Disabling/unsharing always passes. Participants are not
+      // counted per-seat — collaboration is unlocked by the tier, kept simple.
+      const enablingShare =
+        !!isShared || (Array.isArray(sharedWithUserIds) && sharedWithUserIds.length > 0);
+      if (enablingShare) {
+        const share = await checkCopilotShare(req.userId!);
+        if (!share.allowed) {
+          return res.status(402).json(seatLimitPayload(share.quota));
+        }
+      }
+
       session.isShared = !!isShared;
       if (Array.isArray(sharedWithUserIds)) {
         session.sharedWithUserIds = sharedWithUserIds.filter((x: any) => typeof x === 'string');

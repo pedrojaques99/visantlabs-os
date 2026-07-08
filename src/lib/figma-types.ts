@@ -1047,6 +1047,12 @@ export interface BrandGuideline {
   archivedAt?: string;
   // Onboarding brand-first (Fase 3) — marca-exemplo clonada no skip; não conta na quota.
   isDemo?: boolean;
+  /**
+   * Seats por marca (Fase 4 §4.5) — vem no detalhe da marca quando o backend
+   * de billing por seat está no ar. Conta apenas EDITORES (viewer é sempre
+   * grátis); `max: null` = ilimitado.
+   */
+  seatQuota?: { used: number; max: number | null };
   // Public sharing
   publicSlug?: string;
   isPublic?: boolean;

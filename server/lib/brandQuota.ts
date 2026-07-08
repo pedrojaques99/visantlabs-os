@@ -174,6 +174,225 @@ export function brandLimitPayload(quota: BrandQuota) {
   };
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SEAT QUOTA — editors per brand (Fase 4, tasks 4.2/4.5/4.6)
+//
+// A "seat" is an EDITOR on a brand (canEdit[]). Viewers are ALWAYS free —
+// viewer = the end client approving work; it's bait, not cost. The owner never
+// counts against their own seats. Pending editor invites count as used seats
+// so the gate lives at invite CREATION (no race on accept).
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface SeatQuota {
+  /** Editor seats in use on the brand: canEdit[] (minus owner) + pending editor invites. */
+  used: number;
+  /** Editor seats allowed per brand for the tier. `null` = unlimited. */
+  max: number | null;
+  /** Effective tier (same resolution rules as BrandQuota). */
+  tier: string;
+}
+
+/**
+ * Hardcoded fallbacks (plan §Fase 2 table: seats/marca). Product.metadata
+ * .maxEditorsPerBrand (admin-managed) overrides these when present.
+ */
+const FALLBACK_MAX_EDITORS: Record<string, number | null> = {
+  free: 0,
+  premium: 1,
+  pro: 3,
+  agency: null,
+};
+
+async function tierMaxEditorsFromProduct(tier: string): Promise<number | null | undefined> {
+  try {
+    const products = await prisma.product.findMany({
+      where: { type: 'subscription_plan', isActive: true },
+    });
+    const product = products.find(
+      (p) => (p.metadata as any)?.tier === tier || p.productId.includes(tier)
+    );
+    const raw = (product?.metadata as Record<string, any> | null)?.maxEditorsPerBrand;
+    if (raw === undefined || raw === null) return undefined;
+    if (raw === 'unlimited' || raw === -1 || raw === '-1') return null;
+    const n = parseInt(String(raw), 10);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+  } catch {
+    return undefined; // DB hiccup → hardcoded fallback
+  }
+}
+
+function effectiveTier(user: QuotaUserShape): string {
+  const status = user.subscriptionStatus || 'free';
+  const rawTier = user.subscriptionTier || 'free';
+  return status === 'active' && rawTier !== 'free' ? rawTier : 'free';
+}
+
+/**
+ * "Not expired" filter for BrandInvite. Mongo connector caveat: invites created
+ * without expiry leave the field UNSET, and neither `null` equality nor a
+ * negated comparison matches unset fields — `isSet: false` is required.
+ */
+function notExpiredOr() {
+  return [{ expiresAt: { isSet: false } }, { expiresAt: null }, { expiresAt: { gt: new Date() } }];
+}
+
+/** Editor seats in use on ONE brand: unique canEdit ids (minus owner) + pending editor invites. */
+async function countEditorSeats(brandGuidelineId: string): Promise<number> {
+  const guideline = await prisma.brandGuideline.findUnique({
+    where: { id: brandGuidelineId },
+    select: { userId: true, canEdit: true },
+  });
+  if (!guideline) return 0;
+
+  const editorIds = new Set(
+    (Array.isArray(guideline.canEdit) ? (guideline.canEdit as string[]) : []).filter(
+      (id) => typeof id === 'string' && id !== guideline.userId
+    )
+  );
+
+  // Pending, non-expired editor invites hold a seat until accepted or revoked.
+  const pendingInvites = await prisma.brandInvite.count({
+    where: {
+      brandGuidelineId,
+      role: 'editor',
+      status: 'pending',
+      OR: notExpiredOr(),
+    },
+  });
+
+  return editorIds.size + pendingInvites;
+}
+
+/**
+ * Seat quota for a user (the brand OWNER). When `brandGuidelineId` is given,
+ * `used` reflects that brand; without it, `used` is 0 (policy lookup only).
+ */
+export async function getSeatQuota(
+  user: QuotaUserShape,
+  brandGuidelineId?: string
+): Promise<SeatQuota> {
+  const tier = effectiveTier(user);
+  const used = brandGuidelineId ? await countEditorSeats(brandGuidelineId) : 0;
+
+  if (user.isAdmin === true) {
+    return { used, max: null, tier };
+  }
+
+  const fromProduct = await tierMaxEditorsFromProduct(tier);
+  // `null` means unlimited — explicit key check, same rationale as maxBrands.
+  const max =
+    fromProduct !== undefined
+      ? fromProduct
+      : tier in FALLBACK_MAX_EDITORS
+        ? FALLBACK_MAX_EDITORS[tier]
+        : FALLBACK_MAX_EDITORS.free;
+
+  return { used, max, tier };
+}
+
+/** Load the user and compute the seat quota. */
+export async function getSeatQuotaForUserId(
+  userId: string,
+  brandGuidelineId?: string
+): Promise<SeatQuota> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      subscriptionStatus: true,
+      subscriptionTier: true,
+      isAdmin: true,
+      metadata: true,
+    },
+  });
+  if (!user) {
+    return {
+      used: brandGuidelineId ? await countEditorSeats(brandGuidelineId) : 0,
+      max: FALLBACK_MAX_EDITORS.free,
+      tier: 'free',
+    };
+  }
+  return getSeatQuota(user, brandGuidelineId);
+}
+
+/**
+ * Gate for adding ONE editor seat to a brand (editor invite creation or
+ * viewer→editor promotion). Viewer operations must never call this.
+ */
+export async function checkEditorSeat(
+  ownerUserId: string,
+  brandGuidelineId: string
+): Promise<{ allowed: boolean; quota: SeatQuota }> {
+  const quota = await getSeatQuotaForUserId(ownerUserId, brandGuidelineId);
+  if (!brandBillingEnabled()) return { allowed: true, quota };
+  const allowed = quota.max === null || quota.used < quota.max;
+  return { allowed, quota };
+}
+
+/** Standard 402 payload for the frontend paywall (variant `seat_limit`). */
+export function seatLimitPayload(quota: SeatQuota) {
+  return {
+    error: 'seat_limit',
+    reason: 'seat_limit',
+    used: quota.used,
+    max: quota.max,
+    tier: quota.tier,
+    upgradeUrl: '/pricing',
+  };
+}
+
+/**
+ * Copilot session sharing gate (plan task 4.6): sharing a session with the
+ * team is collaboration — it requires a tier with seats > 0. Free doesn't
+ * share. Participants are NOT counted per-seat (keep it simple).
+ */
+export async function checkCopilotShare(
+  userId: string
+): Promise<{ allowed: boolean; quota: SeatQuota }> {
+  const quota = await getSeatQuotaForUserId(userId);
+  if (!brandBillingEnabled()) return { allowed: true, quota };
+  const allowed = quota.max === null || quota.max > 0;
+  return { allowed, quota };
+}
+
+/**
+ * Aggregate view for /payments/subscription-status: total editor seats in use
+ * across the user's OWNED brands (canEdit minus owner, deduped per brand,
+ * plus pending editor invites created by the user) vs the per-brand policy.
+ */
+export async function getSeatOverview(
+  user: QuotaUserShape
+): Promise<{ used: number; maxPerBrand: number | null; tier: string }> {
+  const userId = String(user.id ?? user._id ?? '');
+  const policy = await getSeatQuota(user); // no brand → policy only
+
+  let used = 0;
+  if (userId) {
+    const brands = await prisma.brandGuideline.findMany({
+      where: { userId },
+      select: { canEdit: true },
+    });
+    for (const b of brands) {
+      const ids = new Set(
+        (Array.isArray(b.canEdit) ? (b.canEdit as string[]) : []).filter(
+          (id) => typeof id === 'string' && id !== userId
+        )
+      );
+      used += ids.size;
+    }
+    used += await prisma.brandInvite.count({
+      where: {
+        createdByUserId: userId,
+        role: 'editor',
+        status: 'pending',
+        OR: notExpiredOr(),
+      },
+    });
+  }
+
+  return { used, maxPerBrand: policy.max, tier: policy.tier };
+}
+
 const GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days (plan §2.7)
 
 /**

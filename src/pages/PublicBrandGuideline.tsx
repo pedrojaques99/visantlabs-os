@@ -57,6 +57,7 @@ import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useConnectBrandToAI } from '@/hooks/useConnectBrandToAI';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -162,7 +163,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>('brand');
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
-  const [connecting, setConnecting] = useState(false);
+  const { connecting, connect } = useConnectBrandToAI();
   const [advancedEdit, setAdvancedEdit] = useState(false);
   // Owner action dialogs (ported from the admin editor)
   const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
@@ -251,20 +252,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
   const handleConnect = async () => {
     // Admin context loads by id (no slug) — fall back to the brand's publicSlug.
-    const connectSlug = slug || guideline?.publicSlug;
-    if (!connectSlug) {
-      toast.error('Make the brand public first to connect it');
-      setIsShareOpen(true);
-      return;
-    }
-    setConnecting(true);
-    try {
-      const { connectUrl } = await brandGuidelineApi.getPublicConnectLink(connectSlug);
-      window.location.href = connectUrl;
-    } catch {
-      toast.error('Failed to generate connect link');
-      setConnecting(false);
-    }
+    // Mint + redirect live in the shared hook (also powers the home cockpit).
+    await connect(slug || guideline?.publicSlug, () => setIsShareOpen(true));
   };
 
   const handleDownloadJSON = () => {

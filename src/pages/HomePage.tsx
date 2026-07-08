@@ -11,6 +11,8 @@ import { appsService, AppConfig } from '@/services/appsService';
 import { AuthModal } from '@/components/AuthModal';
 import { LandingHome } from '@/components/landing/LandingHome';
 import { GettingStartedChecklist } from '@/components/onboarding/GettingStartedChecklist';
+import { BrandCockpit } from '@/components/cockpit/BrandCockpit';
+import { FEATURE_COCKPIT } from '@/config/featureFlags';
 
 const playTick = () => {
   const a = new Audio('/sounds/hihat.wav');
@@ -417,9 +419,9 @@ export const HomePage: React.FC = () => {
     playTick();
   }, []);
 
-  // TUI keyboard navigation
+  // TUI keyboard navigation (cockpit replaces the TUI, so skip when it's on)
   useEffect(() => {
-    if (!isLoggedIn || apps.length === 0) return;
+    if (FEATURE_COCKPIT || !isLoggedIn || apps.length === 0) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -484,6 +486,21 @@ export const HomePage: React.FC = () => {
             if (!authIsSignUp) window.location.reload();
           }}
         />
+      </>
+    );
+  }
+
+  // Cockpit (Fase 4, FEATURE_COCKPIT): logged-in home = brand + work in
+  // progress. Flag off → the TUI launcher below renders exactly as before.
+  if (FEATURE_COCKPIT && isLoggedIn) {
+    return (
+      <>
+        <SEO
+          title={t('homepage.seoTitle') || 'VISANT LABS'}
+          description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
+        />
+        <BrandCockpit apps={apps} onSelectApp={handleSelect} />
+        <GettingStartedChecklist />
       </>
     );
   }

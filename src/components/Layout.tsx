@@ -21,9 +21,9 @@ import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
 
-/** Contexto opcional do paywall — e.g. 402 brand_limit passa a mensagem e cai direto na aba de assinatura. */
+/** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. */
 export type SubscriptionModalContext = {
-  reason?: 'brand_limit';
+  reason?: 'brand_limit' | 'seat_limit';
   message?: string;
 };
 
@@ -520,8 +520,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const onSubscriptionModalOpen = useCallback((context?: SubscriptionModalContext) => {
     setSubscriptionModalContext(context ?? null);
-    if (context?.reason === 'brand_limit') {
-      // Limite de marcas se resolve com upgrade de plano, não com pacote de créditos.
+    if (context?.reason === 'brand_limit' || context?.reason === 'seat_limit') {
+      // Limite de marcas/seats se resolve com upgrade de plano, não com pacote de créditos.
       setCreditPackagesModalTab('assinatura');
       setIsCreditPackagesModalOpen(true);
       return;

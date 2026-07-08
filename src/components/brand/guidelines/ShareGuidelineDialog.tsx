@@ -6,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { brandGuidelineApi, type BrandCollaborator } from '@/services/brandGuidelineApi';
+import { isSeatLimitError } from '@/hooks/queries/useBrandGuidelines';
+import { useLayout } from '@/hooks/useLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import {
   Share2,
@@ -43,6 +46,8 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
   guideline,
   onUpdate,
 }) => {
+  const { t } = useTranslation();
+  const { onSubscriptionModalOpen } = useLayout();
   const [isLoading, setIsLoading] = useState(false);
   const [isPublic, setIsPublic] = useState(guideline.isPublic || false);
   const [shareUrl, setShareUrl] = useState('');
@@ -124,6 +129,18 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
       setInviteEmail('');
       toast.success(`${collaborator.email} added as ${inviteRole}`);
     } catch (error: any) {
+      // Convite de editor acima do limite do plano (402 seat_limit, Fase 4 §4.5)
+      // → paywall com contexto em vez de toast seco (padrão do brand_limit).
+      if (isSeatLimitError(error)) {
+        onSubscriptionModalOpen({
+          reason: 'seat_limit',
+          message:
+            typeof error.used === 'number' && typeof error.max === 'number'
+              ? t('cockpit.seats.limitMessage', { used: error.used, max: error.max })
+              : t('cockpit.seats.limitMessageGeneric'),
+        });
+        return;
+      }
       toast.error(error.message || 'Failed to invite collaborator');
     } finally {
       setInviting(false);
@@ -256,10 +273,21 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
 
           {/* Invite collaborators */}
           <motion.div variants={item} className="space-y-3">
-            <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2">
-              <UserPlus size={12} />
-              Invite to collaborate
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+                <UserPlus size={12} />
+                Invite to collaborate
+              </p>
+              {/* Seats do plano — só quando o backend manda seatQuota no detalhe. */}
+              {guideline.seatQuota && guideline.seatQuota.max != null && (
+                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                  {t('cockpit.seats.usage', {
+                    used: guideline.seatQuota.used,
+                    max: guideline.seatQuota.max,
+                  })}
+                </span>
+              )}
+            </div>
 
             <div className="flex gap-2">
               <Input

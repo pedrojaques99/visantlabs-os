@@ -11,10 +11,11 @@ export const CREATIVE_PROJECT_KEYS = {
 // Internal alias for brevity below
 const KEYS = CREATIVE_PROJECT_KEYS;
 
-export function useCreativeProjects(brandId?: string) {
+export function useCreativeProjects(brandId?: string, enabled = true) {
   return useQuery({
     queryKey: KEYS.list(brandId),
     queryFn: () => creativeProjectApi.list(brandId),
+    enabled,
   });
 }
 

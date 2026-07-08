@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Sparkles,
@@ -9,40 +9,17 @@ import {
   FileCode,
   CalendarClock,
   Loader2,
-  Image as ImageIcon,
-  Instagram,
-  Megaphone,
-  Video,
-  FileText,
-  Type,
   Layout,
-  type LucideIcon,
 } from 'lucide-react';
 import { BrandRenderDialog } from '@/components/brand/guidelines/BrandRenderDialog';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
-import {
-  brandGuidelineApi,
-  type BrandSuggestion,
-  type BrandSuggestionKind,
-} from '@/services/brandGuidelineApi';
+import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
+import { brandGuidelineApi, type BrandSuggestion } from '@/services/brandGuidelineApi';
 
-// Each suggestion kind → its icon, label, and how it's executed:
-//  · 'inline'  = Visant generates it in-app (only mockups have a clean brand-aware path)
-//  · 'ai'      = handed to the brand's connected AI assistant (which has the full
-//                Visant MCP toolbelt: campaign/creative/budget/video/naming)
-const KIND_META: Record<
-  BrandSuggestionKind,
-  { label: string; Icon: LucideIcon; mode: 'inline' | 'ai' }
-> = {
-  mockup: { label: 'Mockup', Icon: ImageIcon, mode: 'inline' },
-  social: { label: 'Social', Icon: Instagram, mode: 'ai' },
-  campaign: { label: 'Campaign', Icon: Megaphone, mode: 'ai' },
-  video: { label: 'Video', Icon: Video, mode: 'ai' },
-  budget: { label: 'Budget', Icon: FileText, mode: 'ai' },
-  naming: { label: 'Naming', Icon: Type, mode: 'ai' },
-};
+// Suggestion kind → icon/label/execution mode (SSoT shared with the cockpit).
+const KIND_META = SUGGESTION_KIND_META;
 
 /**
  * Owner-only interactive band for the brand overview. Two jobs:
@@ -57,12 +34,6 @@ const KIND_META: Record<
  * new primitives.
  */
 
-interface SeasonalMoment {
-  key: string;
-  label: string;
-  daysAway: number;
-}
-
 interface Props {
   guidelineId: string;
   /** Whether the brand is public (a connect link can be minted). */
@@ -73,15 +44,6 @@ interface Props {
   onConnect: () => void;
   connecting?: boolean;
   className?: string;
-}
-
-function friendlyError(e: unknown): { code?: string; message: string } {
-  const code = (e as { code?: string })?.code;
-  if (code === 'suggestions_not_configured')
-    return { code, message: 'AI ideas aren’t enabled for this workspace yet.' };
-  if (code === 'suggestions_unavailable')
-    return { code, message: 'AI ideas are temporarily unavailable — try again shortly.' };
-  return { code, message: e instanceof Error ? e.message : 'Could not load ideas.' };
 }
 
 // Primary action: solid brand accent with the theme's computed contrast text
@@ -137,40 +99,16 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   connecting,
   className,
 }) => {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [suggestions, setSuggestions] = useState<BrandSuggestion[]>([]);
-  const [seasonal, setSeasonal] = useState<SeasonalMoment | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Seasonal suggestions — shared SSoT hook (also powers the home cockpit).
+  const { suggestions, seasonal, loading, refreshing, error, load } = useBrandSuggestions(
+    guidelineId,
+    4
+  );
   const [busy, setBusy] = useState<string | null>(null); // which connect action is running
   const [renderOpen, setRenderOpen] = useState(false);
   const [renderInitial, setRenderInitial] = useState<
     { template?: string; h1?: string; brief?: string } | undefined
   >(undefined);
-
-  const load = useCallback(
-    async (force = false) => {
-      if (!guidelineId) return;
-      if (force) setRefreshing(true);
-      else setLoading(true);
-      try {
-        const res = await brandGuidelineApi.getSuggestions(guidelineId, { count: 4, force });
-        setSuggestions(res.suggestions || []);
-        setSeasonal(res.seasonal?.upcoming?.[0] || null);
-        setError(null);
-      } catch (e) {
-        setError(friendlyError(e).message);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [guidelineId]
-  );
-
-  useEffect(() => {
-    load(false);
-  }, [load]);
 
   const copyPrompt = useCallback(async (prompt: string) => {
     try {

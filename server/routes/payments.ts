@@ -16,7 +16,7 @@ import { validateSafeId } from '../utils/securityValidation.js';
 import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
-import { enforceBrandQuotaOnDowngrade, getBrandQuota } from '../lib/brandQuota.js';
+import { enforceBrandQuotaOnDowngrade, getBrandQuota, getSeatOverview } from '../lib/brandQuota.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -552,6 +552,15 @@ router.get(
         /* advisory — never break subscription-status over a quota lookup */
       }
 
+      // Seats (Fase 4 task 4.5): total editor seats in use across owned brands
+      // vs the per-brand policy. Per-brand usage lives on GET /brand-guidelines/:id.
+      let seatQuota: { used: number; maxPerBrand: number | null; tier: string } | null = null;
+      try {
+        seatQuota = await getSeatOverview(user);
+      } catch {
+        /* advisory — never break subscription-status over a quota lookup */
+      }
+
       res.json({
         subscriptionStatus,
         subscriptionTier,
@@ -570,6 +579,7 @@ router.get(
         planMetadata,
         planName,
         brandQuota,
+        seatQuota,
       });
     } catch (error) {
       next(error);
