@@ -63,10 +63,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
   const [answers, setAnswers] = useState<BriefingAnswer[]>([]);
 
   const applyResponse = useCallback(
-    (
-      resp: Awaited<ReturnType<typeof namingBriefing>>,
-      onFirst?: boolean
-    ) => {
+    (resp: Awaited<ReturnType<typeof namingBriefing>>, onFirst?: boolean) => {
       setBrief(resp.brief || {});
       setBriefText(resp.briefText || '');
       if (resp.done || !resp.nextQuestion) {
@@ -163,9 +160,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-100">
                 O que você está criando?
               </h1>
-              <p className="text-sm text-neutral-500">
-                Uma frase basta. A IA cuida do resto.
-              </p>
+              <p className="text-sm text-neutral-500">Uma frase basta. A IA cuida do resto.</p>
             </div>
 
             <textarea
@@ -199,7 +194,11 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
                 disabled={loading || !concept.trim()}
                 className="gap-2"
               >
-                {loading ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
+                {loading ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <ArrowRight size={15} />
+                )}
                 Continuar
               </Button>
             </div>
@@ -323,7 +322,11 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
 
             <div className="flex justify-center">
               <Button variant="brand" onClick={confirmChips} disabled={loading} className="gap-2">
-                {loading ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
+                {loading ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <ArrowRight size={15} />
+                )}
                 Continuar
               </Button>
             </div>

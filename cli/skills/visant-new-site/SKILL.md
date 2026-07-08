@@ -36,7 +36,7 @@ own design language into a working site. Two non-negotiables learned the hard wa
 > Example (Comunicart®, exhibition architecture): the brand's Figma had a desktop mockup —
 > full **orange field**, white Funnel Display headline, photo collage, the brand **tessellation**
 > faint in the corner. The site matched that 1:1, used the brand's real pattern SVG and 11 stand
-> mockup photos (converted to WebP), and read as *that* brand instead of a template.
+> mockup photos (converted to WebP), and read as _that_ brand instead of a template.
 
 ## Stack (Fixed)
 
@@ -51,20 +51,20 @@ own design language into a working site. Two non-negotiables learned the hard wa
 
 ### Files the skill modifies
 
-| File | What changes |
-|------|-------------|
-| `app/globals.css` | Color tokens in `@theme {}` and `.dark {}`; add `--font-display` |
-| `app/[locale]/layout.tsx` | Font loading (next/font/google), metadata, locale guard |
-| `components/layout/ThemeProvider.tsx` | `defaultTheme` to match the brand's primary mode |
-| `components/layout/Navbar.tsx` | Transparent-over-hero + scroll-solidify state; logo color |
-| `components/layout/MobileMenu.tsx` | Drop locale switcher if single-locale |
-| `messages/<locale>.json` | All copy, in the brand voice |
-| `components/icons/Logo.tsx` | Brand logo (CSS mask of the real SVG, aspect locked) |
-| `components/pattern/GenerativePattern.tsx` | Brand graphic device (real pattern, not invented) |
-| `components/sections/*` | Real imagery in every fold; brand type/spacing |
-| `components/seo/JsonLd.tsx`, `package.json` | Business data, project name |
-| `public/brand/**` | Logo SVG, pattern vectors, mockup photos as WebP |
-| `lib/i18n/routing.ts`, `lib/i18n/request.ts` | Locale list |
+| File                                         | What changes                                                     |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| `app/globals.css`                            | Color tokens in `@theme {}` and `.dark {}`; add `--font-display` |
+| `app/[locale]/layout.tsx`                    | Font loading (next/font/google), metadata, locale guard          |
+| `components/layout/ThemeProvider.tsx`        | `defaultTheme` to match the brand's primary mode                 |
+| `components/layout/Navbar.tsx`               | Transparent-over-hero + scroll-solidify state; logo color        |
+| `components/layout/MobileMenu.tsx`           | Drop locale switcher if single-locale                            |
+| `messages/<locale>.json`                     | All copy, in the brand voice                                     |
+| `components/icons/Logo.tsx`                  | Brand logo (CSS mask of the real SVG, aspect locked)             |
+| `components/pattern/GenerativePattern.tsx`   | Brand graphic device (real pattern, not invented)                |
+| `components/sections/*`                      | Real imagery in every fold; brand type/spacing                   |
+| `components/seo/JsonLd.tsx`, `package.json`  | Business data, project name                                      |
+| `public/brand/**`                            | Logo SVG, pattern vectors, mockup photos as WebP                 |
+| `lib/i18n/routing.ts`, `lib/i18n/request.ts` | Locale list                                                      |
 
 ---
 
@@ -164,7 +164,7 @@ photos**). Wire the real files in:
   (`curl -s -o /dev/null -w "%{http_code}" http://localhost:<port>/brand/mockups/x.webp`).
 - **Self-screenshot** the hero with headless Edge/Chrome:
   `msedge --headless --disable-gpu --hide-scrollbars --virtual-time-budget=5000
-  --window-size=1440,900 --screenshot=out.png http://localhost:<port>/` then Read the PNG.
+--window-size=1440,900 --screenshot=out.png http://localhost:<port>/` then Read the PNG.
   **Caveat:** sections wrapped in `ScrollReveal`/IntersectionObserver render blank in headless and
   anchor (`/#section`) scrolling is unreliable — verify below-fold folds by curling the rendered
   HTML for their text + checking asset 200s instead of trusting a blank capture.

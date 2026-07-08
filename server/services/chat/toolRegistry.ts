@@ -334,7 +334,8 @@ REGISTRY['search_reference_library'] = {
         },
         brand_artifact: {
           type: 'string',
-          description: 'Branding refs: logo, brand-system, typography-spec, guideline, pattern, etc.',
+          description:
+            'Branding refs: logo, brand-system, typography-spec, guideline, pattern, etc.',
         },
         logo_construction: {
           type: 'string',

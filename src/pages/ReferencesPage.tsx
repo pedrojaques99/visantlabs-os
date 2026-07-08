@@ -292,7 +292,18 @@ export const ReferencesPage: React.FC = () => {
   useEffect(() => {
     if (similar || collectionView || scope === 'collections') return;
     loadList(1, false);
-  }, [scope, debouncedSearch, country, region, activeTag, kind, dims, similar, collectionView, reloadNonce]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    scope,
+    debouncedSearch,
+    country,
+    region,
+    activeTag,
+    kind,
+    dims,
+    similar,
+    collectionView,
+    reloadNonce,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── URL sync — serialize filter state into the querystring (shareable views) ──
   useEffect(() => {
@@ -451,7 +462,8 @@ export const ReferencesPage: React.FC = () => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable;
+      const typing =
+        tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable;
       // "/" focuses the search box from anywhere
       if (e.key === '/' && !typing) {
         e.preventDefault();
@@ -653,7 +665,11 @@ export const ReferencesPage: React.FC = () => {
                         : 'text-neutral-500 hover:text-neutral-300'
                     )}
                   >
-                    {s === 'library' ? 'Biblioteca' : s === 'collections' ? 'Coleções' : 'Minhas refs'}
+                    {s === 'library'
+                      ? 'Biblioteca'
+                      : s === 'collections'
+                        ? 'Coleções'
+                        : 'Minhas refs'}
                   </button>
                 ))}
                 {/* Kind filter — logos vs mockups */}
@@ -859,7 +875,10 @@ export const ReferencesPage: React.FC = () => {
                       collectionView?.collection.isOwner
                         ? async () => {
                             try {
-                              await collectionsApi.removeItem(collectionView.collection.id, item.id);
+                              await collectionsApi.removeItem(
+                                collectionView.collection.id,
+                                item.id
+                              );
                               refreshBoard();
                             } catch (e: any) {
                               toast.error(e.message || 'Erro ao remover');
@@ -884,11 +903,15 @@ export const ReferencesPage: React.FC = () => {
             <span className="text-xs">Carregando mais...</span>
           </div>
         )}
-        {!similar && !collectionView && scope !== 'collections' && grid.length > 0 && page >= pages && (
-          <p className="text-center text-[10px] text-neutral-600 py-6">
-            {grid.length} de {total} referências
-          </p>
-        )}
+        {!similar &&
+          !collectionView &&
+          scope !== 'collections' &&
+          grid.length > 0 &&
+          page >= pages && (
+            <p className="text-center text-[10px] text-neutral-600 py-6">
+              {grid.length} de {total} referências
+            </p>
+          )}
 
         {/* Upload dialog */}
         {uploadOpen && (
@@ -952,10 +975,7 @@ export const ReferencesPage: React.FC = () => {
 
       {/* Save-to-collection dialog */}
       {saveTarget && (
-        <SaveToCollectionDialog
-          item={saveTarget}
-          onClose={() => setSaveTarget(null)}
-        />
+        <SaveToCollectionDialog item={saveTarget} onClose={() => setSaveTarget(null)} />
       )}
     </div>
   );
@@ -1042,7 +1062,13 @@ const CollectionsGrid: React.FC<{
             {c.covers && c.covers.length > 1 ? (
               <div className="grid grid-cols-2 grid-rows-2 w-full h-full gap-px">
                 {c.covers.slice(0, 4).map((u, i) => (
-                  <img key={i} src={u} alt="" loading="lazy" className="w-full h-full object-cover" />
+                  <img
+                    key={i}
+                    src={u}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 ))}
               </div>
             ) : c.coverUrl || c.covers?.[0] ? (
@@ -1101,7 +1127,9 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
         n.delete(id);
         return n;
       });
-      setCols((p) => p?.map((c) => (c.id === id ? { ...c, count: Math.max(0, c.count - 1) } : c)) ?? p);
+      setCols(
+        (p) => p?.map((c) => (c.id === id ? { ...c, count: Math.max(0, c.count - 1) } : c)) ?? p
+      );
       toast.error(e.message || 'Erro ao salvar');
     }
   };
@@ -1123,7 +1151,9 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-sm bg-neutral-950 border-neutral-800">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">Salvar em coleção</DialogTitle>
+          <DialogTitle className="text-sm font-mono text-neutral-300">
+            Salvar em coleção
+          </DialogTitle>
         </DialogHeader>
         <div className="flex items-center gap-1.5 pt-1">
           <Input
@@ -1259,7 +1289,12 @@ const MasonryCard: React.FC<{
             {/* LQIP: thumbhash if available, else a soft shimmer */}
             {!loaded &&
               (placeholder ? (
-                <img src={placeholder} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />
+                <img
+                  src={placeholder}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
               ) : (
                 <div className="absolute inset-0 animate-pulse bg-neutral-800/50" />
               ))}
