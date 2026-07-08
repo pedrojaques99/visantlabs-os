@@ -39,8 +39,8 @@ interface PricingCopy {
   free: string;
   recommended: string;
   earlyAccess: string;
-  founderLabel: string;
-  founderNote: string;
+  launchLabel: string;
+  launchNote: string;
   byokBadge: string;
   moreCreditsQuestion: string;
   moreCreditsCta: string;
@@ -65,8 +65,8 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
     free: 'Grátis',
     recommended: 'Recomendado',
     earlyAccess: 'Early access',
-    founderLabel: 'Preço fundador',
-    founderNote: 'primeiros 200 · travado enquanto assinar',
+    launchLabel: 'preço de lançamento',
+    launchNote: 'até segunda ordem',
     byokBadge: 'BYOK · use sua chave, economize crédito',
     moreCreditsQuestion: 'Precisa de mais créditos?',
     moreCreditsCta: 'Comprar pacote avulso',
@@ -128,8 +128,8 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
     free: 'Free',
     recommended: 'Recommended',
     earlyAccess: 'Early access',
-    founderLabel: 'Founding price',
-    founderNote: 'first 200 · locked while subscribed',
+    launchLabel: 'launch price',
+    launchNote: 'for a limited time',
     byokBadge: 'BYOK · use your key, save credits',
     moreCreditsQuestion: 'Need more credits?',
     moreCreditsCta: 'Buy a credit pack',

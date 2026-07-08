@@ -209,7 +209,11 @@ export const PricingPage: React.FC = () => {
                 : billingCycle === 'yearly'
                   ? copy.perYear
                   : copy.perMonth;
-              const founder = tier.founderMonthly?.[currency];
+              const regularBase = tier.regularMonthly?.[currency];
+              const regular =
+                regularBase != null && billingCycle === 'yearly'
+                  ? yearlyTotal(regularBase)
+                  : regularBase;
 
               return (
                 <div
@@ -259,22 +263,19 @@ export const PricingPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Ribbon fundador (Pro/Vision) — preço promo travado */}
-                  {founder != null && (
-                    <div className="mt-3 mb-1 rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
-                      <p
-                        className={cn(
-                          'text-xs font-mono',
-                          tier.recommended ? 'text-brand-cyan' : 'text-neutral-300'
-                        )}
-                      >
-                        {formatTierPrice(founder, currency)}
-                        {copy.perMonth} · {copy.founderLabel}
-                      </p>
-                      <p className="text-[10px] text-neutral-500 font-mono mt-0.5">
-                        {copy.founderNote}
-                      </p>
-                    </div>
+                  {/* Preço "normal" riscado — só quando o ativo é promo de lançamento (Vision) */}
+                  {regular != null && (
+                    <p className="mt-2 mb-1 text-xs font-mono text-neutral-500">
+                      <span className="line-through">
+                        {formatTierPrice(regular, currency)}
+                        {cycleSuffix}
+                      </span>
+                      {' · '}
+                      <span className={tier.recommended ? 'text-brand-cyan' : 'text-neutral-300'}>
+                        {copy.launchLabel}
+                      </span>
+                      <span className="text-neutral-600"> · {copy.launchNote}</span>
+                    </p>
                   )}
 
                   {/* Créditos — uma linha fair-use */}

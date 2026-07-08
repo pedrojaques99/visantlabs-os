@@ -19,10 +19,10 @@ export interface TierPricing {
   recommended?: boolean;
   /** Selo "early access" no topo. */
   earlyAccess?: boolean;
-  /** Preço de lista MENSAL por moeda. Anual = mensal × 10 (2 meses grátis). */
+  /** Preço ATIVO (mensal) por moeda — o que o Stripe cobra hoje. Anual = ×10 (2 meses grátis). */
   monthlyList: Record<Currency, number>;
-  /** Preço fundador travado (mensal) — ribbon nos primeiros 200. */
-  founderMonthly?: Record<Currency, number>;
+  /** Preço "normal" (mensal) mostrado riscado quando o ativo é promo de lançamento. */
+  regularMonthly?: Record<Currency, number>;
 }
 
 /** Tabela canônica travada. */
@@ -35,14 +35,15 @@ export const PRICING_TIERS: TierPricing[] = [
   {
     id: 'pro',
     recommended: true,
+    // Cobra R$49,90/mês no Stripe (sem desconto ativo) → sem preço riscado.
     monthlyList: { BRL: 49, USD: 12 },
-    founderMonthly: { BRL: 29, USD: 7 },
   },
   {
     id: 'vision',
     earlyAccess: true,
-    monthlyList: { BRL: 149, USD: 29 },
-    founderMonthly: { BRL: 89, USD: 18 },
+    // Preço de lançamento (cobra R$89,90/mês no Stripe) — até segunda ordem.
+    monthlyList: { BRL: 89, USD: 18 },
+    regularMonthly: { BRL: 149, USD: 29 },
   },
 ];
 
