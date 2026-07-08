@@ -80,7 +80,7 @@ function AppCardSkeleton({ featured = false }: { featured?: boolean }) {
     <div
       className={cn(
         'rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse',
-        featured && 'sm:col-span-2 xl:col-span-2'
+        featured && 'sm:col-span-2 xl:col-span-2 2xl:col-span-2'
       )}
     >
       <div className={cn('bg-neutral-800/20', featured ? 'aspect-[16/7]' : 'aspect-[16/10]')} />
@@ -145,7 +145,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         'transition-all duration-300 outline-none cursor-pointer',
         'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
-        featured && 'sm:col-span-2 xl:col-span-2',
+        featured && 'sm:col-span-2 xl:col-span-2 2xl:col-span-2',
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
         app.isHidden && 'border-warning/20 opacity-60'
       )}
@@ -357,7 +357,7 @@ function SectionHeader({
   );
 }
 
-const GRID_CLASS = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4';
+const GRID_CLASS = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4';
 
 // ─── Page ───────────────────────────────────────────────────────────────────
 
@@ -953,6 +953,7 @@ export const AppsPage: React.FC = () => {
   return (
     <PageShell
       pageId="apps"
+      width="full"
       seoTitle={t('apps.seoTitle')}
       seoDescription={t('apps.seoDescription')}
       title={t('apps.title')}

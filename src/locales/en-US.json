@@ -375,7 +375,7 @@
       "name": "Colorfy"
     },
     "copilot": {
-      "description": "Your agentic brand assistant — generate editable mockups, plan campaigns and create in Figma with your brand as context",
+      "description": "Your agentic brand assistant, generate editable mockups, plan campaigns and create in Figma with your brand as context",
       "name": "Brand Copilot"
     },
     "effectsTools": "EFFECTS TOOLS //",
@@ -392,11 +392,11 @@
       "name": "3D Studio"
     },
     "cmykHalftone": {
-      "description": "Professional CMYK halftone effect with WebGL — dot control, screen angles, ink colors and blend modes",
+      "description": "Professional CMYK halftone effect with WebGL, dot control, screen angles, ink colors and blend modes",
       "name": "CMYK Halftone"
     },
     "gridMachine": {
-      "description": "Upload an SVG logo and analyze its construction grid — anchor points, bezier handles, alignment lines and geometric structure",
+      "description": "Upload an SVG logo and analyze its construction grid, anchor points, bezier handles, alignment lines and geometric structure",
       "name": "Grid Machine"
     },
     "halftoneMachine": {
@@ -434,7 +434,7 @@
     "edit_app": "Edit App",
     "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode",
     "microTitle": "Platform // Tools",
-    "headerDescription": "Your creative toolkit — pro design tools and free experiments.",
+    "headerDescription": "Your creative toolkit of pro design tools and free experiments.",
     "addApp": "Add App",
     "allApps": "All",
     "categoriesLabel": "Categories",
@@ -451,10 +451,10 @@
     "sort": {
       "label": "Sort",
       "recent": "Most used",
-      "name": "A–Z",
+      "name": "A-Z",
       "hintDefault": "Sort",
       "hintRecent": "Most used first",
-      "hintName": "Sorted A–Z"
+      "hintName": "Sorted A-Z"
     },
     "empty": {
       "noResultsTitle": "No results found",
@@ -515,7 +515,7 @@
     },
     "bicubicUpscale": {
       "name": "Bicubic Upscale",
-      "description": "Upscale images 2x–4x with sharpening control."
+      "description": "Upscale images 2x-4x with sharpening control."
     },
     "backgroundRemover": {
       "name": "Background Remover",
@@ -637,13 +637,13 @@
     "meter": "{used} of {max} active brands",
     "meterUnlimited": "{used} active brands · unlimited",
     "upgrade": "Upgrade",
-    "limitMessage": "Active brand limit reached — {used}/{max}. Upgrade your plan to activate more brands.",
+    "limitMessage": "Active brand limit reached, {used}/{max}. Upgrade your plan to activate more brands.",
     "archive": "Archive",
     "unarchive": "Reactivate",
     "archivedBadge": "Archived",
     "archivedSection": "Archived ({count})",
     "archiveConfirmTitle": "Archive this brand?",
-    "archiveConfirmMessage": "The brand becomes read-only and stops counting toward your active brand limit. Nothing is deleted — you can reactivate it anytime.",
+    "archiveConfirmMessage": "The brand becomes read-only and stops counting toward your active brand limit. Nothing is deleted, you can reactivate it anytime.",
     "archiveSuccess": "Brand archived",
     "archiveError": "Failed to archive brand",
     "unarchiveSuccess": "Brand reactivated",
@@ -651,7 +651,7 @@
     "brandActions": "Brand actions",
     "byok": {
       "activeTitle": "BYOK Mode Active",
-      "activeDesc": "Your key covers the generation; your plan covers the platform — brand context, storage and orchestration.",
+      "activeDesc": "Your key covers the generation; your plan covers the platform, brand context, storage and orchestration.",
       "inactiveTitle": "Using Platform Credits",
       "inactiveDesc": "Each generation deducts credits from your plan's fair-use. Add your own API key in Settings to cover generation costs yourself."
     }
@@ -698,9 +698,9 @@
     },
     "selectOne": "Select a guideline to view details",
     "seoDescription": "Manage your brand guidelines, media kits, and visual identity assets in one place.",
-    "seoTitle": "Brand Guidelines — Your Brand Library",
+    "seoTitle": "Brand Guidelines, Your Brand Library",
     "sources": "Extracted from",
-    "subtitle": "Your personal brand library — manage and share across all apps.",
+    "subtitle": "Your personal brand library, manage and share across all apps.",
     "tagCategory": "Category",
     "tagValue": "Tag value",
     "tagline": "Tagline",
@@ -836,8 +836,8 @@
       "logoConcept": "Logo Concept"
     },
     "phases": {
-      "strategy": "Phase 1 — Strategy",
-      "identity": "Phase 2 — Visual Identity",
+      "strategy": "Phase 1, Strategy",
+      "identity": "Phase 2, Visual Identity",
       "strategySubtitle": "The brain of the project",
       "identitySubtitle": "The face of the project"
     },
@@ -1171,8 +1171,8 @@
     "projectTooLargeOnce": "Your project is still too large ({size}MB) even after optimization. Please reduce the number of images or elements on canvas.",
     "projects": {
       "manage_your_visual_canvas_projects": "Manage your visual canvas projects.",
-      "invalid_file_not_a_visant_canvas_j": "Invalid file — not a Visant canvas JSON.",
-      "imported_opening": "Imported \"{name}\" — opening canvas...",
+      "invalid_file_not_a_visant_canvas_j": "Invalid file, not a Visant canvas JSON.",
+      "imported_opening": "Imported \"{name}\", opening canvas...",
       "title": "Projects"
     },
     "projectsCount": "{count} {count, plural, =1 {project} other {projects}}",
@@ -1817,7 +1817,7 @@
     "settings": "Settings",
     "title": "Brand cockpit",
     "connect": {
-      "subtitle": "On-brand by default — colors, fonts, logos & voice, automatically.",
+      "subtitle": "On-brand by default, colors, fonts, logos & voice, automatically.",
       "title": "Connect your AI"
     },
     "hero": {
@@ -1826,12 +1826,12 @@
     "empty": {
       "cta": "Bring your brand",
       "secondary": "Explore brand guidelines",
-      "subtitle": "Ingest your brand once — colors, logos, voice — and every tool, campaign and connected AI starts from it.",
+      "subtitle": "Ingest your brand once, colors, logos, voice, and every tool, campaign and connected AI starts from it.",
       "title": "Your brand is the starting point"
     },
     "seats": {
-      "limitMessage": "Editor seat limit reached ({used} of {max}). Upgrade your plan to invite more editors — viewers are always free.",
-      "limitMessageGeneric": "Editor seat limit reached. Upgrade your plan to invite more editors — viewers are always free.",
+      "limitMessage": "Editor seat limit reached ({used} of {max}). Upgrade your plan to invite more editors, viewers are always free.",
+      "limitMessageGeneric": "Editor seat limit reached. Upgrade your plan to invite more editors, viewers are always free.",
       "usage": "{used} of {max} editors"
     },
     "shortcuts": {
@@ -1839,7 +1839,7 @@
       "title": "Shortcuts"
     },
     "suggestions": {
-      "briefCopied": "Brief copied — run it in your connected AI.",
+      "briefCopied": "Brief copied, run it in your connected AI.",
       "copyFailed": "Couldn't copy",
       "errorTitle": "Suggestions didn't load",
       "generate": "Generate",
@@ -1860,7 +1860,7 @@
       "ctaCopilot": "Open Copilot",
       "ctaCreative": "Create creative",
       "ctaMockups": "Generate mockup kit",
-      "empty": "Nothing in progress yet — start something new.",
+      "empty": "Nothing in progress yet, start something new.",
       "emptySubtitle": "Your brand is ready to work. Pick where to start:",
       "emptyTitle": "Start the brand's first piece of work",
       "new": "New",
@@ -2021,7 +2021,7 @@
     "aspectRatioOptional": "Aspect Ratio (optional)",
     "aspectRatioPlaceholder": "Select aspect ratio",
     "aspectRatioRequired": "Aspect Ratio (required)",
-    "autoFilledHint": "Fields auto-filled from prompt — you can edit them below.",
+    "autoFilledHint": "Fields auto-filled from prompt, you can edit them below.",
     "autoGeneratedId": "ID",
     "categories": {
       "3d": "3D",
@@ -2208,21 +2208,21 @@
       "capabilityPlanDesc": "The Copilot proposes variations and asks what's missing before generating",
       "capabilityPlanTitle": "Plan before you spend",
       "cta": "Upgrade to unlock",
-      "subtitle": "The agentic assistant that knows your brand — generate editable mockups, plan campaigns and create in Figma without leaving the chat."
+      "subtitle": "The agentic assistant that knows your brand, generate editable mockups, plan campaigns and create in Figma without leaving the chat."
     },
     "newSession": "New session started. How can I help with your brand today?",
     "selectSession": "Welcome to Brand Copilot. Select a session or start a new one.",
-    "seoDescription": "Your agentic brand assistant — mockups, campaign planning and Figma creation with your brand as context.",
+    "seoDescription": "Your agentic brand assistant, mockups, campaign planning and Figma creation with your brand as context.",
     "seoTitle": "Brand Copilot | Visant Labs",
     "sessionLoaded": "Session loaded. How would you like to proceed?",
-    "subscriptionExpired": "Your subscription is no longer active — renew to keep using the Copilot.",
+    "subscriptionExpired": "Your subscription is no longer active, renew to keep using the Copilot.",
     "suggestions": {
       "figmaPiece": "Create a piece in Figma",
       "mockupKit": "Generate a mockup kit for my brand",
       "seasonalCampaign": "Plan a seasonal campaign"
     },
     "title": "Brand Copilot",
-    "welcome": "Hi! I'm your Brand Copilot. Link a Brand Guideline for context and I can generate editable mockups, plan campaigns and create pieces in Figma — always on-brand."
+    "welcome": "Hi! I'm your Brand Copilot. Link a Brand Guideline for context and I can generate editable mockups, plan campaigns and create pieces in Figma, always on-brand."
   },
   "creditRechargeSuccess": {
     "creditsPurchased": "Credits purchased",
@@ -2622,7 +2622,7 @@
     "heroTitle": "Upload your logo or layout",
     "sendImage": "Upload image",
     "seoDescription": "High-performance experimentation and design environment.",
-    "seoTitle": "Visant Labs® — Experimental Laboratory"
+    "seoTitle": "Visant Labs®, Experimental Laboratory"
   },
   "messages": {
     "aiBusy": "The AI is a bit busy. We've switched to a simpler prompt that you can edit manually, or try regenerating.",
@@ -2781,7 +2781,7 @@
     "brandWizardFigmaTokensImported": "Figma tokens imported. Colors and typography extracted.",
     "brandWizardFigmaNoToken": "Figma token not set. Go to Profile, then Configuration.",
     "brandWizardFigmaNoTokenHint": "Link a Figma token in Settings → Connected Apps, then try again.",
-    "brandWizardInvalidUrl": "That doesn't look like a valid website URL (e.g. https://acme.com) — skipped extraction.",
+    "brandWizardInvalidUrl": "That doesn't look like a valid website URL (e.g. https://acme.com), skipped extraction.",
     "brandWizardFigmaLinkedTokensFailed": "Figma linked, but token extraction failed.",
     "brandWizardImagesPasted": "Images pasted from clipboard",
     "brandWizardPdfPasted": "PDF pasted from clipboard",
@@ -2792,7 +2792,7 @@
     "brandWizardBack": "Back",
     "brandWizardFigmaLabel": "Figma (optional)",
     "brandWizardDropTitle": "Drag your files here",
-    "brandWizardDropHint": "PDF, images or .fig — or click to browse",
+    "brandWizardDropHint": "PDF, images or .fig, or click to browse",
     "brandWizardDropActive": "Drop to add",
     "brandWizardUnsupportedFile": "unsupported format",
     "brandWizardCreating": "Creating guideline…",
@@ -2914,9 +2914,9 @@
       "vaultEmpty": "Vault is empty",
       "bulkDeleteSuccess": "Bulk Delete Success",
       "bulkDeleteError": "Bulk Delete Error",
-      "duplicateSkipped": "{count} duplicate skipped — already in your library",
-      "duplicatesSkipped": "{count} duplicates skipped — already in your library",
-      "nearDuplicate": "Looks similar to \"{label}\" — added anyway",
+      "duplicateSkipped": "{count} duplicate skipped, already in your library",
+      "duplicatesSkipped": "{count} duplicates skipped, already in your library",
+      "nearDuplicate": "Looks similar to \"{label}\", added anyway",
       "anExistingAsset": "an existing asset"
     },
     "modelSelection": "0. MODEL_SELECTION_",
@@ -2924,14 +2924,22 @@
     "models": {
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
-        "features": ["Fast generation", "1 credit per image", "Auto aspect ratio"],
+        "features": [
+          "Fast generation",
+          "1 credit per image",
+          "Auto aspect ratio"
+        ],
         "name": "Standard (HD)",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-7 credits",
         "emoji": "⛏️",
-        "features": ["4K resolution", "Advanced tools", "Higher quality"],
+        "features": [
+          "4K resolution",
+          "Advanced tools",
+          "Higher quality"
+        ],
         "name": "Pro (4K)",
         "version": "4K"
       }
@@ -2999,7 +3007,7 @@
     "selectBrandDescription": "Choose a brand guideline to contextualize your generations.",
     "seoDescription": "Create realistic mockups in seconds. Upload your design, choose a style, and let our AI do the rest.",
     "seoKeywords": "mockup, ai, mockup generator, design, branding, presentation",
-    "seoTitle": "Mockup Machine — Professional AI Mockup Generator",
+    "seoTitle": "Mockup Machine, Professional AI Mockup Generator",
     "setup": "Setup",
     "setupAndAnalysis": "SETUP & ANALYSIS",
     "setupStepContinue": "Continue",
@@ -3190,13 +3198,13 @@
     "preos_e_planos": "[EN] Preços e Planos",
     "api": {
       "includedTitle": "Included with your plan",
-      "includedDesc": "The API draws from the same credit balance and scopes as your account — there is no separate subscription. Your plan sets the rate limit.",
+      "includedDesc": "The API draws from the same credit balance and scopes as your account, there is no separate subscription. Your plan sets the rate limit.",
       "rateLimitLabel": "Rate limit by plan",
       "perCallLabel": "Per-call credit cost",
       "cta": "Get API key & docs"
     },
     "hero": {
-      "subtitle": "Your brand as context — priced by active brand. Copilot, MCP and seats per tier; credits are generation fair-use.",
+      "subtitle": "Your brand as context, priced by active brand. Copilot, MCP and seats per tier; credits are generation fair-use.",
       "tier": "Plan",
       "brands": "Active brands",
       "copilot": "Copilot",
@@ -3214,7 +3222,7 @@
     "agency": {
       "title": "Agency",
       "badge": "per active brand",
-      "subtitle": "The plan that grows with your client roster — unlimited seats, priority Copilot.",
+      "subtitle": "The plan that grows with your client roster, unlimited seats, priority Copilot.",
       "perBrand": "/active brand/mo",
       "brandsLabel": "active brands",
       "fewerBrands": "Fewer brands",
@@ -3225,7 +3233,7 @@
     },
     "fairUse": {
       "title": "Generation fair-use",
-      "desc": "Credits cover AI generation (images, video, mockups). Every plan includes a monthly fair-use amount — top up anytime in the Credits tab.",
+      "desc": "Credits cover AI generation (images, video, mockups). Every plan includes a monthly fair-use amount, top up anytime in the Credits tab.",
       "byok": "BYOK: your key covers the generation; the plan covers the platform."
     }
   },
@@ -3264,7 +3272,11 @@
           "title": "6.1 Google Analytics"
         },
         "intro": "We use cookies for:",
-        "items": ["Authentication", "Interface preferences", "Internal metrics"],
+        "items": [
+          "Authentication",
+          "Interface preferences",
+          "Internal metrics"
+        ],
         "noAdvertising": "We do not use advertising cookies or tracking pixels for marketing purposes.",
         "title": "6. COOKIES AND TRACKING TECHNOLOGIES"
       },
@@ -3274,7 +3286,7 @@
           "items": [
             "While your Visant Labs account is active and you choose to use your own API key",
             "Until you explicitly delete your API key from our system",
-            "Permanently removed immediately upon deletion — no retention period"
+            "Permanently removed immediately upon deletion, no retention period"
           ],
           "title": "7.3 API Key Data Retention"
         },
@@ -3345,7 +3357,7 @@
             "Payment providers",
             "Hosting and storage services",
             "Authentication services (MongoDBAuth)",
-            "Analytics services (Google Analytics) — for website usage statistics only"
+            "Analytics services (Google Analytics), for website usage statistics only"
           ],
           "note": "We share only the minimum necessary for service operation. Analytics data shared with Google Analytics is anonymized and does not include personally identifiable information.",
           "title": "3.1 Service Providers"
@@ -3405,23 +3417,23 @@
           "important": "Important: Providing your own API key is completely optional. If you choose to provide one, it will be encrypted immediately upon saving and never stored in plaintext.",
           "intro": "If you choose to use your own Gemini API key with our service, we collect and store:",
           "items": [
-            "Your encrypted Gemini API key — Stored securely using AES-256-GCM encryption",
-            "API key metadata — Associated with your account for usage tracking"
+            "Your encrypted Gemini API key, Stored securely using AES-256-GCM encryption",
+            "API key metadata, Associated with your account for usage tracking"
           ],
           "title": "1.6 API Keys"
         },
         "googleAuth": {
           "dataIntro": "The specific data we collect from your Google account includes:",
           "dataItems": [
-            "Email address — Used as your primary account identifier",
-            "Full name — Used to personalize your profile",
-            "Profile picture — Used as your account avatar (optional)",
-            "Google User ID (sub) — Used for authentication and account linking"
+            "Email address, Used as your primary account identifier",
+            "Full name, Used to personalize your profile",
+            "Profile picture, Used as your account avatar (optional)",
+            "Google User ID (sub), Used for authentication and account linking"
           ],
           "important": "Important: We do not access your Google contacts, calendar, drive files, or any other Google services beyond the basic profile information listed above.",
           "permissions": [
-            "email — Access to your Google account email address",
-            "profile — Access to your basic profile information"
+            "email, Access to your Google account email address",
+            "profile, Access to your basic profile information"
           ],
           "permissionsIntro": "When you choose to sign in with Google, we request the following permissions (OAuth 2.0 scopes):",
           "title": "1.5 Google Authentication Data"
@@ -3435,7 +3447,12 @@
           "title": "1.2 Payment Information"
         },
         "technicalData": {
-          "items": ["IP address", "Device type", "Browser", "Language preferences"],
+          "items": [
+            "IP address",
+            "Device type",
+            "Browser",
+            "Language preferences"
+          ],
           "title": "1.4 Technical Data"
         },
         "title": "1. INFORMATION WE COLLECT",
@@ -3459,7 +3476,7 @@
             "In-Memory Decryption: API keys are only decrypted in memory when needed for API calls, then immediately discarded",
             "User Isolation: Each user can only access their own encrypted API key",
             "Authentication Required: Only authenticated users can save or access their own API keys",
-            "No Exposure: We never return decrypted API keys in API responses — we only confirm successful operations",
+            "No Exposure: We never return decrypted API keys in API responses, we only confirm successful operations",
             "Audit Trail: API key operations (save/delete) are logged for security auditing"
           ],
           "responsibilities": "Your Responsibilities: Keep your API key secure, never share it with others, and consider rotating it periodically. Monitor your Google Cloud Console for unexpected usage or charges. Configure API key restrictions in Google AI Studio to limit where it can be used.",
@@ -3498,7 +3515,7 @@
         "title": "5. YOUR RIGHTS"
       }
     },
-    "title": "Privacy Policy — Visant Labs",
+    "title": "Privacy Policy, Visant Labs",
     "policy": {
       "contatovisantco_2": "contato@visant.co",
       "contatovisantco": "contato@visant.co",
@@ -3678,7 +3695,7 @@
         "title": "3. Subscription Refund"
       }
     },
-    "title": "Refund Policy — Visant Labs",
+    "title": "Refund Policy, Visant Labs",
     "policy": {
       "contatovisantco": "contato@visant.co"
     }
@@ -4179,7 +4196,7 @@
         "title": "3. User Accounts"
       }
     },
-    "title": "Terms of Service — Visant Labs"
+    "title": "Terms of Service, Visant Labs"
   },
   "thankYou": {
     "benefit1": "{credits} credits per {interval}",
@@ -4342,7 +4359,7 @@
             "HD generation typically completes in seconds",
             "4K generation may take significantly longer, especially at higher resolutions",
             "Processing times are dependent on Google's API availability and load",
-            "No guaranteed response times — service availability is subject to third-party API status"
+            "No guaranteed response times, service availability is subject to third-party API status"
           ],
           "title": "3.2 Processing Times"
         },
@@ -4432,7 +4449,7 @@
       "serviceProvider": {
         "intro": "The AI image generation capabilities are provided through:",
         "items": [
-          "Google Cloud AI / Google AI — Provider of Gemini AI models",
+          "Google Cloud AI / Google AI, Provider of Gemini AI models",
           "API access to Google Gemini 2.5 Flash for HD generation",
           "API access to Google Gemini 3 Pro Preview for 4K generation",
           "All image generation requests are processed by Google's servers"
@@ -4482,7 +4499,7 @@
         "title": "7. User Responsibilities"
       }
     },
-    "title": "Usage Policy — Visant Labs",
+    "title": "Usage Policy, Visant Labs",
     "policy": {
       "contatovisantco": "contato@visant.co"
     }
@@ -4831,13 +4848,13 @@
       "shaderActive": "{shader} shader active",
       "glbDesc": "3D model with materials",
       "objDesc": "Geometry only (no materials)",
-      "turntableDesc": "Full 360° spin — ignores current animation",
+      "turntableDesc": "Full 360° spin, ignores current animation",
       "duration": "Duration (s)",
-      "perfectLoop": "Perfect Loop — {duration}s",
+      "perfectLoop": "Perfect Loop, {duration}s",
       "exporting": "Exporting...",
       "exportFormat": "Export {format}",
       "exported": "{format} exported",
-      "exportFailed": "Export failed — try again",
+      "exportFailed": "Export failed, try again",
       "sceneNotReady": "Scene not ready"
     },
     "font": {
@@ -4888,7 +4905,7 @@
   },
   "imagelab": {
     "title": "IMAGE LAB",
-    "documentTitle": "Image Lab — Visant",
+    "documentTitle": "Image Lab, Visant",
     "dropPrompt": "Drop or paste an image or video to begin"
   },
   "wind": {
@@ -4973,7 +4990,7 @@
       "png_exported_2x": "PNG exported (2x)",
       "only_svg_files_are_supported": "Only SVG files are supported",
       "please_upload_an_svg_file": "Please upload an SVG file",
-      "loaded_name_anchors_anchors_handles_h": "Loaded ${name} — ${anchors} anchors, ${handles} handles"
+      "loaded_name_anchors_anchors_handles_h": "Loaded ${name}, ${anchors} anchors, ${handles} handles"
     }
   },
   "extractor": {
@@ -5176,7 +5193,7 @@
       "title": "Three steps. Zero rework.",
       "step1Num": "01",
       "step1Title": "Upload your guidelines",
-      "step1Desc": "PDF, URL, or plain text. Visant extracts the essence of your identity — colors, typography, tone of voice, rules.",
+      "step1Desc": "PDF, URL, or plain text. Visant extracts the essence of your identity, colors, typography, tone of voice, rules.",
       "step2Num": "02",
       "step2Title": "They become real context",
       "step2Desc": "Your rules stop being a document and become structured context that any model reads before generating.",
@@ -5215,7 +5232,7 @@
   },
   "funnel": {
     "banner": {
-      "message": "This would look better with your brand — connect it in 2 minutes",
+      "message": "This would look better with your brand, connect it in 2 minutes",
       "cta": "Connect my brand",
       "dismiss": "Dismiss"
     },
@@ -5229,28 +5246,28 @@
   },
   "onboarding": {
     "step1Title": "Bring your brand",
-    "step1Subtitle": "Your brand becomes the context for everything you generate — colors, typography, tone of voice.",
+    "step1Subtitle": "Your brand becomes the context for everything you generate, colors, typography, tone of voice.",
     "pathIngestTitle": "I have brand materials",
-    "pathIngestDesc": "PDF, website URL, images or Figma — we extract colors, typography and tone of voice.",
+    "pathIngestDesc": "PDF, website URL, images or Figma, we extract colors, typography and tone of voice.",
     "pathManualTitle": "I don't have guidelines",
     "pathManualDesc": "60 seconds: name, two colors and the tone of voice.",
     "pathDemoTitle": "Explore first",
-    "pathDemoDesc": "Start with a sample brand — bring yours whenever you want.",
+    "pathDemoDesc": "Start with a sample brand, bring yours whenever you want.",
     "manualNameLabel": "Brand name",
     "manualNamePlaceholder": "e.g. Acme Co.",
     "manualColorsLabel": "Two brand colors",
     "manualToneLabel": "Tone of voice",
     "manualTonePlaceholder": "e.g. confident, direct, friendly",
     "manualSubmit": "Create brand",
-    "manualCreated": "Brand created — everything you generate now follows it.",
+    "manualCreated": "Brand created, everything you generate now follows it.",
     "manualError": "Could not create the brand. Try again.",
     "demoCreating": "Preparing the demo brand…",
-    "demoError": "Could not create the demo brand — create a quick one below instead.",
-    "ingestDone": "Brand imported — on-brand from the first output.",
+    "demoError": "Could not create the demo brand, create a quick one below instead.",
+    "ingestDone": "Brand imported, on-brand from the first output.",
     "step2Ready": "Your brand is ready",
     "step2Desc": "Your brand is loaded as context. Next stop: your first on-brand piece.",
     "step2BrandLoaded": "Your brand is loaded as context for this tool.",
-    "step2BrandDemo": "You're starting with the demo brand — bring yours anytime.",
+    "step2BrandDemo": "You're starting with the demo brand, bring yours anytime.",
     "back": "Back",
     "skip": "Skip",
     "continue": "Continue",

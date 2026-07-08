@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Lock, Image as ImageIcon, ClipboardList, Figma } from 'lucide-react';
+import { Zap, Lock, Image as ImageIcon, ClipboardList, Figma } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEO } from '@/components/SEO';
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,7 @@ const CopilotLockedPreview: React.FC = () => {
     <div className="flex-1 overflow-y-auto flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-2xl flex flex-col items-center gap-8 text-center">
         <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-          <Sparkles size={28} className="text-brand-cyan" />
+          <Zap size={28} className="text-brand-cyan" />
         </div>
 
         <div className="space-y-3">
@@ -158,7 +158,7 @@ export const CopilotPage: React.FC = () => {
             wsPath="/copilot/ws"
             sessionsQueryKey="copilot-sessions"
             feature="copilot"
-            sidebarIcon={<Sparkles className="h-4 w-4 text-brand-cyan" />}
+            sidebarIcon={<Zap className="h-4 w-4 text-brand-cyan" />}
             strings={strings}
             suggestions={suggestions}
             onRequestError={handleRequestError}
