@@ -149,9 +149,7 @@ export const BrandPreviewGallery: React.FC<{ tokens: MockTokens; brandName: stri
 }) => (
   <motion.div id="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-24">
     <div className="flex items-baseline justify-between px-1">
-      <MicroTitle className="text-[var(--accent)] tracking-[0.15em] font-bold opacity-70">
-        Brand Preview
-      </MicroTitle>
+      <MicroTitle className="text-[var(--accent)] font-bold opacity-70">Brand Preview</MicroTitle>
       <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/30">
         Live · local render
       </span>

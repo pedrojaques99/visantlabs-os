@@ -784,9 +784,7 @@ export const PricingPage: React.FC = () => {
                 <div className="animate-fade-in-fast space-y-10">
                   {/* Header */}
                   <div className="text-center">
-                    <MicroTitle className="text-brand-cyan/70 uppercase mb-2">
-                      Developer API
-                    </MicroTitle>
+                    <MicroTitle className="text-brand-cyan/70 mb-2">Developer API</MicroTitle>
                     <p className="text-neutral-400 text-sm font-mono">
                       Pay-as-you-go credits. No minimum commitment.
                     </p>
@@ -883,7 +881,7 @@ export const PricingPage: React.FC = () => {
             {/* Transparency Section */}
             <div className="space-y-6">
               <div className="space-y-2">
-                <MicroTitle className="text-brand-cyan/70 uppercase">
+                <MicroTitle className="text-brand-cyan/70">
                   {t('pricing.transparency.title')}
                 </MicroTitle>
                 <h3 className="text-xl font-bold text-neutral-200">
@@ -913,7 +911,7 @@ export const PricingPage: React.FC = () => {
             {/* Community Section */}
             <div className="space-y-6">
               <div className="space-y-2">
-                <MicroTitle className="text-neutral-500 uppercase">
+                <MicroTitle className="text-neutral-500">
                   {t('pricing.community.buildInPublic')}
                 </MicroTitle>
                 <h3 className="text-xl font-bold text-neutral-200">

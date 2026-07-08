@@ -209,9 +209,7 @@ interface SectionCommonProps {
 }
 
 const CompactSectionHeader: React.FC<{ label: string }> = ({ label }) => (
-  <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest">
-    {label}
-  </MicroTitle>
+  <MicroTitle className="text-[10px] text-neutral-600">{label}</MicroTitle>
 );
 
 const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({
@@ -329,7 +327,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Produto</MicroTitle>
+            <MicroTitle className="text-[var(--accent)]/40 mb-3">Produto</MicroTitle>
             <InlineEditable
               as="p"
               multiline
@@ -346,9 +344,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
-              Diferencial
-            </MicroTitle>
+            <MicroTitle className="text-[var(--accent)]/40 mb-3">Diferencial</MicroTitle>
             <InlineEditable
               as="p"
               multiline
@@ -365,9 +361,7 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
-              Elo Emocional
-            </MicroTitle>
+            <MicroTitle className="text-[var(--accent)]/40 mb-3">Elo Emocional</MicroTitle>
             <InlineEditable
               as="p"
               multiline
@@ -475,13 +469,13 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
       <div className="space-y-12">
         <div className="flex items-center gap-4">
           <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-          <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
+          <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {fields.map(([key, label, value]) =>
             editable || value ? (
               <div key={key} className="space-y-3">
-                <MicroTitle className="text-[var(--accent)]/40 tracking-wider">{label}</MicroTitle>
+                <MicroTitle className="text-[var(--accent)]/40">{label}</MicroTitle>
                 <InlineEditable
                   as="p"
                   multiline
@@ -509,7 +503,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
     <div className="space-y-12">
       <div className="flex items-center gap-4">
         <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-        <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
+        <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
       </div>
       <div className="relative group">
         <div className="absolute -inset-8 bg-[var(--accent)]/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
@@ -1629,7 +1623,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {g.dos && g.dos.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-green-500/60 tracking-wider pt-12">Do</MicroTitle>
+              <MicroTitle className="text-green-500/60 pt-12">Do</MicroTitle>
               <ul className="space-y-4">
                 {g.dos.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
@@ -1644,7 +1638,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           )}
           {g.donts && g.donts.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-red-500/60 tracking-wider pt-12">Don't</MicroTitle>
+              <MicroTitle className="text-red-500/60 pt-12">Don't</MicroTitle>
               <ul className="space-y-4">
                 {g.donts.map((item, i) => (
                   <li key={i} className="flex gap-4 group">

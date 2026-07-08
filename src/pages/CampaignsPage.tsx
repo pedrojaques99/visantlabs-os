@@ -213,7 +213,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
         </button>
         <div className="flex items-center gap-2 min-w-0">
           <Megaphone size={16} className="text-brand-cyan flex-shrink-0" />
-          <MicroTitle as="h1" className="text-base truncate">
+          <MicroTitle as="h1" className="text-base truncate normal-case">
             {campaign?.name || 'Campaign'}
           </MicroTitle>
         </div>

@@ -189,9 +189,7 @@ const FadeIn: React.FC<{ children: React.ReactNode; delay?: number; className?: 
 };
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <MicroTitle className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-    {children}
-  </MicroTitle>
+  <MicroTitle className="font-mono text-[10px] st text-neutral-500">{children}</MicroTitle>
 );
 
 const SectionHeading: React.FC<{ children: React.ReactNode; accent?: boolean }> = ({
@@ -549,7 +547,7 @@ export const OnboardPage: React.FC = () => {
             transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="flex flex-col gap-5"
           >
-            <MicroTitle className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+            <MicroTitle className="font-mono text-[10px] st text-neutral-600">
               Visant Labs OS — Platform Capabilities
             </MicroTitle>
 
@@ -638,7 +636,7 @@ export const OnboardPage: React.FC = () => {
           {/* Bottom CTA */}
           <FadeIn>
             <div className="border-t border-neutral-800 pt-12 flex flex-col items-center gap-6 text-center">
-              <MicroTitle className="font-mono text-[10px] uppercase tracking-widest text-neutral-600">
+              <MicroTitle className="font-mono text-[10px] st text-neutral-600">
                 Pronto para começar?
               </MicroTitle>
               <h2 className="text-2xl font-semibold text-white">

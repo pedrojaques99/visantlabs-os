@@ -65,9 +65,7 @@ export const ConnectAICard: React.FC<ConnectAICardProps> = ({
     >
       <div className="flex items-center gap-2.5 mb-4">
         <Plug size={13} className="text-neutral-500 shrink-0" />
-        <MicroTitle className="text-neutral-500 tracking-[0.15em]">
-          {t('cockpit.connect.title')}
-        </MicroTitle>
+        <MicroTitle className="text-neutral-500">{t('cockpit.connect.title')}</MicroTitle>
       </div>
 
       {/* Visual hero: the assistants this brand plugs into. */}

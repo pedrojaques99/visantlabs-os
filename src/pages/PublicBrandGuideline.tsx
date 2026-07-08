@@ -344,7 +344,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           className="relative z-10 flex flex-col items-center gap-4"
         >
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">
+          <MicroTitle className="text-neutral-600">
             {t('public.brand.guideline.decrypting_brand_assets')}
           </MicroTitle>
         </motion.div>
@@ -685,7 +685,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
             <div className="space-y-6">
-              <MicroTitle className="text-[var(--accent)] tracking-[0.1em] font-bold opacity-60">
+              <MicroTitle className="text-[var(--accent)] font-bold opacity-60 normal-case">
                 <InlineEditable
                   as="span"
                   value={guideline.identity?.tagline || ''}

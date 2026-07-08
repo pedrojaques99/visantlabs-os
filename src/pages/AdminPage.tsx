@@ -2903,29 +2903,19 @@ export const AdminPage: React.FC = () => {
                                 <TableHeader>
                                   <TableRow className="border-neutral-800 hover:bg-transparent">
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Feature
-                                      </MicroTitle>
+                                      <MicroTitle as="span">Feature</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Up
-                                      </MicroTitle>
+                                      <MicroTitle as="span">Up</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        {t('admin.down')}
-                                      </MicroTitle>
+                                      <MicroTitle as="span">{t('admin.down')}</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Total
-                                      </MicroTitle>
+                                      <MicroTitle as="span">Total</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        {t('admin.approval')}
-                                      </MicroTitle>
+                                      <MicroTitle as="span">{t('admin.approval')}</MicroTitle>
                                     </TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -2987,24 +2977,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Model
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Model</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_2')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_2')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          %
-                                        </MicroTitle>
+                                        <MicroTitle as="span">%</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3051,24 +3033,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Type
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Type</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_3')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_3')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          %
-                                        </MicroTitle>
+                                        <MicroTitle as="span">%</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3115,24 +3089,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.vibe')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.vibe')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_4')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_4')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          %
-                                        </MicroTitle>
+                                        <MicroTitle as="span">%</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3179,24 +3145,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.guideline_id')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.guideline_id')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_5')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_5')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Total
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Total</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3338,29 +3296,19 @@ export const AdminPage: React.FC = () => {
                                     <TableHeader>
                                       <TableRow className="border-neutral-800 hover:bg-transparent">
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Prompt
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Prompt</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Feature
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Feature</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Model
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Model</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Tags
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Tags</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Date
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Date</MicroTitle>
                                         </TableHead>
                                       </TableRow>
                                     </TableHeader>
@@ -3758,34 +3706,22 @@ export const AdminPage: React.FC = () => {
                     <TableHeader>
                       <TableRow className="border-neutral-800 hover:bg-transparent">
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.data')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.data')}</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            Feature
-                          </MicroTitle>
+                          <MicroTitle as="span">Feature</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.modelo')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.modelo')}</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.tipo')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.tipo')}</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.stats')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.stats')}</MicroTitle>
                         </TableHead>
                         <TableHead className="text-right">
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.crditos')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.crditos')}</MicroTitle>
                         </TableHead>
                       </TableRow>
                     </TableHeader>

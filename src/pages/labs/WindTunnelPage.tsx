@@ -359,9 +359,7 @@ function ControlsContent({
     <>
       {/* Presets */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-          Presets
-        </MicroTitle>
+        <MicroTitle className="text-neutral-600 text-[10px]">Presets</MicroTitle>
         <div className="flex flex-wrap gap-1">
           {BUILT_IN_PRESETS.map((p) => (
             <Button
@@ -410,7 +408,7 @@ function ControlsContent({
 
       {/* Obstacle Shape */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
+        <MicroTitle className="text-neutral-600 text-[10px]">
           {t('wind.tunnel.obstacle')}
         </MicroTitle>
         <div className="grid grid-cols-3 gap-1">
@@ -435,9 +433,7 @@ function ControlsContent({
       {/* Image Upload */}
       {config.obstacleType === 'image' && (
         <div className="p-3 space-y-2 border-b border-neutral-800">
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-            Image
-          </MicroTitle>
+          <MicroTitle className="text-neutral-600 text-[10px]">Image</MicroTitle>
           <input
             ref={fileInputRef}
             type="file"
@@ -480,9 +476,7 @@ function ControlsContent({
       {/* Text Controls */}
       {config.obstacleType === 'text' && (
         <div className="p-3 space-y-2 border-b border-neutral-800">
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-            Text
-          </MicroTitle>
+          <MicroTitle className="text-neutral-600 text-[10px]">Text</MicroTitle>
           <Input
             value={config.text}
             onChange={(e) => update('text', e.target.value)}
@@ -525,7 +519,7 @@ function ControlsContent({
 
       {/* Transform (universal) */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
+        <MicroTitle className="text-neutral-600 text-[10px]">
           {t('wind.tunnel.transform')}
         </MicroTitle>
         <NodeSlider
@@ -559,9 +553,7 @@ function ControlsContent({
 
       {/* Render Mode */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-          {t('wind.tunnel.render')}
-        </MicroTitle>
+        <MicroTitle className="text-neutral-600 text-[10px]">{t('wind.tunnel.render')}</MicroTitle>
         <div className="flex gap-1">
           {RENDER_MODES.map((m) => (
             <Button
@@ -583,9 +575,7 @@ function ControlsContent({
 
       {/* Color Mode */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-          Color
-        </MicroTitle>
+        <MicroTitle className="text-neutral-600 text-[10px]">Color</MicroTitle>
         <div className="grid grid-cols-2 gap-1">
           {COLOR_MODES.map((m) => (
             <Button
@@ -616,7 +606,7 @@ function ControlsContent({
 
       {/* Simulation Sliders */}
       <div className="p-3 space-y-3 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
+        <MicroTitle className="text-neutral-600 text-[10px]">
           {t('wind.tunnel.simulation')}
         </MicroTitle>
         <NodeSlider
@@ -686,9 +676,7 @@ function ControlsContent({
 
       {/* Effects */}
       <div className="p-3 space-y-3 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-          Effects
-        </MicroTitle>
+        <MicroTitle className="text-neutral-600 text-[10px]">Effects</MicroTitle>
         <NodeSlider
           label={t('wind.tunnel.glow')}
           value={config.glowIntensity}
@@ -711,9 +699,7 @@ function ControlsContent({
 
       {/* Field Overlay (CFD Visualization) */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
-          Field Overlay
-        </MicroTitle>
+        <MicroTitle className="text-neutral-600 text-[10px]">Field Overlay</MicroTitle>
         <div className="grid grid-cols-2 gap-1">
           {FIELD_OVERLAYS.map((f) => (
             <Button
@@ -757,7 +743,7 @@ function ControlsContent({
 
       {/* Appearance */}
       <div className="p-3 space-y-2 border-b border-neutral-800">
-        <MicroTitle className="text-neutral-600 uppercase tracking-[0.2em] text-[10px]">
+        <MicroTitle className="text-neutral-600 text-[10px]">
           {t('wind.tunnel.appearance')}
         </MicroTitle>
         <InlineColorPicker

@@ -49,7 +49,7 @@ const Tile: React.FC<{
       className="group h-full bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10 overflow-hidden hover:border-[var(--brand-text)]/20 transition-colors"
     >
       <div className="flex items-center justify-between mb-5">
-        <MicroTitle className="text-[var(--brand-text)]/50 tracking-[0.15em]">{label}</MicroTitle>
+        <MicroTitle className="text-[var(--brand-text)]/50">{label}</MicroTitle>
         {onView && (
           <button
             type="button"

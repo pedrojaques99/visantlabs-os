@@ -301,7 +301,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
               </div>
 
               {subscriptionStatus.creditsResetDate && (
-                <MicroTitle as="p" className="text-neutral-600 tracking-widest text-center pt-1">
+                <MicroTitle as="p" className="text-neutral-600 text-center pt-1">
                   {subscriptionStatus.hasActiveSubscription
                     ? t('credits.renews', { date: formatDate(subscriptionStatus.creditsResetDate) })
                     : t('credits.resets', {
@@ -381,7 +381,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
                   {referralStats.referredUsersCount || 0}
                 </p>
-                <MicroTitle as="p" className="text-neutral-600 tracking-wide">
+                <MicroTitle as="p" className="text-neutral-600">
                   {t('referral.friendsReferred')}
                 </MicroTitle>
               </div>
@@ -390,7 +390,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}
                 </p>
-                <MicroTitle as="p" className="text-neutral-600 tracking-wide">
+                <MicroTitle as="p" className="text-neutral-600">
                   {t('referral.totalEarned')}
                 </MicroTitle>
               </div>

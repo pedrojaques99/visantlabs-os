@@ -328,9 +328,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                     className="border-neutral-800 bg-neutral-900"
                   />
                   <div className="min-w-0">
-                    <MicroTitle className="text-neutral-600 tracking-[0.15em]">
-                      {t('cockpit.title')}
-                    </MicroTitle>
+                    <MicroTitle className="text-neutral-600">{t('cockpit.title')}</MicroTitle>
                     <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate mt-0.5">
                       {brandName}
                     </h2>
@@ -379,9 +377,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                   className={cn(cardCls, 'lg:col-span-2 p-5 flex flex-col')}
                 >
                   <div className="flex items-center justify-between gap-3 mb-4">
-                    <MicroTitle className="text-neutral-500 tracking-[0.15em]">
-                      {t('cockpit.work.title')}
-                    </MicroTitle>
+                    <MicroTitle className="text-neutral-500">{t('cockpit.work.title')}</MicroTitle>
                     <Button
                       variant="surface"
                       size="xs"
@@ -448,7 +444,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                             variant={i === 0 ? 'brand' : 'surface'}
                             size="sm"
                             onClick={onClick}
-                            className="gap-2"
+                            className="gap-2 font-sans"
                           >
                             <Icon size={13} />
                             {label}
@@ -475,7 +471,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Sparkles size={13} className="text-brand-cyan shrink-0" />
-                      <MicroTitle className="text-neutral-500 tracking-[0.15em]">
+                      <MicroTitle className="text-neutral-500">
                         {t('cockpit.suggestions.title')}
                       </MicroTitle>
                       {seasonal && (
@@ -582,7 +578,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                 data-vsn-region="shortcuts"
                 className="flex items-center gap-2 flex-wrap pt-4 border-t border-neutral-800"
               >
-                <MicroTitle className="text-neutral-600 tracking-[0.15em] mr-1">
+                <MicroTitle className="text-neutral-600 mr-1">
                   {t('cockpit.shortcuts.title')}
                 </MicroTitle>
                 {apps.map((app) => (

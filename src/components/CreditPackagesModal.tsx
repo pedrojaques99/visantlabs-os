@@ -290,7 +290,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               {/* Header */}
               <div className="flex items-center gap-2 sm:gap-3 pb-2">
                 <CreditCard size={16} className="text-neutral-500" />
-                <MicroTitle className="text-neutral-500 uppercase">
+                <MicroTitle className="text-neutral-500">
                   {activeTab === 'carteira'
                     ? t('credits.title') || 'CRÉDITOS'
                     : t('creditsPackages.title') || 'COMPRAR'}

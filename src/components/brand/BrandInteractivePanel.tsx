@@ -185,9 +185,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-2.5 min-w-0">
             <Sparkles size={13} className="text-[var(--accent)] shrink-0" />
-            <MicroTitle className="text-[var(--brand-text)]/50 tracking-[0.15em]">
-              Make something on-brand
-            </MicroTitle>
+            <MicroTitle className="text-[var(--brand-text)]/50">Make something on-brand</MicroTitle>
             {seasonal && (
               <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-[var(--accent)]/80 bg-[var(--accent)]/8 px-2 py-0.5 rounded-full">
                 <CalendarClock size={10} />
@@ -293,9 +291,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
       >
         <div className="flex items-center gap-2.5 mb-4">
           <Plug size={13} className="text-[var(--accent)]" />
-          <MicroTitle className="text-[var(--brand-text)]/50 tracking-[0.15em]">
-            Use as live AI context
-          </MicroTitle>
+          <MicroTitle className="text-[var(--brand-text)]/50">Use as live AI context</MicroTitle>
         </div>
 
         {/* Visual hero: the assistants this brand plugs into. */}

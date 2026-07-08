@@ -435,7 +435,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           >
             {t('welcome.title') || 'MOCKUP MACHINE®'}
           </h1>
-          <MicroTitle className="text-brand-cyan uppercase">
+          <MicroTitle className="text-brand-cyan">
             {t('welcome.magicHappens') || 'e veja a mágica acontecer'}
           </MicroTitle>
         </div>

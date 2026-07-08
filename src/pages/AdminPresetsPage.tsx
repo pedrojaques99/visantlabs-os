@@ -1873,7 +1873,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.idRequired')}
                         </MicroTitle>
                         <Input
@@ -1887,7 +1887,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.nameRequired')}
                         </MicroTitle>
                         <Input
@@ -1899,7 +1899,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.descriptionRequired')}
                         </MicroTitle>
                         <Input
@@ -1913,7 +1913,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.promptRequired')}
                         </MicroTitle>
                         <Textarea
@@ -1927,7 +1927,7 @@ export const AdminPresetsPage: React.FC = () => {
                       {effectiveEditType === 'mockup' && (
                         <div className="md:col-span-2 space-y-4">
                           <div>
-                            <MicroTitle as="label" className="mb-2 uppercase">
+                            <MicroTitle as="label" className="mb-2">
                               Imagem de Referência
                             </MicroTitle>
                             {!formData.referenceImageUrl ? (

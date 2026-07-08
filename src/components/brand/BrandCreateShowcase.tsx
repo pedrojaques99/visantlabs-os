@@ -156,9 +156,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
         {/* Top label */}
         <div className="absolute top-4 left-5 flex items-center gap-2">
           <Zap size={12} className="text-[var(--accent)]" />
-          <MicroTitle className="text-[var(--brand-text)]/60 tracking-[0.18em]">
-            Create with this brand
-          </MicroTitle>
+          <MicroTitle className="text-[var(--brand-text)]/60">Create with this brand</MicroTitle>
         </div>
 
         {/* Slide content */}
