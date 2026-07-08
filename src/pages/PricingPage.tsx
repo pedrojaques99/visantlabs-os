@@ -1,21 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  CreditCard,
-  Plus,
-  Minus,
-  Pickaxe,
-  QrCode,
-  CheckCircle2,
-  HardDrive,
-  Key,
-  Image,
-  Video,
-} from 'lucide-react';
-import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
-import { getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Check, CreditCard, Sparkles } from 'lucide-react';
+import { getUserLocale, type CurrencyInfo } from '@/utils/localeUtils';
+import { getCreditPackageLink } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { trackEvent } from '@/utils/analytics';
 import {
   BreadcrumbWithBack,
   BreadcrumbList,
@@ -24,960 +13,337 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '../components/ui/BreadcrumbWithBack';
-import { PixPaymentModal } from '../components/PixPaymentModal';
 import { SEO } from '../components/SEO';
 import { productService, type Product } from '../services/productService';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { MicroTitle } from '../components/ui/MicroTitle';
 import { cn } from '../lib/utils';
 import { authService, type User } from '../services/authService';
-import { SubscriptionPlansGrid } from '../components/SubscriptionPlansGrid';
-import { MicroTitle } from '../components/ui/MicroTitle';
-import { GlassPanel } from '../components/ui/GlassPanel';
-import { PremiumButton } from '../components/ui/PremiumButton';
-import { STORAGE_PLANS, getCreditsEstimate } from './docs/data/pricingData';
-import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
-import { Layers, Bot, Plug, Users, Mail } from 'lucide-react';
-
-// API tier data for developer pricing tab
-const API_TIERS = [
-  {
-    id: 'free',
-    name: 'Free',
-    credits: 20,
-    rateLimit: 100,
-    highlighted: false,
-    features: ['20 credits/month', '100 req / 15 min', 'Read scopes only', 'Community support'],
-  },
-  {
-    id: 'creator',
-    name: 'Creator',
-    credits: 200,
-    rateLimit: 500,
-    highlighted: true,
-    features: ['200 credits/month', '500 req / 15 min', 'All scopes', 'Email support'],
-  },
-  {
-    id: 'studio',
-    name: 'Studio',
-    credits: 1000,
-    rateLimit: 2000,
-    highlighted: false,
-    features: [
-      '1000 credits/month',
-      '2000 req / 15 min',
-      'All scopes + priority queue',
-      'Priority support',
-    ],
-  },
-];
-
-// Per-call credit costs — mirrors server/utils/usageTracking.ts getCreditsRequired()
-const CREDIT_COSTS = [
-  { operation: 'Image generation (512px)', credits: '1' },
-  { operation: 'Image generation (1K / HD)', credits: '2' },
-  { operation: 'Image generation (2K)', credits: '3' },
-  { operation: 'Image generation (4K)', credits: '4–7' },
-  { operation: 'Video generation (fast)', credits: '15' },
-  { operation: 'Video generation (standard)', credits: '40' },
-  { operation: 'Text / analysis call', credits: '0 (token-based)' },
-];
-
-// ── FEATURE_BRAND_BILLING: pricing por marca ativa (plano Revenue-Centric §2.14) ──
-
-const AGENCY_PRICE_PER_BRAND_BRL = 79;
-const AGENCY_MIN_BRANDS = 5;
-const AGENCY_MAX_BRANDS = 50;
-
-/** Valores por tier (tabela do plano) — estático até os Products do Stripe existirem. */
-const BRAND_TIER_ROWS = [
-  { id: 'free', brands: '1', copilot: 'preview', seats: '0', credits: '20' },
-  { id: 'premium', brands: '3', copilot: '✓', seats: '1', credits: '100' },
-  { id: 'pro', brands: '10', copilot: '✓', seats: '3', credits: '500' },
-  { id: 'agency', brands: '∞', copilot: '✓+', seats: '∞', credits: '1000+' },
-] as const;
-
-/** Herói do pricing v2: a unidade da fatura é a marca ativa, não o token. */
-const BrandBillingHero: React.FC<{ t: (k: string) => string }> = ({ t }) => {
-  const pillars = [
-    { icon: Layers, label: t('pricing.hero.brands') },
-    { icon: Bot, label: t('pricing.hero.copilot') },
-    { icon: Plug, label: t('pricing.hero.mcp') },
-    { icon: Users, label: t('pricing.hero.seats') },
-  ];
-  return (
-    <div className="mb-10 space-y-6">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {pillars.map(({ icon: Icon, label }) => (
-          <span
-            key={label}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-neutral-300"
-          >
-            <Icon size={12} className="text-brand-cyan" />
-            {label}
-          </span>
-        ))}
-      </div>
-
-      {/* Comparativo por tier — o que cada plano destrava */}
-      <GlassPanel padding="none" className="overflow-x-auto rounded-2xl">
-        <table className="w-full text-sm min-w-[480px]">
-          <thead>
-            <tr className="border-b border-white/10 text-[11px] font-mono uppercase tracking-widest text-neutral-500">
-              <th className="text-left py-3 px-4 font-medium">{t('pricing.hero.tier')}</th>
-              <th className="text-center py-3 px-2 font-medium">{t('pricing.hero.brands')}</th>
-              <th className="text-center py-3 px-2 font-medium">{t('pricing.hero.copilot')}</th>
-              <th className="text-center py-3 px-2 font-medium">{t('pricing.hero.seats')}</th>
-              <th className="text-center py-3 px-4 font-medium">{t('pricing.hero.credits')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {BRAND_TIER_ROWS.map((row) => (
-              <tr key={row.id} className="border-b border-white/[0.03] last:border-0">
-                <td className="py-2.5 px-4 font-medium text-neutral-200">
-                  {t(`pricing.hero.tiers.${row.id}`)}
-                </td>
-                <td className="py-2.5 px-2 text-center font-mono text-neutral-300">{row.brands}</td>
-                <td className="py-2.5 px-2 text-center font-mono text-neutral-400">
-                  {row.copilot === 'preview' ? t('pricing.hero.copilotPreview') : row.copilot}
-                </td>
-                <td className="py-2.5 px-2 text-center font-mono text-neutral-300">{row.seats}</td>
-                <td className="py-2.5 px-4 text-center font-mono text-neutral-400">
-                  {row.credits}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </GlassPanel>
-    </div>
-  );
-};
-
-/** Card estático do tier Agency com mini-calculadora N marcas × R$79 (mín. 5). */
-const AgencyTierCard: React.FC<{
-  t: (k: string, params?: Record<string, string | number>) => string;
-}> = ({ t }) => {
-  const [brands, setBrands] = useState(AGENCY_MIN_BRANDS);
-  const total = brands * AGENCY_PRICE_PER_BRAND_BRL;
-  return (
-    <div className="mt-8 max-w-2xl mx-auto">
-      <GlassPanel padding="none" className="overflow-hidden rounded-2xl">
-        <div className="p-6 space-y-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-neutral-100">{t('pricing.agency.title')}</h3>
-                <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-2 py-0">
-                  {t('pricing.agency.badge')}
-                </Badge>
-              </div>
-              <p className="text-sm text-neutral-500 mt-1">{t('pricing.agency.subtitle')}</p>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-2xl font-bold text-brand-cyan font-mono">
-                R${AGENCY_PRICE_PER_BRAND_BRL}
-              </span>
-              <p className="text-[11px] text-neutral-500 font-mono">
-                {t('pricing.agency.perBrand')}
-              </p>
-            </div>
-          </div>
-
-          {/* Mini-calculadora — mesmo padrão minus/plus do seletor de créditos */}
-          <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/10">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => setBrands((n) => Math.max(AGENCY_MIN_BRANDS, n - 1))}
-                disabled={brands <= AGENCY_MIN_BRANDS}
-                className="p-2 rounded-md text-neutral-400 hover:text-brand-cyan disabled:opacity-30"
-                aria-label={t('pricing.agency.fewerBrands')}
-              >
-                <Minus size={16} />
-              </Button>
-              <div className="text-center min-w-[72px]">
-                <span className="text-2xl font-bold text-neutral-100 font-mono tabular-nums">
-                  {brands}
-                </span>
-                <p className="text-[10px] text-neutral-500 font-mono uppercase">
-                  {t('pricing.agency.brandsLabel')}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => setBrands((n) => Math.min(AGENCY_MAX_BRANDS, n + 1))}
-                disabled={brands >= AGENCY_MAX_BRANDS}
-                className="p-2 rounded-md text-neutral-400 hover:text-brand-cyan disabled:opacity-30"
-                aria-label={t('pricing.agency.moreBrands')}
-              >
-                <Plus size={16} />
-              </Button>
-            </div>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-neutral-100 font-mono tabular-nums">
-                R${total.toLocaleString('pt-BR')}
-              </span>
-              <p className="text-[10px] text-neutral-500 font-mono uppercase">
-                {t('pricing.agency.perMonth')}
-              </p>
-            </div>
-          </div>
-
-          <p className="text-[11px] text-neutral-600 font-mono">{t('pricing.agency.minNote')}</p>
-
-          <Button variant="brand" className="w-full" asChild>
-            <a href="mailto:contato@visant.co?subject=Agency%20plan">
-              <Mail size={14} className="mr-2" />
-              {t('pricing.agency.cta')}
-            </a>
-          </Button>
-        </div>
-      </GlassPanel>
-    </div>
-  );
-};
-
-/** Créditos rebaixados a fair-use de geração — o plano cobre a plataforma. */
-const FairUseNote: React.FC<{ t: (k: string) => string }> = ({ t }) => (
-  <div className="mt-10 max-w-2xl mx-auto p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 space-y-1.5">
-    <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-500">
-      {t('pricing.fairUse.title')}
-    </h4>
-    <p className="text-sm text-neutral-400 leading-relaxed">{t('pricing.fairUse.desc')}</p>
-    <p className="text-xs text-neutral-500 leading-relaxed">{t('pricing.fairUse.byok')}</p>
-  </div>
-);
-
-// Hook para animação de contador
-const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
-  const [displayValue, setDisplayValue] = useState(targetValue);
-  const animationFrameRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
-  const startValueRef = useRef<number>(targetValue);
-
-  useEffect(() => {
-    if (targetValue === displayValue) return;
-
-    startValueRef.current = displayValue;
-    startTimeRef.current = null;
-
-    const animate = (currentTime: number) => {
-      if (startTimeRef.current === null) {
-        startTimeRef.current = currentTime;
-      }
-
-      const elapsed = currentTime - startTimeRef.current;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Easing function (easeOutCubic)
-      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-      const currentValue = Math.round(
-        startValueRef.current + (targetValue - startValueRef.current) * easeOutCubic
-      );
-
-      setDisplayValue(currentValue);
-
-      if (progress < 1) {
-        animationFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        setDisplayValue(targetValue);
-      }
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [targetValue, duration]);
-
-  return displayValue;
-};
+import { getPricingCopy } from './pricing/pricingCopy';
+import {
+  PRICING_TIERS,
+  yearlyTotal,
+  formatTierPrice,
+  matchPlanForTier,
+  paymentLinkFor,
+  type BillingCycle,
+  type Currency,
+  type TierPricing,
+} from './pricing/pricingTiers';
 
 export const PricingPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { locale } = useTranslation();
+  const navigate = useNavigate();
+  const copy = getPricingCopy(locale);
+
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+  const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
   const [creditPackages, setCreditPackages] = useState<Product[]>([]);
-  const [selectedCreditIndex, setSelectedCreditIndex] = useState(0);
-  const [isPixModalOpen, setIsPixModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits' | 'storage' | 'api'>(
-    'subscriptions'
-  );
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const currency: Currency = currencyInfo?.currency === 'USD' ? 'USD' : 'BRL';
 
   useEffect(() => {
-    // Check authentication
+    setCurrencyInfo(getUserLocale());
+    productService.getSubscriptionPlans().then(setSubscriptionPlans);
+    productService.getCreditPackages().then(setCreditPackages);
     authService
       .verifyToken()
-      .then((user) => {
-        if (user) {
-          setCurrentUser(user);
-        }
-      })
+      .then((user) => user && setCurrentUser(user))
       .catch((err) => console.error('Auth verification failed:', err));
   }, []);
 
-  useEffect(() => {
-    const locale = getUserLocale();
-    setCurrencyInfo(locale);
+  // Assinatura: reaproveita o payment link real da API (mesmo fluxo Stripe/Abacate
+  // que a página usava). Sem link (API fora), cai pro fluxo de entrar no app.
+  const handleSubscribe = (tier: TierPricing) => {
+    const plan = matchPlanForTier(subscriptionPlans, tier.id, billingCycle);
+    const link = paymentLinkFor(plan, currency);
+    if (link) {
+      trackEvent('checkout_started', {
+        type: 'subscription',
+        plan: tier.id,
+        cycle: billingCycle,
+        currency,
+      });
+      window.location.href = link;
+      return;
+    }
+    navigate('/');
+  };
 
-    // Fetch dynamic credit packages
-    productService.getCreditPackages().then((packages) => {
-      if (packages.length > 0) {
-        setCreditPackages(packages);
-      }
-    });
-  }, []);
-
+  // Pacote avulso de créditos (rodapé discreto) — mesmo Stripe Payment Link
+  // com client_reference_id que o fluxo antigo usava, pego o pacote mais barato.
   const handleBuyCredits = async () => {
-    if (!currencyInfo || creditPackages.length === 0) return;
-
-    // Refresh user state to be sure
+    if (creditPackages.length === 0) return;
+    const pkg = creditPackages[0];
     const user = currentUser || (await authService.ensureAuthenticated());
 
-    // Optional: Force login if not authenticated (depending on UX requirement)
-    // For now, we proceed but log a warning if no user, as payments might be possible as guest (though risky for credits)
-    // However, the original issue implies logged-in users.
-
-    const userId = user?.id;
-    const userEmail = user?.email;
-
-    const currentPackage = creditPackages[selectedCreditIndex];
-
-    // Flag no localStorage para detectar retorno do pagamento
     localStorage.setItem(
       'credit_purchase_pending',
-      JSON.stringify({
-        timestamp: Date.now(),
-        credits: currentPackage.credits,
-      })
+      JSON.stringify({ timestamp: Date.now(), credits: pkg.credits })
     );
 
-    // Usar Payment Link do produto se disponível, caso contrário fallback para utils
-    let paymentLink =
-      currencyInfo.currency === 'USD'
-        ? currentPackage.paymentLinkUSD
-        : currentPackage.paymentLinkBRL;
-
-    if (!paymentLink) {
-      paymentLink = getCreditPackageLink(currentPackage.credits, currencyInfo.currency);
-    }
-
+    let paymentLink = currency === 'USD' ? pkg.paymentLinkUSD : pkg.paymentLinkBRL;
+    if (!paymentLink) paymentLink = getCreditPackageLink(pkg.credits, currency);
     if (!paymentLink) {
       setError('Payment link not found for this package');
       return;
     }
 
-    // Append client_reference_id and prefilled_email
     const separator = paymentLink.includes('?') ? '&' : '?';
-    let params = '';
-
-    if (userId) {
-      params += `client_reference_id=${userId}`;
-    }
-
-    if (userEmail) {
-      params += `${params ? '&' : ''}prefilled_email=${encodeURIComponent(userEmail)}`;
-    }
-
-    if (params) {
-      paymentLink = `${paymentLink}${separator}${params}`;
-    }
-
-    // Redireciona para o Payment Link do Stripe
-    window.location.href = paymentLink;
+    const params: string[] = [];
+    if (user?.id) params.push(`client_reference_id=${user.id}`);
+    if (user?.email) params.push(`prefilled_email=${encodeURIComponent(user.email)}`);
+    trackEvent('checkout_started', { type: 'credit_package', credits: pkg.credits, currency });
+    window.location.href = params.length
+      ? `${paymentLink}${separator}${params.join('&')}`
+      : paymentLink;
   };
-
-  const handleBuyWithPix = () => {
-    if (!currencyInfo) return;
-    setIsPixModalOpen(true);
-  };
-
-  const handlePixSuccess = () => {
-    // Refresh page or update credits display
-    window.location.reload();
-  };
-
-  const handlePreviousCredit = () => {
-    setSelectedCreditIndex((prev) => (prev > 0 ? prev - 1 : prev));
-  };
-
-  const handleNextCredit = () => {
-    setSelectedCreditIndex((prev) => (prev < creditPackages.length - 1 ? prev + 1 : prev));
-  };
-
-  const currentCreditPackage = creditPackages[selectedCreditIndex];
-
-  const getDisplayPrice = () => {
-    if (!currencyInfo || !currentCreditPackage) return 0;
-
-    // Prefer product price if set
-    if (currencyInfo.currency === 'USD' && currentCreditPackage.priceUSD) {
-      return currentCreditPackage.priceUSD;
-    }
-    if (currencyInfo.currency === 'BRL') {
-      return currentCreditPackage.priceBRL;
-    }
-
-    // Fallback to utils
-    return getCreditPackagePrice(currentCreditPackage.credits, currencyInfo.currency);
-  };
-
-  const creditPrice = getDisplayPrice();
-
-  // Animated counter for credits (30% faster: 280ms instead of 400ms)
-  const animatedCredits = useAnimatedCounter(currentCreditPackage?.credits || 0, 280);
-
-  // Animated counter for price (30% faster: 280ms instead of 400ms)
-  const animatedPrice = useAnimatedCounter(creditPrice, 280);
 
   return (
     <>
       <SEO
-        title={t('pricing.preos_e_planos')}
-        description={t('pricing.planos_e_pacotes_de_crditos_para_gerar_m')}
-        keywords="preços, planos, créditos, assinatura, mockup generator, pricing"
+        title={copy.seoTitle}
+        description={copy.seoDescription}
+        keywords="pricing, planos, preços"
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0"></div>
-        <div className="max-w-5xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
+
+      <div
+        className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14"
+        data-vsn-page="pricing"
+        data-vsn-component="pricing-v3"
+      >
+        <div className="max-w-6xl mx-auto px-4 pt-6 pb-24" data-vsn-region="content">
           <div className="mb-4">
             <BreadcrumbWithBack to="/">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/">{t('apps.home')}</Link>
+                    <Link to="/">{copy.breadcrumbHome}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{t('pricing.title') || 'Pricing'}</BreadcrumbPage>
+                  <BreadcrumbPage>{copy.breadcrumbPricing}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </BreadcrumbWithBack>
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono mb-8 text-center animate-fade-in-down">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono mb-8 text-center">
               {error}
             </div>
           )}
 
           {/* Header */}
-          <div className="text-center mb-12 md:mb-16 animate-fade-in-fast">
-            <h1 className="text-5xl md:text-6xl font-semibold font-manrope text-neutral-300 mb-4 tracking-tight">
-              {t('pricing.title')}
+          <div className="text-center mb-10 md:mb-12">
+            <h1 className="text-4xl md:text-5xl font-semibold text-neutral-100 mb-4 tracking-tight">
+              {copy.title}
             </h1>
-            <p className="text-neutral-500 font-mono text-sm md:text-base max-w-2xl mx-auto">
-              {FEATURE_BRAND_BILLING ? t('pricing.hero.subtitle') : t('pricing.subtitle')}
+            <p className="text-neutral-500 text-sm md:text-base max-w-2xl mx-auto">
+              {copy.subtitle}
             </p>
           </div>
 
-          <div className="flex justify-center mb-12 animate-fade-in-fast">
-            <Tabs
-              value={activeTab}
-              onValueChange={(v: any) => setActiveTab(v)}
-              className="w-full max-w-[520px]"
-            >
-              <TabsList asChild>
-                <GlassPanel padding="none" className="grid w-full grid-cols-4 p-1 rounded-xl">
-                  <TabsTrigger
-                    value="subscriptions"
-                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
-                  >
-                    {t('pricing.tabs.subscriptions') || 'Assinaturas'}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="credits"
-                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
-                  >
-                    {t('pricing.tabs.credits') || 'Créditos'}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="storage"
-                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
-                  >
-                    {t('pricing.tabs.storage') || 'Storage'}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="api"
-                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan text-sm"
-                  >
-                    API
-                  </TabsTrigger>
-                </GlassPanel>
-              </TabsList>
-            </Tabs>
+          {/* Billing toggle — mensal / anual (anual = 2 meses grátis) */}
+          <div className="flex justify-center mb-12">
+            <div className="relative inline-flex p-1 rounded-full border border-neutral-800 bg-neutral-900/50">
+              <div
+                className={cn(
+                  'absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out',
+                  billingCycle === 'monthly'
+                    ? 'left-1 w-[calc(50%-4px)]'
+                    : 'left-1/2 w-[calc(50%-4px)]'
+                )}
+              />
+              <Button
+                variant="ghost"
+                onClick={() => setBillingCycle('monthly')}
+                className={cn(
+                  'relative z-10 px-6 py-2 text-sm rounded-full min-w-[104px] transition-colors',
+                  billingCycle === 'monthly'
+                    ? 'text-black font-bold'
+                    : 'text-neutral-400 hover:text-neutral-200'
+                )}
+              >
+                {copy.monthly}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setBillingCycle('yearly')}
+                className={cn(
+                  'relative z-10 px-6 py-2 text-sm rounded-full min-w-[104px] flex items-center justify-center gap-2 transition-colors',
+                  billingCycle === 'yearly'
+                    ? 'text-black font-bold'
+                    : 'text-neutral-400 hover:text-neutral-200'
+                )}
+              >
+                {copy.yearly}
+                <span
+                  className={cn(
+                    'text-[10px] px-1.5 py-0.5 rounded-full font-bold',
+                    billingCycle === 'yearly'
+                      ? 'bg-neutral-950/20 text-black'
+                      : 'bg-neutral-800 text-neutral-300'
+                  )}
+                >
+                  {copy.yearlyBadge}
+                </span>
+              </Button>
+            </div>
           </div>
 
-          {/* Content with smooth transitions */}
-          <div className="relative min-h-[500px]">
-            <Tabs value={activeTab} className="w-full">
-              {/* Subscription Plans View */}
-              <TabsContent value="subscriptions" className="mt-0 outline-none">
-                {FEATURE_BRAND_BILLING && <BrandBillingHero t={t} />}
-                <SubscriptionPlansGrid currencyInfo={currencyInfo} />
-                {FEATURE_BRAND_BILLING && (
-                  <>
-                    <AgencyTierCard t={t} />
-                    <FairUseNote t={t} />
-                  </>
-                )}
-              </TabsContent>
+          {/* 3 cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch max-w-5xl mx-auto">
+            {PRICING_TIERS.map((tier) => {
+              const tc = copy.tiers[tier.id];
+              const monthly = tier.monthlyList[currency];
+              const amount = billingCycle === 'yearly' ? yearlyTotal(monthly) : monthly;
+              const priceStr = tier.free ? copy.free : formatTierPrice(amount, currency);
+              const cycleSuffix = tier.free
+                ? ''
+                : billingCycle === 'yearly'
+                  ? copy.perYear
+                  : copy.perMonth;
+              const founder = tier.founderMonthly?.[currency];
 
-              {/* Credit Packages View */}
-              <TabsContent value="credits" className="mt-0 outline-none">
-                <div className="animate-fade-in-fast">
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <GlassPanel className="w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                      <CardContent className="p-4 md:p-8">
-                        <div className="space-y-8 relative z-10">
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-6 mb-4">
-                              <Button
-                                variant="ghost"
-                                onClick={handlePreviousCredit}
-                                disabled={selectedCreditIndex === 0}
-                                className={cn(
-                                  'p-2 rounded-md transition-all active:scale-90',
-                                  selectedCreditIndex === 0
-                                    ? 'text-neutral-700 opacity-30 cursor-not-allowed'
-                                    : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer'
-                                )}
-                              >
-                                <Minus size={24} />
-                              </Button>
-
-                              <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 20%)]">
-                                {animatedCredits}
-                              </div>
-
-                              <Button
-                                variant="ghost"
-                                onClick={handleNextCredit}
-                                disabled={selectedCreditIndex === creditPackages.length - 1}
-                                className={cn(
-                                  'p-2 rounded-md transition-all active:scale-90',
-                                  selectedCreditIndex === creditPackages.length - 1
-                                    ? 'text-neutral-700 opacity-30 cursor-not-allowed'
-                                    : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer'
-                                )}
-                              >
-                                <Plus size={24} />
-                              </Button>
-                            </div>
-
-                            <MicroTitle
-                              as="span"
-                              className="flex items-center justify-center gap-2 opacity-60"
-                            >
-                              <Pickaxe size={14} className="text-brand-cyan/50" />
-                              {t('pricing.creditsLabel')}
-                            </MicroTitle>
-                          </div>
-
-                          <div className="pt-8 border-t border-white/10 text-center">
-                            <div className="text-4xl font-bold text-neutral-100 font-mono mb-1">
-                              {formatPrice(
-                                animatedPrice,
-                                currencyInfo?.currency || 'BRL',
-                                currencyInfo?.locale || 'pt-BR'
-                              )}
-                            </div>
-                            <MicroTitle as="span" className="opacity-100">
-                              {currencyInfo?.currency === 'BRL'
-                                ? 'Pagamento Único'
-                                : 'One-time payment'}
-                            </MicroTitle>
-
-                            {/* Credit Estimates */}
-                            {(() => {
-                              const estimate = getCreditsEstimate(
-                                creditPackages[selectedCreditIndex]?.credits || 0
-                              );
-                              return (
-                                <div className="flex items-center justify-center gap-4 mt-4 text-xs text-neutral-400">
-                                  <div className="flex items-center gap-1.5">
-                                    <Image size={14} className="text-brand-cyan/70" />
-                                    <span>~{estimate.imagesHD} HD</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <Image size={14} className="text-brand-cyan/70" />
-                                    <span>~{estimate.images4K} 4K</span>
-                                  </div>
-                                  {estimate.videosFast > 0 && (
-                                    <div className="flex items-center gap-1.5">
-                                      <Video size={14} className="text-brand-cyan/70" />
-                                      <span>~{estimate.videosFast} vídeos</span>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </div>
-
-                          <div className="flex flex-col gap-3 pt-6">
-                            <PremiumButton
-                              onClick={handleBuyCredits}
-                              className="w-full h-12 uppercase "
-                            >
-                              <CreditCard className="mr-2 h-4 w-4" />
-                              {t('pricing.buyCredits')}
-                            </PremiumButton>
-
-                            {currencyInfo?.currency === 'BRL' && (
-                              <PremiumButton
-                                onClick={handleBuyWithPix}
-                                className="w-full h-12 uppercase  bg-transparent border-success/30 text-success hover:bg-success/10 shadow-none"
-                                icon={QrCode}
-                              >
-                                {t('pix.payWithPix')}
-                              </PremiumButton>
-                            )}
-                          </div>
-
-                          <p className="text-[10px] text-neutral-600 font-mono text-center leading-relaxed">
-                            {t('pricing.creditsNote')}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </GlassPanel>
-
-                    {/* Indicators */}
-                    <GlassPanel
-                      padding="sm"
-                      className="flex gap-1.5 mt-8 items-center rounded-full"
-                    >
-                      {creditPackages.map((_, index) => (
-                        <Button
-                          variant="ghost"
-                          key={index}
-                          onClick={() => setSelectedCreditIndex(index)}
-                          className={cn(
-                            'h-1.5 rounded-full transition-all duration-300',
-                            index === selectedCreditIndex
-                              ? 'bg-brand-cyan w-8'
-                              : 'bg-neutral-800 w-1.5 hover:bg-neutral-700'
-                          )}
-                        />
-                      ))}
-                    </GlassPanel>
-                  </div>
-                </div>
-              </TabsContent>
-
-              {/* Storage Plans View */}
-              <TabsContent value="storage" className="mt-0 outline-none">
-                <div className="animate-fade-in-fast">
-                  {/* Storage Info Banner */}
-                  <div className="mb-8 p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-brand-cyan/10 rounded-lg">
-                        <Key size={20} className="text-brand-cyan" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-neutral-200 mb-1">
-                          {t('pricing.storage.byokTitle') || 'Storage para BYOK'}
-                        </h3>
-                        <p className="text-sm text-neutral-400">
-                          {t('pricing.storage.byokDescription') ||
-                            'Usando sua própria API key? Seus arquivos ainda precisam de storage. Escolha um plano abaixo.'}
-                        </p>
-                      </div>
+              return (
+                <div
+                  key={tier.id}
+                  className={cn(
+                    'relative flex flex-col rounded-2xl border bg-neutral-900/40 p-6',
+                    tier.recommended
+                      ? 'border-brand-cyan/40 bg-brand-cyan/[0.03]'
+                      : 'border-neutral-800'
+                  )}
+                  data-vsn-region={`tier-${tier.id}`}
+                >
+                  {/* Selo topo — recomendado (brand-cyan) ou early access (neutro) */}
+                  {(tier.recommended || tier.earlyAccess) && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      {tier.recommended ? (
+                        <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full">
+                          {copy.recommended}
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-neutral-800 text-neutral-300 border-none text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <Sparkles size={10} />
+                          {copy.earlyAccess}
+                        </Badge>
+                      )}
                     </div>
+                  )}
+
+                  {/* Nome + tagline */}
+                  <div className="mb-5 mt-1">
+                    <h2 className="text-xl font-bold text-neutral-100">{tc.name}</h2>
+                    <p className="text-xs text-neutral-500 mt-1 leading-relaxed">{tc.tagline}</p>
                   </div>
 
-                  {/* Storage Plans Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {STORAGE_PLANS.map((plan, index) => (
-                      <Card
-                        key={plan.id}
+                  {/* Preço grande */}
+                  <div className="flex items-baseline gap-1.5 mb-1">
+                    <span
+                      className={cn(
+                        'text-4xl font-bold font-mono tracking-tight',
+                        tier.recommended ? 'text-brand-cyan' : 'text-neutral-100'
+                      )}
+                    >
+                      {priceStr}
+                    </span>
+                    {cycleSuffix && (
+                      <span className="text-sm text-neutral-500 font-mono">{cycleSuffix}</span>
+                    )}
+                  </div>
+
+                  {/* Ribbon fundador (Pro/Vision) — preço promo travado */}
+                  {founder != null && (
+                    <div className="mt-3 mb-1 rounded-xl border border-neutral-800 bg-neutral-950/40 px-3 py-2">
+                      <p
                         className={cn(
-                          'relative overflow-hidden transition-all duration-300 hover:border-neutral-700',
-                          index === 1
-                            ? 'bg-gradient-to-b from-brand-cyan/5 to-transparent border-brand-cyan/30'
-                            : 'bg-neutral-900/50 border-neutral-800'
+                          'text-xs font-mono',
+                          tier.recommended ? 'text-brand-cyan' : 'text-neutral-300'
                         )}
                       >
-                        {index === 1 && (
-                          <div className="absolute top-0 right-0 px-3 py-1 bg-brand-cyan text-black text-xs font-bold rounded-bl-lg">
-                            {t('pricing.popular') || 'Popular'}
-                          </div>
-                        )}
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <HardDrive
-                                size={20}
-                                className={index === 1 ? 'text-brand-cyan' : 'text-neutral-400'}
-                              />
-                              <CardTitle className="text-lg font-bold text-neutral-200">
-                                {plan.name}
-                              </CardTitle>
-                            </div>
-                            {plan.isByok && (
-                              <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-2 py-0">
-                                BYOK
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-bold text-neutral-100">
-                              {plan.priceBRL === 0
-                                ? t('pricing.free') || 'Grátis'
-                                : `R$${plan.priceBRL.toFixed(2)}`}
-                            </span>
-                            {plan.billingCycle === 'monthly' && (
-                              <span className="text-sm text-neutral-500">/mês</span>
-                            )}
-                          </div>
-                          <p className="text-sm text-neutral-400 mt-1">
-                            {plan.storageMB >= 1024
-                              ? `${(plan.storageMB / 1024).toFixed(0)} GB`
-                              : `${plan.storageMB} MB`}
-                          </p>
-                        </CardHeader>
-                        <CardContent className="pt-4 border-t border-white/10">
-                          <ul className="space-y-2">
-                            {plan.features.map((feature, i) => (
-                              <li
-                                key={i}
-                                className="flex items-center gap-2 text-sm text-neutral-400"
-                              >
-                                <CheckCircle2 size={14} className="text-success shrink-0" />
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <Button
-                            variant={index === 1 ? 'brand' : 'outline'}
-                            className="w-full mt-6"
-                            disabled={plan.priceBRL === 0}
-                          >
-                            {plan.priceBRL === 0
-                              ? t('pricing.included') || 'Incluído'
-                              : t('pricing.selectPlan') || 'Selecionar'}
-                          </Button>
-                        </CardContent>
-                      </Card>
+                        {formatTierPrice(founder, currency)}
+                        {copy.perMonth} · {copy.founderLabel}
+                      </p>
+                      <p className="text-[10px] text-neutral-500 font-mono mt-0.5">
+                        {copy.founderNote}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Créditos — uma linha fair-use */}
+                  <p className="mt-4 text-xs text-neutral-400 font-mono">{tc.credits}</p>
+
+                  {/* BYOK — badge discreto */}
+                  <div className="mt-2">
+                    <Badge className="bg-neutral-800/60 text-neutral-400 border border-neutral-700 text-[10px] font-mono px-2 py-0.5 rounded-md">
+                      {copy.byokBadge}
+                    </Badge>
+                  </div>
+
+                  {/* Features */}
+                  <ul className="mt-5 space-y-2.5 flex-1">
+                    {tc.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="flex items-start gap-2.5 text-sm text-neutral-300"
+                      >
+                        <Check
+                          size={15}
+                          className={cn(
+                            'mt-0.5 shrink-0',
+                            tier.recommended ? 'text-brand-cyan' : 'text-neutral-500'
+                          )}
+                        />
+                        <span>{feature}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
 
-                  {/* Note about subscription storage */}
-                  <p className="text-center text-sm text-neutral-500 mt-8 max-w-xl mx-auto">
-                    {t('pricing.storage.subscriptionNote') ||
-                      'Assinaturas Pro e Vision já incluem storage. Planos de storage são para quem usa BYOK ou precisa de storage adicional.'}
-                  </p>
-                </div>
-              </TabsContent>
-
-              {/* API Pricing View */}
-              <TabsContent value="api" className="mt-0 outline-none">
-                <div className="animate-fade-in-fast space-y-10">
-                  {/* Header */}
-                  <div className="text-center">
-                    <MicroTitle className="text-brand-cyan/70 mb-2">Developer API</MicroTitle>
-                    <p className="text-neutral-400 text-sm font-mono">
-                      Pay-as-you-go credits. No minimum commitment.
-                    </p>
-                  </div>
-
-                  {/* Single unified API panel — the API runs on your existing plan,
-                      it is not a separate subscription. One card, no duplication. */}
-                  <div className="max-w-2xl mx-auto">
-                    <GlassPanel
-                      padding="none"
-                      className="overflow-hidden rounded-2xl divide-y divide-white/10"
-                    >
-                      {/* Included-with-plan note */}
-                      <div className="p-5 flex items-start gap-3">
-                        <div className="p-2 bg-brand-cyan/10 rounded-lg shrink-0">
-                          <Key size={18} className="text-brand-cyan" />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-semibold text-neutral-200">
-                            {t('pricing.api.includedTitle') || 'Included with your plan'}
-                          </h3>
-                          <p className="text-sm text-neutral-500 mt-0.5">
-                            {t('pricing.api.includedDesc') ||
-                              'The API draws from the same credit balance and scopes as your account — there is no separate subscription. Your plan sets the rate limit.'}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Rate limit by plan */}
-                      <div className="p-5">
-                        <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">
-                          {t('pricing.api.rateLimitLabel') || 'Rate limit by plan'}
-                        </h4>
-                        <div className="space-y-1.5">
-                          {API_TIERS.map((tier) => (
-                            <div
-                              key={tier.id}
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <span
-                                className={cn(
-                                  'font-medium',
-                                  tier.highlighted ? 'text-brand-cyan' : 'text-neutral-300'
-                                )}
-                              >
-                                {tier.name}
-                              </span>
-                              <span className="font-mono text-neutral-400">
-                                {tier.rateLimit.toLocaleString()} req / 15 min
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Per-call credit cost */}
-                      <div className="p-5">
-                        <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-500 mb-3">
-                          {t('pricing.api.perCallLabel') || 'Per-call credit cost'}
-                        </h4>
-                        <table className="w-full text-sm">
-                          <tbody>
-                            {CREDIT_COSTS.map((row, i) => (
-                              <tr key={i} className="border-b border-neutral-800 last:border-0">
-                                <td className="py-2 text-neutral-300">{row.operation}</td>
-                                <td className="py-2 text-right font-mono text-brand-cyan">
-                                  {row.credits}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* CTA */}
-                      <div className="p-5">
-                        <Button variant="brand" className="w-full" asChild>
-                          <Link to="/developer">
-                            {t('pricing.api.cta') || 'Get API key & docs'}
-                          </Link>
-                        </Button>
-                      </div>
-                    </GlassPanel>
+                  {/* CTA */}
+                  <div className="mt-6">
+                    {tier.free ? (
+                      <Button variant="outline" className="w-full" asChild>
+                        <Link to="/">{tc.cta}</Link>
+                      </Button>
+                    ) : (
+                      <Button
+                        variant={tier.recommended ? 'brand' : 'outline'}
+                        className="w-full"
+                        onClick={() => handleSubscribe(tier)}
+                      >
+                        <CreditCard size={14} className="mr-2" />
+                        {tc.cta}
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+              );
+            })}
           </div>
-        </div>
 
-        {/* Transparency & Community - Expert Mode */}
-        <div className="max-w-4xl mx-auto px-4 pb-24 animate-fade-in-slow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-white/10">
-            {/* Transparency Section */}
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <MicroTitle className="text-brand-cyan/70">
-                  {t('pricing.transparency.title')}
-                </MicroTitle>
-                <h3 className="text-xl font-bold text-neutral-200">
-                  {t('pricing.transparency.googleApi')} + Infra
-                </h3>
-                <p className="text-sm text-neutral-500 leading-relaxed font-mono">
-                  {t('pricing.transparency.description')}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-white/10 text-sm">
-                  <span className="text-neutral-400">{t('pricing.google_api_gemini_31')}</span>
-                  <span className="text-neutral-200 font-mono">$0.067</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/10 text-sm">
-                  <span className="text-neutral-400">{t('pricing.visant_processingcdn')}</span>
-                  <span className="text-neutral-200 font-mono">$0.013</span>
-                </div>
-                <div className="flex justify-between items-center py-2 text-base font-bold text-brand-cyan">
-                  <span>{t('pricing.transparency.total')}</span>
-                  <span className="font-mono">$0.080</span>
-                </div>
-              </div>
+          {/* Rodapé — pacote avulso de créditos, discreto */}
+          {creditPackages.length > 0 && (
+            <div className="mt-14 text-center flex items-center justify-center gap-2 flex-wrap">
+              <MicroTitle as="span" className="text-neutral-600">
+                {copy.moreCreditsQuestion}
+              </MicroTitle>
+              <Button
+                variant="link"
+                onClick={handleBuyCredits}
+                className="text-xs text-neutral-400 hover:text-neutral-200 h-auto p-0"
+              >
+                {copy.moreCreditsCta}
+              </Button>
             </div>
-
-            {/* Community Section */}
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <MicroTitle className="text-neutral-500">
-                  {t('pricing.community.buildInPublic')}
-                </MicroTitle>
-                <h3 className="text-xl font-bold text-neutral-200">
-                  {t('pricing.community.subtitle')}
-                </h3>
-                <p className="text-sm text-neutral-400">
-                  Somos um laboratório de design e código. Acompanhe a evolução do projeto em tempo
-                  real.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <a
-                  href="https://github.com/visantlabs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-white/10 rounded-xl hover:border-neutral-700 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
-                      <Key size={18} className="text-neutral-400 group-hover:text-brand-cyan" />
-                    </div>
-                    <span className="text-sm font-medium text-neutral-300">
-                      {t('pricing.community.github')}
-                    </span>
-                  </div>
-                  <Plus
-                    size={16}
-                    className="text-neutral-600 group-hover:translate-x-1 transition-transform"
-                  />
-                </a>
-
-                <a
-                  href="https://discord.gg/visantlabs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 bg-neutral-900/30 border border-white/10 rounded-xl hover:border-neutral-700 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
-                      <Plus size={18} className="text-neutral-400 group-hover:text-brand-cyan" />
-                    </div>
-                    <span className="text-sm font-medium text-neutral-300">
-                      {t('pricing.community.discord')}
-                    </span>
-                  </div>
-                  <Plus
-                    size={16}
-                    className="text-neutral-600 group-hover:translate-x-1 transition-transform"
-                  />
-                </a>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
-
-        {/* PIX Payment Modal */}
-        {isPixModalOpen && currencyInfo && currentCreditPackage && (
-          <PixPaymentModal
-            isOpen={isPixModalOpen}
-            onClose={() => setIsPixModalOpen(false)}
-            credits={currentCreditPackage.credits}
-            currency={currencyInfo.currency}
-            onSuccess={handlePixSuccess}
-          />
-        )}
       </div>
     </>
   );
