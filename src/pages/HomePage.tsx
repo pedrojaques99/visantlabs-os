@@ -11,7 +11,6 @@ import { appsService, AppConfig } from '@/services/appsService';
 import { AuthModal } from '@/components/AuthModal';
 import { LandingHome } from '@/components/landing/LandingHome';
 import { GettingStartedChecklist } from '@/components/onboarding/GettingStartedChecklist';
-import { BrandCockpit } from '@/components/cockpit/BrandCockpit';
 import { FEATURE_COCKPIT } from '@/config/featureFlags';
 
 const playTick = () => {
@@ -111,6 +110,24 @@ const LABS_ENTRY: AppConfig = {
   isHidden: false,
 };
 
+// Synthetic entry for the Brand Cockpit — only added to the roster when
+// FEATURE_COCKPIT is on (the flag now gates the /cockpit route + this
+// launcher line, not a home hijack).
+const COCKPIT_ENTRY: AppConfig = {
+  id: 'cockpit',
+  appId: 'cockpit',
+  name: 'Brand Cockpit',
+  description: 'Your brand and its work in progress',
+  link: '/cockpit',
+  badge: 'NEW',
+  badgeVariant: 'free',
+  category: 'tools',
+  isExternal: false,
+  free: true,
+  displayOrder: 0,
+  isHidden: false,
+};
+
 // ─── Last-used tracking ───────────────────────────────────────────────────────
 const getLastUsed = (): Record<string, number> => {
   try {
@@ -157,6 +174,76 @@ const badgeColor = (variant: AppConfig['badgeVariant']): string => {
 const DOT_COLS = 34;
 const fillDots = (label: string, badge: string) =>
   '·'.repeat(Math.max(3, DOT_COLS - label.length - badge.length));
+
+// ─── useLauncherApps ──────────────────────────────────────────────────────────
+// SSoT for the launcher's app roster + selection handling. Shared by the TUI
+// home (below) and the /cockpit route (App.tsx), which renders BrandCockpit
+// with the exact same apps/onSelectApp the TUI would have used.
+export interface LauncherAppsResult {
+  apps: AppConfig[];
+  handleSelect: (app: AppConfig) => void;
+  isMobile: boolean;
+  isLoggedIn: boolean;
+}
+
+export const useLauncherApps = (): LauncherAppsResult => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useLayout();
+  const isAdmin = user?.isAdmin === true;
+  const isTester = user?.userCategory === 'tester' || user?.username === 'tester';
+  const isElevated = isAdmin || isTester;
+  const isLoggedIn = isAuthenticated === true;
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [apps, setApps] = useState<AppConfig[]>([]);
+
+  useEffect(() => {
+    setIsMobile(detectRealMobile());
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setApps([]);
+      return;
+    }
+    appsService
+      .getAll()
+      .then((data) => {
+        const byId = Object.fromEntries(data.map((a) => [a.appId, a]));
+        const pinned = PINNED_APP_IDS.map((id) => byId[id])
+          .filter(Boolean)
+          .filter((a) => !isMobile || !MOBILE_BLOCKED.has(a.appId))
+          .filter((a) => isElevated || PUBLIC_APP_IDS.has(a.appId));
+        const withExtras = [...pinned, COMMUNITY_ENTRY, LABS_ENTRY];
+        if (!isMobile && isElevated) withExtras.push(EXPORTER_ENTRY);
+        setApps(smartSort(withExtras));
+      })
+      .catch(() => {
+        /* silent fail */
+      });
+  }, [isMobile, isLoggedIn, isElevated]);
+
+  const handleSelect = useCallback(
+    (app: AppConfig) => {
+      recordLastUsed(app.appId);
+      if (app.appId === 'vsn-exporter') {
+        const a = document.createElement('a');
+        a.href = '/vsn-exporter.ps1';
+        a.download = 'vsn-exporter.ps1';
+        a.click();
+        return;
+      }
+      if (app.isExternal) {
+        window.open(app.link, '_blank', 'noopener noreferrer');
+      } else {
+        navigate(app.link);
+      }
+    },
+    [navigate]
+  );
+
+  return { apps, handleSelect, isMobile, isLoggedIn };
+};
 
 // ─── AppRow ───────────────────────────────────────────────────────────────────
 interface AppRowProps {
@@ -351,67 +438,20 @@ const AppList: React.FC<AppListProps> = ({
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useLayout();
-
-  const isAdmin = user?.isAdmin === true;
-  const isTester = user?.userCategory === 'tester' || user?.username === 'tester';
-  const isElevated = isAdmin || isTester;
-  const isLoggedIn = isAuthenticated === true;
+  const { isAuthenticated } = useLayout();
+  const { apps, handleSelect, isMobile, isLoggedIn } = useLauncherApps();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authIsSignUp, setAuthIsSignUp] = useState(false);
 
-  const [isMobile, setIsMobile] = useState(false);
-  const [apps, setApps] = useState<AppConfig[]>([]);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [presetIndex, setPresetIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const xOffsetPx = 0;
 
-  useEffect(() => {
-    setIsMobile(detectRealMobile());
-  }, []);
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      setApps([]);
-      return;
-    }
-    appsService
-      .getAll()
-      .then((data) => {
-        const byId = Object.fromEntries(data.map((a) => [a.appId, a]));
-        const pinned = PINNED_APP_IDS.map((id) => byId[id])
-          .filter(Boolean)
-          .filter((a) => !isMobile || !MOBILE_BLOCKED.has(a.appId))
-          .filter((a) => isElevated || PUBLIC_APP_IDS.has(a.appId));
-        const withExtras = [...pinned, COMMUNITY_ENTRY, LABS_ENTRY];
-        if (!isMobile && isElevated) withExtras.push(EXPORTER_ENTRY);
-        setApps(smartSort(withExtras));
-      })
-      .catch(() => {
-        /* silent fail */
-      });
-  }, [isMobile, isLoggedIn, isElevated]);
-
-  const handleSelect = useCallback(
-    (app: AppConfig) => {
-      recordLastUsed(app.appId);
-      if (app.appId === 'vsn-exporter') {
-        const a = document.createElement('a');
-        a.href = '/vsn-exporter.ps1';
-        a.download = 'vsn-exporter.ps1';
-        a.click();
-        return;
-      }
-      if (app.isExternal) {
-        window.open(app.link, '_blank', 'noopener noreferrer');
-      } else {
-        navigate(app.link);
-      }
-    },
-    [navigate]
-  );
+  // Cockpit entry — synthetic launcher row, only exists behind the flag
+  // (Fase 4→5: cockpit moved from home hijack to its own /cockpit route).
+  const appsWithCockpit = FEATURE_COCKPIT ? [...apps, COCKPIT_ENTRY] : apps;
 
   const moveFocus = useCallback((next: number, appId?: string) => {
     setFocusedIndex(next);
@@ -419,26 +459,26 @@ export const HomePage: React.FC = () => {
     playTick();
   }, []);
 
-  // TUI keyboard navigation (cockpit replaces the TUI, so skip when it's on)
+  // TUI keyboard navigation — home is always the launcher now (no cockpit hijack)
   useEffect(() => {
-    if (FEATURE_COCKPIT || !isLoggedIn || apps.length === 0) return;
+    if (!isLoggedIn || appsWithCockpit.length === 0) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        const n = Math.min(focusedIndex + 1, apps.length - 1);
-        moveFocus(n, apps[n]?.appId);
+        const n = Math.min(focusedIndex + 1, appsWithCockpit.length - 1);
+        moveFocus(n, appsWithCockpit[n]?.appId);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         const n = Math.max(focusedIndex - 1, 0);
-        moveFocus(n, apps[n]?.appId);
+        moveFocus(n, appsWithCockpit[n]?.appId);
       } else if (e.key === 'Enter') {
-        const app = apps[focusedIndex];
+        const app = appsWithCockpit[focusedIndex];
         if (app && app.badgeVariant !== 'comingSoon') handleSelect(app);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [apps, focusedIndex, isLoggedIn, handleSelect, moveFocus]);
+  }, [appsWithCockpit, focusedIndex, isLoggedIn, handleSelect, moveFocus]);
 
   // Scroll focused item into view
   useEffect(() => {
@@ -447,7 +487,7 @@ export const HomePage: React.FC = () => {
   }, [focusedIndex]);
 
   const listProps: AppListProps = {
-    apps,
+    apps: appsWithCockpit,
     listRef,
     focusedIndex,
     onSelect: handleSelect,
@@ -486,21 +526,6 @@ export const HomePage: React.FC = () => {
             if (!authIsSignUp) window.location.reload();
           }}
         />
-      </>
-    );
-  }
-
-  // Cockpit (Fase 4, FEATURE_COCKPIT): logged-in home = brand + work in
-  // progress. Flag off → the TUI launcher below renders exactly as before.
-  if (FEATURE_COCKPIT && isLoggedIn) {
-    return (
-      <>
-        <SEO
-          title={t('homepage.seoTitle') || 'VISANT LABS'}
-          description={t('homepage.seoDescription') || 'Experimental Design Laboratory'}
-        />
-        <BrandCockpit apps={apps} onSelectApp={handleSelect} />
-        <GettingStartedChecklist />
       </>
     );
   }

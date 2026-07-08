@@ -8,11 +8,19 @@ import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
 import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 import { PremiumGate } from './components/shared/PremiumGate';
-import { FEATURE_COPILOT } from './config/featureFlags';
+import { FEATURE_COCKPIT, FEATURE_COPILOT } from './config/featureFlags';
+import { useLayout } from './hooks/useLayout';
+import { useLauncherApps } from './pages/HomePage';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() =>
   import('./pages/HomePage').then((m) => ({ default: m.HomePage }))
+);
+// Cockpit moved out of the home hijack into its own route (plano Revenue-Centric,
+// Fase 5): reuses HomePage's useLauncherApps (SSoT for the apps roster) so
+// BrandCockpit gets the exact same apps/onSelectApp it always has.
+const BrandCockpit = lazyWithRetry(() =>
+  import('./components/cockpit/BrandCockpit').then((m) => ({ default: m.BrandCockpit }))
 );
 const MockupMachinePage = lazyWithRetry(() =>
   import('./pages/MockupMachinePage').then((m) => ({ default: m.MockupMachinePage }))
@@ -267,6 +275,22 @@ const LoadingFallback = () => (
   </div>
 );
 
+// /cockpit route (plano Revenue-Centric, Fase 5): the cockpit no longer
+// hijacks the home — it lives here instead, fed by the same apps roster
+// the TUI launcher uses. Gating is internal (matches the rest of the app):
+// signed-out visitors are bounced back to home instead of seeing a blank
+// cockpit.
+const CockpitRoute: React.FC = () => {
+  const { isAuthenticated } = useLayout();
+  const { apps, handleSelect } = useLauncherApps();
+
+  if (isAuthenticated === false) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <BrandCockpit apps={apps} onSelectApp={handleSelect} />;
+};
+
 const App: React.FC = () => {
   return (
     <ErrorBoundaryWrapper>
@@ -277,6 +301,7 @@ const App: React.FC = () => {
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  {FEATURE_COCKPIT && <Route path="/cockpit" element={<CockpitRoute />} />}
                   <Route path="/mockupmachine" element={<MockupMachinePage />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/profile" element={<ProfilePage />} />

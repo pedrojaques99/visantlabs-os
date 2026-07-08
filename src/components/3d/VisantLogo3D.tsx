@@ -156,20 +156,31 @@ const ZoomSync = ({ targetZRef }: { targetZRef: React.MutableRefObject<number> }
   return null;
 };
 
+// Default GLB — kept as a stable string so useGLTF.preload always targets it,
+// even when a caller later passes a dynamic modelUrl.
+const DEFAULT_MODEL_URL = '/models/visant-3d-simple-2.glb';
+
 // ─── LogoMesh — updates material in-place when preset changes ────────────────
 const LogoMesh = ({
   scale,
   isMobile,
   preset,
   xOffset,
+  modelUrl,
+  accentColor,
 }: {
   scale: number;
   isMobile: boolean;
   preset: Preset;
   xOffset: number;
+  modelUrl?: string;
+  accentColor?: string;
 }) => {
-  const { scene } = useGLTF('/models/visant-3d-simple-2.glb');
+  const { scene } = useGLTF(modelUrl ?? DEFAULT_MODEL_URL);
   const groupRef = useRef<THREE.Group>(null);
+  // accentColor (if passed) overrides the preset's emissive color — e.g. to
+  // eventually follow a brand's color instead of the fixed neutral/cyan/etc presets.
+  const emissiveColor = accentColor ?? preset.emissive;
 
   useFrame((_, delta) => {
     if (groupRef.current) {
@@ -187,7 +198,7 @@ const LogoMesh = ({
             color: GLASS_BASE.color,
             metalness: GLASS_BASE.metalness,
             roughness: GLASS_BASE.roughness,
-            emissive: new THREE.Color(preset.emissive),
+            emissive: new THREE.Color(emissiveColor),
             emissiveIntensity: preset.emissiveIntensity * 0.6,
           })
         : new THREE.MeshPhysicalMaterial({
@@ -199,24 +210,24 @@ const LogoMesh = ({
             ior: GLASS_BASE.ior,
             clearcoat: GLASS_BASE.clearcoat,
             clearcoatRoughness: 0.1,
-            emissive: new THREE.Color(preset.emissive),
+            emissive: new THREE.Color(emissiveColor),
             emissiveIntensity: preset.emissiveIntensity,
           });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene]);
 
-  // On preset change: only update emissive color + intensity, keep glass base intact
+  // On preset/accent change: only update emissive color + intensity, keep glass base intact
   useEffect(() => {
     if (!scene) return;
     scene.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) return;
       const mat = child.material as THREE.MeshPhysicalMaterial;
-      mat.emissive.set(preset.emissive);
+      mat.emissive.set(emissiveColor);
       mat.emissiveIntensity = isMobile ? preset.emissiveIntensity * 0.6 : preset.emissiveIntensity;
       mat.needsUpdate = true;
     });
-  }, [scene, preset, isMobile]);
+  }, [scene, preset, isMobile, emissiveColor]);
 
   return (
     <group ref={groupRef} position={[xOffset, 0, 0]}>
@@ -315,6 +326,10 @@ export interface VisantLogo3DProps {
   shaderName?: HeroShaderName;
   /** Shader intensity 0–1: base always-on level, 1 = full hover. Skip postprocessing below 0 */
   shaderIntensity?: number;
+  /** Overrides the default GLB (`/models/visant-3d-simple-2.glb`) — e.g. a brand's own 3D model */
+  modelUrl?: string;
+  /** Overrides the active preset's emissive color (e.g. to follow a brand's accent color) */
+  accentColor?: string;
 }
 
 export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
@@ -323,6 +338,8 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
   fullScreen = false,
   shaderName,
   shaderIntensity = 0,
+  modelUrl,
+  accentColor,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const fov = window.innerWidth < 768 ? 120 : 100;
@@ -411,6 +428,8 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
                 scale={isMobile ? 2.8 : 10}
                 preset={preset}
                 xOffset={meshX}
+                modelUrl={modelUrl}
+                accentColor={accentColor}
               />
             </Float>
           </PresentationControls>
