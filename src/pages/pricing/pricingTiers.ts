@@ -36,13 +36,13 @@ export const PRICING_TIERS: TierPricing[] = [
     id: 'pro',
     recommended: true,
     // Cobra R$49,90/mês no Stripe (sem desconto ativo) → sem preço riscado.
-    monthlyList: { BRL: 49, USD: 12 },
+    monthlyList: { BRL: 49.9, USD: 12 },
   },
   {
     id: 'vision',
     earlyAccess: true,
     // Preço de lançamento (cobra R$89,90/mês no Stripe) — até segunda ordem.
-    monthlyList: { BRL: 89, USD: 18 },
+    monthlyList: { BRL: 89.9, USD: 18 },
     regularMonthly: { BRL: 149, USD: 29 },
   },
 ];
@@ -50,11 +50,13 @@ export const PRICING_TIERS: TierPricing[] = [
 /** Anual paga 10 meses (2 grátis). Total do ano por moeda. */
 export const yearlyTotal = (monthly: number): number => monthly * 10;
 
-/** Moeda por locale: R$ no pt-BR, US$ no en-US. Inteiros (preços redondos). */
-export const formatTierPrice = (amount: number, currency: Currency): string =>
-  currency === 'BRL'
-    ? `R$${amount.toLocaleString('pt-BR')}`
-    : `US$${amount.toLocaleString('en-US')}`;
+/** Moeda por locale: R$ no pt-BR, US$ no en-US. Centavos só quando o valor tem. */
+export const formatTierPrice = (amount: number, currency: Currency): string => {
+  const opts = amount % 1 !== 0 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {};
+  return currency === 'BRL'
+    ? `R$${amount.toLocaleString('pt-BR', opts)}`
+    : `US$${amount.toLocaleString('en-US', opts)}`;
+};
 
 const isYearlyPlan = (p: Product): boolean =>
   (p.metadata as any)?.interval === 'year' || /anual|yearly|annual/i.test(p.name || '');
