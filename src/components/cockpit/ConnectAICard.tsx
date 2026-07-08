@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 
 /**
  * "Connect your AI" bento for the home cockpit — cockpit-chrome (neutral
@@ -59,7 +60,8 @@ export const ConnectAICard: React.FC<ConnectAICardProps> = ({
       aria-label={t('cockpit.connect.title')}
       data-vsn-region="connect-ai"
       className={cn(
-        'rounded-2xl border border-neutral-800 bg-white/[0.03] p-5 flex flex-col',
+        'rounded-2xl p-5 flex flex-col',
+        glassSurface.panel,
         className
       )}
     >
@@ -69,12 +71,12 @@ export const ConnectAICard: React.FC<ConnectAICardProps> = ({
       </div>
 
       {/* Visual hero: the assistants this brand plugs into. */}
-      <div className="inline-flex items-center gap-1 self-start p-1.5 mb-4 rounded-2xl bg-white/[0.03] border border-neutral-800">
+      <div className={cn('inline-flex items-center gap-1 self-start p-1.5 mb-4 rounded-2xl', glassSurface.tile)}>
         {ASSISTANTS.map((a) => (
           <div
             key={a.id}
             title={a.label}
-            className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-900/60"
+            className={cn('w-10 h-10 rounded-xl flex items-center justify-center', glassSurface.icon)}
           >
             {a.node}
           </div>

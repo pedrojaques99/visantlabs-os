@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDate } from '@/utils/localeUtils';
 import { copyToClipboard } from '@/utils/clipboard';
+import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 
 interface ProfileOverviewProps {
   user: UserType;
@@ -44,8 +46,9 @@ interface ProfileOverviewProps {
 }
 
 // Shared surface for a card section.
-const cardClass =
-  'bg-neutral-900/60 border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col gap-5';
+const cardClass = cn('rounded-2xl p-5 sm:p-6 flex flex-col gap-5', glassSurface.panel);
+const tileClass = cn('rounded-xl', glassSurface.tile);
+const controlClass = cn('rounded-xl', glassSurface.control);
 
 // One navigation row — used for the profile shortcuts. Renders a Link or a button.
 const NavRow: React.FC<{
@@ -66,8 +69,10 @@ const NavRow: React.FC<{
       />
     </>
   );
-  const cls =
-    'group flex w-full items-center justify-between rounded-xl border border-neutral-800 bg-white/[0.03] px-4 py-2.5 text-sm font-mono font-medium text-neutral-300 transition-colors hover:border-white/10 hover:bg-white/5';
+  const cls = cn(
+    'group flex w-full items-center justify-between px-4 py-2.5 text-sm font-mono font-medium text-neutral-300',
+    controlClass
+  );
   return to ? (
     <Link to={to} className={cls}>
       {inner}
@@ -92,7 +97,7 @@ const SectionHeader: React.FC<{ icon: LucideIcon; title: string }> = ({ icon: Ic
 );
 
 const StatTile: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-3">
+  <div className={cn(tileClass, 'p-3')}>
     <MicroTitle as="p" className="mb-1">
       {label}
     </MicroTitle>
@@ -238,7 +243,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
         {subscriptionStatus ? (
           <>
             <div className="flex flex-col gap-4 flex-1">
-              <div className="relative bg-white/[0.03] border border-neutral-800 rounded-xl p-5">
+              <div className={cn(tileClass, 'relative p-5')}>
                 <Button
                   variant="brand"
                   size="icon-sm"
@@ -269,11 +274,11 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   </p>
                 </StatTile>
                 {isLoadingStorage ? (
-                  <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-3 flex items-center justify-center">
+                  <div className={cn(tileClass, 'p-3 flex items-center justify-center')}>
                     <GlitchLoader size={16} />
                   </div>
                 ) : storageUsage ? (
-                  <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-3">
+                  <div className={cn(tileClass, 'p-3')}>
                     <div className="flex items-center justify-between gap-1 mb-1.5">
                       <span className="flex items-center gap-1.5">
                         <HardDrive size={10} className="text-neutral-500" />
@@ -376,7 +381,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-auto">
-              <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+              <div className={cn(tileClass, 'p-4 flex flex-col items-center justify-center text-center')}>
                 <Users className="text-neutral-500 mb-2" size={20} />
                 <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
                   {referralStats.referredUsersCount || 0}
@@ -385,7 +390,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   {t('referral.friendsReferred')}
                 </MicroTitle>
               </div>
-              <div className="bg-white/[0.03] border border-neutral-800 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+              <div className={cn(tileClass, 'p-4 flex flex-col items-center justify-center text-center')}>
                 <CreditCard className="text-brand-cyan/60 mb-2" size={20} />
                 <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}

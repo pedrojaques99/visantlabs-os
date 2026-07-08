@@ -32,6 +32,7 @@ import { useConnectBrandToAI } from '@/hooks/useConnectBrandToAI';
 import { useTranslation } from '@/hooks/useTranslation';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
 import type { AppConfig } from '@/services/appsService';
 import type { BrandSuggestion } from '@/services/brandGuidelineApi';
@@ -73,12 +74,10 @@ interface BrandCockpitProps {
   onSelectApp: (app: AppConfig) => void;
 }
 
-const cardCls =
-  'rounded-2xl border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors';
+const cardCls = cn('rounded-2xl', glassSurface.panel);
 
 /** Inner tile inside a bento card (one radius step down from the card). */
-const tileCls =
-  'rounded-xl border border-neutral-800 bg-white/[0.03] hover:border-white/10 transition-colors';
+const tileCls = cn('rounded-xl', glassSurface.tile);
 
 export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp }) => {
   const { t } = useTranslation();
@@ -276,7 +275,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="rounded-3xl border border-white/10 bg-neutral-900/20 backdrop-blur-sm p-12 lg:p-24 flex flex-col items-center gap-8 text-center"
+              className={cn('rounded-3xl p-12 lg:p-24 flex flex-col items-center gap-8 text-center', glassSurface.panel)}
             >
               <div className="p-8 rounded-3xl bg-neutral-950/50 border border-white/10">
                 <Compass size={48} className="text-brand-cyan" strokeWidth={1.2} />
