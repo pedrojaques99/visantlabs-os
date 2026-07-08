@@ -1340,7 +1340,15 @@ router.post(
           promptText.length,
           resolution as Resolution | undefined,
           (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
-          apiKeySource
+          apiKeySource,
+          undefined,
+          undefined,
+          // §3.3: onBrand/surface enrichment — MCP reuses this route internally,
+          // so a caller-provided surface marker is honored (defaults to 'ui').
+          brandGuidelineId,
+          req.body?.surface === 'mcp' || req.body?.surface === 'copilot'
+            ? req.body.surface
+            : undefined
         );
 
         const recordToInsert = {
@@ -1902,7 +1910,13 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
         hasInputImage,
         promptLength,
         resolution,
-        (feature || 'mockupmachine') as 'mockupmachine' | 'canvas'
+        (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
+        undefined,
+        undefined,
+        undefined,
+        // §3.3: client-side recording path also carries onBrand when the
+        // generation used a brand context.
+        typeof req.body?.brandGuidelineId === 'string' ? req.body.brandGuidelineId : undefined
       );
 
       // Store usage record in database

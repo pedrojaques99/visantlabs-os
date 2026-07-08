@@ -5027,5 +5027,45 @@
     "footer": {
       "tagline": "O único que realmente conhece sua marca."
     }
+  },
+  "onboarding": {
+    "step1Title": "Traga sua marca",
+    "step1Subtitle": "Sua marca vira o contexto de tudo que voce gera — cores, tipografia, tom de voz.",
+    "pathIngestTitle": "Tenho materiais da marca",
+    "pathIngestDesc": "PDF, URL do site, imagens ou Figma — extraimos cores, tipografia e tom de voz.",
+    "pathManualTitle": "Nao tenho guidelines",
+    "pathManualDesc": "60 segundos: nome, duas cores e o tom de voz.",
+    "pathDemoTitle": "Explorar antes",
+    "pathDemoDesc": "Comece com uma marca de exemplo — traga a sua quando quiser.",
+    "manualNameLabel": "Nome da marca",
+    "manualNamePlaceholder": "ex.: Acme Co.",
+    "manualColorsLabel": "Duas cores da marca",
+    "manualToneLabel": "Tom de voz",
+    "manualTonePlaceholder": "ex.: confiante, direto, amigavel",
+    "manualSubmit": "Criar marca",
+    "manualCreated": "Marca criada — tudo que voce gerar agora segue ela.",
+    "manualError": "Nao foi possivel criar a marca. Tente de novo.",
+    "demoCreating": "Preparando a marca demo…",
+    "demoError": "Nao foi possivel criar a marca demo — crie uma rapidinha abaixo.",
+    "ingestDone": "Marca importada — on-brand desde o primeiro output.",
+    "step2Ready": "Sua marca esta pronta",
+    "step2Desc": "Sua marca esta carregada como contexto. Proxima parada: sua primeira peca on-brand.",
+    "step2BrandLoaded": "Sua marca esta carregada como contexto nesta ferramenta.",
+    "step2BrandDemo": "Voce esta comecando com a marca demo — traga a sua quando quiser.",
+    "back": "Voltar",
+    "skip": "Pular",
+    "continue": "Continuar",
+    "finishError": "Erro ao completar onboarding",
+    "welcomeToast": "Bem-vindo a Visant Labs!",
+    "demoBanner": {
+      "label": "Voce esta na marca demo",
+      "message": "traga a sua pra gerar de verdade on-brand.",
+      "cta": "Trazer minha marca"
+    },
+    "checklist": {
+      "bringRealBrand": "Traga sua marca real",
+      "generateOnBrand": "Gere sua primeira peca on-brand",
+      "connectAgent": "Conecte seu AI"
+    }
   }
 }

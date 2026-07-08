@@ -447,6 +447,27 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
   }
 });
 
+// POST /api/brand-guidelines/demo — clone the in-code example brand for the
+// user (onboarding "explorar antes" skip, Fase 3). Idempotent: returns the
+// existing demo when present. Deliberately NOT gated by the brand quota —
+// demo brands never consume an active slot (see brandQuota.ACTIVE_BRAND_WHERE).
+router.post('/demo', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { ensureDemoBrand } = await import('../lib/demoBrand.js');
+    const { guideline, created } = await ensureDemoBrand(req.userId);
+
+    res.status(created ? 201 : 200).json({
+      guideline: { ...guideline, _id: guideline.id },
+      created,
+    });
+  } catch (error: any) {
+    console.error('Error creating demo brand:', error);
+    res.status(500).json({ error: 'Failed to create demo brand' });
+  }
+});
+
 // GET /api/brand-guidelines/:id — fetch single guideline
 router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
@@ -956,6 +977,19 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         extraction: merged.extraction as any,
       },
     });
+
+    // Funnel event (§3.3): brand_ingested — best-effort, never blocks the flow.
+    void (async () => {
+      const { trackFunnelEvent } = await import('../lib/funnelEvents.js');
+      const u = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { onboardingCompleted: true },
+      });
+      await trackFunnelEvent('brand_ingested', req.userId, {
+        source,
+        duringOnboarding: !(u?.onboardingCompleted ?? true),
+      });
+    })().catch(() => {});
 
     const changed = ingestChangedFields.length > 0;
     res.json({

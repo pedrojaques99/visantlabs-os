@@ -48,6 +48,7 @@ import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useCreditValidation } from '@/hooks/useCreditValidation';
 import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
 import { useToolInput } from '@/hooks/useToolInput';
+import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 import { formatMockupError } from '@/utils/mockupErrorHandling';
 import { compressImage } from '@/utils/imageCompression';
 import { loadImage } from '@/utils/imageUtils';
@@ -229,6 +230,7 @@ const MockupMachinePageContent: React.FC = () => {
     imageProvider,
     setImageProvider,
     selectedBrandGuideline,
+    setSelectedBrandGuideline,
     seed,
     setSeed,
     seedLocked,
@@ -265,6 +267,15 @@ const MockupMachinePageContent: React.FC = () => {
       setUploadedImage({ url, mimeType });
     }
   }, [pendingAsset, acceptAsset, setUploadedImage]);
+
+  // Onboarding brand-first (Fase 3): ?brand={id} pré-seleciona a marca —
+  // deep-link vindo do wizard /welcome ou de qualquer superfície externa.
+  useEffect(() => {
+    const brandParam = searchParams.get('brand');
+    if (brandParam) setSelectedBrandGuideline(brandParam);
+    // Só na montagem — o selector da página assume depois.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { availableMockupTags, availableLocationTags } = useMockupTags();
 
@@ -3376,6 +3387,9 @@ Generate the new mockup image with the requested changes applied.`;
         description={t('mockup.seoDescription')}
         keywords={t('mockup.seoKeywords')}
       />
+
+      {/* Marca demo ativa → lembrete persistente de trazer a marca real */}
+      <DemoBrandBanner brandId={selectedBrandGuideline} />
 
       {/* Dynamic Background */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-40">

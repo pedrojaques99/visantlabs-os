@@ -5023,5 +5023,45 @@
     "footer": {
       "tagline": "The only one that truly knows your brand."
     }
+  },
+  "onboarding": {
+    "step1Title": "Bring your brand",
+    "step1Subtitle": "Your brand becomes the context for everything you generate — colors, typography, tone of voice.",
+    "pathIngestTitle": "I have brand materials",
+    "pathIngestDesc": "PDF, website URL, images or Figma — we extract colors, typography and tone of voice.",
+    "pathManualTitle": "I don't have guidelines",
+    "pathManualDesc": "60 seconds: name, two colors and the tone of voice.",
+    "pathDemoTitle": "Explore first",
+    "pathDemoDesc": "Start with a sample brand — bring yours whenever you want.",
+    "manualNameLabel": "Brand name",
+    "manualNamePlaceholder": "e.g. Acme Co.",
+    "manualColorsLabel": "Two brand colors",
+    "manualToneLabel": "Tone of voice",
+    "manualTonePlaceholder": "e.g. confident, direct, friendly",
+    "manualSubmit": "Create brand",
+    "manualCreated": "Brand created — everything you generate now follows it.",
+    "manualError": "Could not create the brand. Try again.",
+    "demoCreating": "Preparing the demo brand…",
+    "demoError": "Could not create the demo brand — create a quick one below instead.",
+    "ingestDone": "Brand imported — on-brand from the first output.",
+    "step2Ready": "Your brand is ready",
+    "step2Desc": "Your brand is loaded as context. Next stop: your first on-brand piece.",
+    "step2BrandLoaded": "Your brand is loaded as context for this tool.",
+    "step2BrandDemo": "You're starting with the demo brand — bring yours anytime.",
+    "back": "Back",
+    "skip": "Skip",
+    "continue": "Continue",
+    "finishError": "Failed to complete onboarding",
+    "welcomeToast": "Welcome to Visant Labs!",
+    "demoBanner": {
+      "label": "You're on the demo brand",
+      "message": "bring yours to generate truly on-brand work.",
+      "cta": "Bring my brand"
+    },
+    "checklist": {
+      "bringRealBrand": "Bring your real brand",
+      "generateOnBrand": "Generate your first on-brand piece",
+      "connectAgent": "Connect your AI"
+    }
   }
 }

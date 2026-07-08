@@ -26,7 +26,14 @@ export interface UsageRecord {
   feature?: FeatureType; // Feature where credits were used (brandingmachine, mockupmachine, canvas)
   apiKeySource?: 'user' | 'system'; // Source of the API key used
   byok?: boolean; // BYOK v2 analytics: true when the user's own key covered the AI cost (0 credits)
+  // §3.3 generation_created enrichment (Fase 3): was this generation on-brand,
+  // and from which surface? Powers the "% on-brand" activation metric (meta 80%).
+  brandGuidelineId?: string; // Brand used as context, when any
+  onBrand?: boolean; // true when a brandGuidelineId was attached to the generation
+  surface?: GenerationSurface; // 'ui' (default) | 'mcp' | 'copilot'
 }
+
+export type GenerationSurface = 'ui' | 'mcp' | 'copilot';
 
 // Text generation pricing (tokens-based)
 // Prices are per 1 million tokens (USD)
@@ -227,7 +234,10 @@ export function createUsageRecord(
   feature?: FeatureType,
   apiKeySource: 'user' | 'system' = 'system',
   inputTokens?: number,
-  outputTokens?: number
+  outputTokens?: number,
+  // New optional params at the END of the signature (repo rule).
+  brandGuidelineId?: string | null,
+  surface?: GenerationSurface
 ): UsageRecord {
   // Determine if this is an image/video generation or text/analysis task
   let cost = 0;
@@ -255,5 +265,9 @@ export function createUsageRecord(
     // BYOK v2: usage is still recorded (analytics) even though AI cost = 0 credits.
     // Monetization of BYOK comes from maxBrands, not from a platform fee here.
     byok: apiKeySource === 'user',
+    // §3.3: on-brand generation tracking (aha-moment metric).
+    ...(brandGuidelineId ? { brandGuidelineId } : {}),
+    onBrand: !!brandGuidelineId,
+    surface: surface || 'ui',
   };
 }

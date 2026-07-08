@@ -70,6 +70,41 @@ function getUserObjectId(userId: string): ObjectId {
   return new ObjectId(userId);
 }
 
+// GET /api/users/onboarding-progress — Checklist v2 (Fase 3): state DERIVED
+// from existing data, zero new persisted state.
+//   hasRealBrand         — owns an active NON-demo brand guideline
+//   hasOnBrandGeneration — generated at least once with a brand attached
+//   hasConnectedAgent    — has an active API key or a live OAuth (MCP) grant
+// NOTE: must be mounted BEFORE '/:identifier' or the param route captures it.
+router.get('/onboarding-progress', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    await connectToMongoDB();
+    const db = getDb();
+    const { ACTIVE_BRAND_WHERE } = await import('../lib/brandQuota.js');
+
+    const [realBrands, brandedMockups, onBrandUsage, apiKeys, oauthGrants] = await Promise.all([
+      prisma.brandGuideline.count({ where: { userId, ...ACTIVE_BRAND_WHERE } }),
+      prisma.mockup.count({ where: { userId, brandGuidelineId: { not: null } } }),
+      // usage_records stores userId as a string (see adminAnalytics.ts note).
+      db.collection('usage_records').countDocuments({ userId, onBrand: true }, { limit: 1 }),
+      prisma.apiKey.count({ where: { userId, active: true } }),
+      prisma.oAuthRefreshToken.count({ where: { userId, expiresAt: { gt: new Date() } } }),
+    ]);
+
+    res.json({
+      hasRealBrand: realBrands > 0,
+      hasOnBrandGeneration: brandedMockups > 0 || onBrandUsage > 0,
+      hasConnectedAgent: apiKeys > 0 || oauthGrants > 0,
+    });
+  } catch (error: any) {
+    console.error('Failed to compute onboarding progress:', error);
+    res.status(500).json({ error: 'Failed to load onboarding progress', message: error.message });
+  }
+});
+
 // Get user profile by username or ID (HIGH-002: stricter rate limiting)
 router.get('/:identifier', publicProfileLimiter, async (req, res) => {
   try {

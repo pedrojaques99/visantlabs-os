@@ -1045,6 +1045,8 @@ export interface BrandGuideline {
   // Billing por marca ativa — archived = read-only, fora da quota, não gera.
   status?: 'active' | 'archived';
   archivedAt?: string;
+  // Onboarding brand-first (Fase 3) — marca-exemplo clonada no skip; não conta na quota.
+  isDemo?: boolean;
   // Public sharing
   publicSlug?: string;
   isPublic?: boolean;

@@ -45,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
+import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   const { t } = useTranslation();
@@ -632,6 +633,9 @@ export const BrandGuidelinesPage: React.FC = () => {
         description={t('brandGuidelines.seoDescription')}
       />
       <div className="fixed inset-0 z-0 bg-neutral-950" />
+
+      {/* Só tem a marca demo → convite persistente pra trazer a real (abre o wizard). */}
+      <DemoBrandBanner onCta={() => handleOpenWizard()} />
 
       <div className="min-h-screen bg-transparent relative z-10 flex">
         {/* Desktop Sidebar */}

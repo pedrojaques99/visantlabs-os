@@ -40,8 +40,15 @@ export function brandBillingEnabled(): boolean {
   return process.env.FEATURE_BRAND_BILLING === 'true';
 }
 
-/** "Active" filter that also matches legacy docs created before the status field existed. */
-export const ACTIVE_BRAND_WHERE = { NOT: { status: 'archived' } } as const;
+/**
+ * "Active" filter that also matches legacy docs created before the status field
+ * existed. Demo brands (onboarding "explore first" clone) never consume a slot
+ * and are never archived by billing — training wheels, not inventory.
+ */
+export const ACTIVE_BRAND_WHERE = {
+  NOT: { status: 'archived' },
+  isDemo: { not: true },
+} as const;
 
 async function tierMaxBrandsFromProduct(tier: string): Promise<number | null | undefined> {
   try {

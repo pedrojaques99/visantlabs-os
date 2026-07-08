@@ -15,3 +15,6 @@ export const FEATURE_COPILOT = readFlag(import.meta.env.VITE_FEATURE_COPILOT);
 
 /** Gate do billing por marca ativa: quota meter, archive UI e tier Agency no pricing. */
 export const FEATURE_BRAND_BILLING = readFlag(import.meta.env.VITE_FEATURE_BRAND_BILLING);
+
+/** Gate do onboarding brand-first (Fase 3): wizard v2, checklist v2 e banner de marca demo. */
+export const FEATURE_ONBOARDING_V2 = readFlag(import.meta.env.VITE_FEATURE_ONBOARDING_V2);

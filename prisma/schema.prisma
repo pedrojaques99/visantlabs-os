@@ -589,6 +589,10 @@ model BrandGuideline {
   status     String    @default("active") // 'active' | 'archived'
   archivedAt DateTime?
 
+  // Onboarding demo brand — cloned from the in-code seed on "explore first" skip.
+  // Never counts toward the active-brand quota (see server/lib/brandQuota.ts).
+  isDemo     Boolean   @default(false)
+
   // Public sharing
   publicSlug   String?    // Handled by sparse index manually
   isPublic     Boolean  @default(false)

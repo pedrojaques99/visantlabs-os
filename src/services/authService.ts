@@ -690,7 +690,10 @@ class AuthService {
     return data;
   }
 
-  async completeOnboarding(userCategory?: string): Promise<{ message: string }> {
+  async completeOnboarding(
+    userCategory?: string,
+    brandGuidelineId?: string
+  ): Promise<{ message: string }> {
     const authToken = this.getToken();
     if (!authToken) throw new Error('Authentication required');
     const response = await fetch(`${API_BASE_URL}/auth/complete-onboarding`, {
@@ -699,7 +702,7 @@ class AuthService {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ userCategory }),
+      body: JSON.stringify({ userCategory, brandGuidelineId }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Failed to complete onboarding');

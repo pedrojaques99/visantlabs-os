@@ -1366,21 +1366,56 @@ router.post(
   }
 );
 
-// Complete onboarding
+// Complete onboarding — Fase 3 (brand-first): also persists the brand chosen
+// during the wizard. `brandGuidelineId` is the NEW optional param (added at the
+// end of the payload contract, repo rule) — real, minimal or demo brand id.
 router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId;
-    const { userCategory } = req.body;
+    const { userCategory, brandGuidelineId } = req.body;
 
     const updateData: Record<string, unknown> = { onboardingCompleted: true };
     if (userCategory && typeof userCategory === 'string') {
       updateData.userCategory = userCategory;
     }
 
+    if (brandGuidelineId !== undefined) {
+      if (typeof brandGuidelineId !== 'string' || !brandGuidelineId) {
+        return res.status(400).json({ error: 'Invalid brandGuidelineId' });
+      }
+      // Ownership check — never let a user pin someone else's brand.
+      const brand = await prisma.brandGuideline.findFirst({
+        where: { id: brandGuidelineId, userId },
+        select: { id: true },
+      });
+      if (!brand) {
+        return res.status(400).json({ error: 'Invalid brandGuidelineId' });
+      }
+      // Persist in the existing metadata bag (no new column).
+      const current = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { metadata: true },
+      });
+      updateData.metadata = {
+        ...((current?.metadata as Record<string, any> | null) || {}),
+        onboardingBrandGuidelineId: brandGuidelineId,
+      };
+    }
+
     await prisma.user.update({
       where: { id: userId },
       data: updateData,
     });
+
+    // Funnel event (§3.3) — best-effort, never blocks the response.
+    void (async () => {
+      const { trackFunnelEvent } = await import('../lib/funnelEvents.js');
+      await trackFunnelEvent('onboarding_step', userId, {
+        step: 'completed',
+        persona: typeof userCategory === 'string' ? userCategory : undefined,
+        skipped: brandGuidelineId === undefined,
+      });
+    })().catch(() => {});
 
     res.json({ message: 'Onboarding completed' });
   } catch (error: any) {

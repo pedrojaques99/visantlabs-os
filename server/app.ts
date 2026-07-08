@@ -32,6 +32,7 @@ import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
 import expertRoutes from './routes/expert.js';
 import telemetryRoutes from './routes/telemetry.js';
+import analyticsRoutes from './routes/analytics.js';
 import llmsRoutes from './routes/llms.js';
 import appRoutes from './routes/apps.js';
 import referralRoutes from './routes/referral.js';
@@ -360,6 +361,7 @@ export function createApp() {
     ['/admin-chat', adminChatRoutes],
     ['/chat', chatRoutes],
     ['/telemetry', telemetryRoutes],
+    ['/analytics', analyticsRoutes],
     ['/rpc', rpcRoutes],
     ['/api-keys', apiKeysRoutes],
     ['/pipeline', pipelineRoutes],

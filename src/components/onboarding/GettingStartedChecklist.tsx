@@ -1,13 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { onboardingApi } from '@/services/onboardingApi';
+import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
+import { useTranslation } from '@/hooks/useTranslation';
 
-// Lightweight first-run guide. State lives in localStorage (no schema/API coupling);
-// a step is marked done when the user follows it. Self-dismisses once dismissed or
-// fully complete. Matches the home TUI aesthetic (mono, neutral, brand-cyan only for
-// confirmed/active state).
+// Lightweight first-run guide. Dismiss lives in localStorage; step completion is
+// derived from GET /users/onboarding-progress when FEATURE_ONBOARDING_V2 is on
+// (fallback gracioso: endpoint indisponível → comportamento legacy por
+// localStorage, idêntico ao anterior). Matches the home TUI aesthetic (mono,
+// neutral, brand-cyan only for confirmed/active state).
 
 const LS_KEY = 'vsn_getting_started';
 
@@ -16,7 +21,15 @@ interface ChecklistState {
   done: Record<string, boolean>;
 }
 
-const STEPS = [
+interface Step {
+  id: string;
+  label: string;
+  route: string;
+  /** Server-derived completion (v2). Undefined = legacy localStorage mode. */
+  done?: boolean;
+}
+
+const LEGACY_STEPS = [
   { id: 'brand', label: 'Criar sua marca', route: '/brand-guidelines' },
   { id: 'generate', label: 'Gerar sua primeira peca', route: '/mockupmachine' },
   { id: 'share', label: 'Compartilhar ou exportar', route: '/brand-guidelines' },
@@ -42,10 +55,46 @@ const writeState = (state: ChecklistState) => {
 
 export const GettingStartedChecklist: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [state, setState] = useState<ChecklistState>(readState);
 
-  const completed = STEPS.filter((s) => state.done[s.id]).length;
-  const allDone = completed === STEPS.length;
+  // v2: progresso real do backend. `null` (404/erro) → fallback legacy.
+  const { data: progress } = useQuery({
+    queryKey: ['onboarding-progress'],
+    queryFn: () => onboardingApi.getProgress(),
+    enabled: FEATURE_ONBOARDING_V2,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+
+  const apiMode = FEATURE_ONBOARDING_V2 && !!progress;
+
+  const steps: Step[] = apiMode
+    ? [
+        {
+          id: 'brand',
+          label: t('onboarding.checklist.bringRealBrand'),
+          route: '/brand-guidelines',
+          done: progress!.hasRealBrand,
+        },
+        {
+          id: 'generate',
+          label: t('onboarding.checklist.generateOnBrand'),
+          route: '/mockupmachine',
+          done: progress!.hasOnBrandGeneration,
+        },
+        {
+          id: 'connect',
+          label: t('onboarding.checklist.connectAgent'),
+          route: '/developer/getting-started',
+          done: progress!.hasConnectedAgent,
+        },
+      ]
+    : LEGACY_STEPS.map((s) => ({ ...s }));
+
+  const isDone = (s: Step) => (apiMode ? !!s.done : !!state.done[s.id]);
+  const completed = steps.filter(isDone).length;
+  const allDone = completed === steps.length;
 
   const dismiss = useCallback(() => {
     setState((prev) => {
@@ -57,14 +106,17 @@ export const GettingStartedChecklist: React.FC = () => {
 
   const handleStep = useCallback(
     (id: string, route: string) => {
-      setState((prev) => {
-        const next = { ...prev, done: { ...prev.done, [id]: true } };
-        writeState(next);
-        return next;
-      });
+      // Legacy mode marca o passo localmente; v2 confia no backend.
+      if (!apiMode) {
+        setState((prev) => {
+          const next = { ...prev, done: { ...prev.done, [id]: true } };
+          writeState(next);
+          return next;
+        });
+      }
       navigate(route);
     },
-    [navigate]
+    [navigate, apiMode]
   );
 
   if (state.dismissed) return null;
@@ -102,12 +154,12 @@ export const GettingStartedChecklist: React.FC = () => {
             <motion.div
               className="h-full bg-brand-cyan"
               initial={false}
-              animate={{ width: `${(completed / STEPS.length) * 100}%` }}
+              animate={{ width: `${(completed / steps.length) * 100}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
           <span className="font-mono text-[10px] text-neutral-500">
-            {completed}/{STEPS.length}
+            {completed}/{steps.length}
           </span>
         </div>
 
@@ -123,8 +175,8 @@ export const GettingStartedChecklist: React.FC = () => {
           </div>
         ) : (
           <ul className="flex flex-col gap-1">
-            {STEPS.map((s) => {
-              const done = !!state.done[s.id];
+            {steps.map((s) => {
+              const done = isDone(s);
               return (
                 <li key={s.id}>
                   <button
