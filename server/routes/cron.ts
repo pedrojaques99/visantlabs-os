@@ -130,4 +130,23 @@ router.post('/reconcile-payments', verifyCronAuth, async (_req, res) => {
     res.status(500).json({ error: 'Reconciliation cron failed' });
   }
 });
+
+// Brand billing: archives excess active brands of users whose 7-day downgrade
+// grace window expired (least recently updated first). No-op unless
+// FEATURE_BRAND_BILLING=true. Safe to run repeatedly — quota is recomputed at
+// execution time and grace flags are cleared after processing.
+router.post('/enforce-brand-quota', verifyCronAuth, async (_req, res) => {
+  try {
+    const { archiveExcessBrands } = await import('../lib/brandQuota.js');
+    const result = await archiveExcessBrands();
+    res.json({
+      message: `Brand quota enforcement done: ${result.brandsArchived} brands archived across ${result.usersProcessed} users`,
+      ...result,
+    });
+  } catch (error: any) {
+    console.error('Brand quota enforcement cron error:', error);
+    res.status(500).json({ error: 'Brand quota cron failed' });
+  }
+});
+
 export default router;

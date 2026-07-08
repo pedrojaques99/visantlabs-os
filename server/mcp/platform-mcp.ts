@@ -193,6 +193,14 @@ async function computeQuotaMeta(userId: string) {
     return `${parseFloat((b / Math.pow(k, i)).toFixed(2))} ${units[i]}`;
   };
 
+  // Brand billing (Fase 2): active-brand quota rides along with credits.
+  let brand_quota: { used: number; max: number | null; tier: string } | null = null;
+  try {
+    brand_quota = await getBrandQuota(user);
+  } catch {
+    /* advisory — never fail quota meta over a brand count */
+  }
+
   return {
     credits_remaining,
     credits_used: creditsUsed,
@@ -200,6 +208,7 @@ async function computeQuotaMeta(userId: string) {
     monthly_credits: monthlyCredits,
     plan,
     can_generate,
+    brand_quota,
     reset_date: creditsResetDate?.toISOString() ?? null,
     storage: {
       used: storageUsed,
@@ -228,6 +237,7 @@ import {
   FREE_MONTHLY_CREDITS,
   refundCreditsWithRetry,
 } from '../lib/credits.js';
+import { getBrandQuota } from '../lib/brandQuota.js';
 
 function jsonResponse(data: unknown) {
   const text = JSON.stringify(data, null, 2);
@@ -260,6 +270,8 @@ function slimMeta(quota: any) {
     credits_remaining: quota.credits_remaining,
     can_generate: quota.can_generate,
     plan: quota.plan,
+    // Brand billing: {used, max, tier} — max === null means unlimited.
+    brand_quota: quota.brand_quota ?? null,
   };
 }
 

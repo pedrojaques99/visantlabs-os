@@ -1042,6 +1042,9 @@ export interface BrandGuideline {
   }>;
   // Organization
   folder?: string;
+  // Billing por marca ativa — archived = read-only, fora da quota, não gera.
+  status?: 'active' | 'archived';
+  archivedAt?: string;
   // Public sharing
   publicSlug?: string;
   isPublic?: boolean;

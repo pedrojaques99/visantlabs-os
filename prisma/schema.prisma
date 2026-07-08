@@ -65,6 +65,7 @@ model User {
   totpEnabled           Boolean   @default(false)
   totpBackupCodes       String[]
   welcomeEmailsSent     Int       @default(0)
+  metadata              Json?     // Billing/grandfathering flags: { legacyBrands?, agencyBrandQuantity?, brandQuotaGraceUntil?, brandQuotaExcess? }
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -583,6 +584,11 @@ model BrandGuideline {
   // Organization
   folder     String?   // User-defined folder for grouping guidelines
 
+  // Brand billing — "active" brands count toward the tier's maxBrands quota.
+  // Archived brands are read-only, don't consume a slot, and can't generate.
+  status     String    @default("active") // 'active' | 'archived'
+  archivedAt DateTime?
+
   // Public sharing
   publicSlug   String?    // Handled by sparse index manually
   isPublic     Boolean  @default(false)
@@ -611,6 +617,7 @@ model BrandGuideline {
   versions BrandGuidelineVersion[]
 
   @@index([userId])
+  @@index([userId, status])
   @@index([userId, folder])
   @@index([updatedAt])
   @@index([publicSlug])

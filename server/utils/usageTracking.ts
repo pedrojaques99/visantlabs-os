@@ -25,6 +25,7 @@ export interface UsageRecord {
   requestId?: string; // Optional request ID for tracking
   feature?: FeatureType; // Feature where credits were used (brandingmachine, mockupmachine, canvas)
   apiKeySource?: 'user' | 'system'; // Source of the API key used
+  byok?: boolean; // BYOK v2 analytics: true when the user's own key covered the AI cost (0 credits)
 }
 
 // Text generation pricing (tokens-based)
@@ -251,5 +252,8 @@ export function createUsageRecord(
     cost,
     feature,
     apiKeySource,
+    // BYOK v2: usage is still recorded (analytics) even though AI cost = 0 credits.
+    // Monetization of BYOK comes from maxBrands, not from a platform fee here.
+    byok: apiKeySource === 'user',
   };
 }

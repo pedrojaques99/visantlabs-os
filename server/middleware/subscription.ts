@@ -231,6 +231,36 @@ export const checkSubscription = async (
       });
     }
 
+    // Brand billing: generation referencing an ARCHIVED brand is blocked.
+    // Single choke point — every generation route (mockups, branding, video,
+    // moodboard) passes through checkSubscription with brandGuidelineId in the
+    // body/query, and the MCP reuses the same routes.
+    const brandGuidelineId =
+      (req.body && typeof req.body.brandGuidelineId === 'string' && req.body.brandGuidelineId) ||
+      (req.query && typeof req.query.brandGuidelineId === 'string' && req.query.brandGuidelineId) ||
+      null;
+    if (brandGuidelineId && ObjectId.isValid(brandGuidelineId)) {
+      try {
+        const brand = await db
+          .collection('brand_guidelines')
+          .findOne({ _id: new ObjectId(brandGuidelineId) }, { projection: { status: 1 } });
+        if (brand?.status === 'archived') {
+          console.warn('[checkSubscription] ❌ BLOCKED - brand is archived', {
+            userId,
+            brandGuidelineId,
+          });
+          return res.status(403).json({
+            error: 'brand_archived',
+            reason: 'brand_archived',
+            message:
+              'This brand is archived and cannot be used for generation. Unarchive it first.',
+          });
+        }
+      } catch {
+        /* lookup failure must not block generation — the route validates the brand itself */
+      }
+    }
+
     console.log('[checkSubscription] ✅ ALLOWED - User can generate', {
       ...decisionDetails,
       duration: `${Date.now() - startTime}ms`,

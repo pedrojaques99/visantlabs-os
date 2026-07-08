@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { brandGuidelineApi, type CodedError } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 export const BRAND_GUIDELINE_KEYS = {
   all: ['brand-guidelines'] as const,
   detail: (id: string) => ['brand-guidelines', id] as const,
+  quota: ['brand-quota'] as const,
 };
 const KEYS = BRAND_GUIDELINE_KEYS;
 
@@ -106,6 +107,68 @@ export function useIngestGuideline() {
       toast.success('Re-extraction complete');
     },
   });
+}
+
+/** Quota de marcas ativas do plano (used/max/tier) — `max: null` = ilimitado. */
+export function useBrandQuota(enabled = true) {
+  return useQuery({
+    queryKey: KEYS.quota,
+    queryFn: () => brandGuidelineApi.getBrandQuota(),
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+/** Muda `status` da marca com optimistic update na lista (padrão do useUpdateGuideline). */
+function useSetGuidelineStatus(status: 'active' | 'archived') {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      status === 'archived' ? brandGuidelineApi.archive(id) : brandGuidelineApi.unarchive(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: KEYS.all });
+      const previousList = qc.getQueryData<BrandGuideline[]>(KEYS.all);
+      if (previousList) {
+        qc.setQueryData(
+          KEYS.all,
+          previousList.map((g) =>
+            g.id === id
+              ? {
+                  ...g,
+                  status,
+                  archivedAt: status === 'archived' ? new Date().toISOString() : undefined,
+                }
+              : g
+          )
+        );
+      }
+      return { previousList };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousList) qc.setQueryData(KEYS.all, context.previousList);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: KEYS.quota });
+    },
+  });
+}
+
+export function useArchiveGuideline() {
+  return useSetGuidelineStatus('archived');
+}
+
+/**
+ * Reativar pode estourar a quota (402 `brand_limit`) — o caller passa `onBrandLimit`
+ * pra abrir o paywall com contexto em vez do toast genérico.
+ */
+export function useUnarchiveGuideline() {
+  return useSetGuidelineStatus('active');
+}
+
+/** True quando o erro é o 402 de limite de marcas do backend. */
+export function isBrandLimitError(err: unknown): err is CodedError {
+  return err instanceof Error && (err as CodedError).code === 'brand_limit';
 }
 
 export function useDuplicateGuideline() {

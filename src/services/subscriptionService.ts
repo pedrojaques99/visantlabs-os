@@ -74,6 +74,8 @@ export interface SubscriptionStatus {
   // Plan metadata for unlimited features
   planMetadata?: PlanMetadata | null;
   planName?: string;
+  // Billing por marca ativa (FEATURE_BRAND_BILLING) — null quando a flag server-side está off
+  brandQuota?: { used: number; max: number | null; tier: string } | null;
 }
 
 export interface UsageInfo {

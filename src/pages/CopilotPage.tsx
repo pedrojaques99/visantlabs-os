@@ -82,7 +82,7 @@ const CopilotLockedPreview: React.FC = () => {
               {t('auth.signIn')}
             </Button>
           ) : (
-            <Button variant="surface" size="sm" onClick={onSubscriptionModalOpen}>
+            <Button variant="surface" size="sm" onClick={() => onSubscriptionModalOpen()}>
               {t('copilot.locked.cta')}
             </Button>
           )}

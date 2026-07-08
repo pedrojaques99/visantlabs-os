@@ -85,6 +85,14 @@ import {
   findDuplicate,
   type AssetFingerprint,
 } from '../lib/brand/assetFingerprint.js';
+import { checkBrandActivation, brandLimitPayload } from '../lib/brandQuota.js';
+
+/** 403 payload for writes against an archived (read-only) brand. */
+const BRAND_ARCHIVED_PAYLOAD = {
+  error: 'brand_archived',
+  reason: 'brand_archived',
+  message: 'This brand is archived and read-only. Unarchive it to make changes.',
+} as const;
 
 /** Existing assets reshaped for duplicate lookup. */
 function fingerprintIndex(g: { media?: any; logos?: any }) {
@@ -374,6 +382,8 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
           figmaFileUrl: true,
           figmaFileKey: true,
           activeSections: true,
+          status: true,
+          archivedAt: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -404,6 +414,14 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         .status(400)
         .json({ error: 'Invalid brand guideline payload', issues: parsed.error.issues });
     }
+
+    // Brand billing gate — a new brand consumes an active slot. Existing brands
+    // are never blocked retroactively (gate lives only on create/unarchive).
+    const gate = await checkBrandActivation(req.userId);
+    if (!gate.allowed) {
+      return res.status(402).json(brandLimitPayload(gate.quota));
+    }
+
     const data: Partial<BrandGuideline> = parsed.data as any;
     const completeness = calculateCompleteness(data);
 
@@ -456,6 +474,11 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     });
 
     if (!existing) return res.status(404).json({ error: 'Not found' });
+
+    // Archived brands are read-only (billing: archived = no slot, no edits, no generation).
+    if ((existing as any).status === 'archived') {
+      return res.status(403).json(BRAND_ARCHIVED_PAYLOAD);
+    }
 
     const parsed = BrandGuidelinePatchSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -570,6 +593,12 @@ router.post('/:id/duplicate', apiRateLimiter, authenticate, async (req: AuthRequ
 
     if (!original) return res.status(404).json({ error: 'Not found' });
 
+    // A duplicate is a new active brand — same quota gate as creation.
+    const gate = await checkBrandActivation(req.userId);
+    if (!gate.allowed) {
+      return res.status(402).json(brandLimitPayload(gate.quota));
+    }
+
     // Clone the guideline with a new name
     const originalIdentity = (original.identity as any) || {};
     const clonedIdentity = {
@@ -619,6 +648,68 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
   } catch (error: any) {
     console.error('Error deleting brand guideline:', error);
     res.status(500).json({ error: 'Failed to delete brand guideline' });
+  }
+});
+
+// POST /api/brand-guidelines/:id/archive — archive a brand (owner-only).
+// Archived = read-only + doesn't consume an active slot + can't generate.
+// Billing never deletes data — this is the "fit into the limit" mechanism.
+router.post('/:id/archive', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Not found' });
+
+    if ((guideline as any).status === 'archived') {
+      return res.json({ guideline: { ...guideline, _id: guideline.id } });
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { status: 'archived', archivedAt: new Date() },
+    });
+
+    await invalidateBrandCache(guideline.id);
+    res.json({ guideline: { ...updated, _id: updated.id } });
+  } catch (error: any) {
+    console.error('Error archiving brand guideline:', error);
+    res.status(500).json({ error: 'Failed to archive brand guideline' });
+  }
+});
+
+// POST /api/brand-guidelines/:id/unarchive — reactivate a brand (owner-only).
+// Gated by the brand quota: reactivating consumes an active slot again.
+router.post('/:id/unarchive', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Not found' });
+
+    if ((guideline as any).status !== 'archived') {
+      return res.json({ guideline: { ...guideline, _id: guideline.id } });
+    }
+
+    const gate = await checkBrandActivation(req.userId);
+    if (!gate.allowed) {
+      return res.status(402).json(brandLimitPayload(gate.quota));
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { status: 'active', archivedAt: null },
+    });
+
+    await invalidateBrandCache(guideline.id);
+    res.json({ guideline: { ...updated, _id: updated.id } });
+  } catch (error: any) {
+    console.error('Error unarchiving brand guideline:', error);
+    res.status(500).json({ error: 'Failed to unarchive brand guideline' });
   }
 });
 
@@ -946,7 +1037,11 @@ router.post('/sync/:projectId', apiRateLimiter, authenticate, async (req: AuthRe
         },
       });
     } else {
-      // Create new
+      // Create new — consumes an active slot (same quota gate as creation).
+      const gate = await checkBrandActivation(req.userId);
+      if (!gate.allowed) {
+        return res.status(402).json(brandLimitPayload(gate.quota));
+      }
       guideline = await prisma.brandGuideline.create({
         data: {
           userId: req.userId,

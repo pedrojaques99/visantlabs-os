@@ -360,6 +360,10 @@ export async function chargeCredits(
   }
 
   if (isUserApiKey) {
+    // BYOK v2: the user's own key zeroes the AI cost, but usage is still
+    // recorded by the routes (usage_records with byok:true — see
+    // createUsageRecord). BYOK never bypasses maxBrands — platform monetization
+    // for BYOK users comes from active-brand billing (server/lib/brandQuota.ts).
     console.log(`${LOG_PREFIX} User API key — skipping deduction`, { userId });
     return {
       charged: false,

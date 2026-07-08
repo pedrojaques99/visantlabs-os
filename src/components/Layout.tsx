@@ -21,12 +21,18 @@ import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
 
+/** Contexto opcional do paywall — e.g. 402 brand_limit passa a mensagem e cai direto na aba de assinatura. */
+export type SubscriptionModalContext = {
+  reason?: 'brand_limit';
+  message?: string;
+};
+
 // Export context values for child components
 export type LayoutContextValue = {
   subscriptionStatus: SubscriptionStatus | null;
   isAuthenticated: boolean | null;
   isCheckingAuth: boolean;
-  onSubscriptionModalOpen: () => void;
+  onSubscriptionModalOpen: (context?: SubscriptionModalContext) => void;
   onCreditPackagesModalOpen: () => void;
   setSubscriptionStatus: (status: SubscriptionStatus | null) => void;
   user: User | null;
@@ -76,6 +82,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, []);
 
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [subscriptionModalContext, setSubscriptionModalContext] =
+    useState<SubscriptionModalContext | null>(null);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
   const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<
     'carteira' | 'creditos' | 'assinatura'
@@ -510,7 +518,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, []);
 
-  const onSubscriptionModalOpen = useCallback(() => setIsSubscriptionModalOpen(true), []);
+  const onSubscriptionModalOpen = useCallback((context?: SubscriptionModalContext) => {
+    setSubscriptionModalContext(context ?? null);
+    if (context?.reason === 'brand_limit') {
+      // Limite de marcas se resolve com upgrade de plano, não com pacote de créditos.
+      setCreditPackagesModalTab('assinatura');
+      setIsCreditPackagesModalOpen(true);
+      return;
+    }
+    setIsSubscriptionModalOpen(true);
+  }, []);
   const onCreditPackagesModalOpen = useCallback(() => {
     setCreditPackagesModalTab('creditos');
     setIsCreditPackagesModalOpen(true);
@@ -673,9 +690,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <CreditPackagesModal
           isOpen={isCreditPackagesModalOpen}
-          onClose={() => setIsCreditPackagesModalOpen(false)}
+          onClose={() => {
+            setIsCreditPackagesModalOpen(false);
+            setSubscriptionModalContext(null);
+          }}
           subscriptionStatus={subscriptionStatus}
           initialTab={creditPackagesModalTab}
+          contextMessage={subscriptionModalContext?.message ?? null}
         />
 
         {!location.pathname.startsWith('/budget/shared') &&

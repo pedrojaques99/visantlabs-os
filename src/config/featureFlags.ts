@@ -12,3 +12,6 @@ const readFlag = (value: string | undefined): boolean => {
 
 /** Gate da rota /copilot + entrada no catálogo de apps. */
 export const FEATURE_COPILOT = readFlag(import.meta.env.VITE_FEATURE_COPILOT);
+
+/** Gate do billing por marca ativa: quota meter, archive UI e tier Agency no pricing. */
+export const FEATURE_BRAND_BILLING = readFlag(import.meta.env.VITE_FEATURE_BRAND_BILLING);

@@ -16,6 +16,7 @@ import { validateSafeId } from '../utils/securityValidation.js';
 import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
+import { enforceBrandQuotaOnDowngrade, getBrandQuota } from '../lib/brandQuota.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -289,6 +290,8 @@ const fetchStripeTransactionsForCustomer = async (customerId: string) => {
 interface StripePlanInfo {
   tier: string;
   monthlyCredits: number;
+  /** Stripe subscription item quantity — for the agency tier, quantity = contracted active brands. */
+  quantity?: number;
 }
 
 const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo | null> => {
@@ -297,6 +300,7 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const priceId = subscription.items.data[0]?.price?.id;
+    const quantity = subscription.items.data[0]?.quantity;
 
     if (!priceId) return null;
 
@@ -316,9 +320,11 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
         ? 100
         : tier === 'pro'
           ? 500
-          : 3;
+          : tier === 'agency'
+            ? 1000
+            : 3;
 
-    return { tier, monthlyCredits };
+    return { tier, monthlyCredits, quantity };
   } catch (error) {
     console.error('Error fetching Stripe plan info:', error);
     return null;
@@ -537,6 +543,15 @@ router.get(
         }
       }
 
+      // Brand billing: expose the active-brand quota so the frontend mirrors
+      // the backend gate without any logic of its own (plan task 2.9).
+      let brandQuota: { used: number; max: number | null; tier: string } | null = null;
+      try {
+        brandQuota = await getBrandQuota(user);
+      } catch {
+        /* advisory — never break subscription-status over a quota lookup */
+      }
+
       res.json({
         subscriptionStatus,
         subscriptionTier,
@@ -554,6 +569,7 @@ router.get(
           : freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0,
         planMetadata,
         planName,
+        brandQuota,
       });
     } catch (error) {
       next(error);
@@ -624,7 +640,9 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
             ? 100
             : tier === 'pro'
               ? 500
-              : 3;
+              : tier === 'agency'
+                ? 1000
+                : 3;
         return res.json({
           priceId,
           tier,
@@ -1846,21 +1864,24 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 currentTier: user.subscriptionTier,
               });
 
-              const updateResult = await db.collection('users').updateOne(
-                { _id: user._id },
-                {
-                  $set: {
-                    subscriptionStatus: 'active',
-                    subscriptionTier: tier,
-                    stripeSubscriptionId: subscriptionId,
-                    stripeCustomerId: customerId, // Ensure customerId is set
-                    subscriptionEndDate: creditsResetDate,
-                    monthlyCredits: monthlyCredits,
-                    creditsUsed: 0, // Reset credits when subscription starts
-                    creditsResetDate: creditsResetDate,
-                  },
-                }
-              );
+              const checkoutSetData: Record<string, any> = {
+                subscriptionStatus: 'active',
+                subscriptionTier: tier,
+                stripeSubscriptionId: subscriptionId,
+                stripeCustomerId: customerId, // Ensure customerId is set
+                subscriptionEndDate: creditsResetDate,
+                monthlyCredits: monthlyCredits,
+                creditsUsed: 0, // Reset credits when subscription starts
+                creditsResetDate: creditsResetDate,
+              };
+              // Agency tier: Stripe quantity = contracted active brands (brand quota).
+              if (tier === 'agency' && planInfo?.quantity && planInfo.quantity > 1) {
+                checkoutSetData['metadata.agencyBrandQuantity'] = planInfo.quantity;
+              }
+
+              const updateResult = await db
+                .collection('users')
+                .updateOne({ _id: user._id }, { $set: checkoutSetData });
 
               if (updateResult.modifiedCount > 0) {
                 console.log('✅ User subscription activated successfully:', {
@@ -2374,9 +2395,25 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             console.log('🔄 Credits reset due to renewal or plan change');
           }
 
+          // Agency tier: Stripe quantity = contracted active brands (brand quota).
+          // Keep it in sync on every update; clear it when the plan is no longer agency.
+          const updateOps: Record<string, any> = { $set: updateData };
+          if (tier === 'agency' && planInfo?.quantity && planInfo.quantity >= 1) {
+            updateData['metadata.agencyBrandQuantity'] = planInfo.quantity;
+          } else if (tier !== 'agency' && user.metadata?.agencyBrandQuantity !== undefined) {
+            updateOps.$unset = { 'metadata.agencyBrandQuantity': '' };
+          }
+
           const updateResult = await db
             .collection('users')
-            .updateOne({ stripeCustomerId: customerId }, { $set: updateData });
+            .updateOne({ stripeCustomerId: customerId }, updateOps);
+
+          // Downgrade handling (brand billing): if the new plan/quantity leaves the
+          // user with more active brands than allowed, record a 7-day grace window
+          // instead of archiving anything now. Never blocks the webhook.
+          enforceBrandQuotaOnDowngrade(user._id.toString()).catch((err: any) =>
+            console.error('⚠️ enforceBrandQuotaOnDowngrade failed:', err?.message)
+          );
 
           if (updateResult.modifiedCount > 0) {
             console.log('✅ Subscription updated successfully:', {
@@ -2454,6 +2491,12 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             if (user.email) {
               revokeBoxyDownloads(user.email, subscription.id).catch(() => {});
             }
+
+            // Downgrade handling (brand billing): back to free tier — record the
+            // 7-day grace window for excess active brands (never archives now).
+            enforceBrandQuotaOnDowngrade(user._id.toString()).catch((err: any) =>
+              console.error('⚠️ enforceBrandQuotaOnDowngrade failed:', err?.message)
+            );
           } else {
             console.warn('⚠️ Subscription cancellation returned 0 modified documents:', {
               userId: user._id,

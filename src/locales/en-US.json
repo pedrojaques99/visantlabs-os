@@ -499,6 +499,29 @@
     "tryAgain": "Try Again",
     "userMenu": "User menu"
   },
+  "brandQuota": {
+    "meter": "{used} of {max} active brands",
+    "meterUnlimited": "{used} active brands · unlimited",
+    "upgrade": "Upgrade",
+    "limitMessage": "Active brand limit reached — {used}/{max}. Upgrade your plan to activate more brands.",
+    "archive": "Archive",
+    "unarchive": "Reactivate",
+    "archivedBadge": "Archived",
+    "archivedSection": "Archived ({count})",
+    "archiveConfirmTitle": "Archive this brand?",
+    "archiveConfirmMessage": "The brand becomes read-only and stops counting toward your active brand limit. Nothing is deleted — you can reactivate it anytime.",
+    "archiveSuccess": "Brand archived",
+    "archiveError": "Failed to archive brand",
+    "unarchiveSuccess": "Brand reactivated",
+    "unarchiveError": "Failed to reactivate brand",
+    "brandActions": "Brand actions",
+    "byok": {
+      "activeTitle": "BYOK Mode Active",
+      "activeDesc": "Your key covers the generation; your plan covers the platform — brand context, storage and orchestration.",
+      "inactiveTitle": "Using Platform Credits",
+      "inactiveDesc": "Each generation deducts credits from your plan's fair-use. Add your own API key in Settings to cover generation costs yourself."
+    }
+  },
   "brandGuidelines": {
     "accessibility": {
       "placeholder": "Enter accessibility guidelines...",
@@ -2982,6 +3005,39 @@
       "rateLimitLabel": "Rate limit by plan",
       "perCallLabel": "Per-call credit cost",
       "cta": "Get API key & docs"
+    },
+    "hero": {
+      "subtitle": "Your brand as context — priced by active brand. Copilot, MCP and seats per tier; credits are generation fair-use.",
+      "tier": "Plan",
+      "brands": "Active brands",
+      "copilot": "Copilot",
+      "mcp": "MCP / API",
+      "seats": "Seats",
+      "credits": "Credits/mo",
+      "copilotPreview": "preview",
+      "tiers": {
+        "free": "Free",
+        "premium": "Premium",
+        "pro": "Pro",
+        "agency": "Agency"
+      }
+    },
+    "agency": {
+      "title": "Agency",
+      "badge": "per active brand",
+      "subtitle": "The plan that grows with your client roster — unlimited seats, priority Copilot.",
+      "perBrand": "/active brand/mo",
+      "brandsLabel": "active brands",
+      "fewerBrands": "Fewer brands",
+      "moreBrands": "More brands",
+      "perMonth": "/month",
+      "minNote": "Minimum of 5 active brands. Includes 1000 credits + generation fair-use.",
+      "cta": "Talk to us"
+    },
+    "fairUse": {
+      "title": "Generation fair-use",
+      "desc": "Credits cover AI generation (images, video, mockups). Every plan includes a monthly fair-use amount — top up anytime in the Credits tab.",
+      "byok": "BYOK: your key covers the generation; the plan covers the platform."
     }
   },
   "privacy": {

@@ -25,6 +25,8 @@ import {
   FolderOpen,
   Zap,
   Eye,
+  Archive,
+  ArchiveRestore,
 } from 'lucide-react';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
@@ -34,6 +36,9 @@ import {
   useDeleteGuideline,
   useUpdateGuideline,
 } from '@/hooks/queries/useBrandGuidelines';
+import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
   selectedId: string | null;
@@ -55,6 +60,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   const duplicateMutation = useDuplicateGuideline();
   const deleteMutation = useDeleteGuideline();
   const updateMutation = useUpdateGuideline();
+  const archiveActions = useBrandArchiveActions();
 
   const { data: recentProjects = [] } = useQuery({
     queryKey: ['creative-projects-brand', selectedId],
@@ -271,6 +277,32 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                         <Copy size={12} />
                         Duplicate
                       </DropdownMenuItem>
+                      {FEATURE_BRAND_BILLING &&
+                        (isArchived(g) ? (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              archiveActions.unarchive(g.id!);
+                            }}
+                            className="text-xs gap-2"
+                            disabled={archiveActions.isUnarchiving}
+                          >
+                            <ArchiveRestore size={12} />
+                            {t('brandQuota.unarchive')}
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              archiveActions.requestArchive(g.id!);
+                            }}
+                            className="text-xs gap-2"
+                            disabled={archiveActions.isArchiving}
+                          >
+                            <Archive size={12} />
+                            {t('brandQuota.archive')}
+                          </DropdownMenuItem>
+                        ))}
                       <DropdownMenuItem
                         onClick={(e) => handleDelete(g.id!, e as any)}
                         className="text-xs gap-2 text-destructive focus:text-destructive"
@@ -360,6 +392,8 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      {FEATURE_BRAND_BILLING && <ConfirmationModal {...archiveActions.confirmModalProps} />}
     </div>
   );
 };

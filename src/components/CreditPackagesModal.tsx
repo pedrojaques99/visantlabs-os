@@ -102,6 +102,8 @@ interface CreditPackagesModalProps {
   onClose: () => void;
   subscriptionStatus?: SubscriptionStatus | null;
   initialTab?: 'carteira' | 'creditos' | 'assinatura';
+  /** Motivo do paywall (e.g. "limite de marcas atingido — 3/3") mostrado como banner. */
+  contextMessage?: string | null;
 }
 
 const formatDate = (dateString: string | null): string => {
@@ -118,6 +120,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   onClose,
   subscriptionStatus = null,
   initialTab = 'creditos',
+  contextMessage = null,
 }) => {
   useScrollLock(isOpen);
   const { t } = useTranslation();
@@ -293,6 +296,12 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     : t('creditsPackages.title') || 'COMPRAR'}
                 </MicroTitle>
               </div>
+
+              {contextMessage && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-xs leading-relaxed">
+                  {contextMessage}
+                </div>
+              )}
 
               {/* 3-tab bar */}
               <SegmentedControl

@@ -38,6 +38,8 @@ import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { STORAGE_PLANS, getCreditsEstimate } from './docs/data/pricingData';
+import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
+import { Layers, Bot, Plug, Users, Mail } from 'lucide-react';
 
 // API tier data for developer pricing tab
 const API_TIERS = [
@@ -82,6 +84,172 @@ const CREDIT_COSTS = [
   { operation: 'Video generation (standard)', credits: '40' },
   { operation: 'Text / analysis call', credits: '0 (token-based)' },
 ];
+
+// ── FEATURE_BRAND_BILLING: pricing por marca ativa (plano Revenue-Centric §2.14) ──
+
+const AGENCY_PRICE_PER_BRAND_BRL = 79;
+const AGENCY_MIN_BRANDS = 5;
+const AGENCY_MAX_BRANDS = 50;
+
+/** Valores por tier (tabela do plano) — estático até os Products do Stripe existirem. */
+const BRAND_TIER_ROWS = [
+  { id: 'free', brands: '1', copilot: 'preview', seats: '0', credits: '20' },
+  { id: 'premium', brands: '3', copilot: '✓', seats: '1', credits: '100' },
+  { id: 'pro', brands: '10', copilot: '✓', seats: '3', credits: '500' },
+  { id: 'agency', brands: '∞', copilot: '✓+', seats: '∞', credits: '1000+' },
+] as const;
+
+/** Herói do pricing v2: a unidade da fatura é a marca ativa, não o token. */
+const BrandBillingHero: React.FC<{ t: (k: string) => string }> = ({ t }) => {
+  const pillars = [
+    { icon: Layers, label: t('pricing.hero.brands') },
+    { icon: Bot, label: t('pricing.hero.copilot') },
+    { icon: Plug, label: t('pricing.hero.mcp') },
+    { icon: Users, label: t('pricing.hero.seats') },
+  ];
+  return (
+    <div className="mb-10 space-y-6">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {pillars.map(({ icon: Icon, label }) => (
+          <span
+            key={label}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-neutral-300"
+          >
+            <Icon size={12} className="text-brand-cyan" />
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {/* Comparativo por tier — o que cada plano destrava */}
+      <GlassPanel padding="none" className="overflow-x-auto rounded-2xl">
+        <table className="w-full text-sm min-w-[480px]">
+          <thead>
+            <tr className="border-b border-white/10 text-[11px] font-mono uppercase tracking-widest text-neutral-500">
+              <th className="text-left py-3 px-4 font-medium">{t('pricing.hero.tier')}</th>
+              <th className="text-center py-3 px-2 font-medium">{t('pricing.hero.brands')}</th>
+              <th className="text-center py-3 px-2 font-medium">{t('pricing.hero.copilot')}</th>
+              <th className="text-center py-3 px-2 font-medium">{t('pricing.hero.seats')}</th>
+              <th className="text-center py-3 px-4 font-medium">{t('pricing.hero.credits')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {BRAND_TIER_ROWS.map((row) => (
+              <tr key={row.id} className="border-b border-white/[0.03] last:border-0">
+                <td className="py-2.5 px-4 font-medium text-neutral-200">
+                  {t(`pricing.hero.tiers.${row.id}`)}
+                </td>
+                <td className="py-2.5 px-2 text-center font-mono text-neutral-300">{row.brands}</td>
+                <td className="py-2.5 px-2 text-center font-mono text-neutral-400">
+                  {row.copilot === 'preview' ? t('pricing.hero.copilotPreview') : row.copilot}
+                </td>
+                <td className="py-2.5 px-2 text-center font-mono text-neutral-300">{row.seats}</td>
+                <td className="py-2.5 px-4 text-center font-mono text-neutral-400">
+                  {row.credits}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </GlassPanel>
+    </div>
+  );
+};
+
+/** Card estático do tier Agency com mini-calculadora N marcas × R$79 (mín. 5). */
+const AgencyTierCard: React.FC<{
+  t: (k: string, params?: Record<string, string | number>) => string;
+}> = ({ t }) => {
+  const [brands, setBrands] = useState(AGENCY_MIN_BRANDS);
+  const total = brands * AGENCY_PRICE_PER_BRAND_BRL;
+  return (
+    <div className="mt-8 max-w-2xl mx-auto">
+      <GlassPanel padding="none" className="overflow-hidden rounded-2xl">
+        <div className="p-6 space-y-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-neutral-100">{t('pricing.agency.title')}</h3>
+                <Badge className="bg-brand-cyan/20 text-brand-cyan border-none text-[10px] px-2 py-0">
+                  {t('pricing.agency.badge')}
+                </Badge>
+              </div>
+              <p className="text-sm text-neutral-500 mt-1">{t('pricing.agency.subtitle')}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-2xl font-bold text-brand-cyan font-mono">
+                R${AGENCY_PRICE_PER_BRAND_BRL}
+              </span>
+              <p className="text-[11px] text-neutral-500 font-mono">
+                {t('pricing.agency.perBrand')}
+              </p>
+            </div>
+          </div>
+
+          {/* Mini-calculadora — mesmo padrão minus/plus do seletor de créditos */}
+          <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => setBrands((n) => Math.max(AGENCY_MIN_BRANDS, n - 1))}
+                disabled={brands <= AGENCY_MIN_BRANDS}
+                className="p-2 rounded-md text-neutral-400 hover:text-brand-cyan disabled:opacity-30"
+                aria-label={t('pricing.agency.fewerBrands')}
+              >
+                <Minus size={16} />
+              </Button>
+              <div className="text-center min-w-[72px]">
+                <span className="text-2xl font-bold text-neutral-100 font-mono tabular-nums">
+                  {brands}
+                </span>
+                <p className="text-[10px] text-neutral-500 font-mono uppercase">
+                  {t('pricing.agency.brandsLabel')}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => setBrands((n) => Math.min(AGENCY_MAX_BRANDS, n + 1))}
+                disabled={brands >= AGENCY_MAX_BRANDS}
+                className="p-2 rounded-md text-neutral-400 hover:text-brand-cyan disabled:opacity-30"
+                aria-label={t('pricing.agency.moreBrands')}
+              >
+                <Plus size={16} />
+              </Button>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-neutral-100 font-mono tabular-nums">
+                R${total.toLocaleString('pt-BR')}
+              </span>
+              <p className="text-[10px] text-neutral-500 font-mono uppercase">
+                {t('pricing.agency.perMonth')}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-neutral-600 font-mono">{t('pricing.agency.minNote')}</p>
+
+          <Button variant="brand" className="w-full" asChild>
+            <a href="mailto:contato@visant.co?subject=Agency%20plan">
+              <Mail size={14} className="mr-2" />
+              {t('pricing.agency.cta')}
+            </a>
+          </Button>
+        </div>
+      </GlassPanel>
+    </div>
+  );
+};
+
+/** Créditos rebaixados a fair-use de geração — o plano cobre a plataforma. */
+const FairUseNote: React.FC<{ t: (k: string) => string }> = ({ t }) => (
+  <div className="mt-10 max-w-2xl mx-auto p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 space-y-1.5">
+    <h4 className="text-xs font-mono uppercase tracking-widest text-neutral-500">
+      {t('pricing.fairUse.title')}
+    </h4>
+    <p className="text-sm text-neutral-400 leading-relaxed">{t('pricing.fairUse.desc')}</p>
+    <p className="text-xs text-neutral-500 leading-relaxed">{t('pricing.fairUse.byok')}</p>
+  </div>
+);
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -307,7 +475,7 @@ export const PricingPage: React.FC = () => {
               {t('pricing.title')}
             </h1>
             <p className="text-neutral-500 font-mono text-sm md:text-base max-w-2xl mx-auto">
-              {t('pricing.subtitle')}
+              {FEATURE_BRAND_BILLING ? t('pricing.hero.subtitle') : t('pricing.subtitle')}
             </p>
           </div>
 
@@ -353,7 +521,14 @@ export const PricingPage: React.FC = () => {
             <Tabs value={activeTab} className="w-full">
               {/* Subscription Plans View */}
               <TabsContent value="subscriptions" className="mt-0 outline-none">
+                {FEATURE_BRAND_BILLING && <BrandBillingHero t={t} />}
                 <SubscriptionPlansGrid currencyInfo={currencyInfo} />
+                {FEATURE_BRAND_BILLING && (
+                  <>
+                    <AgencyTierCard t={t} />
+                    <FairUseNote t={t} />
+                  </>
+                )}
               </TabsContent>
 
               {/* Credit Packages View */}

@@ -499,6 +499,29 @@
     "tryAgain": "Tentar Novamente",
     "userMenu": "Menu do usuário"
   },
+  "brandQuota": {
+    "meter": "{used} de {max} marcas ativas",
+    "meterUnlimited": "{used} marcas ativas · ilimitado",
+    "upgrade": "Upgrade",
+    "limitMessage": "Limite de marcas ativas atingido — {used}/{max}. Faça upgrade do plano para ativar mais marcas.",
+    "archive": "Arquivar",
+    "unarchive": "Reativar",
+    "archivedBadge": "Arquivada",
+    "archivedSection": "Arquivadas ({count})",
+    "archiveConfirmTitle": "Arquivar esta marca?",
+    "archiveConfirmMessage": "A marca fica em modo leitura e deixa de contar no seu limite de marcas ativas. Nada é apagado — você pode reativar quando quiser.",
+    "archiveSuccess": "Marca arquivada",
+    "archiveError": "Falha ao arquivar a marca",
+    "unarchiveSuccess": "Marca reativada",
+    "unarchiveError": "Falha ao reativar a marca",
+    "brandActions": "Ações da marca",
+    "byok": {
+      "activeTitle": "Modo BYOK ativo",
+      "activeDesc": "Sua key cobre a geração; o plano cobre a plataforma — contexto de marca, storage e orquestração.",
+      "inactiveTitle": "Usando créditos da plataforma",
+      "inactiveDesc": "Cada geração desconta créditos do fair-use do seu plano. Adicione sua própria API key em Configurações para cobrir o custo de geração você mesmo."
+    }
+  },
   "brandGuidelines": {
     "accessibility": {
       "placeholder": "Digite as diretrizes de acessibilidade...",
@@ -2986,6 +3009,39 @@
       "rateLimitLabel": "Limite de requisições por plano",
       "perCallLabel": "Custo em créditos por chamada",
       "cta": "Obter chave de API & docs"
+    },
+    "hero": {
+      "subtitle": "Sua marca como contexto — cobrada por marca ativa. Copilot, MCP e seats por tier; créditos são fair-use de geração.",
+      "tier": "Plano",
+      "brands": "Marcas ativas",
+      "copilot": "Copilot",
+      "mcp": "MCP / API",
+      "seats": "Seats",
+      "credits": "Créditos/mês",
+      "copilotPreview": "preview",
+      "tiers": {
+        "free": "Free",
+        "premium": "Premium",
+        "pro": "Pro",
+        "agency": "Agency"
+      }
+    },
+    "agency": {
+      "title": "Agency",
+      "badge": "por marca ativa",
+      "subtitle": "O plano que cresce com a sua carteira de clientes — seats ilimitados, Copilot com prioridade.",
+      "perBrand": "/marca ativa/mês",
+      "brandsLabel": "marcas ativas",
+      "fewerBrands": "Menos marcas",
+      "moreBrands": "Mais marcas",
+      "perMonth": "/mês",
+      "minNote": "Mínimo de 5 marcas ativas. Inclui 1000 créditos + fair-use de geração.",
+      "cta": "Falar com a gente"
+    },
+    "fairUse": {
+      "title": "Fair-use de geração",
+      "desc": "Créditos cobrem a geração com IA (imagens, vídeo, mockups). Todo plano inclui um volume mensal de fair-use — recarregue quando quiser na aba Créditos.",
+      "byok": "BYOK: sua key cobre a geração; o plano cobre a plataforma."
     }
   },
   "privacy": {

@@ -2,7 +2,9 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuidelines, useBrandQuota } from '@/hooks/queries/useBrandGuidelines';
+import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { SEO } from '@/components/SEO';
@@ -27,6 +29,10 @@ import {
   ArrowUpDown,
   FileText,
   Figma,
+  Archive,
+  ArchiveRestore,
+  MoreVertical,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,8 +41,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   const { t } = useTranslation();
@@ -117,11 +125,18 @@ const BrandCard = ({
   guideline,
   onSelect,
   index,
+  archived = false,
+  onArchive,
+  onUnarchive,
 }: {
   guideline: BrandGuideline;
   onSelect: (g: BrandGuideline) => void;
   index: number;
+  archived?: boolean;
+  onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   const [coverLoaded, setCoverLoaded] = useState(false);
   const coverUrl = getCoverUrl(guideline);
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
@@ -141,7 +156,10 @@ const BrandCard = ({
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
       onClick={() => onSelect(guideline)}
-      className="group relative flex flex-col sm:flex-col rounded-xl border border-neutral-800 bg-neutral-900 hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer"
+      className={cn(
+        'group relative flex flex-col sm:flex-col rounded-xl border border-neutral-800 bg-neutral-900 hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer',
+        archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
+      )}
     >
       {/* Cover */}
       <div className="relative w-full sm:w-full h-20 sm:h-24 shrink-0 overflow-hidden bg-neutral-800">
@@ -166,6 +184,56 @@ const BrandCard = ({
 
         {/* Badges overlay */}
         <div className="absolute top-2 right-2 flex items-center gap-1.5">
+          {archived && (
+            <Badge
+              variant="secondary"
+              className="bg-white/10 backdrop-blur-sm border-white/10 text-neutral-400 text-[10px] px-1.5 py-0 h-5 gap-1"
+            >
+              <Archive size={9} />
+              {t('brandQuota.archivedBadge')}
+            </Badge>
+          )}
+          {(onArchive || onUnarchive) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  role="button"
+                  aria-label={t('brandQuota.brandActions')}
+                  className="p-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical size={11} className="text-white/80" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[130px]">
+                {archived
+                  ? onUnarchive && (
+                      <DropdownMenuItem
+                        className="text-xs gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUnarchive(guideline.id!);
+                        }}
+                      >
+                        <ArchiveRestore size={12} />
+                        {t('brandQuota.unarchive')}
+                      </DropdownMenuItem>
+                    )
+                  : onArchive && (
+                      <DropdownMenuItem
+                        className="text-xs gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onArchive(guideline.id!);
+                        }}
+                      >
+                        <Archive size={12} />
+                        {t('brandQuota.archive')}
+                      </DropdownMenuItem>
+                    )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {guideline.isPublic && (
             <Badge
               variant="secondary"
@@ -234,16 +302,67 @@ const BrandCard = ({
 
 type SortMode = 'recent' | 'name' | 'completeness';
 
+/**
+ * "X de Y marcas ativas" — meter discreto do plano; Y = ∞ para agency/ilimitado.
+ * CTA de upgrade só quando a quota está cheia (padrão paywall_hit do plano).
+ */
+const BrandQuotaMeter = ({
+  used,
+  max,
+  onUpgrade,
+}: {
+  used: number;
+  max: number | null;
+  onUpgrade: () => void;
+}) => {
+  const { t } = useTranslation();
+  const unlimited = max === null;
+  const full = !unlimited && used >= max;
+  const pct = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(max, 1)) * 100));
+
+  return (
+    <div className="flex items-center gap-2.5 shrink-0">
+      {!unlimited && (
+        <div className="hidden sm:block w-16 h-1 rounded-full bg-neutral-800 overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              full ? 'bg-warning' : 'bg-white/30'
+            )}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+      <span className="text-[11px] text-neutral-600 tabular-nums whitespace-nowrap">
+        {unlimited
+          ? t('brandQuota.meterUnlimited', { used })
+          : t('brandQuota.meter', { used, max })}
+      </span>
+      {full && (
+        <Button variant="subtle" size="sm" className="h-6 px-2 text-[11px]" onClick={onUpgrade}>
+          {t('brandQuota.upgrade')}
+        </Button>
+      )}
+    </div>
+  );
+};
+
 const BrandGrid = ({
   guidelines,
   onSelect,
+  onArchive,
+  onUnarchive,
 }: {
   guidelines: BrandGuideline[];
   onSelect: (g: BrandGuideline) => void;
+  onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
 }) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('recent');
+  const [showArchived, setShowArchived] = useState(false);
 
   const folders = useMemo(() => {
     const s = new Set<string>();
@@ -276,6 +395,12 @@ const BrandGrid = ({
     }
     return list;
   }, [guidelines, search, folderFilter, sort]);
+
+  // Marcas arquivadas saem do grid principal e viram seção colapsável no fim
+  // (billing por marca ativa). Sem a flag, tudo cai em `activeList` como antes.
+  const billingOn = FEATURE_BRAND_BILLING && (onArchive || onUnarchive);
+  const activeList = billingOn ? filtered.filter((g) => !isArchived(g)) : filtered;
+  const archivedList = billingOn ? filtered.filter(isArchived) : [];
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-4">
@@ -367,10 +492,47 @@ const BrandGrid = ({
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-        {filtered.map((g, i) => (
-          <BrandCard key={g.id} guideline={g} onSelect={onSelect} index={i} />
+        {activeList.map((g, i) => (
+          <BrandCard
+            key={g.id}
+            guideline={g}
+            onSelect={onSelect}
+            index={i}
+            onArchive={billingOn ? onArchive : undefined}
+          />
         ))}
       </div>
+
+      {/* Archived section — atenuada, colapsável, no fim da lista */}
+      {archivedList.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className="flex items-center gap-1.5 text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors"
+          >
+            <ChevronDown
+              size={12}
+              className={cn('transition-transform', !showArchived && '-rotate-90')}
+            />
+            <Archive size={11} />
+            {t('brandQuota.archivedSection', { count: archivedList.length })}
+          </button>
+          {showArchived && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {archivedList.map((g, i) => (
+                <BrandCard
+                  key={g.id}
+                  guideline={g}
+                  onSelect={onSelect}
+                  index={i}
+                  archived
+                  onUnarchive={billingOn ? onUnarchive : undefined}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {filtered.length === 0 && search.trim() && (
         <div className="flex flex-col items-center py-12 gap-3">
@@ -386,7 +548,7 @@ export const BrandGuidelinesPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAuthenticated } = useLayout();
+  const { isAuthenticated, onSubscriptionModalOpen } = useLayout();
 
   const urlGuidelineId = searchParams.get('id');
   const [selectedId, setSelectedId] = useState<string | null>(urlGuidelineId);
@@ -396,6 +558,21 @@ export const BrandGuidelinesPage: React.FC = () => {
 
   // Server state via react-query — dashboard only needs the list.
   const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
+
+  // Billing por marca ativa (flag FEATURE_BRAND_BILLING)
+  const { data: brandQuota } = useBrandQuota(FEATURE_BRAND_BILLING && isAuthenticated === true);
+  const archiveActions = useBrandArchiveActions();
+
+  const handleQuotaUpgrade = useCallback(() => {
+    if (!brandQuota) return;
+    onSubscriptionModalOpen({
+      reason: 'brand_limit',
+      message: t('brandQuota.limitMessage', {
+        used: brandQuota.used,
+        max: brandQuota.max ?? '∞',
+      }),
+    });
+  }, [brandQuota, onSubscriptionModalOpen, t]);
 
   // Auth guard
   React.useEffect(() => {
@@ -525,6 +702,13 @@ export const BrandGuidelinesPage: React.FC = () => {
                   </h1>
                 </div>
               </div>
+              {FEATURE_BRAND_BILLING && brandQuota && (
+                <BrandQuotaMeter
+                  used={brandQuota.used}
+                  max={brandQuota.max}
+                  onUpgrade={handleQuotaUpgrade}
+                />
+              )}
             </div>
 
             {/* Content — dashboard/list. The per-brand editor lives in the unified
@@ -550,13 +734,20 @@ export const BrandGuidelinesPage: React.FC = () => {
                   animate={{ opacity: 1 }}
                   className="flex flex-col gap-8 md:gap-16 items-start w-full"
                 >
-                  <BrandGrid guidelines={guidelines} onSelect={handleSelect} />
+                  <BrandGrid
+                    guidelines={guidelines}
+                    onSelect={handleSelect}
+                    onArchive={FEATURE_BRAND_BILLING ? archiveActions.requestArchive : undefined}
+                    onUnarchive={FEATURE_BRAND_BILLING ? archiveActions.unarchive : undefined}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </main>
       </div>
+
+      {FEATURE_BRAND_BILLING && <ConfirmationModal {...archiveActions.confirmModalProps} />}
 
       <BrandGuidelineWizardModal
         isOpen={isWizardOpen}

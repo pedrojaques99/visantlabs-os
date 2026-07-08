@@ -25,11 +25,30 @@ const getAuthHeaders = () => {
  * `.code` property, so callers can map codes (e.g. `vision_not_configured`) to
  * friendly, user-facing copy instead of leaking raw "Set GEMINI_API_KEY…" text.
  */
-const codedError = (body: any, fallback: string): Error & { code?: string } => {
-  const err = new Error(body?.message || body?.error || fallback) as Error & { code?: string };
+const codedError = (body: any, fallback: string): CodedError => {
+  const err = new Error(body?.message || body?.error || fallback) as CodedError;
   if (typeof body?.error === 'string') err.code = body.error;
+  // Billing errors (402 brand_limit) carry quota context for the paywall UI.
+  if (typeof body?.reason === 'string') err.code = body.reason;
+  if (typeof body?.used === 'number') err.used = body.used;
+  if (typeof body?.max === 'number' || body?.max === null) err.max = body.max;
+  if (typeof body?.upgradeUrl === 'string') err.upgradeUrl = body.upgradeUrl;
   return err;
 };
+
+export type CodedError = Error & {
+  code?: string;
+  used?: number;
+  max?: number | null;
+  upgradeUrl?: string;
+};
+
+/** Quota de marcas ativas do plano — `max: null` = ilimitado (Agency). */
+export interface BrandQuota {
+  used: number;
+  max: number | null;
+  tier: string;
+}
 
 export const brandGuidelineApi = {
   async getAll(params?: { limit?: number; offset?: number }): Promise<BrandGuideline[]> {
@@ -72,10 +91,57 @@ export const brandGuidelineApi = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) throw new Error('Failed to create brand guideline');
+    if (!response.ok) {
+      // 402 brand_limit precisa chegar tipado no caller pra abrir o paywall certo.
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to create brand guideline');
+    }
     const result = await response.json();
     trackEvent('brand_created', { source: 'guideline' });
     return result.guideline;
+  },
+
+  /** Arquiva a marca — sai da quota, vira read-only, não gera. Nunca deleta. */
+  async archive(id: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/archive`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to archive brand guideline');
+    }
+    const result = await response.json();
+    return result.guideline;
+  },
+
+  /** Reativa a marca — pode falhar com 402 `brand_limit` se a quota estiver cheia. */
+  async unarchive(id: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/unarchive`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to unarchive brand guideline');
+    }
+    const result = await response.json();
+    return result.guideline;
+  },
+
+  /** Quota de marcas ativas do plano (`GET /payments/subscription-status` → `brandQuota`). */
+  async getBrandQuota(): Promise<BrandQuota | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/subscription-status`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data?.brandQuota ?? null;
+    } catch {
+      // Quota é informativa — falha de rede não pode quebrar a página de marcas.
+      return null;
+    }
   },
 
   async update(id: string, guideline: Partial<BrandGuideline>): Promise<BrandGuideline> {
