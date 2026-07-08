@@ -8,6 +8,7 @@ import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
 import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 import { PremiumGate } from './components/shared/PremiumGate';
+import { FEATURE_COPILOT } from './config/featureFlags';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() =>
@@ -167,6 +168,9 @@ const CampaignsPage = lazyWithRetry(() =>
 );
 const AdminChatPage = lazyWithRetry(() =>
   import('./pages/AdminChatPage').then((m) => ({ default: m.AdminChatPage }))
+);
+const CopilotPage = lazyWithRetry(() =>
+  import('./pages/CopilotPage').then((m) => ({ default: m.CopilotPage }))
 );
 const OnboardPage = lazyWithRetry(() =>
   import('./pages/OnboardPage').then((m) => ({ default: m.OnboardPage }))
@@ -383,6 +387,8 @@ const App: React.FC = () => {
                   <Route path="/verify-email" element={<VerifyEmailPage />} />
                   <Route path="/welcome" element={<OnboardingWizardPage />} />
                   <Route path="/admin" element={<AdminPage />} />
+                  {/* Rota some com a flag desligada — kill-switch do rollout (plano §3.2) */}
+                  {FEATURE_COPILOT && <Route path="/copilot" element={<CopilotPage />} />}
                   <Route path="/admin/chat" element={<AdminChatPage />} />
                   <Route path="/admin/presets" element={<AdminPresetsPage />} />
                   <Route path="/admin/products" element={<AdminProductsPage />} />

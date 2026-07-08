@@ -368,6 +368,10 @@
       "description": "Um gerador de gradientes para seus projetos",
       "name": "Colorfy"
     },
+    "copilot": {
+      "description": "Seu assistente agêntico de marca — gere mockups editáveis, planeje campanhas e crie no Figma com a sua marca como contexto",
+      "name": "Brand Copilot"
+    },
     "effectsTools": "EFFECTS TOOLS //",
     "ellipseAudio": {
       "description": "Analisador de espectro de áudio circular",
@@ -1980,6 +1984,33 @@
   "confirmationModal": {
     "defaultConfirm": "Continuar",
     "defaultTitle": "Confirmar Ação"
+  },
+  "copilot": {
+    "inputPlaceholder": "Pergunte qualquer coisa sobre a sua marca...",
+    "locked": {
+      "badge": "Premium",
+      "capabilityFigmaDesc": "Envie peças on-brand direto para o seu arquivo Figma, prontas para editar",
+      "capabilityFigmaTitle": "Criar no Figma",
+      "capabilityMockupsDesc": "Mockups editáveis gerados com as cores, logos e voz da sua marca",
+      "capabilityMockupsTitle": "Gerar mockups editáveis",
+      "capabilityPlanDesc": "O Copilot propõe variações e pergunta o que falta antes de gerar",
+      "capabilityPlanTitle": "Planejar antes de gastar",
+      "cta": "Fazer upgrade para desbloquear",
+      "subtitle": "O assistente agêntico que conhece a sua marca — gere mockups editáveis, planeje campanhas e crie no Figma sem sair do chat."
+    },
+    "newSession": "Nova sessão iniciada. Como posso ajudar com a sua marca hoje?",
+    "selectSession": "Bem-vindo ao Brand Copilot. Selecione uma sessão ou inicie uma nova.",
+    "seoDescription": "Seu assistente agêntico de marca — mockups, planejamento de campanha e criação no Figma com a sua marca como contexto.",
+    "seoTitle": "Brand Copilot | Visant Labs",
+    "sessionLoaded": "Sessão carregada. Como deseja prosseguir?",
+    "subscriptionExpired": "Sua assinatura não está mais ativa — renove para continuar usando o Copilot.",
+    "suggestions": {
+      "figmaPiece": "Criar uma peça no Figma",
+      "mockupKit": "Gerar kit de mockups da minha marca",
+      "seasonalCampaign": "Planejar campanha sazonal"
+    },
+    "title": "Brand Copilot",
+    "welcome": "Olá! Sou o seu Brand Copilot. Vincule uma Brand Guideline para contexto e eu gero mockups editáveis, planejo campanhas e crio peças no Figma — sempre on-brand."
   },
   "creditRechargeSuccess": {
     "creditsPurchased": "Créditos comprados",

@@ -59,7 +59,7 @@ export interface ChatMessageProps {
     summary?: string;
   }>;
   generationId?: string;
-  feature?: 'chat' | 'admin-chat';
+  feature?: 'chat' | 'admin-chat' | 'copilot';
 }
 
 const TOOL_LABELS: Record<string, string> = {

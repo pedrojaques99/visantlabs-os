@@ -54,6 +54,7 @@ import surpriseMeRoutes from './routes/surprise-me.js';
 import brandIntelligenceRoutes from './routes/brandIntelligence.js';
 import rpcRoutes from './routes/rpc.js';
 import adminChatRoutes from './routes/adminChat.js';
+import copilotRoutes from './routes/copilot.js';
 import chatRoutes from './routes/chat.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
@@ -385,6 +386,13 @@ export function createApp() {
 
   for (const [path, router] of mounts) {
     app.use(`${routePrefix}${path}`, router);
+  }
+
+  // Brand Copilot — Fase 1 do revenue realignment, atrás de flag (default OFF).
+  // Kill-switch: desligar FEATURE_COPILOT e o comportamento antigo volta.
+  if (process.env.FEATURE_COPILOT === 'true') {
+    app.use(`${routePrefix}/copilot`, copilotRoutes);
+    app.use(`${routePrefix}/v1/copilot`, copilotRoutes);
   }
 
   // ── API v1 alias — /api/v1/* mirrors /api/* for versioned access ────────

@@ -25,6 +25,7 @@ import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
+import { FEATURE_COPILOT } from '@/config/featureFlags';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -944,23 +945,46 @@ export const AppsPage: React.FC = () => {
     fetchApps();
   }, [fetchApps]);
 
+  // Copilot é flag-gated e fica FORA do staticAppsData de propósito: assim
+  // nunca é seedado no DB de apps e a visibilidade/kill-switch segue só a
+  // flag. Injetado no topo pra aparecer acima do Mockup Machine em Pro Tools.
+  const visibleApps = useMemo(() => {
+    const withoutCopilot = apps.filter((a) => ((a as any).id || a.appId) !== 'copilot');
+    if (!FEATURE_COPILOT) return withoutCopilot;
+    return [
+      {
+        id: 'copilot',
+        name: t('apps.copilot.name'),
+        desc: t('apps.copilot.description'),
+        link: '/copilot',
+        badge: t('apps.badge.premium'),
+        // "featured" (como o Mockup Machine) navega até o preview travado do
+        // /copilot em vez do modal — paywall que mostra o produto vende mais.
+        badgeVariant: 'featured',
+        category: 'pro',
+        free: false,
+      } as any,
+      ...withoutCopilot,
+    ];
+  }, [apps, t]);
+
   // ─── Featured apps for hero (explicit order) ───────────────────────────
 
   const HERO_ORDER = ['canvas', 'brand-guidelines', '3d-studio', 'cmyk-halftone'];
 
   const heroApps = useMemo(() => {
-    const byId = new Map(apps.map((a) => [(a as any).id || a.appId, a]));
+    const byId = new Map(visibleApps.map((a) => [(a as any).id || a.appId, a]));
     return HERO_ORDER.map((id) => byId.get(id))
       .filter(Boolean)
       .slice(0, 3);
-  }, [apps]);
+  }, [visibleApps]);
 
   // ─── Filtered & Sorted ────────────────────────────────────────────────
 
   const filteredApps = useMemo(() => {
     const q = search.toLowerCase().trim();
 
-    return apps.filter((app) => {
+    return visibleApps.filter((app) => {
       if (app.isHidden && !isAdmin) return false;
       if ((app as any).adminOnly && !isAdmin) return false;
       if (activeCategory && app.category !== activeCategory) return false;
@@ -975,7 +999,7 @@ export const AppsPage: React.FC = () => {
       }
       return true;
     });
-  }, [apps, isAdmin, search, activeCategory, accessFilter]);
+  }, [visibleApps, isAdmin, search, activeCategory, accessFilter]);
 
   const sortedApps = useMemo(() => {
     const sorted = [...filteredApps];
@@ -1007,13 +1031,13 @@ export const AppsPage: React.FC = () => {
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    apps.forEach((app) => {
+    visibleApps.forEach((app) => {
       if (app.isHidden && !isAdmin) return;
       if ((app as any).adminOnly && !isAdmin) return;
       counts[app.category] = (counts[app.category] || 0) + 1;
     });
     return counts;
-  }, [apps, isAdmin]);
+  }, [visibleApps, isAdmin]);
 
   const totalApps = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
   const hasActiveFilters = !!search || !!activeCategory || accessFilter !== 'all';

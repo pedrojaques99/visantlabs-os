@@ -368,6 +368,10 @@
       "description": "A gradient generator for your projects",
       "name": "Colorfy"
     },
+    "copilot": {
+      "description": "Your agentic brand assistant — generate editable mockups, plan campaigns and create in Figma with your brand as context",
+      "name": "Brand Copilot"
+    },
     "effectsTools": "EFFECTS TOOLS //",
     "ellipseAudio": {
       "description": "Circular audio spectrum analyzer",
@@ -1980,6 +1984,33 @@
   "confirmationModal": {
     "defaultConfirm": "Continue",
     "defaultTitle": "Confirm Action"
+  },
+  "copilot": {
+    "inputPlaceholder": "Ask anything about your brand...",
+    "locked": {
+      "badge": "Premium",
+      "capabilityFigmaDesc": "Send on-brand pieces straight to your Figma file, ready to edit",
+      "capabilityFigmaTitle": "Create in Figma",
+      "capabilityMockupsDesc": "Editable mockups generated with your brand's colors, logos and voice",
+      "capabilityMockupsTitle": "Generate editable mockups",
+      "capabilityPlanDesc": "The Copilot proposes variations and asks what's missing before generating",
+      "capabilityPlanTitle": "Plan before you spend",
+      "cta": "Upgrade to unlock",
+      "subtitle": "The agentic assistant that knows your brand — generate editable mockups, plan campaigns and create in Figma without leaving the chat."
+    },
+    "newSession": "New session started. How can I help with your brand today?",
+    "selectSession": "Welcome to Brand Copilot. Select a session or start a new one.",
+    "seoDescription": "Your agentic brand assistant — mockups, campaign planning and Figma creation with your brand as context.",
+    "seoTitle": "Brand Copilot | Visant Labs",
+    "sessionLoaded": "Session loaded. How would you like to proceed?",
+    "subscriptionExpired": "Your subscription is no longer active — renew to keep using the Copilot.",
+    "suggestions": {
+      "figmaPiece": "Create a piece in Figma",
+      "mockupKit": "Generate a mockup kit for my brand",
+      "seasonalCampaign": "Plan a seasonal campaign"
+    },
+    "title": "Brand Copilot",
+    "welcome": "Hi! I'm your Brand Copilot. Link a Brand Guideline for context and I can generate editable mockups, plan campaigns and create pieces in Figma — always on-brand."
   },
   "creditRechargeSuccess": {
     "creditsPurchased": "Credits purchased",
