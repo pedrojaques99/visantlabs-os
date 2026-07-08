@@ -119,15 +119,16 @@ try {
     const action = existing ? 'update' : 'insert';
     const preserved = PRESERVE.filter((k) => existing?.[k]).map((k) => `${k}=✓`);
 
-    // Diff de preço (o que muda pro usuário) — atual → novo.
-    const priceDiff =
-      existing && (existing.priceBRL !== p.priceBRL || existing.priceUSD !== p.priceUSD)
-        ? `R$${existing.priceBRL}/$${existing.priceUSD} → R$${p.priceBRL}/$${p.priceUSD}`
-        : `R$${p.priceBRL}/$${p.priceUSD}`;
+    // Preço/nome só entram em INSERT — em produto existente, PRESERVA o preço
+    // (que já casa com o Stripe live) e só faz merge da metadata de gating.
+    // Mudar preço de exibição é decisão acoplada ao Stripe (Price imutável) → manual.
+    const priceInfo = existing
+      ? `R$${existing.priceBRL} (preservado)`
+      : `R$${p.priceBRL}/$${p.priceUSD} (novo)`;
 
     console.log(
       `  [${action}] ${p.productId.padEnd(13)} ${p.name.padEnd(8)} ` +
-        `${priceDiff} · ${p.metadata.monthlyCredits}cr · ` +
+        `${priceInfo} · ${p.metadata.monthlyCredits}cr · ` +
         `marcas=${p.metadata.maxBrands} · seats=${p.metadata.maxEditorsPerBrand}` +
         (preserved.length ? `  (preserva: ${preserved.join(', ')})` : '')
     );
@@ -142,8 +143,10 @@ try {
       await col.updateOne(
         { productId },
         {
-          $set: { ...fields, ...metaSet, updatedAt: new Date() },
-          $setOnInsert: { productId, createdAt: new Date() },
+          // SEMPRE: só a metadata de gating (merge) + updatedAt.
+          $set: { ...metaSet, updatedAt: new Date() },
+          // SÓ EM INSERT: doc completo (preço/nome/tipo) — nunca altera existente.
+          $setOnInsert: { productId, createdAt: new Date(), ...fields },
         },
         { upsert: true }
       );
