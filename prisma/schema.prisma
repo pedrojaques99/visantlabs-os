@@ -52,6 +52,7 @@ model User {
   storageProductId     String?   // Active storage plan product ID (e.g., 'storage_pro')
   storageSubscriptionEnd DateTime? // When standalone storage subscription expires (null = lifetime or tier-based)
   canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)
+  namingSettings       Json?     // Naming Machine default prefs (ruler, techniques, language, model, batchSize) — new sessions inherit
   llmProvider          String    @default("gemini") // "gemini" | "ollama" — user's preferred LLM
   ollamaUrl            String?   // User's Ollama endpoint (e.g. http://host:11434) when llmProvider="ollama"
   ollamaModel          String?   // User's preferred Ollama model (default: llama3.1)
@@ -82,6 +83,7 @@ model User {
   brandGuidelines BrandGuideline[]
   studio3DScenes  Studio3DScene[]
   miniApps        MiniApp[]
+  namingSessions  NamingSession[]
 
   // Indexes for better query performance
   // Note: @unique on email and username already creates indexes
@@ -274,6 +276,37 @@ model Campaign {
   @@index([userId, createdAt])
   @@index([jobId])
   @@map("campaigns")
+}
+
+/// Persisted Naming Machine session. Promotes the previously localStorage-only
+/// (`naming-machine-session-v1`) single session into a durable, per-user, multi-session
+/// history — listable/restorable across devices. Mirrors the Campaign persistence pattern.
+/// The full session (profile, deck, shortlist, settings) lives in `data` (Json blob);
+/// scalar columns are promoted only for the "sessões anteriores" list/preview.
+model NamingSession {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @db.ObjectId
+  name             String   @default("Nova sessão")
+
+  // Promoted for the list/grid (avoid loading the heavy blob just to preview)
+  brandGuidelineId String?  @db.ObjectId // brand used as generation context
+  brief            String?  // resumo do briefing p/ preview
+  phase            String   @default("briefing") // briefing | deck
+  likedCount       Int      @default(0)
+  seenCount        Int      @default(0)
+
+  // Full NamingSession shape (profile, briefObj, shortlist, tasteReading, deck, settings)
+  data             Json
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@index([brandGuidelineId])
+  @@map("naming_sessions")
 }
 
 model Product {

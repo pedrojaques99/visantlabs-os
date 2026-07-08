@@ -83,7 +83,9 @@ const TECHNIQUE_LABELS: Record<string, string> = {
 
 function clip(list: string[] | undefined, max = MAX_LIST_ITEMS): string[] {
   if (!Array.isArray(list)) return [];
-  return list.filter((s) => typeof s === 'string' && s.trim().length > 0).slice(0, max);
+  // slice(-max): mantém os itens MAIS RECENTES (fim da lista). Antes pegava os
+  // mais antigos, deixando os nomes recém-mostrados fora do avoid-list → repetição.
+  return list.filter((s) => typeof s === 'string' && s.trim().length > 0).slice(-max);
 }
 
 /**

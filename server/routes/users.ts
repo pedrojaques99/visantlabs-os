@@ -884,6 +884,54 @@ router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthReq
   }
 });
 
+// Get user Naming Machine default settings (mirrors /settings/canvas).
+// New naming sessions inherit these instead of the factory defaults.
+router.get('/settings/naming', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { namingSettings: true },
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user.namingSettings || {});
+  } catch (error: any) {
+    console.error('Failed to get naming settings:', error);
+    res.status(500).json({ error: 'Failed to get naming settings', message: error.message });
+  }
+});
+
+// Update user Naming Machine default settings.
+router.put('/settings/naming', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const settings = req.body;
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      return res.status(400).json({
+        error: 'Invalid settings format',
+        message: 'Settings must be a valid JSON object',
+      });
+    }
+
+    await prisma.user.update({ where: { id: userId }, data: { namingSettings: settings } });
+    res.json({ success: true, message: 'Naming settings updated successfully' });
+  } catch (error: any) {
+    console.error('[Naming Settings] Failed to update:', error);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found', message: 'User does not exist' });
+    }
+    res.status(500).json({
+      error: 'Failed to update naming settings',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
 // Save/Update Seedream API Key
 router.put(
   '/settings/seedream-api-key',

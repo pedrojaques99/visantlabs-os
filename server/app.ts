@@ -61,6 +61,7 @@ import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
 import campaignsCrudRoutes from './routes/campaigns-crud.js';
+import namingSessionsRoutes from './routes/naming-sessions.js';
 import contentStudioRoutes from './routes/contentStudio.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
@@ -355,6 +356,7 @@ export function createApp() {
     ['/creative', creativeRoutes],
     ['/creative-projects', creativeProjectsRoutes],
     ['/campaigns', campaignsCrudRoutes],
+    ['/naming-sessions', namingSessionsRoutes],
     ['/docs', docsRoutes],
     ['/surprise-me', surpriseMeRoutes],
     ['/brand-intelligence', brandIntelligenceRoutes],
