@@ -26,10 +26,7 @@ import {
   type Verdict,
   type NamingPhase,
 } from '@/lib/naming/tasteProfile';
-import {
-  DEFAULT_NAMING_SETTINGS,
-  type NamingSettings,
-} from '@/lib/naming/constants';
+import { DEFAULT_NAMING_SETTINGS, type NamingSettings } from '@/lib/naming/constants';
 import {
   generateNaming,
   namingEvent,
@@ -160,8 +157,7 @@ export const NamingMachinePage: React.FC = () => {
         if (!isPrefetch && !(await requireAuth())) return;
 
         let reading = tasteReading;
-        const swipes =
-          profile.liked.length + profile.superliked.length + profile.rejected.length;
+        const swipes = profile.liked.length + profile.superliked.length + profile.rejected.length;
         if (isPrefetch && swipes > 0) {
           try {
             const r = await namingPatternInsight({
@@ -229,7 +225,12 @@ export const NamingMachinePage: React.FC = () => {
     if (phase !== 'deck') return;
     if (deck.length === 0 && !generatingRef.current) {
       void fetchBatch(false);
-    } else if (deck.length > 0 && deck.length <= 5 && !prefetchingRef.current && !generatingRef.current) {
+    } else if (
+      deck.length > 0 &&
+      deck.length <= 5 &&
+      !prefetchingRef.current &&
+      !generatingRef.current
+    ) {
       void fetchBatch(true);
     }
   }, [phase, deck.length, fetchBatch]);

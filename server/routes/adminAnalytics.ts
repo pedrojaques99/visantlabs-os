@@ -70,7 +70,10 @@ router.get(
             return res.json({ ...JSON.parse(cached), cached: true });
           }
         } catch (err) {
-          console.warn('[admin-analytics] Redis GET failed, skipping cache:', (err as Error).message);
+          console.warn(
+            '[admin-analytics] Redis GET failed, skipping cache:',
+            (err as Error).message
+          );
         }
       }
 
@@ -223,8 +226,19 @@ router.get(
         ])
         .toArray();
 
-      const [features, [activeKeys, refreshTokens, oauthClients, mcpCallerIds], cohort, [dauIds, wauIds, mauIds, weeklyActive], [namingFacet]] =
-        await Promise.all([featurePromise, mcpPromise, cohortPromise, retentionPromise, namingPromise]);
+      const [
+        features,
+        [activeKeys, refreshTokens, oauthClients, mcpCallerIds],
+        cohort,
+        [dauIds, wauIds, mauIds, weeklyActive],
+        [namingFacet],
+      ] = await Promise.all([
+        featurePromise,
+        mcpPromise,
+        cohortPromise,
+        retentionPromise,
+        namingPromise,
+      ]);
 
       // MCP sets
       const apiKeyUsers = new Set(activeKeys.map((k) => k.userId));
@@ -389,7 +403,9 @@ router.get(
       }
       const totalSwipes = swipeCounts.nope + swipeCounts.like + swipeCounts.superlike;
       const likeRate =
-        totalSwipes > 0 ? Math.round(((swipeCounts.like + swipeCounts.superlike) / totalSwipes) * 1000) / 1000 : 0;
+        totalSwipes > 0
+          ? Math.round(((swipeCounts.like + swipeCounts.superlike) / totalSwipes) * 1000) / 1000
+          : 0;
 
       const payload = {
         days,

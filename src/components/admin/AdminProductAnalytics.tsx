@@ -21,14 +21,7 @@ import {
 } from 'recharts';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '../ui/table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui/table';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { SkeletonLoader } from '../ui/SkeletonLoader';
@@ -176,10 +169,7 @@ export function AdminProductAnalytics() {
               variant={days === d ? 'secondary' : 'outline'}
               size="sm"
               onClick={() => setDays(d)}
-              className={cn(
-                'text-xs border-neutral-800',
-                days !== d && 'hover:bg-neutral-800/50'
-              )}
+              className={cn('text-xs border-neutral-800', days !== d && 'hover:bg-neutral-800/50')}
             >
               {d}d
             </Button>
@@ -227,9 +217,7 @@ export function AdminProductAnalytics() {
             label: 'Signup → Paying',
             value: `${
               data.funnel.steps[0].count > 0
-                ? Math.round(
-                    (data.funnel.steps[3].count / data.funnel.steps[0].count) * 1000
-                  ) / 10
+                ? Math.round((data.funnel.steps[3].count / data.funnel.steps[0].count) * 1000) / 10
                 : 0
             }%`,
             icon: CreditCard,
@@ -252,9 +240,7 @@ export function AdminProductAnalytics() {
       {/* Activation Funnel */}
       <Card className="bg-neutral-900 border border-white/10">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-neutral-300">
-            Activation Funnel
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-neutral-300">Activation Funnel</CardTitle>
           <CardDescription className="text-xs text-neutral-600 font-mono">
             Users who signed up in the last {data.days} days
           </CardDescription>
@@ -469,9 +455,7 @@ export function AdminProductAnalytics() {
           </div>
           <Card className="bg-neutral-900 border border-white/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-300">
-                Connected Apps
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-neutral-300">Connected Apps</CardTitle>
               <CardDescription className="text-xs text-neutral-600 font-mono">
                 Users per OAuth client
               </CardDescription>

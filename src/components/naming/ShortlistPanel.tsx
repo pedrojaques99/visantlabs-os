@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gem, Copy, Trash2, Zap, ChevronDown, ArrowRight, Loader2, Pencil, SearchCheck, BookmarkPlus } from 'lucide-react';
+import {
+  Gem,
+  Copy,
+  Trash2,
+  Zap,
+  ChevronDown,
+  ArrowRight,
+  Loader2,
+  Pencil,
+  SearchCheck,
+  BookmarkPlus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
@@ -195,10 +206,7 @@ function ShortlistRow({
         <span className="flex-1 truncate text-sm font-medium text-neutral-200">{card.name}</span>
         <ChevronDown
           size={13}
-          className={cn(
-            'shrink-0 text-neutral-600 transition-transform',
-            expanded && 'rotate-180'
-          )}
+          className={cn('shrink-0 text-neutral-600 transition-transform', expanded && 'rotate-180')}
         />
       </button>
 
@@ -228,9 +236,7 @@ function ShortlistRow({
                       </ul>
                     )}
                     {defense.risks?.length > 0 && (
-                      <p className="text-neutral-600">
-                        Riscos: {defense.risks.join('; ')}
-                      </p>
+                      <p className="text-neutral-600">Riscos: {defense.risks.join('; ')}</p>
                     )}
                   </div>
                 ) : (

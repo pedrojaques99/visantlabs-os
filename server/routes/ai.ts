@@ -1113,9 +1113,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
         status: 400,
       });
     }
-    return val
-      .filter((v) => typeof v === 'string')
-      .map((v) => sanitizeForPrompt(v, MAX_ITEM_LEN));
+    return val.filter((v) => typeof v === 'string').map((v) => sanitizeForPrompt(v, MAX_ITEM_LEN));
   };
 
   let seenArr: string[] | undefined;
@@ -1149,7 +1147,9 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       }
       if (
         settings.maxLength !== undefined &&
-        (typeof settings.maxLength !== 'number' || settings.maxLength < 0 || settings.maxLength > 20)
+        (typeof settings.maxLength !== 'number' ||
+          settings.maxLength < 0 ||
+          settings.maxLength > 20)
       ) {
         throw Object.assign(new Error('settings.maxLength must be a number between 0 and 20'), {
           status: 400,
@@ -1168,10 +1168,9 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
           .map((t: string) => sanitizeForPrompt(t, 60));
       }
       if (settings.language !== undefined && !NAMING_LANGUAGES.has(settings.language)) {
-        throw Object.assign(
-          new Error('settings.language must be "auto", "pt", "en" or "multi"'),
-          { status: 400 }
-        );
+        throw Object.assign(new Error('settings.language must be "auto", "pt", "en" or "multi"'), {
+          status: 400,
+        });
       }
       settingsValidated = {
         ruler: settings.ruler,
@@ -1188,7 +1187,9 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
   }
   if (modelOverride !== undefined) {
     if (typeof modelOverride !== 'string' || !NAMING_TEXT_MODELS.has(modelOverride)) {
-      return res.status(400).json({ error: 'model must be one of: ' + [...NAMING_TEXT_MODELS].join(', ') });
+      return res
+        .status(400)
+        .json({ error: 'model must be one of: ' + [...NAMING_TEXT_MODELS].join(', ') });
     }
   }
   const resolvedModel = modelOverride || GEMINI_MODELS.FLASH;
@@ -1233,7 +1234,12 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     if (Array.isArray(parsed?.names) && seenArr?.length) {
       const seenLower = new Set(seenArr.map((s) => s.toLowerCase().trim()));
       parsed.names = parsed.names.filter(
-        (n: any) => !seenLower.has(String(n?.name || '').toLowerCase().trim())
+        (n: any) =>
+          !seenLower.has(
+            String(n?.name || '')
+              .toLowerCase()
+              .trim()
+          )
       );
     }
 
@@ -1450,8 +1456,7 @@ router.post('/naming-insight', apiRateLimiter, authenticate, async (req: AuthReq
     const nameSafe = sanitizeForPrompt(name, 60);
     const briefSafe = sanitizeForPrompt(briefText || '', 3000);
 
-    const fallback = () =>
-      res.json({ concept: nameSafe, layers: [], risks: [] });
+    const fallback = () => res.json({ concept: nameSafe, layers: [], risks: [] });
     try {
       const system = `You write the "full finalist defense" of a brand name, following the Visant naming methodology's presentation format (section 7): a name is consequence of a concept, never the other way around. Produce 3-6 GENUINE layers only (linguistic roots, cultural resonance, symbolic associations, brand-architecture fit, practical advantages) — never force a layer that doesn't exist. Also list honest risks (famous homonyms, pronunciation ambiguity, cultural traps, domain availability) — never promise legal/trademark clearance. Respond in the same language as the brief (default Portuguese). Respond ONLY with JSON: { "concept": string, "layers": string[], "risks": string[] }`;
       const user = `Name: ${nameSafe}\nBrief: ${briefSafe || '(no brief provided)'}`;
@@ -1468,8 +1473,12 @@ router.post('/naming-insight', apiRateLimiter, authenticate, async (req: AuthReq
       if (!parsed || typeof parsed !== 'object') return fallback();
       res.json({
         concept: typeof parsed.concept === 'string' ? parsed.concept : nameSafe,
-        layers: Array.isArray(parsed.layers) ? parsed.layers.filter((l: any) => typeof l === 'string').slice(0, 6) : [],
-        risks: Array.isArray(parsed.risks) ? parsed.risks.filter((r: any) => typeof r === 'string').slice(0, 6) : [],
+        layers: Array.isArray(parsed.layers)
+          ? parsed.layers.filter((l: any) => typeof l === 'string').slice(0, 6)
+          : [],
+        risks: Array.isArray(parsed.risks)
+          ? parsed.risks.filter((r: any) => typeof r === 'string').slice(0, 6)
+          : [],
       });
     } catch (err: any) {
       console.warn('[naming-insight:defense] falling back:', err?.message || err);
@@ -1487,8 +1496,7 @@ let namingEventsIndexEnsured = false;
 function ensureNamingEventsIndex(db: ReturnType<typeof getDb>): void {
   if (namingEventsIndexEnsured) return;
   namingEventsIndexEnsured = true;
-  db
-    .collection('naming_events')
+  db.collection('naming_events')
     .createIndex({ type: 1, createdAt: -1 }, { background: true })
     .catch(() => {});
 }

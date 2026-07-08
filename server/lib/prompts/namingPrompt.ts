@@ -69,11 +69,16 @@ const TECHNIQUE_LABELS: Record<string, string> = {
   invencao: 'Phonetic invention — a word that does not exist but sounds right (Kodak).',
   metafora: 'Metaphor from another domain (Apple, Nest).',
   truncamento: 'Truncation — cut to the essence (Canva from canvas).',
-  raizes: 'Foreign roots — Latin/Greek/other roots for resonance without literalness. Root yes, Latin ENDING no (still obeys the phonetic ruler).',
-  contrabando: 'Letter smuggling — a real word hiding another inside it (AÇOR hides aço/steel; VIGOR hides viga/beam).',
-  jargao: 'Tribe jargon — backstage technical terms elevated to brand names, a password of belonging for a technical B2B decision-maker (TRAFO, PLENUM, PRUMADA).',
-  'costura-invisivel': 'Invisible seam (signature technique) — fusion where the seam disappears (AMPARA, GALVA, MONTRIZ).',
-  afixos: 'Affix families — a shared prefix/suffix that builds a naming system across a group of brands (SUPRA-, -MONT).',
+  raizes:
+    'Foreign roots — Latin/Greek/other roots for resonance without literalness. Root yes, Latin ENDING no (still obeys the phonetic ruler).',
+  contrabando:
+    'Letter smuggling — a real word hiding another inside it (AÇOR hides aço/steel; VIGOR hides viga/beam).',
+  jargao:
+    'Tribe jargon — backstage technical terms elevated to brand names, a password of belonging for a technical B2B decision-maker (TRAFO, PLENUM, PRUMADA).',
+  'costura-invisivel':
+    'Invisible seam (signature technique) — fusion where the seam disappears (AMPARA, GALVA, MONTRIZ).',
+  afixos:
+    'Affix families — a shared prefix/suffix that builds a naming system across a group of brands (SUPRA-, -MONT).',
 };
 
 function clip(list: string[] | undefined, max = MAX_LIST_ITEMS): string[] {
@@ -137,7 +142,7 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
         lengthLine,
         '- Clean endings: open vowel (-a/-o/-e) OR a single strong final consonant (R or Z).',
         '- The "shop floor test": must work shouted on a factory floor AND written on a spreadsheet.',
-        '- REJECT: hiatus and -io/-ia endings; Latin -us/-um endings; long proparoxytones (stress 3+ syllables back); clogged consonant clusters; foreign words outside the brand\'s symbolic universe.',
+        "- REJECT: hiatus and -io/-ia endings; Latin -us/-um endings; long proparoxytones (stress 3+ syllables back); clogged consonant clusters; foreign words outside the brand's symbolic universe.",
         '- Read each candidate aloud fast, three times. If it trips once, discard it.',
         '- Generate broad internally (30-50 candidates), filter hard by this ruler, and surface only the survivors — never mention the discarded pool.',
       ].join('\n')
@@ -197,22 +202,26 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
       '- Presenting a name with no rationale/defense.',
       '- Repeating a rejected name.',
       '- Monolingual thinking — mine 2-3 language families, even for a local-market brand.',
-      '- Promising availability/trademark clearance — that is not this tool\'s job.',
+      "- Promising availability/trademark clearance — that is not this tool's job.",
     ].join('\n')
   );
 
   if (language === 'pt') {
-    sections.push('## Language\nMine Portuguese explicitly — candidates should read as Portuguese (or Portuguese-rooted) words.');
+    sections.push(
+      '## Language\nMine Portuguese explicitly — candidates should read as Portuguese (or Portuguese-rooted) words.'
+    );
   } else if (language === 'en') {
-    sections.push('## Language\nMine English explicitly — candidates should read as English (or English-rooted) words.');
+    sections.push(
+      '## Language\nMine English explicitly — candidates should read as English (or English-rooted) words.'
+    );
   } else if (language === 'multi') {
-    sections.push('## Language\nMine 2-3 distinct language families explicitly (e.g. Latin, Greek, Tupi-Guarani, Germanic, Japanese) and label diversity across the round — do not collapse into a single language.');
+    sections.push(
+      '## Language\nMine 2-3 distinct language families explicitly (e.g. Latin, Greek, Tupi-Guarani, Germanic, Japanese) and label diversity across the round — do not collapse into a single language.'
+    );
   }
 
   if (seen.length) {
-    sections.push(
-      `## Already shown — DO NOT repeat, in any form/casing\n${seen.join(', ')}`
-    );
+    sections.push(`## Already shown — DO NOT repeat, in any form/casing\n${seen.join(', ')}`);
   }
 
   if (rejected.length) {
