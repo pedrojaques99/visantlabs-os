@@ -5064,6 +5064,20 @@
       "tagline": "The only one that truly knows your brand."
     }
   },
+  "funnel": {
+    "banner": {
+      "message": "This would look better with your brand — connect it in 2 minutes",
+      "cta": "Connect my brand",
+      "dismiss": "Dismiss"
+    },
+    "saveToBrand": {
+      "button": "Save colors to my brand",
+      "noBrand": "Create a brand to save colors",
+      "saving": "Saving…",
+      "success": "Colors saved to your brand",
+      "error": "Could not save the colors. Try again."
+    }
+  },
   "onboarding": {
     "step1Title": "Bring your brand",
     "step1Subtitle": "Your brand becomes the context for everything you generate — colors, typography, tone of voice.",

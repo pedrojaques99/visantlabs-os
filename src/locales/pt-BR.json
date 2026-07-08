@@ -5068,6 +5068,20 @@
       "tagline": "O único que realmente conhece sua marca."
     }
   },
+  "funnel": {
+    "banner": {
+      "message": "Isso ficaria melhor com a sua marca — conecte em 2 minutos",
+      "cta": "Conectar minha marca",
+      "dismiss": "Dispensar"
+    },
+    "saveToBrand": {
+      "button": "Salvar cores na minha marca",
+      "noBrand": "Crie uma marca para salvar as cores",
+      "saving": "Salvando…",
+      "success": "Cores salvas na sua marca",
+      "error": "Nao foi possivel salvar as cores. Tente de novo."
+    }
+  },
   "onboarding": {
     "step1Title": "Traga sua marca",
     "step1Subtitle": "Sua marca vira o contexto de tudo que voce gera — cores, tipografia, tom de voz.",

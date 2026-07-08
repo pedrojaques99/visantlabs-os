@@ -21,6 +21,7 @@ import {
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 
 export interface MiniAppShellDragDrop {
   onDrop: (e: React.DragEvent) => void;
@@ -48,6 +49,9 @@ export interface MiniAppShellProps {
   dragDrop?: MiniAppShellDragDrop;
   dropMessage?: string;
 
+  /** Opt-out do banner de funil "conecte sua marca" (Fase 5). Default: mostra. */
+  hideFunnelBanner?: boolean;
+
   /** Center the canvas children vertically + horizontally. Default true. */
   centerContent?: boolean;
   className?: string;
@@ -74,6 +78,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   onReset,
   dragDrop,
   dropMessage,
+  hideFunnelBanner = false,
   centerContent = true,
   className,
   canvasClassName,
@@ -157,6 +162,10 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
           </>
         }
       />
+
+      {!hideFunnelBanner && (
+        <BrandFunnelBanner toolId={title.toLowerCase().replace(/[^a-z0-9]+/g, '-')} />
+      )}
 
       <div
         className={cn(

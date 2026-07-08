@@ -21,3 +21,6 @@ export const FEATURE_ONBOARDING_V2 = readFlag(import.meta.env.VITE_FEATURE_ONBOA
 
 /** Gate do cockpit de marca na home logada (Fase 4) — launcher TUI vira fallback. */
 export const FEATURE_COCKPIT = readFlag(import.meta.env.VITE_FEATURE_COCKPIT);
+
+/** Gate da higiene de funil nas free tools (Fase 5): banner "conecte sua marca" + save-to-brand. */
+export const FEATURE_FUNNEL_BANNER = readFlag(import.meta.env.VITE_FEATURE_FUNNEL_BANNER);
