@@ -150,14 +150,36 @@ export const PageShell: React.FC<PageShellProps> = ({
             )}
 
             {!hideHeader && (
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 border-b border-white/10 pb-6 sm:pb-10 mb-8 sm:mb-12">
-                <div className="space-y-3">
-                  {microTitle && <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>}
-                  <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+              // Dentro do AppShell o AppTopBar já carrega a identidade da página:
+              // o header vira uma linha compacta (sem micro-título decorativo,
+              // título menor, espaçamento apertado) e devolve o espaço vertical.
+              <div
+                className={cn(
+                  'flex flex-col md:flex-row md:items-end justify-between',
+                  inShell
+                    ? 'gap-2 border-b border-border pb-3 mb-5'
+                    : 'gap-4 sm:gap-6 border-b border-white/10 pb-6 sm:pb-10 mb-8 sm:mb-12'
+                )}
+              >
+                <div className={cn(inShell ? 'space-y-1' : 'space-y-3')}>
+                  {microTitle && !inShell && (
+                    <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>
+                  )}
+                  <h2
+                    className={cn(
+                      'font-bold text-foreground tracking-tight',
+                      inShell ? 'text-lg' : 'text-2xl lg:text-3xl text-white'
+                    )}
+                  >
                     {title}
                   </h2>
                   {description && (
-                    <p className="text-sm text-neutral-500 leading-relaxed max-w-xl">
+                    <p
+                      className={cn(
+                        'text-muted-foreground leading-relaxed max-w-xl',
+                        inShell ? 'text-xs' : 'text-sm text-neutral-500'
+                      )}
+                    >
                       {description}
                     </p>
                   )}
