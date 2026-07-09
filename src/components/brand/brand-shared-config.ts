@@ -29,6 +29,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import type { BrandViewSection } from './BrandReadOnlyView';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 // ── Icon Map ────────────────────────────────────────────────────────────────
 
@@ -234,4 +235,45 @@ export function safeFileName(label?: string, fallback = 'asset'): string {
 export function extFromUrl(url?: string): string {
   if (!url) return 'png';
   return url.split('.').pop()?.split('?')[0] || 'png';
+}
+
+// ── Brand avatar / default ────────────────────────────────────────────────────
+// SSoT for a brand's canonical "mark" — the primary/icon logo when present,
+// otherwise a themed initial. Reused by the public hero lockup and (via quick-edit)
+// the dashboard cards so a brand looks identified everywhere, even before a logo.
+
+export interface BrandAvatar {
+  /** Logo image URL when the brand has one (icon > primary > first). */
+  logoUrl?: string;
+  /** Uppercase first letter fallback when there's no logo. */
+  initial: string;
+  /** Background for the initial chip — the brand's primary color. */
+  bg: string;
+  /** Foreground picked for AA contrast against `bg`. */
+  fg: string;
+}
+
+/** Relative luminance (WCAG) → readable ink for a solid background. */
+function readableInk(hex: string): string {
+  const h = (hex || '').replace('#', '').padEnd(6, '0').slice(0, 6);
+  const chan = (i: number) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  const L = 0.2126 * chan(0) + 0.7152 * chan(2) + 0.0722 * chan(4);
+  return L > 0.5 ? '#111111' : '#ffffff';
+}
+
+export function getBrandAvatar(g?: BrandGuideline | null): BrandAvatar {
+  const logos = g?.logos || [];
+  const logo =
+    logos.find((l) => l.variant === 'icon') ||
+    logos.find((l) => l.variant === 'primary') ||
+    logos[0];
+  const name = g?.identity?.name || g?.name || 'Brand';
+  const initial = name.trim().charAt(0).toUpperCase() || 'B';
+  const colors = g?.colors || [];
+  const primary = colors.find((c) => c.role?.toUpperCase() === 'PRIMARY') || colors[0];
+  const bg = primary?.hex || '#888888';
+  return { logoUrl: logo?.url, initial, bg, fg: readableInk(bg) };
 }
