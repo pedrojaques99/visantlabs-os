@@ -26,11 +26,13 @@ import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
+import { getLucideIcon } from '@/lib/ui/lucideIcon';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { toast } from 'sonner';
+import { glassSurface } from '@/lib/ui/glass';
 
 // ─── Last-used tracking (shared with HomePage) ──────────────────────────────
 const LS_KEY = 'vsn_app_last_used';
@@ -64,6 +66,11 @@ const CATEGORY_CONFIG: CategoryDef[] = [
 ];
 
 const ADMIN_CATEGORY: CategoryDef = { key: 'admin', icon: ShieldCheck };
+
+// Two-tier na home do catálogo (RCD §3.3 — Swiss Knife Index): o core brand-AI
+// fica sempre aberto; o cinto de utilidades (conversores, geradores, áudio,
+// comunidade) colapsa sob um disclosure pra não diluir "pra que a Visant serve".
+const CORE_CATEGORY_KEYS = new Set(['pro', 'creative']);
 
 // Anchor apps promoted to the Featured band (spanning cards). Only rendered
 // when present in the visible set (copilot depends on FEATURE_COPILOT).
@@ -111,6 +118,9 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
   const isAlpha = app.alpha === true;
   const isExternal = app.isExternal;
   const description = app.description || app.desc;
+  // Ícone lucide do app (AppConfig.icon, editável no admin) como fallback do
+  // thumbnail — em vez do genérico ImageIcon. Plano APP-SHELL P3.
+  const AppIcon = getLucideIcon(app.icon) ?? ImageIcon;
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.style.display = 'none';
@@ -173,12 +183,12 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
             <div className="w-full h-full items-center justify-center text-neutral-800 hidden">
-              <ImageIcon size={32} strokeWidth={1.2} />
+              <AppIcon size={32} strokeWidth={1.2} />
             </div>
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-800">
-            <ImageIcon size={featured ? 40 : 32} strokeWidth={1.2} />
+          <div className="w-full h-full flex items-center justify-center text-neutral-700">
+            <AppIcon size={featured ? 40 : 32} strokeWidth={1.2} />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-80" />
@@ -287,7 +297,7 @@ function RailItem({ icon: Icon, label, count, active, onClick }: RailItemProps) 
       className={cn(
         'w-full flex items-center gap-3 rounded-md px-3 py-2.5 border font-mono text-xs transition-all',
         active
-          ? 'text-neutral-200 bg-white/[0.04] border-white/10 shadow-lg'
+          ? 'text-neutral-200 bg-white/5 border-white/10 shadow-lg'
           : 'text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.03] border-transparent'
       )}
     >
@@ -315,8 +325,8 @@ function CategoryChip({ icon: Icon, label, count, active, onClick }: RailItemPro
       className={cn(
         'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-all shrink-0',
         active
-          ? 'text-neutral-200 bg-white/[0.06] border-white/10 font-medium'
-          : 'text-neutral-500 hover:text-neutral-300 border-transparent bg-white/[0.02]'
+          ? 'text-neutral-200 bg-white/5 border-white/10 font-medium'
+          : 'text-neutral-500 hover:text-neutral-300 border-transparent bg-white/[0.03]'
       )}
     >
       <Icon size={13} className="shrink-0" />
@@ -376,6 +386,8 @@ export const AppsPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [accessFilter, setAccessFilter] = useState<AccessFilter>('all');
   const [sortBy, setSortBy] = useState<'default' | 'name' | 'recent'>('default');
+  // Cinto de utilidades colapsado por padrão (two-tier, RCD §3.3).
+  const [showUtilities, setShowUtilities] = useState(false);
 
   const catLabel = useCallback((key: string) => t(`apps.categories.${key}.label`), [t]);
   const catDesc = useCallback((key: string) => t(`apps.categories.${key}.description`), [t]);
@@ -426,7 +438,7 @@ export const AppsPage: React.FC = () => {
         badge: t('apps.badge.free'),
         badgeVariant: 'free',
         thumbnail: '/tools/canvas.webp',
-        category: 'free',
+        category: 'creative',
         free: true,
       },
       {
@@ -1053,7 +1065,7 @@ export const AppsPage: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('apps.searchPlaceholder')}
-                  className="w-full pl-9 pr-9 py-2 text-sm bg-white/[0.03] border border-neutral-800 rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all"
+                  className={cn('w-full pl-9 pr-9 py-2 text-sm rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all', glassSurface.tile)}
                 />
                 {search && (
                   <button
@@ -1067,7 +1079,7 @@ export const AppsPage: React.FC = () => {
               </div>
 
               {/* Access segmented control */}
-              <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl bg-white/[0.03] border border-neutral-800 shrink-0">
+              <div className={cn('hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl shrink-0', glassSurface.tile)}>
                 {(['all', 'free', 'premium'] as AccessFilter[]).map((key) => (
                   <button
                     key={key}
@@ -1075,7 +1087,7 @@ export const AppsPage: React.FC = () => {
                     className={cn(
                       'px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all',
                       accessFilter === key
-                        ? 'bg-white/[0.06] text-neutral-100 font-medium'
+                        ? 'bg-white/5 text-neutral-100 font-medium'
                         : 'text-neutral-500 hover:text-neutral-300'
                     )}
                   >
@@ -1128,7 +1140,7 @@ export const AppsPage: React.FC = () => {
             </div>
           ) : sortedApps.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[40vh] gap-5 text-center py-20">
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-neutral-800">
+              <div className={cn('p-5 rounded-2xl', glassSurface.panel)}>
                 <PackageOpen size={48} strokeWidth={1.2} className="text-neutral-700" />
               </div>
               <div className="space-y-2">
@@ -1181,22 +1193,76 @@ export const AppsPage: React.FC = () => {
                       </section>
                     )}
 
-                    {/* Category sections */}
-                    {sections.map((section) => (
-                      <section key={section.key}>
-                        <SectionHeader
-                          icon={section.icon}
-                          label={catLabel(section.key)}
-                          description={catDesc(section.key)}
-                          count={section.apps.length}
-                        />
-                        <div className={GRID_CLASS}>
-                          {section.apps.map((app) => (
-                            <AppCard key={appId(app)} app={app} {...cardProps} />
-                          ))}
-                        </div>
-                      </section>
-                    ))}
+                    {/* Core sections (brand-AI) — sempre abertas */}
+                    {sections
+                      .filter((s) => CORE_CATEGORY_KEYS.has(s.key))
+                      .map((section) => (
+                        <section key={section.key}>
+                          <SectionHeader
+                            icon={section.icon}
+                            label={catLabel(section.key)}
+                            description={catDesc(section.key)}
+                            count={section.apps.length}
+                          />
+                          <div className={GRID_CLASS}>
+                            {section.apps.map((app) => (
+                              <AppCard key={appId(app)} app={app} {...cardProps} />
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+
+                    {/* Cinto de utilidades — colapsado por padrão (Swiss Knife Index) */}
+                    {(() => {
+                      const utility = sections.filter((s) => !CORE_CATEGORY_KEYS.has(s.key));
+                      const utilityCount = utility.reduce((n, s) => n + s.apps.length, 0);
+                      if (utility.length === 0) return null;
+                      return (
+                        <section className="border-t border-neutral-800 pt-8">
+                          <button
+                            type="button"
+                            onClick={() => setShowUtilities((v) => !v)}
+                            aria-expanded={showUtilities}
+                            className="group flex w-full items-center gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/40 rounded-lg"
+                          >
+                            <LayoutGrid size={16} className="text-neutral-500" />
+                            <MicroTitle as="span" className="text-neutral-300">
+                              {t('apps.quickTools')}
+                            </MicroTitle>
+                            <span className="text-xs font-mono text-neutral-600">{utilityCount}</span>
+                            <ChevronRight
+                              size={16}
+                              className={cn(
+                                'ml-auto text-neutral-500 transition-transform',
+                                showUtilities && 'rotate-90'
+                              )}
+                            />
+                          </button>
+                          {!showUtilities && (
+                            <p className="mt-2 text-sm text-neutral-600">{t('apps.quickToolsDesc')}</p>
+                          )}
+                          {showUtilities && (
+                            <div className="mt-8 space-y-12">
+                              {utility.map((section) => (
+                                <section key={section.key}>
+                                  <SectionHeader
+                                    icon={section.icon}
+                                    label={catLabel(section.key)}
+                                    description={catDesc(section.key)}
+                                    count={section.apps.length}
+                                  />
+                                  <div className={GRID_CLASS}>
+                                    {section.apps.map((app) => (
+                                      <AppCard key={appId(app)} app={app} {...cardProps} />
+                                    ))}
+                                  </div>
+                                </section>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+                      );
+                    })()}
                   </>
                 ) : (
                   // Flat grid (category selected or searching)
