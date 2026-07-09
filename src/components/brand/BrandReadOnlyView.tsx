@@ -92,7 +92,9 @@ function ensureReadable(fg: string, bg: string, target = AA_TEXT): string {
   if (contrastHex(c.toHex(), bg) >= target) return c.toHex();
   const towardLight = colord(bg).isDark();
   for (let i = 0; i < 50; i++) {
-    c = towardLight ? c.lighten(0.04).saturate(0.02) : c.darken(0.04);
+    // Lighten/darken only — never saturate: re-saturating a near-neutral color
+    // amplifies its residual hue into a hallucinated cast (black → rose).
+    c = towardLight ? c.lighten(0.04) : c.darken(0.04);
     const hex = c.toHex();
     if (contrastHex(hex, bg) >= target) return hex;
     const b = c.brightness();
@@ -107,6 +109,12 @@ function pickChromatic(hexes: string[]): string | undefined {
     .map((hex) => ({ hex, hsl: colord(hex).toHsl() }))
     .filter((x) => x.hsl.l > 10 && x.hsl.l < 90)
     .sort((a, b) => b.hsl.s - a.hsl.s)[0]?.hex;
+}
+
+/** Saturated & mid-luminance enough to serve as a UI accent (a pop, not ink). */
+function isVivid(hex: string): boolean {
+  const { s, l } = colord(hex).toHsl();
+  return s >= 25 && l >= 20 && l <= 88;
 }
 
 export function toCSSVariables(g: BrandGuideline): string {
@@ -162,12 +170,17 @@ export function extractBrandTheme(
   const colors = guideline?.colors || [];
   const hexes = colors.map((c) => c.hex).filter(Boolean) as string[];
 
-  // ── Accent: explicit role first, else the most chromatic mid-tone hue ──
-  const accentRaw =
-    findByRole('PRIMARY')?.hex ||
+  // ── Accent: the brand's VIVID signature, not a base neutral. A black or
+  // white tagged "primary" is ink/canvas — honor an explicit accent role only
+  // when it's actually chromatic; otherwise take the most chromatic swatch. ──
+  const roleAccent =
     findByRole('ACCENT')?.hex ||
-    findByMatch(['brand', 'primary', 'accent', 'main'])?.hex ||
+    findByRole('PRIMARY')?.hex ||
+    findByMatch(['brand', 'primary', 'accent', 'main'])?.hex;
+  const accentRaw =
+    (roleAccent && isVivid(roleAccent) ? roleAccent : undefined) ||
     pickChromatic(hexes) ||
+    roleAccent ||
     hexes[0] ||
     '#888888';
 
