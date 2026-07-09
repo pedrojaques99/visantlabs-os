@@ -84,15 +84,10 @@ const appId = (app: any): string => app.id || app.appId;
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 
-function AppCardSkeleton({ featured = false }: { featured?: boolean }) {
+function AppCardSkeleton() {
   return (
-    <div
-      className={cn(
-        'rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse',
-        featured && 'sm:col-span-2 xl:col-span-2 2xl:col-span-2'
-      )}
-    >
-      <div className={cn('bg-neutral-800/20', featured ? 'aspect-[16/7]' : 'aspect-[16/10]')} />
+    <div className="rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 animate-pulse">
+      <div className="aspect-[16/10] bg-neutral-800/20" />
       <div className="p-5 space-y-3">
         <div className="h-4 w-1/2 bg-neutral-800/30 rounded-full" />
         <div className="h-3 w-4/5 bg-neutral-800/20 rounded-full" />
@@ -165,7 +160,8 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         'transition-all duration-300 outline-none cursor-pointer',
         'hover:border-white/10 hover:bg-white/[0.035] hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20',
         'focus-visible:ring-2 focus-visible:ring-brand-cyan/40',
-        featured && 'sm:col-span-2 xl:col-span-2 2xl:col-span-2',
+        // Featured não spanneia mais (grid uniforme): destaque vem da seção +
+        // badge, não de um card gigante escuro que sumia no fundo.
         isComingSoon && 'opacity-30 grayscale pointer-events-none',
         app.isHidden && 'border-warning/20 opacity-60'
       )}
@@ -191,13 +187,9 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         <Star size={14} className={pinned ? 'fill-brand-cyan' : ''} />
       </button>
 
-      {/* Thumbnail */}
-      <div
-        className={cn(
-          'relative overflow-hidden bg-neutral-900/40',
-          featured ? 'aspect-[16/7] sm:aspect-[16/6]' : 'aspect-[16/10]'
-        )}
-      >
+      {/* Thumbnail — superfície levemente iluminada + separador embaixo para
+          definir a arte escura contra o card (contraste). */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-b from-neutral-800/50 to-neutral-950/70 border-b border-white/5">
         {app.thumbnail ? (
           <>
             <img
@@ -1157,8 +1149,7 @@ export const AppsPage: React.FC = () => {
           {isLoading ? (
             <div className="space-y-8">
               <div className={GRID_CLASS}>
-                <AppCardSkeleton featured />
-                {Array.from({ length: 8 }).map((_, i) => (
+                {Array.from({ length: 9 }).map((_, i) => (
                   <AppCardSkeleton key={i} />
                 ))}
               </div>
