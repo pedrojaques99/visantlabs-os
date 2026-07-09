@@ -3,6 +3,7 @@ import { useNavigate, useBlocker, useLocation, useSearchParams } from 'react-rou
 import { Menu, PanelLeftOpen, Pickaxe, X } from 'lucide-react';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { ImageUploader } from '../components/ui/ImageUploader';
 import { normalizeImageToBase64, detectMimeType } from '../services/reactFlowService';
 import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
@@ -3379,6 +3380,7 @@ Generate the new mockup image with the requested changes applied.`;
   // Mas não mostrar se estiver restaurando estado ou se já tiver conteúdo gerado/referências
   const isActuallyEmpty = !uploadedImage && !hasGenerated && referenceImages.length === 0;
   const shouldShowWelcome = !isRestoring && isActuallyEmpty;
+  const inShell = useInAppShell(); // editor logado: sem Header acima → sem offset
 
   return (
     <>
@@ -3408,7 +3410,9 @@ Generate the new mockup image with the requested changes applied.`;
       {shouldShowWelcome ? (
         <WelcomeScreen onImageUpload={handleImageUpload} />
       ) : (
-        <div className="h-full w-full pt-12 md:pt-14 bg-background overflow-hidden">
+        <div
+          className={cn('h-full w-full bg-background overflow-hidden', !inShell && 'pt-12 md:pt-14')}
+        >
           <div
             className={cn(
               'flex h-full transition-all duration-300',

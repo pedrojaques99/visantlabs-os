@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import {
   generateMiniApp,
   iterateMiniApp,
@@ -419,6 +420,7 @@ export const PlaygroundPage: React.FC = () => {
   const { slug } = useParams();
   const isMobile = useIsMobile();
   const { user } = useLayout();
+  const inShell = useInAppShell(); // sem Header de marketing acima → dropa o offset
 
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1303,7 +1305,10 @@ export const PlaygroundPage: React.FC = () => {
 
     return (
       <div
-        className="h-[100dvh] w-full flex overflow-hidden bg-neutral-950 pt-10 md:pt-14 relative"
+        className={cn(
+          'w-full flex overflow-hidden bg-neutral-950 relative',
+          inShell ? 'h-full' : 'h-[100dvh] pt-10 md:pt-14'
+        )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

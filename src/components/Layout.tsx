@@ -23,6 +23,7 @@ import { identifyUser } from '@/utils/analytics';
 import { resolveShell, routeMode } from '@/config/navConfig';
 import { AppShell } from './shell/AppShell';
 import { FocusRail } from './shell/FocusRail';
+import { InAppShellContext } from './shell/InAppShellContext';
 
 /** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. `insufficient_credits` (free user no muro de crédito) abre o modal de upgrade de plano — Pro dá 10× créditos. */
 export type SubscriptionModalContext = {
@@ -761,6 +762,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {useAppShell ? (
           <AppShell>{children}</AppShell>
+        ) : focusMode ? (
+          // Editor logado: sem Header de marketing acima. Sinaliza inShell pra
+          // as páginas dropar o offset de header antigo (pt-10/14). P (item 3).
+          <InAppShellContext.Provider value={true}>
+            <div className="flex-1 relative overflow-hidden">{children}</div>
+          </InAppShellContext.Provider>
         ) : (
           <div
             className={cn(
