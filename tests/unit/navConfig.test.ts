@@ -51,9 +51,10 @@ describe('classifyRoute', () => {
     }
   });
 
-  it('chats (/copilot, /admin/chat) são focus; /admin é dashboard', () => {
-    expect(classifyRoute('/copilot').mode).toBe('focus');
-    expect(classifyRoute('/admin/chat').mode).toBe('focus');
+  it('chats (/copilot, /admin/chat) e /admin são dashboard full (rail + ChatShell como pane)', () => {
+    expect(classifyRoute('/copilot').mode).toBe('full');
+    expect(classifyRoute('/copilot').section).toBe('copilot');
+    expect(classifyRoute('/admin/chat').mode).toBe('full');
     expect(classifyRoute('/admin').mode).toBe('full');
   });
 

@@ -12,6 +12,8 @@ import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 
 /**
  * Preview travado para free users — mostra o produto em vez de um 403 seco
@@ -63,7 +65,7 @@ const CopilotLockedPreview: React.FC = () => {
           {capabilities.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="rounded-2xl border border-neutral-800 bg-white/[0.03] p-5 text-left space-y-3 hover:border-white/10 transition-colors"
+              className={cn('rounded-2xl p-5 text-left space-y-3', glassSurface.panel)}
             >
               <div className="p-2 rounded-xl bg-white/5 border border-neutral-800 w-fit">
                 <Icon size={16} className="text-neutral-400" />
@@ -100,6 +102,9 @@ export const CopilotPage: React.FC = () => {
   const { theme } = useTheme();
   const { hasAccess, isLoading } = usePremiumAccess();
   const { onSubscriptionModalOpen } = useLayout();
+  // Dentro do AppShell o AppTopBar é o header: sem o offset pt-24 (do Header
+  // antigo) e altura acompanha o <main>, não 100dvh. P (fix /copilot).
+  const inShell = useInAppShell();
 
   const strings: ChatShellStrings = useMemo(
     () => ({
@@ -140,13 +145,19 @@ export const CopilotPage: React.FC = () => {
   return (
     <div
       className={cn(
-        'h-[100dvh] w-full flex flex-col overflow-hidden',
+        'w-full flex flex-col overflow-hidden',
+        inShell ? 'h-full' : 'h-[100dvh]',
         theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50'
       )}
     >
       <SEO title={t('copilot.seoTitle')} description={t('copilot.seoDescription')} noindex={true} />
 
-      <div className="flex-1 w-full h-full flex flex-col pt-16 md:pt-20 lg:pt-24 overflow-hidden">
+      <div
+        className={cn(
+          'flex-1 w-full h-full flex flex-col overflow-hidden',
+          !inShell && 'pt-16 md:pt-20 lg:pt-24'
+        )}
+      >
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <GlitchLoader />

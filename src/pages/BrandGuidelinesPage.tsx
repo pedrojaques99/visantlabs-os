@@ -704,8 +704,10 @@ export const BrandGuidelinesPage: React.FC = () => {
         >
           <div
             className={cn(
-              'mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16',
-              !isLoading && guidelines.length > 0 ? 'max-w-5xl' : 'max-w-7xl'
+              'px-4 sm:px-6 lg:px-8 pt-8 pb-16',
+              // Com a lista lateral, o conteúdo encosta nela (left-aligned) em vez
+              // de centralizar e deixar um vão; vazio → centraliza normalmente.
+              !isLoading && guidelines.length > 0 ? 'max-w-6xl' : 'mx-auto max-w-7xl'
             )}
           >
             {/* Header */}

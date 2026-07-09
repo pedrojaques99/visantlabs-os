@@ -158,8 +158,9 @@ function isEditor(p: string): boolean {
   if (p.startsWith('/canvas/')) return true;
   // /create (studio) é editor; /create/projects é lista (dashboard).
   if (p === '/create') return true;
-  // Chats têm sidebar de sessões própria (ChatShell) — focus evita rail duplo.
-  if (p === '/copilot' || p === '/admin/chat') return true;
+  // Nota: chats (/copilot, /admin/chat) são `full` (rail + ChatShell como
+  // segundo pane), não focus — o dock flutuante sobrepunha a sidebar de
+  // sessões do ChatShell e destoava do resto do app.
   return EDITOR_PREFIXES.some((prefix) => p === prefix || p.startsWith(prefix + '/'));
 }
 
