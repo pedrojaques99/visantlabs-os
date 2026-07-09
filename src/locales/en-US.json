@@ -5083,6 +5083,9 @@
       "guideline": {
         "visant_labs": "Visant // Labs®",
         "version": "Version",
+        "connect_to_your_ai": "Connect your AI",
+        "connecting": "Connecting…",
+        "assets": "Assets",
         "search_assets_colors_or_spe": "Search assets, colors, or specs...",
         "download_brand_variables_as": "Download brand variables as CSS",
         "download_brand_guidelines_a": "Download brand guidelines as JSON",

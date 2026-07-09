@@ -46,6 +46,7 @@ import {
   SLUG_TO_TAB,
   downloadBlob,
   safeFileName,
+  getBrandAvatar,
 } from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
 import { BrandOverviewBento } from '@/components/brand/guidelines/preview/BrandOverviewBento';
@@ -272,6 +273,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
+  // Canonical brand mark (logo → themed initial) for the hero lockup.
+  const avatar = useMemo(() => getBrandAvatar(guideline), [guideline]);
   // Brand theme CSS vars — also passed to portaled overlays (dropdown) so their
   // glass surfaces match the live page theme.
   const themeVars = useMemo(
@@ -407,7 +410,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         // Admin (idOverride): cover the whole viewport over the native app header.
         // z-50 (tie with the header) wins by DOM order — same mechanism that lets
         // portaled overlays (dialogs/menus/sheets, z-50) render above this shell.
-        // Going higher (z-[60]) trapped every overlay behind the shell.
+        // Going higher (z-50) trapped every overlay behind the shell.
         idOverride ? 'fixed inset-0 z-50 overflow-y-auto' : 'min-h-screen'
       )}
       style={
@@ -672,19 +675,22 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
-        {/* Dynamic Hero Section */}
+        {/* Dynamic Hero Section — identity on the left, the brand mark on the
+            right. Bottom-aligned so the mark sits on the wordmark's baseline like
+            a brand card, killing the old empty gap below the title. */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: 'easeOut' }}
-          className="relative mb-32"
+          className="relative mb-12 md:mb-16"
         >
           {theme === 'dark' && brandTheme.isCustomBg && (
             <div className="absolute -top-40 -left-60 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[160px] opacity-20 pointer-events-none" />
           )}
 
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
-            <div className="space-y-6">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 md:gap-12">
+            {/* Identity column */}
+            <div className="space-y-5 min-w-0">
               <MicroTitle className="text-[var(--accent)] font-bold opacity-60 normal-case">
                 <InlineEditable
                   as="span"
@@ -706,6 +712,77 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   handleSave({ identity: { ...(guideline.identity || {}), name: v } })
                 }
               />
+
+              {/* Positioning — one line, from identity.description */}
+              {tokens.description && (
+                <p className="max-w-xl text-base md:text-lg leading-snug text-[var(--brand-text)]/60 line-clamp-2">
+                  {tokens.description}
+                </p>
+              )}
+
+              {/* Color signature — thin strip, click to copy */}
+              {tokens.palette.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5" aria-label="Brand colors">
+                  {tokens.palette.slice(0, 8).map((c, i) => (
+                    <button
+                      key={`${c.hex}-${i}`}
+                      type="button"
+                      onClick={() => {
+                        copyToClipboard(c.hex);
+                        toast.success(`Copied ${c.hex}`);
+                      }}
+                      title={`${c.name || ''} ${c.hex}`.trim()}
+                      aria-label={`Copy ${c.hex}${c.name ? ` — ${c.name}` : ''}`}
+                      className="w-8 h-8 rounded-lg border border-[var(--brand-text)]/10 shadow-sm transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Directed CTAs — lead with the category differentiator (Connect AI) */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleConnect}
+                  disabled={connecting}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-[var(--accent-text)] text-sm font-semibold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  <Plug size={15} />
+                  {connecting
+                    ? t('public.brand.guideline.connecting')
+                    : t('public.brand.guideline.connect_to_your_ai')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeTab('logos')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--brand-text)]/15 text-[var(--brand-text)]/70 text-sm font-medium transition-colors hover:border-[var(--brand-text)]/30 hover:text-[var(--brand-text)]"
+                >
+                  <ImageIcon size={15} />
+                  {t('public.brand.guideline.assets')}
+                </button>
+              </div>
+            </div>
+
+            {/* Brand mark — logo lockup, or themed initial when there's no logo */}
+            <div className="shrink-0">
+              <div className="flex items-center justify-center rounded-3xl bg-[var(--brand-surface)]/25 border border-[var(--brand-text)]/10 px-8 py-7 min-w-[180px] md:min-w-[220px]">
+                {avatar.logoUrl ? (
+                  <img
+                    src={avatar.logoUrl}
+                    alt={`${tokens.name} logo`}
+                    className="max-h-24 md:max-h-28 max-w-[200px] object-contain"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span
+                    className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-black"
+                    style={{ backgroundColor: avatar.bg, color: avatar.fg }}
+                  >
+                    {avatar.initial}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
