@@ -13,7 +13,7 @@
  * Colapsável (P2): estado persiste em `vsn_rail_collapsed`; colapsado vira
  * uma faixa de ícones (labels/L2 escondidos). Mobile é sempre expandido.
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Settings, Sun, Moon, PanelLeftClose, PanelLeftOpen, Star, X, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { getLucideIcon } from '@/lib/ui/lucideIcon';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from '@/config/featureFlags';
 import { classifyRoute, visibleSections, contextNavFor, type NavCtx } from '@/config/navConfig';
+import type { BrandGuideline } from '@/lib/figma-types';
 
 const RAIL_COLLAPSED_KEY = 'vsn_rail_collapsed';
 
@@ -43,8 +44,35 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useLayout();
-  const { brands, activeBrand, activeBrandId, setActiveBrand } = useActiveBrand();
+  const { brands, activeBrand, activeBrandId, setActiveBrand, recentBrandIds } = useActiveBrand();
   const { items: pinned, unpin } = usePinnedNav();
+
+  // RECENTES — marcas visitadas recentemente (MRU), exceto a ativa. Sem MRU
+  // ainda, cai nas mais recém-editadas. Acesso rápido cross-tela que o rail
+  // (sempre presente) oferece e a página não duplica.
+  const recentBrands = useMemo(() => {
+    const byId = new Map(brands.map((b) => [b.id, b]));
+    const notActive = (b: BrandGuideline) => b.id !== activeBrandId;
+    // MRU (menos a ativa); se sobrou nada, cai nas mais recém-editadas.
+    const mru = recentBrandIds
+      .map((id) => byId.get(id))
+      .filter((b): b is BrandGuideline => !!b)
+      .filter(notActive);
+    const source =
+      mru.length > 0
+        ? mru
+        : [...brands]
+            .sort(
+              (a, b) => new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
+            )
+            .filter(notActive);
+    return source.slice(0, 4);
+  }, [brands, recentBrandIds, activeBrandId]);
+
+  const openBrand = (id: string) => {
+    setActiveBrand(id);
+    go('/cockpit');
+  };
 
   const isMobile = variant === 'mobile';
   const [collapsedRaw, setCollapsedRaw] = useState(
@@ -212,6 +240,41 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                   </div>
                 );
               })}
+            </nav>
+          </div>
+        ))}
+
+      {/* Recentes — marcas visitadas recentemente (acesso rápido cross-tela) */}
+      {recentBrands.length > 0 &&
+        (collapsed ? (
+          <div className="px-2 pt-2 mt-1 border-t border-border flex flex-col items-center gap-1">
+            {recentBrands.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => openBrand(b.id!)}
+                title={b.identity?.name || b.name || 'Brand'}
+                className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-muted transition-colors"
+              >
+                <BrandAvatar brand={b} size={20} rounded="md" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="px-2 pt-2 mt-1 border-t border-border">
+            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+              {t('nav.recent')}
+            </div>
+            <nav className="space-y-0.5">
+              {recentBrands.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => openBrand(b.id!)}
+                  className="w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  <BrandAvatar brand={b} size={16} rounded="sm" />
+                  <span className="truncate">{b.identity?.name || b.name || 'Brand'}</span>
+                </button>
+              ))}
             </nav>
           </div>
         ))}

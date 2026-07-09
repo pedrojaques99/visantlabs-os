@@ -13,21 +13,7 @@
  * (AppSidebar/AppShell) consome; nenhum componente decide navegação por conta.
  */
 import type { LucideIcon } from 'lucide-react';
-import {
-  Home,
-  Palette,
-  Bot,
-  LayoutGrid,
-  User,
-  Sparkles,
-  Megaphone,
-  Image as ImageIcon,
-  KeyRound,
-  Plug,
-  Activity,
-  Layers,
-  FileText,
-} from 'lucide-react';
+import { Home, Palette, Bot, LayoutGrid, User, KeyRound, Plug, Activity } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos
@@ -208,41 +194,12 @@ export function routeMode(pathname: string): ShellMode {
 // Nível 2 — sub-navegação por seção
 // ─────────────────────────────────────────────────────────────────────────────
 
-function brandQuery(ctx: NavCtx, base: string): string {
-  return ctx.activeBrandId ? `${base}?id=${ctx.activeBrandId}` : base;
-}
-
-const cockpitNav = (): ContextNavItem[] => [
-  { id: 'overview', labelKey: 'nav.cockpit.overview', to: '/cockpit', icon: Home },
-  { id: 'campaigns', labelKey: 'nav.cockpit.campaigns', to: '/campaigns', icon: Megaphone },
-  { id: 'work', labelKey: 'nav.cockpit.work', to: '/create/projects', icon: ImageIcon },
-];
-
-const brandsNav = (ctx: NavCtx): ContextNavItem[] => {
-  const items: ContextNavItem[] = [
-    { id: 'all', labelKey: 'nav.brands.all', to: '/brand-guidelines', icon: Palette },
-  ];
-  if (ctx.activeBrandId) {
-    items.push({
-      id: 'guideline',
-      labelKey: 'nav.brands.guideline',
-      to: brandQuery(ctx, '/brand-guidelines'),
-      icon: FileText,
-    });
-  }
-  items.push(
-    { id: 'branding-machine', labelKey: 'nav.brands.machine', to: '/branding-machine', icon: Sparkles },
-    { id: 'my-brandings', labelKey: 'nav.brands.mine', to: '/my-brandings', icon: Layers }
-  );
-  return items;
-};
-
-/** Categorias estáveis do catálogo de apps. O roster real (com contagem/ícone
- *  por app) é mesclado em runtime a partir de `appsService`; aqui ficam só as
- *  âncoras de categoria que o /apps já usa. */
-const appsNav = (): ContextNavItem[] => [
-  { id: 'all', labelKey: 'nav.apps.all', to: '/apps', icon: LayoutGrid },
-];
+// L2 vazia para seções cuja própria página já traz a sub-navegação com mais
+// contexto (lista de marcas em /brand-guidelines, CATEGORIAS em /apps): repetir
+// no rail era redundante. O valor único do rail (sempre-presente) vem de
+// RECENTES + FIXADOS, renderizados direto no AppSidebar. Só `profile` mantém L2,
+// porque ali ela unifica rotas soltas (/settings/*) que não estão nas abas.
+const emptyNav = (): ContextNavItem[] => [];
 
 const profileNav = (): ContextNavItem[] => [
   { id: 'account', labelKey: 'nav.profile.account', to: '/profile?tab=overview', icon: User },
@@ -267,7 +224,7 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: Home,
     to: '/cockpit',
     visibleWhen: (ctx) => ctx.flags.cockpit,
-    contextNav: cockpitNav,
+    contextNav: emptyNav,
   },
   {
     id: 'brands',
@@ -275,7 +232,7 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: Palette,
     to: '/brand-guidelines',
     visibleWhen: () => true,
-    contextNav: brandsNav,
+    contextNav: emptyNav,
   },
   {
     id: 'copilot',
@@ -291,7 +248,7 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: LayoutGrid,
     to: '/apps',
     visibleWhen: () => true,
-    contextNav: appsNav,
+    contextNav: emptyNav,
   },
 ];
 

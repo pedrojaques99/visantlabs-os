@@ -1,6 +1,7 @@
 {
   "nav": {
     "context": "CONTEXTO",
+    "recent": "RECENTES",
     "pinned": "FIXADOS",
     "unpin": "Desafixar",
     "pin": "Fixar no menu",

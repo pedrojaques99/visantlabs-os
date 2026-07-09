@@ -1,6 +1,7 @@
 {
   "nav": {
     "context": "CONTEXT",
+    "recent": "RECENT",
     "pinned": "PINNED",
     "unpin": "Unpin",
     "pin": "Pin to sidebar",

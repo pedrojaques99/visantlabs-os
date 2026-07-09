@@ -130,13 +130,10 @@ describe('contextNavFor', () => {
     expect(contextNavFor('/canvas', baseCtx)).toEqual([]);
   });
 
-  it('sub-nav de brands ganha o item guideline só com marca ativa', () => {
-    const semMarca = contextNavFor('/brand-guidelines', baseCtx).map((i) => i.id);
-    expect(semMarca).not.toContain('guideline');
-
-    const comMarca = contextNavFor('/brand-guidelines', { ...baseCtx, activeBrandId: 'b1' });
-    const guideline = comMarca.find((i) => i.id === 'guideline');
-    expect(guideline?.to).toBe('/brand-guidelines?id=b1');
+  it('brands/apps/cockpit têm L2 vazia (a própria página traz a sub-nav)', () => {
+    expect(contextNavFor('/brand-guidelines', baseCtx)).toEqual([]);
+    expect(contextNavFor('/apps', baseCtx)).toEqual([]);
+    expect(contextNavFor('/cockpit', baseCtx)).toEqual([]);
   });
 
   it('sub-nav de profile lista conta, uso, api-keys e connected-apps', () => {

@@ -17,6 +17,20 @@ import type { BrandGuideline } from '@/lib/figma-types';
 
 /** Chave de persistência — herdada do BrandCockpit (SSoT). */
 export const ACTIVE_BRAND_LS_KEY = 'vsn_active_brand';
+/** MRU de marcas visitadas (mais-recente-primeiro) — alimenta RECENTES no rail. */
+const RECENT_BRANDS_LS_KEY = 'vsn_recent_brands';
+const RECENT_CAP = 8;
+
+function readRecent(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(RECENT_BRANDS_LS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 interface ActiveBrandContextValue {
   /** Id da marca ativa (persistido), ou null quando não há marca selecionável. */
@@ -28,6 +42,8 @@ interface ActiveBrandContextValue {
   /** Lista bruta (inclui arquivadas), para telas que precisem do todo. */
   allBrands: BrandGuideline[];
   setActiveBrand: (id: string) => void;
+  /** Ids de marcas visitadas recentemente (MRU, mais-recente-primeiro). */
+  recentBrandIds: string[];
   isLoading: boolean;
 }
 
@@ -66,8 +82,16 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [brands, activeBrandId]);
 
+  const [recentBrandIds, setRecentBrandIds] = useState<string[]>(() => readRecent());
+
   const setActiveBrand = useCallback((id: string) => {
     setActiveBrandId(id);
+    setRecentBrandIds((prev) => {
+      const next = [id, ...prev.filter((x) => x !== id)].slice(0, RECENT_CAP);
+      if (typeof window !== 'undefined')
+        localStorage.setItem(RECENT_BRANDS_LS_KEY, JSON.stringify(next));
+      return next;
+    });
     if (typeof window !== 'undefined') localStorage.setItem(ACTIVE_BRAND_LS_KEY, id);
   }, []);
 
@@ -77,8 +101,16 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
   );
 
   const value = useMemo<ActiveBrandContextValue>(
-    () => ({ activeBrandId, activeBrand, brands, allBrands, setActiveBrand, isLoading }),
-    [activeBrandId, activeBrand, brands, allBrands, setActiveBrand, isLoading]
+    () => ({
+      activeBrandId,
+      activeBrand,
+      brands,
+      allBrands,
+      setActiveBrand,
+      recentBrandIds,
+      isLoading,
+    }),
+    [activeBrandId, activeBrand, brands, allBrands, setActiveBrand, recentBrandIds, isLoading]
   );
 
   return <ActiveBrandContext.Provider value={value}>{children}</ActiveBrandContext.Provider>;
