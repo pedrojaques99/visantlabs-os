@@ -6,13 +6,18 @@
  */
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Coins } from 'lucide-react';
+import { Coins, Menu } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import { classifyRoute } from '@/config/navConfig';
 
-export const AppTopBar: React.FC = () => {
+interface AppTopBarProps {
+  /** Abre o drawer de navegação no mobile. */
+  onMenuClick?: () => void;
+}
+
+export const AppTopBar: React.FC<AppTopBarProps> = ({ onMenuClick }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const { subscriptionStatus, onCreditPackagesModalOpen } = useLayout();
@@ -26,6 +31,13 @@ export const AppTopBar: React.FC = () => {
   return (
     <header className="h-12 shrink-0 flex items-center justify-between px-4 border-b border-border">
       <div className="flex items-center gap-2 text-sm min-w-0">
+        <button
+          onClick={onMenuClick}
+          aria-label="open navigation"
+          className="md:hidden p-1.5 -ml-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <Menu size={18} />
+        </button>
         {brandName && (
           <>
             <span className="text-foreground font-medium truncate">{brandName}</span>

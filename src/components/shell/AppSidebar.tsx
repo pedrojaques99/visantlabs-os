@@ -27,7 +27,14 @@ import {
   type NavCtx,
 } from '@/config/navConfig';
 
-export const AppSidebar: React.FC = () => {
+interface AppSidebarProps {
+  /** 'desktop' = rail persistente (hidden no mobile); 'mobile' = drawer. */
+  variant?: 'desktop' | 'mobile';
+  /** Chamado após navegar — usado pelo drawer mobile para fechar. */
+  onNavigate?: () => void;
+}
+
+export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onNavigate }) => {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -48,9 +55,20 @@ export const AppSidebar: React.FC = () => {
   const initial = (user?.name || user?.email || '?').slice(0, 1).toUpperCase();
 
   const isSubActive = (to: string) => location.pathname === to.split('?')[0];
+  const go = (to: string) => {
+    navigate(to);
+    onNavigate?.();
+  };
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-border bg-background/60">
+    <aside
+      className={cn(
+        'flex-col border-r border-border',
+        variant === 'mobile'
+          ? 'flex w-64 h-full bg-background'
+          : 'hidden md:flex w-60 shrink-0 bg-background/60'
+      )}
+    >
       {/* Nível 0 — marca ativa */}
       <div className="p-3 border-b border-border">
         <BrandSwitcher
@@ -69,7 +87,7 @@ export const AppSidebar: React.FC = () => {
           return (
             <button
               key={s.id}
-              onClick={() => navigate(s.to)}
+              onClick={() => go(s.to)}
               className={cn(
                 'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                 active
@@ -97,7 +115,7 @@ export const AppSidebar: React.FC = () => {
               return (
                 <button
                   key={i.id}
-                  onClick={() => navigate(i.to)}
+                  onClick={() => go(i.to)}
                   className={cn(
                     'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
                     active
@@ -119,7 +137,7 @@ export const AppSidebar: React.FC = () => {
       {/* Footer — usuário · tema · settings */}
       <div className="p-2 border-t border-border flex items-center gap-1">
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => go('/profile')}
           className="flex-1 min-w-0 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0">
@@ -135,7 +153,7 @@ export const AppSidebar: React.FC = () => {
           {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
         </button>
         <button
-          onClick={() => navigate('/profile?tab=configuration')}
+          onClick={() => go('/profile?tab=configuration')}
           aria-label="settings"
           className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
