@@ -1,6 +1,9 @@
 {
   "nav": {
     "context": "CONTEXT",
+    "allBrands": "All brands",
+    "filterThisBrand": "Show only this brand",
+    "showAll": "Show all brands",
     "recent": "RECENT",
     "pinned": "PINNED",
     "unpin": "Unpin",

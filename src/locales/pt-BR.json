@@ -1,6 +1,9 @@
 {
   "nav": {
     "context": "CONTEXTO",
+    "allBrands": "Todas as marcas",
+    "filterThisBrand": "Mostrar só esta marca",
+    "showAll": "Mostrar todas as marcas",
     "recent": "RECENTES",
     "pinned": "FIXADOS",
     "unpin": "Desafixar",
