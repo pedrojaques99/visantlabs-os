@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { colord } from 'colord';
 import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -71,6 +72,43 @@ export function getContrastRatio(l1: number, l2: number): number {
   return (brightest + 0.05) / (darkest + 0.05);
 }
 
+// WCAG AA contrast threshold for normal-size text.
+const AA_TEXT = 4.5;
+
+/** WCAG contrast ratio between two hex colors. */
+function contrastHex(a: string, b: string): number {
+  return getContrastRatio(getRelativeLuminance(a), getRelativeLuminance(b));
+}
+
+/**
+ * Nudge `fg` (hue preserved) toward the bg's opposite luminance pole until it
+ * clears `target` WCAG contrast on `bg`, re-saturating lightly so the brand hue
+ * stays vivid instead of washing out. Snaps to pure ink only if unreachable.
+ * This is what keeps brand accents/links readable instead of hard black/white.
+ */
+function ensureReadable(fg: string, bg: string, target = AA_TEXT): string {
+  let c = colord(fg);
+  if (!c.isValid()) c = colord('#888888');
+  if (contrastHex(c.toHex(), bg) >= target) return c.toHex();
+  const towardLight = colord(bg).isDark();
+  for (let i = 0; i < 50; i++) {
+    c = towardLight ? c.lighten(0.04).saturate(0.02) : c.darken(0.04);
+    const hex = c.toHex();
+    if (contrastHex(hex, bg) >= target) return hex;
+    const b = c.brightness();
+    if ((towardLight && b >= 0.98) || (!towardLight && b <= 0.02)) break;
+  }
+  return colord(bg).isDark() ? '#ffffff' : '#111111';
+}
+
+/** Most chromatic, mid-luminance palette color — the brand's signature hue. */
+function pickChromatic(hexes: string[]): string | undefined {
+  return hexes
+    .map((hex) => ({ hex, hsl: colord(hex).toHsl() }))
+    .filter((x) => x.hsl.l > 10 && x.hsl.l < 90)
+    .sort((a, b) => b.hsl.s - a.hsl.s)[0]?.hex;
+}
+
 export function toCSSVariables(g: BrandGuideline): string {
   const lines: string[] = [':root {'];
   g.colors?.forEach((c) => {
@@ -122,63 +160,77 @@ export function extractBrandTheme(
     );
 
   const colors = guideline?.colors || [];
-  const accentToken = findByRole('PRIMARY') ||
-    findByRole('ACCENT') ||
-    findByMatch(['brand', 'primary', 'accent', 'main']) ||
-    colors[0] || { hex: '#888888' };
-  const bgToken = findByRole('BACKGROUND') ||
-    findByRole('BG') ||
-    findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
-  const surfaceToken = findByRole('SURFACE') ||
-    findByRole('CARD') ||
-    findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
-  const textToken = findByRole('TEXT') ||
-    findByRole('HEADLINE') ||
-    findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
+  const hexes = colors.map((c) => c.hex).filter(Boolean) as string[];
 
-  const paletteByLum = [...(guideline?.colors || [])].sort(
-    (a, b) => getRelativeLuminance(a.hex) - getRelativeLuminance(b.hex)
-  );
-  const lightestInPalette = paletteByLum[paletteByLum.length - 1]?.hex || '#ffffff';
-  const darkestInPalette = paletteByLum[0]?.hex || '#050505';
+  // ── Accent: explicit role first, else the most chromatic mid-tone hue ──
+  const accentRaw =
+    findByRole('PRIMARY')?.hex ||
+    findByRole('ACCENT')?.hex ||
+    findByMatch(['brand', 'primary', 'accent', 'main'])?.hex ||
+    pickChromatic(hexes) ||
+    hexes[0] ||
+    '#888888';
 
-  let rBg = bgToken.hex;
-  let rSurface = surfaceToken.hex;
-  let rText = textToken.hex;
+  // Palette poles by luminance drive the light/dark derivations.
+  const byLum = [...hexes].sort((a, b) => getRelativeLuminance(a) - getRelativeLuminance(b));
+  const lightest = byLum[byLum.length - 1] || '#ffffff';
+  const darkest = byLum[0] || '#0a0a0a';
+
+  const accentHsl = colord(accentRaw).toHsl();
+  // Grayscale brands shouldn't get a phantom color cast on their dark canvas.
+  const tintS = accentHsl.s < 12 ? 0 : 16;
+
+  let rBg: string;
+  let rSurface: string;
+  let rText: string;
 
   if (mode === 'light') {
-    rBg = lightestInPalette;
-    if (getRelativeLuminance(rBg) < 0.8) rBg = '#ffffff';
-    rSurface = paletteByLum[paletteByLum.length - 2]?.hex || '#f5f5f7';
-    rText = darkestInPalette;
+    // Brand LIGHT theme: near-white canvas, darkest brand ink for text.
+    rBg = getRelativeLuminance(lightest) > 0.75 ? lightest : '#ffffff';
+    rSurface = colord(rBg).darken(0.05).toHex();
+    rText = ensureReadable(darkest, rBg, AA_TEXT);
   } else if (mode === 'dark') {
-    rBg = darkestInPalette;
-    if (getRelativeLuminance(rBg) > 0.2) rBg = '#050505';
-    rSurface = paletteByLum[1]?.hex || '#111111';
-    rText = lightestInPalette;
+    // Brand DARK theme: near-black canvas subtly tinted with the brand hue,
+    // light ink lifted to AA. This is what the app renders in dark mode.
+    rBg = colord({ h: accentHsl.h, s: tintS, l: 7 }).toHex();
+    rSurface = colord({ h: accentHsl.h, s: Math.min(tintS, 14), l: 12 }).toHex();
+    rText = ensureReadable(lightest, rBg, AA_TEXT);
+  } else {
+    // 'brand' — honor declared tokens, falling back to the palette's poles,
+    // then enforce contrast so a self-declared theme still reads.
+    const bgTok =
+      findByRole('BACKGROUND') || findByRole('BG') || findByMatch(['background', 'canvas', 'bg']);
+    const surfTok = findByRole('SURFACE') || findByRole('CARD') || findByMatch(['surface', 'card']);
+    const textTok =
+      findByRole('TEXT') || findByRole('HEADLINE') || findByMatch(['text', 'content', 'body']);
+    rBg = bgTok?.hex || darkest || '#0a0a0a';
+    const bgDark = colord(rBg).isDark();
+    rSurface =
+      surfTok?.hex ||
+      (bgDark ? colord(rBg).lighten(0.06).toHex() : colord(rBg).darken(0.05).toHex());
+    rText = ensureReadable(textTok?.hex || (bgDark ? lightest : darkest), rBg, AA_TEXT);
   }
 
-  const bgLum = getRelativeLuminance(rBg);
-  const textLum = getRelativeLuminance(rText);
-  if (getContrastRatio(bgLum, textLum) < 4.5) {
-    rText = bgLum > 0.5 ? '#000000' : '#ffffff';
+  // Surface must read as a distinct layer from the canvas.
+  if (contrastHex(rSurface, rBg) < 1.08) {
+    rSurface = colord(rBg).isDark()
+      ? colord(rBg).lighten(0.06).toHex()
+      : colord(rBg).darken(0.05).toHex();
   }
 
   const toRgb = (hex: string) => {
-    const h = hex.replace('#', '').padEnd(6, '0');
-    const r = parseInt(h.substring(0, 2), 16) || 0;
-    const g = parseInt(h.substring(2, 4), 16) || 0;
-    const b = parseInt(h.substring(4, 6), 16) || 0;
+    const { r, g, b } = colord(hex).toRgb();
     return `${r}, ${g}, ${b}`;
   };
 
-  const accentLum = getRelativeLuminance(accentToken.hex);
-  const accentText =
-    getContrastRatio(accentLum, getRelativeLuminance('#000000')) >= 4.5 ? '#000000' : '#ffffff';
+  // Accent is used both as a fill AND as text/icon on the canvas, so pin it to
+  // AA against the resolved bg (hue preserved) — links/labels never wash out.
+  const accent = ensureReadable(accentRaw, rBg, AA_TEXT);
+  const accentText = contrastHex(accent, '#000000') >= AA_TEXT ? '#000000' : '#ffffff';
 
   return {
-    accent: accentToken.hex,
-    accentRgb: toRgb(accentToken.hex),
+    accent,
+    accentRgb: toRgb(accent),
     accentText,
     bg: rBg,
     surface: rSurface,
@@ -1794,7 +1846,7 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   if (!guideline) return null;
 
   const enabled = new Set(sections);
-  const wrapperCls = compact ? 'flex flex-col' : 'flex flex-col gap-24';
+  const wrapperCls = compact ? 'flex flex-col' : 'flex flex-col gap-16';
 
   const wrap = (id: BrandViewSection, node: React.ReactNode) => {
     const actions = renderSectionActions?.(id);

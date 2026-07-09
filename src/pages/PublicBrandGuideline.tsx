@@ -59,6 +59,7 @@ import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandComple
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { copyToClipboard } from '@/utils/clipboard';
 import { useConnectBrandToAI } from '@/hooks/useConnectBrandToAI';
+import { useTheme } from '@/hooks/useTheme';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -161,7 +162,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // Nav collapses from top-bar → sidebar once the hero scrolls out of view.
   const [navCollapsed, setNavCollapsed] = useState(false);
   const heroSentinelRef = useRef<HTMLDivElement>(null);
-  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>('brand');
+  // Brand portal theme follows the APP's light/dark by default (app in dark →
+  // the brand's dark theme), until the viewer picks one or the brand has a
+  // saved default. `themePinnedRef` guards against overriding an explicit pick.
+  const { theme: appTheme } = useTheme();
+  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>(appTheme);
+  const themePinnedRef = useRef(false);
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const { connecting, connect } = useConnectBrandToAI();
@@ -219,16 +225,26 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // Theme: owners persist their pick as the brand's default (loaded first next time).
   const chooseTheme = useCallback(
     (next: 'brand' | 'light' | 'dark') => {
+      themePinnedRef.current = true; // explicit viewer choice — stop following the app
       setTheme(next);
       if (canEdit && guideline?.id) handleSave({ defaultTheme: next } as Partial<BrandGuideline>);
     },
     [canEdit, guideline?.id, handleSave]
   );
 
-  // Load the brand's saved default theme on first load (once per brand).
+  // Follow the app's light/dark toggle until the viewer pins a choice.
+  useEffect(() => {
+    if (!themePinnedRef.current) setTheme(appTheme);
+  }, [appTheme]);
+
+  // A brand's explicitly saved default theme (owner's curated presentation)
+  // wins over the app-following default and pins it.
   useEffect(() => {
     const dt = guideline?.defaultTheme;
-    if (dt === 'brand' || dt === 'light' || dt === 'dark') setTheme(dt);
+    if (dt === 'brand' || dt === 'light' || dt === 'dark') {
+      themePinnedRef.current = true;
+      setTheme(dt);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guideline?.id]);
 
@@ -674,7 +690,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         )}
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
         {/* Dynamic Hero Section — identity on the left, the brand mark on the
             right. Bottom-aligned so the mark sits on the wordmark's baseline like
             a brand card, killing the old empty gap below the title. */}
@@ -764,9 +780,18 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               </div>
             </div>
 
-            {/* Brand mark — logo lockup, or themed initial when there's no logo */}
+            {/* Brand mark — logo lockup, or themed initial when there's no logo.
+                Logo sits on a light plate (like a brand-kit chip) so dark/colored
+                marks stay visible on the dark hero instead of vanishing. */}
             <div className="shrink-0">
-              <div className="flex items-center justify-center rounded-3xl bg-[var(--brand-text)]/[0.03] border border-[var(--brand-text)]/10 px-8 py-7 min-w-[180px] md:min-w-[220px]">
+              <div
+                className={cn(
+                  'flex items-center justify-center rounded-3xl border px-8 py-7 min-w-[180px] md:min-w-[220px]',
+                  avatar.logoUrl
+                    ? 'bg-white border-black/5 shadow-sm'
+                    : 'bg-[var(--brand-text)]/[0.03] border-[var(--brand-text)]/10'
+                )}
+              >
                 {avatar.logoUrl ? (
                   <img
                     src={avatar.logoUrl}
