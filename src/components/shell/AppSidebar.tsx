@@ -120,19 +120,19 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   };
 
   const iconBtn =
-    'p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors';
+    'p-1.5 rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors';
 
   return (
     <aside
       className={cn(
-        'flex-col border-r border-border',
+        'flex-col border-r border-sidebar-border',
         isMobile
-          ? 'flex w-64 h-full bg-background'
-          : cn('hidden md:flex shrink-0 bg-background/60', collapsed ? 'w-[56px]' : 'w-60')
+          ? 'flex w-64 h-full bg-sidebar'
+          : cn('hidden md:flex shrink-0 bg-sidebar', collapsed ? 'w-[56px]' : 'w-60')
       )}
     >
       {/* Nível 0 — marca ativa */}
-      <div className={cn('border-b border-border', collapsed ? 'p-2 flex justify-center' : 'p-3')}>
+      <div className={cn('border-b border-sidebar-border', collapsed ? 'p-2 flex justify-center' : 'p-3')}>
         {collapsed ? (
           <button
             onClick={toggleCollapsed}
@@ -171,8 +171,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                 'flex items-center rounded-md text-sm transition-colors',
                 collapsed ? 'h-9 w-9 justify-center' : 'w-full gap-2.5 px-2.5 py-1.5',
                 active
-                  ? 'bg-accent text-accent-foreground font-medium'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
               <Icon size={16} className="shrink-0" />
@@ -185,7 +185,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
       {/* Favoritos — itens fixados pelo usuário (star estilo Figma) */}
       {pinned.length > 0 &&
         (collapsed ? (
-          <div className="px-2 pt-2 mt-1 border-t border-border flex flex-col items-center gap-1">
+          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
             {pinned.map((p) => {
               const PinIcon = p.type === 'brand' ? Palette : getLucideIcon(p.icon) ?? Star;
               const active = location.pathname === p.to.split('?')[0];
@@ -197,8 +197,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                   className={cn(
                     'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
                     active
-                      ? 'bg-accent text-accent-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   )}
                 >
                   <PinIcon size={16} className="shrink-0" />
@@ -207,8 +207,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             })}
           </div>
         ) : (
-          <div className="px-2 pt-2 mt-1 border-t border-border">
-            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
               {t('nav.pinned')}
             </div>
             <nav className="space-y-0.5">
@@ -222,8 +222,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                       className={cn(
                         'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
                         active
-                          ? 'bg-accent/60 text-foreground'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       )}
                     >
                       <PinIcon size={14} className="shrink-0" />
@@ -247,7 +247,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
       {/* Recentes — marcas visitadas recentemente (acesso rápido cross-tela) */}
       {recentBrands.length > 0 &&
         (collapsed ? (
-          <div className="px-2 pt-2 mt-1 border-t border-border flex flex-col items-center gap-1">
+          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
             {recentBrands.map((b) => (
               <button
                 key={b.id}
@@ -260,8 +260,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             ))}
           </div>
         ) : (
-          <div className="px-2 pt-2 mt-1 border-t border-border">
-            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
               {t('nav.recent')}
             </div>
             <nav className="space-y-0.5">
@@ -269,7 +269,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                 <button
                   key={b.id}
                   onClick={() => openBrand(b.id!)}
-                  className="w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                 >
                   <BrandAvatar brand={b} size={16} rounded="sm" />
                   <span className="truncate">{b.identity?.name || b.name || 'Brand'}</span>
@@ -281,8 +281,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
 
       {/* Nível 2 — contexto da seção atual (escondido quando colapsado) */}
       {!collapsed && contextItems.length > 0 && (
-        <div className="px-2 pt-2 mt-1 border-t border-border">
-          <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+        <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+          <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
             {t('nav.context')}
           </div>
           <nav className="space-y-0.5">
@@ -296,8 +296,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                   className={cn(
                     'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
                     active
-                      ? 'bg-accent/60 text-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   )}
                 >
                   {Icon && <Icon size={14} className="shrink-0" />}
@@ -313,7 +313,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
 
       {/* Footer — usuário · tema · settings · colapsar */}
       {collapsed ? (
-        <div className="p-2 border-t border-border flex flex-col items-center gap-1">
+        <div className="p-2 border-t border-sidebar-border flex flex-col items-center gap-1">
           <button onClick={() => go('/profile')} title={user?.name || user?.email || t('nav.profile.label')} className={iconBtn}>
             <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
               {initial}
@@ -327,10 +327,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           </button>
         </div>
       ) : (
-        <div className="p-2 border-t border-border flex items-center gap-1">
+        <div className="p-2 border-t border-sidebar-border flex items-center gap-1">
           <button
             onClick={() => go('/profile')}
-            className="flex-1 min-w-0 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex-1 min-w-0 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
           >
             <span className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium shrink-0">
               {initial}

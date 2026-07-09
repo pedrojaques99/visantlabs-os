@@ -709,7 +709,7 @@ export const BrandGuidelinesPage: React.FC = () => {
           <aside
             role="navigation"
             aria-label={t('brand.guidelines.brand_guidelines_selection')}
-            className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl overflow-y-auto"
+            className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 border-r border-sidebar-border bg-sidebar overflow-y-auto"
             data-vsn-region="sidebar"
           >
             <GuidelinesSidebar
