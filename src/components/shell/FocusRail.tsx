@@ -33,8 +33,8 @@ const DockItem: React.FC<DockItemProps> = ({ icon: Icon, label, to, active, onCl
     className={cn(
       'h-9 w-9 flex items-center justify-center rounded-lg transition-colors',
       active
-        ? 'bg-accent text-accent-foreground'
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
     )}
   >
     <Icon size={17} />
@@ -59,7 +59,7 @@ export const FocusRail: React.FC = () => {
   const go = (to: string) => navigate(to);
 
   return (
-    <div className="hidden md:flex fixed left-2 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-1 p-1.5 rounded-2xl border border-border bg-background/80 backdrop-blur-md shadow-lg">
+    <div className="hidden md:flex fixed left-2 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-1 p-1.5 rounded-2xl border border-sidebar-border bg-sidebar/90 backdrop-blur-md shadow-lg">
       {sections.map((s) => (
         <DockItem
           key={s.id}
@@ -70,7 +70,7 @@ export const FocusRail: React.FC = () => {
           onClick={go}
         />
       ))}
-      <div className="h-px w-6 bg-border my-0.5" />
+      <div className="h-px w-6 bg-sidebar-border my-0.5" />
       <DockItem
         icon={PROFILE_SECTION.icon}
         label={t(PROFILE_SECTION.labelKey)}

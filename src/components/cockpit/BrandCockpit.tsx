@@ -227,7 +227,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
       <DemoBrandBanner brandId={activeBrand?.id} />
 
       <main
-        className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-8 pb-12 min-h-full flex flex-col"
+        className="relative z-10 w-full px-4 sm:px-6 lg:px-8 pt-8 pb-12 min-h-full flex flex-col"
         data-vsn-region="content"
       >
         <h1 className="sr-only">{t('cockpit.title')}</h1>

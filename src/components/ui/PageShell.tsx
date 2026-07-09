@@ -110,7 +110,10 @@ export const PageShell: React.FC<PageShellProps> = ({
             className={cn(
               'mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-16',
               inShell ? 'pt-6 sm:pt-8' : 'pt-14 sm:pt-20',
-              WIDTH_MAP[width],
+              // Dentro do AppShell todas as páginas usam a MESMA largura (full,
+              // ignora o `width` por-página): sem isso o conteúdo "pisca pro lado"
+              // ao navegar entre full e 7xl/5xl, e os grids não cobrem a tela.
+              inShell ? 'max-w-full' : WIDTH_MAP[width],
               contentClassName
             )}
           >

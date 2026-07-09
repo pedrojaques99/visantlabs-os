@@ -402,6 +402,11 @@ const BrandGraceBanner = ({
   );
 };
 
+// Sidebar-lista de marcas escondida por ora (single-column + grid preenche a
+// tela; mata a duplicação de lista/busca). O componente `GuidelinesSidebar`
+// segue pronto pra reimportar — basta virar este flag pra true.
+const SHOW_BRAND_SIDEBAR = false;
+
 const BrandGrid = ({
   guidelines,
   onSelect,
@@ -714,8 +719,8 @@ export const BrandGuidelinesPage: React.FC = () => {
       {/* Two-pane contido: lista-de-marcas + conteúdo dentro do AppShell (não
           mais `fixed` cobrindo o rail). Cada pane rola independente. */}
       <div className="h-full bg-transparent relative z-10 flex overflow-hidden">
-        {/* Desktop Sidebar */}
-        {!isLoading && guidelines.length > 0 && (
+        {/* Desktop Sidebar (escondida por ora — SHOW_BRAND_SIDEBAR) */}
+        {SHOW_BRAND_SIDEBAR && !isLoading && guidelines.length > 0 && (
           <aside
             role="navigation"
             aria-label={t('brand.guidelines.brand_guidelines_selection')}
@@ -740,19 +745,12 @@ export const BrandGuidelinesPage: React.FC = () => {
           className="flex-1 w-full min-w-0 overflow-y-auto"
           data-vsn-region="content"
         >
-          <div
-            className={cn(
-              'px-4 sm:px-6 lg:px-8 pt-8 pb-16',
-              // Com a lista lateral, o conteúdo encosta nela (left-aligned) em vez
-              // de centralizar e deixar um vão; vazio → centraliza normalmente.
-              !isLoading && guidelines.length > 0 ? 'max-w-6xl' : 'mx-auto max-w-7xl'
-            )}
-          >
+          <div className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-16">
             {/* Header */}
             <div className="flex items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Mobile sidebar trigger */}
-                <div className="lg:hidden">
+                {/* Mobile sidebar trigger (escondido por ora — SHOW_BRAND_SIDEBAR) */}
+                <div className={SHOW_BRAND_SIDEBAR ? 'lg:hidden' : 'hidden'}>
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button

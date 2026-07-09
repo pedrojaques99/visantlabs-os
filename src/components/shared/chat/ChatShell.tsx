@@ -711,7 +711,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
               {/* Sidebar */}
               <aside
                 className={cn(
-                  'flex flex-col bg-neutral-950 border-r border-neutral-800 transition-all duration-200 ease-in-out',
+                  'flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-200 ease-in-out',
                   // Mobile: overlay drawer
                   !isDesktop && 'fixed inset-y-0 left-0 z-40 w-72',
                   !isDesktop && !sidebarOpen && '-translate-x-full',
