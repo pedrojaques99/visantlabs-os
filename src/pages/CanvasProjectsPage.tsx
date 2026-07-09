@@ -31,9 +31,8 @@ import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExpor
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDateShort } from '@/utils/localeUtils';
-import { cn } from '@/lib/utils';
-import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
-import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { useBrandFilter } from '@/hooks/useBrandFilter';
+import { BrandFilterChip } from '@/components/shell/BrandFilterChip';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -99,9 +98,8 @@ export const CanvasProjectsPage: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   // Filtro opcional pela marca ativa (default global; um clique escopa) — o
   // canvas é produção mas a lista é global; o chip reconcilia com o topbar.
-  const activeBrandCtx = useActiveBrandSafe();
-  const activeBrand = activeBrandCtx?.activeBrand ?? null;
-  const [brandFilter, setBrandFilter] = useState(false);
+  const { activeBrand, enabled: brandFilter, toggle: toggleBrandFilter, brandId } =
+    useBrandFilter('vsn_filter_canvas');
 
   const isLoadingRef = useRef(false);
   const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
@@ -296,8 +294,8 @@ export const CanvasProjectsPage: React.FC = () => {
 
   const filteredProjects = useMemo(() => {
     let result = [...projects];
-    if (brandFilter && activeBrand?.id) {
-      result = result.filter((project) => project.linkedGuidelineId === activeBrand.id);
+    if (brandId) {
+      result = result.filter((project) => project.linkedGuidelineId === brandId);
     }
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -308,30 +306,11 @@ export const CanvasProjectsPage: React.FC = () => {
       const dateB = new Date(b.updatedAt || b.createdAt).getTime();
       return dateB - dateA;
     });
-  }, [projects, searchQuery, brandFilter, activeBrand]);
+  }, [projects, searchQuery, brandId]);
 
   const headerActions = (
     <div className="flex items-center gap-3">
-      {activeBrand?.id && (
-        <Button
-          variant="ghost"
-          onClick={() => setBrandFilter((v) => !v)}
-          title={brandFilter ? t('nav.showAll') : t('nav.filterThisBrand')}
-          className={cn(
-            'h-10 px-3 rounded-md flex items-center gap-2 text-xs transition-colors',
-            brandFilter
-              ? 'bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan'
-              : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/40 border border-transparent'
-          )}
-        >
-          <BrandAvatar brand={activeBrand} size={16} rounded="sm" />
-          <span className="hidden md:inline truncate max-w-[120px]">
-            {brandFilter
-              ? activeBrand.identity?.name || activeBrand.name
-              : t('nav.allBrands')}
-          </span>
-        </Button>
-      )}
+      <BrandFilterChip brand={activeBrand} enabled={brandFilter} onToggle={toggleBrandFilter} />
 
       <div className="relative">
         <Button

@@ -18,9 +18,8 @@ import {
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatDateShort } from '@/utils/localeUtils';
-import { cn } from '@/lib/utils';
-import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
-import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { useBrandFilter } from '@/hooks/useBrandFilter';
+import { BrandFilterChip } from '@/components/shell/BrandFilterChip';
 
 /**
  * Grid of the user's Creative Studio projects.
@@ -34,11 +33,9 @@ export const CreativeProjectsPage: React.FC = () => {
   const reset = useCreativeStore((s) => s.reset);
 
   // Filtro opcional pela marca ativa (default global; server-side via hook).
-  const activeBrand = useActiveBrandSafe()?.activeBrand ?? null;
-  const [brandFilter, setBrandFilter] = useState(false);
-  const { data: projects = [], isLoading, error } = useCreativeProjects(
-    brandFilter && activeBrand?.id ? activeBrand.id : undefined
-  );
+  const { activeBrand, enabled: brandFilter, toggle: toggleBrandFilter, brandId } =
+    useBrandFilter('vsn_filter_creative');
+  const { data: projects = [], isLoading, error } = useCreativeProjects(brandId ?? undefined);
   const deleteMutation = useDeleteCreativeProject();
   const updateMutation = useUpdateCreativeProject();
 
@@ -136,24 +133,7 @@ export const CreativeProjectsPage: React.FC = () => {
 
   const headerActions = (
     <div className="flex items-center gap-3">
-      {activeBrand?.id && (
-        <Button
-          variant="ghost"
-          onClick={() => setBrandFilter((v) => !v)}
-          title={brandFilter ? t('nav.showAll') : t('nav.filterThisBrand')}
-          className={cn(
-            'h-10 px-3 rounded-md flex items-center gap-2 text-xs transition-colors',
-            brandFilter
-              ? 'bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan'
-              : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/40 border border-transparent'
-          )}
-        >
-          <BrandAvatar brand={activeBrand} size={16} rounded="sm" />
-          <span className="hidden md:inline truncate max-w-[120px]">
-            {brandFilter ? activeBrand.identity?.name || activeBrand.name : t('nav.allBrands')}
-          </span>
-        </Button>
-      )}
+      <BrandFilterChip brand={activeBrand} enabled={brandFilter} onToggle={toggleBrandFilter} />
       <div className="relative">
         <Button
           variant="ghost"

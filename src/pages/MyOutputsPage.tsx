@@ -22,6 +22,10 @@ import {
 } from '../components/ui/BreadcrumbWithBack';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
+import { useBrandFilter } from '@/hooks/useBrandFilter';
+import { BrandFilterChip } from '@/components/shell/BrandFilterChip';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { cn } from '@/lib/utils';
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -32,6 +36,10 @@ export const MyOutputsPage: React.FC = () => {
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
+  const inShell = useInAppShell();
+  // Filtro opcional pela marca ativa — mockups guardam brandGuidelineId.
+  const { activeBrand, enabled: brandFilter, toggle: toggleBrandFilter, brandId } =
+    useBrandFilter('vsn_filter_outputs');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const { isAuthenticated, subscriptionStatus } = useLayout();
@@ -103,12 +111,14 @@ export const MyOutputsPage: React.FC = () => {
           tags.includes(filterTag.toLowerCase()) ||
           brandingTags.includes(filterTag.toLowerCase());
 
-        return matchesSearch && matchesTag;
+        const matchesBrand = !brandId || mockup.brandGuidelineId === brandId;
+
+        return matchesSearch && matchesTag && matchesBrand;
       });
     } catch {
       return [];
     }
-  }, [mockups, searchQuery, filterTag]);
+  }, [mockups, searchQuery, filterTag, brandId]);
 
   // Handler functions
   const handleView = useCallback((mockup: Mockup) => {
@@ -389,12 +399,17 @@ export const MyOutputsPage: React.FC = () => {
         description={t('myOutputs.seoDescription')}
         noindex={true}
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 relative overflow-hidden">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative overflow-hidden',
+          inShell ? 'min-h-full' : 'min-h-screen'
+        )}
+      >
         {/* Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none"></div>
+        <div className={cn('inset-0 z-0 pointer-events-none', inShell ? 'absolute' : 'fixed')}></div>
 
         {/* Header with Controls and Sidebar */}
-        <div className="relative z-30 pt-16 md:pt-20 pb-6">
+        <div className={cn('relative z-30 pb-6', inShell ? 'pt-6' : 'pt-16 md:pt-20')}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             {/* Breadcrumb with Back Button */}
             <div className="mb-4">
@@ -432,6 +447,11 @@ export const MyOutputsPage: React.FC = () => {
                   showBackButton={false}
                 />
               </div>
+              <BrandFilterChip
+                brand={activeBrand}
+                enabled={brandFilter}
+                onToggle={toggleBrandFilter}
+              />
             </div>
           </div>
         </div>

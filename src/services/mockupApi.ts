@@ -69,6 +69,7 @@ export interface Mockup {
   aspectRatio: string;
   isLiked?: boolean; // User's like status for this mockup
   likesCount?: number; // Total number of likes
+  brandGuidelineId?: string | null; // marca vinculada (biblioteca brand-scoped)
   createdAt?: string;
   updatedAt?: string;
 }
