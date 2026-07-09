@@ -162,11 +162,14 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // Nav collapses from top-bar → sidebar once the hero scrolls out of view.
   const [navCollapsed, setNavCollapsed] = useState(false);
   const heroSentinelRef = useRef<HTMLDivElement>(null);
-  // Brand portal theme follows the APP's light/dark by default (app in dark →
-  // the brand's dark theme), until the viewer picks one or the brand has a
-  // saved default. `themePinnedRef` guards against overriding an explicit pick.
+  // In-app (owner opens by id) the portal mirrors the APP's light/dark — app in
+  // dark → the brand's dark theme. The public page (opened by slug) instead
+  // keeps the brand's curated presentation ('brand' or a saved default).
+  // `themePinnedRef` guards against overriding an explicit/curated pick.
   const { theme: appTheme } = useTheme();
-  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>(appTheme);
+  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>(() =>
+    idOverride ? appTheme : 'brand'
+  );
   const themePinnedRef = useRef(false);
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
@@ -232,18 +235,22 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     [canEdit, guideline?.id, handleSave]
   );
 
-  // Follow the app's light/dark toggle until the viewer pins a choice.
+  // In-app only: follow the app's light/dark toggle until the viewer pins a
+  // choice. The public page ignores the visitor's app theme (curated view).
   useEffect(() => {
-    if (!themePinnedRef.current) setTheme(appTheme);
-  }, [appTheme]);
+    if (idOverride && !themePinnedRef.current) setTheme(appTheme);
+  }, [appTheme, idOverride]);
 
-  // Light/dark always mirror the app (the viewer's OS/app preference wins), so
-  // only a saved `'brand'` default — the raw-palette presentation, which isn't a
-  // light/dark choice — is honored and pins the portal.
+  // Saved default: on the PUBLIC page any saved theme is the curated default and
+  // pins it. In-app only an explicit 'brand' pick overrides the app-follow
+  // (a saved light/dark shouldn't fight the owner's live app theme).
   useEffect(() => {
-    if (guideline?.defaultTheme === 'brand') {
+    const dt = guideline?.defaultTheme;
+    const valid = dt === 'brand' || dt === 'light' || dt === 'dark';
+    if (!valid) return;
+    if (idOverride ? dt === 'brand' : true) {
       themePinnedRef.current = true;
-      setTheme('brand');
+      setTheme(dt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guideline?.id]);

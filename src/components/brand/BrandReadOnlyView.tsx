@@ -57,7 +57,10 @@ export interface BrandReadOnlyViewProps {
 // ──────────────────────────────────────────────────────────────────────────────
 
 export function getRelativeLuminance(hex: string): number {
-  const h = hex.replace('#', '').padEnd(6, '0');
+  // Normalize any CSS color (3-digit hex, rgb(), named) to 6-digit hex first —
+  // the raw `.replace/.padEnd` below mis-parses '#fff' as '#fff000'.
+  const c = colord(hex);
+  const h = (c.isValid() ? c.toHex() : '#000000').replace('#', '').padEnd(6, '0');
   const rgb = [
     parseInt(h.substring(0, 2), 16) / 255,
     parseInt(h.substring(2, 4), 16) / 255,
