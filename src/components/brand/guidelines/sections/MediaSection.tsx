@@ -179,30 +179,24 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
               )}
             </div>
 
-            {hits !== null && (
-              <div>
-                {hits.length === 0 ? (
-                  <p className="text-[11px] text-neutral-600">No matching assets.</p>
-                ) : (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                    {hits.map((h) => (
-                      <div
-                        key={h.id}
-                        className="relative aspect-square rounded-md overflow-hidden border border-neutral-800 group"
-                        title={`${h.label || ''} · ${Math.round(h.score * 100)}% match`}
-                      >
-                        <img
-                          src={h.url}
-                          alt={h.label || ''}
-                          className="w-full h-full object-cover"
-                        />
-                        <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-[9px] font-mono text-white/80">
-                          {Math.round(h.score * 100)}%
-                        </span>
-                      </div>
-                    ))}
+            {hits !== null && hits.length > 0 && (
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                {hits.map((h) => (
+                  <div
+                    key={h.id}
+                    className="relative aspect-square rounded-md overflow-hidden border border-neutral-800 group"
+                    title={`${h.label || ''} · ${Math.round(h.score * 100)}% match`}
+                  >
+                    <img
+                      src={h.url}
+                      alt={h.label || ''}
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-[9px] font-mono text-white/80">
+                      {Math.round(h.score * 100)}%
+                    </span>
                   </div>
-                )}
+                ))}
               </div>
             )}
           </div>

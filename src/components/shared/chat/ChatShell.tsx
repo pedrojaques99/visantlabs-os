@@ -1249,7 +1249,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
               </div>
 
               {/* Right-side panel — Media Kit / Prompt Library */}
-              {isLargeScreen && mediaPanelOpen && (
+              {isLargeScreen && mediaPanelOpen && selectedBrand && (
                 <aside className="flex flex-col bg-neutral-950 border-l border-neutral-800 w-80 shrink-0">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
                     <div className="flex items-center bg-white/5 rounded-md p-0.5 gap-px">
@@ -1305,7 +1305,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                     </div>
                   </div>
 
-                  {panelTab === 'media' && selectedBrand ? (
+                  {panelTab === 'media' ? (
                     <div className="flex-1 overflow-y-auto scrollbar-thin p-3">
                       <p className="text-xs text-neutral-500 mb-3 px-1">
                         Clique ou arraste para o chat
@@ -1342,12 +1342,6 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           'typography',
                         ]}
                       />
-                    </div>
-                  ) : panelTab === 'media' ? (
-                    <div className="flex-1 flex items-center justify-center p-4">
-                      <p className="text-xs text-neutral-500 text-center">
-                        Selecione uma brand guideline para ver o Media Kit
-                      </p>
                     </div>
                   ) : (
                     <div className="flex-1 overflow-y-auto">
