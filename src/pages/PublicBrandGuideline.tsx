@@ -766,7 +766,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
             {/* Brand mark — logo lockup, or themed initial when there's no logo */}
             <div className="shrink-0">
-              <div className="flex items-center justify-center rounded-3xl bg-[var(--brand-surface)]/25 border border-[var(--brand-text)]/10 px-8 py-7 min-w-[180px] md:min-w-[220px]">
+              <div className="flex items-center justify-center rounded-3xl bg-[var(--brand-text)]/[0.03] border border-[var(--brand-text)]/10 px-8 py-7 min-w-[180px] md:min-w-[220px]">
                 {avatar.logoUrl ? (
                   <img
                     src={avatar.logoUrl}
