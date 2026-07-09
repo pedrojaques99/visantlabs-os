@@ -19,7 +19,6 @@ import {
   ChevronRight,
   Search,
   X,
-  Sparkles,
   LayoutGrid,
   Star,
 } from 'lucide-react';
@@ -73,10 +72,6 @@ const ADMIN_CATEGORY: CategoryDef = { key: 'admin', icon: ShieldCheck };
 // fica sempre aberto; o cinto de utilidades (conversores, geradores, áudio,
 // comunidade) colapsa sob um disclosure pra não diluir "pra que a Visant serve".
 const CORE_CATEGORY_KEYS = new Set(['pro', 'creative']);
-
-// Anchor apps promoted to the Featured band (spanning cards). Only rendered
-// when present in the visible set (copilot depends on FEATURE_COPILOT).
-const FEATURED_IDS = ['copilot', 'mockup-machine', 'branding-machine', 'brand-guidelines'];
 
 type AccessFilter = 'all' | 'free' | 'premium';
 
@@ -926,24 +921,16 @@ export const AppsPage: React.FC = () => {
   // Sectioned view: only on "All", no search, default sort.
   const showSections = !activeCategory && !search && sortBy === 'default';
 
-  const featuredApps = useMemo(() => {
-    if (!showSections) return [];
-    const byId = new Map(sortedApps.map((a) => [appId(a), a]));
-    return FEATURED_IDS.map((id) => byId.get(id)).filter(Boolean) as any[];
-  }, [sortedApps, showSections]);
-
-  const featuredIdSet = useMemo(() => new Set(featuredApps.map((a) => appId(a))), [featuredApps]);
-
   const sections = useMemo(() => {
     if (!showSections) return [];
     return categories
       .map((cat) => ({
         key: cat.key,
         icon: cat.icon,
-        apps: sortedApps.filter((a) => a.category === cat.key && !featuredIdSet.has(appId(a))),
+        apps: sortedApps.filter((a) => a.category === cat.key),
       }))
       .filter((cat) => cat.apps.length > 0);
-  }, [showSections, categories, sortedApps, featuredIdSet]);
+  }, [showSections, categories, sortedApps]);
 
   // ─── Handlers ─────────────────────────────────────────────────────────
 
@@ -1193,21 +1180,8 @@ export const AppsPage: React.FC = () => {
               >
                 {showSections ? (
                   <>
-                    {/* Featured band */}
-                    {featuredApps.length > 0 && (
-                      <section>
-                        <SectionHeader
-                          icon={Sparkles}
-                          label={t('apps.featuredLabel')}
-                          count={featuredApps.length}
-                        />
-                        <div className={GRID_CLASS}>
-                          {featuredApps.map((app) => (
-                            <AppCard key={appId(app)} app={app} featured {...cardProps} />
-                          ))}
-                        </div>
-                      </section>
-                    )}
+                    {/* Featured apps fundidos nas categorias (mantêm o badge Pro) —
+                        sem seção "Destaque" solitária deixando colunas vazias. */}
 
                     {/* Core sections (brand-AI) — sempre abertas */}
                     {sections

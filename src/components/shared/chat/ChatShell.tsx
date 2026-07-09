@@ -738,7 +738,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                 {/* Sessions section */}
                 <div className="flex-1 overflow-y-auto px-3 pb-3">
-                  <div className="px-3 py-2 text-xs text-neutral-500">Recentes</div>
+                  <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                    Sessões
+                  </div>
                   {loadingSessions ? (
                     <div className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-500">
                       <GlitchLoader size={12} />
