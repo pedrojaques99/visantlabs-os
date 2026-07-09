@@ -407,14 +407,21 @@ const BrandGrid = ({
   onSelect,
   onArchive,
   onUnarchive,
+  search: searchProp,
+  onSearchChange,
 }: {
   guidelines: BrandGuideline[];
   onSelect: (g: BrandGuideline) => void;
   onArchive?: (id: string) => void;
   onUnarchive?: (id: string) => void;
+  /** Busca controlada (SSoT único compartilhado com a sidebar). */
+  search?: string;
+  onSearchChange?: (v: string) => void;
 }) => {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
+  const [internalSearch, setInternalSearch] = useState('');
+  const search = searchProp ?? internalSearch;
+  const setSearch = onSearchChange ?? setInternalSearch;
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('recent');
   const [showArchived, setShowArchived] = useState(false);
@@ -543,7 +550,7 @@ const BrandGrid = ({
 
       {/* Count */}
       <p className="text-[11px] text-neutral-700">
-        {filtered.length} of {guidelines.length} design system{guidelines.length !== 1 ? 's' : ''}
+        {filtered.length} of {guidelines.length} brand{guidelines.length !== 1 ? 's' : ''}
       </p>
 
       {/* Grid */}
@@ -617,6 +624,9 @@ export const BrandGuidelinesPage: React.FC = () => {
 
   const urlGuidelineId = searchParams.get('id');
   const [selectedId, setSelectedId] = useState<string | null>(urlGuidelineId);
+  // Busca de marca — SSoT único: a sidebar (lista) e o BrandGrid (cards) filtram
+  // pelo MESMO termo, em vez de dois estados desconexos. Finding #2.
+  const [brandSearch, setBrandSearch] = useState('');
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -717,6 +727,8 @@ export const BrandGuidelinesPage: React.FC = () => {
               selectedId={selectedId}
               onSelect={handleSelect}
               onCreate={() => handleOpenWizard()}
+              search={brandSearch}
+              onSearchChange={setBrandSearch}
             />
           </aside>
         )}
@@ -761,6 +773,8 @@ export const BrandGuidelinesPage: React.FC = () => {
                         selectedId={selectedId}
                         onSelect={handleSelect}
                         onCreate={() => handleOpenWizard()}
+                        search={brandSearch}
+                        onSearchChange={setBrandSearch}
                       />
                     </SheetContent>
                   </Sheet>
@@ -815,6 +829,8 @@ export const BrandGuidelinesPage: React.FC = () => {
                     onSelect={handleSelect}
                     onArchive={FEATURE_BRAND_BILLING ? archiveActions.requestArchive : undefined}
                     onUnarchive={FEATURE_BRAND_BILLING ? archiveActions.unarchive : undefined}
+                    search={brandSearch}
+                    onSearchChange={setBrandSearch}
                   />
                 </motion.div>
               )}

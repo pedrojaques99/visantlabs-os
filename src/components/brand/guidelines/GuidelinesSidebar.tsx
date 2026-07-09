@@ -44,6 +44,10 @@ interface GuidelinesSidebarProps {
   selectedId: string | null;
   onSelect: (guideline: BrandGuideline) => void;
   onCreate: () => void;
+  /** Busca controlada (SSoT único compartilhado com o grid). Sem isso, usa
+   *  estado interno — mantém compatibilidade com outros callers. */
+  search?: string;
+  onSearchChange?: (v: string) => void;
 }
 
 export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
@@ -51,11 +55,15 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   selectedId,
   onSelect,
   onCreate,
+  search,
+  onSearchChange,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isPinned, toggle: togglePin } = usePinnedNav();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearch, setInternalSearch] = useState('');
+  const searchQuery = search ?? internalSearch;
+  const setSearchQuery = onSearchChange ?? setInternalSearch;
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const duplicateMutation = useDuplicateGuideline();
