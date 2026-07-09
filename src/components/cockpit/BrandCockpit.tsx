@@ -226,7 +226,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
   // ── Render ──
   return (
     <div
-      className="fixed inset-0 z-10 bg-neutral-950 overflow-y-auto"
+      className="absolute inset-0 z-0 bg-neutral-950 overflow-y-auto"
       data-vsn-page="home"
       data-vsn-component="BrandCockpit"
     >
@@ -234,7 +234,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
       <DemoBrandBanner brandId={activeBrand?.id} />
 
       <main
-        className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-12 min-h-full flex flex-col"
+        className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-8 pb-12 min-h-full flex flex-col"
         data-vsn-region="content"
       >
         <h1 className="sr-only">{t('cockpit.title')}</h1>

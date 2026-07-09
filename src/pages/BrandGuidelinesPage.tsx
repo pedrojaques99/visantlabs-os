@@ -33,6 +33,7 @@ import {
   ArchiveRestore,
   MoreVertical,
   ChevronDown,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +47,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
+import { glassSurface } from '@/lib/ui/glass';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   const { t } = useTranslation();
@@ -348,6 +350,42 @@ const BrandQuotaMeter = ({
   );
 };
 
+/**
+ * Banner de tolerância de downgrade (RCD §3.5 — moldura de perda). Enquanto a
+ * janela de 7 dias corre, as marcas em excesso seguem ATIVAS; passou o prazo, o
+ * cron arquiva as mais antigas. Mostrar isso (com a perda enquadrada nas marcas
+ * do próprio usuário) converte melhor que arquivar em silêncio.
+ */
+const BrandGraceBanner = ({
+  graceUntil,
+  onUpgrade,
+}: {
+  graceUntil: string;
+  onUpgrade: () => void;
+}) => {
+  const { t } = useTranslation();
+  const until = new Date(graceUntil);
+  if (Number.isNaN(until.getTime()) || until.getTime() <= Date.now()) return null;
+  const days = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 86_400_000));
+
+  return (
+    <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+      <AlertTriangle size={16} className="text-warning shrink-0" />
+      <p className="text-sm text-neutral-200 flex-1">
+        {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
+      </p>
+      <Button
+        variant="subtle"
+        size="sm"
+        className="h-7 px-3 text-xs shrink-0 self-start sm:self-auto"
+        onClick={onUpgrade}
+      >
+        {t('brandQuota.graceCta')}
+      </Button>
+    </div>
+  );
+};
+
 const BrandGrid = ({
   guidelines,
   onSelect,
@@ -416,7 +454,7 @@ const BrandGrid = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search brands..."
-            className="h-8 pl-8 text-xs bg-white/[0.03] border-neutral-800"
+            className={cn('h-8 pl-8 text-xs', glassSurface.control)}
           />
         </div>
 
@@ -623,7 +661,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
   return (
     <div
-      className="brand-guidelines-root"
+      className="brand-guidelines-root relative h-full"
       data-vsn-page="brand-guidelines"
       data-vsn-component="brand-explorer"
       data-vsn-selected-id={selectedId}
@@ -632,18 +670,20 @@ export const BrandGuidelinesPage: React.FC = () => {
         title={t('brandGuidelines.seoTitle')}
         description={t('brandGuidelines.seoDescription')}
       />
-      <div className="fixed inset-0 z-0 bg-neutral-950" />
+      <div className="absolute inset-0 z-0 bg-neutral-950" />
 
       {/* Só tem a marca demo → convite persistente pra trazer a real (abre o wizard). */}
       <DemoBrandBanner onCta={() => handleOpenWizard()} />
 
-      <div className="min-h-screen bg-transparent relative z-10 flex">
+      {/* Two-pane contido: lista-de-marcas + conteúdo dentro do AppShell (não
+          mais `fixed` cobrindo o rail). Cada pane rola independente. */}
+      <div className="h-full bg-transparent relative z-10 flex overflow-hidden">
         {/* Desktop Sidebar */}
         {!isLoading && guidelines.length > 0 && (
           <aside
             role="navigation"
             aria-label={t('brand.guidelines.brand_guidelines_selection')}
-            className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30"
+            className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl overflow-y-auto"
             data-vsn-region="sidebar"
           >
             <GuidelinesSidebar
@@ -659,15 +699,12 @@ export const BrandGuidelinesPage: React.FC = () => {
         <main
           role="main"
           aria-label={t('brand.guidelines.brand_guideline_content')}
-          className={cn(
-            'flex-1 w-full min-h-screen transition-all duration-300',
-            !isLoading && guidelines.length > 0 ? 'lg:ml-[260px] xl:ml-[280px]' : ''
-          )}
+          className="flex-1 w-full min-w-0 overflow-y-auto"
           data-vsn-region="content"
         >
           <div
             className={cn(
-              'mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16',
+              'mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16',
               !isLoading && guidelines.length > 0 ? 'max-w-5xl' : 'max-w-7xl'
             )}
           >
@@ -714,6 +751,13 @@ export const BrandGuidelinesPage: React.FC = () => {
                 />
               )}
             </div>
+
+            {FEATURE_BRAND_BILLING && brandQuota?.graceUntil && (
+              <BrandGraceBanner
+                graceUntil={brandQuota.graceUntil}
+                onUpgrade={handleQuotaUpgrade}
+              />
+            )}
 
             {/* Content — dashboard/list. The per-brand editor lives in the unified
                 view (PublicBrandGuideline), reached via the early return above. */}

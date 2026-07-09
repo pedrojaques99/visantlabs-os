@@ -54,7 +54,19 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   const contextItems = contextNavFor(location.pathname, ctx);
   const initial = (user?.name || user?.email || '?').slice(0, 1).toUpperCase();
 
-  const isSubActive = (to: string) => location.pathname === to.split('?')[0];
+  // Active-state do L2 respeitando `?tab`: item sem query casa por path; item
+  // com `?tab` casa o tab atual; sem tab na URL, o 1º item daquele path é o
+  // default. Evita destacar "Conta" e "Uso e créditos" juntos em /profile.
+  const curTab = new URLSearchParams(location.search).get('tab');
+  const firstItemForPath = contextItems.find((i) => i.to.split('?')[0] === location.pathname);
+  const isSubActive = (to: string) => {
+    const [toPath, toQuery] = to.split('?');
+    if (location.pathname !== toPath) return false;
+    const toTab = toQuery ? new URLSearchParams(toQuery).get('tab') : null;
+    if (toTab === null) return true;
+    if (curTab === null) return firstItemForPath?.to === to;
+    return curTab === toTab;
+  };
   const go = (to: string) => {
     navigate(to);
     onNavigate?.();

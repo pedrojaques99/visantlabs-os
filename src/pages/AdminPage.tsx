@@ -1143,8 +1143,8 @@ export const AdminPage: React.FC = () => {
   return (
     <>
       <SEO title={t('admin.title')} description={t('admin.description')} noindex={true} />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0"></div>
+      <div className="min-h-full bg-neutral-950 text-neutral-300 relative">
+        <div className="absolute inset-0 z-0"></div>
 
         {/* Auth-resolution skeleton — only while confirming admin; sections handle their own loading. */}
         {(isCheckingAuth || (isUserAuthenticated && isAdmin === null)) && (

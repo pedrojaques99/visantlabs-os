@@ -12,6 +12,7 @@ import {
 } from './BreadcrumbWithBack';
 import { MicroTitle } from './MicroTitle';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '../shell/InAppShellContext';
 
 export interface BreadcrumbSegment {
   label: string;
@@ -87,6 +88,10 @@ export const PageShell: React.FC<PageShellProps> = ({
 }) => {
   const ariaLabel = typeof title === 'string' ? title : pageId;
   const backTarget = backTo ?? breadcrumb?.[0]?.to;
+  // Dentro do AppShell o rail + top bar já são o chrome: o fundo vira `absolute`
+  // (contido no <main relative>, não cobre o rail), a altura acompanha o main e
+  // o padding-top encolhe (não há mais Header por cima). Plano P1.
+  const inShell = useInAppShell();
 
   return (
     <div data-vsn-page={pageId} data-vsn-component={componentName ?? pageId}>
@@ -94,23 +99,24 @@ export const PageShell: React.FC<PageShellProps> = ({
 
       {/* Background layer */}
       {!noBackground && (
-        <div className="fixed inset-0 z-0 bg-neutral-950">
+        <div className={cn('inset-0 z-0 bg-neutral-950', inShell ? 'absolute' : 'fixed')}>
           <GridDotsBackground />
         </div>
       )}
 
-      <div className="min-h-screen bg-transparent relative z-10">
+      <div className={cn('bg-transparent relative z-10', inShell ? 'min-h-full' : 'min-h-screen')}>
         <main role="main" aria-label={ariaLabel} data-vsn-region="content">
           <div
             className={cn(
-              'mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 pb-10 sm:pb-16',
+              'mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-16',
+              inShell ? 'pt-6 sm:pt-8' : 'pt-14 sm:pt-20',
               WIDTH_MAP[width],
               contentClassName
             )}
           >
             {typeof title === 'string' && <h1 className="sr-only">{title}</h1>}
 
-            {breadcrumb && breadcrumb.length > 0 && (
+            {!inShell && breadcrumb && breadcrumb.length > 0 && (
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <BreadcrumbWithBack to={backTarget}>
                   <BreadcrumbList>

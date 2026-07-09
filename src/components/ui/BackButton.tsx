@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '../shell/InAppShellContext';
 
 interface BackButtonProps {
   onClick?: () => void;
@@ -14,6 +15,9 @@ interface BackButtonProps {
 export const BackButton: React.FC<BackButtonProps> = ({ onClick, className = '', label, to }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // Dentro do AppShell a navegação é o rail — o back de página é redundante. P1.
+  const inShell = useInAppShell();
+  if (inShell) return null;
 
   const handleClick = () => {
     if (onClick) {

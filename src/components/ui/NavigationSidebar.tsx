@@ -3,6 +3,7 @@ import { Menu, X, ChevronRight, ChevronDown, LucideIcon, GripVertical } from 'lu
 import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useResizable } from '@/hooks/useResizable';
+import { useInAppShell } from '../shell/InAppShellContext';
 
 export interface NavigationItem {
   id: string;
@@ -48,6 +49,9 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   externalGroupLabel,
 }) => {
   const firstExternalIndex = items.findIndex((i) => i.external);
+  // Dentro do AppShell o sidebar é contido (absolute no <main>), sem o offset
+  // de Header (pt-24) que assume o chrome antigo de página. P1.
+  const inShell = useInAppShell();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set([activeItemId]));
@@ -135,12 +139,13 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         ref={sidebarRef}
         style={{ width: `${sidebarWidth}px` }}
         className={cn(
-          'fixed top-0 left-0 h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border/50 overflow-y-auto z-40 transition-transform duration-300 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]',
+          'bg-sidebar text-sidebar-foreground border-r border-sidebar-border/50 overflow-y-auto z-40 transition-transform duration-300 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]',
+          inShell ? 'absolute top-0 left-0 h-full' : 'fixed top-0 left-0 h-screen',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           className
         )}
       >
-        <div className="p-4 pt-24 md:pt-28 space-y-2">
+        <div className={cn('p-4 space-y-2', inShell ? 'pt-6' : 'pt-24 md:pt-28')}>
           {title && (
             <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase  mb-4 px-2">
               {title}
