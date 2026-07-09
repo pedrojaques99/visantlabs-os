@@ -27,7 +27,9 @@ import {
   Eye,
   Archive,
   ArchiveRestore,
+  Star,
 } from 'lucide-react';
+import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -54,6 +56,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isPinned, toggle: togglePin } = usePinnedNav();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
@@ -262,6 +265,24 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="min-w-[120px]">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePin({
+                            type: 'brand',
+                            id: g.id!,
+                            label: g.identity?.name || g.name || 'Brand',
+                            to: `/brand-guidelines?id=${g.id}`,
+                          });
+                        }}
+                        className="text-xs gap-2"
+                      >
+                        <Star
+                          size={12}
+                          className={isPinned('brand', g.id!) ? 'fill-brand-cyan text-brand-cyan' : ''}
+                        />
+                        {isPinned('brand', g.id!) ? t('nav.unpin') : t('nav.pin')}
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)}
                         className="text-xs gap-2"

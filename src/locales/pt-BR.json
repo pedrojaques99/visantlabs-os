@@ -1,6 +1,9 @@
 {
   "nav": {
     "context": "CONTEXTO",
+    "pinned": "FIXADOS",
+    "unpin": "Desafixar",
+    "pin": "Fixar no menu",
     "collapse": "Recolher",
     "expand": "Expandir",
     "credits": "Créditos",

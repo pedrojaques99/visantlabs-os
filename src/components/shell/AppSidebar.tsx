@@ -15,14 +15,16 @@
  */
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Settings, Sun, Moon, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Settings, Sun, Moon, PanelLeftClose, PanelLeftOpen, Star, X, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
+import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { getLucideIcon } from '@/lib/ui/lucideIcon';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from '@/config/featureFlags';
 import { classifyRoute, visibleSections, contextNavFor, type NavCtx } from '@/config/navConfig';
 
@@ -42,6 +44,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   const navigate = useNavigate();
   const { user } = useLayout();
   const { brands, activeBrand, activeBrandId, setActiveBrand } = useActiveBrand();
+  const { items: pinned, unpin } = usePinnedNav();
 
   const isMobile = variant === 'mobile';
   const [collapsedRaw, setCollapsedRaw] = useState(
@@ -80,7 +83,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
     return curTab === toTab;
   };
   const go = (to: string) => {
-    navigate(to);
+    if (/^https?:\/\//.test(to)) {
+      window.open(to, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(to);
+    }
     onNavigate?.();
   };
 
@@ -146,6 +153,68 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           );
         })}
       </nav>
+
+      {/* Favoritos — itens fixados pelo usuário (star estilo Figma) */}
+      {pinned.length > 0 &&
+        (collapsed ? (
+          <div className="px-2 pt-2 mt-1 border-t border-border flex flex-col items-center gap-1">
+            {pinned.map((p) => {
+              const PinIcon = p.type === 'brand' ? Palette : getLucideIcon(p.icon) ?? Star;
+              const active = location.pathname === p.to.split('?')[0];
+              return (
+                <button
+                  key={`${p.type}:${p.id}`}
+                  onClick={() => go(p.to)}
+                  title={p.label}
+                  className={cn(
+                    'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
+                    active
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )}
+                >
+                  <PinIcon size={16} className="shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="px-2 pt-2 mt-1 border-t border-border">
+            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+              {t('nav.pinned')}
+            </div>
+            <nav className="space-y-0.5">
+              {pinned.map((p) => {
+                const PinIcon = p.type === 'brand' ? Palette : getLucideIcon(p.icon) ?? Star;
+                const active = location.pathname === p.to.split('?')[0];
+                return (
+                  <div key={`${p.type}:${p.id}`} className="group relative flex items-center">
+                    <button
+                      onClick={() => go(p.to)}
+                      className={cn(
+                        'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                        active
+                          ? 'bg-accent/60 text-foreground'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      )}
+                    >
+                      <PinIcon size={14} className="shrink-0" />
+                      <span className="truncate">{p.label}</span>
+                    </button>
+                    <button
+                      onClick={() => unpin(p.type, p.id)}
+                      aria-label={t('nav.unpin')}
+                      title={t('nav.unpin')}
+                      className="absolute right-1 opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
 
       {/* Nível 2 — contexto da seção atual (escondido quando colapsado) */}
       {!collapsed && contextItems.length > 0 && (

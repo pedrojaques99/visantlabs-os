@@ -21,12 +21,14 @@ import {
   X,
   Sparkles,
   LayoutGrid,
+  Star,
 } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
 import { getLucideIcon } from '@/lib/ui/lucideIcon';
+import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
 import { AppEditDialog } from '@/components/AppEditDialog';
 import { Button } from '@/components/ui/button';
@@ -121,6 +123,14 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
   // Ícone lucide do app (AppConfig.icon, editável no admin) como fallback do
   // thumbnail — em vez do genérico ImageIcon. Plano APP-SHELL P3.
   const AppIcon = getLucideIcon(app.icon) ?? ImageIcon;
+  // Fixar no rail (star estilo Figma).
+  const { isPinned, toggle } = usePinnedNav();
+  const pinId = app.appId || app.id;
+  const pinned = isPinned('app', pinId);
+  const togglePin = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggle({ type: 'app', id: pinId, label: app.name, to: app.link, icon: app.icon });
+  };
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.style.display = 'none';
@@ -165,6 +175,21 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
           {t('apps.hidden')}
         </div>
       )}
+
+      {/* Fixar no rail (star estilo Figma) — aparece no hover, fica se fixado */}
+      <button
+        onClick={togglePin}
+        aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
+        title={pinned ? t('nav.unpin') : t('nav.pin')}
+        className={cn(
+          'absolute top-2 left-2 z-40 p-1.5 rounded-md bg-black/40 backdrop-blur-sm transition-all',
+          pinned
+            ? 'opacity-100 text-brand-cyan'
+            : 'opacity-0 group-hover:opacity-100 text-white/70 hover:text-white'
+        )}
+      >
+        <Star size={14} className={pinned ? 'fill-brand-cyan' : ''} />
+      </button>
 
       {/* Thumbnail */}
       <div

@@ -1,6 +1,9 @@
 {
   "nav": {
     "context": "CONTEXT",
+    "pinned": "PINNED",
+    "unpin": "Unpin",
+    "pin": "Pin to sidebar",
     "collapse": "Collapse",
     "expand": "Expand",
     "credits": "Credits",
