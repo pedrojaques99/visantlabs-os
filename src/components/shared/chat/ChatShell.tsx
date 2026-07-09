@@ -48,6 +48,7 @@ import { usePasteImage } from '@/hooks/usePasteImage';
 import { toast } from 'sonner';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { useBrandImport } from '@/hooks/queries/useBrandImport';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import { Select } from '@/components/ui/select';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
 import { BrandReadOnlyView } from '@/components/brand/BrandReadOnlyView';
@@ -57,6 +58,7 @@ import { useLayout } from '@/hooks/useLayout';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
+import { glassSurface } from '@/lib/ui/glass';
 
 /** Copy that differs between chat surfaces (Admin Chat vs Brand Copilot). */
 export interface ChatShellStrings {
@@ -134,6 +136,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  // Copilot herda a marca ativa do app (SSoT): topbar/rail dizem "Aurora Coffee",
+  // então o contexto do chat começa nela. Numa sessão nova é a 1ª escolha (ainda
+  // destravável); sessões já com marca respeitam a marca salva.
+  const activeBrandId = useActiveBrandSafe()?.activeBrandId ?? '';
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
@@ -169,6 +175,14 @@ export const ChatShell: React.FC<ChatShellProps> = ({
     () => (brandGuidelines || []).find((b: any) => b.id === selectedBrandId),
     [brandGuidelines, selectedBrandId]
   );
+
+  // No load inicial (ainda sem sessão), adota a marca ativa. Não sobrescreve
+  // sessão carregada (currentSessionId) nem escolha explícita (selectedBrandId).
+  useEffect(() => {
+    if (!selectedBrandId && activeBrandId && !currentSessionId) {
+      setSelectedBrandId(activeBrandId);
+    }
+  }, [activeBrandId, selectedBrandId, currentSessionId]);
 
   // O(1) lookup by id — used to show brand avatars in session list
   const brandById = React.useMemo(() => {
@@ -316,7 +330,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
   const createNewSession = async () => {
     try {
       const session = await api.createSession(undefined);
-      setSelectedBrandId('');
+      setSelectedBrandId(activeBrandId); // sessão nova herda a marca ativa
       setCurrentSessionId(session._id);
       setPendingApprovals([]);
       setPendingPlan(null);
@@ -921,7 +935,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             key={s}
                             type="button"
                             onClick={() => setInput(s)}
-                            className="text-left px-4 py-3 rounded-xl border border-neutral-800 bg-white/[0.03] text-xs text-neutral-300 hover:border-white/15 hover:bg-white/[0.06] hover:text-neutral-100 transition-colors flex items-center gap-2.5"
+                            className={cn('text-left px-4 py-3 rounded-xl text-xs text-neutral-300 hover:border-white/15 hover:text-neutral-100 flex items-center gap-2.5', glassSurface.tile)}
                           >
                             <Sparkles size={12} className="text-brand-cyan/70 shrink-0" />
                             <span>{s}</span>
@@ -1088,7 +1102,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           {inflightToolCalls.some(
                             (tc) => tc.name === 'generate_or_update_mockup'
                           ) && (
-                            <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-xl border border-neutral-800 bg-white/[0.03] group">
+                            <div className={cn('relative aspect-square w-full max-w-md overflow-hidden rounded-xl group', glassSurface.tile)}>
                               <SkeletonLoader
                                 width="100%"
                                 height="100%"
