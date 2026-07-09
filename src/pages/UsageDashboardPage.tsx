@@ -17,6 +17,8 @@ import {
 } from '../components/ui/BreadcrumbWithBack';
 import { BackButton } from '../components/ui/BackButton';
 import { Button } from '@/components/ui/button';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { cn } from '@/lib/utils';
 
 interface UsageStats {
   totalRecords: number;
@@ -100,6 +102,7 @@ const FEATURE_OPTIONS: { value: FeatureFilter; label: string }[] = [
 
 export const UsageDashboardPage: React.FC = () => {
   const { isAuthenticated, isCheckingAuth } = useLayout();
+  const inShell = useInAppShell();
 
   const [chartMetric, setChartMetric] = useState<ChartMetric>('calls');
   const [featureFilter, setFeatureFilter] = useState<FeatureFilter>('all');
@@ -121,7 +124,13 @@ export const UsageDashboardPage: React.FC = () => {
 
   if (isCheckingAuth || (isLoadingStats && !stats)) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 flex items-center justify-center',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
         <GlitchLoader size={32} />
       </div>
     );
@@ -129,7 +138,13 @@ export const UsageDashboardPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 flex items-center justify-center',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
         <div className="text-center">
           <p className="text-destructive font-mono mb-4">Please sign in to view usage analytics</p>
           <BackButton
@@ -187,7 +202,13 @@ export const UsageDashboardPage: React.FC = () => {
         description="Monitor your API consumption, credits, and historical usage trends."
         noindex={true}
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
           {/* Header Card */}
           <Card className="bg-neutral-900 border border-white/10 rounded-xl">

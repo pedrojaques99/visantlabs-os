@@ -37,6 +37,8 @@ import { API_BASE } from '@/config/api';
 import { useTranslation } from '@/hooks/useTranslation';
 import { copyToClipboard } from '@/utils/clipboard';
 import { formatDateShort } from '@/utils/localeUtils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { cn } from '@/lib/utils';
 
 interface ApiKeyRaw {
   id: string;
@@ -78,6 +80,7 @@ function getAuthHeaders(): Record<string, string> {
 export const ApiKeysPage: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
+  const inShell = useInAppShell();
 
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -231,7 +234,13 @@ export const ApiKeysPage: React.FC = () => {
   // Loading state
   if (isCheckingAuth || (isLoading && keys.length === 0)) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 flex items-center justify-center',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
         <GlitchLoader size={32} />
       </div>
     );
@@ -240,7 +249,13 @@ export const ApiKeysPage: React.FC = () => {
   // Not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 flex items-center justify-center',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
         <div className="text-center">
           <p className="text-destructive font-mono mb-4">
             {t('api.keys.please_sign_in_to_manage_api_keys')}
@@ -261,8 +276,14 @@ export const ApiKeysPage: React.FC = () => {
         description={t('api.keys.manage_your_api_keys_for_agent_and_progr')}
         noindex={true}
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0"></div>
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
+        <div className={cn('inset-0 z-0', inShell ? 'absolute' : 'fixed')}></div>
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
           {/* Header Card */}
           <Card className="bg-neutral-900 border border-white/10 rounded-xl">

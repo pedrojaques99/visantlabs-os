@@ -24,6 +24,8 @@ import {
   BreadcrumbSeparator,
 } from '../components/ui/BreadcrumbWithBack';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { cn } from '@/lib/utils';
 
 // ─── Local CodeBlock component ──────────────────────────────────────────────
 
@@ -294,6 +296,7 @@ result = response.json()
 
 export const GettingStartedPage: React.FC = () => {
   useLayout();
+  const inShell = useInAppShell();
 
   return (
     <>
@@ -301,8 +304,14 @@ export const GettingStartedPage: React.FC = () => {
         title="Getting Started — Visant API"
         description="Follow a step-by-step guide to authenticate and call Visant's AI brand, mockup, and creative generation tools via API."
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0 pointer-events-none">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-12 md:pt-14'
+        )}
+      >
+        <div className={cn('inset-0 z-0 pointer-events-none', inShell ? 'absolute' : 'fixed')}>
           <GridDotsBackground />
         </div>
 

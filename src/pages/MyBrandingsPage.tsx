@@ -23,11 +23,14 @@ import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button';
 import { formatDateShort } from '@/utils/localeUtils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { cn } from '@/lib/utils';
 
 export const MyBrandingsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useLayout();
+  const inShell = useInAppShell();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -83,8 +86,14 @@ export const MyBrandingsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative">
-        <div className="fixed inset-0 z-0"></div>
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-14'
+        )}
+      >
+        <div className={cn('inset-0 z-0', inShell ? 'absolute' : 'fixed')}></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -106,8 +115,14 @@ export const MyBrandingsPage: React.FC = () => {
         description={t('branding.myBrandings.seoDescription')}
         noindex={true}
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0"></div>
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative overflow-hidden',
+          inShell ? 'min-h-full' : 'min-h-screen',
+          inShell ? 'pt-6' : 'pt-14'
+        )}
+      >
+        <div className={cn('inset-0 z-0', inShell ? 'absolute' : 'fixed')}></div>
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
           {/* Breadcrumb with Back Button */}
           <div className="mb-6">
