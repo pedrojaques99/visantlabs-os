@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import type { BrandViewSection } from './BrandReadOnlyView';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { getBrandLogoUrl, getBrandInitial } from '@/utils/brandLogo';
 
 // ── Icon Map ────────────────────────────────────────────────────────────────
 
@@ -238,12 +239,13 @@ export function extFromUrl(url?: string): string {
 }
 
 // ── Brand avatar / default ────────────────────────────────────────────────────
-// SSoT for a brand's canonical "mark" — the primary/icon logo when present,
-// otherwise a themed initial. Reused by the public hero lockup and (via quick-edit)
-// the dashboard cards so a brand looks identified everywhere, even before a logo.
+// A brand's canonical "mark" for large display (hero lockup): the logo when
+// present, otherwise a themed initial chip over the brand's primary color.
+// Delegates logo/initial resolution to the shared `brandLogo` SSoT and only
+// adds the AA-contrast color pair the initial chip needs.
 
 export interface BrandAvatar {
-  /** Logo image URL when the brand has one (icon > primary > first). */
+  /** Logo image URL when the brand has one (primary > icon > first). */
   logoUrl?: string;
   /** Uppercase first letter fallback when there's no logo. */
   initial: string;
@@ -265,15 +267,13 @@ function readableInk(hex: string): string {
 }
 
 export function getBrandAvatar(g?: BrandGuideline | null): BrandAvatar {
-  const logos = g?.logos || [];
-  const logo =
-    logos.find((l) => l.variant === 'icon') ||
-    logos.find((l) => l.variant === 'primary') ||
-    logos[0];
-  const name = g?.identity?.name || g?.name || 'Brand';
-  const initial = name.trim().charAt(0).toUpperCase() || 'B';
   const colors = g?.colors || [];
   const primary = colors.find((c) => c.role?.toUpperCase() === 'PRIMARY') || colors[0];
   const bg = primary?.hex || '#888888';
-  return { logoUrl: logo?.url, initial, bg, fg: readableInk(bg) };
+  return {
+    logoUrl: getBrandLogoUrl(g, 'primary'),
+    initial: getBrandInitial(g),
+    bg,
+    fg: readableInk(bg),
+  };
 }
