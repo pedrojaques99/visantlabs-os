@@ -22,6 +22,7 @@ import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
 import { resolveShell, routeMode } from '@/config/navConfig';
 import { AppShell } from './shell/AppShell';
+import { FocusRail } from './shell/FocusRail';
 
 /** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. `insufficient_credits` (free user no muro de crédito) abre o modal de upgrade de plano — Pro dá 10× créditos. */
 export type SubscriptionModalContext = {
@@ -586,9 +587,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Shell switcher (plano APP-SHELL-REALIGNMENT, F1): o SSoT decide o chrome.
   // App logado + rota dashboard → AppShell (rail + top bar). Marketing e
   // editores (focus) seguem o chrome atual; F3 migra os editores.
-  const useAppShell =
-    resolveShell(location.pathname, isAuthenticated) === 'app' &&
-    routeMode(location.pathname) === 'full';
+  const shellKind = resolveShell(location.pathname, isAuthenticated);
+  const useAppShell = shellKind === 'app' && routeMode(location.pathname) === 'full';
+  // Modo focus (editor logado): dock flutuante em vez do rail cheio; o Header
+  // de marketing some para o editor não parecer "site". CanvasHeader e o chrome
+  // próprio de cada editor (ToolEditorShell/MiniAppShell) permanecem.
+  const focusMode = shellKind === 'app' && routeMode(location.pathname) === 'focus';
 
   return (
     <LayoutContext.Provider value={contextValue}>
@@ -663,6 +667,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
 
         {!useAppShell &&
+          !focusMode &&
           !location.pathname.startsWith('/canvas/') &&
           !location.pathname.startsWith('/brand/') && (
           <Header
@@ -752,6 +757,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           )}
 
+        {focusMode && <FocusRail />}
+
         {useAppShell ? (
           <AppShell>{children}</AppShell>
         ) : (
@@ -770,6 +777,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         )}
 
         {!useAppShell &&
+          !focusMode &&
           !location.pathname.startsWith('/canvas/') &&
           !location.pathname.startsWith('/brand/') &&
           !location.pathname.startsWith('/admin/chat') &&

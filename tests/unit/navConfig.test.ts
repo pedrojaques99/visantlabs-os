@@ -51,6 +51,12 @@ describe('classifyRoute', () => {
     }
   });
 
+  it('chats (/copilot, /admin/chat) são focus; /admin é dashboard', () => {
+    expect(classifyRoute('/copilot').mode).toBe('focus');
+    expect(classifyRoute('/admin/chat').mode).toBe('focus');
+    expect(classifyRoute('/admin').mode).toBe('full');
+  });
+
   it('distingue /canvas (dashboard) de /canvas/:id (editor)', () => {
     expect(classifyRoute('/canvas')).toMatchObject({ shell: 'app', mode: 'full', section: null });
     expect(classifyRoute('/canvas/abc')).toMatchObject({ shell: 'app', mode: 'focus' });
