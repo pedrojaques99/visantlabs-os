@@ -237,13 +237,13 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     if (!themePinnedRef.current) setTheme(appTheme);
   }, [appTheme]);
 
-  // A brand's explicitly saved default theme (owner's curated presentation)
-  // wins over the app-following default and pins it.
+  // Light/dark always mirror the app (the viewer's OS/app preference wins), so
+  // only a saved `'brand'` default — the raw-palette presentation, which isn't a
+  // light/dark choice — is honored and pins the portal.
   useEffect(() => {
-    const dt = guideline?.defaultTheme;
-    if (dt === 'brand' || dt === 'light' || dt === 'dark') {
+    if (guideline?.defaultTheme === 'brand') {
       themePinnedRef.current = true;
-      setTheme(dt);
+      setTheme('brand');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guideline?.id]);
