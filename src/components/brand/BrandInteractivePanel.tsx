@@ -21,6 +21,32 @@ import { brandGuidelineApi, type BrandSuggestion } from '@/services/brandGuideli
 // Suggestion kind → icon/label/execution mode (SSoT shared with the cockpit).
 const KIND_META = SUGGESTION_KIND_META;
 
+// Static, always-available starters shown when live AI ideas are offline. The
+// generator injects the brand, so these stay on-brand without any AI call —
+// the panel never dead-ends on an error in the hero.
+const STATIC_STARTERS: Array<{ title: string; label: string; prompt: string }> = [
+  {
+    title: 'Instagram feed post',
+    label: 'Social',
+    prompt: 'A bold, on-brand Instagram feed post announcing what makes this brand special.',
+  },
+  {
+    title: 'Promo story',
+    label: 'Social',
+    prompt: 'A vertical, on-brand Instagram story promoting a current offer or launch.',
+  },
+  {
+    title: 'Launch poster',
+    label: 'Print',
+    prompt: 'A striking on-brand launch poster with the brand logo, a headline and key message.',
+  },
+  {
+    title: 'Campaign ad',
+    label: 'Ad',
+    prompt: 'A clean on-brand ad creative with a strong headline and a clear call to action.',
+  },
+];
+
 /**
  * Owner-only interactive band for the brand overview. Two jobs:
  *  (A) Seasonal/contextual on-brand IDEAS (free, cached) → one-tap into the mockup
@@ -209,7 +235,31 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             <Loader2 size={13} className="animate-spin" /> Reading the brand + what’s coming up…
           </div>
         ) : error && suggestions.length === 0 ? (
-          <p className="text-xs text-[var(--brand-text)]/45 py-8 text-center">{error}</p>
+          <div className="space-y-3">
+            <p className="flex items-center gap-1.5 text-[11px] text-[var(--brand-text)]/40">
+              <Sparkles size={11} className="text-[var(--accent)]/70" />
+              Live ideas are offline — start from a brand-ready template:
+            </p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {STATIC_STARTERS.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => onGenerate(s.prompt)}
+                  className="group flex flex-col gap-2 rounded-xl bg-[var(--brand-text)]/[0.03] p-4 text-left hover:bg-[var(--brand-text)]/[0.06] transition-colors"
+                >
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--brand-text)]/40">
+                    {s.label}
+                  </span>
+                  <span className="text-sm font-medium text-[var(--brand-text)] leading-snug">
+                    {s.title}
+                  </span>
+                  <span className={cn(primaryBtn, 'h-7 px-3 text-[11px] self-start mt-1')}>
+                    <Wand2 size={11} /> Generate
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
             {suggestions.map((s, i) => {
@@ -222,7 +272,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                 >
                   <div className="flex items-center gap-1.5 text-[var(--brand-text)]/40">
                     <Icon size={12} className="shrink-0" />
-                    <span className="text-[9px] font-mono uppercase tracking-wider">
+                    <span className="text-[10px] font-mono uppercase tracking-wider">
                       {meta.label}
                     </span>
                   </div>
