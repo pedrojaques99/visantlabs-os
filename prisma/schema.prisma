@@ -735,6 +735,7 @@ model AppConfig {
   thumbnail    String?
   badge        String?
   badgeVariant String   @default("free") // featured | premium | free | comingSoon
+  icon         String?  // nome do ícone lucide (ex.: "LayoutGrid") — usado no rail/nav (plano APP-SHELL F4)
   category     String   @default("design")
   isExternal   Boolean  @default(false)
   free         Boolean  @default(true)

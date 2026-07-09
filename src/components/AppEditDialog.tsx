@@ -51,6 +51,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
     thumbnail: '',
     badge: '',
     badgeVariant: 'free',
+    icon: '',
     category: 'pro',
     isExternal: false,
     free: true,
@@ -102,6 +103,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         thumbnail: app.thumbnail,
         badge: app.badge,
         badgeVariant: app.badgeVariant,
+        icon: app.icon,
         category: app.category,
         isExternal: app.isExternal,
         free: app.free,
@@ -119,6 +121,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
         thumbnail: '',
         badge: '',
         badgeVariant: 'free',
+        icon: '',
         category: 'pro',
         isExternal: false,
         free: true,
@@ -294,6 +297,17 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   placeholder="0"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="icon">Icon (lucide)</Label>
+              <Input
+                id="icon"
+                value={formData.icon || ''}
+                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                placeholder="e.g. LayoutGrid, Sparkles, Image"
+              />
             </div>
 
             <div className="space-y-2">
