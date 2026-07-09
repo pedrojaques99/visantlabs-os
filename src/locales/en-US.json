@@ -12,11 +12,33 @@
     "expand": "Expand",
     "credits": "Credits",
     "upgrade": "Upgrade",
-    "cockpit": { "label": "Cockpit", "overview": "Overview", "campaigns": "Campaigns", "work": "Work" },
-    "brands": { "label": "Brands", "all": "All brands", "guideline": "Guidelines", "machine": "Branding machine", "mine": "My brandings" },
-    "copilot": { "label": "Copilot" },
-    "apps": { "label": "Apps", "all": "All apps" },
-    "profile": { "label": "Profile", "account": "Account", "usage": "Usage & credits", "apiKeys": "API keys", "connectedApps": "Connected apps" }
+    "cockpit": {
+      "label": "Cockpit",
+      "overview": "Overview",
+      "campaigns": "Campaigns",
+      "work": "Work"
+    },
+    "brands": {
+      "label": "Brands",
+      "all": "All brands",
+      "guideline": "Guidelines",
+      "machine": "Branding machine",
+      "mine": "My brandings"
+    },
+    "copilot": {
+      "label": "Copilot"
+    },
+    "apps": {
+      "label": "Apps",
+      "all": "All apps"
+    },
+    "profile": {
+      "label": "Profile",
+      "account": "Account",
+      "usage": "Usage & credits",
+      "apiKeys": "API keys",
+      "connectedApps": "Connected apps"
+    }
   },
   "about": {
     "description": {
@@ -740,7 +762,14 @@
     "typography": "Typography",
     "voice": "Voice & Tone",
     "voicePlaceholder": "e.g., Professional, friendly, concise",
-    "voiceTone": "Voice Tone"
+    "voiceTone": "Voice Tone",
+    "searchPlaceholder": "Search brands...",
+    "allFolders": "All",
+    "sortRecent": "Recent",
+    "sortName": "Name",
+    "sortCompleteness": "Completeness",
+    "countBrands": "{filtered} of {total} brands",
+    "noMatch": "No brands match “{term}”"
   },
   "branding": {
     "allSectionsGenerated": "All sections have already been generated",
@@ -5101,7 +5130,6 @@
         "open_full_editor": "Open full editor →",
         "editing_section": "Editing",
         "connect": "Connect",
-        "connecting": "Connecting…",
         "connect_brand_aria": "Connect brand to Claude, Cursor or other AI tools",
         "download": "Download",
         "download_brand_aria": "Download brand guidelines",

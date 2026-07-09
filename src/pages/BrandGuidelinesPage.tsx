@@ -482,7 +482,7 @@ const BrandGrid = ({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search brands..."
+            placeholder={t('brandGuidelines.searchPlaceholder')}
             className={cn('h-8 pl-8 text-xs', glassSurface.control)}
           />
         </div>
@@ -498,7 +498,7 @@ const BrandGrid = ({
                   : 'border-transparent text-neutral-600 hover:text-neutral-400'
               )}
             >
-              All
+              {t('brandGuidelines.allFolders')}
             </button>
             {folders.map((f) => (
               <button
@@ -523,7 +523,11 @@ const BrandGrid = ({
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-400 border border-transparent hover:border-neutral-800 transition-colors">
                 <ArrowUpDown size={11} />
-                {sort === 'recent' ? 'Recent' : sort === 'name' ? 'Name' : 'Completeness'}
+                {sort === 'recent'
+                  ? t('brandGuidelines.sortRecent')
+                  : sort === 'name'
+                    ? t('brandGuidelines.sortName')
+                    : t('brandGuidelines.sortCompleteness')}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[130px]">
@@ -532,21 +536,21 @@ const BrandGrid = ({
                 checked={sort === 'recent'}
                 onCheckedChange={() => setSort('recent')}
               >
-                Recent
+                {t('brandGuidelines.sortRecent')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 className="text-xs"
                 checked={sort === 'name'}
                 onCheckedChange={() => setSort('name')}
               >
-                Name
+                {t('brandGuidelines.sortName')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 className="text-xs"
                 checked={sort === 'completeness'}
                 onCheckedChange={() => setSort('completeness')}
               >
-                Completeness
+                {t('brandGuidelines.sortCompleteness')}
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -555,7 +559,10 @@ const BrandGrid = ({
 
       {/* Count */}
       <p className="text-[11px] text-neutral-700">
-        {filtered.length} of {guidelines.length} brand{guidelines.length !== 1 ? 's' : ''}
+        {t('brandGuidelines.countBrands', {
+          filtered: filtered.length,
+          total: guidelines.length,
+        })}
       </p>
 
       {/* Grid */}
@@ -606,7 +613,7 @@ const BrandGrid = ({
       {filtered.length === 0 && search.trim() && (
         <div className="flex flex-col items-center py-12 gap-3">
           <Search size={20} className="text-neutral-700" />
-          <p className="text-xs text-neutral-600">No brands match "{search}"</p>
+          <p className="text-xs text-neutral-600">{t('brandGuidelines.noMatch', { term: search })}</p>
         </div>
       )}
 
@@ -811,7 +818,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                   className="flex flex-col items-center justify-center py-40 gap-6"
                 >
                   <GlitchLoader size={40} />
-                  <p className="text-neutral-600 text-xs animate-pulse">Loading...</p>
+                  <p className="text-neutral-600 text-xs animate-pulse">{t('common.loading')}</p>
                 </motion.div>
               ) : guidelines.length === 0 ? (
                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />

@@ -12,11 +12,33 @@
     "expand": "Expandir",
     "credits": "Créditos",
     "upgrade": "Assinar",
-    "cockpit": { "label": "Cockpit", "overview": "Visão geral", "campaigns": "Campanhas", "work": "Trabalhos" },
-    "brands": { "label": "Marcas", "all": "Todas as marcas", "guideline": "Diretrizes", "machine": "Branding machine", "mine": "Minhas marcas" },
-    "copilot": { "label": "Copilot" },
-    "apps": { "label": "Aplicativos", "all": "Todos os apps" },
-    "profile": { "label": "Perfil", "account": "Conta", "usage": "Uso e créditos", "apiKeys": "Chaves de API", "connectedApps": "Apps conectados" }
+    "cockpit": {
+      "label": "Cockpit",
+      "overview": "Visão geral",
+      "campaigns": "Campanhas",
+      "work": "Trabalhos"
+    },
+    "brands": {
+      "label": "Marcas",
+      "all": "Todas as marcas",
+      "guideline": "Diretrizes",
+      "machine": "Branding machine",
+      "mine": "Minhas marcas"
+    },
+    "copilot": {
+      "label": "Copilot"
+    },
+    "apps": {
+      "label": "Aplicativos",
+      "all": "Todos os apps"
+    },
+    "profile": {
+      "label": "Perfil",
+      "account": "Conta",
+      "usage": "Uso e créditos",
+      "apiKeys": "Chaves de API",
+      "connectedApps": "Apps conectados"
+    }
   },
   "about": {
     "description": {
@@ -730,7 +752,7 @@
     "tagline": "Tagline",
     "taglinePlaceholder": "ex: Design que fala",
     "tags": "Tags",
-    "title": "Brand Guidelines",
+    "title": "Marcas",
     "tokens": {
       "components": "Componentes",
       "radius": "Raio de Canto",
@@ -740,7 +762,14 @@
     "typography": "Tipografia",
     "voice": "Voz & Tom",
     "voicePlaceholder": "ex: Profissional, amigável, conciso",
-    "voiceTone": "Tom de Voz"
+    "voiceTone": "Tom de Voz",
+    "searchPlaceholder": "Buscar marcas...",
+    "allFolders": "Todas",
+    "sortRecent": "Recentes",
+    "sortName": "Nome",
+    "sortCompleteness": "Completude",
+    "countBrands": "{filtered} de {total} marcas",
+    "noMatch": "Nenhuma marca corresponde a “{term}”"
   },
   "branding": {
     "allSectionsGenerated": "Todas as seções já foram geradas",
@@ -5105,7 +5134,6 @@
         "open_full_editor": "Abrir editor completo →",
         "editing_section": "Editando",
         "connect": "Conectar",
-        "connecting": "Conectando…",
         "connect_brand_aria": "Conectar marca ao Claude, Cursor ou outras ferramentas de IA",
         "download": "Baixar",
         "download_brand_aria": "Baixar brand guidelines",
