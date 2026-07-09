@@ -10,7 +10,7 @@ import { Coins, Menu } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
-import { classifyRoute } from '@/config/navConfig';
+import { classifyRoute, isBrandContext } from '@/config/navConfig';
 
 interface AppTopBarProps {
   /** Abre o drawer de navegação no mobile. */
@@ -25,7 +25,11 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({ onMenuClick }) => {
 
   const section = classifyRoute(location.pathname).section;
   const sectionLabel = section ? t(`nav.${section}.label`) : '';
-  const brandName = brand?.activeBrand?.identity?.name || brand?.activeBrand?.name || '';
+  // Marca só aparece em contexto de produção; some na biblioteca de marcas,
+  // no catálogo de apps, em settings e admin (gestão). Feedback do user.
+  const brandName = isBrandContext(location.pathname)
+    ? brand?.activeBrand?.identity?.name || brand?.activeBrand?.name || ''
+    : '';
   const credits = subscriptionStatus?.creditsRemaining;
   const isFree = !subscriptionStatus?.hasActiveSubscription;
 

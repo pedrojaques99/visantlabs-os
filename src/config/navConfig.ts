@@ -190,6 +190,21 @@ export function routeMode(pathname: string): ShellMode {
   return classifyRoute(pathname).mode;
 }
 
+/**
+ * A marca ativa é contexto de PRODUÇÃO (cockpit, copilot, canvas, criativos,
+ * mockups, campanhas — você produz *para* uma marca), não de GESTÃO/navegação
+ * (biblioteca de marcas, catálogo de apps, settings, admin — ali você transita
+ * entre todas). Só nas rotas de produção o chrome (top bar) mostra a marca.
+ */
+const BRAND_MANAGEMENT_SECTIONS = new Set<SectionId>(['brands', 'apps', 'profile']);
+export function isBrandContext(pathname: string): boolean {
+  const p = normalize(pathname);
+  if (p === '/admin' || p.startsWith('/admin/')) return false;
+  const section = classifyRoute(p).section;
+  if (section && BRAND_MANAGEMENT_SECTIONS.has(section)) return false;
+  return true;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Nível 2 — sub-navegação por seção
 // ─────────────────────────────────────────────────────────────────────────────

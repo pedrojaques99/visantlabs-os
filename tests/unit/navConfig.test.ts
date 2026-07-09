@@ -3,6 +3,7 @@ import {
   classifyRoute,
   resolveShell,
   routeMode,
+  isBrandContext,
   visibleSections,
   contextNavFor,
   NAV_SECTIONS,
@@ -99,6 +100,20 @@ describe('resolveShell', () => {
   it('ferramenta grátis logada usa app shell (focus), deslogada usa marketing', () => {
     expect(resolveShell('/qrcode', true)).toBe('app');
     expect(resolveShell('/qrcode', false)).toBe('marketing');
+  });
+});
+
+describe('isBrandContext', () => {
+  it('marca aparece em produção (cockpit, copilot, canvas, criativos, campanhas)', () => {
+    for (const p of ['/cockpit', '/copilot', '/canvas/abc', '/create', '/create/projects', '/campaigns', '/mockupmachine']) {
+      expect(isBrandContext(p)).toBe(true);
+    }
+  });
+
+  it('marca some na gestão (biblioteca de marcas, apps, profile, admin)', () => {
+    for (const p of ['/brand-guidelines', '/brand-guidelines?id=x', '/my-brandings', '/apps', '/profile', '/settings/api-keys', '/admin', '/admin/products']) {
+      expect(isBrandContext(p)).toBe(false);
+    }
   });
 });
 
