@@ -1,6 +1,10 @@
 {
   "nav": {
     "context": "CONTEXTO",
+    "collapse": "Recolher",
+    "expand": "Expandir",
+    "credits": "Créditos",
+    "upgrade": "Assinar",
     "cockpit": { "label": "Cockpit", "overview": "Visão geral", "campaigns": "Campanhas", "work": "Trabalhos" },
     "brands": { "label": "Marcas", "all": "Todas as marcas", "guideline": "Diretrizes", "machine": "Branding machine", "mine": "Minhas marcas" },
     "copilot": { "label": "Copilot" },

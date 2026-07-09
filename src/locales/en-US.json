@@ -1,6 +1,10 @@
 {
   "nav": {
     "context": "CONTEXT",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "credits": "Credits",
+    "upgrade": "Upgrade",
     "cockpit": { "label": "Cockpit", "overview": "Overview", "campaigns": "Campaigns", "work": "Work" },
     "brands": { "label": "Brands", "all": "All brands", "guideline": "Guidelines", "machine": "Branding machine", "mine": "My brandings" },
     "copilot": { "label": "Copilot" },

@@ -21,7 +21,6 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
-import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
 import { ConnectAICard } from '@/components/cockpit/ConnectAICard';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { useBrandGuideline } from '@/hooks/queries/useBrandGuidelines';
@@ -84,13 +83,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
 
   // Marca ativa vem do SSoT global (ActiveBrandContext) — o cockpit não gere
   // mais o estado/localStorage localmente. O rail e o hero ficam em sincronia.
-  const {
-    brands: activeBrands,
-    activeBrandId,
-    setActiveBrand: selectBrand,
-    activeBrand,
-    isLoading: brandsLoading,
-  } = useActiveBrand();
+  const { brands: activeBrands, activeBrand, isLoading: brandsLoading } = useActiveBrand();
   const hasBrand = !!activeBrand?.id;
 
   // Full guideline detail (colors, logos) for the hero — list rows are the
@@ -331,12 +324,9 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                     )}
                   </div>
                 </div>
+                {/* Troca de marca agora vive no rail do AppShell (SSoT único) —
+                    o hero só mostra a marca ativa, sem switcher redundante. */}
                 <div className="flex items-center gap-2">
-                  <BrandSwitcher
-                    brands={activeBrands}
-                    value={activeBrand?.id ?? null}
-                    onChange={selectBrand}
-                  />
                   <Button
                     variant="ghost"
                     size="icon-md"

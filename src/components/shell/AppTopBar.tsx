@@ -20,13 +20,14 @@ interface AppTopBarProps {
 export const AppTopBar: React.FC<AppTopBarProps> = ({ onMenuClick }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { subscriptionStatus, onCreditPackagesModalOpen } = useLayout();
+  const { subscriptionStatus, onCreditPackagesModalOpen, onSubscriptionModalOpen } = useLayout();
   const brand = useActiveBrandSafe();
 
   const section = classifyRoute(location.pathname).section;
   const sectionLabel = section ? t(`nav.${section}.label`) : '';
   const brandName = brand?.activeBrand?.identity?.name || brand?.activeBrand?.name || '';
   const credits = subscriptionStatus?.creditsRemaining;
+  const isFree = !subscriptionStatus?.hasActiveSubscription;
 
   return (
     <header className="h-12 shrink-0 flex items-center justify-between px-4 border-b border-border">
@@ -50,10 +51,19 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({ onMenuClick }) => {
         {typeof credits === 'number' && (
           <button
             onClick={() => onCreditPackagesModalOpen()}
+            title={t('nav.credits')}
             className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <Coins size={13} />
             <span>{credits}</span>
+          </button>
+        )}
+        {isFree && (
+          <button
+            onClick={() => onSubscriptionModalOpen()}
+            className="rounded-md px-3 py-1 text-xs font-medium bg-brand-cyan/90 text-black hover:bg-brand-cyan transition-colors"
+          >
+            {t('nav.upgrade')}
           </button>
         )}
       </div>
