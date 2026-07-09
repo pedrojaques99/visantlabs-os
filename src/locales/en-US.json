@@ -672,6 +672,7 @@
     "unarchiveSuccess": "Brand reactivated",
     "unarchiveError": "Failed to reactivate brand",
     "brandActions": "Brand actions",
+    "quickEdit": "Quick edit",
     "byok": {
       "activeTitle": "BYOK Mode Active",
       "activeDesc": "Your key covers the generation; your plan covers the platform, brand context, storage and orchestration.",

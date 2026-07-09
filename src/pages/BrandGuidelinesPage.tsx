@@ -34,6 +34,7 @@ import {
   MoreVertical,
   ChevronDown,
   AlertTriangle,
+  Pencil,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +47,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
+import { BrandQuickEditDialog } from '@/components/brand/guidelines/BrandQuickEditDialog';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 import { glassSurface } from '@/lib/ui/glass';
 
@@ -131,6 +133,7 @@ const BrandCard = ({
   archived = false,
   onArchive,
   onUnarchive,
+  onQuickEdit,
 }: {
   guideline: BrandGuideline;
   onSelect: (g: BrandGuideline) => void;
@@ -138,6 +141,7 @@ const BrandCard = ({
   archived?: boolean;
   onArchive?: (id: string) => void;
   onUnarchive?: (id: string) => void;
+  onQuickEdit?: (g: BrandGuideline) => void;
 }) => {
   const { t } = useTranslation();
   const [coverLoaded, setCoverLoaded] = useState(false);
@@ -196,7 +200,7 @@ const BrandCard = ({
               {t('brandQuota.archivedBadge')}
             </Badge>
           )}
-          {(onArchive || onUnarchive) && (
+          {(onArchive || onUnarchive || onQuickEdit) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div
@@ -209,6 +213,18 @@ const BrandCard = ({
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[130px]">
+                {!archived && onQuickEdit && (
+                  <DropdownMenuItem
+                    className="text-xs gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onQuickEdit(guideline);
+                    }}
+                  >
+                    <Pencil size={12} />
+                    {t('brandQuota.quickEdit')}
+                  </DropdownMenuItem>
+                )}
                 {archived
                   ? onUnarchive && (
                       <DropdownMenuItem
@@ -402,6 +418,7 @@ const BrandGrid = ({
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('recent');
   const [showArchived, setShowArchived] = useState(false);
+  const [quickEdit, setQuickEdit] = useState<BrandGuideline | null>(null);
 
   const folders = useMemo(() => {
     const s = new Set<string>();
@@ -538,6 +555,7 @@ const BrandGrid = ({
             onSelect={onSelect}
             index={i}
             onArchive={billingOn ? onArchive : undefined}
+            onQuickEdit={setQuickEdit}
           />
         ))}
       </div>
@@ -578,6 +596,14 @@ const BrandGrid = ({
           <Search size={20} className="text-neutral-700" />
           <p className="text-xs text-neutral-600">No brands match "{search}"</p>
         </div>
+      )}
+
+      {quickEdit && (
+        <BrandQuickEditDialog
+          guideline={quickEdit}
+          open={!!quickEdit}
+          onOpenChange={(o) => !o && setQuickEdit(null)}
+        />
       )}
     </motion.div>
   );

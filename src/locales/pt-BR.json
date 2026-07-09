@@ -672,6 +672,7 @@
     "unarchiveSuccess": "Marca reativada",
     "unarchiveError": "Falha ao reativar a marca",
     "brandActions": "Ações da marca",
+    "quickEdit": "Edição rápida",
     "byok": {
       "activeTitle": "Modo BYOK ativo",
       "activeDesc": "Sua key cobre a geração; o plano cobre a plataforma, contexto de marca, storage e orquestração.",
