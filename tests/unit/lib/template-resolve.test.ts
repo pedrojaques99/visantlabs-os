@@ -45,7 +45,7 @@ describe('resolveFill', () => {
   });
 });
 
-describe('resolveSlot', () => {
+describe('resolveSlot (alias pipeline)', () => {
   const c: TemplateContent = {
     name: 'Padoo',
     headline: 'Do forno à sua porta.',
@@ -54,9 +54,11 @@ describe('resolveSlot', () => {
     tagL: 'Left',
     tagR: 'Right',
     keywords: ['artisanal', 'authentic', 'strategic'],
+    tagline: 'A vó mais descolada do bairro',
+    description: 'Full description.',
   };
 
-  it('maps named slots to content', () => {
+  it('maps canonical slot ids to content', () => {
     expect(resolveSlot('h1', c)).toBe('Do forno à sua porta.');
     expect(resolveSlot('brand', c)).toBe('Padoo');
     expect(resolveSlot('body', c)).toBe('Bakery body.');
@@ -65,14 +67,31 @@ describe('resolveSlot', () => {
     expect(resolveSlot('caption', c)).toBe('A vó mais descolada.');
   });
 
-  it('maps indexed keyword slots (1-based) and empties out of range', () => {
-    expect(resolveSlot('kw1', c)).toBe('artisanal');
-    expect(resolveSlot('kw3', c)).toBe('strategic');
-    expect(resolveSlot('kw4', c)).toBe('');
+  it('accepts natural aliases (EN + PT), case/separator-insensitive', () => {
+    expect(resolveSlot('headline', c)).toBe(c.headline);
+    expect(resolveSlot('Title', c)).toBe(c.headline);
+    expect(resolveSlot('manchete', c)).toBe(c.headline);
+    expect(resolveSlot('MARCA', c)).toBe('Padoo');
+    expect(resolveSlot('wordmark', c)).toBe('Padoo');
+    expect(resolveSlot('slogan', c)).toBe(c.tagline);
+    expect(resolveSlot('descricao', c)).toBe('Bakery body.');
+    expect(resolveSlot('sub-title', c)).toBe('Bakery body.');
   });
 
-  it('returns empty for unknown slots', () => {
+  it('handles indexed keyword slots by several prefixes (1-based)', () => {
+    expect(resolveSlot('kw1', c)).toBe('artisanal');
+    expect(resolveSlot('keyword2', c)).toBe('authentic');
+    expect(resolveSlot('tag3', c)).toBe('strategic');
+    expect(resolveSlot('kw4', c)).toBe(''); // out of range, no fallback
+    expect(resolveSlot('kw4', c, 'placeholder')).toBe('placeholder');
+  });
+
+  it('falls back to the layer literal for unknown or unfilled slots', () => {
     expect(resolveSlot('mystery', c)).toBe('');
+    expect(resolveSlot('mystery', c, 'drawn text')).toBe('drawn text');
+    // mapped but empty field → fallback
+    const empty = { ...c, headline: '' };
+    expect(resolveSlot('h1', empty, 'literal h1')).toBe('literal h1');
   });
 });
 

@@ -44,7 +44,12 @@ function renderNode(
   };
 
   if (node.type === 'TEXT' && node.text) {
-    const txt = node.slot ? resolveSlot(node.slot.id, c) : node.text.chars;
+    // Required slots fall back to the layer's literal text (never blank); optional
+    // slots ('#name?') pass no fallback, so they hide when the brand has no content.
+    const literal = node.text.chars;
+    const txt = node.slot
+      ? resolveSlot(node.slot.id, c, node.slot.optional ? '' : literal)
+      : literal;
     if (node.slot?.optional && !txt) return null;
     const family =
       node.text.fontVar === 'heading-font'
@@ -138,6 +143,8 @@ export const TemplateRenderer: React.FC<{
     tagL,
     tagR,
     keywords: tokens.keywords,
+    tagline: rc.tagline || '',
+    description: tokens.description || '',
   };
   const root = schema.root;
   return (

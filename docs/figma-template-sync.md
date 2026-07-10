@@ -42,28 +42,43 @@ That's the whole contract. The layer names self-describe the layout — no confi
 
 ---
 
-## 2. Slot → content map (what each `#slot` becomes in the preview)
+## 2. Slot → content — an automatic pipeline (no code per slot)
 
-The renderer fills text slots from the brand's own content. Name your text layers with
-these ids to bind them:
+Text slots are filled from the brand's own content by a **convention pipeline**, not a
+hardcoded list. You name a text layer **naturally** and the right content flows in — and
+if nothing maps, it keeps the text you drew (never blank). So adding a slot needs **zero
+code**.
 
-| `#slot`         | Renders as (from the brand) |
-|-----------------|-----------------------------|
-| `#h1`           | headline — first sentence of the manifesto (or tagline / name) |
-| `#brand`        | brand name (e.g. the big wordmark) |
-| `#tagline`      | tagline |
-| `#tagL` / `#tagR` | tagline split into two halves (for split lockups) |
-| `#body`         | body copy — first sentence of the description |
-| `#caption`      | short caption (tagline) |
-| `#kw1` … `#kwN` | brand keywords (from values/aesthetic tags), 1-based |
-| `#photo1`, `#logo` | brand photo / logo (image slot) |
+Matching is case- and separator-insensitive (`#Sub-Title` == `#subtitle`) and speaks
+EN + PT:
 
-Anything **not** named `#…` is treated as literal design (kept exactly as drawn). The
-mapping lives in `src/components/brand/guidelines/preview/templateResolve.ts::resolveSlot`
-— add a case there to support a new slot id.
+| Content (from the brand) | Name the slot any of… |
+|--------------------------|------------------------|
+| headline (1st sentence of the manifesto) | `#h1` `#headline` `#title` `#hero` `#manchete` `#titulo` |
+| brand name / wordmark | `#brand` `#name` `#wordmark` `#logotype` `#marca` `#nome` |
+| tagline | `#tagline` `#slogan` `#eyebrow` `#kicker` |
+| body (1st sentence of the description) | `#body` `#description` `#paragraph` `#subtitle` `#corpo` `#texto` `#descricao` |
+| short caption | `#caption` `#legenda` `#label` |
+| split tagline halves | `#tagL` / `#tagR` |
+| keyword N (1-based, from values/aesthetic tags) | `#kw1` `#keyword2` `#tag3` … |
+| brand photo / logo | `#photo1` `#logo` (image slot) |
+
+**Fallbacks (why it never breaks):**
+- An **unknown** slot (`#somethingNew`) → renders the layer's own literal text. Ship it,
+  refine the alias later.
+- A **known** slot whose brand field is empty → also falls back to the literal text.
+- An **optional** slot (`#h2?`) with no content → hidden (respects the `?`).
+
+To teach the pipeline a new synonym, add **one alias row** (data, not a `switch`) to
+`SLOT_ALIASES` in `src/components/brand/guidelines/preview/templateResolve.ts`. Anything
+**not** prefixed `#` is literal design, kept exactly as drawn.
+
+> Want true semantic/AI mapping instead of aliases? That's the `figma-preset-fill` path
+> (the LLM reads the manifest and supplies content) — but it costs a credit per fill; the
+> preview pipeline here is deterministic and free.
 
 > **Text overrides**: in the preview, each card has an "Editar" panel — Marca / Tagline /
-> Headline / Corpo — that overrides `#brand` / `#tagline` / `#h1` / `#body` per design.
+> Headline / Corpo — that overrides those fields per design.
 
 ---
 

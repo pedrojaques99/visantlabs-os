@@ -60,27 +60,42 @@ export interface TemplateContent {
   tagL: string;
   tagR: string;
   keywords: string[];
+  tagline: string;
+  description: string;
 }
 
-/** Slot id → the brand's content (mirrors the hand-coded mocks' content mapping). */
-export function resolveSlot(id: string, c: TemplateContent): string {
-  switch (id) {
-    case 'h1':
-      return c.headline;
-    case 'body':
-      return c.body;
-    case 'brand':
-      return c.name;
-    case 'caption':
-      return c.caption;
-    case 'tagL':
-      return c.tagL;
-    case 'tagR':
-      return c.tagR;
-    case 'tagline':
-      return c.caption;
-    default:
-      if (/^kw\d+$/.test(id)) return c.keywords[Number(id.slice(2)) - 1] || '';
-      return '';
+type SlotGetter = (c: TemplateContent) => string;
+
+/**
+ * Convention pipeline: a normalized slot id → a brand content field, by ALIAS (EN+PT)
+ * — first match wins. Designers name slots naturally (`#headline`, `#manchete`, `#title`,
+ * `#marca`, `#slogan`…) with NO code change per slot. Indexed keywords (`#kw1`, `#tag2`)
+ * are handled separately, and unknown slots fall back to the layer's own drawn text, so
+ * a preview is never blank. Extend the map (data), not a switch.
+ */
+const SLOT_ALIASES: Array<[RegExp, SlotGetter]> = [
+  [/^(h1|headline|title|hero|heading|manchete|titulo)$/, (c) => c.headline],
+  [/^(brand|name|wordmark|logotype|marca|nome)$/, (c) => c.name],
+  [/^(tagline|slogan|eyebrow|kicker)$/, (c) => c.tagline || c.caption],
+  [/^(caption|legenda|label)$/, (c) => c.caption],
+  [/^(body|desc|description|paragraph|subtitle|subhead|corpo|texto|descricao)$/, (c) => c.body || c.description],
+  [/^tagl(eft)?$/, (c) => c.tagL],
+  [/^tagr(ight)?$/, (c) => c.tagR],
+];
+
+const normalizeSlot = (id: string) => id.toLowerCase().replace(/[\s_-]/g, '');
+
+/**
+ * Resolve a `#slot` id to brand content via the alias pipeline. `fallback` (the layer's
+ * literal Figma text) is returned when nothing maps or the mapped field is empty — so
+ * unknown/unfilled slots keep what the designer drew instead of going blank.
+ */
+export function resolveSlot(id: string, c: TemplateContent, fallback = ''): string {
+  const key = normalizeSlot(id);
+  const kw = key.match(/^(?:kw|keyword|tag|palavra)(\d+)$/);
+  if (kw) return c.keywords[Number(kw[1]) - 1] || fallback;
+  for (const [re, get] of SLOT_ALIASES) {
+    if (re.test(key)) return get(c) || fallback;
   }
+  return fallback;
 }
