@@ -1,6 +1,7 @@
 // server/routes/brand-guidelines.ts
 import express from 'express';
 import crypto from 'crypto';
+import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
@@ -2603,15 +2604,11 @@ router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthReq
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-    if (!isCheapTextConfigured()) {
-      return res.status(503).json({
-        error: 'suggestions_not_configured',
-        message: 'AI suggestions are not available right now.',
-      });
-    }
-
     const count = Math.min(Math.max(parseInt(String(req.query.count || '4'), 10) || 4, 3), 6);
     const force = req.query.force === 'true';
+    // Cache-only mode: open on static starters and spend a model call ONLY when the
+    // user explicitly asks (Refresh). Page loads never auto-generate.
+    const cacheOnly = req.query.cacheOnly === 'true';
     const now = new Date();
     // Weekly cache bucket — seasonal context shifts slowly, so a brand's ideas are
     // stable for ~a week and effectively free to serve.
@@ -2622,19 +2619,42 @@ router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthReq
     )}`;
     const cacheKey = `brand-suggestions:${guideline.id}:${week}:${count}`;
 
+    // Serve the weekly cache first — free, no model call.
     if (!force) {
       const cached = await redisClient.get(cacheKey).catch(() => null);
       if (cached) {
         try {
           return res.json({ ...JSON.parse(cached as string), cached: true });
         } catch {
-          /* fall through and regenerate */
+          /* fall through and (maybe) regenerate */
         }
       }
     }
 
     const market = marketFromLanguage((guideline.identity as any)?.language);
     const seasonal = getSeasonalContext(now, market);
+    const seasonalPayload = {
+      market,
+      upcoming: seasonal.upcoming.slice(0, 3).map((e) => ({
+        key: e.key,
+        label: e.label,
+        daysAway: e.daysAway,
+      })),
+    };
+
+    // Cache miss + cache-only → return just the (locally computed, free) seasonal
+    // context so the client shows starters. No generation, no LLM key required.
+    if (cacheOnly) {
+      return res.json({ suggestions: [], seasonal: seasonalPayload, cached: false });
+    }
+
+    if (!isCheapTextConfigured()) {
+      return res.status(503).json({
+        error: 'suggestions_not_configured',
+        message: 'AI suggestions are not available right now.',
+      });
+    }
+
     const seasonalLine = seasonalPromptLine(seasonal);
     const brandContext = buildBrandContext(guideline as any);
 
@@ -2689,14 +2709,7 @@ Include at least one "mockup". Vary the rest across the other kinds.`;
 
     const payload = {
       suggestions,
-      seasonal: {
-        market,
-        upcoming: seasonal.upcoming.slice(0, 3).map((e) => ({
-          key: e.key,
-          label: e.label,
-          daysAway: e.daysAway,
-        })),
-      },
+      seasonal: seasonalPayload,
       provider,
       generatedAt: now.toISOString(),
     };
@@ -2802,6 +2815,71 @@ router.get('/:id/figma-templates', apiRateLimiter, authenticate, async (req: Aut
   } catch (error: any) {
     console.error('[Figma Templates List] Error:', error?.message || error);
     res.status(500).json({ error: 'Failed to list figma templates', message: error?.message });
+  }
+});
+
+// ── Template SYNC (Figma [Template] frames → layout schemas → webapp) ──────────
+// The plugin parses each [Template] frame into a brand-agnostic TemplateSchema
+// (geometry + variable binds + slots) and POSTs them here; the webapp renders them
+// live via <TemplateRenderer>. One source (Figma), two renderers. See
+// src/lib/figma-template-schema.ts.
+
+const SyncedTemplatesSchema = z.object({
+  templates: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        width: z.number(),
+        height: z.number(),
+        aspect: z.string().optional(),
+        root: z.object({}).passthrough(),
+      })
+    )
+    .max(100),
+});
+
+// GET — the stored schemas for the webapp preview (owner-gated, like the preview tab).
+router.get('/:id/synced-templates', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    // No `select` for the JSON field — the Prisma client may predate the migration;
+    // reading via cast degrades to [] until `prisma generate` runs, no 500.
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+    res.json({
+      templates: (guideline as any).syncedTemplates || [],
+      syncedAt: (guideline as any).figmaSyncedAt || null,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to read synced templates', message: error?.message });
+  }
+});
+
+// POST — the plugin pushes freshly-parsed schemas here (owner-gated).
+router.post('/:id/synced-templates', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    const parsed = SyncedTemplatesSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'invalid_schema', message: parsed.error.message });
+    }
+    await prisma.brandGuideline.update({
+      where: { id: req.params.id },
+      data: { syncedTemplates: parsed.data.templates, figmaSyncedAt: new Date() } as any,
+    });
+    res.json({ ok: true, count: parsed.data.templates.length });
+  } catch (error: any) {
+    console.error('[Synced Templates] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to save synced templates', message: error?.message });
   }
 });
 

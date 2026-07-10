@@ -646,6 +646,7 @@ model BrandGuideline {
   figmaFileUrl    String?   // Full URL: "https://www.figma.com/file/abc123/..."
   figmaFileKey    String?   // Extracted key for plugin matching
   figmaSyncedAt   DateTime? // Last successful sync timestamp
+  syncedTemplates Json?     // TemplateSchema[] — layout schemas parsed from [Template] frames by the plugin
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
