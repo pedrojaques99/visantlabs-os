@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { thumbHashToDataURL } from 'thumbhash';
 import {
@@ -116,24 +117,7 @@ function useThumbPlaceholder(hash?: string): string | null {
   }, [hash]);
 }
 
-/** Responsive column count for the JS masonry (stable on append — no reflow). */
-function useColumns(): number {
-  const get = () => {
-    if (typeof window === 'undefined') return 4;
-    const w = window.innerWidth;
-    if (w < 640) return 2;
-    if (w < 1024) return 3;
-    if (w < 1280) return 4;
-    return 5;
-  };
-  const [cols, setCols] = useState(get);
-  useEffect(() => {
-    const onResize = () => setCols(get());
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-  return cols;
-}
+// Masonry column count now comes from the shared `useMasonryColumns` (src/components/ui/Masonry).
 
 export const ReferencesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -184,7 +168,7 @@ export const ReferencesPage: React.FC = () => {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
 
-  const cols = useColumns();
+  const cols = useMasonryColumns();
   const activeDimEntries = Object.entries(dims).filter(([, v]) => v);
   const hasActiveFilters = !!(
     debouncedSearch ||
@@ -212,17 +196,6 @@ export const ReferencesPage: React.FC = () => {
     setDims({});
   };
   const grid = collectionView ? collectionView.items : similar ? similar.items : items;
-
-  // Round-robin distribution → each item keeps a fixed column, so appending
-  // pages never reflows existing cards (Apple-smooth infinite feed).
-  const columns = useMemo(() => {
-    const out: Array<Array<{ item: ReferenceItem; idx: number }>> = Array.from(
-      { length: cols },
-      () => []
-    );
-    grid.forEach((item, idx) => out[idx % cols].push({ item, idx }));
-    return out;
-  }, [grid, cols]);
 
   // ── Data loading ───────────────────────────────────────────────
   const loadList = useCallback(
@@ -614,7 +587,7 @@ export const ReferencesPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-neutral-400 hover:text-red-400"
+                  className="h-7 text-xs text-neutral-400 hover:text-destructive"
                   onClick={async () => {
                     if (!window.confirm('Apagar esta coleção?')) return;
                     try {
@@ -783,7 +756,7 @@ export const ReferencesPage: React.FC = () => {
                               'cursor-pointer text-[10px]',
                               active
                                 ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30'
-                                : 'border-neutral-800 text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan'
+                                : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan'
                             )}
                             onClick={() => setDim(dk, v.value)}
                           >
@@ -791,7 +764,7 @@ export const ReferencesPage: React.FC = () => {
                             {active ? (
                               <X className="h-2.5 w-2.5 ml-1" />
                             ) : (
-                              <span className="ml-1 text-neutral-600">{v.count}</span>
+                              <span className="ml-1 text-neutral-600 tabular-nums">{v.count}</span>
                             )}
                           </Badge>
                         );
@@ -822,11 +795,11 @@ export const ReferencesPage: React.FC = () => {
                     <Badge
                       key={t.value}
                       variant="outline"
-                      className="cursor-pointer border-neutral-700 text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan text-[10px]"
+                      className="cursor-pointer border-neutral-700 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan text-[10px]"
                       onClick={() => setActiveTag(t.value)}
                     >
                       {t.value}
-                      <span className="ml-1 text-neutral-600">{t.count}</span>
+                      <span className="ml-1 text-neutral-600 tabular-nums">{t.count}</span>
                     </Badge>
                   ))}
               </div>
@@ -860,37 +833,33 @@ export const ReferencesPage: React.FC = () => {
             <FirstRun onUpload={() => requireAuth() && setUploadOpen(true)} />
           )
         ) : (
-          <div className="flex gap-3 items-start">
-            {columns.map((col, ci) => (
-              <div key={ci} className="flex-1 min-w-0 flex flex-col gap-3">
-                {col.map(({ item, idx }) => (
-                  <MasonryCard
-                    key={item.id}
-                    item={item}
-                    focused={idx === focusedIndex}
-                    onOpen={() => setLightboxIndex(idx)}
-                    onSimilar={() => runSimilarTo(item)}
-                    onSave={() => requireAuth() && setSaveTarget(item)}
-                    onRemove={
-                      collectionView?.collection.isOwner
-                        ? async () => {
-                            try {
-                              await collectionsApi.removeItem(
-                                collectionView.collection.id,
-                                item.id
-                              );
-                              refreshBoard();
-                            } catch (e: any) {
-                              toast.error(e.message || 'Erro ao remover');
-                            }
-                          }
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
+          <Masonry
+            items={grid}
+            cols={cols}
+            gap={12}
+            getKey={(item) => item.id}
+            renderItem={(item, idx) => (
+              <MasonryCard
+                item={item}
+                focused={idx === focusedIndex}
+                onOpen={() => setLightboxIndex(idx)}
+                onSimilar={() => runSimilarTo(item)}
+                onSave={() => requireAuth() && setSaveTarget(item)}
+                onRemove={
+                  collectionView?.collection.isOwner
+                    ? async () => {
+                        try {
+                          await collectionsApi.removeItem(collectionView.collection.id, item.id);
+                          refreshBoard();
+                        } catch (e: any) {
+                          toast.error(e.message || 'Erro ao remover');
+                        }
+                      }
+                    : undefined
+                }
+              />
+            )}
+          />
         )}
 
         {/* Infinite-scroll sentinel */}
@@ -950,7 +919,7 @@ export const ReferencesPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
           >
             <div className="flex flex-col items-center gap-3 text-brand-cyan border-2 border-dashed border-brand-cyan/50 rounded-2xl px-12 py-10">
               <ImageIcon className="h-8 w-8" />
@@ -1045,7 +1014,7 @@ const CollectionsGrid: React.FC<{
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-brand-cyan/50 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
+          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-neutral-700 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
         >
           <FolderPlus className="h-6 w-6" />
           <span className="text-xs font-mono uppercase tracking-wider">Nova coleção</span>
@@ -1195,7 +1164,7 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
                 {savedIds.has(c.id) ? (
                   <Check className="h-4 w-4 text-brand-cyan shrink-0" />
                 ) : (
-                  <span className="text-[10px] font-mono text-neutral-600">{c.count}</span>
+                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">{c.count}</span>
                 )}
               </button>
             ))
@@ -1329,7 +1298,7 @@ const MasonryCard: React.FC<{
               </span>
             )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-brand-cyan/90 px-1.5 py-0.5 text-[9px] font-mono text-black">
+              <span className="absolute top-2 right-2 rounded-full bg-brand-cyan/90 px-1.5 py-0.5 text-[10px] font-mono text-black">
                 {Math.round(item.score * 100)}%
               </span>
             )}
@@ -1351,7 +1320,7 @@ const MasonryCard: React.FC<{
             <button
               onClick={onRemove}
               title="Remover da coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-red-400"
+              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-destructive"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -1405,7 +1374,7 @@ const Lightbox: React.FC<{
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[70] bg-neutral-950/95 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-neutral-950/95 backdrop-blur-sm"
           onClick={onClose}
         >
           {/* Close */}
@@ -1669,7 +1638,7 @@ const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
 
 const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-    <AlertTriangle className="h-8 w-8 text-amber-500/80" />
+    <AlertTriangle className="h-8 w-8 text-warning/80" />
     <p className="text-sm text-neutral-400">Não foi possível carregar as referências</p>
     <Button
       variant="outline"
@@ -1751,7 +1720,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         <div className="space-y-4">
           <div
             onClick={pick}
-            className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-brand-cyan/40 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-neutral-700 transition-colors cursor-pointer"
           >
             <Upload className="h-7 w-7 mx-auto text-neutral-500 mb-2" />
             <p className="text-sm text-neutral-300">
