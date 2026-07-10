@@ -77,10 +77,38 @@ export async function extractTemplateSchemas() {
     (n) => n.type === 'FRAME' && n.name.startsWith('[Template]')
   ) as FrameNode[];
 
-  // Resolve every referenced variable id → name once (async), then parse synchronously.
+  // Resolve every referenced variable once (async): its NAME (for Brand tokens) and its
+  // literal HEX (for the file's own variables → auto-tokenized by the renderer).
   const ids = new Set<string>();
   for (const f of frames) collectVarIds(f, ids);
   const nameById = new Map<string, string>();
+  const hexById = new Map<string, string>();
+
+  const toHex = (c: RGB | RGBA) =>
+    '#' +
+    [c.r, c.g, c.b]
+      .map((v) => Math.round(v * 255).toString(16).padStart(2, '0'))
+      .join('');
+  const resolveHex = async (id: string, depth = 0): Promise<string | null> => {
+    if (hexById.has(id)) return hexById.get(id)!;
+    if (depth > 4) return null;
+    try {
+      const v = await figma.variables.getVariableByIdAsync(id);
+      if (!v) return null;
+      const mode = Object.keys(v.valuesByMode)[0];
+      const val = v.valuesByMode[mode] as any;
+      if (val && val.type === 'VARIABLE_ALIAS') return await resolveHex(val.id, depth + 1);
+      if (val && typeof val.r === 'number') {
+        const h = toHex(val);
+        hexById.set(id, h);
+        return h;
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  };
+
   for (const id of ids) {
     try {
       const v = await figma.variables.getVariableByIdAsync(id);
@@ -88,10 +116,14 @@ export async function extractTemplateSchemas() {
     } catch {
       /* variable deleted or inaccessible — leave unresolved (renderer falls back) */
     }
+    await resolveHex(id);
   }
 
-  const lookup = (id: string) => nameById.get(id) ?? null;
-  const templates = frames.map((f) => frameToSchema(f as unknown as FigmaNodeLike, lookup, f.id));
+  const nameLookup = (id: string) => nameById.get(id) ?? null;
+  const hexLookup = (id: string) => hexById.get(id) ?? null;
+  const templates = frames.map((f) =>
+    frameToSchema(f as unknown as FigmaNodeLike, nameLookup, f.id, hexLookup)
+  );
   return { templates, count: templates.length };
 }
 

@@ -12,7 +12,15 @@
  * webapp all share it — same discipline as `figma-slots.ts`. The plugin pre-resolves
  * variable ids → names (one async pass) and passes a sync lookup into `frameToSchema`.
  */
-import { parseSlotName, aspectLabel } from './figma-slots';
+import { parseSlotName, aspectLabel, BRAND_TOKEN_VARS } from './figma-slots';
+
+/** The semantic Brand variable names — a bound var with one of these keeps its varName;
+ * any OTHER variable (the file's own colors) is resolved to a literal hex instead. */
+const BRAND_TOKENS = new Set<string>([
+  ...BRAND_TOKEN_VARS.color,
+  ...BRAND_TOKEN_VARS.font,
+  ...BRAND_TOKEN_VARS.number,
+]);
 
 // ── Schema ───────────────────────────────────────────────────────────────────
 
@@ -110,6 +118,8 @@ export interface FigmaNodeLike {
 
 /** Resolve a Figma variable id → its name (e.g. "accent", "heading-font"). */
 export type VarNameLookup = (id: string) => string | null | undefined;
+/** Resolve a NON-brand variable id → its literal hex value (so it can be auto-tokenized). */
+export type VarHexLookup = (id: string) => string | null | undefined;
 
 // ── Parser ───────────────────────────────────────────────────────────────────
 
@@ -123,19 +133,39 @@ function rgbToHex(c: { r: number; g: number; b: number }): string {
   return `#${h(c.r)}${h(c.g)}${h(c.b)}`;
 }
 
-function readFill(node: FigmaNodeLike, varName: VarNameLookup): TemplateFill | undefined {
+/** A bound var that IS a Brand token keeps its name; any other var resolves to hex. */
+function bindColor(
+  boundId: string,
+  varName: VarNameLookup,
+  varHex?: VarHexLookup
+): { varName?: string; hex?: string } {
+  const nm = varName(boundId);
+  if (nm && BRAND_TOKENS.has(nm)) return { varName: nm };
+  const hx = varHex?.(boundId);
+  return hx ? { hex: hx } : {};
+}
+
+function readFill(
+  node: FigmaNodeLike,
+  varName: VarNameLookup,
+  varHex?: VarHexLookup
+): TemplateFill | undefined {
   const fills = node.fills;
   if (!Array.isArray(fills) || !fills.length) return undefined;
   const f = fills[0] as PaintLike;
   if (f.type !== 'SOLID' || f.visible === false) return undefined;
   const out: TemplateFill = { opacity: f.opacity == null ? 1 : f.opacity };
   const boundId = f.boundVariables?.color?.id;
-  if (boundId) out.varName = varName(boundId) || undefined;
+  if (boundId) Object.assign(out, bindColor(boundId, varName, varHex));
   else if (f.color) out.hex = rgbToHex(f.color);
   return out.varName || out.hex ? out : undefined;
 }
 
-function readStroke(node: FigmaNodeLike, varName: VarNameLookup): TemplateStroke | undefined {
+function readStroke(
+  node: FigmaNodeLike,
+  varName: VarNameLookup,
+  varHex?: VarHexLookup
+): TemplateStroke | undefined {
   const strokes = node.strokes;
   if (!Array.isArray(strokes) || !strokes.length) return undefined;
   const s = strokes[0] as PaintLike;
@@ -143,7 +173,7 @@ function readStroke(node: FigmaNodeLike, varName: VarNameLookup): TemplateStroke
   const weight = isNum(node.strokeWeight) ? node.strokeWeight : 1;
   const out: TemplateStroke = { opacity: s.opacity == null ? 1 : s.opacity, weight };
   const boundId = s.boundVariables?.color?.id;
-  if (boundId) out.varName = varName(boundId) || undefined;
+  if (boundId) Object.assign(out, bindColor(boundId, varName, varHex));
   else if (s.color) out.hex = rgbToHex(s.color);
   return out.varName || out.hex ? out : undefined;
 }
@@ -174,7 +204,11 @@ function readText(node: FigmaNodeLike, varName: VarNameLookup): TemplateText | u
 }
 
 /** Parse a Figma node subtree into a `TemplateNode`. Pure; skips invisible nodes. */
-export function parseTemplateNode(node: FigmaNodeLike, varName: VarNameLookup): TemplateNode {
+export function parseTemplateNode(
+  node: FigmaNodeLike,
+  varName: VarNameLookup,
+  varHex?: VarHexLookup
+): TemplateNode {
   const rt = node.relativeTransform;
   const out: TemplateNode = {
     name: node.name,
@@ -187,10 +221,10 @@ export function parseTemplateNode(node: FigmaNodeLike, varName: VarNameLookup): 
   if (isNum(node.cornerRadius) && node.cornerRadius) out.cornerRadius = node.cornerRadius;
   if (node.clipsContent) out.clip = true;
 
-  const fill = readFill(node, varName);
+  const fill = readFill(node, varName, varHex);
   if (fill) out.fill = fill;
 
-  const stroke = readStroke(node, varName);
+  const stroke = readStroke(node, varName, varHex);
   if (stroke) out.stroke = stroke;
 
   const slot = parseSlotName(node.name);
@@ -204,7 +238,7 @@ export function parseTemplateNode(node: FigmaNodeLike, varName: VarNameLookup): 
   if (node.children && node.children.length) {
     const kids = node.children
       .filter((ch) => ch.visible !== false)
-      .map((ch) => parseTemplateNode(ch, varName));
+      .map((ch) => parseTemplateNode(ch, varName, varHex));
     if (kids.length) out.children = kids;
   }
   return out;
@@ -222,8 +256,13 @@ export function collectFontFamilies(schema: TemplateSchema): string[] {
 }
 
 /** Parse a `[Template]` frame into a full schema (root transform normalized away). */
-export function frameToSchema(node: FigmaNodeLike, varName: VarNameLookup, id?: string): TemplateSchema {
-  const root = parseTemplateNode(node, varName);
+export function frameToSchema(
+  node: FigmaNodeLike,
+  varName: VarNameLookup,
+  id?: string,
+  varHex?: VarHexLookup
+): TemplateSchema {
+  const root = parseTemplateNode(node, varName, varHex);
   return {
     id,
     name: root.name,
