@@ -36,6 +36,14 @@ export interface TemplateText {
   fontVar?: 'heading-font' | 'body-font';
 }
 
+/** A stroke: a bound variable OR literal hex, plus its weight (px). */
+export interface TemplateStroke {
+  varName?: string;
+  hex?: string;
+  opacity: number;
+  weight: number;
+}
+
 export interface TemplateNode {
   name: string;
   type: string;
@@ -47,6 +55,7 @@ export interface TemplateNode {
   cornerRadius?: number;
   clip?: boolean;
   fill?: TemplateFill;
+  stroke?: TemplateStroke;
   slot?: { id: string; variant?: string; optional: boolean; list: boolean };
   text?: TemplateText;
   children?: TemplateNode[];
@@ -86,6 +95,8 @@ export interface FigmaNodeLike {
   clipsContent?: boolean;
   visible?: boolean;
   fills?: readonly PaintLike[] | Mixed;
+  strokes?: readonly PaintLike[];
+  strokeWeight?: number | Mixed;
   characters?: string;
   fontName?: { family: string; style: string } | Mixed;
   fontSize?: number | Mixed;
@@ -121,6 +132,19 @@ function readFill(node: FigmaNodeLike, varName: VarNameLookup): TemplateFill | u
   const boundId = f.boundVariables?.color?.id;
   if (boundId) out.varName = varName(boundId) || undefined;
   else if (f.color) out.hex = rgbToHex(f.color);
+  return out.varName || out.hex ? out : undefined;
+}
+
+function readStroke(node: FigmaNodeLike, varName: VarNameLookup): TemplateStroke | undefined {
+  const strokes = node.strokes;
+  if (!Array.isArray(strokes) || !strokes.length) return undefined;
+  const s = strokes[0] as PaintLike;
+  if (s.type !== 'SOLID' || s.visible === false) return undefined;
+  const weight = isNum(node.strokeWeight) ? node.strokeWeight : 1;
+  const out: TemplateStroke = { opacity: s.opacity == null ? 1 : s.opacity, weight };
+  const boundId = s.boundVariables?.color?.id;
+  if (boundId) out.varName = varName(boundId) || undefined;
+  else if (s.color) out.hex = rgbToHex(s.color);
   return out.varName || out.hex ? out : undefined;
 }
 
@@ -165,6 +189,9 @@ export function parseTemplateNode(node: FigmaNodeLike, varName: VarNameLookup): 
 
   const fill = readFill(node, varName);
   if (fill) out.fill = fill;
+
+  const stroke = readStroke(node, varName);
+  if (stroke) out.stroke = stroke;
 
   const slot = parseSlotName(node.name);
   if (slot) out.slot = slot;

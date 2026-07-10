@@ -48,6 +48,28 @@ function renderNode(
     transformOrigin: '0 0',
     opacity: node.opacity,
   };
+  const strokeColor = node.stroke
+    ? resolveFill(
+        { varName: node.stroke.varName, hex: node.stroke.hex, opacity: node.stroke.opacity },
+        t,
+        autoTokenize
+      )
+    : undefined;
+
+  // A LINE (a divider) has height 0 — its STROKE is the visible mark. Render as a rule.
+  if (node.type === 'LINE') {
+    return (
+      <div
+        key={key}
+        style={{
+          ...pos,
+          width: node.w || 1,
+          height: Math.max(1, node.stroke?.weight ?? 1),
+          background: strokeColor,
+        }}
+      />
+    );
+  }
 
   if (node.type === 'TEXT' && node.text) {
     // Required slots fall back to the layer's literal text (never blank); optional
@@ -119,6 +141,7 @@ function renderNode(
         width: node.w,
         height: node.h,
         background: resolveFill(node.fill, t, autoTokenize),
+        border: node.stroke && strokeColor ? `${node.stroke.weight}px solid ${strokeColor}` : undefined,
         borderRadius: node.cornerRadius,
         overflow: node.clip ? 'hidden' : undefined,
       }}
