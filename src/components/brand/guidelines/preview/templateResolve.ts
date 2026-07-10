@@ -43,10 +43,45 @@ export function hexWithOpacity(hex: string, opacity: number): string {
   return `rgba(${r},${g},${b},${opacity})`;
 }
 
-/** A bound variable resolves to the brand's live token; a literal keeps its hex. */
-export function resolveFill(fill: TemplateFill | undefined, t: RoleTheme): string | undefined {
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '').padEnd(6, '0');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+/**
+ * Auto-tokenize: map a LITERAL color to the nearest brand role color, so a raw Figma
+ * frame (authored with hardcoded colors, no `Brand` variables) still recolors per brand.
+ * Nearest by RGB distance across the role anchors — light→bg, dark→text, saturated→accent
+ * fall out naturally.
+ */
+export function nearestRoleColor(hex: string, t: RoleTheme): string {
+  const anchors = [t.bg, t.surface, t.text, t.textMuted, t.primary, t.secondary, t.accent, t.accentText];
+  const [r, g, b] = hexToRgb(hex);
+  let best = anchors[0];
+  let bestD = Infinity;
+  for (const a of anchors) {
+    const [ar, ag, ab] = hexToRgb(a);
+    const d = (r - ar) ** 2 + (g - ag) ** 2 + (b - ab) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      best = a;
+    }
+  }
+  return best;
+}
+
+/**
+ * A bound variable resolves to the brand's live token; a literal keeps its hex — unless
+ * `autoTokenize` is on (imported raw frames), where literals snap to the nearest role.
+ */
+export function resolveFill(
+  fill: TemplateFill | undefined,
+  t: RoleTheme,
+  autoTokenize = false
+): string | undefined {
   if (!fill) return undefined;
-  const base = fill.varName && VAR_TO_ROLE[fill.varName] ? t[VAR_TO_ROLE[fill.varName]] : fill.hex;
+  let base = fill.varName && VAR_TO_ROLE[fill.varName] ? t[VAR_TO_ROLE[fill.varName]] : fill.hex;
+  if (autoTokenize && !fill.varName && fill.hex) base = nearestRoleColor(fill.hex, t);
   if (!base) return undefined;
   return hexWithOpacity(base, fill.opacity);
 }

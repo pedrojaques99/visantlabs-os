@@ -183,6 +183,17 @@ export function parseTemplateNode(node: FigmaNodeLike, varName: VarNameLookup): 
   return out;
 }
 
+/** Every distinct font family used by a schema's text nodes (for dynamic font loading). */
+export function collectFontFamilies(schema: TemplateSchema): string[] {
+  const out = new Set<string>();
+  const walk = (n: TemplateNode) => {
+    if (n.text?.family) out.add(n.text.family);
+    n.children?.forEach(walk);
+  };
+  walk(schema.root);
+  return [...out];
+}
+
 /** Parse a `[Template]` frame into a full schema (root transform normalized away). */
 export function frameToSchema(node: FigmaNodeLike, varName: VarNameLookup, id?: string): TemplateSchema {
   const root = parseTemplateNode(node, varName);

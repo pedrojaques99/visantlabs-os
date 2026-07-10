@@ -29,6 +29,7 @@ import {
 } from './BrandMocks';
 import { TemplateRenderer, type TemplateSchema } from './TemplateRenderer';
 import cardScatterSchema from './schemas/card-scatter.json';
+import editorialLayoutSchema from './schemas/editorial-layout-01.json';
 import { PreviewTile, type TileItem } from './PreviewTile';
 
 // A preset rendered LIVE from a Figma-extracted schema (no hand-written React).
@@ -40,6 +41,18 @@ const SyncedCardScatterMock: React.FC<{
   overrides?: MockOverrides;
 }> = (props) => (
   <TemplateRenderer schema={cardScatterSchema as unknown as TemplateSchema} {...props} />
+);
+
+// A RAW Design-Library frame (literal colors/fonts, no convention) — auto-tokenized:
+// literal colors snap to the nearest brand role + arbitrary fonts load dynamically.
+const RawEditorialMock: React.FC<{
+  tokens: MockTokens;
+  className?: string;
+  exportRef?: React.Ref<HTMLDivElement>;
+  variant?: number;
+  overrides?: MockOverrides;
+}> = (props) => (
+  <TemplateRenderer schema={editorialLayoutSchema as unknown as TemplateSchema} autoTokenize {...props} />
 );
 
 const BUILTIN: TileItem[] = [
@@ -55,6 +68,7 @@ const BUILTIN: TileItem[] = [
   { id: 'hero', label: 'Editorial hero', Component: EditorialHeroMock },
   { id: 'pattern', label: 'Brand pattern', Component: BrandPatternMock },
   { id: 'scatter-sync', label: 'Card scatter · Figma', Component: SyncedCardScatterMock },
+  { id: 'ed-layout', label: 'Editorial layout · auto-tokenized', Component: RawEditorialMock },
 ];
 
 export const BrandPreviewGallery: React.FC<{

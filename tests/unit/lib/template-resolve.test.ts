@@ -3,6 +3,7 @@ import {
   resolveFill,
   resolveSlot,
   hexWithOpacity,
+  nearestRoleColor,
   VAR_TO_ROLE,
   type TemplateContent,
 } from '../../../src/components/brand/guidelines/preview/templateResolve';
@@ -92,6 +93,20 @@ describe('resolveSlot (alias pipeline)', () => {
     // mapped but empty field → fallback
     const empty = { ...c, headline: '' };
     expect(resolveSlot('h1', empty, 'literal h1')).toBe('literal h1');
+  });
+});
+
+describe('nearestRoleColor (auto-tokenize)', () => {
+  it('snaps neutrals to the brand neutral roles (white→bg, black→dark role)', () => {
+    // white is nearest the light bg/surface; near-black is nearest text/accentText.
+    expect(nearestRoleColor('#ffffff', theme)).toBe(theme.bg);
+    expect(['#1c1a14', '#000000']).toContain(nearestRoleColor('#000000', theme));
+    expect(nearestRoleColor('#faf7f0', theme)).toBe(theme.bg); // off-white → bg
+  });
+  it('snaps a saturated color to the closest saturated role', () => {
+    // a warm gold snaps to primary (Honey Gold), a teal to accent.
+    expect(nearestRoleColor('#e6a040', theme)).toBe(theme.primary);
+    expect(nearestRoleColor('#4f9090', theme)).toBe(theme.accent);
   });
 });
 

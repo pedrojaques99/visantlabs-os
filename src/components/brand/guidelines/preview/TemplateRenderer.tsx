@@ -9,12 +9,17 @@
  *
  * POC: schema is a static JSON. Production: the Visant plugin pushes it on "sync".
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Artboard } from './Artboard';
 import { FitText } from './FitText';
 import { buildRoleTheme, type MockTokens, type RoleTheme } from './mockTokens';
 import { resolveContent, splitTwo, type MockOverrides } from './BrandMocks';
-import type { TemplateSchema, TemplateNode } from '@/lib/figma-template-schema';
+import { useGoogleFonts } from './useBrandFonts';
+import {
+  collectFontFamilies,
+  type TemplateSchema,
+  type TemplateNode,
+} from '@/lib/figma-template-schema';
 import {
   resolveFill,
   resolveSlot,
@@ -31,7 +36,8 @@ function renderNode(
   t: RoleTheme,
   tokens: MockTokens,
   c: TemplateContent,
-  key: string
+  key: string,
+  autoTokenize: boolean
 ): React.ReactNode {
   const [a, b, cc, d, e, f] = node.m;
   const pos: React.CSSProperties = {
@@ -67,7 +73,7 @@ function renderNode(
       ...pos,
       fontFamily: family,
       fontWeight: node.text.style ? WEIGHTS[node.text.style] || 400 : 400,
-      color: resolveFill(node.fill, t),
+      color: resolveFill(node.fill, t, autoTokenize),
       textAlign: (node.text.align?.toLowerCase() as React.CSSProperties['textAlign']) || undefined,
       textTransform:
         node.text.tcase === 'UPPER'
@@ -112,12 +118,12 @@ function renderNode(
         ...pos,
         width: node.w,
         height: node.h,
-        background: resolveFill(node.fill, t),
+        background: resolveFill(node.fill, t, autoTokenize),
         borderRadius: node.cornerRadius,
         overflow: node.clip ? 'hidden' : undefined,
       }}
     >
-      {node.children?.map((ch, i) => renderNode(ch, t, tokens, c, `${key}-${i}`))}
+      {node.children?.map((ch, i) => renderNode(ch, t, tokens, c, `${key}-${i}`, autoTokenize))}
     </div>
   );
 }
@@ -131,7 +137,11 @@ export const TemplateRenderer: React.FC<{
   overrides?: MockOverrides;
   className?: string;
   exportRef?: React.Ref<HTMLDivElement>;
-}> = ({ schema, tokens, variant = 0, overrides, className, exportRef }) => {
+  /** Snap literal (non-variable) colors to the nearest brand role — for imported raw frames. */
+  autoTokenize?: boolean;
+}> = ({ schema, tokens, variant = 0, overrides, className, exportRef, autoTokenize = false }) => {
+  // Load whatever fonts the frame uses (Red Hat Mono, Almarai…) so it renders in real type.
+  useGoogleFonts(useMemo(() => collectFontFamilies(schema), [schema]));
   const t = buildRoleTheme(tokens, variant);
   const rc = resolveContent(tokens, overrides);
   const [tagL, tagR] = splitTwo(rc.tagline || rc.name);
@@ -153,12 +163,12 @@ export const TemplateRenderer: React.FC<{
         style={{
           position: 'absolute',
           inset: 0,
-          background: resolveFill(root.fill, t),
+          background: resolveFill(root.fill, t, autoTokenize),
           borderRadius: root.cornerRadius,
           overflow: root.clip ? 'hidden' : undefined,
         }}
       >
-        {root.children?.map((ch, i) => renderNode(ch, t, tokens, c, `n${i}`))}
+        {root.children?.map((ch, i) => renderNode(ch, t, tokens, c, `n${i}`, autoTokenize))}
       </div>
     </Artboard>
   );
