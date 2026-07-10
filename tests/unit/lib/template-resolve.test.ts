@@ -4,6 +4,7 @@ import {
   resolveSlot,
   hexWithOpacity,
   nearestRoleColor,
+  contrastNeutral,
   VAR_TO_ROLE,
   type TemplateContent,
 } from '../../../src/components/brand/guidelines/preview/templateResolve';
@@ -107,6 +108,18 @@ describe('nearestRoleColor (auto-tokenize)', () => {
     // a warm gold snaps to primary (Honey Gold), a teal to accent.
     expect(nearestRoleColor('#e6a040', theme)).toBe(theme.primary);
     expect(nearestRoleColor('#4f9090', theme)).toBe(theme.accent);
+  });
+});
+
+describe('contrastNeutral (readable text on auto-tokenized bg)', () => {
+  it('picks a dark neutral on a light bg and a light neutral on a dark bg', () => {
+    const onLight = contrastNeutral('#fdf5e6', theme); // cream bg → dark text
+    const onDark = contrastNeutral('#1c1a14', theme); // carvão bg → light text
+    expect(['#1c1a14', '#000000', '#733d1f']).toContain(onLight);
+    expect(['#fdf5e6']).toContain(onDark);
+    // and they must differ from the bg (never invisible)
+    expect(onLight).not.toBe('#fdf5e6');
+    expect(onDark).not.toBe('#1c1a14');
   });
 });
 

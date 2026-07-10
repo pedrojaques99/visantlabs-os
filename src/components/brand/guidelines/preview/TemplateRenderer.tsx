@@ -23,6 +23,7 @@ import {
 import {
   resolveFill,
   resolveSlot,
+  contrastNeutral,
   WEIGHTS,
   type TemplateContent,
 } from './templateResolve';
@@ -37,7 +38,8 @@ function renderNode(
   tokens: MockTokens,
   c: TemplateContent,
   key: string,
-  autoTokenize: boolean
+  autoTokenize: boolean,
+  bg: string
 ): React.ReactNode {
   const [a, b, cc, d, e, f] = node.m;
   const pos: React.CSSProperties = {
@@ -95,7 +97,7 @@ function renderNode(
       ...pos,
       fontFamily: family,
       fontWeight: node.text.style ? WEIGHTS[node.text.style] || 400 : 400,
-      color: resolveFill(node.fill, t, autoTokenize),
+      color: autoTokenize ? contrastNeutral(bg, t) : resolveFill(node.fill, t),
       textAlign: (node.text.align?.toLowerCase() as React.CSSProperties['textAlign']) || undefined,
       textTransform:
         node.text.tcase === 'UPPER'
@@ -133,6 +135,8 @@ function renderNode(
     );
   }
 
+  const nodeBg = resolveFill(node.fill, t, autoTokenize);
+  const childBg = nodeBg || bg; // children inherit this node's bg for text contrast
   return (
     <div
       key={key}
@@ -140,13 +144,15 @@ function renderNode(
         ...pos,
         width: node.w,
         height: node.h,
-        background: resolveFill(node.fill, t, autoTokenize),
+        background: nodeBg,
         border: node.stroke && strokeColor ? `${node.stroke.weight}px solid ${strokeColor}` : undefined,
-        borderRadius: node.cornerRadius,
+        borderRadius: node.type === 'ELLIPSE' ? '50%' : node.cornerRadius,
         overflow: node.clip ? 'hidden' : undefined,
       }}
     >
-      {node.children?.map((ch, i) => renderNode(ch, t, tokens, c, `${key}-${i}`, autoTokenize))}
+      {node.children?.map((ch, i) =>
+        renderNode(ch, t, tokens, c, `${key}-${i}`, autoTokenize, childBg)
+      )}
     </div>
   );
 }
@@ -180,18 +186,19 @@ export const TemplateRenderer: React.FC<{
     description: tokens.description || '',
   };
   const root = schema.root;
+  const rootBg = resolveFill(root.fill, t, autoTokenize) || t.bg;
   return (
     <Artboard w={schema.width} h={schema.height} className={className} exportRef={exportRef}>
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: resolveFill(root.fill, t, autoTokenize),
+          background: rootBg,
           borderRadius: root.cornerRadius,
           overflow: root.clip ? 'hidden' : undefined,
         }}
       >
-        {root.children?.map((ch, i) => renderNode(ch, t, tokens, c, `n${i}`, autoTokenize))}
+        {root.children?.map((ch, i) => renderNode(ch, t, tokens, c, `n${i}`, autoTokenize, rootBg))}
       </div>
     </Artboard>
   );

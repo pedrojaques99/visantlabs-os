@@ -30,6 +30,7 @@ import {
 import { TemplateRenderer, type TemplateSchema } from './TemplateRenderer';
 import cardScatterSchema from './schemas/card-scatter.json';
 import editorialLayoutSchema from './schemas/editorial-layout-01.json';
+import designLibrarySchemas from './schemas/design-library.json';
 import { PreviewTile, type TileItem } from './PreviewTile';
 
 // A preset rendered LIVE from a Figma-extracted schema (no hand-written React).
@@ -83,12 +84,18 @@ export const BrandPreviewGallery: React.FC<{
   // <TemplateRenderer>. Appended to the built-in presets in the same masonry.
   const synced = useSyncedTemplates(brandId);
   const items = useMemo<TileItem[]>(() => {
+    // RAW Design-Library frames (auto-tokenized to the brand).
+    const libItems: TileItem[] = (designLibrarySchemas as unknown as TemplateSchema[]).map((s) => ({
+      id: `lib-${s.id}`,
+      label: `${s.name} · Design Library`,
+      Component: (props) => <TemplateRenderer schema={s} autoTokenize {...props} />,
+    }));
     const syncedItems: TileItem[] = (synced.data ?? []).map((s, i) => ({
       id: `synced-${s.id || i}`,
       label: `${s.name.replace(/^\[Template\]\s*/, '')} · Figma`,
       Component: (props) => <TemplateRenderer schema={s} {...props} />,
     }));
-    return [...BUILTIN, ...syncedItems];
+    return [...BUILTIN, ...libItems, ...syncedItems];
   }, [synced.data]);
 
   return (

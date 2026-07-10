@@ -70,6 +70,34 @@ export function nearestRoleColor(hex: string, t: RoleTheme): string {
   return best;
 }
 
+function luminance(hex: string): number {
+  const ch = hexToRgb(hex).map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+}
+
+/**
+ * Auto-tokenize for TEXT: pick the brand NEUTRAL role that contrasts most with the
+ * inherited background — so text is never mapped to (near) the same color as its bg
+ * (which nearest-color alone can do for monochromatic source designs → invisible text).
+ */
+export function contrastNeutral(bgHex: string, t: RoleTheme): string {
+  const neutrals = [t.bg, t.surface, t.text, t.textMuted, t.accentText];
+  const lb = luminance(bgHex);
+  let best = neutrals[0];
+  let bestD = -1;
+  for (const n of neutrals) {
+    const d = Math.abs(luminance(n) - lb);
+    if (d > bestD) {
+      bestD = d;
+      best = n;
+    }
+  }
+  return best;
+}
+
 /**
  * A bound variable resolves to the brand's live token; a literal keeps its hex — unless
  * `autoTokenize` is on (imported raw frames), where literals snap to the nearest role.
