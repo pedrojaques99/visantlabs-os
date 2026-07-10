@@ -6,6 +6,7 @@ import type { BrandGuideline } from '@/lib/figma-types';
 export const BRAND_GUIDELINE_KEYS = {
   all: ['brand-guidelines'] as const,
   detail: (id: string) => ['brand-guidelines', id] as const,
+  syncedTemplates: (id: string) => ['brand-guidelines', id, 'synced-templates'] as const,
   quota: ['brand-quota'] as const,
 };
 const KEYS = BRAND_GUIDELINE_KEYS;
@@ -28,6 +29,16 @@ export function useBrandGuideline(id: string | null | undefined) {
       const list = qc.getQueryData<BrandGuideline[]>(KEYS.all);
       return list?.find((g) => g.id === id);
     },
+  });
+}
+
+/** Layout schemas synced from the brand's Figma [Template] frames — the sync bridge. */
+export function useSyncedTemplates(brandId: string | null | undefined) {
+  return useQuery({
+    queryKey: KEYS.syncedTemplates(brandId ?? ''),
+    queryFn: () => brandGuidelineApi.getSyncedTemplates(brandId as string),
+    enabled: !!brandId,
+    staleTime: 60_000,
   });
 }
 

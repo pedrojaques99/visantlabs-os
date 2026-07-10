@@ -1,6 +1,7 @@
 import { authService } from './authService';
 import { trackEvent } from '../utils/analytics';
 import type { BrandGuideline } from '../lib/figma-types';
+import type { TemplateSchema } from '../lib/figma-template-schema';
 
 const getApiBaseUrl = () => {
   const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
@@ -48,6 +49,8 @@ export interface BrandQuota {
   used: number;
   max: number | null;
   tier: string;
+  /** ISO date até quando marcas em excesso seguem ativas após downgrade; null = sem grace. */
+  graceUntil?: string | null;
 }
 
 export const brandGuidelineApi = {
@@ -82,6 +85,16 @@ export const brandGuidelineApi = {
     if (!response.ok) throw new Error('Failed to fetch brand guideline');
     const data = await response.json();
     return data.guideline;
+  },
+
+  /** Layout schemas synced from the brand's Figma [Template] frames (for the live preview). */
+  async getSyncedTemplates(id: string): Promise<TemplateSchema[]> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/synced-templates`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch synced templates');
+    const data = await response.json();
+    return Array.isArray(data.templates) ? data.templates : [];
   },
 
   async create(data: Partial<BrandGuideline>): Promise<BrandGuideline> {
@@ -288,7 +301,7 @@ export const brandGuidelineApi = {
   /** Seasonal/contextual on-brand IDEAS for the interactive panel (free, cached weekly). */
   async getSuggestions(
     id: string,
-    opts: { count?: number; force?: boolean } = {}
+    opts: { count?: number; force?: boolean; cacheOnly?: boolean } = {}
   ): Promise<{
     suggestions: BrandSuggestion[];
     seasonal: { market: string; upcoming: Array<{ key: string; label: string; daysAway: number }> };
@@ -298,9 +311,26 @@ export const brandGuidelineApi = {
     const qs = new URLSearchParams();
     if (opts.count) qs.set('count', String(opts.count));
     if (opts.force) qs.set('force', 'true');
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggestions?${qs}`, {
-      headers: getAuthHeaders(),
-    });
+    if (opts.cacheOnly) qs.set('cacheOnly', 'true');
+    // The server cascades across cheap-text providers (Groq→…→Gemini), which can
+    // take a while when the fast ones are cooling down. Bound the wait so the card
+    // never spins forever — on timeout the caller degrades to static starters.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggestions?${qs}`, {
+        headers: getAuthHeaders(),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        throw codedError({ error: 'suggestions_unavailable' }, 'Ideas took too long — try again shortly.');
+      }
+      throw e;
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       throw codedError(body, 'Failed to load suggestions');

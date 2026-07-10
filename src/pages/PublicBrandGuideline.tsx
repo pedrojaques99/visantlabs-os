@@ -868,7 +868,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             · Overview in edit mode + every other tab → BrandReadOnlyView sections
               (kept for inline section editing / focused detail views) */}
         {activeTab === 'preview' ? (
-          hasPreviewData && <BrandPreviewGallery tokens={tokens} brandName={brandName} />
+          hasPreviewData && (
+            <BrandPreviewGallery tokens={tokens} brandName={brandName} brandId={guideline.id} />
+          )
         ) : activeTab === 'all' && !(canEdit && editMode) ? (
           <BrandOverviewBento guideline={guideline} tokens={tokens} onOpenTab={changeTab} />
         ) : (
