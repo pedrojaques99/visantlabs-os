@@ -38,6 +38,7 @@ const ROUTE: Record<OpName, Channel> = {
   'components.captureSelection': 'figma',
   'components.importFromSelection': 'figma',
   'templates.get': 'figma',
+  'templates.extractSchema': 'figma',
   'templates.scaffold': 'figma',
   'variables.getColors': 'figma',
   'variables.getFonts': 'figma',

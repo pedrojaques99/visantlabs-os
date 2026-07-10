@@ -15,7 +15,7 @@ export {
   getAvailableFontFamilies,
 } from './variables';
 export { notifyContextChange } from './context';
-export { getTemplates } from './templates';
+export { getTemplates, extractTemplateSchemas } from './templates';
 export { scaffoldAgentLibrary } from './scaffold';
 export { pasteGeneratedImage, deleteSelection } from './image';
 export {

@@ -3,6 +3,7 @@
 import { postToUI } from '../utils/postMessage';
 import { parseSlotName, aspectLabel } from '../../../src/lib/figma-slots';
 import type { TemplateSlot, TemplateVariableInfo } from '../../../src/lib/figma-slots';
+import { frameToSchema, type FigmaNodeLike } from '../../../src/lib/figma-template-schema';
 
 /**
  * Template info + self-describing MANIFEST. A frame named `[Template] <Name>` is a
@@ -45,6 +46,53 @@ function isImageCapable(node: SceneNode): boolean {
     t === 'COMPONENT' ||
     t === 'INSTANCE'
   );
+}
+
+/** Collect every bound-variable id referenced by a node subtree (fills + font family). */
+function collectVarIds(node: SceneNode, ids: Set<string>): void {
+  const anyNode = node as any;
+  const fills = anyNode.fills;
+  if (Array.isArray(fills)) {
+    for (const f of fills) {
+      const id = f?.boundVariables?.color?.id;
+      if (id) ids.add(id);
+    }
+  }
+  const ff = anyNode.boundVariables?.fontFamily;
+  if (ff) {
+    if (Array.isArray(ff)) ff.forEach((x: any) => x?.id && ids.add(x.id));
+    else if (ff.id) ids.add(ff.id);
+  }
+  if ('children' in node) for (const ch of (node as FrameNode).children) collectVarIds(ch, ids);
+}
+
+/**
+ * Parse every `[Template]` frame on the current page into a `TemplateSchema`
+ * (geometry + variable binds + slots) via the shared pure parser. The UI POSTs the
+ * result to `/brand-guidelines/:id/synced-templates`; the webapp renders it live.
+ * This is the producer half of the Figma↔preview sync bridge.
+ */
+export async function extractTemplateSchemas() {
+  const frames = figma.currentPage.findAll(
+    (n) => n.type === 'FRAME' && n.name.startsWith('[Template]')
+  ) as FrameNode[];
+
+  // Resolve every referenced variable id → name once (async), then parse synchronously.
+  const ids = new Set<string>();
+  for (const f of frames) collectVarIds(f, ids);
+  const nameById = new Map<string, string>();
+  for (const id of ids) {
+    try {
+      const v = await figma.variables.getVariableByIdAsync(id);
+      if (v) nameById.set(id, v.name);
+    } catch {
+      /* variable deleted or inaccessible — leave unresolved (renderer falls back) */
+    }
+  }
+
+  const lookup = (id: string) => nameById.get(id) ?? null;
+  const templates = frames.map((f) => frameToSchema(f as unknown as FigmaNodeLike, lookup, f.id));
+  return { templates, count: templates.length };
 }
 
 /** Get templates ([Template]-prefixed frames) with their slot+variable manifest. */

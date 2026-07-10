@@ -48,6 +48,7 @@ export interface OpMap {
   'components.captureSelection': { payload: Record<string, never>; result: unknown };
   'components.importFromSelection': { payload: { folderPath?: string }; result: unknown };
   'templates.get': { payload: Record<string, never>; result: unknown };
+  'templates.extractSchema': { payload: Record<string, never>; result: unknown };
   'templates.scaffold': { payload: { libraryName?: string }; result: unknown };
 
   // ── Variables ──
