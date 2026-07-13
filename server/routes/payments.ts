@@ -751,27 +751,51 @@ router.post('/claim-club', apiRateLimiter, authenticate, async (req: AuthRequest
     if (!found) return res.json({ granted: false, reason: 'no-purchase' });
 
     const grantTier = (found.metadata?.tier as string) || 'club';
+    // Valida que a sessão é de fato uma compra de fundador paga (não só um
+    // e-mail que bateu): tier precisa ser de club e o valor precisa ser > 0.
+    if (!clubTiers.includes(grantTier.toLowerCase())) {
+      return res.json({ granted: false, reason: 'invalid-tier' });
+    }
+    if (!found.amount_total || found.amount_total <= 0) {
+      return res.json({ granted: false, reason: 'not-paid' });
+    }
+
+    // Idempotência: carimba ESTA sessão do Stripe como reivindicada antes de
+    // aplicar o grant — espelha o webhook. Sem isso, qualquer mudança futura de
+    // tier (downgrade, ajuste de admin, race entre abas) reabriria a mesma
+    // compra velha pra re-zerar `creditsUsed` = refil de créditos infinito.
+    const claimed = await claimPaymentEvent(db, 'stripe', found.id);
+    if (!claimed) {
+      return res.json({ granted: false, reason: 'already-claimed' });
+    }
+
     const isLifetime = found.metadata?.lifetime === 'true';
     const grantCredits = parseInt(found.metadata?.monthlyCredits || '1000', 10);
     const resetDate = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
     const farFuture = new Date('2100-01-01T00:00:00Z');
     const custId = typeof found.customer === 'string' ? found.customer : undefined;
 
-    await db.collection('users').updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          subscriptionStatus: 'active',
-          subscriptionTier: grantTier,
-          subscriptionEndDate: isLifetime ? farFuture : resetDate,
-          monthlyCredits: grantCredits,
-          creditsUsed: 0,
-          creditsResetDate: resetDate,
-          ...(custId ? { stripeCustomerId: custId } : {}),
-          'metadata.clubFounder': isLifetime,
-        },
-      }
-    );
+    try {
+      await db.collection('users').updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            subscriptionStatus: 'active',
+            subscriptionTier: grantTier,
+            subscriptionEndDate: isLifetime ? farFuture : resetDate,
+            monthlyCredits: grantCredits,
+            creditsUsed: 0,
+            creditsResetDate: resetDate,
+            ...(custId ? { stripeCustomerId: custId } : {}),
+            'metadata.clubFounder': isLifetime,
+          },
+        }
+      );
+    } catch (grantError) {
+      // Grant falhou: libera o carimbo pra permitir nova tentativa.
+      await releasePaymentEvent(db, 'stripe', found.id);
+      throw grantError;
+    }
     return res.json({ granted: true, tier: grantTier, lifetime: isLifetime });
   } catch (e) {
     next(e);
