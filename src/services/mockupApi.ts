@@ -69,6 +69,7 @@ export interface Mockup {
   aspectRatio: string;
   isLiked?: boolean; // User's like status for this mockup
   likesCount?: number; // Total number of likes
+  brandGuidelineId?: string | null; // marca vinculada (biblioteca brand-scoped)
   createdAt?: string;
   updatedAt?: string;
 }
@@ -103,9 +104,10 @@ export const mockupApi = {
     return Array.isArray(data) ? data : [];
   },
 
-  async getAll(): Promise<Mockup[]> {
+  async getAll(brandId?: string): Promise<Mockup[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/mockups`, {
+      const query = brandId ? `?brandId=${encodeURIComponent(brandId)}` : '';
+      const response = await fetch(`${API_BASE_URL}/mockups${query}`, {
         headers: getAuthHeaders(),
       });
 

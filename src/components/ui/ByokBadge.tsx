@@ -3,6 +3,7 @@ import { Key, CreditCard } from 'lucide-react';
 import { Badge } from './badge';
 import { cn } from '@/lib/utils';
 import { Tooltip } from './Tooltip';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ByokBadgeProps {
   active: boolean;
@@ -15,6 +16,7 @@ interface ByokBadgeProps {
  * Shows whether user is using their own API key or platform credits
  */
 export function ByokBadge({ active, showTooltip = true, className }: ByokBadgeProps) {
+  const { t } = useTranslation();
   const badge = (
     <Badge
       className={cn(
@@ -49,19 +51,13 @@ export function ByokBadge({ active, showTooltip = true, className }: ByokBadgePr
       content={
         active ? (
           <div className="space-y-1">
-            <p className="font-medium text-success">BYOK Mode Active</p>
-            <p className="text-xs text-neutral-400">
-              Using your own API key. Charges go directly to Google. No credits deducted from
-              Visant.
-            </p>
+            <p className="font-medium text-success">{t('brandQuota.byok.activeTitle')}</p>
+            <p className="text-xs text-neutral-400">{t('brandQuota.byok.activeDesc')}</p>
           </div>
         ) : (
           <div className="space-y-1">
-            <p className="font-medium">Using Platform Credits</p>
-            <p className="text-xs text-neutral-400">
-              Each generation deducts credits from your account. Add your own API key in Settings
-              for unlimited generations.
-            </p>
+            <p className="font-medium">{t('brandQuota.byok.inactiveTitle')}</p>
+            <p className="text-xs text-neutral-400">{t('brandQuota.byok.inactiveDesc')}</p>
           </div>
         )
       }

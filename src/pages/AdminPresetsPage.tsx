@@ -1465,8 +1465,8 @@ export const AdminPresetsPage: React.FC = () => {
     : editingPreset?.type;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0"></div>
+    <div className="min-h-full bg-neutral-950 text-neutral-300 relative">
+      <div className="absolute inset-0 z-0"></div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">
@@ -1873,7 +1873,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.idRequired')}
                         </MicroTitle>
                         <Input
@@ -1887,7 +1887,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.nameRequired')}
                         </MicroTitle>
                         <Input
@@ -1899,7 +1899,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.descriptionRequired')}
                         </MicroTitle>
                         <Input
@@ -1913,7 +1913,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <MicroTitle as="label" className="mb-2 uppercase">
+                        <MicroTitle as="label" className="mb-2">
                           {t('adminPresets.promptRequired')}
                         </MicroTitle>
                         <Textarea
@@ -1927,7 +1927,7 @@ export const AdminPresetsPage: React.FC = () => {
                       {effectiveEditType === 'mockup' && (
                         <div className="md:col-span-2 space-y-4">
                           <div>
-                            <MicroTitle as="label" className="mb-2 uppercase">
+                            <MicroTitle as="label" className="mb-2">
                               Imagem de Referência
                             </MicroTitle>
                             {!formData.referenceImageUrl ? (

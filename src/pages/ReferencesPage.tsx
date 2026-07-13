@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { thumbHashToDataURL } from 'thumbhash';
 import {
@@ -26,6 +27,11 @@ import {
   Trash2,
   ArrowLeft,
   Lock,
+  Pencil,
+  CheckSquare,
+  Square,
+  Save,
+  ChevronDown,
 } from 'lucide-react';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
@@ -33,6 +39,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
@@ -48,6 +62,7 @@ import {
   type ReferenceFacets,
   type ReferenceUploadInput,
   collectionsApi,
+  adminReferencesApi,
   type ReferenceCollection,
   type CollectionDetail,
   type TasteHint,
@@ -88,6 +103,31 @@ interface SimilarView {
   source?: ReferenceItem;
 }
 
+// Generic source labels that aren't real titles (studio field is often just a provenance tag).
+const GENERIC_STUDIO = /^(visant|curated|visant\s*curated|reference|ref)$/i;
+
+/** Human-facing title — never surface the raw slug id (ref_urbanstay_56, club_ref_69…). */
+function refTitle(item: Pick<ReferenceItem, 'name' | 'studio' | 'provenance'>): string {
+  const prov = item.provenance || {};
+  const designer = prov.designer?.trim();
+  const studio = item.studio?.trim();
+  if (designer && !GENERIC_STUDIO.test(designer)) return designer;
+  if (studio && !GENERIC_STUDIO.test(studio)) return studio;
+  const raw = (item.name || '').trim();
+  // Rewrite our internal ref-id slugs; leave real human names untouched.
+  const m = raw.match(/^(?:userref[-_]|club[-_]?ref[-_]|ref[-_])(.+)$/i);
+  if (m) {
+    const cleaned = m[1]
+      .replace(/[-_]\d+$/, '')
+      .replace(/[-_]+/g, ' ')
+      .trim();
+    // A meaningful name survived → title-case it; otherwise the slug is just an id (e.g. "69").
+    if (cleaned && !/^\d+$/.test(cleaned)) return cleaned.replace(/\b\w/g, (c) => c.toUpperCase());
+    return studio || designer || 'Referência';
+  }
+  return raw || 'Referência';
+}
+
 /** Dimension values two references share — powers the "why it matches" explanation. */
 function sharedDimensions(a?: ReferenceItem, b?: ReferenceItem): string[] {
   if (!a || !b) return [];
@@ -116,24 +156,7 @@ function useThumbPlaceholder(hash?: string): string | null {
   }, [hash]);
 }
 
-/** Responsive column count for the JS masonry (stable on append — no reflow). */
-function useColumns(): number {
-  const get = () => {
-    if (typeof window === 'undefined') return 4;
-    const w = window.innerWidth;
-    if (w < 640) return 2;
-    if (w < 1024) return 3;
-    if (w < 1280) return 4;
-    return 5;
-  };
-  const [cols, setCols] = useState(get);
-  useEffect(() => {
-    const onResize = () => setCols(get());
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-  return cols;
-}
+// Masonry column count now comes from the shared `useMasonryColumns` (src/components/ui/Masonry).
 
 export const ReferencesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -167,9 +190,24 @@ export const ReferencesPage: React.FC = () => {
   const [dims, setDims] = useState<Record<string, string>>(initialDims);
   const [collections, setCollections] = useState<ReferenceCollection[]>([]);
   const [collectionView, setCollectionView] = useState<CollectionDetail | null>(null);
-  const [saveTarget, setSaveTarget] = useState<ReferenceItem | null>(null);
+  const [saveTarget, setSaveTarget] = useState<ReferenceItem[] | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [taste, setTaste] = useState<TasteHint[]>([]);
+
+  // Admin curation gate — verified server-side; this only toggles the UI affordances.
+  const [isAdmin, setIsAdmin] = useState(false);
+  // Batch multi-select (Set of ref ids) + shift-range anchor.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const selectAnchor = useRef<number | null>(null);
+  // Right-click context menu, anchored at the cursor.
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; item: ReferenceItem } | null>(
+    null
+  );
+  const [editTarget, setEditTarget] = useState<ReferenceItem | null>(null);
+  // Progressive disclosure — the facet wall stays folded until asked for.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Items pending an undo-able delete are hidden from the grid but not yet gone.
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
   const [facets, setFacets] = useState<ReferenceFacets | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -184,7 +222,7 @@ export const ReferencesPage: React.FC = () => {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
 
-  const cols = useColumns();
+  const cols = useMasonryColumns();
   const activeDimEntries = Object.entries(dims).filter(([, v]) => v);
   const hasActiveFilters = !!(
     debouncedSearch ||
@@ -211,18 +249,11 @@ export const ReferencesPage: React.FC = () => {
     setKind('all');
     setDims({});
   };
-  const grid = collectionView ? collectionView.items : similar ? similar.items : items;
-
-  // Round-robin distribution → each item keeps a fixed column, so appending
-  // pages never reflows existing cards (Apple-smooth infinite feed).
-  const columns = useMemo(() => {
-    const out: Array<Array<{ item: ReferenceItem; idx: number }>> = Array.from(
-      { length: cols },
-      () => []
-    );
-    grid.forEach((item, idx) => out[idx % cols].push({ item, idx }));
-    return out;
-  }, [grid, cols]);
+  const baseGrid = collectionView ? collectionView.items : similar ? similar.items : items;
+  const grid = useMemo(
+    () => (hiddenIds.size ? baseGrid.filter((r) => !hiddenIds.has(r.id)) : baseGrid),
+    [baseGrid, hiddenIds]
+  );
 
   // ── Data loading ───────────────────────────────────────────────
   const loadList = useCallback(
@@ -282,6 +313,15 @@ export const ReferencesPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  // resolve admin flag (verifyToken is cached/throttled, so this is cheap)
+  useEffect(() => {
+    if (!authService.isAuthenticated()) return;
+    authService
+      .verifyToken()
+      .then((u) => setIsAdmin(!!u?.isAdmin))
+      .catch(() => {});
+  }, []);
+
   // debounce the search box (instant search)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 320);
@@ -304,6 +344,17 @@ export const ReferencesPage: React.FC = () => {
     collectionView,
     reloadNonce,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── URL → estado (rail drill-in) ──────────────────────────────────────────
+  // O rail-mãe navega pra /references?scope=…&kind=… (tabs da seção). Como a
+  // página não remonta, sincroniza esses dois eixos de VOLTA pro estado. Guardado
+  // (só atualiza se difere) pra não brigar com o efeito estado→URL abaixo.
+  useEffect(() => {
+    const urlScope = (searchParams.get('scope') as 'library' | 'collections' | 'mine') || 'library';
+    const urlKind = (searchParams.get('kind') as 'all' | 'branding' | 'mockup') || 'all';
+    setScope((s) => (s === urlScope ? s : urlScope));
+    setKind((k) => (k === urlKind ? k : urlKind));
+  }, [searchParams]);
 
   // ── URL sync — serialize filter state into the querystring (shareable views) ──
   useEffect(() => {
@@ -421,6 +472,99 @@ export const ReferencesPage: React.FC = () => {
     }
   }, [collectionView]);
 
+  // ── Tag → pre-filtered route (anyone) ──────────────────────────
+  // Click a tag anywhere → drop into the library filtered by it (URL-synced, shareable).
+  const handleTagClick = useCallback((tag: string) => {
+    setSimilar(null);
+    setCollectionView(null);
+    setLightboxIndex(null);
+    setScope('library');
+    setActiveTag(tag);
+  }, []);
+
+  // ── Batch multi-select ─────────────────────────────────────────
+  const clearSelection = useCallback(() => {
+    setSelected(new Set());
+    selectAnchor.current = null;
+  }, []);
+
+  // Toggle one card; Shift extends a contiguous range from the last anchor.
+  const toggleSelect = useCallback(
+    (index: number, shiftKey: boolean) => {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        if (shiftKey && selectAnchor.current !== null) {
+          const [lo, hi] = [selectAnchor.current, index].sort((a, b) => a - b);
+          for (let i = lo; i <= hi; i++) {
+            const id = grid[i]?.id;
+            if (id) next.add(id);
+          }
+        } else {
+          const id = grid[index]?.id;
+          if (!id) return prev;
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          selectAnchor.current = index;
+        }
+        return next;
+      });
+    },
+    [grid]
+  );
+
+  // Clear selection whenever the underlying result set changes.
+  useEffect(() => {
+    clearSelection();
+  }, [scope, debouncedSearch, country, region, activeTag, kind, dims, similar, collectionView, clearSelection]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Admin delete (single or batch) — optimistic, with a 5s Undo window ─────────
+  const unhide = useCallback((ids: string[]) => {
+    setHiddenIds((prev) => {
+      const n = new Set(prev);
+      ids.forEach((id) => n.delete(id));
+      return n;
+    });
+  }, []);
+
+  const handleAdminDelete = useCallback(
+    (ids: string[]) => {
+      if (!ids.length) return;
+      const plural = ids.length > 1;
+      // Hide immediately (feels instant); defer the real delete so Undo can cancel it.
+      setHiddenIds((prev) => new Set([...prev, ...ids]));
+      setLightboxIndex(null);
+      clearSelection();
+
+      const commit = setTimeout(async () => {
+        try {
+          await Promise.all(ids.map((id) => adminReferencesApi.remove(id)));
+          const gone = new Set(ids);
+          setItems((prev) => prev.filter((r) => !gone.has(r.id)));
+          setSimilar((s) => (s ? { ...s, items: s.items.filter((r) => !gone.has(r.id)) } : s));
+          setCollectionView((cv) =>
+            cv ? { ...cv, items: cv.items.filter((r) => !gone.has(r.id)) } : cv
+          );
+          unhide(ids); // now truly removed from the source arrays too
+        } catch (e: any) {
+          unhide(ids); // restore on failure
+          toast.error(e.message || 'Erro ao excluir');
+        }
+      }, 5000);
+
+      toast(plural ? `${ids.length} referências excluídas` : 'Referência excluída', {
+        duration: 5000,
+        action: {
+          label: 'Desfazer',
+          onClick: () => {
+            clearTimeout(commit);
+            unhide(ids);
+          },
+        },
+      });
+    },
+    [clearSelection, unhide]
+  );
+
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -484,12 +628,15 @@ export const ReferencesPage: React.FC = () => {
       else if (e.key === 'ArrowUp' || e.key === 'k') move(-cols);
       else if (e.key === 'Enter' && focusedIndex >= 0) setLightboxIndex(focusedIndex);
       else if (e.key.toLowerCase() === 's' && focusedIndex >= 0) {
-        if (requireAuth()) setSaveTarget(grid[focusedIndex]);
-      } else if (e.key === 'Escape') setFocusedIndex(-1);
+        if (requireAuth()) setSaveTarget([grid[focusedIndex]]);
+      } else if (e.key === 'Escape') {
+        if (selected.size) clearSelection();
+        else setFocusedIndex(-1);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [grid, cols, focusedIndex, lightboxIndex, saveTarget, scope, collectionView]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [grid, cols, focusedIndex, lightboxIndex, saveTarget, scope, collectionView, selected, clearSelection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset grid focus whenever the result set changes.
   useEffect(() => {
@@ -614,17 +761,30 @@ export const ReferencesPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-neutral-400 hover:text-red-400"
-                  onClick={async () => {
-                    if (!window.confirm('Apagar esta coleção?')) return;
-                    try {
-                      await collectionsApi.remove(collectionView.collection.id);
-                      setCollectionView(null);
-                      loadCollections();
-                      toast.success('Coleção apagada');
-                    } catch (e: any) {
-                      toast.error(e.message || 'Erro ao apagar');
-                    }
+                  className="h-7 text-xs text-neutral-400 hover:text-destructive"
+                  aria-label="Apagar coleção"
+                  onClick={() => {
+                    const board = collectionView.collection;
+                    setCollectionView(null);
+                    setScope('collections');
+                    const commit = setTimeout(async () => {
+                      try {
+                        await collectionsApi.remove(board.id);
+                        loadCollections();
+                      } catch (e: any) {
+                        toast.error(e.message || 'Erro ao apagar');
+                      }
+                    }, 5000);
+                    toast('Coleção apagada', {
+                      duration: 5000,
+                      action: {
+                        label: 'Desfazer',
+                        onClick: () => {
+                          clearTimeout(commit);
+                          openBoard(board.id);
+                        },
+                      },
+                    });
                   }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -706,8 +866,33 @@ export const ReferencesPage: React.FC = () => {
               )}
             </div>
 
-            {/* Desktop inline filters */}
-            {scope === 'library' && <div className="hidden md:block">{filterControls}</div>}
+            {/* Desktop inline filters + progressive-disclosure toggle */}
+            {scope === 'library' && (
+              <div className="hidden md:flex items-center gap-2">
+                <div className="flex-1">{filterControls}</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-expanded={filtersOpen}
+                  className={cn(
+                    'h-9 shrink-0 border-neutral-700 text-xs transition-colors',
+                    filtersOpen
+                      ? 'bg-neutral-800 text-neutral-100'
+                      : 'bg-neutral-900 text-neutral-400'
+                  )}
+                  onClick={() => setFiltersOpen((o) => !o)}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+                  Filtros
+                  <ChevronDown
+                    className={cn(
+                      'h-3.5 w-3.5 ml-1.5 transition-transform',
+                      filtersOpen && 'rotate-180'
+                    )}
+                  />
+                </Button>
+              </div>
+            )}
 
             {/* Semantic suggestion — based on what the user has saved */}
             {scope === 'library' && !hasActiveFilters && taste.length > 0 && (
@@ -750,6 +935,7 @@ export const ReferencesPage: React.FC = () => {
                 {debouncedSearch && (
                   <FilterChip label={`"${debouncedSearch}"`} onRemove={() => setSearch('')} />
                 )}
+                {activeTag && <FilterChip label={activeTag} onRemove={() => setActiveTag('')} />}
                 {activeDimEntries.map(([k, v]) => (
                   <FilterChip key={k} label={v} onRemove={() => setDim(k, '')} />
                 ))}
@@ -762,9 +948,13 @@ export const ReferencesPage: React.FC = () => {
               </div>
             )}
 
-            {/* Structured dimension facets — designer-friendly groups (additive) */}
-            {scope === 'library' && facets?.dimensions && (
-              <div className="hidden md:flex flex-col gap-1.5">
+            {/* Structured dimension facets — folded until "Filtros" is opened */}
+            {scope === 'library' && filtersOpen && facets?.dimensions && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="hidden md:flex flex-col gap-1.5"
+              >
                 {DIM_GROUPS_BY_KIND[kind].map((dk) => {
                   const vals = facets.dimensions?.[dk];
                   if (!vals || !vals.length) return null;
@@ -783,7 +973,7 @@ export const ReferencesPage: React.FC = () => {
                               'cursor-pointer text-[10px]',
                               active
                                 ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30'
-                                : 'border-neutral-800 text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan'
+                                : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan'
                             )}
                             onClick={() => setDim(dk, v.value)}
                           >
@@ -791,7 +981,7 @@ export const ReferencesPage: React.FC = () => {
                             {active ? (
                               <X className="h-2.5 w-2.5 ml-1" />
                             ) : (
-                              <span className="ml-1 text-neutral-600">{v.count}</span>
+                              <span className="ml-1 text-neutral-600 tabular-nums">{v.count}</span>
                             )}
                           </Badge>
                         );
@@ -799,11 +989,11 @@ export const ReferencesPage: React.FC = () => {
                     </div>
                   );
                 })}
-              </div>
+              </motion.div>
             )}
 
-            {/* Tag facets */}
-            {scope === 'library' && facets && facets.tags.length > 0 && (
+            {/* Tag facets — folded until "Filtros" is opened */}
+            {scope === 'library' && filtersOpen && facets && facets.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {activeTag && (
                   <Badge
@@ -822,11 +1012,11 @@ export const ReferencesPage: React.FC = () => {
                     <Badge
                       key={t.value}
                       variant="outline"
-                      className="cursor-pointer border-neutral-700 text-neutral-400 hover:border-brand-cyan/40 hover:text-brand-cyan text-[10px]"
+                      className="cursor-pointer border-neutral-700 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan text-[10px]"
                       onClick={() => setActiveTag(t.value)}
                     >
                       {t.value}
-                      <span className="ml-1 text-neutral-600">{t.count}</span>
+                      <span className="ml-1 text-neutral-600 tabular-nums">{t.count}</span>
                     </Badge>
                   ))}
               </div>
@@ -860,37 +1050,37 @@ export const ReferencesPage: React.FC = () => {
             <FirstRun onUpload={() => requireAuth() && setUploadOpen(true)} />
           )
         ) : (
-          <div className="flex gap-3 items-start">
-            {columns.map((col, ci) => (
-              <div key={ci} className="flex-1 min-w-0 flex flex-col gap-3">
-                {col.map(({ item, idx }) => (
-                  <MasonryCard
-                    key={item.id}
-                    item={item}
-                    focused={idx === focusedIndex}
-                    onOpen={() => setLightboxIndex(idx)}
-                    onSimilar={() => runSimilarTo(item)}
-                    onSave={() => requireAuth() && setSaveTarget(item)}
-                    onRemove={
-                      collectionView?.collection.isOwner
-                        ? async () => {
-                            try {
-                              await collectionsApi.removeItem(
-                                collectionView.collection.id,
-                                item.id
-                              );
-                              refreshBoard();
-                            } catch (e: any) {
-                              toast.error(e.message || 'Erro ao remover');
-                            }
-                          }
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
+          <Masonry
+            items={grid}
+            cols={cols}
+            gap={12}
+            getKey={(item) => item.id}
+            renderItem={(item, idx) => (
+              <MasonryCard
+                item={item}
+                focused={idx === focusedIndex}
+                selected={selected.has(item.id)}
+                selectionActive={selected.size > 0}
+                onToggleSelect={(shiftKey) => toggleSelect(idx, shiftKey)}
+                onOpen={() => setLightboxIndex(idx)}
+                onSimilar={() => runSimilarTo(item)}
+                onSave={() => requireAuth() && setSaveTarget([item])}
+                onContextMenu={(x, y) => setCtxMenu({ x, y, item })}
+                onRemove={
+                  collectionView?.collection.isOwner
+                    ? async () => {
+                        try {
+                          await collectionsApi.removeItem(collectionView.collection.id, item.id);
+                          refreshBoard();
+                        } catch (e: any) {
+                          toast.error(e.message || 'Erro ao remover');
+                        }
+                      }
+                    : undefined
+                }
+              />
+            )}
+          />
         )}
 
         {/* Infinite-scroll sentinel */}
@@ -950,7 +1140,7 @@ export const ReferencesPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
           >
             <div className="flex flex-col items-center gap-3 text-brand-cyan border-2 border-dashed border-brand-cyan/50 rounded-2xl px-12 py-10">
               <ImageIcon className="h-8 w-8" />
@@ -969,13 +1159,74 @@ export const ReferencesPage: React.FC = () => {
           setLightboxIndex((i) => (i === null ? i : Math.max(0, Math.min(grid.length - 1, i + d))))
         }
         onSimilar={(ref) => runSimilarTo(ref)}
-        onSave={(ref) => requireAuth() && setSaveTarget(ref)}
+        onSave={(ref) => requireAuth() && setSaveTarget([ref])}
+        onTag={handleTagClick}
+        isAdmin={isAdmin}
+        onEdit={(ref) => setEditTarget(ref)}
+        onDelete={(ref) => handleAdminDelete([ref.id])}
         similarSource={similar?.source}
       />
 
-      {/* Save-to-collection dialog */}
+      {/* Right-click context menu (reuses dropdown-menu, anchored at cursor) */}
+      {ctxMenu && (
+        <CardContextMenu
+          menu={ctxMenu}
+          isAdmin={isAdmin}
+          onClose={() => setCtxMenu(null)}
+          onSave={(ref) => requireAuth() && setSaveTarget([ref])}
+          onSimilar={(ref) => runSimilarTo(ref)}
+          onEdit={(ref) => setEditTarget(ref)}
+          onDelete={(ref) => handleAdminDelete([ref.id])}
+        />
+      )}
+
+      {/* Batch action bar (floating) */}
+      <AnimatePresence>
+        {selected.size > 0 && (
+          <BatchActionBar
+            count={selected.size}
+            total={grid.length}
+            isAdmin={isAdmin}
+            onSave={() => {
+              if (!requireAuth()) return;
+              const chosen = grid.filter((r) => selected.has(r.id));
+              if (chosen.length) setSaveTarget(chosen);
+            }}
+            onSelectAll={() => {
+              setSelected(new Set(grid.map((r) => r.id)));
+              selectAnchor.current = grid.length - 1;
+            }}
+            onDelete={() => handleAdminDelete([...selected])}
+            onClear={clearSelection}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Save-to-collection dialog (single or batch) */}
       {saveTarget && (
-        <SaveToCollectionDialog item={saveTarget} onClose={() => setSaveTarget(null)} />
+        <SaveToCollectionDialog
+          items={saveTarget}
+          onClose={() => {
+            setSaveTarget(null);
+            clearSelection();
+          }}
+        />
+      )}
+
+      {/* Admin edit dialog */}
+      {editTarget && (
+        <EditReferenceDialog
+          item={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={(patch) => {
+            const apply = (r: ReferenceItem): ReferenceItem =>
+              r.id === editTarget.id ? { ...r, ...patch } : r;
+            setItems((prev) => prev.map(apply));
+            setSimilar((s) => (s ? { ...s, items: s.items.map(apply) } : s));
+            setCollectionView((cv) => (cv ? { ...cv, items: cv.items.map(apply) } : cv));
+            setEditTarget(null);
+          }}
+        />
       )}
     </div>
   );
@@ -1045,7 +1296,7 @@ const CollectionsGrid: React.FC<{
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-brand-cyan/50 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
+          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-neutral-700 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
         >
           <FolderPlus className="h-6 w-6" />
           <span className="text-xs font-mono uppercase tracking-wider">Nova coleção</span>
@@ -1099,13 +1350,14 @@ const CollectionsGrid: React.FC<{
   );
 };
 
-const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => void }> = ({
-  item,
+const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => void }> = ({
+  items,
   onClose,
 }) => {
   const [cols, setCols] = useState<ReferenceCollection[] | null>(null);
   const [creating, setCreating] = useState('');
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const count = items.length;
 
   useEffect(() => {
     collectionsApi
@@ -1118,9 +1370,11 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
     if (savedIds.has(id)) return;
     // Optimistic — reflect instantly, roll back only on failure.
     setSavedIds((s) => new Set(s).add(id));
-    setCols((p) => p?.map((c) => (c.id === id ? { ...c, count: c.count + 1 } : c)) ?? p);
+    setCols((p) => p?.map((c) => (c.id === id ? { ...c, count: c.count + count } : c)) ?? p);
     try {
-      await collectionsApi.addItem(id, item.id);
+      // addItem is idempotent server-side ($addToSet); run sequentially to keep it simple.
+      for (const it of items) await collectionsApi.addItem(id, it.id);
+      if (count > 1) toast.success(`${count} referências salvas`);
     } catch (e: any) {
       setSavedIds((s) => {
         const n = new Set(s);
@@ -1128,7 +1382,7 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
         return n;
       });
       setCols(
-        (p) => p?.map((c) => (c.id === id ? { ...c, count: Math.max(0, c.count - 1) } : c)) ?? p
+        (p) => p?.map((c) => (c.id === id ? { ...c, count: Math.max(0, c.count - count) } : c)) ?? p
       );
       toast.error(e.message || 'Erro ao salvar');
     }
@@ -1152,7 +1406,7 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
       <DialogContent className="max-w-sm bg-neutral-950 border-neutral-800">
         <DialogHeader>
           <DialogTitle className="text-sm font-mono text-neutral-300">
-            Salvar em coleção
+            {count > 1 ? `Salvar ${count} em coleção` : 'Salvar em coleção'}
           </DialogTitle>
         </DialogHeader>
         <div className="flex items-center gap-1.5 pt-1">
@@ -1195,11 +1449,228 @@ const SaveToCollectionDialog: React.FC<{ item: ReferenceItem; onClose: () => voi
                 {savedIds.has(c.id) ? (
                   <Check className="h-4 w-4 text-brand-cyan shrink-0" />
                 ) : (
-                  <span className="text-[10px] font-mono text-neutral-600">{c.count}</span>
+                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">{c.count}</span>
                 )}
               </button>
             ))
           )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// ─── Right-click context menu (reuses dropdown-menu, anchored at cursor) ─────────
+const CardContextMenu: React.FC<{
+  menu: { x: number; y: number; item: ReferenceItem };
+  isAdmin: boolean;
+  onClose: () => void;
+  onSave: (r: ReferenceItem) => void;
+  onSimilar: (r: ReferenceItem) => void;
+  onEdit: (r: ReferenceItem) => void;
+  onDelete: (r: ReferenceItem) => void;
+}> = ({ menu, isAdmin, onClose, onSave, onSimilar, onEdit, onDelete }) => {
+  const { x, y, item } = menu;
+  return (
+    <DropdownMenu
+      open
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
+      {/* Invisible 0×0 anchor placed at the cursor. */}
+      <DropdownMenuTrigger asChild>
+        <span aria-hidden style={{ position: 'fixed', left: x, top: y }} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-52">
+        <DropdownMenuLabel className="truncate">{refTitle(item)}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => onSave(item)}>
+          <Bookmark className="h-3.5 w-3.5 mr-2" />
+          Salvar em coleção
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onSimilar(item)}>
+          <Images className="h-3.5 w-3.5 mr-2" />
+          Ver parecidas
+        </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => onEdit(item)}>
+              <Pencil className="h-3.5 w-3.5 mr-2" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => onDelete(item)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-2" />
+              Excluir
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+// ─── Batch action bar (floating) ─────────────────────────────────
+const BatchActionBar: React.FC<{
+  count: number;
+  total: number;
+  isAdmin: boolean;
+  onSave: () => void;
+  onSelectAll: () => void;
+  onDelete: () => void;
+  onClear: () => void;
+}> = ({ count, total, isAdmin, onSave, onSelectAll, onDelete, onClear }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: 16 }}
+    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-950/95 backdrop-blur px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+    role="toolbar"
+    aria-label="Ações da seleção"
+  >
+    <span className="px-1 text-xs font-mono text-neutral-300 tabular-nums">
+      <motion.span
+        key={count}
+        initial={{ scale: 0.7, opacity: 0.4 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 600, damping: 24 }}
+        className="inline-block text-brand-cyan"
+      >
+        {count}
+      </motion.span>{' '}
+      {count === 1 ? 'selecionada' : 'selecionadas'}
+    </span>
+    {count < total && (
+      <button
+        onClick={onSelectAll}
+        className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 hover:text-brand-cyan transition-colors"
+      >
+        Tudo
+      </button>
+    )}
+    <Button
+      size="sm"
+      className="h-8 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+      onClick={onSave}
+    >
+      <Bookmark className="h-3.5 w-3.5 mr-1.5" />
+      Salvar em coleção
+    </Button>
+    {isAdmin && (
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-8 bg-neutral-900 border-neutral-700 text-xs text-destructive hover:text-destructive"
+        onClick={onDelete}
+      >
+        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+        Excluir
+      </Button>
+    )}
+    <button
+      onClick={onClear}
+      title="Concluir seleção"
+      aria-label="Concluir seleção"
+      className="h-7 w-7 grid place-items-center rounded-full text-neutral-400 hover:text-neutral-200"
+    >
+      <X className="h-4 w-4" />
+    </button>
+  </motion.div>
+);
+
+// ─── Admin edit dialog ───────────────────────────────────────────
+const EditReferenceDialog: React.FC<{
+  item: ReferenceItem;
+  onClose: () => void;
+  onSaved: (patch: Partial<ReferenceItem>) => void;
+}> = ({ item, onClose, onSaved }) => {
+  const [name, setName] = useState(item.name);
+  const [description, setDescription] = useState(item.description || '');
+  const [tagsInput, setTagsInput] = useState((item.tags || []).join(', '));
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const tags = tagsInput
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+    const patch = { name: name.trim(), description: description.trim(), tags };
+    try {
+      await adminReferencesApi.update(item.id, patch);
+      toast.success('Referência atualizada');
+      onSaved(patch);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao salvar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={() => !saving && onClose()}>
+      <DialogContent className="max-w-md bg-neutral-950 border-neutral-800">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-mono text-neutral-300">Editar referência</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase">Nome</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-neutral-900 border-neutral-700 text-sm h-9"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase">Descrição</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="w-full bg-neutral-900 border border-neutral-700 rounded-md text-sm p-2 text-neutral-200 resize-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase">
+              Tags (separadas por vírgula)
+            </label>
+            <Input
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="minimalist, line art, warm..."
+              className="bg-neutral-900 border-neutral-700 text-sm h-9"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-neutral-900 border-neutral-700 text-xs"
+              disabled={saving}
+              onClick={onClose}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+              disabled={saving}
+              onClick={save}
+            >
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5 mr-1.5" />
+              )}
+              Salvar
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -1255,7 +1726,22 @@ const MasonryCard: React.FC<{
   onSave?: () => void;
   onRemove?: () => void;
   focused?: boolean;
-}> = ({ item, onOpen, onSimilar, onSave, onRemove, focused }) => {
+  selected?: boolean;
+  selectionActive?: boolean;
+  onToggleSelect?: (shiftKey: boolean) => void;
+  onContextMenu?: (x: number, y: number) => void;
+}> = ({
+  item,
+  onOpen,
+  onSimilar,
+  onSave,
+  onRemove,
+  focused,
+  selected,
+  selectionActive,
+  onToggleSelect,
+  onContextMenu,
+}) => {
   const [loaded, setLoaded] = useState(false);
   const reduce = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -1275,14 +1761,29 @@ const MasonryCard: React.FC<{
       viewport={{ once: true, margin: '120px' }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="group relative" ref={cardRef}>
+      <div
+        className="group relative"
+        ref={cardRef}
+        onContextMenu={(e) => {
+          if (!onContextMenu) return;
+          e.preventDefault();
+          onContextMenu(e.clientX, e.clientY);
+        }}
+      >
         <button
-          onClick={onOpen}
+          aria-label={selectionActive ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item)}` : `Abrir ${refTitle(item)}`}
+          onClick={(e) => {
+            // Once anything is selected, clicking a card toggles it (fast multi-select).
+            if (selectionActive) onToggleSelect?.(e.shiftKey);
+            else onOpen();
+          }}
           className={cn(
-            'block w-full text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] focus:outline-none',
-            focused
+            'block w-full text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 transition-[box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-[0.985] focus:outline-none',
+            selected || focused
               ? 'ring-2 ring-brand-cyan'
-              : 'ring-white/5 hover:ring-white/15 focus-visible:ring-2 focus-visible:ring-brand-cyan/60'
+              : 'ring-white/5 hover:ring-white/15 focus-visible:ring-2 focus-visible:ring-brand-cyan/60',
+            // In select-mode, dim what isn't chosen so the mode is unmistakable.
+            selectionActive && !selected && 'opacity-55 hover:opacity-100'
           )}
         >
           <div className="relative" style={{ aspectRatio: loaded ? undefined : '4 / 5' }}>
@@ -1315,34 +1816,64 @@ const MasonryCard: React.FC<{
             />
             {/* gradient + meta on hover */}
             <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-[11px] font-medium text-white truncate">{item.name}</p>
-              {item.studio && (
-                <p className="text-[10px] font-mono text-neutral-300 truncate">{item.studio}</p>
+              <p className="text-[11px] font-medium text-white truncate">{refTitle(item)}</p>
+              {item.country && (
+                <p className="text-[10px] font-mono text-neutral-300 truncate">
+                  {countryFlag(item.country)} {item.country}
+                </p>
               )}
             </div>
             {flag && (
               <span
-                className="absolute top-2 left-2 text-base leading-none drop-shadow"
+                className={cn(
+                  'absolute top-2 left-2 text-base leading-none drop-shadow transition-opacity',
+                  selected || selectionActive
+                    ? 'opacity-0'
+                    : 'opacity-100 group-hover:opacity-0'
+                )}
                 title={item.country}
               >
                 {flag}
               </span>
             )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-brand-cyan/90 px-1.5 py-0.5 text-[9px] font-mono text-black">
+              <span className="absolute top-2 right-2 rounded-full bg-brand-cyan/90 px-1.5 py-0.5 text-[10px] font-mono text-black">
                 {Math.round(item.score * 100)}%
               </span>
             )}
           </div>
         </button>
+        {/* Select checkbox — sibling of the card button (avoids nested <button>) */}
+        {onToggleSelect && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect(e.shiftKey);
+            }}
+            title={selected ? 'Desmarcar' : 'Selecionar'}
+            aria-label={selected ? 'Desmarcar' : 'Selecionar'}
+            aria-pressed={selected}
+            className={cn(
+              'absolute top-1.5 left-1.5 z-10 h-6 w-6 grid place-items-center rounded-md bg-black/60 backdrop-blur transition-opacity',
+              selected || selectionActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+              selected ? 'text-brand-cyan' : 'text-neutral-200 hover:text-brand-cyan'
+            )}
+          >
+            {selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+          </button>
+        )}
         {/* Quick actions */}
         <div
           className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ display: typeof item.score === 'number' ? 'none' : undefined }}
+          style={{
+            display: typeof item.score === 'number' || selectionActive ? 'none' : undefined,
+          }}
         >
           <button
             onClick={onSimilar}
             title="Ver parecidas"
+            aria-label="Ver parecidas"
             className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
           >
             <Images className="h-3.5 w-3.5" />
@@ -1351,7 +1882,8 @@ const MasonryCard: React.FC<{
             <button
               onClick={onRemove}
               title="Remover da coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-red-400"
+              aria-label="Remover da coleção"
+              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-destructive"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -1359,6 +1891,7 @@ const MasonryCard: React.FC<{
             <button
               onClick={onSave}
               title="Salvar em coleção"
+              aria-label="Salvar em coleção"
               className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
             >
               <Bookmark className="h-3.5 w-3.5" />
@@ -1379,12 +1912,34 @@ const Lightbox: React.FC<{
   onNav: (delta: number) => void;
   onSimilar: (ref: ReferenceItem) => void;
   onSave?: (ref: ReferenceItem) => void;
+  onTag?: (tag: string) => void;
+  isAdmin?: boolean;
+  onEdit?: (ref: ReferenceItem) => void;
+  onDelete?: (ref: ReferenceItem) => void;
   similarSource?: ReferenceItem;
-}> = ({ items, index, onClose, onNav, onSimilar, onSave, similarSource }) => {
+}> = ({
+  items,
+  index,
+  onClose,
+  onNav,
+  onSimilar,
+  onSave,
+  onTag,
+  isAdmin,
+  onEdit,
+  onDelete,
+  similarSource,
+}) => {
   const item = index !== null ? items[index] : null;
   const prov = item?.provenance || {};
   const flag = item ? countryFlag(item.country) : '';
   const reduce = useReducedMotion();
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  // Collapse the tag list back to the top few whenever the reference changes.
+  useEffect(() => {
+    setShowAllTags(false);
+  }, [item?.id]);
 
   // Prefetch neighbours so arrow-nav is instant.
   useEffect(() => {
@@ -1405,12 +1960,13 @@ const Lightbox: React.FC<{
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[70] bg-neutral-950/95 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-neutral-950/95 backdrop-blur-sm"
           onClick={onClose}
         >
           {/* Close */}
           <button
             onClick={onClose}
+            aria-label="Fechar"
             className="absolute top-4 right-4 z-10 h-9 w-9 grid place-items-center rounded-full bg-neutral-900/80 text-neutral-300 hover:text-white"
           >
             <X className="h-4 w-4" />
@@ -1423,6 +1979,7 @@ const Lightbox: React.FC<{
                 e.stopPropagation();
                 onNav(-1);
               }}
+              aria-label="Anterior"
               className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 grid place-items-center rounded-full bg-neutral-900/80 text-neutral-300 hover:text-white"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -1434,18 +1991,19 @@ const Lightbox: React.FC<{
                 e.stopPropagation();
                 onNav(1);
               }}
+              aria-label="Próxima"
               className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-10 w-10 grid place-items-center rounded-full bg-neutral-900/80 text-neutral-300 hover:text-white"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           )}
 
-          <div
-            className="h-full w-full flex flex-col lg:flex-row items-stretch"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Image */}
-            <div className="flex-1 min-h-0 flex items-center justify-center p-4 sm:p-8">
+          <div className="h-full w-full flex flex-col lg:flex-row items-stretch">
+            {/* Image — clicking the empty space around it closes (backdrop behaviour) */}
+            <div
+              className="flex-1 min-h-0 flex items-center justify-center p-4 sm:p-8"
+              onClick={onClose}
+            >
               <motion.img
                 key={item.id}
                 layoutId={`card-${item.id}`}
@@ -1454,18 +2012,28 @@ const Lightbox: React.FC<{
                 }
                 src={item.referenceImageUrl}
                 alt={item.name}
+                onClick={(e) => e.stopPropagation()}
                 className="max-h-full max-w-full object-contain rounded-lg"
               />
             </div>
 
             {/* Meta panel */}
-            <div className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-neutral-950/60 p-5 sm:p-6 overflow-y-auto space-y-4">
-              <div>
-                <h3 className="text-base font-semibold text-white leading-snug">{item.name}</h3>
-                {item.studio && (
-                  <p className="text-xs font-mono text-neutral-400 mt-0.5">{item.studio}</p>
-                )}
-              </div>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-neutral-950/60 p-5 sm:p-6 overflow-y-auto space-y-4"
+            >
+              {(() => {
+                const title = refTitle(item);
+                const sub = item.studio?.trim() || item.provenance?.designer?.trim();
+                return (
+                  <div>
+                    <h3 className="text-base font-semibold text-white leading-snug">{title}</h3>
+                    {sub && sub !== title && (
+                      <p className="text-xs font-mono text-neutral-400 mt-0.5">{sub}</p>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Why it matches — shared dimensions with the similarity source */}
               {typeof item.score === 'number' &&
@@ -1501,7 +2069,7 @@ const Lightbox: React.FC<{
                       <MapPin className="h-3 w-3 mr-1" />
                     )}
                     {item.country}
-                    {prov.countryInferred && <span className="ml-1 text-neutral-500">(IA)</span>}
+                    {prov.countryInferred && <span className="ml-1 text-neutral-500">auto</span>}
                   </Badge>
                 )}
                 {item.region && (
@@ -1549,22 +2117,59 @@ const Lightbox: React.FC<{
                 </div>
               )}
 
-              {item.dimensions && (
-                <div className="flex flex-wrap gap-1">
-                  {Object.values(item.dimensions)
-                    .flat()
-                    .slice(0, 12)
-                    .map((v, i) => (
+              {/* Tags — click to drop into the library filtered by it (shareable route) */}
+              {item.tags && item.tags.length > 0 && (
+                <div>
+                  <span className="text-[10px] font-mono text-neutral-500 uppercase">Tags</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((t) => (
+                      <Badge
+                        key={t}
+                        variant="outline"
+                        className={cn(
+                          'text-[10px] px-1.5 py-0 border-neutral-700 text-neutral-400 transition-colors',
+                          onTag && 'cursor-pointer hover:border-brand-cyan/40 hover:text-brand-cyan'
+                        )}
+                        onClick={onTag ? () => onTag(t) : undefined}
+                      >
+                        {t}
+                      </Badge>
+                    ))}
+                    {!showAllTags && item.tags.length > 6 && (
+                      <button
+                        onClick={() => setShowAllTags(true)}
+                        className="text-[10px] font-mono text-neutral-500 hover:text-brand-cyan px-1 transition-colors"
+                      >
+                        +{item.tags.length - 6}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Dimension values not already surfaced as a tag (avoids a duplicate list) */}
+              {(() => {
+                const extra = [...new Set(Object.values(item.dimensions || {}).flat())].filter(
+                  (v) => !(item.tags || []).includes(v)
+                );
+                return extra.length ? (
+                  <div className="flex flex-wrap gap-1">
+                    {extra.slice(0, 12).map((v, i) => (
                       <Badge
                         key={`${v}-${i}`}
                         variant="outline"
-                        className="text-[10px] px-1.5 py-0 border-neutral-800 text-neutral-400"
+                        className={cn(
+                          'text-[10px] px-1.5 py-0 border-neutral-800 text-neutral-400 transition-colors',
+                          onTag && 'cursor-pointer hover:border-brand-cyan/40 hover:text-brand-cyan'
+                        )}
+                        onClick={onTag ? () => onTag(v) : undefined}
                       >
                         {v}
                       </Badge>
                     ))}
-                </div>
-              )}
+                  </div>
+                ) : null;
+              })()}
 
               <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
                 <Button
@@ -1585,6 +2190,28 @@ const Lightbox: React.FC<{
                     <Bookmark className="h-3.5 w-3.5 mr-1.5" />
                     Salvar em coleção
                   </Button>
+                )}
+                {isAdmin && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 bg-neutral-900 border-neutral-700 text-xs"
+                      onClick={() => onEdit?.(item)}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                      Editar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 bg-neutral-900 border-neutral-700 text-xs text-destructive hover:text-destructive"
+                      onClick={() => onDelete?.(item)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      Excluir
+                    </Button>
+                  </div>
                 )}
                 {(item.sourceUrl || prov.sourceUrl) && (
                   <a
@@ -1669,7 +2296,7 @@ const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
 
 const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-    <AlertTriangle className="h-8 w-8 text-amber-500/80" />
+    <AlertTriangle className="h-8 w-8 text-warning/80" />
     <p className="text-sm text-neutral-400">Não foi possível carregar as referências</p>
     <Button
       variant="outline"
@@ -1751,7 +2378,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         <div className="space-y-4">
           <div
             onClick={pick}
-            className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-brand-cyan/40 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-neutral-700 transition-colors cursor-pointer"
           >
             <Upload className="h-7 w-7 mx-auto text-neutral-500 mb-2" />
             <p className="text-sm text-neutral-300">
@@ -1773,7 +2400,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
                 options={COUNTRY_OPTIONS}
                 value={country}
                 onChange={setCountry}
-                placeholder="Auto (IA)"
+                placeholder="Auto"
               />
             </div>
             <div className="space-y-1">

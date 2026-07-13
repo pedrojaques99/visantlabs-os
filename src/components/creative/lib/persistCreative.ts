@@ -41,18 +41,29 @@ export function snapshotCreativeFromStore(name?: string) {
   };
 }
 
+/**
+ * Sobe o background `blob:` atual pro R2 (se houver) e reescreve o store
+ * (página ativa + mirror + uploadedBackgroundUrl) com a URL persistida. Sem
+ * isso, salvar um projeto com bg local grava uma URL `blob:` morta no servidor
+ * (ERR_FILE_NOT_FOUND no reload). Idempotente para URLs já persistidas.
+ */
+export async function ensurePersistedBackground(): Promise<void> {
+  const state = useCreativeStore.getState();
+  const persisted = await ensurePersistedUrl(state.backgroundUrl);
+  if (persisted && persisted !== state.backgroundUrl) {
+    state.setBackgroundUrl(persisted); // atualiza pages[active].backgroundUrl + mirror
+    useCreativeStore.setState({ uploadedBackgroundUrl: persisted });
+  }
+}
+
 /** Create a new record from the current store state. */
 export async function saveCurrentCreativeAsNew(
   name?: string,
   thumbnailUrl?: string | null,
   opts?: { signal?: AbortSignal }
 ) {
+  await ensurePersistedBackground();
   const snapshot = snapshotCreativeFromStore(name);
-  const backgroundUrl = await ensurePersistedUrl(snapshot.backgroundUrl);
-  if (backgroundUrl && backgroundUrl !== snapshot.backgroundUrl) {
-    useCreativeStore.setState({ backgroundUrl, uploadedBackgroundUrl: backgroundUrl });
-    snapshot.backgroundUrl = backgroundUrl;
-  }
   return creativeProjectApi.create(
     {
       ...snapshot,
@@ -60,24 +71,6 @@ export async function saveCurrentCreativeAsNew(
     },
     { signal: opts?.signal }
   );
-}
-
-/** Update an existing record with the current store state. */
-export async function updateCreativeFromStore(
-  projectId: string,
-  opts?: { name?: string; thumbnailUrl?: string | null }
-) {
-  const snapshot = snapshotCreativeFromStore(opts?.name);
-  return ensurePersistedUrl(snapshot.backgroundUrl).then((backgroundUrl) => {
-    if (backgroundUrl && backgroundUrl !== snapshot.backgroundUrl) {
-      useCreativeStore.setState({ backgroundUrl, uploadedBackgroundUrl: backgroundUrl });
-      snapshot.backgroundUrl = backgroundUrl;
-    }
-    return creativeProjectApi.update(projectId, {
-      ...snapshot,
-      ...(opts?.thumbnailUrl !== undefined && { thumbnailUrl: opts.thumbnailUrl }),
-    });
-  });
 }
 
 /**

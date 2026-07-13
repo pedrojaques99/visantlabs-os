@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useToolInput } from '@/hooks/useToolInput';
+import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
+import { SavePaletteToBrand } from '@/components/funnel/SavePaletteToBrand';
 
 export const ColorPalettePage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -185,6 +187,7 @@ export const ColorPalettePage: React.FC = () => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
     >
+      <BrandFunnelBanner toolId="color-palette" />
       <div className="w-full max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-2">
@@ -403,6 +406,7 @@ export const ColorPalettePage: React.FC = () => {
                     <Copy size={12} className="mr-1.5" /> Copy All
                   </Button>
                 </div>
+                <SavePaletteToBrand colors={colors.map((c) => c.hex)} />
               </div>
             )}
 

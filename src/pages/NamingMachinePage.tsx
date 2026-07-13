@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Zap, X, Heart, Gem } from 'lucide-react';
+import { Zap, X, Heart, Bookmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -13,6 +13,7 @@ import { BriefingFlow } from '@/components/naming/BriefingFlow';
 import { SwipeCard, type SwipeCardHandle } from '@/components/naming/SwipeCard';
 import { ShortlistPanel } from '@/components/naming/ShortlistPanel';
 import { NamingSettingsPopover } from '@/components/naming/NamingSettingsPopover';
+import { NamingHistoryPopover } from '@/components/naming/NamingHistoryPopover';
 import {
   emptyProfile,
   updateProfile,
@@ -25,6 +26,7 @@ import {
   type NamingCard,
   type Verdict,
   type NamingPhase,
+  type NamingSession,
 } from '@/lib/naming/tasteProfile';
 import { DEFAULT_NAMING_SETTINGS, type NamingSettings } from '@/lib/naming/constants';
 import {
@@ -36,11 +38,18 @@ import {
   type NamingDefenseInsightResponse,
 } from '@/services/namingApi';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { authService } from '@/services/authService';
+import { namingSessionApi, type NamingSessionScalars } from '@/services/namingSessionApi';
+import { getNamingSettings, updateNamingSettings } from '@/services/userSettingsService';
 
 /**
  * Extrai só os campos ≠ default para enviar ao generate-naming (request lean,
  * retrocompatível). Retorna undefined quando tudo está no padrão.
  */
+/** Backend valida cada lista (seen/liked/superliked/rejected) em ≤200 itens e
+ *  dá 400 se passar — capa nos mais RECENTES antes de enviar. */
+const MAX_SENT = 200;
+
 function buildSettingsPayload(s: NamingSettings): NamingSettingsPayload | undefined {
   const p: NamingSettingsPayload = {};
   if (s.ruler !== DEFAULT_NAMING_SETTINGS.ruler) p.ruler = s.ruler;
@@ -48,6 +57,28 @@ function buildSettingsPayload(s: NamingSettings): NamingSettingsPayload | undefi
   if (s.language !== DEFAULT_NAMING_SETTINGS.language) p.language = s.language;
   if (s.techniques.length > 0) p.techniques = s.techniques; // vazio = todas (default)
   return Object.keys(p).length > 0 ? p : undefined;
+}
+
+/**
+ * Deriva os campos escalares "promovidos" (título, contadores) que a lista de
+ * sessões anteriores exibe sem carregar o blob pesado. Título = melhor nome +N.
+ */
+function deriveScalars(s: NamingSession): NamingSessionScalars {
+  const liked = s.profile.superliked.length + s.profile.liked.length;
+  const top = s.profile.superliked[0]?.name || s.profile.liked[0]?.name;
+  const name = top
+    ? liked > 1
+      ? `${top} +${liked - 1}`
+      : top
+    : s.brief?.trim().slice(0, 48) || 'Nova sessão';
+  return {
+    name,
+    brief: s.brief ?? null,
+    phase: s.phase,
+    brandGuidelineId: s.brandGuidelineId ?? null,
+    likedCount: liked,
+    seenCount: s.profile.seen.length,
+  };
 }
 
 export const NamingMachinePage: React.FC = () => {
@@ -71,6 +102,8 @@ export const NamingMachinePage: React.FC = () => {
   const [finalists, setFinalists] = useState<string[]>([]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [lastSwiped, setLastSwiped] = useState<NamingCard | null>(null);
+  /** id do registro backend da sessão atual (null = ainda não persistida / anônimo). */
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const cardRef = useRef<SwipeCardHandle>(null);
   const deckRef = useRef<NamingCard[]>(deck);
@@ -79,37 +112,158 @@ export const NamingMachinePage: React.FC = () => {
   const territoriesRef = useRef<Set<string>>(new Set());
   const defenseRequested = useRef<Set<string>>(new Set());
   const hydrated = useRef(false);
+  const sessionIdRef = useRef<string | null>(null);
+  const creatingRef = useRef(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Default de settings do usuário (backend) — sessões novas herdam daqui. */
+  const userDefaultSettingsRef = useRef<NamingSettings | null>(null);
+  const settingsRef = useRef(settings);
+  const settingsSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     deckRef.current = deck;
   }, [deck]);
 
-  /* ── Restaura sessão ao montar ──────────────────────────────────────── */
   useEffect(() => {
-    const s = loadSession();
-    if (s) {
-      setProfile(s.profile);
-      setBrief(s.brief);
-      setBriefObj(s.briefObj);
-      setPhase(s.phase);
-      setTasteReading(s.tasteReading);
-      setBrandGuidelineId(s.brandGuidelineId ?? null);
-      if (s.settings) setSettings({ ...DEFAULT_NAMING_SETTINGS, ...s.settings });
-      if (s.deck?.length) setDeck(s.deck);
-      const set = new Set<string>();
-      [...s.profile.superliked, ...s.profile.liked, ...s.profile.rejected].forEach((c) =>
-        set.add(c.territory)
-      );
-      territoriesRef.current = set;
-    }
-    hydrated.current = true;
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  /** Persiste as settings como default do usuário (sticky, debounced). Só é
+   *  chamado em edições explícitas do popover — restaurar sessão NÃO altera o default. */
+  const scheduleDefaultSave = useCallback((next: NamingSettings) => {
+    if (!authService.isAuthenticated()) return;
+    userDefaultSettingsRef.current = next;
+    if (settingsSaveTimer.current) clearTimeout(settingsSaveTimer.current);
+    settingsSaveTimer.current = setTimeout(() => {
+      void updateNamingSettings(next).catch(() => {
+        /* preferência é best-effort — não trava a UX */
+      });
+    }, 800);
   }, []);
 
-  /* ── Persiste sessão ────────────────────────────────────────────────── */
+  /* ── Aplica uma sessão (do backend ou do localStorage) no estado ──────── */
+  const applySession = useCallback((s: NamingSession) => {
+    setProfile(s.profile);
+    setBrief(s.brief);
+    setBriefObj(s.briefObj);
+    setPhase(s.phase);
+    setTasteReading(s.tasteReading);
+    setBrandGuidelineId(s.brandGuidelineId ?? null);
+    if (s.settings) setSettings({ ...DEFAULT_NAMING_SETTINGS, ...s.settings });
+    if (s.deck?.length) setDeck(s.deck);
+    const set = new Set<string>();
+    [...s.profile.superliked, ...s.profile.liked, ...s.profile.rejected].forEach((c) =>
+      set.add(c.territory)
+    );
+    territoriesRef.current = set;
+  }, []);
+
+  /* ── Persiste no backend (create na 1ª vez, update depois) ────────────── */
+  const persistToBackend = useCallback(async (session: NamingSession) => {
+    const scalars = deriveScalars(session);
+    try {
+      if (sessionIdRef.current) {
+        await namingSessionApi.save(sessionIdRef.current, session, scalars);
+      } else if (!creatingRef.current) {
+        creatingRef.current = true;
+        try {
+          const created = await namingSessionApi.create(session, scalars);
+          sessionIdRef.current = created.id;
+          setSessionId(created.id);
+        } finally {
+          creatingRef.current = false;
+        }
+      }
+    } catch {
+      /* backend indisponível — não trava a UX; o próximo autosave tenta de novo */
+    }
+  }, []);
+
+  /* ── Restaura sessão ao montar ──────────────────────────────────────────
+   * Logado: backend é a fonte da verdade — restaura a sessão mais recente e,
+   * se não houver nenhuma, migra uma sessão local pendente (login em outro
+   * device). Anônimo (ou backend fora): cai pro localStorage.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    const done = () => {
+      if (!cancelled) hydrated.current = true;
+    };
+
+    void (async () => {
+      if (!authService.isAuthenticated()) {
+        const s = loadSession();
+        if (s && !cancelled) applySession(s);
+        done();
+        return;
+      }
+
+      // Baseline: default de settings do usuário (sessões novas herdam daqui).
+      // Uma sessão restaurada logo abaixo sobrescreve com as settings dela.
+      try {
+        const pref = await getNamingSettings();
+        if (!cancelled && pref && typeof pref === 'object' && Object.keys(pref).length > 0) {
+          const merged = { ...DEFAULT_NAMING_SETTINGS, ...pref };
+          userDefaultSettingsRef.current = merged;
+          setSettings(merged);
+        }
+      } catch {
+        /* segue com o default de fábrica */
+      }
+      if (cancelled) return;
+
+      try {
+        const sessions = await namingSessionApi.list();
+        if (cancelled) return;
+
+        if (sessions.length > 0) {
+          const rec = await namingSessionApi.get(sessions[0].id);
+          if (cancelled) return;
+          applySession(rec.data);
+          setSessionId(rec.id);
+          done();
+          return;
+        }
+
+        // Sem sessão no backend — migra a local (se houver) uma única vez.
+        const local = loadSession();
+        if (local) {
+          applySession(local);
+          try {
+            const created = await namingSessionApi.create(local, deriveScalars(local));
+            if (!cancelled) setSessionId(created.id);
+            clearSession(); // migrada: LS deixa de ser fonte da verdade p/ logados
+          } catch {
+            /* mantém a local como fallback */
+          }
+        }
+        done();
+      } catch {
+        // Backend indisponível: usa o cache local.
+        const s = loadSession();
+        if (s && !cancelled) applySession(s);
+        done();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applySession]);
+
+  /* ── Persiste sessão ─────────────────────────────────────────────────────
+   * Logado: autosave no backend com debounce (não martela a API a cada swipe).
+   * Anônimo: grava síncrono no localStorage (comportamento legado).
+   */
   useEffect(() => {
     if (!hydrated.current) return;
     if (phase === 'briefing' && profile.history.length === 0) return;
-    saveSession({
+
+    const session: NamingSession = {
       profile,
       brief,
       briefObj,
@@ -119,8 +273,34 @@ export const NamingMachinePage: React.FC = () => {
       deck,
       brandGuidelineId,
       settings,
-    });
-  }, [profile, brief, briefObj, phase, tasteReading, deck, brandGuidelineId, settings]);
+    };
+
+    if (authService.isAuthenticated()) {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => void persistToBackend(session), 800);
+    } else {
+      saveSession(session);
+    }
+  }, [
+    profile,
+    brief,
+    briefObj,
+    phase,
+    tasteReading,
+    deck,
+    brandGuidelineId,
+    settings,
+    persistToBackend,
+  ]);
+
+  /* Flush do debounce ao desmontar. */
+  useEffect(
+    () => () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      if (settingsSaveTimer.current) clearTimeout(settingsSaveTimer.current);
+    },
+    []
+  );
 
   /* ── Erro de API ────────────────────────────────────────────────────── */
   const handleApiError = useCallback(
@@ -162,9 +342,9 @@ export const NamingMachinePage: React.FC = () => {
           try {
             const r = await namingPatternInsight({
               mode: 'pattern',
-              liked: profile.liked,
-              superliked: profile.superliked,
-              rejected: profile.rejected,
+              liked: profile.liked.map((c) => c.name).slice(-MAX_SENT),
+              superliked: profile.superliked.map((c) => c.name).slice(-MAX_SENT),
+              rejected: profile.rejected.map((c) => c.name).slice(-MAX_SENT),
               stats: {
                 likeRateByTerritory: profile.likeRateByTerritory,
                 likeRateByTechnique: profile.likeRateByTechnique,
@@ -179,13 +359,20 @@ export const NamingMachinePage: React.FC = () => {
         }
 
         const territories = pickTerritories(profile, Array.from(territoriesRef.current));
+
+        // Exclusão = TUDO já superficiado nesta sessão (swipado ∪ deck ainda não
+        // julgado) — não só o que foi swipado. Impede o LLM de regenerar nomes que
+        // já estão na tela. Backend valida ≤200: mantém os mais recentes.
+        const surfaced = Array.from(
+          new Set([...profile.seen, ...deckRef.current.map((c) => c.name)])
+        );
         const resp = await generateNaming({
           brief: brief || '',
           count: settings.batchSize,
-          seen: profile.seen,
-          liked: profile.liked.map((c) => c.name),
-          superliked: profile.superliked.map((c) => c.name),
-          rejected: profile.rejected.map((c) => c.name),
+          seen: surfaced.slice(-MAX_SENT),
+          liked: profile.liked.map((c) => c.name).slice(-MAX_SENT),
+          superliked: profile.superliked.map((c) => c.name).slice(-MAX_SENT),
+          rejected: profile.rejected.map((c) => c.name).slice(-MAX_SENT),
           tasteReading: reading || undefined,
           territories: territories.length ? territories : undefined,
           brandGuidelineId: brandGuidelineId || undefined,
@@ -193,11 +380,18 @@ export const NamingMachinePage: React.FC = () => {
           model: settings.model || undefined,
         });
 
-        const existing = new Set([...profile.seen, ...deckRef.current.map((c) => c.name)]);
+        // Dedup normalizado (case + espaços): o card renderiza em CAIXA ALTA, então
+        // "Tecta"/"TECTA"/"tecta " são o MESMO nome — comparar cru deixava duplicata passar.
+        const norm = (s: string) => s.toLowerCase().trim();
+        const existing = new Set(
+          [...profile.seen, ...deckRef.current.map((c) => c.name)].map(norm)
+        );
         const fresh: NamingCard[] = [];
         for (const n of resp.names || []) {
-          if (!n?.name || existing.has(n.name)) continue;
-          existing.add(n.name);
+          if (!n?.name) continue;
+          const key = norm(n.name);
+          if (existing.has(key)) continue;
+          existing.add(key);
           if (n.territory) territoriesRef.current.add(n.territory);
           fresh.push(n);
         }
@@ -306,10 +500,15 @@ export const NamingMachinePage: React.FC = () => {
     setLastSwiped(null);
   }, [lastSwiped]);
 
-  useHotkeys('left', () => phase === 'deck' && triggerVerdict('nope'), [phase, triggerVerdict]);
-  useHotkeys('right', () => phase === 'deck' && triggerVerdict('like'), [phase, triggerVerdict]);
-  useHotkeys('up', () => phase === 'deck' && triggerVerdict('superlike'), [phase, triggerVerdict]);
-  useHotkeys('z', () => phase === 'deck' && undoKey(), [phase, undoKey]);
+  // Setas (legado) + letras da ref (N/C/S/D) como aliases.
+  useHotkeys('left,n', () => phase === 'deck' && triggerVerdict('nope'), [phase, triggerVerdict]);
+  useHotkeys('right,c', () => phase === 'deck' && triggerVerdict('like'), [phase, triggerVerdict]);
+  useHotkeys(
+    'up,s',
+    () => phase === 'deck' && triggerVerdict('superlike'),
+    [phase, triggerVerdict]
+  );
+  useHotkeys('z,d', () => phase === 'deck' && undoKey(), [phase, undoKey]);
 
   /* ── Shortlist callbacks ────────────────────────────────────────────── */
   const handleMoreLikeThis = useCallback(
@@ -373,11 +572,23 @@ export const NamingMachinePage: React.FC = () => {
     }
   }, [brandGuidelineId, profile.superliked, profile.liked, defenseCache]);
 
-  /* ── Reset ──────────────────────────────────────────────────────────── */
+  /* ── Reset ────────────────────────────────────────────────────────────────
+   * Logado: a sessão atual já está salva no histórico — só começamos uma nova
+   * (dropa o sessionId → o próximo autosave cria outro registro). Anônimo: limpa
+   * o localStorage. Em ambos, cancela o autosave pendente pra não gravar o
+   * estado zerado no registro antigo.
+   */
   const handleReset = useCallback(() => {
-    clearSession();
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    if (authService.isAuthenticated()) {
+      setSessionId(null);
+      sessionIdRef.current = null;
+    } else {
+      clearSession();
+    }
     setProfile(emptyProfile());
-    setSettings(DEFAULT_NAMING_SETTINGS);
+    // Sessão nova herda o default do usuário (não o de fábrica).
+    setSettings(userDefaultSettingsRef.current || DEFAULT_NAMING_SETTINGS);
     setDeck([]);
     setBrief(null);
     setBriefObj(null);
@@ -402,12 +613,36 @@ export const NamingMachinePage: React.FC = () => {
     []
   );
 
+  /* ── Restaura uma sessão anterior (do popover de histórico) ──────────── */
+  const restoreBackendSession = useCallback(
+    async (id: string) => {
+      try {
+        const rec = await namingSessionApi.get(id);
+        applySession(rec.data);
+        setSessionId(rec.id);
+        setFinalists([]);
+        setNudgeDismissed(false);
+        setLastSwiped(null);
+      } catch {
+        toast.error('Não foi possível abrir a sessão.');
+      }
+    },
+    [applySession]
+  );
+
   /* ── Configurações avançadas (aplicam na próxima leva) ──────────────── */
   const updateSettings = useCallback(
-    (patch: Partial<NamingSettings>) => setSettings((s) => ({ ...s, ...patch })),
-    []
+    (patch: Partial<NamingSettings>) => {
+      const next = { ...settingsRef.current, ...patch };
+      setSettings(next);
+      scheduleDefaultSave(next); // edição no popover vira o default do usuário
+    },
+    [scheduleDefaultSave]
   );
-  const resetSettings = useCallback(() => setSettings(DEFAULT_NAMING_SETTINGS), []);
+  const resetSettings = useCallback(() => {
+    setSettings(DEFAULT_NAMING_SETTINGS);
+    scheduleDefaultSave(DEFAULT_NAMING_SETTINGS); // "restaurar padrão" também reseta o default
+  }, [scheduleDefaultSave]);
 
   /* ── Derivados de UI ────────────────────────────────────────────────── */
   const seenCount = profile.seen.length;
@@ -460,8 +695,17 @@ export const NamingMachinePage: React.FC = () => {
         <BriefingFlow onComplete={onBriefingComplete} />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-8 px-4 py-8">
-          {/* Config avançada — engrenagem discreta alinhada ao topo do deck */}
-          <div className="flex w-full max-w-md justify-end">
+          {/* Topo do deck: histórico (esq., só logado) + config avançada (dir.) */}
+          <div className="flex w-full max-w-md items-center justify-between">
+            {authService.isAuthenticated() ? (
+              <NamingHistoryPopover
+                currentId={sessionId}
+                onRestore={restoreBackendSession}
+                onNew={handleReset}
+              />
+            ) : (
+              <span />
+            )}
             <NamingSettingsPopover
               settings={settings}
               onChange={updateSettings}
@@ -470,7 +714,7 @@ export const NamingMachinePage: React.FC = () => {
           </div>
 
           {/* Deck */}
-          <div className="relative h-[440px] w-full max-w-md">
+          <div className="relative h-[420px] w-full max-w-md">
             {activeCard ? (
               <>
                 {previewCard && (
@@ -494,36 +738,45 @@ export const NamingMachinePage: React.FC = () => {
             )}
           </div>
 
-          {/* Botões */}
+          {/* Botões — label embaixo, paleta suave (só "Salvar" carrega o acento) */}
           {activeCard && (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => triggerVerdict('nope')}
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-neutral-800 bg-white/[0.03] text-neutral-400 hover:border-destructive/50 hover:text-destructive transition-colors"
-                aria-label="Nope (←)"
-              >
-                <X size={22} />
-              </button>
-              <button
-                onClick={() => triggerVerdict('superlike')}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors"
-                aria-label="Superlike (↑)"
-              >
-                <Gem size={18} />
-              </button>
-              <button
-                onClick={() => triggerVerdict('like')}
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-neutral-800 bg-white/[0.03] text-neutral-400 hover:border-success/50 hover:text-success transition-colors"
-                aria-label="Curti (→)"
-              >
-                <Heart size={22} />
-              </button>
+            <div className="flex items-start justify-center gap-6">
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => triggerVerdict('nope')}
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-neutral-300 transition-colors hover:border-destructive/50 hover:text-destructive"
+                  aria-label="Não é isso (N)"
+                >
+                  <X size={22} />
+                </button>
+                <span className="text-[11px] text-neutral-500">Não é isso</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => triggerVerdict('like')}
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-neutral-100 transition-colors hover:border-white/25 hover:bg-white/10"
+                  aria-label="Gostei (C)"
+                >
+                  <Heart size={22} />
+                </button>
+                <span className="text-[11px] text-neutral-300">Gostei</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => triggerVerdict('superlike')}
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-brand-cyan transition-colors hover:border-neutral-700 hover:bg-brand-cyan/15"
+                  aria-label="Salvar (S)"
+                >
+                  <Bookmark size={22} />
+                </button>
+                <span className="text-[11px] text-neutral-500">Salvar</span>
+              </div>
             </div>
           )}
 
           {activeCard && (
             <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-700">
-              ← nope · → curti · ↑ superlike · Z desfaz
+              N não é isso · C gostei · S salvar · D desfaz
             </p>
           )}
         </div>

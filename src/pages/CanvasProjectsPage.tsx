@@ -18,6 +18,7 @@ import {
   FolderOpen,
   FileJson,
   Search,
+  Globe,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
@@ -26,11 +27,13 @@ import type { Node } from '@xyflow/react';
 import type { FlowNodeData, OutputNodeData, ImageNodeData } from '../types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
-import { type CanvasWorkflow } from '../services/workflowApi';
+import { WorkflowCard } from '../components/WorkflowCard';
+import { type CanvasWorkflow, workflowApi } from '../services/workflowApi';
 import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDateShort } from '@/utils/localeUtils';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -94,10 +97,72 @@ export const CanvasProjectsPage: React.FC = () => {
   const hasLoadedProjectsRef = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  // Filtro opcional pela marca ativa (default global; um clique escopa) — o
+  // canvas é produção mas a lista é global; o chip reconcilia com o topbar.
+  // A lista segue a MARCA ATIVA do BrandSwitcher (SSoT). null = "Todas as
+  // marcas" → sem filtro. Unifica o antigo BrandFilterChip no switcher do header.
+  const { activeBrandId: brandId } = useActiveBrand();
 
   const isLoadingRef = useRef(false);
   const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
   const [isAdmin] = useState(false);
+
+  // Community workflows surfaced inline (same source as the library modal's
+  // COMMUNITY tab). The user links their active brand and runs a ready-made
+  // workflow — "mostrar workflows da comunidade" direto na página, sem modal.
+  const [communityWorkflows, setCommunityWorkflows] = useState<CanvasWorkflow[]>([]);
+  const [loadingCommunity, setLoadingCommunity] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await workflowApi.getPublic();
+        if (!cancelled) setCommunityWorkflows(data);
+      } catch (err) {
+        console.error('[CanvasProjects] community workflows load failed:', err);
+      } finally {
+        if (!cancelled) setLoadingCommunity(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCommunityLike = async (workflowId: string) => {
+    if (!isAuthenticated) {
+      toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+      return;
+    }
+    try {
+      const liked = await workflowApi.toggleLike(workflowId);
+      setCommunityWorkflows((prev) =>
+        prev.map((w) =>
+          w._id === workflowId
+            ? { ...w, isLikedByUser: liked, likesCount: liked ? w.likesCount + 1 : w.likesCount - 1 }
+            : w
+        )
+      );
+    } catch (err) {
+      console.error('Error toggling like:', err);
+      toast.error(t('workflows.errors.failedToToggleLike') || 'Failed to toggle like');
+    }
+  };
+
+  const handleCommunityDuplicate = async (workflowId: string) => {
+    if (!isAuthenticated) {
+      toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+      return;
+    }
+    try {
+      await workflowApi.duplicate(workflowId);
+      toast.success(t('workflows.messages.duplicated') || 'Workflow added to your library!');
+    } catch (err) {
+      console.error('Error duplicating workflow:', err);
+      toast.error(t('workflows.errors.failedToDuplicate') || 'Failed to duplicate workflow');
+    }
+  };
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -288,6 +353,9 @@ export const CanvasProjectsPage: React.FC = () => {
 
   const filteredProjects = useMemo(() => {
     let result = [...projects];
+    if (brandId) {
+      result = result.filter((project) => project.linkedGuidelineId === brandId);
+    }
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((project) => project.name?.toLowerCase().includes(query));
@@ -297,33 +365,37 @@ export const CanvasProjectsPage: React.FC = () => {
       const dateB = new Date(b.updatedAt || b.createdAt).getTime();
       return dateB - dateA;
     });
-  }, [projects, searchQuery]);
+  }, [projects, searchQuery, brandId]);
 
   const headerActions = (
     <div className="flex items-center gap-3">
-      <div className="relative">
+
+      {/* Search de projetos: expande INLINE dentro do header (não é popup
+          flutuante); colapsa ao sair vazio. Fica visualmente distinto do
+          Cmd+K global da espinha (que é navegação, não filtro de lista). */}
+      {showSearch ? (
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={t('canvas.searchProjects') || 'Buscar projetos...'}
+          iconSize={14}
+          className="h-10 bg-neutral-900/40 border-white/10 text-xs font-mono"
+          containerClassName="w-[200px] md:w-[240px]"
+          autoFocus
+          onBlur={() => {
+            if (!searchQuery.trim()) setShowSearch(false);
+          }}
+        />
+      ) : (
         <Button
           variant="ghost"
-          onClick={() => setShowSearch(!showSearch)}
+          onClick={() => setShowSearch(true)}
           className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
-          title="Search"
+          title={t('canvas.searchProjects') || 'Buscar projetos'}
         >
           <Search size={18} />
         </Button>
-        {showSearch && (
-          <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-ml p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
-            <SearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={t('canvas.searchProjects') || 'Search projects...'}
-              iconSize={14}
-              className="bg-transparent border-white/10 text-xs font-mono"
-              containerClassName="w-full"
-              autoFocus
-            />
-          </div>
-        )}
-      </div>
+      )}
 
       <div className="h-6 w-[1px] bg-neutral-800/60 mx-1 hidden md:block" />
 
@@ -570,6 +642,63 @@ export const CanvasProjectsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* ── Community workflows — link your brand, run a ready-made workflow ── */}
+      <section
+        className="relative z-10 mt-16 pt-10 border-t border-neutral-800/60"
+        data-vsn-region="community-workflows"
+      >
+        <div className="flex items-end justify-between gap-4 mb-6">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="p-2 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
+              <Globe size={16} className="text-brand-cyan" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-sm font-mono uppercase tracking-widest text-neutral-300">
+                {t('canvas.community.title')}
+              </h2>
+              <p className="text-xs text-neutral-600 font-mono mt-0.5">
+                {t('canvas.community.subtitle')}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            onClick={() => setShowWorkflowLibrary(true)}
+            className="shrink-0 h-9 px-3 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-brand-cyan"
+          >
+            {t('canvas.community.viewAll')}
+          </Button>
+        </div>
+
+        {loadingCommunity ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonLoader key={i} height="14rem" className="w-full rounded-md" />
+            ))}
+          </div>
+        ) : communityWorkflows.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {communityWorkflows.slice(0, 8).map((workflow) => (
+              <WorkflowCard
+                key={workflow._id}
+                workflow={workflow}
+                onClick={() => handleLoadWorkflow(workflow)}
+                onToggleLike={() => handleCommunityLike(workflow._id)}
+                onDuplicate={() => handleCommunityDuplicate(workflow._id)}
+                isAuthenticated={isAuthenticated === true}
+                canEdit={false}
+                t={t}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-2 rounded-xl border border-dashed border-neutral-800/60">
+            <Globe size={28} className="text-neutral-700" strokeWidth={1.2} />
+            <p className="text-xs text-neutral-600 font-mono">{t('canvas.community.empty')}</p>
+          </div>
+        )}
+      </section>
 
       {showAuthModal && (
         <AuthModal

@@ -6,9 +6,11 @@ import { getGuidelineId, getGuidelineLabel } from '../../lib/brandHydration';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Plus, RefreshCw, BookOpen, Check, X } from 'lucide-react';
+import { Plus, RefreshCw, BookOpen, Check, X, LayoutTemplate } from 'lucide-react';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { NamingGuideModal, PushPreviewModal } from './BrandModals';
+import { useClient } from '../../lib/ClientProvider';
+import { useApi } from '../../hooks/useApi';
 
 export function BrandGuidelineSection() {
   const linkedGuideline = usePluginStore((s) => s.linkedGuideline);
@@ -24,6 +26,34 @@ export function BrandGuidelineSection() {
   const [newName, setNewName] = useState('');
   const newNameInputRef = useRef<HTMLInputElement>(null);
   const refreshingRef = useRef(false);
+
+  // Template SYNC: parse the page's [Template] frames → POST schemas → webapp preview.
+  const client = useClient();
+  const { call } = useApi();
+  const showToast = usePluginStore((s) => s.showToast);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncTemplates = async () => {
+    if (!linkedGuideline || syncing) return;
+    setSyncing(true);
+    try {
+      const res: any = await client.request('templates.extractSchema', {});
+      const templates = res?.templates ?? [];
+      if (!templates.length) {
+        showToast('Nenhum [Template] nesta página', 'error');
+        return;
+      }
+      await call(`/api/brand-guidelines/${linkedGuideline}/synced-templates`, {
+        method: 'POST',
+        body: JSON.stringify({ templates }),
+      });
+      showToast(`${templates.length} template(s) sincronizado(s)`, 'success');
+    } catch {
+      showToast('Falha ao sincronizar templates', 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const refresh = async () => {
     if (refreshingRef.current) return;
@@ -218,6 +248,20 @@ export function BrandGuidelineSection() {
                   onClick={() => setPushOpen(true)}
                 >
                   Push
+                </Button>
+              )}
+              {linkedGuideline && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-brand-cyan hover:bg-brand-cyan/10 text-[10px] font-bold uppercase tracking-wider"
+                  onClick={handleSyncTemplates}
+                  disabled={syncing}
+                  aria-label="Sync [Template] frames to the preview"
+                  title="Sincronizar os [Template] desta página com o preview"
+                >
+                  {syncing ? <GlitchLoader size={12} /> : <LayoutTemplate size={13} className="mr-1" />}
+                  Sync
                 </Button>
               )}
             </>

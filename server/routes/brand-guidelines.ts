@@ -1,6 +1,7 @@
 // server/routes/brand-guidelines.ts
 import express from 'express';
 import crypto from 'crypto';
+import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
@@ -25,6 +26,12 @@ import { brandSharedService } from '../services/brandSharedService.js';
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { runBrandHealth, isBrandEmpty, buildEmptyBrandHealthReport } from '../lib/brandHealth.js';
 import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js';
+import { listScenes } from '../services/sceneStore.js';
+import {
+  rankSuggestions,
+  type AssetForMatch,
+  type SceneForMatch,
+} from '../services/sceneMatcher.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -85,6 +92,20 @@ import {
   findDuplicate,
   type AssetFingerprint,
 } from '../lib/brand/assetFingerprint.js';
+import {
+  checkBrandActivation,
+  brandLimitPayload,
+  checkEditorSeat,
+  seatLimitPayload,
+  getSeatQuotaForUserId,
+} from '../lib/brandQuota.js';
+
+/** 403 payload for writes against an archived (read-only) brand. */
+const BRAND_ARCHIVED_PAYLOAD = {
+  error: 'brand_archived',
+  reason: 'brand_archived',
+  message: 'This brand is archived and read-only. Unarchive it to make changes.',
+} as const;
 
 /** Existing assets reshaped for duplicate lookup. */
 function fingerprintIndex(g: { media?: any; logos?: any }) {
@@ -374,6 +395,9 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
           figmaFileUrl: true,
           figmaFileKey: true,
           activeSections: true,
+          status: true,
+          isDemo: true,
+          archivedAt: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -404,6 +428,14 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
         .status(400)
         .json({ error: 'Invalid brand guideline payload', issues: parsed.error.issues });
     }
+
+    // Brand billing gate — a new brand consumes an active slot. Existing brands
+    // are never blocked retroactively (gate lives only on create/unarchive).
+    const gate = await checkBrandActivation(req.userId);
+    if (!gate.allowed) {
+      return res.status(402).json(brandLimitPayload(gate.quota));
+    }
+
     const data: Partial<BrandGuideline> = parsed.data as any;
     const completeness = calculateCompleteness(data);
 
@@ -429,6 +461,27 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
   }
 });
 
+// POST /api/brand-guidelines/demo — clone the in-code example brand for the
+// user (onboarding "explorar antes" skip, Fase 3). Idempotent: returns the
+// existing demo when present. Deliberately NOT gated by the brand quota —
+// demo brands never consume an active slot (see brandQuota.ACTIVE_BRAND_WHERE).
+router.post('/demo', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { ensureDemoBrand } = await import('../lib/demoBrand.js');
+    const { guideline, created } = await ensureDemoBrand(req.userId);
+
+    res.status(created ? 201 : 200).json({
+      guideline: { ...guideline, _id: guideline.id },
+      created,
+    });
+  } catch (error: any) {
+    console.error('Error creating demo brand:', error);
+    res.status(500).json({ error: 'Failed to create demo brand' });
+  }
+});
+
 // GET /api/brand-guidelines/:id — fetch single guideline
 router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
@@ -439,7 +492,19 @@ router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     });
 
     if (!guideline) return res.status(404).json({ error: 'Not found' });
-    res.json({ guideline: { ...guideline, _id: guideline.id } });
+
+    // Seats (Fase 4): expose per-brand editor usage vs tier policy so the
+    // frontend mirrors the invite gate without logic of its own. Advisory —
+    // never break the detail fetch over a quota lookup.
+    let seatQuota: { used: number; max: number | null } | null = null;
+    try {
+      const q = await getSeatQuotaForUserId(req.userId, guideline.id);
+      seatQuota = { used: q.used, max: q.max };
+    } catch {
+      /* advisory */
+    }
+
+    res.json({ guideline: { ...guideline, _id: guideline.id }, seatQuota });
   } catch (error: any) {
     console.error('Error fetching brand guideline:', error);
     res.status(500).json({ error: 'Failed to fetch brand guideline' });
@@ -456,6 +521,11 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) =
     });
 
     if (!existing) return res.status(404).json({ error: 'Not found' });
+
+    // Archived brands are read-only (billing: archived = no slot, no edits, no generation).
+    if ((existing as any).status === 'archived') {
+      return res.status(403).json(BRAND_ARCHIVED_PAYLOAD);
+    }
 
     const parsed = BrandGuidelinePatchSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -570,6 +640,12 @@ router.post('/:id/duplicate', apiRateLimiter, authenticate, async (req: AuthRequ
 
     if (!original) return res.status(404).json({ error: 'Not found' });
 
+    // A duplicate is a new active brand — same quota gate as creation.
+    const gate = await checkBrandActivation(req.userId);
+    if (!gate.allowed) {
+      return res.status(402).json(brandLimitPayload(gate.quota));
+    }
+
     // Clone the guideline with a new name
     const originalIdentity = (original.identity as any) || {};
     const clonedIdentity = {
@@ -619,6 +695,68 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
   } catch (error: any) {
     console.error('Error deleting brand guideline:', error);
     res.status(500).json({ error: 'Failed to delete brand guideline' });
+  }
+});
+
+// POST /api/brand-guidelines/:id/archive — archive a brand (owner-only).
+// Archived = read-only + doesn't consume an active slot + can't generate.
+// Billing never deletes data — this is the "fit into the limit" mechanism.
+router.post('/:id/archive', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Not found' });
+
+    if ((guideline as any).status === 'archived') {
+      return res.json({ guideline: { ...guideline, _id: guideline.id } });
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { status: 'archived', archivedAt: new Date() },
+    });
+
+    await invalidateBrandCache(guideline.id);
+    res.json({ guideline: { ...updated, _id: updated.id } });
+  } catch (error: any) {
+    console.error('Error archiving brand guideline:', error);
+    res.status(500).json({ error: 'Failed to archive brand guideline' });
+  }
+});
+
+// POST /api/brand-guidelines/:id/unarchive — reactivate a brand (owner-only).
+// Gated by the brand quota: reactivating consumes an active slot again.
+router.post('/:id/unarchive', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Not found' });
+
+    if ((guideline as any).status !== 'archived') {
+      return res.json({ guideline: { ...guideline, _id: guideline.id } });
+    }
+
+    const gate = await checkBrandActivation(req.userId);
+    if (!gate.allowed) {
+      return res.status(402).json(brandLimitPayload(gate.quota));
+    }
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { status: 'active', archivedAt: null },
+    });
+
+    await invalidateBrandCache(guideline.id);
+    res.json({ guideline: { ...updated, _id: updated.id } });
+  } catch (error: any) {
+    console.error('Error unarchiving brand guideline:', error);
+    res.status(500).json({ error: 'Failed to unarchive brand guideline' });
   }
 });
 
@@ -866,6 +1004,19 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
       },
     });
 
+    // Funnel event (§3.3): brand_ingested — best-effort, never blocks the flow.
+    void (async () => {
+      const { trackFunnelEvent } = await import('../lib/funnelEvents.js');
+      const u = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { onboardingCompleted: true },
+      });
+      await trackFunnelEvent('brand_ingested', req.userId, {
+        source,
+        duringOnboarding: !(u?.onboardingCompleted ?? true),
+      });
+    })().catch(() => {});
+
     const changed = ingestChangedFields.length > 0;
     res.json({
       guideline: { ...guideline, _id: guideline.id },
@@ -946,7 +1097,11 @@ router.post('/sync/:projectId', apiRateLimiter, authenticate, async (req: AuthRe
         },
       });
     } else {
-      // Create new
+      // Create new — consumes an active slot (same quota gate as creation).
+      const gate = await checkBrandActivation(req.userId);
+      if (!gate.allowed) {
+        return res.status(402).json(brandLimitPayload(gate.quota));
+      }
       guideline = await prisma.brandGuideline.create({
         data: {
           userId: req.userId,
@@ -1409,6 +1564,103 @@ router.get(
     } catch (error: any) {
       console.error('[Brand Asset Similar] Error:', error?.message || error);
       res.status(500).json({ error: 'Failed to find similar assets', message: error?.message });
+    }
+  }
+);
+
+/**
+ * GET /api/brand-guidelines/:id/mockup-suggestions
+ *
+ * The free "surprise-me" feed: deterministically matches the brand's own analyzed
+ * assets to commercial mockup scenes and returns render RECIPES — NOT images. The
+ * client renders each recipe in the browser via the Scene Package engine (zero AI,
+ * zero credits). Read-only, owner-gated, rate-limited.
+ *
+ * Query: ?cursor=<offset> &count=<1-30> &seen=<psd:face,psd:face> (MRU exclude).
+ * Returns { suggestions: Recipe[], nextCursor, total } where a Recipe is
+ * { psdFileName, faceKey, assetUrl, variant, surfaceKind, score }.
+ */
+router.get(
+  '/:id/mockup-suggestions',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+      // Build the asset pool from logos + image media. Placement metadata
+      // (from assetAnalysis) drives the match; missing placement degrades to a
+      // sane default so a not-yet-analyzed brand still gets suggestions.
+      const assets: AssetForMatch[] = [];
+      for (const l of (guideline.logos as any[]) || []) {
+        if (!l?.url) continue;
+        const p = l.analysis?.placement || {};
+        assets.push({
+          url: l.url,
+          variant: l.variant,
+          kind: p.kind || 'logo',
+          luminance: p.luminance,
+          contrastSafeOn: p.contrastSafeOn,
+          aspectRatio: p.aspectRatio,
+          // Logos are usually cut-out PNGs; default to transparent when unknown.
+          hasTransparency: p.hasTransparency ?? true,
+        });
+      }
+      for (const m of (guideline.media as any[]) || []) {
+        if (!m?.url || m.type === 'pdf') continue;
+        const p = m.analysis?.placement || {};
+        assets.push({
+          url: m.url,
+          kind: p.kind || 'graphic',
+          luminance: p.luminance,
+          contrastSafeOn: p.contrastSafeOn,
+          aspectRatio: p.aspectRatio,
+          hasTransparency: p.hasTransparency,
+        });
+      }
+
+      if (!assets.length) {
+        return res.json({ suggestions: [], nextCursor: null, total: 0, reason: 'no_assets' });
+      }
+
+      // Commercial scenes only (SSoT isComercial filter — never leaks paid studios).
+      const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+      await connectToMongoDB();
+      const db = getDb();
+      const sceneRows = await listScenes(db, { commercialOnly: true });
+      const scenes: SceneForMatch[] = sceneRows
+        .filter((s) => Array.isArray(s.faces) && s.faces.length > 0)
+        .map((s) => ({
+          psdFileName: s.psdFileName,
+          baseLuminance: s.baseLuminance,
+          faces: s.faces,
+        }));
+
+      if (!scenes.length) {
+        return res.json({ suggestions: [], nextCursor: null, total: 0, reason: 'no_scenes' });
+      }
+
+      const seen = String(req.query.seen || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const exclude = new Set(seen);
+
+      const ranked = rankSuggestions(assets, scenes, { exclude });
+
+      const cursor = Math.max(0, parseInt(String(req.query.cursor || '0'), 10) || 0);
+      const count = Math.min(Math.max(parseInt(String(req.query.count || '12'), 10) || 12, 1), 30);
+      const page = ranked.slice(cursor, cursor + count);
+      const nextCursor = cursor + count < ranked.length ? cursor + count : null;
+
+      res.json({ suggestions: page, nextCursor, total: ranked.length });
+    } catch (error: any) {
+      console.error('[Mockup Suggestions] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to load mockup suggestions', message: error?.message });
     }
   }
 );
@@ -1992,6 +2244,16 @@ router.post('/:id/invite', apiRateLimiter, authenticate, async (req: AuthRequest
       expiresInDays?: number;
     };
 
+    // Seat gate (Fase 4 task 4.5): an editor invite HOLDS a seat from creation
+    // (pending invites count as used) — no race window on accept. Viewer
+    // invites always pass: viewer = end client approving work, always free.
+    if (role === 'editor') {
+      const seat = await checkEditorSeat(req.userId, guideline.id);
+      if (!seat.allowed) {
+        return res.status(402).json(seatLimitPayload(seat.quota));
+      }
+    }
+
     const token = nanoid(16);
     const brandName = (guideline.identity as any)?.name || 'Brand Kit';
     const expiresAt = expiresInDays ? new Date(Date.now() + expiresInDays * 86_400_000) : undefined;
@@ -2445,15 +2707,11 @@ router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthReq
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-    if (!isCheapTextConfigured()) {
-      return res.status(503).json({
-        error: 'suggestions_not_configured',
-        message: 'AI suggestions are not available right now.',
-      });
-    }
-
     const count = Math.min(Math.max(parseInt(String(req.query.count || '4'), 10) || 4, 3), 6);
     const force = req.query.force === 'true';
+    // Cache-only mode: open on static starters and spend a model call ONLY when the
+    // user explicitly asks (Refresh). Page loads never auto-generate.
+    const cacheOnly = req.query.cacheOnly === 'true';
     const now = new Date();
     // Weekly cache bucket — seasonal context shifts slowly, so a brand's ideas are
     // stable for ~a week and effectively free to serve.
@@ -2464,19 +2722,42 @@ router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthReq
     )}`;
     const cacheKey = `brand-suggestions:${guideline.id}:${week}:${count}`;
 
+    // Serve the weekly cache first — free, no model call.
     if (!force) {
       const cached = await redisClient.get(cacheKey).catch(() => null);
       if (cached) {
         try {
           return res.json({ ...JSON.parse(cached as string), cached: true });
         } catch {
-          /* fall through and regenerate */
+          /* fall through and (maybe) regenerate */
         }
       }
     }
 
     const market = marketFromLanguage((guideline.identity as any)?.language);
     const seasonal = getSeasonalContext(now, market);
+    const seasonalPayload = {
+      market,
+      upcoming: seasonal.upcoming.slice(0, 3).map((e) => ({
+        key: e.key,
+        label: e.label,
+        daysAway: e.daysAway,
+      })),
+    };
+
+    // Cache miss + cache-only → return just the (locally computed, free) seasonal
+    // context so the client shows starters. No generation, no LLM key required.
+    if (cacheOnly) {
+      return res.json({ suggestions: [], seasonal: seasonalPayload, cached: false });
+    }
+
+    if (!isCheapTextConfigured()) {
+      return res.status(503).json({
+        error: 'suggestions_not_configured',
+        message: 'AI suggestions are not available right now.',
+      });
+    }
+
     const seasonalLine = seasonalPromptLine(seasonal);
     const brandContext = buildBrandContext(guideline as any);
 
@@ -2531,14 +2812,7 @@ Include at least one "mockup". Vary the rest across the other kinds.`;
 
     const payload = {
       suggestions,
-      seasonal: {
-        market,
-        upcoming: seasonal.upcoming.slice(0, 3).map((e) => ({
-          key: e.key,
-          label: e.label,
-          daysAway: e.daysAway,
-        })),
-      },
+      seasonal: seasonalPayload,
       provider,
       generatedAt: now.toISOString(),
     };
@@ -2644,6 +2918,71 @@ router.get('/:id/figma-templates', apiRateLimiter, authenticate, async (req: Aut
   } catch (error: any) {
     console.error('[Figma Templates List] Error:', error?.message || error);
     res.status(500).json({ error: 'Failed to list figma templates', message: error?.message });
+  }
+});
+
+// ── Template SYNC (Figma [Template] frames → layout schemas → webapp) ──────────
+// The plugin parses each [Template] frame into a brand-agnostic TemplateSchema
+// (geometry + variable binds + slots) and POSTs them here; the webapp renders them
+// live via <TemplateRenderer>. One source (Figma), two renderers. See
+// src/lib/figma-template-schema.ts.
+
+const SyncedTemplatesSchema = z.object({
+  templates: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        width: z.number(),
+        height: z.number(),
+        aspect: z.string().optional(),
+        root: z.object({}).passthrough(),
+      })
+    )
+    .max(100),
+});
+
+// GET — the stored schemas for the webapp preview (owner-gated, like the preview tab).
+router.get('/:id/synced-templates', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    // No `select` for the JSON field — the Prisma client may predate the migration;
+    // reading via cast degrades to [] until `prisma generate` runs, no 500.
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+    res.json({
+      templates: (guideline as any).syncedTemplates || [],
+      syncedAt: (guideline as any).figmaSyncedAt || null,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to read synced templates', message: error?.message });
+  }
+});
+
+// POST — the plugin pushes freshly-parsed schemas here (owner-gated).
+router.post('/:id/synced-templates', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+      select: { id: true },
+    });
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+    const parsed = SyncedTemplatesSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'invalid_schema', message: parsed.error.message });
+    }
+    await prisma.brandGuideline.update({
+      where: { id: req.params.id },
+      data: { syncedTemplates: parsed.data.templates, figmaSyncedAt: new Date() } as any,
+    });
+    res.json({ ok: true, count: parsed.data.templates.length });
+  } catch (error: any) {
+    console.error('[Synced Templates] Error:', error?.message || error);
+    res.status(500).json({ error: 'Failed to save synced templates', message: error?.message });
   }
 });
 
@@ -3860,6 +4199,16 @@ router.post('/:id/collaborators', apiRateLimiter, authenticate, async (req: Auth
 
     let canEdit = Array.isArray(guideline.canEdit) ? [...(guideline.canEdit as string[])] : [];
     let canView = Array.isArray(guideline.canView) ? [...(guideline.canView as string[])] : [];
+
+    // Seat gate (Fase 4 task 4.5): direct add / viewer→editor promotion also
+    // consumes a seat. Skip when the user is ALREADY an editor (no-op keeps
+    // working even at the limit). Viewer role always passes.
+    if (role === 'editor' && !canEdit.includes(invitee.id)) {
+      const seat = await checkEditorSeat(req.userId, guideline.id);
+      if (!seat.allowed) {
+        return res.status(402).json(seatLimitPayload(seat.quota));
+      }
+    }
 
     // Remove from both arrays first (role change support)
     canEdit = canEdit.filter((id) => id !== invitee.id);

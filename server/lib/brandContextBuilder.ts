@@ -331,6 +331,27 @@ ${ragContext}
  * @param options - Optional configuration
  * @returns Formatted string for LLM context injection
  */
+/**
+ * Classify a font family into a renderable VIBE (serif / sans-serif / monospace /
+ * script / display) — used for image gen so we describe the typographic look
+ * without ever emitting a font name the diffusion model would print as text.
+ */
+function classifyTypeface(family: string): string {
+  const f = family.toLowerCase();
+  if (/\bmono\b|monospace|courier|consolas/.test(f)) return 'monospace';
+  if (/script|cursive|pacifico|dancing|caveat|satisfy|brush|hand|great vibes/.test(f))
+    return 'script';
+  if (/bebas|anton|oswald|archivo black|bungee|staatliches|condensed/.test(f)) return 'display';
+  if (
+    /serif|fraunces|playfair|merriweather|\blora\b|georgia|times|garamond|baskerville|cormorant|spectral|bitter|crimson|slab|recoleta|canela|tiempos/.test(
+      f
+    ) &&
+    !/sans/.test(f)
+  )
+    return 'serif';
+  return 'sans-serif';
+}
+
 export function buildBrandContext(
   bg: BrandGuideline,
   options?: {
@@ -342,9 +363,23 @@ export function buildBrandContext(
     compact?: boolean;
     /** Only include these sections (default: all) */
     sections?: BrandContextSection[];
+    /**
+     * How to render typography:
+     * - 'spec' (default): "role: Family Style 40px" — for LLMs/design tools.
+     * - 'classify': serif/sans/mono vibe only, NO font names or sizes — for
+     *   IMAGE generation, where a diffusion model can't use a named font and
+     *   instead prints the literal spec ("Fraunces SemiBold 40px") on the art.
+     */
+    typographyMode?: 'spec' | 'classify';
   }
 ): string {
-  const { includeLogos = true, includeMedia = true, compact = false, sections } = options || {};
+  const {
+    includeLogos = true,
+    includeMedia = true,
+    compact = false,
+    sections,
+    typographyMode = 'spec',
+  } = options || {};
   const s = (section: BrandContextSection) => shouldInclude(sections, section);
   const lines: string[] = [];
   const name = bg.identity?.name || 'Brand';
@@ -363,19 +398,34 @@ export function buildBrandContext(
     lines.push('');
   }
 
-  // Typography - important for text-based generations
+  // Typography. In 'classify' mode (image gen) we emit only a serif/sans vibe —
+  // NEVER the font name or px, since a diffusion model can't use a named font
+  // and instead renders the literal spec ("Fraunces SemiBold 40px") onto the art.
   if (s('typography') && bg.typography?.length) {
-    lines.push('FONTS:');
-    for (const t of bg.typography as any[]) {
-      const role = t.role || t.name || 'body';
-      const family = t.family || t.fontFamily || '';
-      const style = t.style || t.fontStyle || '';
-      if (!family) continue;
-      const parts = [family, style].filter(Boolean).join(' ');
-      const size = t.size || t.fontSize;
-      lines.push(`  ${role}: ${parts}${size ? ` ${size}px` : ''}`);
+    if (typographyMode === 'classify') {
+      const classes = new Set<string>();
+      for (const t of bg.typography as any[]) {
+        const family = t.family || t.fontFamily || '';
+        if (!family) continue;
+        classes.add(classifyTypeface(family));
+      }
+      if (classes.size) {
+        lines.push(`TYPOGRAPHY VIBE: ${[...classes].join(', ')} lettering`);
+        lines.push('');
+      }
+    } else {
+      lines.push('FONTS:');
+      for (const t of bg.typography as any[]) {
+        const role = t.role || t.name || 'body';
+        const family = t.family || t.fontFamily || '';
+        const style = t.style || t.fontStyle || '';
+        if (!family) continue;
+        const parts = [family, style].filter(Boolean).join(' ');
+        const size = t.size || t.fontSize;
+        lines.push(`  ${role}: ${parts}${size ? ` ${size}px` : ''}`);
+      }
+      lines.push('');
     }
-    lines.push('');
   }
 
   // Guidelines - voice, dos/donts, imagery, accessibility
@@ -558,6 +608,9 @@ export function buildBrandContextForImageGen(bg: BrandGuideline): string {
     includeMedia: false,
     compact: false,
     sections: BRAND_SECTION_PRESETS.imageGen,
+    // Never leak font names/px into an image prompt — the model prints them as
+    // literal label text. A serif/sans vibe carries the look without that bug.
+    typographyMode: 'classify',
   });
 }
 

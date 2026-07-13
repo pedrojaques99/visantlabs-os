@@ -31,6 +31,7 @@ export type FeedbackFeature =
   | 'node-builder'
   | 'chat'
   | 'admin-chat'
+  | 'copilot'
   | 'image-gen';
 
 export interface FeedbackContext {

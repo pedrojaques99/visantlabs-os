@@ -1,0 +1,21 @@
+[
+  {
+    "id": "23:264", "name": "Post editorial", "width": 1080, "height": 1350, "aspect": "4:5",
+    "root": { "name": "Post", "type": "FRAME", "m": [1,0,0,1,0,0], "w": 1080, "h": 1350, "clip": true, "fill": {"opacity":1,"hex":"#f5f1ed"}, "children": [
+      { "name": "img", "type": "RECTANGLE", "m": [1,0,0,1,380,66], "w": 609, "h": 609, "fill": {"opacity":1,"hex":"#d9d9d9"} },
+      { "name": "h", "type": "TEXT", "m": [1,0,0,1,64,1045], "w": 778, "h": 241, "fill": {"opacity":1,"hex":"#565c61"}, "text": {"chars":"Essencialismo,\nSemântica visual\ne Intencionalidade","family":"Zalando Sans","style":"Medium","size":96,"align":"LEFT","tcase":"ORIGINAL","letter":{"unit":"PERCENT","value":-3},"lhPct":90} },
+      { "name": "b", "type": "TEXT", "m": [1,0,0,1,664,723], "w": 325, "h": 95, "fill": {"opacity":1,"hex":"#565c61"}, "text": {"chars":"Quando essencialismo, semântica visual e intencionalidade se unem, cada elemento visual escolhido existe por um motivo.","family":"Zalando Sans","style":"Regular","size":20,"align":"RIGHT","tcase":"ORIGINAL","lhPct":135} },
+      { "name": "meta", "type": "TEXT", "m": [1,0,0,1,380,723], "w": 182, "h": 95, "fill": {"opacity":1,"hex":"#565c61"}, "text": {"chars":"Salinidade 35‰ Elevação 0,00 m Maré -0,32 m Visibilidade 12,7 km","family":"Zalando Sans","style":"Regular","size":20,"align":"LEFT","tcase":"ORIGINAL","lhPct":135} }
+    ] }
+  },
+  {
+    "id": "23:251", "name": "Story manifesto", "width": 1080, "height": 1920, "aspect": "9:16",
+    "root": { "name": "Story", "type": "FRAME", "m": [1,0,0,1,0,0], "w": 1080, "h": 1920, "clip": true, "fill": {"opacity":1,"hex":"#af9f8a"}, "children": [
+      { "name": "p", "type": "TEXT", "m": [1,0,0,1,121,227], "w": 405, "h": 488, "fill": {"opacity":1,"hex":"#f5f1ed"}, "text": {"chars":"Nada em um veleiro é construído como ornamento gratuito. Mas é de uma confiança absoluta na lógica construtiva que nasce sua força estética. Quando o vento enche a vela e o barco ganha vida, não há como distinguir onde termina a engenharia e onde começa a poesia. A melhor arquitetura funciona da mesma forma: move-se com quem a habita.","family":"Zalando Sans","style":"Regular","size":28.2,"align":"JUSTIFIED","tcase":"ORIGINAL","lhPct":140} },
+      { "name": "kw1", "type": "TEXT", "m": [0.5945903658866882,-0.8040287494659424,0.8040287494659424,0.5945903658866882,-67.6,1666.6], "w": 1003, "h": 139, "fill": {"opacity":1,"hex":"#f5f1ed"}, "text": {"chars":"essencialista","family":"Zalando Sans","style":"Regular","size":194.3,"align":"LEFT","tcase":"ORIGINAL","letter":{"unit":"PERCENT","value":-7},"lhPct":80} },
+      { "name": "kw2", "type": "TEXT", "m": [0.5945903658866882,-0.8040287494659424,0.8040287494659424,0.5945903658866882,179.6,1666.6], "w": 1033, "h": 139, "fill": {"opacity":1,"hex":"#f5f1ed"}, "text": {"chars":"arquitetônico","family":"Zalando Sans","style":"Regular","size":194.3,"align":"LEFT","tcase":"ORIGINAL","letter":{"unit":"PERCENT","value":-7},"lhPct":80} },
+      { "name": "kw3", "type": "TEXT", "m": [0.5945903658866882,-0.8040287494659424,0.8040287494659424,0.5945903658866882,426.8,1666.6], "w": 796, "h": 139, "fill": {"opacity":1,"hex":"#f5f1ed"}, "text": {"chars":"atemporal","family":"Zalando Sans","style":"Regular","size":194.3,"align":"LEFT","tcase":"ORIGINAL","letter":{"unit":"PERCENT","value":-7},"lhPct":80} },
+      { "name": "kw4", "type": "TEXT", "m": [0.5945903658866882,-0.8040287494659424,0.8040287494659424,0.5945903658866882,673.98,1666.6], "w": 581, "h": 139, "fill": {"opacity":1,"hex":"#f5f1ed"}, "text": {"chars":"preciso","family":"Zalando Sans","style":"Regular","size":194.3,"align":"LEFT","tcase":"ORIGINAL","letter":{"unit":"PERCENT","value":-7},"lhPct":80} }
+    ] }
+  }
+]

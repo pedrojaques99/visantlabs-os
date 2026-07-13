@@ -17,6 +17,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
+import { glassSurface } from '@/lib/ui/glass';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
@@ -401,7 +402,7 @@ export const BgRemovePage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Mode toggle — top of panel */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-900/60 border border-neutral-800">
+      <div className={cn('flex items-center gap-1 p-1 rounded-xl', glassSurface.tile)}>
         <button
           onClick={() => setMode('ai')}
           disabled={isProcessing}
@@ -444,7 +445,7 @@ export const BgRemovePage: React.FC = () => {
       <AnimatePresence>
         {processingItem && (
           <motion.div
-            className="px-3 py-2 rounded-lg bg-neutral-900/60 border border-neutral-800"
+            className={cn('px-3 py-2 rounded-lg', glassSurface.control)}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -697,7 +698,7 @@ export const BgRemovePage: React.FC = () => {
         {!hasItems ? (
           <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
             <motion.div
-              className="w-16 h-16 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex items-center justify-center"
+              className={cn('w-16 h-16 rounded-2xl flex items-center justify-center', glassSurface.panel)}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}

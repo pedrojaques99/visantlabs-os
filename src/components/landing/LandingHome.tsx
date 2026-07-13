@@ -197,6 +197,9 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
             <p className="max-w-lg text-base text-neutral-400 sm:text-lg">
               {t('landing.hero.subtitle')}
             </p>
+            <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+              {t('landing.hero.icp')}
+            </p>
             <div
               className="pointer-events-auto mt-1 flex flex-col items-center gap-3 sm:flex-row"
               onMouseEnter={() => lerpIntensity(2)}
@@ -231,7 +234,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
             {t('landing.howItWorks.title')}
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-px bg-white/5 sm:grid-cols-3 rounded-2xl overflow-hidden border border-white/5">
+        <div className="grid grid-cols-1 gap-px bg-white/5 sm:grid-cols-3 rounded-2xl overflow-hidden border border-neutral-800">
           {[
             {
               num: t('landing.howItWorks.step1Num'),
@@ -307,7 +310,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       </section>
 
       {/* ── Trust bar ───────────────────────────────────────────── */}
-      <section className="relative z-10 border-y border-white/5 py-5">
+      <section className="relative z-10 border-y border-neutral-800 py-5">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-8 gap-y-3 px-6">
           {[
             t('landing.trust.label1'),
@@ -354,7 +357,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-500"
           style={{
             opacity: ctaGlow.active ? 1 : 0,
-            background: `radial-gradient(500px at ${ctaGlow.x}% ${ctaGlow.y}%, rgba(82,221,235,0.1), transparent 65%)`,
+            background: `radial-gradient(500px at ${ctaGlow.x}% ${ctaGlow.y}%, oklch(from var(--brand-cyan) l c h / 10%), transparent 65%)`,
           }}
         />
         <div

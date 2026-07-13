@@ -4,7 +4,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,16 +15,19 @@ import {
   FileText,
   RefreshCw,
   Settings,
-  Search,
   MoreVertical,
   Copy,
   Trash2,
-  X,
   Folder,
   FolderOpen,
   Zap,
   Eye,
+  Archive,
+  ArchiveRestore,
+  Star,
 } from 'lucide-react';
+import { usePinnedNav } from '@/hooks/usePinnedNav';
+import { sb, SidebarSectionLabel, SidebarSearch } from '@/components/shell/sidebarKit';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -34,11 +36,18 @@ import {
   useDeleteGuideline,
   useUpdateGuideline,
 } from '@/hooks/queries/useBrandGuidelines';
+import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
+import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
 interface GuidelinesSidebarProps {
   guidelines: BrandGuideline[];
   selectedId: string | null;
   onSelect: (guideline: BrandGuideline) => void;
   onCreate: () => void;
+  /** Busca controlada (SSoT único compartilhado com o grid). Sem isso, usa
+   *  estado interno — mantém compatibilidade com outros callers. */
+  search?: string;
+  onSearchChange?: (v: string) => void;
 }
 
 export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
@@ -46,15 +55,21 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   selectedId,
   onSelect,
   onCreate,
+  search,
+  onSearchChange,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { isPinned, toggle: togglePin } = usePinnedNav();
+  const [internalSearch, setInternalSearch] = useState('');
+  const searchQuery = search ?? internalSearch;
+  const setSearchQuery = onSearchChange ?? setInternalSearch;
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const duplicateMutation = useDuplicateGuideline();
   const deleteMutation = useDeleteGuideline();
   const updateMutation = useUpdateGuideline();
+  const archiveActions = useBrandArchiveActions();
 
   const { data: recentProjects = [] } = useQuery({
     queryKey: ['creative-projects-brand', selectedId],
@@ -111,26 +126,15 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
   return (
     <div className="flex flex-col h-full bg-transparent p-4 lg:p-6 space-y-6 min-h-0 overflow-y-auto custom-scrollbar">
       <div className="flex-1 space-y-4">
-        <h2 className="text-[11px] font-semibold text-neutral-500 px-1">Design Systems</h2>
+        <SidebarSectionLabel className="px-1">{t('nav.brands.label')}</SidebarSectionLabel>
 
         {/* Search */}
-        <div className="relative px-1">
-          <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600" />
-          <Input
-            type="text"
-            placeholder="Search..."
+        <div className="px-1">
+          <SidebarSearch
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-8 pr-8 text-xs bg-white/[0.03] border-neutral-800 placeholder:text-neutral-600"
+            onChange={setSearchQuery}
+            placeholder={`${t('common.search')}...`}
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors"
-            >
-              <X size={12} />
-            </button>
-          )}
         </div>
 
         {/* Folder filter */}
@@ -138,12 +142,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           <div className="flex flex-wrap gap-1.5 px-1">
             <button
               onClick={() => setSelectedFolder(null)}
-              className={cn(
-                'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all',
-                selectedFolder === null
-                  ? 'bg-white/5 text-neutral-200 border border-white/10'
-                  : 'bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300'
-              )}
+              className={cn(sb.chip, selectedFolder === null ? sb.chipActive : sb.chipIdle)}
             >
               <FolderOpen size={10} />
               All
@@ -153,10 +152,9 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 key={folder}
                 onClick={() => setSelectedFolder(folder)}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all truncate max-w-[120px]',
-                  selectedFolder === folder
-                    ? 'bg-white/5 text-neutral-200 border border-white/10'
-                    : 'bg-white/[0.03] text-neutral-500 border border-neutral-800 hover:text-neutral-300'
+                  sb.chip,
+                  'truncate max-w-[120px]',
+                  selectedFolder === folder ? sb.chipActive : sb.chipIdle
                 )}
                 title={folder}
               >
@@ -199,18 +197,18 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                 key={g.id}
                 onClick={() => onSelect(g)}
                 className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all text-xs border group/item',
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-xs border group/item',
                   selectedId === g.id
-                    ? 'text-neutral-200 bg-white/5 border-white/10'
-                    : 'text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]'
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border'
+                    : 'text-sidebar-foreground/70 hover:text-sidebar-accent-foreground border-transparent hover:bg-sidebar-accent'
                 )}
               >
                 <div
                   className={cn(
-                    'w-5 h-5 rounded-md overflow-hidden border flex items-center justify-center shrink-0 transition-all',
+                    'w-5 h-5 rounded-md overflow-hidden border flex items-center justify-center shrink-0 transition-colors',
                     selectedId === g.id
-                      ? 'border-white/20 bg-white/5'
-                      : 'border-neutral-800 bg-neutral-950/50'
+                      ? 'border-sidebar-border bg-sidebar-accent'
+                      : 'border-sidebar-border/60 bg-sidebar/50'
                   )}
                 >
                   {brandLogo?.url ? (
@@ -257,6 +255,24 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="min-w-[120px]">
                       <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePin({
+                            type: 'brand',
+                            id: g.id!,
+                            label: g.identity?.name || g.name || 'Brand',
+                            to: `/brand-guidelines?id=${g.id}`,
+                          });
+                        }}
+                        className="text-xs gap-2"
+                      >
+                        <Star
+                          size={12}
+                          className={isPinned('brand', g.id!) ? 'fill-brand-cyan text-brand-cyan' : ''}
+                        />
+                        {isPinned('brand', g.id!) ? t('nav.unpin') : t('nav.pin')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={(e) => handleSetFolder(g.id!, g.folder, e as any)}
                         className="text-xs gap-2"
                       >
@@ -271,6 +287,32 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                         <Copy size={12} />
                         Duplicate
                       </DropdownMenuItem>
+                      {FEATURE_BRAND_BILLING &&
+                        (isArchived(g) ? (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              archiveActions.unarchive(g.id!);
+                            }}
+                            className="text-xs gap-2"
+                            disabled={archiveActions.isUnarchiving}
+                          >
+                            <ArchiveRestore size={12} />
+                            {t('brandQuota.unarchive')}
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              archiveActions.requestArchive(g.id!);
+                            }}
+                            className="text-xs gap-2"
+                            disabled={archiveActions.isArchiving}
+                          >
+                            <Archive size={12} />
+                            {t('brandQuota.archive')}
+                          </DropdownMenuItem>
+                        ))}
                       <DropdownMenuItem
                         onClick={(e) => handleDelete(g.id!, e as any)}
                         className="text-xs gap-2 text-destructive focus:text-destructive"
@@ -360,6 +402,8 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      {FEATURE_BRAND_BILLING && <ConfirmationModal {...archiveActions.confirmModalProps} />}
     </div>
   );
 };

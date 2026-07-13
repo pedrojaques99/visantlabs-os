@@ -22,16 +22,24 @@ export default defineConfig(({ mode }) => {
         ignored: ['**/.data/**'],
       },
       proxy: {
-        '/api': {
-          target: `http://localhost:${process.env.SERVER_PORT || 3001}`,
-          changeOrigin: true,
-          secure: false,
-          timeout: 600000,
-          proxyTimeout: 600000,
-          configure: (proxy) => {
-            proxy.on('error', () => {}); // suppress ECONNREFUSED flood while server boots
-          },
-        },
+        // Em prod o vercel.json reescreve /api E /oauth → api.visantlabs.com;
+        // o dev precisa espelhar os dois, senão /oauth/* bate no próprio Vite e
+        // volta index.html (o "<!DOCTYPE ... is not valid JSON" em Connected Apps).
+        ...Object.fromEntries(
+          ['/api', '/oauth'].map((prefix) => [
+            prefix,
+            {
+              target: `http://localhost:${process.env.SERVER_PORT || 3001}`,
+              changeOrigin: true,
+              secure: false,
+              timeout: 600000,
+              proxyTimeout: 600000,
+              configure: (proxy: any) => {
+                proxy.on('error', () => {}); // suppress ECONNREFUSED flood while server boots
+              },
+            },
+          ])
+        ),
       },
     },
     plugins: [react(), tailwindcss()],

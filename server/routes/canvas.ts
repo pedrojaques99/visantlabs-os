@@ -21,6 +21,7 @@ import { Liveblocks } from '@liveblocks/node';
 import { rateLimit } from 'express-rate-limit';
 import { redisClient } from '../lib/redis.js';
 import { CACHE_TTL, CacheKey } from '../lib/cache-utils.js';
+import { ensureEventIndexes } from '../lib/funnelEvents.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -57,36 +58,34 @@ async function convertEmailsToUserIds(identifiers: string[]): Promise<string[]> 
     return [];
   }
 
+  // Partition into already-resolved ObjectIds and emails to look up.
   const userIds: string[] = [];
-  const invalidEmails: string[] = [];
-
+  const emails: string[] = [];
   for (const identifier of identifiers) {
-    // Check if it's already a valid MongoDB ObjectId format (24 hex characters)
-    if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
-      userIds.push(identifier);
-      continue;
-    }
-
-    // Try to find user by email
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: identifier },
-        select: { id: true },
-      });
-
-      if (user) {
-        userIds.push(user.id);
-      } else {
-        invalidEmails.push(identifier);
-      }
-    } catch (error) {
-      console.error(`Error finding user by email ${identifier}:`, error);
-      invalidEmails.push(identifier);
-    }
+    if (/^[0-9a-fA-F]{24}$/.test(identifier)) userIds.push(identifier);
+    else emails.push(identifier);
   }
 
-  if (invalidEmails.length > 0) {
-    console.warn(`Could not find users for emails: ${invalidEmails.join(', ')}`);
+  if (emails.length > 0) {
+    // Single batched query instead of one findUnique per email (N+1).
+    try {
+      const users = await prisma.user.findMany({
+        where: { email: { in: emails } },
+        select: { id: true, email: true },
+      });
+      const idByEmail = new Map(users.map((u) => [u.email, u.id]));
+      const invalidEmails: string[] = [];
+      for (const email of emails) {
+        const id = idByEmail.get(email);
+        if (id) userIds.push(id);
+        else invalidEmails.push(email);
+      }
+      if (invalidEmails.length > 0) {
+        console.warn(`Could not find users for emails: ${invalidEmails.join(', ')}`);
+      }
+    } catch (error) {
+      console.error('Error resolving users by email:', error);
+    }
   }
 
   return userIds;
@@ -941,18 +940,8 @@ router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
 });
 
 // ── Canvas Analytics Events ─────────────────────────────────────────────────
-let eventsIndexed = false;
-async function ensureEventIndexes(db: any) {
-  if (eventsIndexed) return;
-  eventsIndexed = true;
-  const col = db.collection('canvas_events');
-  await Promise.all([
-    col.createIndex({ serverTs: 1 }, { expireAfterSeconds: 90 * 86400 }),
-    col.createIndex({ event: 1, serverTs: 1 }),
-    col.createIndex({ nodeType: 1, serverTs: 1 }),
-    col.createIndex({ userId: 1, serverTs: 1 }),
-  ]).catch(() => {});
-}
+// ensureEventIndexes lives in server/lib/funnelEvents.ts (shared across the
+// canvas_events writers: this route, analytics.ts, trackFunnelEvent).
 
 router.post('/events', apiRateLimiter, async (req, res) => {
   try {
@@ -967,6 +956,8 @@ router.post('/events', apiRateLimiter, async (req, res) => {
       try {
         const jwt = await import('jsonwebtoken');
         const token = authHeader.slice(7);
+        // TODO: pre-existing — migrate to server/utils/jwtSecret.ts getJwtSecret()
+        // (out of scope for this pass; see server/routes/analytics.ts for the pattern).
         const decoded = jwt.default.verify(token, process.env.JWT_SECRET || 'dev-secret') as any;
         userId = decoded.userId;
       } catch {}
@@ -2143,9 +2134,11 @@ router.post(
         return res.status(404).json({ error: 'Project not found' });
       }
 
-      // Convert emails to user IDs
-      const canEditUserIds = await convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []);
-      const canViewUserIds = await convertEmailsToUserIds(Array.isArray(canView) ? canView : []);
+      // Convert emails to user IDs (both lists in parallel)
+      const [canEditUserIds, canViewUserIds] = await Promise.all([
+        convertEmailsToUserIds(Array.isArray(canEdit) ? canEdit : []),
+        convertEmailsToUserIds(Array.isArray(canView) ? canView : []),
+      ]);
 
       // Generate new shareId if doesn't exist
       let shareId = project.shareId;

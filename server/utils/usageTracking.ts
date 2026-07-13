@@ -25,7 +25,15 @@ export interface UsageRecord {
   requestId?: string; // Optional request ID for tracking
   feature?: FeatureType; // Feature where credits were used (brandingmachine, mockupmachine, canvas)
   apiKeySource?: 'user' | 'system'; // Source of the API key used
+  byok?: boolean; // BYOK v2 analytics: true when the user's own key covered the AI cost (0 credits)
+  // §3.3 generation_created enrichment (Fase 3): was this generation on-brand,
+  // and from which surface? Powers the "% on-brand" activation metric (meta 80%).
+  brandGuidelineId?: string; // Brand used as context, when any
+  onBrand?: boolean; // true when a brandGuidelineId was attached to the generation
+  surface?: GenerationSurface; // 'ui' (default) | 'mcp' | 'copilot'
 }
+
+export type GenerationSurface = 'ui' | 'mcp' | 'copilot';
 
 // Text generation pricing (tokens-based)
 // Prices are per 1 million tokens (USD)
@@ -160,6 +168,15 @@ export function getCreditsRequired(model: GeminiModel | string, resolution?: Res
 /**
  * Get credits required for video generation.
  * Covers Veo, Seedance, and Kling models.
+ *
+ * This is the REAL charging path (server/routes/video.ts calls this — not
+ * lookupCredits/CREDIT_COSTS, which only feeds the public /api/docs/pricing
+ * payload). Veo Fast/Standard were sold below cost (~$0.08/credit vs the
+ * ~$0.072/credit price-per-credit floor from the 500-credit package) — bumped
+ * here to match the corrected CREDIT_COSTS entries in pricing-data.ts:
+ * Fast 15→20, Standard 40→50. Seedance and Kling are priced even further
+ * below cost (see pricing-data.ts CREDIT_COSTS for the per-model math) but are
+ * intentionally left untouched pending explicit confirmation.
  */
 export function getVideoCreditsRequired(model?: string): number {
   if (model?.startsWith('seedance-')) {
@@ -171,7 +188,7 @@ export function getVideoCreditsRequired(model?: string): number {
     return isPro ? 30 : 20;
   }
   const isFast = model?.includes('fast') ?? false;
-  return isFast ? 15 : 40;
+  return isFast ? 20 : 50;
 }
 
 /**
@@ -226,7 +243,10 @@ export function createUsageRecord(
   feature?: FeatureType,
   apiKeySource: 'user' | 'system' = 'system',
   inputTokens?: number,
-  outputTokens?: number
+  outputTokens?: number,
+  // New optional params at the END of the signature (repo rule).
+  brandGuidelineId?: string | null,
+  surface?: GenerationSurface
 ): UsageRecord {
   // Determine if this is an image/video generation or text/analysis task
   let cost = 0;
@@ -251,5 +271,12 @@ export function createUsageRecord(
     cost,
     feature,
     apiKeySource,
+    // BYOK v2: usage is still recorded (analytics) even though AI cost = 0 credits.
+    // Monetization of BYOK comes from maxBrands, not from a platform fee here.
+    byok: apiKeySource === 'user',
+    // §3.3: on-brand generation tracking (aha-moment metric).
+    ...(brandGuidelineId ? { brandGuidelineId } : {}),
+    onBrand: !!brandGuidelineId,
+    surface: surface || 'ui',
   };
 }

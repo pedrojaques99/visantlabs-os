@@ -29,6 +29,8 @@ import {
   Smartphone,
 } from 'lucide-react';
 import type { BrandViewSection } from './BrandReadOnlyView';
+import type { BrandGuideline } from '@/lib/figma-types';
+import { getBrandLogoUrl, getBrandInitial } from '@/utils/brandLogo';
 
 // ── Icon Map ────────────────────────────────────────────────────────────────
 
@@ -234,4 +236,44 @@ export function safeFileName(label?: string, fallback = 'asset'): string {
 export function extFromUrl(url?: string): string {
   if (!url) return 'png';
   return url.split('.').pop()?.split('?')[0] || 'png';
+}
+
+// ── Brand avatar / default ────────────────────────────────────────────────────
+// A brand's canonical "mark" for large display (hero lockup): the logo when
+// present, otherwise a themed initial chip over the brand's primary color.
+// Delegates logo/initial resolution to the shared `brandLogo` SSoT and only
+// adds the AA-contrast color pair the initial chip needs.
+
+export interface BrandAvatar {
+  /** Logo image URL when the brand has one (primary > icon > first). */
+  logoUrl?: string;
+  /** Uppercase first letter fallback when there's no logo. */
+  initial: string;
+  /** Background for the initial chip — the brand's primary color. */
+  bg: string;
+  /** Foreground picked for AA contrast against `bg`. */
+  fg: string;
+}
+
+/** Relative luminance (WCAG) → readable ink for a solid background. */
+function readableInk(hex: string): string {
+  const h = (hex || '').replace('#', '').padEnd(6, '0').slice(0, 6);
+  const chan = (i: number) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  const L = 0.2126 * chan(0) + 0.7152 * chan(2) + 0.0722 * chan(4);
+  return L > 0.5 ? '#111111' : '#ffffff';
+}
+
+export function getBrandAvatar(g?: BrandGuideline | null): BrandAvatar {
+  const colors = g?.colors || [];
+  const primary = colors.find((c) => c.role?.toUpperCase() === 'PRIMARY') || colors[0];
+  const bg = primary?.hex || '#888888';
+  return {
+    logoUrl: getBrandLogoUrl(g, 'primary'),
+    initial: getBrandInitial(g),
+    bg,
+    fg: readableInk(bg),
+  };
 }

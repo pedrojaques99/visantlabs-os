@@ -8,6 +8,7 @@ import { fileToBase64 } from '@/utils/fileUtils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { authService } from '../services/authService';
 import { AuthModal } from '../components/AuthModal';
 import { Tutorial } from '../components/Tutorial';
@@ -32,6 +33,7 @@ interface WelcomeScreenProps {
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) => {
+  const inShell = useInAppShell(); // dentro do editor logado: sem Header → sem offset
   const { t } = useTranslation();
   const { theme } = useTheme();
   const location = useLocation();
@@ -408,7 +410,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
   return (
     <div
-      className={`welcome-screen relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-all duration-300 ${
+      className={`welcome-screen relative ${inShell ? 'min-h-full' : 'min-h-screen pt-16 md:pt-20'} flex items-center justify-center p-6 overflow-hidden transition-all duration-300 ${
         theme === 'dark'
           ? `bg-background ${isDragOver ? 'bg-background/90 ring-4 ring-brand-cyan/50' : ''}`
           : `bg-neutral-100 ${isDragOver ? 'bg-neutral-100/90 ring-4 ring-brand-cyan/50' : ''}`
@@ -435,8 +437,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           >
             {t('welcome.title') || 'MOCKUP MACHINE®'}
           </h1>
-          <MicroTitle className="text-brand-cyan uppercase">
-            {t('welcome.magicHappens') || 'e veja a mágica acontecer'}
+          <MicroTitle className="text-brand-cyan">
+            {t('welcome.magicHappens') || 'Seu logo em mockups fotorrealistas, em segundos'}
           </MicroTitle>
         </div>
         <div className="flex flex-col gap-6 justify-center items-center">

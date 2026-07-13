@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Gem,
   Copy,
   Trash2,
   Zap,
@@ -194,15 +193,21 @@ function ShortlistRow({
   return (
     <div
       className={cn(
-        'rounded-lg border bg-white/[0.02] transition-colors',
-        highlighted ? 'border-brand-cyan/40' : 'border-neutral-800/70'
+        'rounded-lg border bg-white/[0.03] transition-colors hover:bg-white/[0.035]',
+        highlighted ? 'border-brand-cyan/40' : 'border-neutral-800'
       )}
     >
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left"
+        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left"
       >
-        {isSuper && <Gem size={12} className="shrink-0 text-brand-cyan" />}
+        {/* Dot de status — acende no superlike (item forte) */}
+        <span
+          className={cn(
+            'h-1.5 w-1.5 shrink-0 rounded-full',
+            isSuper ? 'bg-brand-cyan' : 'bg-neutral-700'
+          )}
+        />
         <span className="flex-1 truncate text-sm font-medium text-neutral-200">{card.name}</span>
         <ChevronDown
           size={13}
@@ -315,7 +320,7 @@ function ActionChip({
         'inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 transition-colors',
         destructive
           ? 'hover:border-destructive/40 hover:text-destructive'
-          : 'hover:border-brand-cyan/40 hover:text-brand-cyan'
+          : 'hover:border-neutral-700 hover:text-brand-cyan'
       )}
     >
       {icon}

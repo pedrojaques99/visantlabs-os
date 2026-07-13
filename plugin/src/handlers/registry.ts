@@ -36,6 +36,7 @@ export const registry: Registry = {
   'components.getInFile': async () => H.getComponentsInCurrentFile() as any,
   'components.getAgent': async () => H.getAgentComponents() as any,
   'templates.get': async () => H.getTemplates() as any,
+  'templates.extractSchema': async () => H.extractTemplateSchemas() as any,
   'templates.scaffold': async ({ libraryName }) => {
     await H.scaffoldAgentLibrary({ name: libraryName ?? 'Agent' } as any);
     return { ok: true } as any;

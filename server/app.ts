@@ -32,6 +32,7 @@ import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
 import expertRoutes from './routes/expert.js';
 import telemetryRoutes from './routes/telemetry.js';
+import analyticsRoutes from './routes/analytics.js';
 import llmsRoutes from './routes/llms.js';
 import appRoutes from './routes/apps.js';
 import referralRoutes from './routes/referral.js';
@@ -54,11 +55,13 @@ import surpriseMeRoutes from './routes/surprise-me.js';
 import brandIntelligenceRoutes from './routes/brandIntelligence.js';
 import rpcRoutes from './routes/rpc.js';
 import adminChatRoutes from './routes/adminChat.js';
+import copilotRoutes from './routes/copilot.js';
 import chatRoutes from './routes/chat.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import pipelineRoutes from './routes/pipeline.js';
 import campaignRoutes from './routes/campaign.js';
 import campaignsCrudRoutes from './routes/campaigns-crud.js';
+import namingSessionsRoutes from './routes/naming-sessions.js';
 import contentStudioRoutes from './routes/contentStudio.js';
 import oauthRoutes from './routes/oauth.js';
 import liveblocksRoutes from './routes/liveblocks.js';
@@ -92,6 +95,7 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from './utils/jwtSecret.js';
+import { flagEnabled } from './lib/featureFlags.js';
 import {
   API_BASE_URL,
   FRONTEND_BASE_URL,
@@ -352,6 +356,7 @@ export function createApp() {
     ['/creative', creativeRoutes],
     ['/creative-projects', creativeProjectsRoutes],
     ['/campaigns', campaignsCrudRoutes],
+    ['/naming-sessions', namingSessionsRoutes],
     ['/docs', docsRoutes],
     ['/surprise-me', surpriseMeRoutes],
     ['/brand-intelligence', brandIntelligenceRoutes],
@@ -359,6 +364,7 @@ export function createApp() {
     ['/admin-chat', adminChatRoutes],
     ['/chat', chatRoutes],
     ['/telemetry', telemetryRoutes],
+    ['/analytics', analyticsRoutes],
     ['/rpc', rpcRoutes],
     ['/api-keys', apiKeysRoutes],
     ['/pipeline', pipelineRoutes],
@@ -385,6 +391,13 @@ export function createApp() {
 
   for (const [path, router] of mounts) {
     app.use(`${routePrefix}${path}`, router);
+  }
+
+  // Brand Copilot — Fase 1 do revenue realignment, atrás de flag (default OFF).
+  // Kill-switch: desligar FEATURE_COPILOT e o comportamento antigo volta.
+  if (flagEnabled('FEATURE_COPILOT')) {
+    app.use(`${routePrefix}/copilot`, copilotRoutes);
+    app.use(`${routePrefix}/v1/copilot`, copilotRoutes);
   }
 
   // ── API v1 alias — /api/v1/* mirrors /api/* for versioned access ────────

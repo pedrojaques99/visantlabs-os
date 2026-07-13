@@ -819,6 +819,25 @@ export interface BrandAssetAnalysis {
     mood?: string[];
     medium?: string[];
   };
+  /** Placement metadata — how the asset composites onto a mockup surface. */
+  placement?: {
+    kind?:
+      | 'logo'
+      | 'wordmark'
+      | 'symbol'
+      | 'photo'
+      | 'pattern'
+      | 'texture'
+      | 'graphic'
+      | 'illustration';
+    luminance?: 'light' | 'dark' | 'mixed';
+    hasText?: boolean;
+    text?: string;
+    contrastSafeOn?: ('light' | 'dark')[];
+    aspectRatio?: number;
+    hasTransparency?: boolean;
+    dominantColor?: string;
+  };
   analyzedAt?: string;
   model?: string;
 }
@@ -1042,6 +1061,17 @@ export interface BrandGuideline {
   }>;
   // Organization
   folder?: string;
+  // Billing por marca ativa — archived = read-only, fora da quota, não gera.
+  status?: 'active' | 'archived';
+  archivedAt?: string;
+  // Onboarding brand-first (Fase 3) — marca-exemplo clonada no skip; não conta na quota.
+  isDemo?: boolean;
+  /**
+   * Seats por marca (Fase 4 §4.5) — vem no detalhe da marca quando o backend
+   * de billing por seat está no ar. Conta apenas EDITORES (viewer é sempre
+   * grátis); `max: null` = ilimitado.
+   */
+  seatQuota?: { used: number; max: number | null };
   // Public sharing
   publicSlug?: string;
   isPublic?: boolean;

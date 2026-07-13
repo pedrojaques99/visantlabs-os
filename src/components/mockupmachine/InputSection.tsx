@@ -281,7 +281,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.03] pb-6">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <MicroTitle className="text-neutral-600 font-mono text-[10px] tracking-[0.1em] mb-1">
+            <MicroTitle className="text-neutral-600 font-mono text-[10px] mb-1">
               WORKSPACE INITIALIZED
             </MicroTitle>
             <p className="text-sm font-bold text-white tracking-tight">

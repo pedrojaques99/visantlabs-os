@@ -3,6 +3,7 @@ import { Stage, Layer, Rect, Image as KonvaImage, Transformer, Line } from 'reac
 import { KonvaTextLayer } from './layers/KonvaTextLayer';
 import { KonvaLogoLayer } from './layers/KonvaLogoLayer';
 import { KonvaShapeLayer } from './layers/KonvaShapeLayer';
+import { KonvaGroupLayer } from './layers/KonvaGroupLayer';
 import useImage from 'use-image';
 import type Konva from 'konva';
 import { useCreativeStore } from './store/creativeStore';
@@ -102,6 +103,26 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
       [backgroundUrl]
     );
     const [bgImage] = useImage(proxiedBgUrl, 'anonymous');
+
+    // "Cover" crop (Figma "Fill"): preserva o aspect natural da foto e recorta
+    // centralizado pro frame — trocar o aspect ratio do frame CROPA a foto em
+    // vez de esticá-la. Sem crop, mudar 1:1→9:16 distorcia a imagem.
+    const bgCrop = useMemo(() => {
+      if (!bgImage) return undefined;
+      const iw = bgImage.width;
+      const ih = bgImage.height;
+      if (!iw || !ih || !width || !height) return undefined;
+      const frameAspect = width / height;
+      const imgAspect = iw / ih;
+      if (imgAspect > frameAspect) {
+        // imagem mais larga que o frame → recorta as laterais
+        const cropW = ih * frameAspect;
+        return { x: (iw - cropW) / 2, y: 0, width: cropW, height: ih };
+      }
+      // imagem mais alta que o frame → recorta topo/base
+      const cropH = iw / frameAspect;
+      return { x: 0, y: (ih - cropH) / 2, width: iw, height: cropH };
+    }, [bgImage, width, height]);
 
     // Sync selection -> Transformer (RESEARCH Pattern 2)
     useEffect(() => {
@@ -419,6 +440,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
                 y={0}
                 width={width}
                 height={height}
+                crop={bgCrop}
                 listening={false}
               />
             )}
@@ -426,16 +448,22 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
             {/* Overlay rect — above background, below layers */}
             {renderOverlay()}
 
-            {/* Layer dispatch — type-routed to Konva*Layer components */}
-            {layers
-              .filter((l) => l.visible)
-              .map((layer) => {
+            {/* Layer dispatch — grupos renderizam os filhos DENTRO de um <Group>. */}
+            {(() => {
+              const groupedChildIds = new Set(
+                layers.flatMap((l) => (l.data.type === 'group' ? l.data.children : []))
+              );
+              const renderNode = (
+                layer: (typeof layers)[number],
+                opts?: { inGroup?: boolean; onSelect?: (id: string, extend: boolean) => void }
+              ) => {
                 const common = {
                   canvasWidth: width,
                   canvasHeight: height,
                   isSelected: selectedLayerIds.includes(layer.id),
+                  inGroup: opts?.inGroup ?? false,
                   registerNode,
-                  onSelect: handleSelect,
+                  onSelect: opts?.onSelect ?? handleSelect,
                   onDragStart: handleDragStart,
                   onSmartDragMove: onDragMove,
                   onSmartTransform: onTransform,
@@ -457,9 +485,41 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
                 if (layer.data.type === 'shape') {
                   return <KonvaShapeLayer key={layer.id} layer={layer as any} {...common} />;
                 }
-                // 'group' — out of scope for this phase; skip render
                 return null;
-              })}
+              };
+
+              return layers
+                .filter((l) => l.visible)
+                .map((layer) => {
+                  // Filho de grupo: renderizado dentro do próprio grupo, não aqui.
+                  if (groupedChildIds.has(layer.id)) return null;
+                  if (layer.data.type === 'group') {
+                    const kids = layer.data.children
+                      .map((cid) => layers.find((l) => l.id === cid))
+                      .filter((l): l is (typeof layers)[number] => !!l && l.visible);
+                    return (
+                      <KonvaGroupLayer
+                        key={layer.id}
+                        layer={layer as any}
+                        canvasWidth={width}
+                        canvasHeight={height}
+                        registerNode={registerNode}
+                        onSelect={handleSelect}
+                        onDragStart={handleDragStart}
+                        onSmartClear={clearGuides}
+                      >
+                        {kids.map((k) =>
+                          renderNode(k, {
+                            inGroup: true,
+                            onSelect: () => handleSelect(layer.id, false),
+                          })
+                        )}
+                      </KonvaGroupLayer>
+                    );
+                  }
+                  return renderNode(layer);
+                });
+            })()}
 
             {/* Transformer — LAST child of Layer (RESEARCH Pitfall 3) */}
             <Transformer

@@ -188,6 +188,7 @@ interface MockupData {
   designType: string;
   tags: string[];
   brandingTags: string[];
+  brandGuidelineId?: string; // FK to the brand guideline — enables per-brand output gallery
   aspectRatio: string;
   isLiked?: boolean; // User's like status for this mockup
   createdAt: Date;
@@ -286,14 +287,24 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next
         .collection('mockups')
         .createIndex({ userId: 1, createdAt: -1 }, { background: true });
       await db.collection('mockups').createIndex({ createdAt: -1 }, { background: true });
+      await db
+        .collection('mockups')
+        .createIndex({ brandGuidelineId: 1, createdAt: -1 }, { background: true });
     } catch (indexError) {
       // Indexes may already exist, ignore error
     }
 
+    // Optional per-brand filter → powers the brand output gallery in the cockpit.
+    const brandId =
+      typeof req.query.brandId === 'string' && req.query.brandId ? req.query.brandId : undefined;
+
     // Use find() with sort instead of aggregation for better performance with indexes
     const mockups = await db
       .collection('mockups')
-      .find({ userId: { $in: [req.userId, new ObjectId(req.userId)] } })
+      .find({
+        userId: { $in: [req.userId, new ObjectId(req.userId)] },
+        ...(brandId ? { brandGuidelineId: brandId } : {}),
+      })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -558,8 +569,12 @@ router.post(
             finalPromptText = `${brandContext}\n\n--- USER PROMPT ---\n${promptText}`;
 
             // Inject brand logos as reference images (prepended, so logo comes first)
-            const logos: Array<{ url: string; variant: string; label?: string }> =
-              guidelineData.logos || [];
+            const logos: Array<{
+              url: string;
+              variant: string;
+              label?: string;
+              thumbnailUrl?: string;
+            }> = guidelineData.logos || [];
             if (logos.length > 0) {
               // Priority: primary > icon > light > dark > first available
               const priority = ['primary', 'icon', 'light', 'dark'];
@@ -569,11 +584,17 @@ router.post(
                 return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
               });
               const logoReferenceImages: Array<{ base64: string; mimeType: string }> = [];
+              const isSvgUrl = (u?: string) => !!u && (/\.svg(\?|$)/i.test(u) || /svg/i.test(u));
               for (const logo of sorted.slice(0, 2)) {
-                if (!logo.url) continue;
-                if (logo.url.toLowerCase().endsWith('.svg') || logo.url.includes('svg')) continue;
+                // Brand logos are very commonly SVG, which image models can't ingest
+                // as a reference — so the model hallucinates the wordmark instead of
+                // using the real mark. Uploaded logos persist a rasterized PNG
+                // `thumbnailUrl`; prefer a raster source (the url when it's not SVG,
+                // else the PNG thumbnail) so the REAL logo reaches the model.
+                const src = !isSvgUrl(logo.url) ? logo.url : logo.thumbnailUrl;
+                if (!src) continue;
                 try {
-                  const processed = (await processImageInput({ url: logo.url })) as any;
+                  const processed = (await processImageInput({ url: src })) as any;
                   if (processed && processed.mimeType !== 'image/svg+xml') {
                     logoReferenceImages.push(processed);
                   }
@@ -1340,7 +1361,15 @@ router.post(
           promptText.length,
           resolution as Resolution | undefined,
           (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
-          apiKeySource
+          apiKeySource,
+          undefined,
+          undefined,
+          // §3.3: onBrand/surface enrichment — MCP reuses this route internally,
+          // so a caller-provided surface marker is honored (defaults to 'ui').
+          brandGuidelineId,
+          req.body?.surface === 'mcp' || req.body?.surface === 'copilot'
+            ? req.body.surface
+            : undefined
         );
 
         const recordToInsert = {
@@ -1902,7 +1931,13 @@ router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthReques
         hasInputImage,
         promptLength,
         resolution,
-        (feature || 'mockupmachine') as 'mockupmachine' | 'canvas'
+        (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
+        undefined,
+        undefined,
+        undefined,
+        // §3.3: client-side recording path also carries onBrand when the
+        // generation used a brand context.
+        typeof req.body?.brandGuidelineId === 'string' ? req.body.brandGuidelineId : undefined
       );
 
       // Store usage record in database
@@ -2044,6 +2079,9 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
       designType: req.body.designType || 'blank',
       tags: req.body.tags || [],
       brandingTags: req.body.brandingTags || [],
+      ...(req.body.brandGuidelineId
+        ? { brandGuidelineId: String(req.body.brandGuidelineId) }
+        : {}),
       aspectRatio: req.body.aspectRatio || '16:9',
       isLiked: isLiked, // Always boolean
       createdAt: new Date(),

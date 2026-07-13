@@ -935,9 +935,9 @@ export const ImageLabPage: React.FC = () => {
       >
         {/* Proximity sensor for FX bar auto-hide (z-0: works when magic hand inactive) */}
         <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
-        {/* Top-strip proximity trigger — z-[25] above magic hand overlay (z-10) */}
+        {/* Top-strip proximity trigger — z-20 above magic hand overlay (z-10) */}
         <div
-          className="absolute top-0 left-0 right-0 h-20 z-[25]"
+          className="absolute top-0 left-0 right-0 h-20 z-20"
           onPointerMove={handleCanvasPointerMove}
         />
 

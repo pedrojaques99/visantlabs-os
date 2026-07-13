@@ -9,6 +9,8 @@ export interface AppConfig {
   thumbnail?: string;
   badge?: string;
   badgeVariant: 'featured' | 'premium' | 'free' | 'comingSoon' | 'admin';
+  /** Nome do ícone lucide (ex.: "LayoutGrid") — usado no rail/nav (plano APP-SHELL F4). */
+  icon?: string;
   category: string;
   isExternal: boolean;
   free: boolean;

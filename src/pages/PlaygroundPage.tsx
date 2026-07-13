@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import {
   generateMiniApp,
   iterateMiniApp,
@@ -63,6 +64,7 @@ import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { ChatInput } from '@/components/shared/chat/ChatInput';
 import { CHAT_MODELS } from '@/constants/geminiModels';
 import { usePasteImage } from '@/hooks/usePasteImage';
+import { useResizable } from '@/hooks/useResizable';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check, ChevronDown } from 'lucide-react';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
@@ -418,6 +420,7 @@ export const PlaygroundPage: React.FC = () => {
   const { slug } = useParams();
   const isMobile = useIsMobile();
   const { user } = useLayout();
+  const inShell = useInAppShell(); // sem Header de marketing acima → dropa o offset
 
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -438,7 +441,6 @@ export const PlaygroundPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ViewTab>('preview');
   const [sidebarOpen, setSidebarOpen] = useState(() => !isMobile);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [sidebarWidth, setSidebarWidth] = useState(288);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [genStartTime, setGenStartTime] = useState<number | null>(null);
   const [genElapsed, setGenElapsed] = useState(0);
@@ -447,7 +449,14 @@ export const PlaygroundPage: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isDraggingRef = useRef(false);
+
+  // Sidebar drag-to-resize via the shared SSoT hook (mouse + touch).
+  const { width: sidebarWidth, handleProps: resizeHandleProps } = useResizable({
+    min: 220,
+    max: 480,
+    initial: 288,
+    edge: 'right',
+  });
 
   const {
     data: myMiniApps = [],
@@ -484,60 +493,6 @@ export const PlaygroundPage: React.FC = () => {
   const removeAttachedFile = useCallback((index: number) => {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
-
-  // Sidebar resize drag handler
-  const handleResizeStart = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      isDraggingRef.current = true;
-      const startX = e.clientX;
-      const startWidth = sidebarWidth;
-
-      const onMove = (ev: MouseEvent) => {
-        if (!isDraggingRef.current) return;
-        const newWidth = Math.min(480, Math.max(220, startWidth + (ev.clientX - startX)));
-        setSidebarWidth(newWidth);
-      };
-      const onUp = () => {
-        isDraggingRef.current = false;
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-      };
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    },
-    [sidebarWidth]
-  );
-
-  const handleTouchResizeStart = useCallback(
-    (e: React.TouchEvent) => {
-      const touch = e.touches[0];
-      if (!touch) return;
-      isDraggingRef.current = true;
-      const startX = touch.clientX;
-      const startWidth = sidebarWidth;
-
-      const onMove = (ev: TouchEvent) => {
-        if (!isDraggingRef.current) return;
-        const t = ev.touches[0];
-        if (!t) return;
-        const newWidth = Math.min(480, Math.max(220, startWidth + (t.clientX - startX)));
-        setSidebarWidth(newWidth);
-      };
-      const onEnd = () => {
-        isDraggingRef.current = false;
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', onEnd);
-      };
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', onEnd);
-    },
-    [sidebarWidth]
-  );
 
   // Persist model choice
   useEffect(() => {
@@ -1105,8 +1060,11 @@ export const PlaygroundPage: React.FC = () => {
         {sidebarContent}
       </aside>
       <div
-        onMouseDown={handleResizeStart}
-        onTouchStart={handleTouchResizeStart}
+        {...resizeHandleProps}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+        style={{ touchAction: 'none' }}
         className="group shrink-0 w-1.5 cursor-col-resize flex items-center justify-center hover:bg-neutral-800/30 transition-colors"
       >
         <GripVertical className="w-3 h-3 text-neutral-800 group-hover:text-neutral-600 transition-colors" />
@@ -1347,7 +1305,10 @@ export const PlaygroundPage: React.FC = () => {
 
     return (
       <div
-        className="h-[100dvh] w-full flex overflow-hidden bg-neutral-950 pt-10 md:pt-14 relative"
+        className={cn(
+          'w-full flex overflow-hidden bg-neutral-950 relative',
+          inShell ? 'h-full' : 'h-[100dvh] pt-10 md:pt-14'
+        )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

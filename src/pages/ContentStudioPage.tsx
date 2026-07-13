@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
 import {
   Sparkles,
   Download,
@@ -45,7 +46,11 @@ export const ContentStudioPage: React.FC = () => {
 
   const [brief, setBrief] = useState('');
   const [selectedFormats, setSelectedFormats] = useState<string[]>(DEFAULT_CONTENT_FORMATS);
-  const [brandGuidelineId, setBrandGuidelineId] = useState<string | null>(null);
+  // Onboarding brand-first (Fase 3): ?brand={id} pré-seleciona a marca no selector.
+  const [searchParams] = useSearchParams();
+  const [brandGuidelineId, setBrandGuidelineId] = useState<string | null>(
+    () => searchParams.get('brand') || null
+  );
   const [model, setModel] = useState<string>(GEMINI_MODELS.IMAGE_NB2);
   const [imageProvider, setImageProvider] = useState<ImageProvider>('gemini');
   const [tone, setTone] = useState<string>('');
@@ -195,6 +200,8 @@ export const ContentStudioPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-neutral-950 text-white">
+      {/* Marca demo ativa → lembrete persistente de trazer a marca real */}
+      <DemoBrandBanner brandId={brandGuidelineId} />
       {/* Header */}
       <header className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
         <button

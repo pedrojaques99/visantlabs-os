@@ -4,15 +4,18 @@ import { SEO } from '@/components/SEO';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 
 export const AdminChatPage: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const inShell = useInAppShell();
 
   return (
     <div
       className={cn(
-        'h-[100dvh] w-full flex flex-col overflow-hidden',
+        'w-full flex flex-col overflow-hidden',
+        inShell ? 'h-full' : 'h-[100dvh]',
         theme === 'dark' ? 'bg-neutral-950' : 'bg-neutral-50'
       )}
     >
@@ -22,7 +25,12 @@ export const AdminChatPage: React.FC = () => {
         noindex={true}
       />
 
-      <div className="flex-1 w-full h-full flex flex-col pt-16 md:pt-20 lg:pt-24 overflow-hidden">
+      <div
+        className={cn(
+          'flex-1 w-full h-full flex flex-col overflow-hidden',
+          !inShell && 'pt-16 md:pt-20 lg:pt-24'
+        )}
+      >
         <AdminChat mode="inline" />
       </div>
     </div>

@@ -21,6 +21,8 @@ import {
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
+import { glassSurface } from '@/lib/ui/glass';
 
 export interface MiniAppShellDragDrop {
   onDrop: (e: React.DragEvent) => void;
@@ -48,6 +50,9 @@ export interface MiniAppShellProps {
   dragDrop?: MiniAppShellDragDrop;
   dropMessage?: string;
 
+  /** Opt-out do banner de funil "conecte sua marca" (Fase 5). Default: mostra. */
+  hideFunnelBanner?: boolean;
+
   /** Center the canvas children vertically + horizontally. Default true. */
   centerContent?: boolean;
   className?: string;
@@ -74,6 +79,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   onReset,
   dragDrop,
   dropMessage,
+  hideFunnelBanner = false,
   centerContent = true,
   className,
   canvasClassName,
@@ -121,9 +127,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
               </Button>
             </Tooltip>
             {Icon && <Icon size={14} className="text-brand-cyan ml-0.5" />}
-            <MicroTitle className="text-[10px] text-neutral-500 uppercase tracking-widest ml-1.5">
-              {title}
-            </MicroTitle>
+            <MicroTitle className="text-[10px] text-neutral-500 ml-1.5">{title}</MicroTitle>
           </>
         }
         right={
@@ -158,6 +162,10 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
         }
       />
 
+      {!hideFunnelBanner && (
+        <BrandFunnelBanner toolId={title.toLowerCase().replace(/[^a-z0-9]+/g, '-')} />
+      )}
+
       <div
         className={cn(
           'absolute inset-0 pt-10 overflow-auto transition-all duration-300',
@@ -177,7 +185,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
 
       {hasPanel && !isMobile && (
         <AppShellPanel side="right" visible={panelVisible} width={panelWidth}>
-          <div className="h-full overflow-y-auto scrollbar-none rounded-2xl border border-neutral-800 bg-neutral-900/70 backdrop-blur-xl p-5">
+          <div className={cn('h-full overflow-y-auto scrollbar-none rounded-2xl p-5', glassSurface.panel)}>
             {panel}
           </div>
         </AppShellPanel>

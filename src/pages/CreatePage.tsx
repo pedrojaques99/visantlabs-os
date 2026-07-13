@@ -7,21 +7,26 @@ import { loadCreativeIntoStore } from '@/components/creative/lib/persistCreative
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
 import { PageShell } from '@/components/ui/PageShell';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 
 export const CreatePage: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const { t } = useTranslation();
   const projectId = params.get('project');
   const brandIdParam = params.get('brandId');
+  const { activeBrand } = useActiveBrand();
   const loadedRef = useRef<string | null>(null);
   const currentCreativeId = useCreativeStore((s) => s.creativeId);
   const projectName = useCreativeStore((s) => s.projectName);
   const setBrandId = useCreativeStore((s) => s.setBrandId);
 
-  // Pre-select brand when navigating from BrandGuidelinesPage
+  // Pre-select brand: explicit ?brandId= wins; otherwise, when opening a fresh
+  // studio (no project), fall back to the globally active brand so arriving from
+  // the cockpit still carries the brand's tokens instead of a blank canvas.
   useEffect(() => {
     if (brandIdParam) setBrandId(brandIdParam);
-  }, [brandIdParam, setBrandId]);
+    else if (!projectId && activeBrand?.id) setBrandId(activeBrand.id);
+  }, [brandIdParam, projectId, activeBrand?.id, setBrandId]);
 
   useEffect(() => {
     // 1. Sync Store -> URL: Only when no projectId in URL (don't override intentional navigation)
@@ -49,6 +54,8 @@ export const CreatePage: React.FC = () => {
       .get(projectId)
       .then((project) => {
         loadCreativeIntoStore(project);
+        // Projeto carregado = baseline do undo; não deixar desfazer pro vazio.
+        useCreativeStore.temporal.getState().clear();
       })
       .catch((err: Error) => {
         toast.error(err.message || 'Failed to load creative');

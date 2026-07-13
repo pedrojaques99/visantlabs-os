@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { colord } from 'colord';
 import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -56,7 +57,10 @@ export interface BrandReadOnlyViewProps {
 // ──────────────────────────────────────────────────────────────────────────────
 
 export function getRelativeLuminance(hex: string): number {
-  const h = hex.replace('#', '').padEnd(6, '0');
+  // Normalize any CSS color (3-digit hex, rgb(), named) to 6-digit hex first —
+  // the raw `.replace/.padEnd` below mis-parses '#fff' as '#fff000'.
+  const c = colord(hex);
+  const h = (c.isValid() ? c.toHex() : '#000000').replace('#', '').padEnd(6, '0');
   const rgb = [
     parseInt(h.substring(0, 2), 16) / 255,
     parseInt(h.substring(2, 4), 16) / 255,
@@ -69,6 +73,51 @@ export function getContrastRatio(l1: number, l2: number): number {
   const brightest = Math.max(l1, l2);
   const darkest = Math.min(l1, l2);
   return (brightest + 0.05) / (darkest + 0.05);
+}
+
+// WCAG AA contrast threshold for normal-size text.
+const AA_TEXT = 4.5;
+
+/** WCAG contrast ratio between two hex colors. */
+function contrastHex(a: string, b: string): number {
+  return getContrastRatio(getRelativeLuminance(a), getRelativeLuminance(b));
+}
+
+/**
+ * Nudge `fg` (hue preserved) toward the bg's opposite luminance pole until it
+ * clears `target` WCAG contrast on `bg`, re-saturating lightly so the brand hue
+ * stays vivid instead of washing out. Snaps to pure ink only if unreachable.
+ * This is what keeps brand accents/links readable instead of hard black/white.
+ */
+function ensureReadable(fg: string, bg: string, target = AA_TEXT): string {
+  let c = colord(fg);
+  if (!c.isValid()) c = colord('#888888');
+  if (contrastHex(c.toHex(), bg) >= target) return c.toHex();
+  const towardLight = colord(bg).isDark();
+  for (let i = 0; i < 50; i++) {
+    // Lighten/darken only — never saturate: re-saturating a near-neutral color
+    // amplifies its residual hue into a hallucinated cast (black → rose).
+    c = towardLight ? c.lighten(0.04) : c.darken(0.04);
+    const hex = c.toHex();
+    if (contrastHex(hex, bg) >= target) return hex;
+    const b = c.brightness();
+    if ((towardLight && b >= 0.98) || (!towardLight && b <= 0.02)) break;
+  }
+  return colord(bg).isDark() ? '#ffffff' : '#111111';
+}
+
+/** Most chromatic, mid-luminance palette color — the brand's signature hue. */
+function pickChromatic(hexes: string[]): string | undefined {
+  return hexes
+    .map((hex) => ({ hex, hsl: colord(hex).toHsl() }))
+    .filter((x) => x.hsl.l > 10 && x.hsl.l < 90)
+    .sort((a, b) => b.hsl.s - a.hsl.s)[0]?.hex;
+}
+
+/** Saturated & mid-luminance enough to serve as a UI accent (a pop, not ink). */
+function isVivid(hex: string): boolean {
+  const { s, l } = colord(hex).toHsl();
+  return s >= 25 && l >= 20 && l <= 88;
 }
 
 export function toCSSVariables(g: BrandGuideline): string {
@@ -122,63 +171,82 @@ export function extractBrandTheme(
     );
 
   const colors = guideline?.colors || [];
-  const accentToken = findByRole('PRIMARY') ||
-    findByRole('ACCENT') ||
-    findByMatch(['brand', 'primary', 'accent', 'main']) ||
-    colors[0] || { hex: '#888888' };
-  const bgToken = findByRole('BACKGROUND') ||
-    findByRole('BG') ||
-    findByMatch(['background', 'canvas', 'bg']) || { hex: '#0a0a0a' };
-  const surfaceToken = findByRole('SURFACE') ||
-    findByRole('CARD') ||
-    findByMatch(['surface', 'card', 'neutral', 'off']) || { hex: '#141414' };
-  const textToken = findByRole('TEXT') ||
-    findByRole('HEADLINE') ||
-    findByMatch(['text', 'content', 'body']) || { hex: '#ffffff' };
+  const hexes = colors.map((c) => c.hex).filter(Boolean) as string[];
 
-  const paletteByLum = [...(guideline?.colors || [])].sort(
-    (a, b) => getRelativeLuminance(a.hex) - getRelativeLuminance(b.hex)
-  );
-  const lightestInPalette = paletteByLum[paletteByLum.length - 1]?.hex || '#ffffff';
-  const darkestInPalette = paletteByLum[0]?.hex || '#050505';
+  // ── Accent: the brand's VIVID signature, not a base neutral. A black or
+  // white tagged "primary" is ink/canvas — honor an explicit accent role only
+  // when it's actually chromatic; otherwise take the most chromatic swatch. ──
+  const roleAccent =
+    findByRole('ACCENT')?.hex ||
+    findByRole('PRIMARY')?.hex ||
+    findByMatch(['brand', 'primary', 'accent', 'main'])?.hex;
+  const accentRaw =
+    (roleAccent && isVivid(roleAccent) ? roleAccent : undefined) ||
+    pickChromatic(hexes) ||
+    roleAccent ||
+    hexes[0] ||
+    '#888888';
 
-  let rBg = bgToken.hex;
-  let rSurface = surfaceToken.hex;
-  let rText = textToken.hex;
+  // Palette poles by luminance drive the light/dark derivations.
+  const byLum = [...hexes].sort((a, b) => getRelativeLuminance(a) - getRelativeLuminance(b));
+  const lightest = byLum[byLum.length - 1] || '#ffffff';
+  const darkest = byLum[0] || '#0a0a0a';
+
+  const accentHsl = colord(accentRaw).toHsl();
+  // Grayscale brands shouldn't get a phantom color cast on their dark canvas.
+  const tintS = accentHsl.s < 12 ? 0 : 16;
+
+  let rBg: string;
+  let rSurface: string;
+  let rText: string;
 
   if (mode === 'light') {
-    rBg = lightestInPalette;
-    if (getRelativeLuminance(rBg) < 0.8) rBg = '#ffffff';
-    rSurface = paletteByLum[paletteByLum.length - 2]?.hex || '#f5f5f7';
-    rText = darkestInPalette;
+    // Brand LIGHT theme: near-white canvas, darkest brand ink for text.
+    rBg = getRelativeLuminance(lightest) > 0.75 ? lightest : '#ffffff';
+    rSurface = colord(rBg).darken(0.05).toHex();
+    rText = ensureReadable(darkest, rBg, AA_TEXT);
   } else if (mode === 'dark') {
-    rBg = darkestInPalette;
-    if (getRelativeLuminance(rBg) > 0.2) rBg = '#050505';
-    rSurface = paletteByLum[1]?.hex || '#111111';
-    rText = lightestInPalette;
+    // Brand DARK theme: near-black canvas subtly tinted with the brand hue,
+    // light ink lifted to AA. This is what the app renders in dark mode.
+    rBg = colord({ h: accentHsl.h, s: tintS, l: 7 }).toHex();
+    rSurface = colord({ h: accentHsl.h, s: Math.min(tintS, 14), l: 12 }).toHex();
+    rText = ensureReadable(lightest, rBg, AA_TEXT);
+  } else {
+    // 'brand' — honor declared tokens, falling back to the palette's poles,
+    // then enforce contrast so a self-declared theme still reads.
+    const bgTok =
+      findByRole('BACKGROUND') || findByRole('BG') || findByMatch(['background', 'canvas', 'bg']);
+    const surfTok = findByRole('SURFACE') || findByRole('CARD') || findByMatch(['surface', 'card']);
+    const textTok =
+      findByRole('TEXT') || findByRole('HEADLINE') || findByMatch(['text', 'content', 'body']);
+    rBg = bgTok?.hex || darkest || '#0a0a0a';
+    const bgDark = colord(rBg).isDark();
+    rSurface =
+      surfTok?.hex ||
+      (bgDark ? colord(rBg).lighten(0.06).toHex() : colord(rBg).darken(0.05).toHex());
+    rText = ensureReadable(textTok?.hex || (bgDark ? lightest : darkest), rBg, AA_TEXT);
   }
 
-  const bgLum = getRelativeLuminance(rBg);
-  const textLum = getRelativeLuminance(rText);
-  if (getContrastRatio(bgLum, textLum) < 4.5) {
-    rText = bgLum > 0.5 ? '#000000' : '#ffffff';
+  // Surface must read as a distinct layer from the canvas.
+  if (contrastHex(rSurface, rBg) < 1.08) {
+    rSurface = colord(rBg).isDark()
+      ? colord(rBg).lighten(0.06).toHex()
+      : colord(rBg).darken(0.05).toHex();
   }
 
   const toRgb = (hex: string) => {
-    const h = hex.replace('#', '').padEnd(6, '0');
-    const r = parseInt(h.substring(0, 2), 16) || 0;
-    const g = parseInt(h.substring(2, 4), 16) || 0;
-    const b = parseInt(h.substring(4, 6), 16) || 0;
+    const { r, g, b } = colord(hex).toRgb();
     return `${r}, ${g}, ${b}`;
   };
 
-  const accentLum = getRelativeLuminance(accentToken.hex);
-  const accentText =
-    getContrastRatio(accentLum, getRelativeLuminance('#000000')) >= 4.5 ? '#000000' : '#ffffff';
+  // Accent is used both as a fill AND as text/icon on the canvas, so pin it to
+  // AA against the resolved bg (hue preserved) — links/labels never wash out.
+  const accent = ensureReadable(accentRaw, rBg, AA_TEXT);
+  const accentText = contrastHex(accent, '#000000') >= AA_TEXT ? '#000000' : '#ffffff';
 
   return {
-    accent: accentToken.hex,
-    accentRgb: toRgb(accentToken.hex),
+    accent,
+    accentRgb: toRgb(accent),
     accentText,
     bg: rBg,
     surface: rSurface,
@@ -209,9 +277,7 @@ interface SectionCommonProps {
 }
 
 const CompactSectionHeader: React.FC<{ label: string }> = ({ label }) => (
-  <MicroTitle className="text-[10px] text-neutral-600 uppercase tracking-widest">
-    {label}
-  </MicroTitle>
+  <MicroTitle className="text-[10px] text-neutral-600">{label}</MicroTitle>
 );
 
 const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({
@@ -293,6 +359,14 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
   );
 };
 
+// Static column classes for the 1-or-3 triplet layouts (Tailwind can't purge
+// dynamically-built `md:grid-cols-${n}` names, so map them explicitly).
+const TRIPLET_COLS: Record<number, string> = {
+  1: 'md:grid-cols-1',
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+};
+
 export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
   guideline,
   compact,
@@ -320,65 +394,67 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
     );
   }
 
+  const fields: Array<['product' | 'differential' | 'emotionalBond', string, string]> = [
+    ['product', 'Produto', 'Produto…'],
+    ['differential', 'Diferencial', 'Diferencial…'],
+    ['emotionalBond', 'Elo Emocional', 'Elo emocional…'],
+  ];
+  const hasContent = !!(cm.product || cm.differential || cm.emotionalBond);
+  const visible = fields.filter(([key]) => editable || cm[key]);
+
+  // Empty + editable → compact single-row of light fields, so the placeholder
+  // state doesn't dominate the page with three tall cards.
+  if (editable && !hasContent) {
+    return (
+      <div className="space-y-4">
+        <FullSectionHeader label="Mensagem Central" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {fields.map(([key, label, ph]) => (
+            <div
+              key={key}
+              className="rounded-xl bg-[var(--brand-surface)]/10 border border-[var(--brand-text)]/[0.06] px-4 py-3"
+            >
+              <MicroTitle className="text-[var(--accent)]/40 mb-1.5">{label}</MicroTitle>
+              <InlineEditable
+                as="p"
+                multiline
+                editable
+                value={cm[key] || ''}
+                placeholder={ph}
+                onCommit={setField(key)}
+                className="text-sm font-medium opacity-70"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Filled → break 1-or-3 (never an orphaned 2+1); auto-fit so 1 or 2 filled
+  // fields still balance the row.
   return (
     <div className="space-y-8">
       <FullSectionHeader label="Mensagem Central" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {(editable || cm.product) && (
+      <div className={cn('grid grid-cols-1 gap-8', TRIPLET_COLS[visible.length] || 'md:grid-cols-3')}>
+        {visible.map(([key, label, ph]) => (
           <GlassPanel
+            key={key}
             padding="md"
             className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
           >
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">Produto</MicroTitle>
+            <MicroTitle className="text-[var(--accent)]/40 mb-3">{label}</MicroTitle>
             <InlineEditable
               as="p"
               multiline
               editable={editable}
-              value={cm.product || ''}
-              placeholder="Produto…"
-              onCommit={setField('product')}
+              value={cm[key] || ''}
+              placeholder={ph}
+              onCommit={setField(key)}
               className="text-lg font-medium opacity-80"
             />
           </GlassPanel>
-        )}
-        {(editable || cm.differential) && (
-          <GlassPanel
-            padding="md"
-            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
-          >
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
-              Diferencial
-            </MicroTitle>
-            <InlineEditable
-              as="p"
-              multiline
-              editable={editable}
-              value={cm.differential || ''}
-              placeholder="Diferencial…"
-              onCommit={setField('differential')}
-              className="text-lg font-medium opacity-80"
-            />
-          </GlassPanel>
-        )}
-        {(editable || cm.emotionalBond) && (
-          <GlassPanel
-            padding="md"
-            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
-          >
-            <MicroTitle className="text-[var(--accent)]/40 tracking-wider mb-3">
-              Elo Emocional
-            </MicroTitle>
-            <InlineEditable
-              as="p"
-              multiline
-              editable={editable}
-              value={cm.emotionalBond || ''}
-              placeholder="Elo emocional…"
-              onCommit={setField('emotionalBond')}
-              className="text-lg font-medium opacity-80"
-            />
-          </GlassPanel>
-        )}
+        ))}
       </div>
     </div>
   );
@@ -406,10 +482,14 @@ export const BrandPillarsView: React.FC<SectionCommonProps> = ({ guideline, comp
     );
   }
 
+  // Adaptive columns so a set of 3 lands as a clean 1-or-3 row instead of an
+  // orphaned 2+1 (matches the strategy triplets); 4+ keep the 2-col rhythm.
+  const cols = pillars.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2';
+
   return (
     <div className="space-y-8">
       <FullSectionHeader label="Pilares" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className={cn('grid grid-cols-1 gap-8', cols)}>
         {pillars.map((p, i) => (
           <GlassPanel
             key={i}
@@ -471,29 +551,62 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
       ['tension', 'Tensão', m.tension || ''],
       ['promise', 'Promessa', m.promise || ''],
     ];
-    return (
-      <div className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-          <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {fields.map(([key, label, value]) =>
-            editable || value ? (
-              <div key={key} className="space-y-3">
-                <MicroTitle className="text-[var(--accent)]/40 tracking-wider">{label}</MicroTitle>
+    const hasContent = !!(m.provocation || m.tension || m.promise);
+    const visible = fields.filter(([, , value]) => editable || value);
+
+    const header = (
+      <div className="flex items-center gap-4">
+        <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
+        <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
+      </div>
+    );
+
+    // Empty + editable → compact light fields instead of three tall placeholders.
+    if (editable && !hasContent) {
+      return (
+        <div className="space-y-6">
+          {header}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {fields.map(([key, label, value]) => (
+              <div
+                key={key}
+                className="rounded-xl bg-[var(--brand-surface)]/10 border border-[var(--brand-text)]/[0.06] px-4 py-3"
+              >
+                <MicroTitle className="text-[var(--accent)]/40 mb-1.5">{label}</MicroTitle>
                 <InlineEditable
                   as="p"
                   multiline
-                  editable={editable}
+                  editable
                   value={value}
                   placeholder={`${label}…`}
                   onCommit={setManifesto(key)}
-                  className="text-lg leading-relaxed font-light opacity-70"
+                  className="text-sm leading-relaxed font-light opacity-70"
                 />
               </div>
-            ) : null
-          )}
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-12">
+        {header}
+        <div className={cn('grid grid-cols-1 gap-12', TRIPLET_COLS[visible.length] || 'md:grid-cols-3')}>
+          {visible.map(([key, label, value]) => (
+            <div key={key} className="space-y-3">
+              <MicroTitle className="text-[var(--accent)]/40">{label}</MicroTitle>
+              <InlineEditable
+                as="p"
+                multiline
+                editable={editable}
+                value={value}
+                placeholder={`${label}…`}
+                onCommit={setManifesto(key)}
+                className="text-lg leading-relaxed font-light opacity-70"
+              />
+            </div>
+          ))}
         </div>
         {m.full && (
           <p className="text-xl leading-relaxed font-light opacity-60 mt-8 italic">
@@ -509,7 +622,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
     <div className="space-y-12">
       <div className="flex items-center gap-4">
         <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-        <MicroTitle className="text-[var(--accent)]/60 tracking-wider">[Manifesto]</MicroTitle>
+        <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
       </div>
       <div className="relative group">
         <div className="absolute -inset-8 bg-[var(--accent)]/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
@@ -600,10 +713,19 @@ const ArchetypesInteractive: React.FC<{
   const [selected, setSelected] = useState<number | null>(null);
   const active = selected !== null ? archetypes[selected] : null;
 
+  // Portrait cards: a single one centers; 3 go 3-up; everything else keeps a 2-col
+  // rhythm — never an orphaned 2+1.
+  const gridCls =
+    archetypes.length === 1
+      ? 'grid grid-cols-1 max-w-[280px] mx-auto gap-8'
+      : archetypes.length === 3
+        ? 'grid grid-cols-2 sm:grid-cols-3 gap-8'
+        : 'grid grid-cols-1 sm:grid-cols-2 gap-8';
+
   return (
     <div className="space-y-12">
       <FullSectionHeader label="Archetypes" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className={gridCls}>
         {archetypes.map((arch, i) => {
           const isActive = selected === i;
           return (
@@ -613,14 +735,21 @@ const ArchetypesInteractive: React.FC<{
               onClick={() => setSelected(isActive ? null : i)}
               aria-expanded={isActive}
               aria-controls="archetype-detail-panel"
-              className={cn(
-                'group relative rounded-[40px] p-10 flex flex-col items-center gap-6 overflow-hidden text-center transition-all bg-[var(--brand-surface)]/40 border',
-                isActive
-                  ? 'border-[var(--accent)]/40 ring-1 ring-[var(--accent)]/25'
-                  : 'border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/15'
-              )}
+              className="group relative flex flex-col items-center gap-5 text-center transition-all"
             >
-              <div className="w-full aspect-[3/4] max-w-[240px] rounded-2xl overflow-hidden relative transition-transform duration-500 shadow-2xl group-hover:rotate-2 bg-[var(--brand-bg)] flex items-center justify-center">
+              {/* Just the card PNG — the art carries its own frame; no extra
+                  surface/border. Selection reads via a soft accent glow. */}
+              <div
+                className={cn(
+                  'w-full aspect-[3/4] max-w-[240px] relative transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-1 flex items-center justify-center',
+                  isActive
+                    ? 'drop-shadow-[0_18px_40px_rgba(0,0,0,0.35)]'
+                    : 'drop-shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
+                )}
+              >
+                {isActive && (
+                  <div className="absolute -inset-4 rounded-3xl bg-[var(--accent)]/15 blur-2xl -z-10" />
+                )}
                 <ImgOrFallback
                   src={arch.image || getArchetypeImage(arch.name) || undefined}
                   alt={arch.name}
@@ -637,7 +766,7 @@ const ArchetypesInteractive: React.FC<{
                   </span>
                 )}
               </div>
-              <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest opacity-40">
+              <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest opacity-40 group-hover:opacity-70 transition-opacity">
                 <MousePointerClick size={11} aria-hidden="true" />
                 {isActive ? 'Hide' : 'Details'}
               </span>
@@ -722,19 +851,19 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
     );
   }
 
+  const brandName = guideline.name || guideline.identity?.name || 'a marca';
+
   return (
     <div className="space-y-16">
       <FullSectionHeader label="Personas" />
-      <div className="grid grid-cols-1 gap-12">
-        {personas.map((persona, i) => (
-          <GlassPanel
-            key={i}
-            padding="lg"
-            className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
-          >
-            <div className="flex flex-col md:flex-row gap-12">
-              <div className="w-full md:w-1/3 space-y-2">
-                <div className="aspect-square rounded-[32px] overflow-hidden border border-[var(--brand-text)]/10 shadow-2xl">
+      {personas.map((persona, i) => {
+        const displayName = persona.name || 'Persona';
+        return (
+          <div key={i} className="space-y-10">
+            {/* ── Identity: photo + name/traits/bio (Figma DS Urban Stay layout) ── */}
+            <div className="flex flex-col md:flex-row gap-8 md:gap-10">
+              <div className="w-full md:w-[300px] shrink-0 space-y-2">
+                <div className="aspect-square rounded-[20px] overflow-hidden shadow-2xl">
                   <ImgOrFallback
                     src={persona.image}
                     alt={persona.name}
@@ -769,53 +898,83 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                   </p>
                 )}
               </div>
-              <div className="flex-1 space-y-8">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                  <div className="space-y-1">
-                    <h4 className="text-4xl font-bold opacity-90">
-                      {persona.name}
-                      {persona.age ? `, ${persona.age}` : ''}
-                    </h4>
-                    {persona.traits && persona.traits.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        {persona.traits.map((trait, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-[10px] font-bold uppercase tracking-widest opacity-60"
-                          >
-                            {trait}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+
+              <div className="flex-1 min-w-0 space-y-5 pt-1">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                  <h4 className="text-2xl md:text-3xl tracking-tight text-balance">
+                    <span className="font-bold opacity-90">{displayName}</span>
+                    {persona.age ? <span className="font-light opacity-60">, {persona.age}</span> : null}
+                  </h4>
+                  {persona.traits && persona.traits.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {persona.traits.map((trait, idx) => (
+                        <span
+                          key={idx}
+                          className="px-4 py-1.5 rounded-full border border-[var(--brand-text)]/25 text-xs font-light tracking-wide opacity-70"
+                        >
+                          {trait}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-
-                <div className="h-[1px] w-full bg-[var(--brand-text)]/10" />
-
-                {persona.desires && persona.desires.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {persona.desires.map((desire, idx) => (
-                      <div
-                        key={idx}
-                        className="p-6 rounded-2xl border border-[var(--brand-text)]/5 bg-[var(--brand-surface)]/60 hover:border-[var(--brand-text)]/10 transition-all"
-                      >
-                        <p className="text-sm leading-relaxed font-light opacity-60">{desire}</p>
-                      </div>
-                    ))}
-                  </div>
+                {persona.occupation && (
+                  <p className="text-xs font-mono uppercase tracking-widest opacity-40">
+                    {persona.occupation}
+                  </p>
                 )}
-
                 {persona.bio && (
-                  <div className="p-6 rounded-2xl border border-[var(--brand-text)]/5 bg-[var(--brand-text)]/[0.02]">
-                    <p className="text-sm font-light leading-relaxed opacity-60">"{persona.bio}"</p>
-                  </div>
+                  <p className="text-lg md:text-xl font-light leading-relaxed opacity-70 max-w-3xl">
+                    {persona.bio}
+                  </p>
                 )}
               </div>
             </div>
-          </GlassPanel>
-        ))}
-      </div>
+
+            {/* ── Desires: left question / right stacked full-width cards ── */}
+            {persona.desires && persona.desires.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)] gap-10 pt-12 border-t border-[var(--brand-text)]/10">
+                <div className="space-y-4 lg:sticky lg:top-24 self-start">
+                  <MicroTitle className="text-[var(--accent)]/60">O que deseja</MicroTitle>
+                  <h3 className="text-2xl md:text-4xl font-light leading-[1.12] tracking-tight opacity-90 text-balance">
+                    O que sente ao ser atendido por {brandName}?
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {persona.desires.map((desire, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-[20px] border border-[var(--brand-text)]/12 bg-[var(--brand-surface)]/10 px-7 py-6 md:px-9 md:py-7"
+                    >
+                      <p className="text-base md:text-lg leading-relaxed opacity-80">{desire}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Pain points kept as a subtle secondary strip (not in the Figma frame,
+                but preserving data the persona may carry). */}
+            {persona.painPoints && persona.painPoints.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.9fr)] gap-10">
+                <MicroTitle className="text-[var(--brand-text)]/40 lg:pt-1">
+                  Dores &amp; atritos
+                </MicroTitle>
+                <div className="flex flex-wrap gap-2">
+                  {persona.painPoints.map((p, idx) => (
+                    <span
+                      key={idx}
+                      className="px-4 py-2 rounded-xl border border-[var(--brand-text)]/8 bg-[var(--brand-text)]/[0.03] text-sm font-light opacity-60"
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -844,19 +1003,24 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
     );
   }
 
+  // 3 → clean 1-or-3 row; otherwise keep the 2-col editorial rhythm. Cards size to
+  // their content (a firm min-height keeps the row even) instead of a fixed 400px
+  // that left short tones swimming in empty space.
+  const cols = voiceValues.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2';
+
   return (
     <div className="space-y-16">
       <FullSectionHeader label="Tone of Voice" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={cn('grid grid-cols-1 gap-6', cols)}>
         {voiceValues.map((v, i) => (
           <div
             key={i}
-            className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[280px] sm:min-h-[340px] md:min-h-[400px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10"
+            className="relative group p-8 rounded-[32px] border transition-all duration-500 overflow-hidden min-h-[220px] flex flex-col bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:bg-[var(--brand-surface)]/40 hover:border-[var(--brand-text)]/10"
           >
-            <div className="absolute top-0 left-0 w-16 h-16 rounded-br-[32px] flex items-center justify-center text-xl font-bold bg-[var(--brand-text)]/5 opacity-20">
+            <div className="absolute top-0 left-0 w-14 h-14 rounded-br-[28px] flex items-center justify-center text-lg font-bold bg-[var(--brand-text)]/5 opacity-20">
               {i + 1}
             </div>
-            <div className="mt-12 space-y-8 flex-1">
+            <div className="mt-10 space-y-4 flex-1 flex flex-col">
               <h4 className="text-2xl font-bold opacity-90">{v.title}</h4>
               <p className="text-sm leading-relaxed opacity-60 transition-colors">
                 {v.description}
@@ -1629,7 +1793,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {g.dos && g.dos.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-green-500/60 tracking-wider pt-12">Do</MicroTitle>
+              <MicroTitle className="text-green-500/60 pt-12">Do</MicroTitle>
               <ul className="space-y-4">
                 {g.dos.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
@@ -1644,7 +1808,7 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           )}
           {g.donts && g.donts.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-red-500/60 tracking-wider pt-12">Don't</MicroTitle>
+              <MicroTitle className="text-red-500/60 pt-12">Don't</MicroTitle>
               <ul className="space-y-4">
                 {g.donts.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
@@ -1698,7 +1862,7 @@ export const BrandReadOnlyView: React.FC<BrandReadOnlyViewProps> = ({
   if (!guideline) return null;
 
   const enabled = new Set(sections);
-  const wrapperCls = compact ? 'flex flex-col' : 'flex flex-col gap-24';
+  const wrapperCls = compact ? 'flex flex-col' : 'flex flex-col gap-16';
 
   const wrap = (id: BrandViewSection, node: React.ReactNode) => {
     const actions = renderSectionActions?.(id);

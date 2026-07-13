@@ -6,6 +6,7 @@ export interface BrandGuidelineSeed {
   colors?: any[];
   typography?: any[];
   logos?: any[];
+  media?: any[];
   isPublic?: boolean;
   publicSlug?: string;
   canEdit?: string[];
@@ -27,6 +28,7 @@ export async function createBrandGuideline(seed: BrandGuidelineSeed) {
         seed.typography ??
         ([{ family: 'Inter', style: 'Regular', role: 'heading', size: 32 }] as any),
       logos: seed.logos ?? ([] as any),
+      media: seed.media ?? ([] as any),
       isPublic: seed.isPublic ?? false,
       publicSlug: seed.publicSlug ?? null,
       canEdit: seed.canEdit ?? [],

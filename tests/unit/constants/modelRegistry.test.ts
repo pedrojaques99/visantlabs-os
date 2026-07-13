@@ -325,12 +325,12 @@ describe('Credit calculator', () => {
   });
 
   describe('video credits', () => {
-    it('Veo 3.1 Standard = 40 credits', () => {
-      expect(getVideoCreditsRequired('veo-3.1-generate-preview')).toBe(40);
+    it('Veo 3.1 Standard = 50 credits', () => {
+      expect(getVideoCreditsRequired('veo-3.1-generate-preview')).toBe(50);
     });
 
-    it('Veo 3.1 Fast = 15 credits', () => {
-      expect(getVideoCreditsRequired('veo-3.1-fast-generate-preview')).toBe(15);
+    it('Veo 3.1 Fast = 20 credits', () => {
+      expect(getVideoCreditsRequired('veo-3.1-fast-generate-preview')).toBe(20);
     });
 
     it('Veo 3.1 Lite = 8 credits', () => {

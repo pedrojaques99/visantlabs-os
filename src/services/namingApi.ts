@@ -132,9 +132,11 @@ export function namingBriefing(params: NamingBriefingParams): Promise<NamingBrie
 
 export interface NamingPatternInsightParams {
   mode: 'pattern';
-  liked: NamingCard[];
-  superliked: NamingCard[];
-  rejected: NamingCard[];
+  // Nomes (não cards): o backend valida/usa como string[]. Mandar objetos
+  // fazia o length-check estourar (400) e a leitura ignorar os nomes.
+  liked: string[];
+  superliked: string[];
+  rejected: string[];
   stats?: Record<string, unknown>;
 }
 

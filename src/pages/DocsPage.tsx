@@ -14,6 +14,7 @@ import {
   FileText,
   Bot,
   Coins,
+  Zap,
 } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
@@ -462,6 +463,21 @@ export const DocsPage: React.FC = () => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsContent value="overview" className="space-y-6 bg-transparent mt-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <Link to="/docs/getting-started" className="block">
+                        <Card className="h-full cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1">
+                          <CardHeader>
+                            <Zap className="w-8 h-8 text-brand-cyan mb-2" />
+                            <CardTitle>Getting Started</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-muted-foreground text-sm">
+                              Step-by-step quickstart — authenticate and make your first API and MCP
+                              calls with copy-paste code.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+
                       <Card
                         className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('api')}
@@ -678,7 +694,7 @@ export const DocsPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-secondary/40 border border-border rounded-md p-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-white/[0.05] text-neutral-400 border border-white/[0.08] text-xs">
+                              <Badge className="bg-white/5 text-neutral-400 border border-white/10 text-xs">
                                 HTTP/SSE
                               </Badge>
                               <span className="font-semibold text-foreground text-sm">

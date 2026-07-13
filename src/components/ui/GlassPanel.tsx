@@ -1,6 +1,7 @@
 import React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 
 export interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
@@ -9,9 +10,9 @@ export interface GlassPanelProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const intensityStyles = {
-  subtle: 'bg-white/[0.03] border-neutral-800',
-  default: 'bg-white/[0.03] border-neutral-800',
-  strong: 'bg-white/5 border-neutral-800',
+  subtle: glassSurface.panelSubtle,
+  default: glassSurface.panel,
+  strong: glassSurface.panelStrong,
 } as const;
 
 export const GlassPanel = React.forwardRef<HTMLDivElement, GlassPanelProps>(

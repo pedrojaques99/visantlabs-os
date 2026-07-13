@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/hooks/useLayout';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -29,6 +30,7 @@ export const CampaignsPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useLayout();
   const isLoggedIn = isAuthenticated === true;
+  const inShell = useInAppShell();
 
   const { data: brands = [] } = useBrandGuidelines(isLoggedIn);
   const [searchParams] = useSearchParams();
@@ -45,13 +47,15 @@ export const CampaignsPage: React.FC = () => {
     <div className="flex flex-col h-full bg-neutral-950 text-white">
       {/* Header */}
       <header className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-1.5 rounded-md hover:bg-neutral-800/50 transition-colors"
-          aria-label="Back"
-        >
-          <ArrowLeft size={16} className="text-neutral-400" />
-        </button>
+        {!inShell && (
+          <button
+            onClick={() => navigate(-1)}
+            className="p-1.5 rounded-md hover:bg-neutral-800/50 transition-colors"
+            aria-label="Back"
+          >
+            <ArrowLeft size={16} className="text-neutral-400" />
+          </button>
+        )}
         <div className="flex items-center gap-2">
           <Megaphone size={16} className="text-brand-cyan" />
           <MicroTitle as="h1" className="text-base">
@@ -146,8 +150,8 @@ function StatusBadge({ status }: { status: CampaignSummary['status'] }) {
   const map: Record<CampaignSummary['status'], [string, string]> = {
     planning: ['text-neutral-400', 'planning'],
     generating: ['text-brand-cyan', 'generating'],
-    done: ['text-emerald-400', 'done'],
-    error: ['text-red-400', 'error'],
+    done: ['text-success', 'done'],
+    error: ['text-destructive', 'error'],
   };
   const [color, label] = map[status] ?? map.planning;
   return <span className={cn('text-[10px] font-mono tracking-wide', color)}>{label}</span>;
@@ -187,7 +191,7 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
           <div
             className={cn(
               'h-full transition-all',
-              c.status === 'error' ? 'bg-red-500/70' : 'bg-brand-cyan'
+              c.status === 'error' ? 'bg-destructive/70' : 'bg-brand-cyan'
             )}
             style={{ width: `${pct}%` }}
           />
@@ -213,7 +217,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
         </button>
         <div className="flex items-center gap-2 min-w-0">
           <Megaphone size={16} className="text-brand-cyan flex-shrink-0" />
-          <MicroTitle as="h1" className="text-base truncate">
+          <MicroTitle as="h1" className="text-base truncate normal-case">
             {campaign?.name || 'Campaign'}
           </MicroTitle>
         </div>
@@ -267,8 +271,8 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
                     />
                   ) : r.status === 'error' ? (
                     <div className="flex flex-col items-center gap-2 px-4 text-center">
-                      <AlertCircle size={20} className="text-red-400/60" />
-                      <span className="text-[10px] font-mono text-red-400">{r.error}</span>
+                      <AlertCircle size={20} className="text-destructive/60" />
+                      <span className="text-[10px] font-mono text-destructive">{r.error}</span>
                     </div>
                   ) : (
                     <Loader2 size={22} className="animate-spin text-neutral-600" />

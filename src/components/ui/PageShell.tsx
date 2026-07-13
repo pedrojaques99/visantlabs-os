@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { GridDotsBackground } from './GridDotsBackground';
 import { SEO } from '../SEO';
@@ -12,6 +13,8 @@ import {
 } from './BreadcrumbWithBack';
 import { MicroTitle } from './MicroTitle';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '../shell/InAppShellContext';
+import { useShellHeader } from '../shell/ShellHeaderContext';
 
 export interface BreadcrumbSegment {
   label: string;
@@ -87,6 +90,11 @@ export const PageShell: React.FC<PageShellProps> = ({
 }) => {
   const ariaLabel = typeof title === 'string' ? title : pageId;
   const backTarget = backTo ?? breadcrumb?.[0]?.to;
+  // Dentro do AppShell o rail + top bar já são o chrome: o fundo vira `absolute`
+  // (contido no <main relative>, não cobre o rail), a altura acompanha o main e
+  // o padding-top encolhe (não há mais Header por cima). Plano P1.
+  const inShell = useInAppShell();
+  const shellHeader = useShellHeader();
 
   return (
     <div data-vsn-page={pageId} data-vsn-component={componentName ?? pageId}>
@@ -94,23 +102,27 @@ export const PageShell: React.FC<PageShellProps> = ({
 
       {/* Background layer */}
       {!noBackground && (
-        <div className="fixed inset-0 z-0 bg-neutral-950">
+        <div className={cn('inset-0 z-0 bg-neutral-950', inShell ? 'absolute' : 'fixed')}>
           <GridDotsBackground />
         </div>
       )}
 
-      <div className="min-h-screen bg-transparent relative z-10">
+      <div className={cn('bg-transparent relative z-10', inShell ? 'min-h-full' : 'min-h-screen')}>
         <main role="main" aria-label={ariaLabel} data-vsn-region="content">
           <div
             className={cn(
-              'mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 pb-10 sm:pb-16',
-              WIDTH_MAP[width],
+              'mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-16',
+              inShell ? 'pt-6 sm:pt-8' : 'pt-14 sm:pt-20',
+              // Dentro do AppShell todas as páginas usam a MESMA largura (full,
+              // ignora o `width` por-página): sem isso o conteúdo "pisca pro lado"
+              // ao navegar entre full e 7xl/5xl, e os grids não cobrem a tela.
+              inShell ? 'max-w-full' : WIDTH_MAP[width],
               contentClassName
             )}
           >
             {typeof title === 'string' && <h1 className="sr-only">{title}</h1>}
 
-            {breadcrumb && breadcrumb.length > 0 && (
+            {!inShell && breadcrumb && breadcrumb.length > 0 && (
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <BreadcrumbWithBack to={backTarget}>
                   <BreadcrumbList>
@@ -143,15 +155,19 @@ export const PageShell: React.FC<PageShellProps> = ({
               </div>
             )}
 
-            {!hideHeader && (
+            {/* Fora do AppShell: header próprio da página (título + descrição +
+                ações). Dentro do AppShell o AppTopBar JÁ é a identidade da página
+                (label da seção): não repetimos título/descrição aqui — só
+                teleportamos as ações pro slot do topbar (fim do header dobrado). */}
+            {!hideHeader && !inShell && (
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 border-b border-white/10 pb-6 sm:pb-10 mb-8 sm:mb-12">
                 <div className="space-y-3">
                   {microTitle && <MicroTitle className="text-neutral-500">{microTitle}</MicroTitle>}
-                  <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                  <h2 className="font-bold text-foreground tracking-tight text-2xl lg:text-3xl text-white">
                     {title}
                   </h2>
                   {description && (
-                    <p className="text-sm text-neutral-500 leading-relaxed max-w-xl">
+                    <p className="text-muted-foreground leading-relaxed max-w-xl text-sm text-neutral-500">
                       {description}
                     </p>
                   )}
@@ -159,6 +175,10 @@ export const PageShell: React.FC<PageShellProps> = ({
                 {actions && <div className="flex items-center gap-3">{actions}</div>}
               </div>
             )}
+
+            {!hideHeader && inShell && actions && shellHeader?.actionsSlot
+              ? createPortal(actions, shellHeader.actionsSlot)
+              : null}
 
             {children}
           </div>

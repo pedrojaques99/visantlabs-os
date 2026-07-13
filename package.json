@@ -60,6 +60,8 @@
     "check:design": "node scripts/scan-design-violations.mjs",
     "check:design:summary": "node scripts/scan-design-violations.mjs --summary --no-fail",
     "check:design:report": "node scripts/scan-design-violations.mjs --report",
+    "check:ai-dash": "node scripts/check-ai-dash.mjs",
+    "fix:ai-dash": "node scripts/check-ai-dash.mjs --fix",
     "fix:design": "node scripts/scan-design-violations.mjs --fix",
     "fix:design:all": "node scripts/scan-design-violations.mjs --fix-all",
     "build": "npm run stop:servers && npm run fix:icons && npm run audit:visuals && npm run i18n:check && npm run i18n:fix-placeholders && npm run check:node-tokens && npm run fix:accent-borders && npm run check:accent-borders && npm run check:design:summary && npm run check:serverless-imports && prisma generate && vite build",
@@ -106,7 +108,9 @@
     "test:e2e": "vitest run --project e2e",
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --project unit --project integration --project e2e --coverage",
-    "test:validation": "vitest run server/utils/validation.test.ts"
+    "test:validation": "vitest run server/utils/validation.test.ts",
+    "check:glass-surfaces": "node scripts/scan-glass-surfaces.mjs",
+    "check:glass-surfaces:summary": "node scripts/scan-glass-surfaces.mjs --summary --no-fail"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -164,6 +168,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "cockatiel": "^3.2.1",
+    "colord": "^2.9.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dompurify": "^3.4.7",

@@ -18,6 +18,7 @@ import {
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatDateShort } from '@/utils/localeUtils';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 
 /**
  * Grid of the user's Creative Studio projects.
@@ -30,7 +31,10 @@ export const CreativeProjectsPage: React.FC = () => {
   const { isAuthenticated } = useLayout();
   const reset = useCreativeStore((s) => s.reset);
 
-  const { data: projects = [], isLoading, error } = useCreativeProjects();
+  // Filtro opcional pela marca ativa (default global; server-side via hook).
+  // Lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas").
+  const { activeBrandId: brandId } = useActiveBrand();
+  const { data: projects = [], isLoading, error } = useCreativeProjects(brandId ?? undefined);
   const deleteMutation = useDeleteCreativeProject();
   const updateMutation = useUpdateCreativeProject();
 

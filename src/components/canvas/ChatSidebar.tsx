@@ -358,7 +358,7 @@ export const ChatSidebar = ({
             <span className="text-neutral-300 font-medium">
               {' '}
               {t('canvasNodes.chatNode.messages')}:{' '}
-              <span className="text-neutral-200">{userMessageCount}</span>{' '}
+              <span className="text-neutral-200 tabular-nums">{userMessageCount}</span>{' '}
             </span>
             <span className="text-neutral-400 text-xs">
               {' '}

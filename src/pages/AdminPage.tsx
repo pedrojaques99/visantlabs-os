@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import {
   ShieldCheck,
   RefreshCw,
@@ -95,110 +95,20 @@ import { DataTableEditableCell } from '../components/ui/data-table-editable-cell
 import { ColumnDef } from '@tanstack/react-table';
 import { getImagePricing } from '@/utils/pricing';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { formatDate } from '@/utils/localeUtils';
 import { AdminReferenceLibrary } from '../components/admin/AdminReferenceLibrary';
 import { AdminProductAnalytics } from '../components/admin/AdminProductAnalytics';
 
-interface AdminUser {
-  id: string;
-  email: string;
-  name?: string | null;
-  picture?: string | null;
-  subscriptionStatus: string;
-  subscriptionTier: string;
-  monthlyCredits: number | null;
-  creditsUsed: number | null;
-  totalCreditsEarned: number | null;
-  createdAt: string;
-  updatedAt: string;
-  creditsRemaining: number;
-  manualCredits: number;
-  mockupCount: number;
-  transactionCount: number;
-  referralCode?: string | null;
-  referralCount?: number | null;
-  referredBy?: string | null;
-  totalSpentBRL: number;
-  totalSpentUSD: number;
-  apiCostUSD: number;
-  totalGenerations?: number;
-  totalTokensUsed?: number;
-  byok?: { gemini: boolean; seedream: boolean; openai: boolean };
-}
-
-interface GenerationStats {
-  imagesByModel: {
-    [model: string]: {
-      total: number;
-      byResolution: { [resolution: string]: number };
-    };
-  };
-  videos: {
-    total: number;
-    byModel: { [model: string]: number };
-  };
-  textTokens: {
-    totalSteps: number;
-    estimatedTokens: number;
-    totalPromptLength: number;
-    inputTokens: number;
-    outputTokens: number;
-    totalCost?: number;
-  };
-  byFeature: {
-    mockupmachine: { images: number; videos: number; textSteps: number; promptGenerations: number };
-    canvas: { images: number; videos: number; textSteps: number; promptGenerations: number };
-    brandingmachine: {
-      images: number;
-      videos: number;
-      textSteps: number;
-      promptGenerations: number;
-    };
-    'prompt-generation': { total: number; inputTokens: number; outputTokens: number };
-  };
-}
-
-interface RevenueTimeSeriesItem {
-  date: string;
-  revenueBRL: number;
-  revenueUSD: number;
-  cumulativeBRL: number;
-  cumulativeUSD: number;
-}
-
-interface CostTimeSeriesItem {
-  date: string;
-  cost: number;
-  cumulative: number;
-}
-
-interface GenerationsTimeSeriesItem {
-  date: string;
-  [model: string]: any; // Allow dynamic model names as keys
-}
-
-interface AdminResponse {
-  totalUsers: number;
-  totalMockupsGenerated: number;
-  totalMockupsSaved: number;
-  totalCreditsUsed: number;
-  totalStorageUsed?: number;
-  totalRevenueBRL: number;
-  totalRevenueUSD: number;
-  totalApiCostUSD: number;
-  referralStats?: {
-    totalReferralCount: number;
-    totalReferredUsers: number;
-    usersWithReferralCode: number;
-  };
-  users: AdminUser[];
-  generationStats?: GenerationStats;
-  revenueTimeSeries?: RevenueTimeSeriesItem[];
-  costTimeSeries?: CostTimeSeriesItem[];
-  generationsTimeSeries?: GenerationsTimeSeriesItem[];
-}
+import type { AdminUser, AdminResponse } from '@/services/adminApi';
+import {
+  useAdminSummary,
+  useAdminUsers,
+  useAdminCharts,
+  useRefreshAdminDashboard,
+} from '@/hooks/queries/useAdminDashboard';
 
 const ADMIN_API = '/api/admin/users';
 
@@ -322,17 +232,148 @@ const AdminDashboardSkeleton: React.FC = () => (
   </div>
 );
 
+// Empty shell so `data` is never null — sections gate on ready flags, not presence.
+const EMPTY_ADMIN: AdminResponse = {
+  totalUsers: 0,
+  activeSubscriptions: 0,
+  newUsers30d: 0,
+  totalMockupsGenerated: 0,
+  totalMockupsSaved: 0,
+  totalCreditsUsed: 0,
+  totalMonthlyCredits: 0,
+  totalManualCredits: 0,
+  totalStorageUsed: 0,
+  totalTransactions: 0,
+  totalRevenueBRL: 0,
+  totalRevenueUSD: 0,
+  totalApiCostUSD: 0,
+  referralStats: { totalReferralCount: 0, totalReferredUsers: 0, usersWithReferralCode: 0 },
+  users: [],
+};
+
+// Per-section skeletons — each dynamic block waits only on its own slice.
+const KpiGridSkeleton: React.FC<{ count?: number; gridClass?: string }> = ({
+  count = 4,
+  gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6',
+}) => (
+  <div className={`${gridClass} animate-in fade-in duration-300`}>
+    {[...Array(count)].map((_, i) => (
+      <Card key={i} className="bg-neutral-900 border border-white/10 rounded-xl">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <SkeletonLoader width="48px" height="48px" className="rounded-md" />
+            <SkeletonLoader width="50px" height="16px" className="rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <SkeletonLoader width="80px" height="32px" className="rounded" />
+            <SkeletonLoader width="120px" height="14px" className="rounded" />
+            <SkeletonLoader width="100px" height="12px" className="rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
+
+const ChartCardSkeleton: React.FC<{ height?: number }> = ({ height = 300 }) => (
+  <Card className="bg-neutral-900 border border-white/10 rounded-xl animate-in fade-in duration-300">
+    <CardHeader>
+      <SkeletonLoader width="200px" height="24px" className="rounded mb-2" />
+      <SkeletonLoader width="280px" height="16px" className="rounded" />
+    </CardHeader>
+    <CardContent>
+      <div className="w-full flex items-end justify-between gap-2 px-4" style={{ height }}>
+        {[40, 65, 55, 80, 45, 70, 60, 75, 50, 85, 55, 90].map((h, i) => (
+          <SkeletonLoader key={i} width="100%" height={`${h}%`} className="rounded-t flex-1" />
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const TableSkeleton: React.FC<{ rows?: number }> = ({ rows = 8 }) => (
+  <div className="space-y-3 animate-in fade-in duration-300">
+    <div className="flex items-center justify-between">
+      <SkeletonLoader width="180px" height="20px" className="rounded" />
+      <SkeletonLoader width="240px" height="36px" className="rounded-md" />
+    </div>
+    {[...Array(rows)].map((_, i) => (
+      <SkeletonLoader key={i} width="100%" height="44px" className="rounded-md" />
+    ))}
+  </div>
+);
+
+// Per-section failure state with a retry, so a failed slice never shows an
+// infinite skeleton.
+const SectionError: React.FC<{ onRetry: () => void; message?: string }> = ({
+  onRetry,
+  message,
+}) => (
+  <Card className="bg-neutral-900 border border-destructive/30 rounded-xl animate-in fade-in duration-300">
+    <CardContent className="p-6 flex flex-col items-center gap-3 text-center">
+      <p className="text-sm text-neutral-400 font-mono">
+        {message || 'Falha ao carregar esta seção.'}
+      </p>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onRetry}
+        className="border-neutral-800 hover:bg-neutral-800/50"
+      >
+        <RefreshCw className="h-3.5 w-3.5 mr-2" />
+        Tentar novamente
+      </Button>
+    </CardContent>
+  </Card>
+);
+
 export const AdminPage: React.FC = () => {
   const { t } = useTranslation();
+  const inShell = useInAppShell();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated: isUserAuthenticated, isCheckingAuth, user: layoutUser } = useLayout();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<AdminResponse | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Active tab lives in the URL — deep-linkable and survives refresh.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab: string) =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (tab === 'overview') next.delete('tab');
+        else next.set('tab', tab);
+        return next;
+      },
+      { replace: true }
+    );
+
+  // Dashboard data via React Query — cached, deduped, retried, background-refreshed.
+  // Each slice is an independent query so sections render as soon as their data lands.
+  const adminEnabled = isAdmin === true;
+  const summaryQuery = useAdminSummary(adminEnabled);
+  const usersQuery = useAdminUsers(adminEnabled);
+  const chartsQuery = useAdminCharts(adminEnabled);
+  const refreshDashboard = useRefreshAdminDashboard();
+
+  const data: AdminResponse = useMemo(
+    () => ({
+      ...EMPTY_ADMIN,
+      ...(summaryQuery.data ?? {}),
+      users: usersQuery.data ?? [],
+      ...(chartsQuery.data ?? {}),
+    }),
+    [summaryQuery.data, usersQuery.data, chartsQuery.data]
+  );
+
+  const summaryReady = summaryQuery.isSuccess;
+  const usersReady = usersQuery.isSuccess;
+  const chartsReady = chartsQuery.isSuccess;
+  const isRefreshing =
+    summaryQuery.isFetching || usersQuery.isFetching || chartsQuery.isFetching;
+  const handleRefresh = () => refreshDashboard();
 
   const adminNavItems = useMemo<NavigationItem[]>(
     () => [
@@ -343,13 +384,24 @@ export const AdminPage: React.FC = () => {
       { id: 'product-analytics', label: 'Product Analytics', icon: BarChart2 },
       { id: 'users', label: t('admin.users') || 'Users', icon: Users },
       { id: 'financial', label: t('admin.financial') || 'Financial', icon: DollarSign },
-      { id: 'presets', label: t('common.presets') || 'Presets', icon: Settings },
-      { id: 'products', label: t('admin.products.title') || 'Products', icon: ShoppingCart },
-      { id: 'admin-chat', label: 'Chat Estratégico', icon: MessageSquare },
-      { id: 'design-system', label: t('admin.designSystem') || 'Design System', icon: Palette },
       { id: 'mcp-usage', label: 'MCP Usage', icon: Activity },
       { id: 'feedback-rag', label: 'Feedback & RAG', icon: BarChart2 },
       { id: 'references', label: 'Reference Library', icon: Image },
+      // External routes — grouped below a divider in the sidebar.
+      { id: 'presets', label: t('common.presets') || 'Presets', icon: Settings, external: true },
+      {
+        id: 'products',
+        label: t('admin.products.title') || 'Products',
+        icon: ShoppingCart,
+        external: true,
+      },
+      { id: 'admin-chat', label: 'Chat Estratégico', icon: MessageSquare, external: true },
+      {
+        id: 'design-system',
+        label: t('admin.designSystem') || 'Design System',
+        icon: Palette,
+        external: true,
+      },
     ],
     [t, data?.generationStats]
   );
@@ -386,7 +438,13 @@ export const AdminPage: React.FC = () => {
   };
 
   // Sidebar dynamic width
-  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('admin-sidebar-width');
+      return saved ? parseInt(saved, 10) : 256;
+    }
+    return 256;
+  });
 
   // Feedback & RAG tab state
   const [feedbackStats, setFeedbackStats] = useState<any>(null);
@@ -476,43 +534,6 @@ export const AdminPage: React.FC = () => {
     fetchUserHistory(user.id, 0);
   };
 
-  const handleFetch = async () => {
-    const token = authService.getToken();
-    if (!token) {
-      setError(t('admin.authRequired'));
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(ADMIN_API, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          throw new Error(t('admin.accessDenied'));
-        }
-        throw new Error(t('admin.failedToLoadData'));
-      }
-
-      const result = (await response.json()) as AdminResponse;
-      setData(result);
-    } catch (fetchError: any) {
-      console.error('Erro ao carregar dados do admin:', fetchError);
-      setData(null);
-      setError(fetchError.message || t('admin.unexpectedError'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRefresh = () => {
-    handleFetch();
-  };
 
   const handleSaveUser = async (user: AdminUser, field: string, value: any) => {
     const numericFields = ['monthlyCredits', 'creditsUsed', 'manualCredits'];
@@ -547,10 +568,8 @@ export const AdminPage: React.FC = () => {
 
       toast.success(t('admin.saveSuccess') || 'User updated successfully');
 
-      // Update local state to avoid full refetch if preferred, or just refetch
-      // For simplicity/consistency, let's refetch or update the specific row in data
-      // Refetching is safer to ensure sync
-      handleFetch();
+      // Refresh the affected slices (user rows + KPI totals) via React Query.
+      refreshDashboard();
     } catch (error) {
       console.error('Error updating user:', error);
       toast.error(t('admin.saveError') || 'Failed to update user');
@@ -564,39 +583,14 @@ export const AdminPage: React.FC = () => {
     if (isUserAuthenticated === true && layoutUser) {
       const userIsAdmin = layoutUser.isAdmin || false;
       setIsAdmin(userIsAdmin);
-      if (userIsAdmin) handleFetch();
+      // Data loads automatically via the React Query hooks (enabled once admin).
     } else {
       setIsAdmin(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUserAuthenticated, isCheckingAuth, layoutUser]);
 
-  const isAuthenticated = isUserAuthenticated === true && isAdmin === true && data !== null;
-
-  const totals = useMemo(() => {
-    if (!data) {
-      return {
-        manualCredits: 0,
-        monthlyCredits: 0,
-        creditsUsed: 0,
-      };
-    }
-
-    return data.users.reduce(
-      (acc, user) => {
-        acc.manualCredits += user.manualCredits || 0;
-        acc.monthlyCredits += user.monthlyCredits || 0;
-        acc.creditsUsed += user.creditsUsed || 0;
-        return acc;
-      },
-      { manualCredits: 0, monthlyCredits: 0, creditsUsed: 0 }
-    );
-  }, [data]);
-
-  const totalTransactions = useMemo(() => {
-    if (!data) return 0;
-    return data.users.reduce((sum, user) => sum + (user.transactionCount || 0), 0);
-  }, [data]);
+  const isAuthenticated = isUserAuthenticated === true && isAdmin === true;
 
   const totalEstimatedCost = useMemo(() => {
     if (!data?.generationStats?.imagesByModel) return 0;
@@ -927,7 +921,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'creditsRemaining',
         header: t('admin.remaining'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono text-brand-cyan">{row.original.creditsRemaining}</span>
+          <span className="text-xs font-mono text-brand-cyan tabular-nums">{row.original.creditsRemaining}</span>
         ),
         size: 100,
         enableSorting: true,
@@ -951,7 +945,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'referralCount',
         header: t('admin.referrals'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono">{row.original.referralCount ?? 0}</span>
+          <span className="text-xs font-mono tabular-nums">{row.original.referralCount ?? 0}</span>
         ),
         size: 80,
         enableSorting: true,
@@ -1151,20 +1145,18 @@ export const AdminPage: React.FC = () => {
   return (
     <>
       <SEO title={t('admin.title')} description={t('admin.description')} noindex={true} />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative">
-        <div className="fixed inset-0 z-0"></div>
+      <div className="min-h-full bg-neutral-950 text-neutral-300 relative">
+        <div className="absolute inset-0 z-0"></div>
 
-        {/* Skeleton Loading States */}
-        {(isCheckingAuth ||
-          (isUserAuthenticated && isAdmin === null) ||
-          (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
+        {/* Auth-resolution skeleton — only while confirming admin; sections handle their own loading. */}
+        {(isCheckingAuth || (isUserAuthenticated && isAdmin === null)) && (
           <div className="max-w-5xl mx-auto px-4 pt-[30px]">
             <AdminDashboardSkeleton />
           </div>
         )}
 
         {/* Access Denied States */}
-        {!isCheckingAuth && !isAuthenticated && !isLoading && (
+        {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto px-4 pt-[30px]">
             <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
@@ -1180,21 +1172,14 @@ export const AdminPage: React.FC = () => {
                     </Button>
                   </>
                 ) : isAdmin === false ? (
-                  <>
-                    <p className="text-neutral-400 font-mono mb-4">{t('admin.accessDeniedFull')}</p>
-                    {error && (
-                      <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono">
-                        {error}
-                      </div>
-                    )}
-                  </>
+                  <p className="text-neutral-400 font-mono mb-4">{t('admin.accessDeniedFull')}</p>
                 ) : null}
               </CardContent>
             </Card>
           </div>
         )}
 
-        {isAuthenticated && data && (
+        {isAuthenticated && (
           <>
             <NavigationSidebar
               items={adminNavItems}
@@ -1222,13 +1207,21 @@ export const AdminPage: React.FC = () => {
                 }
               }}
               title="Admin"
+              externalGroupLabel={t('admin.pages') || 'Páginas'}
               isOpen={sidebarOpen}
               onToggleOpen={setSidebarOpen}
+              width={sidebarWidth}
               storageKey="admin-sidebar-width"
-              onWidthChange={setSidebarWidth}
+              onWidthChange={(w) => {
+                setSidebarWidth(w);
+                localStorage.setItem('admin-sidebar-width', w.toString());
+              }}
             />
 
-            <div className="min-h-screen max-lg:!pl-0" style={{ paddingLeft: `${sidebarWidth}px` }}>
+            <div
+              className={cn('max-lg:!pl-0', inShell ? 'min-h-full' : 'min-h-screen')}
+              style={{ paddingLeft: `${sidebarWidth}px` }}
+            >
               <div className="px-4 md:px-8 pt-6 pb-16 md:pb-24 relative z-10">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
@@ -1246,18 +1239,22 @@ export const AdminPage: React.FC = () => {
                   </div>
                   <Button
                     onClick={handleRefresh}
-                    disabled={isLoading}
+                    disabled={isRefreshing}
                     variant="outline"
                     size="sm"
                     className="border-neutral-800 hover:bg-neutral-800/50 h-8 w-8 p-0"
                     aria-label="Refresh data"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
 
                 {activeTab === 'overview' && (
                   <div className="space-y-6 admin-tab-enter">
+                    {summaryQuery.isError ? (
+                      <SectionError onRetry={() => summaryQuery.refetch()} />
+                    ) : summaryReady ? (
+                      <>
                     {/* KPI Grid - Top Level Metrics */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                       {/* Total Users */}
@@ -1296,13 +1293,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {
-                                data.users.filter(
-                                  (u) =>
-                                    u.subscriptionStatus === 'active' ||
-                                    u.subscriptionStatus === 'trialing'
-                                ).length
-                              }
+                              {data.activeSubscriptions}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.activeSubscriptions')}
@@ -1324,7 +1315,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                              {totalTransactions}
+                              {data.totalTransactions}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.transactions')}
@@ -1350,14 +1341,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                              {
-                                data.users.filter((u) => {
-                                  const createdAt = new Date(u.createdAt);
-                                  const thirtyDaysAgo = new Date();
-                                  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                                  return createdAt >= thirtyDaysAgo;
-                                }).length
-                              }
+                              {data.newUsers30d}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.novos_usurios')}
@@ -1440,8 +1424,21 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
                     </div>
+                      </>
+                    ) : (
+                      <>
+                        <KpiGridSkeleton count={4} />
+                        <KpiGridSkeleton
+                          count={3}
+                          gridClass="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+                        />
+                      </>
+                    )}
 
                     {/* User Growth Chart */}
+                    {usersQuery.isError ? (
+                      <SectionError onRetry={() => usersQuery.refetch()} />
+                    ) : usersReady ? (
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl">
                       <CardHeader>
                         <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
@@ -1499,6 +1496,9 @@ export const AdminPage: React.FC = () => {
                         </div>
                       </CardContent>
                     </Card>
+                    ) : (
+                      <ChartCardSkeleton />
+                    )}
                   </div>
                 )}
 
@@ -2069,7 +2069,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                              {data.users.length}
+                              {data.totalUsers}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.totalUsers')}
@@ -2090,13 +2090,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {
-                                data.users.filter(
-                                  (u) =>
-                                    u.subscriptionStatus === 'active' ||
-                                    u.subscriptionStatus === 'trialing'
-                                ).length
-                              }
+                              {data.activeSubscriptions}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.activeSubscriptions')}
@@ -2117,7 +2111,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {totals.monthlyCredits + totals.manualCredits}
+                              {data.totalMonthlyCredits + data.totalManualCredits}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.creditsDistributed')}
@@ -2138,7 +2132,7 @@ export const AdminPage: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
+                              {data.totalMockupsSaved}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
                               {t('admin.mockupsCreated')}
@@ -2226,14 +2220,20 @@ export const AdminPage: React.FC = () => {
                     {/* Table Card */}
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
                       <CardContent className="p-6">
-                        <DataTable
-                          columns={columns}
-                          data={data.users}
-                          searchKey="name"
-                          searchPlaceholder={t('admin.searchPlaceholder')}
-                          title={t('admin.userList')}
-                          icon={<Users className="h-5 w-5 text-brand-cyan" />}
-                        />
+                        {usersQuery.isError ? (
+                          <SectionError onRetry={() => usersQuery.refetch()} />
+                        ) : usersReady ? (
+                          <DataTable
+                            columns={columns}
+                            data={data.users}
+                            searchKey="name"
+                            searchPlaceholder={t('admin.searchPlaceholder')}
+                            title={t('admin.userList')}
+                            icon={<Users className="h-5 w-5 text-brand-cyan" />}
+                          />
+                        ) : (
+                          <TableSkeleton rows={10} />
+                        )}
                       </CardContent>
                     </Card>
                   </div>
@@ -2370,6 +2370,13 @@ export const AdminPage: React.FC = () => {
                     </div>
 
                     {/* Revenue & Cost Charts Grid */}
+                    {chartsQuery.isError && <SectionError onRetry={() => chartsQuery.refetch()} />}
+                    {!chartsReady && !chartsQuery.isError && (
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+                        <ChartCardSkeleton />
+                        <ChartCardSkeleton />
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
                       {/* Revenue Chart */}
                       {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
@@ -2903,29 +2910,19 @@ export const AdminPage: React.FC = () => {
                                 <TableHeader>
                                   <TableRow className="border-neutral-800 hover:bg-transparent">
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Feature
-                                      </MicroTitle>
+                                      <MicroTitle as="span">Feature</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Up
-                                      </MicroTitle>
+                                      <MicroTitle as="span">Up</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        {t('admin.down')}
-                                      </MicroTitle>
+                                      <MicroTitle as="span">{t('admin.down')}</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        Total
-                                      </MicroTitle>
+                                      <MicroTitle as="span">Total</MicroTitle>
                                     </TableHead>
                                     <TableHead>
-                                      <MicroTitle as="span" className="uppercase">
-                                        {t('admin.approval')}
-                                      </MicroTitle>
+                                      <MicroTitle as="span">{t('admin.approval')}</MicroTitle>
                                     </TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -2987,24 +2984,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Model
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Model</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_2')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_2')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          %
-                                        </MicroTitle>
+                                        <MicroTitle as="span">%</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3051,24 +3040,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Type
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Type</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_3')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_3')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          %
-                                        </MicroTitle>
+                                        <MicroTitle as="span">%</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3115,24 +3096,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.vibe')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.vibe')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_4')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_4')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          %
-                                        </MicroTitle>
+                                        <MicroTitle as="span">%</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3179,24 +3152,16 @@ export const AdminPage: React.FC = () => {
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.guideline_id')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.guideline_id')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Up
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Up</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          {t('admin.down_5')}
-                                        </MicroTitle>
+                                        <MicroTitle as="span">{t('admin.down_5')}</MicroTitle>
                                       </TableHead>
                                       <TableHead>
-                                        <MicroTitle as="span" className="uppercase">
-                                          Total
-                                        </MicroTitle>
+                                        <MicroTitle as="span">Total</MicroTitle>
                                       </TableHead>
                                     </TableRow>
                                   </TableHeader>
@@ -3338,29 +3303,19 @@ export const AdminPage: React.FC = () => {
                                     <TableHeader>
                                       <TableRow className="border-neutral-800 hover:bg-transparent">
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Prompt
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Prompt</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Feature
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Feature</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Model
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Model</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Tags
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Tags</MicroTitle>
                                         </TableHead>
                                         <TableHead>
-                                          <MicroTitle as="span" className="uppercase">
-                                            Date
-                                          </MicroTitle>
+                                          <MicroTitle as="span">Date</MicroTitle>
                                         </TableHead>
                                       </TableRow>
                                     </TableHeader>
@@ -3758,34 +3713,22 @@ export const AdminPage: React.FC = () => {
                     <TableHeader>
                       <TableRow className="border-neutral-800 hover:bg-transparent">
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.data')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.data')}</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            Feature
-                          </MicroTitle>
+                          <MicroTitle as="span">Feature</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.modelo')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.modelo')}</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.tipo')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.tipo')}</MicroTitle>
                         </TableHead>
                         <TableHead>
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.stats')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.stats')}</MicroTitle>
                         </TableHead>
                         <TableHead className="text-right">
-                          <MicroTitle as="span" className="uppercase">
-                            {t('admin.crditos')}
-                          </MicroTitle>
+                          <MicroTitle as="span">{t('admin.crditos')}</MicroTitle>
                         </TableHead>
                       </TableRow>
                     </TableHeader>

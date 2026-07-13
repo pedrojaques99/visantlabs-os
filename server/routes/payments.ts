@@ -16,6 +16,7 @@ import { validateSafeId } from '../utils/securityValidation.js';
 import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
+import { enforceBrandQuotaOnDowngrade, getBrandQuota, getSeatOverview } from '../lib/brandQuota.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -289,6 +290,8 @@ const fetchStripeTransactionsForCustomer = async (customerId: string) => {
 interface StripePlanInfo {
   tier: string;
   monthlyCredits: number;
+  /** Stripe subscription item quantity — for the agency tier, quantity = contracted active brands. */
+  quantity?: number;
 }
 
 const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo | null> => {
@@ -297,6 +300,7 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const priceId = subscription.items.data[0]?.price?.id;
+    const quantity = subscription.items.data[0]?.quantity;
 
     if (!priceId) return null;
 
@@ -308,7 +312,11 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
     const product = await stripe.products.retrieve(productId);
     const metadata = product.metadata || {};
 
-    // Extract tier and monthlyCredits from metadata
+    // Extract tier and monthlyCredits from metadata.
+    // Legacy tiers (premium/pro/agency) coexist with the v3 pricing tiers
+    // (starter/pro/vision) — 'pro' is shared by both generations and is
+    // numerically compatible (500 credits either way; only maxBrands differs,
+    // see FALLBACK_MAX_BRANDS in brandQuota.ts for that reconciliation).
     const tier = metadata.tier || 'premium';
     const monthlyCredits = metadata.monthlyCredits
       ? parseInt(metadata.monthlyCredits, 10)
@@ -316,9 +324,15 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
         ? 100
         : tier === 'pro'
           ? 500
-          : 3;
+          : tier === 'agency'
+            ? 1000
+            : tier === 'starter'
+              ? 50
+              : tier === 'vision'
+                ? 1000
+                : 3;
 
-    return { tier, monthlyCredits };
+    return { tier, monthlyCredits, quantity };
   } catch (error) {
     console.error('Error fetching Stripe plan info:', error);
     return null;
@@ -537,6 +551,24 @@ router.get(
         }
       }
 
+      // Brand billing + seats (plan task 2.9 / Fase 4 task 4.5): both are
+      // independent quota lookups (advisory — must never break
+      // subscription-status), so run them concurrently instead of serially.
+      // getBrandQuota/getSeatOverview also share brandQuota.ts's in-memory
+      // Product cache (60s TTL), so this doesn't re-hit Mongo for products.
+      const [brandQuotaResult, seatQuotaResult] = await Promise.allSettled([
+        getBrandQuota(user),
+        getSeatOverview(user),
+      ]);
+      const brandQuota: {
+        used: number;
+        max: number | null;
+        tier: string;
+        graceUntil?: string | null;
+      } | null = brandQuotaResult.status === 'fulfilled' ? brandQuotaResult.value : null;
+      const seatQuota: { totalEditors: number; maxPerBrand: number | null; tier: string } | null =
+        seatQuotaResult.status === 'fulfilled' ? seatQuotaResult.value : null;
+
       res.json({
         subscriptionStatus,
         subscriptionTier,
@@ -554,6 +586,8 @@ router.get(
           : freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0,
         planMetadata,
         planName,
+        brandQuota,
+        seatQuota,
       });
     } catch (error) {
       next(error);
@@ -617,6 +651,7 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
         const productId = typeof price.product === 'string' ? price.product : price.product?.id;
         const product = productId ? await stripe.products.retrieve(productId) : null;
         const metadata = product?.metadata || {};
+        // Same reconciled fallback ladder as getStripePlanInfo above.
         const tier = metadata.tier || 'premium';
         const monthlyCredits = metadata.monthlyCredits
           ? parseInt(metadata.monthlyCredits, 10)
@@ -624,7 +659,13 @@ router.get('/plans', apiRateLimiter, async (req, res) => {
             ? 100
             : tier === 'pro'
               ? 500
-              : 3;
+              : tier === 'agency'
+                ? 1000
+                : tier === 'starter'
+                  ? 50
+                  : tier === 'vision'
+                    ? 1000
+                    : 3;
         return res.json({
           priceId,
           tier,
@@ -667,6 +708,100 @@ router.get('/products', apiRateLimiter, async (_req, res, next) => {
 });
 
 // Get usage info
+// POST /claim-club — "reivindicar acesso": comprou o Fundador antes de ter conta,
+// então o webhook não achou o user. Aqui o membro logado busca no Stripe uma compra
+// de fundador (metadata.club) com o email dele e aplica o grant vitalício.
+router.post('/claim-club', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const userId = req.userId!;
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const clubTiers = ['club', 'fundador', 'visantista'];
+    if (user.subscriptionStatus === 'active' && clubTiers.includes((user.subscriptionTier || '').toLowerCase())) {
+      return res.json({ granted: true, already: true, tier: user.subscriptionTier });
+    }
+    if (!stripe) return res.status(500).json({ error: 'Stripe not configured' });
+
+    const email = (user.email || '').toLowerCase();
+    if (!email) return res.json({ granted: false, reason: 'no-email' });
+
+    // Procura uma sessão paga de fundador com esse email
+    let found: Stripe.Checkout.Session | null = null;
+    let starting_after: string | undefined;
+    for (let p = 0; p < 10; p++) {
+      const list = await stripe.checkout.sessions.list({
+        limit: 100,
+        status: 'complete',
+        ...(starting_after ? { starting_after } : {}),
+      });
+      for (const s of list.data) {
+        const sEmail = (s.customer_email || s.customer_details?.email || '').toLowerCase();
+        if (s.payment_status === 'paid' && s.metadata?.club && sEmail && sEmail === email) {
+          found = s;
+          break;
+        }
+      }
+      if (found || !list.has_more) break;
+      starting_after = list.data[list.data.length - 1].id;
+    }
+
+    if (!found) return res.json({ granted: false, reason: 'no-purchase' });
+
+    const grantTier = (found.metadata?.tier as string) || 'club';
+    // Valida que a sessão é de fato uma compra de fundador paga (não só um
+    // e-mail que bateu): tier precisa ser de club e o valor precisa ser > 0.
+    if (!clubTiers.includes(grantTier.toLowerCase())) {
+      return res.json({ granted: false, reason: 'invalid-tier' });
+    }
+    if (!found.amount_total || found.amount_total <= 0) {
+      return res.json({ granted: false, reason: 'not-paid' });
+    }
+
+    // Idempotência: carimba ESTA sessão do Stripe como reivindicada antes de
+    // aplicar o grant — espelha o webhook. Sem isso, qualquer mudança futura de
+    // tier (downgrade, ajuste de admin, race entre abas) reabriria a mesma
+    // compra velha pra re-zerar `creditsUsed` = refil de créditos infinito.
+    const claimed = await claimPaymentEvent(db, 'stripe', found.id);
+    if (!claimed) {
+      return res.json({ granted: false, reason: 'already-claimed' });
+    }
+
+    const isLifetime = found.metadata?.lifetime === 'true';
+    const grantCredits = parseInt(found.metadata?.monthlyCredits || '1000', 10);
+    const resetDate = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
+    const farFuture = new Date('2100-01-01T00:00:00Z');
+    const custId = typeof found.customer === 'string' ? found.customer : undefined;
+
+    try {
+      await db.collection('users').updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            subscriptionStatus: 'active',
+            subscriptionTier: grantTier,
+            subscriptionEndDate: isLifetime ? farFuture : resetDate,
+            monthlyCredits: grantCredits,
+            creditsUsed: 0,
+            creditsResetDate: resetDate,
+            ...(custId ? { stripeCustomerId: custId } : {}),
+            'metadata.clubFounder': isLifetime,
+          },
+        }
+      );
+    } catch (grantError) {
+      // Grant falhou: libera o carimbo pra permitir nova tentativa.
+      await releasePaymentEvent(db, 'stripe', found.id);
+      throw grantError;
+    }
+    return res.json({ granted: true, tier: grantTier, lifetime: isLifetime });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
@@ -1846,21 +1981,24 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 currentTier: user.subscriptionTier,
               });
 
-              const updateResult = await db.collection('users').updateOne(
-                { _id: user._id },
-                {
-                  $set: {
-                    subscriptionStatus: 'active',
-                    subscriptionTier: tier,
-                    stripeSubscriptionId: subscriptionId,
-                    stripeCustomerId: customerId, // Ensure customerId is set
-                    subscriptionEndDate: creditsResetDate,
-                    monthlyCredits: monthlyCredits,
-                    creditsUsed: 0, // Reset credits when subscription starts
-                    creditsResetDate: creditsResetDate,
-                  },
-                }
-              );
+              const checkoutSetData: Record<string, any> = {
+                subscriptionStatus: 'active',
+                subscriptionTier: tier,
+                stripeSubscriptionId: subscriptionId,
+                stripeCustomerId: customerId, // Ensure customerId is set
+                subscriptionEndDate: creditsResetDate,
+                monthlyCredits: monthlyCredits,
+                creditsUsed: 0, // Reset credits when subscription starts
+                creditsResetDate: creditsResetDate,
+              };
+              // Agency tier: Stripe quantity = contracted active brands (brand quota).
+              if (tier === 'agency' && planInfo?.quantity && planInfo.quantity >= 1) {
+                checkoutSetData['metadata.agencyBrandQuantity'] = planInfo.quantity;
+              }
+
+              const updateResult = await db
+                .collection('users')
+                .updateOne({ _id: user._id }, { $set: checkoutSetData });
 
               if (updateResult.modifiedCount > 0) {
                 console.log('✅ User subscription activated successfully:', {
@@ -1928,6 +2066,85 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             if (!stripe) {
               console.error('❌ Stripe is not configured');
               break;
+            }
+
+            // ── Visant Club: grant de tier por pagamento ÚNICO (Fundador vitalício) ──
+            // A visantismo vende o Fundador como one-time com metadata.tier (ex: 'club')
+            // e metadata.lifetime='true'. Aqui viramos o tier do usuário e saímos —
+            // NÃO passa pelo fluxo de créditos abaixo.
+            if (session.metadata?.club) {
+              const grantTier = (session.metadata?.tier as string) || 'club';
+              const isLifetime = session.metadata?.lifetime === 'true';
+              const grantCredits = parseInt(session.metadata?.monthlyCredits || '1000', 10);
+              const resetDate = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
+              const farFuture = new Date('2100-01-01T00:00:00Z');
+
+              let clubUser = customerId
+                ? await db.collection('users').findOne({ stripeCustomerId: customerId })
+                : null;
+              if (!clubUser && customerEmail) {
+                clubUser = await db.collection('users').findOne({ email: customerEmail });
+                if (clubUser && customerId) {
+                  await db
+                    .collection('users')
+                    .updateOne({ _id: clubUser._id }, { $set: { stripeCustomerId: customerId } });
+                }
+              }
+
+              if (clubUser) {
+                // Idempotency: Stripe redelivers webhooks em timeout/5xx. Sem
+                // claim, um redelivery re-zera o `creditsUsed` do fundador (e
+                // re-grava a transação). Reivindica DEPOIS de achar o user —
+                // assim um redelivery antes do cadastro, ou o /claim-club
+                // manual, ainda conseguem aplicar o grant quando o user existir.
+                const claimed = await claimPaymentEvent(db, 'stripe', session.id);
+                if (!claimed) {
+                  console.log('⏭️ Visant Club: sessão já processada, pulando:', session.id);
+                  break;
+                }
+
+                try {
+                  await db.collection('users').updateOne(
+                    { _id: clubUser._id },
+                    {
+                      $set: {
+                        subscriptionStatus: 'active',
+                        subscriptionTier: grantTier,
+                        subscriptionEndDate: isLifetime ? farFuture : resetDate,
+                        monthlyCredits: grantCredits,
+                        creditsUsed: 0,
+                        creditsResetDate: resetDate,
+                        'metadata.clubFounder': isLifetime,
+                      },
+                    }
+                  );
+                } catch (grantError) {
+                  await releasePaymentEvent(db, 'stripe', session.id);
+                  throw grantError;
+                }
+                await recordTransaction(db, {
+                  userId: clubUser._id,
+                  type: 'subscription',
+                  status: session.payment_status || 'paid',
+                  credits: grantCredits,
+                  amount: session.amount_total ?? null,
+                  currency: session.currency,
+                  description: `Visant Club — ${grantTier}${isLifetime ? ' (vitalício)' : ''}`,
+                  stripeSessionId: session.id,
+                  stripeCustomerId: customerId || undefined,
+                });
+                console.log('✅ Visant Club grant aplicado:', {
+                  userId: clubUser._id,
+                  grantTier,
+                  isLifetime,
+                });
+              } else {
+                console.error('❌ Visant Club: usuário não encontrado para grant:', {
+                  customerId,
+                  customerEmail,
+                });
+              }
+              break; // não segue pro fluxo de créditos
             }
 
             // Get line items to extract product information
@@ -2374,9 +2591,25 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             console.log('🔄 Credits reset due to renewal or plan change');
           }
 
+          // Agency tier: Stripe quantity = contracted active brands (brand quota).
+          // Keep it in sync on every update; clear it when the plan is no longer agency.
+          const updateOps: Record<string, any> = { $set: updateData };
+          if (tier === 'agency' && planInfo?.quantity && planInfo.quantity >= 1) {
+            updateData['metadata.agencyBrandQuantity'] = planInfo.quantity;
+          } else if (tier !== 'agency' && user.metadata?.agencyBrandQuantity !== undefined) {
+            updateOps.$unset = { 'metadata.agencyBrandQuantity': '' };
+          }
+
           const updateResult = await db
             .collection('users')
-            .updateOne({ stripeCustomerId: customerId }, { $set: updateData });
+            .updateOne({ stripeCustomerId: customerId }, updateOps);
+
+          // Downgrade handling (brand billing): if the new plan/quantity leaves the
+          // user with more active brands than allowed, record a 7-day grace window
+          // instead of archiving anything now. Never blocks the webhook.
+          enforceBrandQuotaOnDowngrade(user._id.toString()).catch((err: any) =>
+            console.error('⚠️ enforceBrandQuotaOnDowngrade failed:', err?.message)
+          );
 
           if (updateResult.modifiedCount > 0) {
             console.log('✅ Subscription updated successfully:', {
@@ -2454,6 +2687,12 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             if (user.email) {
               revokeBoxyDownloads(user.email, subscription.id).catch(() => {});
             }
+
+            // Downgrade handling (brand billing): back to free tier — record the
+            // 7-day grace window for excess active brands (never archives now).
+            enforceBrandQuotaOnDowngrade(user._id.toString()).catch((err: any) =>
+              console.error('⚠️ enforceBrandQuotaOnDowngrade failed:', err?.message)
+            );
           } else {
             console.warn('⚠️ Subscription cancellation returned 0 modified documents:', {
               userId: user._id,

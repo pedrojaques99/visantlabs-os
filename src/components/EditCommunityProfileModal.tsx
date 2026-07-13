@@ -213,7 +213,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Cover Image */}
           <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1 uppercase">
+            <MicroTitle as="label" className="ml-1">
               Cover Image
             </MicroTitle>
             <div className="relative w-full h-40 rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/60 group">
@@ -267,7 +267,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Username */}
           <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1 uppercase">
+            <MicroTitle as="label" className="ml-1">
               Username
             </MicroTitle>
             <Input
@@ -284,7 +284,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Bio */}
           <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1 uppercase">
+            <MicroTitle as="label" className="ml-1">
               Bio
             </MicroTitle>
             <Textarea
@@ -297,7 +297,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Social Links */}
           <div className="space-y-6">
-            <MicroTitle as="label" className="ml-1 uppercase">
+            <MicroTitle as="label" className="ml-1">
               Social Media Links
             </MicroTitle>
 

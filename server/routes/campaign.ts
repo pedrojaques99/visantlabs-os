@@ -424,6 +424,18 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
   const safeCount = Math.min(Math.max(1, Number(count) || 10), MAX_COUNT);
 
+  // Validate the brand BEFORE charging credits — an archived brand must never
+  // consume credits (mirrors the creative.ts generate-from-brand gate).
+  if (brandGuidelineId) {
+    const bg = await prisma.brandGuideline.findFirst({
+      where: { id: brandGuidelineId, userId: req.userId },
+      select: { status: true },
+    });
+    if (bg?.status === 'archived') {
+      return res.status(403).json({ error: 'brand_archived', reason: 'brand_archived' });
+    }
+  }
+
   // Charge credits upfront: 1 credit for GPT-4o planning + per-image credits
   const perImageCredits = getCreditsRequired(model, '1K');
   const totalCredits = 1 + perImageCredits * safeCount;

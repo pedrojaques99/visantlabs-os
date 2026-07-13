@@ -28,7 +28,7 @@ export const UpgradeGate: React.FC<UpgradeGateProps> = ({ feature, children }) =
           <p className="text-sm font-mono text-neutral-300 mb-4">
             Upgrade para desbloquear <strong>{feature}</strong>
           </p>
-          <Button onClick={onSubscriptionModalOpen} variant="brand" className="w-full">
+          <Button onClick={() => onSubscriptionModalOpen()} variant="brand" className="w-full">
             Ver planos
           </Button>
         </GlassPanel>

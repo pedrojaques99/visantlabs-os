@@ -11,10 +11,11 @@ export const CAMPAIGN_KEYS = {
 const KEYS = CAMPAIGN_KEYS;
 
 /** Brand cockpit: list campaigns, optionally scoped to one brand. */
-export function useCampaigns(brandId?: string) {
+export function useCampaigns(brandId?: string, enabled = true) {
   return useQuery({
     queryKey: KEYS.list(brandId),
     queryFn: () => campaignApi.list(brandId),
+    enabled,
   });
 }
 

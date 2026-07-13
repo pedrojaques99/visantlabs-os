@@ -1,6 +1,7 @@
 import { authService } from './authService';
 import { trackEvent } from '../utils/analytics';
 import type { BrandGuideline } from '../lib/figma-types';
+import type { TemplateSchema } from '../lib/figma-template-schema';
 
 const getApiBaseUrl = () => {
   const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
@@ -25,11 +26,32 @@ const getAuthHeaders = () => {
  * `.code` property, so callers can map codes (e.g. `vision_not_configured`) to
  * friendly, user-facing copy instead of leaking raw "Set GEMINI_API_KEY…" text.
  */
-const codedError = (body: any, fallback: string): Error & { code?: string } => {
-  const err = new Error(body?.message || body?.error || fallback) as Error & { code?: string };
+const codedError = (body: any, fallback: string): CodedError => {
+  const err = new Error(body?.message || body?.error || fallback) as CodedError;
   if (typeof body?.error === 'string') err.code = body.error;
+  // Billing errors (402 brand_limit) carry quota context for the paywall UI.
+  if (typeof body?.reason === 'string') err.code = body.reason;
+  if (typeof body?.used === 'number') err.used = body.used;
+  if (typeof body?.max === 'number' || body?.max === null) err.max = body.max;
+  if (typeof body?.upgradeUrl === 'string') err.upgradeUrl = body.upgradeUrl;
   return err;
 };
+
+export type CodedError = Error & {
+  code?: string;
+  used?: number;
+  max?: number | null;
+  upgradeUrl?: string;
+};
+
+/** Quota de marcas ativas do plano — `max: null` = ilimitado (Agency). */
+export interface BrandQuota {
+  used: number;
+  max: number | null;
+  tier: string;
+  /** ISO date até quando marcas em excesso seguem ativas após downgrade; null = sem grace. */
+  graceUntil?: string | null;
+}
 
 export const brandGuidelineApi = {
   async getAll(params?: { limit?: number; offset?: number }): Promise<BrandGuideline[]> {
@@ -65,6 +87,16 @@ export const brandGuidelineApi = {
     return data.guideline;
   },
 
+  /** Layout schemas synced from the brand's Figma [Template] frames (for the live preview). */
+  async getSyncedTemplates(id: string): Promise<TemplateSchema[]> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/synced-templates`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch synced templates');
+    const data = await response.json();
+    return Array.isArray(data.templates) ? data.templates : [];
+  },
+
   async create(data: Partial<BrandGuideline>): Promise<BrandGuideline> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines`, {
       method: 'POST',
@@ -72,10 +104,57 @@ export const brandGuidelineApi = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) throw new Error('Failed to create brand guideline');
+    if (!response.ok) {
+      // 402 brand_limit precisa chegar tipado no caller pra abrir o paywall certo.
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to create brand guideline');
+    }
     const result = await response.json();
     trackEvent('brand_created', { source: 'guideline' });
     return result.guideline;
+  },
+
+  /** Arquiva a marca — sai da quota, vira read-only, não gera. Nunca deleta. */
+  async archive(id: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/archive`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to archive brand guideline');
+    }
+    const result = await response.json();
+    return result.guideline;
+  },
+
+  /** Reativa a marca — pode falhar com 402 `brand_limit` se a quota estiver cheia. */
+  async unarchive(id: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/unarchive`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to unarchive brand guideline');
+    }
+    const result = await response.json();
+    return result.guideline;
+  },
+
+  /** Quota de marcas ativas do plano (`GET /payments/subscription-status` → `brandQuota`). */
+  async getBrandQuota(): Promise<BrandQuota | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/payments/subscription-status`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data?.brandQuota ?? null;
+    } catch {
+      // Quota é informativa — falha de rede não pode quebrar a página de marcas.
+      return null;
+    }
   },
 
   async update(id: string, guideline: Partial<BrandGuideline>): Promise<BrandGuideline> {
@@ -222,7 +301,7 @@ export const brandGuidelineApi = {
   /** Seasonal/contextual on-brand IDEAS for the interactive panel (free, cached weekly). */
   async getSuggestions(
     id: string,
-    opts: { count?: number; force?: boolean } = {}
+    opts: { count?: number; force?: boolean; cacheOnly?: boolean } = {}
   ): Promise<{
     suggestions: BrandSuggestion[];
     seasonal: { market: string; upcoming: Array<{ key: string; label: string; daysAway: number }> };
@@ -232,12 +311,66 @@ export const brandGuidelineApi = {
     const qs = new URLSearchParams();
     if (opts.count) qs.set('count', String(opts.count));
     if (opts.force) qs.set('force', 'true');
-    const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggestions?${qs}`, {
-      headers: getAuthHeaders(),
-    });
+    if (opts.cacheOnly) qs.set('cacheOnly', 'true');
+    // The server cascades across cheap-text providers (Groq→…→Gemini), which can
+    // take a while when the fast ones are cooling down. Bound the wait so the card
+    // never spins forever — on timeout the caller degrades to static starters.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20_000);
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}/suggestions?${qs}`, {
+        headers: getAuthHeaders(),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        throw codedError({ error: 'suggestions_unavailable' }, 'Ideas took too long — try again shortly.');
+      }
+      throw e;
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       throw codedError(body, 'Failed to load suggestions');
+    }
+    return response.json();
+  },
+
+  /**
+   * Free "surprise-me" mockup suggestions — render RECIPES (not images) matching the
+   * brand's assets to commercial scenes. The client renders each in the browser via
+   * the Scene Package engine (zero credits). `seen` excludes recently-shown pairs.
+   */
+  async getMockupSuggestions(
+    id: string,
+    opts: { cursor?: number; count?: number; seen?: string[] } = {}
+  ): Promise<{
+    suggestions: Array<{
+      psdFileName: string;
+      faceKey: string;
+      faceName: string;
+      assetUrl: string;
+      variant?: string;
+      surfaceKind: string;
+      score: number;
+    }>;
+    nextCursor: number | null;
+    total: number;
+    reason?: 'no_assets' | 'no_scenes';
+  }> {
+    const qs = new URLSearchParams();
+    if (opts.cursor) qs.set('cursor', String(opts.cursor));
+    if (opts.count) qs.set('count', String(opts.count));
+    if (opts.seen?.length) qs.set('seen', opts.seen.join(','));
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${id}/mockup-suggestions?${qs}`,
+      { headers: getAuthHeaders() }
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to load mockup suggestions');
     }
     return response.json();
   },
@@ -798,8 +931,10 @@ export const brandGuidelineApi = {
       body: JSON.stringify({ email, role }),
     });
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Failed to add collaborator' }));
-      throw new Error(err.error || 'Failed to add collaborator');
+      // 402 seat_limit carrega {error, used, max, upgradeUrl} — codedError expõe
+      // isso pro fluxo de share abrir o paywall com contexto (Fase 4 §4.5).
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to add collaborator');
     }
     const data = await response.json();
     return data.collaborator;

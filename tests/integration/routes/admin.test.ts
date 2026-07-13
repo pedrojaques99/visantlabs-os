@@ -11,7 +11,9 @@ import { signTestToken, bearer } from '../../helpers/auth.js';
  * list — the test will assert 403 for every one.
  */
 const endpoints: Array<[method: 'get' | 'post', path: string]> = [
+  ['get', '/api/admin/summary'],
   ['get', '/api/admin/users'],
+  ['get', '/api/admin/charts'],
   ['get', '/api/admin/feedback/stats'],
 ];
 

@@ -20,13 +20,26 @@ import { useTheme } from '@/hooks/useTheme';
 import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
+import { resolveShell, routeMode, editorHasOwnChrome } from '@/config/navConfig';
+import { AppShell } from './shell/AppShell';
+import { AppSpine } from './shell/AppSpine';
+import { InAppShellContext } from './shell/InAppShellContext';
+import { ShellHeaderContext } from './shell/ShellHeaderContext';
+import { useTrackEditorOrigin } from './shell/editorOrigin';
+import { FirstRunGuard } from './shell/FirstRunGuard';
+
+/** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. `insufficient_credits` (free user no muro de crédito) abre o modal de upgrade de plano — Pro dá 10× créditos. */
+export type SubscriptionModalContext = {
+  reason?: 'brand_limit' | 'seat_limit' | 'insufficient_credits';
+  message?: string;
+};
 
 // Export context values for child components
 export type LayoutContextValue = {
   subscriptionStatus: SubscriptionStatus | null;
   isAuthenticated: boolean | null;
   isCheckingAuth: boolean;
-  onSubscriptionModalOpen: () => void;
+  onSubscriptionModalOpen: (context?: SubscriptionModalContext) => void;
   onCreditPackagesModalOpen: () => void;
   setSubscriptionStatus: (status: SubscriptionStatus | null) => void;
   user: User | null;
@@ -76,11 +89,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, []);
 
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [subscriptionModalContext, setSubscriptionModalContext] =
+    useState<SubscriptionModalContext | null>(null);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
   const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<
     'carteira' | 'creditos' | 'assinatura'
   >('creditos');
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  // Slot de ações da AppSpine no modo focus (editores teleportam ações pra cá —
+  // portal universal, análogo ao do AppShell). Plano APP-SPINE-CONSOLIDATION.
+  const [focusActionsSlot, setFocusActionsSlot] = useState<HTMLElement | null>(null);
+  // Rastreia a última rota de dashboard p/ o "voltar" dos editores voltar à origem.
+  useTrackEditorOrigin();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() => {
     if (typeof window !== 'undefined') {
@@ -510,7 +530,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, []);
 
-  const onSubscriptionModalOpen = useCallback(() => setIsSubscriptionModalOpen(true), []);
+  const onSubscriptionModalOpen = useCallback((context?: SubscriptionModalContext) => {
+    setSubscriptionModalContext(context ?? null);
+    if (
+      context?.reason === 'brand_limit' ||
+      context?.reason === 'seat_limit' ||
+      context?.reason === 'insufficient_credits'
+    ) {
+      // Limite de marcas/seats/créditos: o upgrade de plano é a alavanca (Pro dá
+      // 10× créditos). Abre na aba de assinatura com a mensagem de contexto; o
+      // pacote avulso fica a um clique na aba de créditos.
+      setCreditPackagesModalTab('assinatura');
+      setIsCreditPackagesModalOpen(true);
+      return;
+    }
+    setIsSubscriptionModalOpen(true);
+  }, []);
   const onCreditPackagesModalOpen = useCallback(() => {
     setCreditPackagesModalTab('creditos');
     setIsCreditPackagesModalOpen(true);
@@ -558,8 +593,28 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     ]
   );
 
+  // Shell switcher (plano APP-SHELL-REALIGNMENT, F1): o SSoT decide o chrome.
+  // App logado + rota dashboard → AppShell (rail + top bar). Marketing e
+  // editores (focus) seguem o chrome atual; F3 migra os editores.
+  const shellKind = resolveShell(location.pathname, isAuthenticated);
+  const useAppShell = shellKind === 'app' && routeMode(location.pathname) === 'full';
+  // Modo focus (editor logado): dock flutuante em vez do rail cheio; o Header
+  // de marketing some para o editor não parecer "site". CanvasHeader e o chrome
+  // próprio de cada editor (ToolEditorShell/MiniAppShell) permanecem.
+  const focusMode = shellKind === 'app' && routeMode(location.pathname) === 'focus';
+  // Editores focus (menos /canvas/:id, que tem CanvasHeader próprio) passam a
+  // exibir o Header real do app no topo — em vez do dock de ícones flutuante
+  // (FocusRail) que cobria a sidebar. A altura do Header (fixed) é reservada com
+  // padding-top no wrapper, então o editor fica shell-aware sem cada página
+  // precisar saber do chrome.
+  // Editor que já traz o próprio topo completo (CanvasHeader, MiniAppShell da
+  // Naming Machine…) NÃO recebe a AppSpine — senão empilha dois headers. Ver
+  // editorHasOwnChrome (navConfig). Os demais editores focus ganham a espinha.
+  const focusAppHeader = focusMode && !editorHasOwnChrome(location.pathname);
+
   return (
     <LayoutContext.Provider value={contextValue}>
+      <FirstRunGuard />
       <div className="h-screen bg-background text-foreground font-sans flex flex-col">
         <Toaster
           position="top-center"
@@ -630,7 +685,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClose={handleCloseUsagePolicy}
         />
 
-        {!location.pathname.startsWith('/canvas/') && !location.pathname.startsWith('/brand/') && (
+        {!useAppShell &&
+          !focusMode &&
+          !location.pathname.startsWith('/canvas/') &&
+          !location.pathname.startsWith('/brand/') && (
           <Header
             subscriptionStatus={subscriptionStatus}
             onPricingClick={() => navigate('/pricing')}
@@ -657,7 +715,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           />
         )}
 
-        {location.pathname.startsWith('/canvas/') && (
+        {!useAppShell && location.pathname.startsWith('/canvas/') && (
           <CanvasHeader onBack={() => navigate('/canvas')} />
         )}
 
@@ -673,9 +731,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <CreditPackagesModal
           isOpen={isCreditPackagesModalOpen}
-          onClose={() => setIsCreditPackagesModalOpen(false)}
+          onClose={() => {
+            setIsCreditPackagesModalOpen(false);
+            setSubscriptionModalContext(null);
+          }}
           subscriptionStatus={subscriptionStatus}
           initialTab={creditPackagesModalTab}
+          contextMessage={subscriptionModalContext?.message ?? null}
         />
 
         {!location.pathname.startsWith('/budget/shared') &&
@@ -714,20 +776,48 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           )}
 
-        <div
-          className={cn(
-            'flex-1 relative',
-            location.pathname.startsWith('/canvas/') ||
-              location.pathname.startsWith('/mockupmachine') ||
-              location.pathname.startsWith('/playground')
-              ? 'overflow-hidden'
-              : ''
-          )}
-        >
-          {children}
-        </div>
+        {useAppShell ? (
+          <AppShell>{children}</AppShell>
+        ) : focusMode ? (
+          // Editor logado com a AppSpine (modo focus) no topo — a MESMA espinha
+          // do dashboard, no lugar do antigo Header de marketing. Casa a altura
+          // fixed (h-10 md:h-14), então o wrapper mantém pt-10/14 e os offsets de
+          // cada editor seguem válidos. Sinaliza inShell pras páginas droparem o
+          // offset legado. /canvas/:id (focusAppHeader=false) mantém CanvasHeader.
+          // ShellHeaderContext universal: editores teleportam ações pra espinha.
+          <InAppShellContext.Provider value={true}>
+            <ShellHeaderContext.Provider
+              value={{ actionsSlot: focusActionsSlot, setActionsSlot: setFocusActionsSlot }}
+            >
+              {focusAppHeader && <AppSpine variant="focus" />}
+              <div
+                className={cn(
+                  'flex-1 relative overflow-hidden',
+                  focusAppHeader && 'pt-10 md:pt-14'
+                )}
+              >
+                {children}
+              </div>
+            </ShellHeaderContext.Provider>
+          </InAppShellContext.Provider>
+        ) : (
+          <div
+            className={cn(
+              'flex-1 relative',
+              location.pathname.startsWith('/canvas/') ||
+                location.pathname.startsWith('/mockupmachine') ||
+                location.pathname.startsWith('/playground')
+                ? 'overflow-hidden'
+                : ''
+            )}
+          >
+            {children}
+          </div>
+        )}
 
-        {!location.pathname.startsWith('/canvas/') &&
+        {!useAppShell &&
+          !focusMode &&
+          !location.pathname.startsWith('/canvas/') &&
           !location.pathname.startsWith('/brand/') &&
           !location.pathname.startsWith('/admin/chat') &&
           !location.pathname.startsWith('/3d-studio') &&

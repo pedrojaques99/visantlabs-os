@@ -17,6 +17,25 @@ export interface BrandAssetAnalysis {
     mood?: string[];
     medium?: string[];
   };
+  /** Placement metadata — how the asset composites onto a mockup surface. */
+  placement?: {
+    kind?:
+      | 'logo'
+      | 'wordmark'
+      | 'symbol'
+      | 'photo'
+      | 'pattern'
+      | 'texture'
+      | 'graphic'
+      | 'illustration';
+    luminance?: 'light' | 'dark' | 'mixed';
+    hasText?: boolean;
+    text?: string;
+    contrastSafeOn?: ('light' | 'dark')[];
+    aspectRatio?: number;
+    hasTransparency?: boolean;
+    dominantColor?: string;
+  };
   analyzedAt?: string;
   model?: string;
 }

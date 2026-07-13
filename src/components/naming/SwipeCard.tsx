@@ -25,8 +25,12 @@ interface SwipeCardProps {
 
 const THRESHOLD = 100;
 
-/** Slugs do backend (ex. "foreign-roots") viram labels legíveis. */
-const formatTag = (s: string) => s.replace(/[-_]/g, ' ').trim();
+/** Slugs do backend (ex. "foreign-roots") viram labels legíveis; vírgulas viram "•". */
+const formatTag = (s: string) =>
+  s
+    .replace(/[-_]/g, ' ')
+    .replace(/\s*,\s*/g, ' • ')
+    .trim();
 
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
   ({ card, onVerdict, active = true }, ref) => {
@@ -76,26 +80,32 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
     };
 
     return (
+      // Camada EXTERNA = profundidade da pilha. Anima scale/opacity/y conforme
+      // o card é promovido (active vira true) — corrige o card promovido ficar
+      // travado em baixa opacidade.
       <motion.div
-        className={cn(
-          'absolute inset-0 flex items-center justify-center',
-          active ? 'z-20' : 'z-10'
-        )}
-        style={active ? { x, y, rotate } : undefined}
-        animate={active ? controls : { scale: 0.94, y: 14, opacity: 0.6 }}
-        initial={active ? false : { scale: 0.94, y: 14, opacity: 0.6 }}
-        drag={active}
-        dragElastic={0.6}
-        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-        onDragEnd={active ? handleDragEnd : undefined}
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ zIndex: active ? 20 : 10 }}
+        animate={{ scale: active ? 1 : 0.94, y: active ? 0 : 14, opacity: active ? 1 : 0.6 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
       >
-        <GlassPanel
-          intensity="strong"
-          className={cn(
-            'relative w-full h-full max-w-md items-center justify-center text-center px-8 py-12 select-none',
-            active && 'cursor-grab shadow-2xl shadow-black/40'
-          )}
+        {/* Camada INTERNA = arrasto + fly (x/y/rotate/opacity do gesto). */}
+        <motion.div
+          className="flex h-full w-full max-w-md items-center justify-center"
+          style={active ? { x, y, rotate } : undefined}
+          animate={controls}
+          drag={active}
+          dragElastic={0.6}
+          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+          onDragEnd={active ? handleDragEnd : undefined}
         >
+          <GlassPanel
+            intensity="strong"
+            className={cn(
+              'relative h-full w-full items-center justify-center text-center px-8 py-12 select-none',
+              active && 'cursor-grab shadow-2xl shadow-black/40'
+            )}
+          >
           {/* Indicadores de gesto */}
           {active && (
             <>
@@ -133,8 +143,8 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
               do preview vazaria por baixo; o card de trás fica como moldura vazia. */}
           {active && (
             <>
-              {/* Território */}
-              <span className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+              {/* Território — pill suave (não mono cru) */}
+              <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-400">
                 {formatTag(card.territory)}
               </span>
 
@@ -143,13 +153,16 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 {card.name}
               </h2>
 
+              {/* Divisor — dá âncora ao nome e mata o "card oco" */}
+              <span className="my-5 h-px w-10 bg-white/10" />
+
               {/* Defesa */}
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-400">
+              <p className="max-w-xs text-sm leading-relaxed text-neutral-400">
                 {card.rationale}
               </p>
 
-              {/* Técnica */}
-              <span className="mt-5 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+              {/* Técnica — mono só aqui (label técnico de verdade) */}
+              <span className="mt-6 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
                 {formatTag(card.technique)}
               </span>
 
@@ -162,7 +175,8 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
               )}
             </>
           )}
-        </GlassPanel>
+          </GlassPanel>
+        </motion.div>
       </motion.div>
     );
   }

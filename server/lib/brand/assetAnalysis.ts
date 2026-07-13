@@ -27,24 +27,36 @@ const MODEL = 'gemini-2.5-flash';
 
 const ANALYSIS_PROMPT = `You are a brand designer cataloguing a brand's own visual asset (a logo, graphic, photo, pattern or mockup).
 
-Return JSON describing its visual language:
+Return JSON describing its visual language AND how it can be placed onto a mockup surface.
+Emit the fields in EXACTLY this order (description LAST):
 {
-  "description": "One concise sentence describing the asset, for prompt engineering (English).",
   "dimensions": {
     "vibe": ["emotional tone, e.g. premium, playful, bold, calm, edgy, corporate, warm"],
     "aesthetic": ["visual style, e.g. minimalist, brutalist, editorial, retro, organic, swiss, maximalist"],
     "theme": ["subject/motif, e.g. abstract, geometric, nature, urban, human, product, typographic"],
     "mood": ["color & light mood, e.g. warm, cool, vibrant, muted, pastel, monochrome, high-contrast"],
     "medium": ["treatment, e.g. photography, 3d render, illustration, vector, flat, gradient, grain, line-art"]
-  }
+  },
+  "placement": {
+    "kind": "ONE of: logo | wordmark | symbol | photo | pattern | texture | graphic | illustration",
+    "luminance": "ONE of: light (art is mostly light/white) | dark (mostly dark/black) | mixed",
+    "hasText": true or false (is there any legible text/lettering),
+    "text": "the exact text if any, verbatim; empty string if none",
+    "contrastSafeOn": ["which backgrounds it stays legible on: 'light' and/or 'dark'"]
+  },
+  "description": "MAX 15 words. One short phrase (English). NEVER transcribe text in the image. No lists, no line breaks."
 }
 
+kind: 'logo' = symbol + wordmark lockup; 'wordmark' = text-only logotype; 'symbol' = icon/mark only; 'graphic' = a designed campaign composition; 'photo' = a photograph.
+contrastSafeOn: a white/light mark is safe on 'dark'; a black/dark mark is safe on 'light'; a full-bleed photo or framed graphic is safe on both.
 Each dimension array should have 1-3 precise, lowercase values. Judge only what is visible.`;
 
 const RESPONSE_SCHEMA = {
   type: Type.OBJECT,
+  // Order matters: placement/dimensions FIRST, description LAST. If the model lets
+  // the description run away (it sometimes emits a huge string), it truncates at the
+  // token cap — but the essential fields are already emitted and get salvaged.
   properties: {
-    description: { type: Type.STRING },
     dimensions: {
       type: Type.OBJECT,
       properties: {
@@ -55,8 +67,72 @@ const RESPONSE_SCHEMA = {
         medium: { type: Type.ARRAY, items: { type: Type.STRING } },
       },
     },
+    placement: {
+      type: Type.OBJECT,
+      properties: {
+        kind: { type: Type.STRING },
+        luminance: { type: Type.STRING },
+        hasText: { type: Type.BOOLEAN },
+        text: { type: Type.STRING },
+        contrastSafeOn: { type: Type.ARRAY, items: { type: Type.STRING } },
+      },
+    },
+    description: { type: Type.STRING },
   },
+  propertyOrdering: ['dimensions', 'placement', 'description'],
 } as const;
+
+/**
+ * Parse the analysis JSON, salvaging the essential fields when the trailing
+ * `description` overflows the token budget and truncates the response. Since
+ * description is emitted LAST, cutting before it yields valid JSON with the
+ * dimensions + placement intact.
+ */
+export function parseAnalysisJson(text: string): any {
+  const t = (text || '').trim();
+  try {
+    return JSON.parse(t);
+  } catch {
+    /* fall through to salvage */
+  }
+  const di = t.indexOf('"description"');
+  if (di > 0) {
+    const head = t.slice(0, di).replace(/[,\s]*$/, '');
+    try {
+      return JSON.parse(head + '}');
+    } catch {
+      /* unsalvageable */
+    }
+  }
+  throw new Error('Unparseable analysis JSON');
+}
+
+// Vision returns free-form strings; clamp to our unions so the matcher can trust them.
+const VALID_KINDS = [
+  'logo', 'wordmark', 'symbol', 'photo', 'pattern', 'texture', 'graphic', 'illustration',
+] as const;
+export function normalizePlacementSemantic(
+  raw: any
+): import('./visualSignature.js').BrandAssetPlacement {
+  if (!raw || typeof raw !== 'object') return {};
+  const kind = String(raw.kind || '').toLowerCase().trim();
+  const lum = String(raw.luminance || '').toLowerCase().trim();
+  const safe = Array.isArray(raw.contrastSafeOn)
+    ? raw.contrastSafeOn
+        .map((s: unknown) => String(s).toLowerCase().trim())
+        .filter((s: string) => s === 'light' || s === 'dark')
+    : undefined;
+  let text = typeof raw.text === 'string' ? raw.text.trim() : undefined;
+  // Models sometimes echo a sentinel ("false"/"none"/"n/a") instead of real text.
+  if (text && /^(false|true|none|n\/?a|null|no text)$/i.test(text)) text = undefined;
+  return {
+    kind: (VALID_KINDS as readonly string[]).includes(kind) ? (kind as any) : undefined,
+    luminance: lum === 'light' || lum === 'dark' || lum === 'mixed' ? (lum as any) : undefined,
+    hasText: typeof raw.hasText === 'boolean' ? raw.hasText : text ? text.length > 0 : undefined,
+    text: text || undefined,
+    contrastSafeOn: safe && safe.length ? Array.from(new Set(safe)) : undefined,
+  };
+}
 
 function geminiKey(): string {
   return (
@@ -75,7 +151,9 @@ export function isAssetAnalysisConfigured(): boolean {
   );
 }
 
-async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: string } | null> {
+async function fetchAsBase64(
+  url: string
+): Promise<{ data: string; mimeType: string; raster: Buffer } | null> {
   try {
     // 20s socket timeout so a dead asset host can't stall a large analysis job.
     const res = await safeFetch(url, { timeoutMs: 20_000 } as any);
@@ -92,17 +170,96 @@ async function fetchAsBase64(url: string): Promise<{ data: string; mimeType: str
     // marks (which are often SVG) actually get analyzed instead of returning empty.
     if (isSvg) {
       const { default: sharp } = await import('sharp');
-      const png = await sharp(buf, { density: 200 })
+      // Keep alpha in the raster we measure mechanics on (transparency detection),
+      // but send the vision model a flattened copy so it isn't confused by alpha.
+      const raster = await sharp(buf, { density: 200 })
         .resize(512, 512, { fit: 'inside', withoutEnlargement: false })
-        .flatten({ background: '#ffffff' })
         .png()
         .toBuffer();
-      return { data: png.toString('base64'), mimeType: 'image/png' };
+      const flat = await sharp(raster).flatten({ background: '#ffffff' }).png().toBuffer();
+      return { data: flat.toString('base64'), mimeType: 'image/png', raster };
     }
 
-    return { data: buf.toString('base64'), mimeType: ct.startsWith('image/') ? ct : 'image/png' };
+    // Downscale rasters before vision. A full-res, text-heavy image (og-image,
+    // screenshots) makes the model OCR-transcribe every word into `description`,
+    // overflowing the JSON output ("Unterminated string"). Capping to ~1024px
+    // keeps composition legible, kills the transcription runaway, and cuts tokens.
+    // Ratio/alpha/dominant all survive the downscale, so mechanics stay correct.
+    try {
+      const { default: sharp } = await import('sharp');
+      const meta = await sharp(buf).metadata();
+      if ((meta.width || 0) > 1024 || (meta.height || 0) > 1024) {
+        const resized = await sharp(buf)
+          .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+          .png()
+          .toBuffer();
+        return { data: resized.toString('base64'), mimeType: 'image/png', raster: resized };
+      }
+    } catch {
+      /* sharp failed — fall through to the original bytes */
+    }
+
+    return {
+      data: buf.toString('base64'),
+      mimeType: ct.startsWith('image/') ? ct : 'image/png',
+      raster: buf,
+    };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Deterministic placement mechanics via sharp — no LLM, no cost. These are pure
+ * measurements the matcher trusts: aspect ratio (matches SceneFace innerW/innerH),
+ * whether the asset has real transparency (can be pasted without a frame), and
+ * its dominant color (for contrast scoring against a scene's base).
+ */
+export async function computeMechanics(
+  raster: Buffer
+): Promise<Pick<
+  import('./visualSignature.js').BrandAssetPlacement,
+  'aspectRatio' | 'hasTransparency' | 'dominantColor'
+>> {
+  try {
+    const { default: sharp } = await import('sharp');
+    const img = sharp(raster);
+    const meta = await img.metadata();
+    const out: {
+      aspectRatio?: number;
+      hasTransparency?: boolean;
+      dominantColor?: string;
+    } = {};
+
+    if (meta.width && meta.height) out.aspectRatio = +(meta.width / meta.height).toFixed(4);
+
+    // Real transparency = has alpha AND at least one meaningfully transparent pixel
+    // (a flat opaque PNG can still carry an alpha channel). stats().isOpaque is the
+    // cheap, reliable signal sharp already computes.
+    if (meta.hasAlpha) {
+      try {
+        const stats = await img.stats();
+        out.hasTransparency = !stats.isOpaque;
+      } catch {
+        out.hasTransparency = true; // has alpha but stats failed — assume transparent
+      }
+    } else {
+      out.hasTransparency = false;
+    }
+
+    try {
+      const { dominant } = await img.stats();
+      out.dominantColor =
+        '#' +
+        [dominant.r, dominant.g, dominant.b]
+          .map((c) => Math.round(c).toString(16).padStart(2, '0'))
+          .join('');
+    } catch {
+      /* dominant optional */
+    }
+    return out;
+  } catch {
+    return {};
   }
 }
 
@@ -167,15 +324,19 @@ async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<Bran
           // 2.5-flash spends the output budget reasoning and truncates the JSON
           // mid-string (the "Unterminated string" failures). Off = faster + valid.
           thinkingConfig: { thinkingBudget: 0 },
-          maxOutputTokens: 1024,
+          // Headroom for the richer schema (dimensions + placement + description).
+          // 1024 truncated once placement was added; a rambling description on busy
+          // images can still eat the budget, so the prompt caps it at 15 words too.
+          maxOutputTokens: 3072,
         },
       }),
     maxAttempts
   );
-  const parsed = JSON.parse((response.text || '').trim());
+  const parsed = parseAnalysisJson(response.text || '');
   return {
     description: parsed.description || undefined,
     dimensions: parsed.dimensions || {},
+    placement: normalizePlacementSemantic(parsed.placement),
     analyzedAt: new Date().toISOString(),
     model: MODEL,
   };
@@ -191,7 +352,9 @@ function replicateToken(): string {
 const REPLICATE_MODEL = () => process.env.REPLICATE_VISION_MODEL || 'openai/gpt-4o-mini';
 const REPLICATE_PROMPT =
   'You are tagging a brand visual asset. Output ONLY a JSON object, no prose. ' +
-  'Schema: {"description":"one short sentence","dimensions":{"vibe":[],"aesthetic":[],"theme":[],"mood":[],"medium":[]}}. ' +
+  'Schema: {"description":"one short sentence","dimensions":{"vibe":[],"aesthetic":[],"theme":[],"mood":[],"medium":[]},' +
+  '"placement":{"kind":"logo|wordmark|symbol|photo|pattern|texture|graphic|illustration",' +
+  '"luminance":"light|dark|mixed","hasText":true,"text":"verbatim text or empty","contrastSafeOn":["light","dark"]}}. ' +
   'Use 1-3 lowercase single-word tags per dimension.';
 
 // Official models (openai/anthropic/google/meta) run via the model endpoint with
@@ -232,6 +395,14 @@ function parseReplicateOutput(text: string): BrandAssetAnalysis {
     }
   }
   if (!description) description = text.trim().slice(0, 200) || undefined;
+  let placement: BrandAssetAnalysis['placement'];
+  if (match) {
+    try {
+      placement = normalizePlacementSemantic(JSON.parse(match[0]).placement);
+    } catch {
+      /* placement optional — leave undefined */
+    }
+  }
   return {
     description,
     dimensions: {
@@ -241,6 +412,7 @@ function parseReplicateOutput(text: string): BrandAssetAnalysis {
       mood: clean(dims.mood),
       medium: clean(dims.medium),
     },
+    placement,
     analyzedAt: new Date().toISOString(),
     model: `replicate:${REPLICATE_MODEL()}`,
   };
@@ -323,10 +495,15 @@ export async function analyzeAssetImage(url: string): Promise<{
   const img = await fetchAsBase64(url);
   if (!img) return null;
 
+  // Deterministic mechanics (sharp) computed once, merged onto whichever provider
+  // returns — so aspectRatio/hasTransparency/dominantColor are always present even
+  // if the vision model omits or fumbles the semantic placement fields.
+  const mechanics = await computeMechanics(img.raster);
+
   const geminiUp = !!geminiKey() && Date.now() >= geminiDisabledUntil;
   const replicateUp = !!replicateToken() && Date.now() >= replicateDisabledUntil;
   const ok = (analysis: BrandAssetAnalysis) => ({
-    analysis,
+    analysis: { ...analysis, placement: { ...(analysis.placement || {}), ...mechanics } },
     image: img,
     inputTokens: 0,
     outputTokens: 0,

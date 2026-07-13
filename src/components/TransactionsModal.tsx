@@ -111,9 +111,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
       <div className="w-full max-w-3xl bg-neutral-950 border border-neutral-800/60 rounded-xl shadow-2xl relative">
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <div>
-            <MicroTitle className="text-neutral-500 uppercase mb-1">
-              {t('transactions.title')}
-            </MicroTitle>
+            <MicroTitle className="text-neutral-500 mb-1">{t('transactions.title')}</MicroTitle>
             <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
               {t('transactions.subtitle')}
             </h2>
@@ -145,7 +143,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
           ) : (
             groupedTransactions.map(([date, items]) => (
               <div key={date} className="mb-6 last:mb-0">
-                <MicroTitle className="text-neutral-600 uppercase mb-3 border-b border-neutral-800/20 pb-1">
+                <MicroTitle className="text-neutral-600 mb-3 border-b border-neutral-800/20 pb-1">
                   {date}
                 </MicroTitle>
                 <div className="space-y-3">

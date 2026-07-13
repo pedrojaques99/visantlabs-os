@@ -70,6 +70,41 @@ function getUserObjectId(userId: string): ObjectId {
   return new ObjectId(userId);
 }
 
+// GET /api/users/onboarding-progress — Checklist v2 (Fase 3): state DERIVED
+// from existing data, zero new persisted state.
+//   hasRealBrand         — owns an active NON-demo brand guideline
+//   hasOnBrandGeneration — generated at least once with a brand attached
+//   hasConnectedAgent    — has an active API key or a live OAuth (MCP) grant
+// NOTE: must be mounted BEFORE '/:identifier' or the param route captures it.
+router.get('/onboarding-progress', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    await connectToMongoDB();
+    const db = getDb();
+    const { ACTIVE_BRAND_WHERE } = await import('../lib/brandQuota.js');
+
+    const [realBrands, brandedMockups, onBrandUsage, apiKeys, oauthGrants] = await Promise.all([
+      prisma.brandGuideline.count({ where: { userId, ...ACTIVE_BRAND_WHERE } }),
+      prisma.mockup.count({ where: { userId, brandGuidelineId: { not: null } } }),
+      // usage_records stores userId as a string (see adminAnalytics.ts note).
+      db.collection('usage_records').countDocuments({ userId, onBrand: true }, { limit: 1 }),
+      prisma.apiKey.count({ where: { userId, active: true } }),
+      prisma.oAuthRefreshToken.count({ where: { userId, expiresAt: { gt: new Date() } } }),
+    ]);
+
+    res.json({
+      hasRealBrand: realBrands > 0,
+      hasOnBrandGeneration: brandedMockups > 0 || onBrandUsage > 0,
+      hasConnectedAgent: apiKeys > 0 || oauthGrants > 0,
+    });
+  } catch (error: any) {
+    console.error('Failed to compute onboarding progress:', error);
+    res.status(500).json({ error: 'Failed to load onboarding progress', message: error.message });
+  }
+});
+
 // Get user profile by username or ID (HIGH-002: stricter rate limiting)
 router.get('/:identifier', publicProfileLimiter, async (req, res) => {
   try {
@@ -86,17 +121,13 @@ router.get('/:identifier', publicProfileLimiter, async (req, res) => {
     const db = getDb();
     const userObjectId = getUserObjectId(user.id);
 
-    // Count mockups (only blank mockups for public display)
-    const mockupCount = await db.collection('mockups').countDocuments({
-      userId: userObjectId,
-      designType: 'blank',
-    });
-
-    // Count approved community presets
-    const presetCount = await db.collection('community_presets').countDocuments({
-      userId: userObjectId,
-      isApproved: true,
-    });
+    // Independent counts run in parallel (hot public-profile route).
+    const [mockupCount, presetCount] = await Promise.all([
+      // Only blank mockups for public display.
+      db.collection('mockups').countDocuments({ userId: userObjectId, designType: 'blank' }),
+      // Approved community presets.
+      db.collection('community_presets').countDocuments({ userId: userObjectId, isApproved: true }),
+    ]);
 
     // Return public profile data
     res.json({
@@ -844,6 +875,54 @@ router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthReq
 
     res.status(500).json({
       error: 'Failed to update canvas settings',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+// Get user Naming Machine default settings (mirrors /settings/canvas).
+// New naming sessions inherit these instead of the factory defaults.
+router.get('/settings/naming', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { namingSettings: true },
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user.namingSettings || {});
+  } catch (error: any) {
+    console.error('Failed to get naming settings:', error);
+    res.status(500).json({ error: 'Failed to get naming settings', message: error.message });
+  }
+});
+
+// Update user Naming Machine default settings.
+router.put('/settings/naming', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    if (!userId) return res.status(401).json({ error: 'Authentication required' });
+
+    const settings = req.body;
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      return res.status(400).json({
+        error: 'Invalid settings format',
+        message: 'Settings must be a valid JSON object',
+      });
+    }
+
+    await prisma.user.update({ where: { id: userId }, data: { namingSettings: settings } });
+    res.json({ success: true, message: 'Naming settings updated successfully' });
+  } catch (error: any) {
+    console.error('[Naming Settings] Failed to update:', error);
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found', message: 'User does not exist' });
+    }
+    res.status(500).json({
+      error: 'Failed to update naming settings',
       message: error.message || 'An error occurred',
     });
   }

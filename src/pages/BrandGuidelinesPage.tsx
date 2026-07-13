@@ -2,7 +2,9 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuidelines, useBrandQuota } from '@/hooks/queries/useBrandGuidelines';
+import { FEATURE_BRAND_BILLING } from '@/config/featureFlags';
+import { ConfirmationModal } from '@/components/ConfirmationModal';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { SEO } from '@/components/SEO';
@@ -27,6 +29,12 @@ import {
   ArrowUpDown,
   FileText,
   Figma,
+  Archive,
+  ArchiveRestore,
+  MoreVertical,
+  ChevronDown,
+  AlertTriangle,
+  Pencil,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,8 +43,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useBrandArchiveActions, isArchived } from '@/components/brand/useBrandArchiveActions';
+import { BrandQuickEditDialog } from '@/components/brand/guidelines/BrandQuickEditDialog';
+import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
+import { glassSurface } from '@/lib/ui/glass';
 
 const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   const { t } = useTranslation();
@@ -117,11 +130,20 @@ const BrandCard = ({
   guideline,
   onSelect,
   index,
+  archived = false,
+  onArchive,
+  onUnarchive,
+  onQuickEdit,
 }: {
   guideline: BrandGuideline;
   onSelect: (g: BrandGuideline) => void;
   index: number;
+  archived?: boolean;
+  onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
+  onQuickEdit?: (g: BrandGuideline) => void;
 }) => {
+  const { t } = useTranslation();
   const [coverLoaded, setCoverLoaded] = useState(false);
   const coverUrl = getCoverUrl(guideline);
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
@@ -141,10 +163,13 @@ const BrandCard = ({
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
       onClick={() => onSelect(guideline)}
-      className="group relative flex flex-col sm:flex-col rounded-xl border border-neutral-800 bg-neutral-900 hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer"
+      className={cn(
+        'group relative flex flex-col sm:flex-col rounded-xl border border-neutral-800 bg-neutral-900 hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer',
+        archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
+      )}
     >
       {/* Cover */}
-      <div className="relative w-full sm:w-full h-20 sm:h-24 shrink-0 overflow-hidden bg-neutral-800">
+      <div className="relative w-full sm:w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-neutral-800">
         {coverUrl && !coverLoaded && (
           <div className="absolute inset-0 animate-pulse bg-neutral-800" />
         )}
@@ -166,6 +191,68 @@ const BrandCard = ({
 
         {/* Badges overlay */}
         <div className="absolute top-2 right-2 flex items-center gap-1.5">
+          {archived && (
+            <Badge
+              variant="secondary"
+              className="bg-white/10 backdrop-blur-sm border-white/10 text-neutral-400 text-[10px] px-1.5 py-0 h-5 gap-1"
+            >
+              <Archive size={9} />
+              {t('brandQuota.archivedBadge')}
+            </Badge>
+          )}
+          {(onArchive || onUnarchive || onQuickEdit) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  role="button"
+                  aria-label={t('brandQuota.brandActions')}
+                  className="p-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical size={11} className="text-white/80" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[130px]">
+                {!archived && onQuickEdit && (
+                  <DropdownMenuItem
+                    className="text-xs gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onQuickEdit(guideline);
+                    }}
+                  >
+                    <Pencil size={12} />
+                    {t('brandQuota.quickEdit')}
+                  </DropdownMenuItem>
+                )}
+                {archived
+                  ? onUnarchive && (
+                      <DropdownMenuItem
+                        className="text-xs gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUnarchive(guideline.id!);
+                        }}
+                      >
+                        <ArchiveRestore size={12} />
+                        {t('brandQuota.unarchive')}
+                      </DropdownMenuItem>
+                    )
+                  : onArchive && (
+                      <DropdownMenuItem
+                        className="text-xs gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onArchive(guideline.id!);
+                        }}
+                      >
+                        <Archive size={12} />
+                        {t('brandQuota.archive')}
+                      </DropdownMenuItem>
+                    )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {guideline.isPublic && (
             <Badge
               variant="secondary"
@@ -234,16 +321,116 @@ const BrandCard = ({
 
 type SortMode = 'recent' | 'name' | 'completeness';
 
+/**
+ * "X de Y marcas ativas" — meter discreto do plano; Y = ∞ para agency/ilimitado.
+ * CTA de upgrade só quando a quota está cheia (padrão paywall_hit do plano).
+ */
+const BrandQuotaMeter = ({
+  used,
+  max,
+  onUpgrade,
+}: {
+  used: number;
+  max: number | null;
+  onUpgrade: () => void;
+}) => {
+  const { t } = useTranslation();
+  const unlimited = max === null;
+  const full = !unlimited && used >= max;
+  const pct = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(max, 1)) * 100));
+
+  return (
+    <div className="flex items-center gap-2.5 shrink-0">
+      {!unlimited && (
+        <div className="hidden sm:block w-16 h-1 rounded-full bg-neutral-800 overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              full ? 'bg-warning' : 'bg-white/30'
+            )}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+      <span className="text-[11px] text-neutral-600 tabular-nums whitespace-nowrap">
+        {unlimited
+          ? t('brandQuota.meterUnlimited', { used })
+          : t('brandQuota.meter', { used, max })}
+      </span>
+      {full && (
+        <Button variant="subtle" size="sm" className="h-6 px-2 text-[11px]" onClick={onUpgrade}>
+          {t('brandQuota.upgrade')}
+        </Button>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Banner de tolerância de downgrade (RCD §3.5 — moldura de perda). Enquanto a
+ * janela de 7 dias corre, as marcas em excesso seguem ATIVAS; passou o prazo, o
+ * cron arquiva as mais antigas. Mostrar isso (com a perda enquadrada nas marcas
+ * do próprio usuário) converte melhor que arquivar em silêncio.
+ */
+const BrandGraceBanner = ({
+  graceUntil,
+  onUpgrade,
+}: {
+  graceUntil: string;
+  onUpgrade: () => void;
+}) => {
+  const { t } = useTranslation();
+  const until = new Date(graceUntil);
+  if (Number.isNaN(until.getTime()) || until.getTime() <= Date.now()) return null;
+  const days = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 86_400_000));
+
+  return (
+    <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+      <AlertTriangle size={16} className="text-warning shrink-0" />
+      <p className="text-sm text-neutral-200 flex-1">
+        {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
+      </p>
+      <Button
+        variant="subtle"
+        size="sm"
+        className="h-7 px-3 text-xs shrink-0 self-start sm:self-auto"
+        onClick={onUpgrade}
+      >
+        {t('brandQuota.graceCta')}
+      </Button>
+    </div>
+  );
+};
+
+// Sidebar-lista de marcas escondida por ora (single-column + grid preenche a
+// tela; mata a duplicação de lista/busca). O componente `GuidelinesSidebar`
+// segue pronto pra reimportar — basta virar este flag pra true.
+const SHOW_BRAND_SIDEBAR = false;
+
 const BrandGrid = ({
   guidelines,
   onSelect,
+  onArchive,
+  onUnarchive,
+  search: searchProp,
+  onSearchChange,
 }: {
   guidelines: BrandGuideline[];
   onSelect: (g: BrandGuideline) => void;
+  onArchive?: (id: string) => void;
+  onUnarchive?: (id: string) => void;
+  /** Busca controlada (SSoT único compartilhado com a sidebar). */
+  search?: string;
+  onSearchChange?: (v: string) => void;
 }) => {
-  const [search, setSearch] = useState('');
+  const { t } = useTranslation();
+  const [internalSearch, setInternalSearch] = useState('');
+  const search = searchProp ?? internalSearch;
+  const setSearch = onSearchChange ?? setInternalSearch;
   const [folderFilter, setFolderFilter] = useState<string | null>(null);
   const [sort, setSort] = useState<SortMode>('recent');
+  const [showArchived, setShowArchived] = useState(false);
+  const [quickEdit, setQuickEdit] = useState<BrandGuideline | null>(null);
 
   const folders = useMemo(() => {
     const s = new Set<string>();
@@ -277,6 +464,12 @@ const BrandGrid = ({
     return list;
   }, [guidelines, search, folderFilter, sort]);
 
+  // Marcas arquivadas saem do grid principal e viram seção colapsável no fim
+  // (billing por marca ativa). Sem a flag, tudo cai em `activeList` como antes.
+  const billingOn = FEATURE_BRAND_BILLING && (onArchive || onUnarchive);
+  const activeList = billingOn ? filtered.filter((g) => !isArchived(g)) : filtered;
+  const archivedList = billingOn ? filtered.filter(isArchived) : [];
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-4">
       {/* Toolbar: search + folder pills + sort */}
@@ -289,8 +482,8 @@ const BrandGrid = ({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search brands..."
-            className="h-8 pl-8 text-xs bg-white/[0.03] border-neutral-800"
+            placeholder={t('brandGuidelines.searchPlaceholder')}
+            className={cn('h-8 pl-8 text-xs', glassSurface.control)}
           />
         </div>
 
@@ -305,7 +498,7 @@ const BrandGrid = ({
                   : 'border-transparent text-neutral-600 hover:text-neutral-400'
               )}
             >
-              All
+              {t('brandGuidelines.allFolders')}
             </button>
             {folders.map((f) => (
               <button
@@ -330,7 +523,11 @@ const BrandGrid = ({
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-400 border border-transparent hover:border-neutral-800 transition-colors">
                 <ArrowUpDown size={11} />
-                {sort === 'recent' ? 'Recent' : sort === 'name' ? 'Name' : 'Completeness'}
+                {sort === 'recent'
+                  ? t('brandGuidelines.sortRecent')
+                  : sort === 'name'
+                    ? t('brandGuidelines.sortName')
+                    : t('brandGuidelines.sortCompleteness')}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[130px]">
@@ -339,21 +536,21 @@ const BrandGrid = ({
                 checked={sort === 'recent'}
                 onCheckedChange={() => setSort('recent')}
               >
-                Recent
+                {t('brandGuidelines.sortRecent')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 className="text-xs"
                 checked={sort === 'name'}
                 onCheckedChange={() => setSort('name')}
               >
-                Name
+                {t('brandGuidelines.sortName')}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 className="text-xs"
                 checked={sort === 'completeness'}
                 onCheckedChange={() => setSort('completeness')}
               >
-                Completeness
+                {t('brandGuidelines.sortCompleteness')}
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -362,21 +559,70 @@ const BrandGrid = ({
 
       {/* Count */}
       <p className="text-[11px] text-neutral-700">
-        {filtered.length} of {guidelines.length} design system{guidelines.length !== 1 ? 's' : ''}
+        {t('brandGuidelines.countBrands', {
+          filtered: filtered.length,
+          total: guidelines.length,
+        })}
       </p>
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-        {filtered.map((g, i) => (
-          <BrandCard key={g.id} guideline={g} onSelect={onSelect} index={i} />
+        {activeList.map((g, i) => (
+          <BrandCard
+            key={g.id}
+            guideline={g}
+            onSelect={onSelect}
+            index={i}
+            onArchive={billingOn ? onArchive : undefined}
+            onQuickEdit={setQuickEdit}
+          />
         ))}
       </div>
+
+      {/* Archived section — atenuada, colapsável, no fim da lista */}
+      {archivedList.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className="flex items-center gap-1.5 text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors"
+          >
+            <ChevronDown
+              size={12}
+              className={cn('transition-transform', !showArchived && '-rotate-90')}
+            />
+            <Archive size={11} />
+            {t('brandQuota.archivedSection', { count: archivedList.length })}
+          </button>
+          {showArchived && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {archivedList.map((g, i) => (
+                <BrandCard
+                  key={g.id}
+                  guideline={g}
+                  onSelect={onSelect}
+                  index={i}
+                  archived
+                  onUnarchive={billingOn ? onUnarchive : undefined}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {filtered.length === 0 && search.trim() && (
         <div className="flex flex-col items-center py-12 gap-3">
           <Search size={20} className="text-neutral-700" />
-          <p className="text-xs text-neutral-600">No brands match "{search}"</p>
+          <p className="text-xs text-neutral-600">{t('brandGuidelines.noMatch', { term: search })}</p>
         </div>
+      )}
+
+      {quickEdit && (
+        <BrandQuickEditDialog
+          guideline={quickEdit}
+          open={!!quickEdit}
+          onOpenChange={(o) => !o && setQuickEdit(null)}
+        />
       )}
     </motion.div>
   );
@@ -386,16 +632,34 @@ export const BrandGuidelinesPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAuthenticated } = useLayout();
+  const { isAuthenticated, onSubscriptionModalOpen } = useLayout();
 
   const urlGuidelineId = searchParams.get('id');
   const [selectedId, setSelectedId] = useState<string | null>(urlGuidelineId);
+  // Busca de marca — SSoT único: a sidebar (lista) e o BrandGrid (cards) filtram
+  // pelo MESMO termo, em vez de dois estados desconexos. Finding #2.
+  const [brandSearch, setBrandSearch] = useState('');
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Server state via react-query — dashboard only needs the list.
   const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
+
+  // Billing por marca ativa (flag FEATURE_BRAND_BILLING)
+  const { data: brandQuota } = useBrandQuota(FEATURE_BRAND_BILLING && isAuthenticated === true);
+  const archiveActions = useBrandArchiveActions();
+
+  const handleQuotaUpgrade = useCallback(() => {
+    if (!brandQuota) return;
+    onSubscriptionModalOpen({
+      reason: 'brand_limit',
+      message: t('brandQuota.limitMessage', {
+        used: brandQuota.used,
+        max: brandQuota.max ?? '∞',
+      }),
+    });
+  }, [brandQuota, onSubscriptionModalOpen, t]);
 
   // Auth guard
   React.useEffect(() => {
@@ -445,7 +709,7 @@ export const BrandGuidelinesPage: React.FC = () => {
 
   return (
     <div
-      className="brand-guidelines-root"
+      className="brand-guidelines-root relative h-full"
       data-vsn-page="brand-guidelines"
       data-vsn-component="brand-explorer"
       data-vsn-selected-id={selectedId}
@@ -454,15 +718,20 @@ export const BrandGuidelinesPage: React.FC = () => {
         title={t('brandGuidelines.seoTitle')}
         description={t('brandGuidelines.seoDescription')}
       />
-      <div className="fixed inset-0 z-0 bg-neutral-950" />
+      <div className="absolute inset-0 z-0 bg-neutral-950" />
 
-      <div className="min-h-screen bg-transparent relative z-10 flex">
-        {/* Desktop Sidebar */}
-        {!isLoading && guidelines.length > 0 && (
+      {/* Só tem a marca demo → convite persistente pra trazer a real (abre o wizard). */}
+      <DemoBrandBanner onCta={() => handleOpenWizard()} />
+
+      {/* Two-pane contido: lista-de-marcas + conteúdo dentro do AppShell (não
+          mais `fixed` cobrindo o rail). Cada pane rola independente. */}
+      <div className="h-full bg-transparent relative z-10 flex overflow-hidden">
+        {/* Desktop Sidebar (escondida por ora — SHOW_BRAND_SIDEBAR) */}
+        {SHOW_BRAND_SIDEBAR && !isLoading && guidelines.length > 0 && (
           <aside
             role="navigation"
             aria-label={t('brand.guidelines.brand_guidelines_selection')}
-            className="hidden lg:flex flex-col fixed top-10 md:top-14 left-0 bottom-0 w-[260px] xl:w-[280px] border-r border-white/10 bg-neutral-950/80 backdrop-blur-xl z-30"
+            className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 border-r border-sidebar-border bg-sidebar overflow-y-auto"
             data-vsn-region="sidebar"
           >
             <GuidelinesSidebar
@@ -470,6 +739,8 @@ export const BrandGuidelinesPage: React.FC = () => {
               selectedId={selectedId}
               onSelect={handleSelect}
               onCreate={() => handleOpenWizard()}
+              search={brandSearch}
+              onSearchChange={setBrandSearch}
             />
           </aside>
         )}
@@ -478,23 +749,15 @@ export const BrandGuidelinesPage: React.FC = () => {
         <main
           role="main"
           aria-label={t('brand.guidelines.brand_guideline_content')}
-          className={cn(
-            'flex-1 w-full min-h-screen transition-all duration-300',
-            !isLoading && guidelines.length > 0 ? 'lg:ml-[260px] xl:ml-[280px]' : ''
-          )}
+          className="flex-1 w-full min-w-0 overflow-y-auto"
           data-vsn-region="content"
         >
-          <div
-            className={cn(
-              'mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16',
-              !isLoading && guidelines.length > 0 ? 'max-w-5xl' : 'max-w-7xl'
-            )}
-          >
+          <div className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-16">
             {/* Header */}
             <div className="flex items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Mobile sidebar trigger */}
-                <div className="lg:hidden">
+                {/* Mobile sidebar trigger (escondido por ora — SHOW_BRAND_SIDEBAR) */}
+                <div className={SHOW_BRAND_SIDEBAR ? 'lg:hidden' : 'hidden'}>
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button
@@ -515,6 +778,8 @@ export const BrandGuidelinesPage: React.FC = () => {
                         selectedId={selectedId}
                         onSelect={handleSelect}
                         onCreate={() => handleOpenWizard()}
+                        search={brandSearch}
+                        onSearchChange={setBrandSearch}
                       />
                     </SheetContent>
                   </Sheet>
@@ -525,7 +790,21 @@ export const BrandGuidelinesPage: React.FC = () => {
                   </h1>
                 </div>
               </div>
+              {FEATURE_BRAND_BILLING && brandQuota && (
+                <BrandQuotaMeter
+                  used={brandQuota.used}
+                  max={brandQuota.max}
+                  onUpgrade={handleQuotaUpgrade}
+                />
+              )}
             </div>
+
+            {FEATURE_BRAND_BILLING && brandQuota?.graceUntil && (
+              <BrandGraceBanner
+                graceUntil={brandQuota.graceUntil}
+                onUpgrade={handleQuotaUpgrade}
+              />
+            )}
 
             {/* Content — dashboard/list. The per-brand editor lives in the unified
                 view (PublicBrandGuideline), reached via the early return above. */}
@@ -539,7 +818,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                   className="flex flex-col items-center justify-center py-40 gap-6"
                 >
                   <GlitchLoader size={40} />
-                  <p className="text-neutral-600 text-xs animate-pulse">Loading...</p>
+                  <p className="text-neutral-600 text-xs animate-pulse">{t('common.loading')}</p>
                 </motion.div>
               ) : guidelines.length === 0 ? (
                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />
@@ -550,13 +829,22 @@ export const BrandGuidelinesPage: React.FC = () => {
                   animate={{ opacity: 1 }}
                   className="flex flex-col gap-8 md:gap-16 items-start w-full"
                 >
-                  <BrandGrid guidelines={guidelines} onSelect={handleSelect} />
+                  <BrandGrid
+                    guidelines={guidelines}
+                    onSelect={handleSelect}
+                    onArchive={FEATURE_BRAND_BILLING ? archiveActions.requestArchive : undefined}
+                    onUnarchive={FEATURE_BRAND_BILLING ? archiveActions.unarchive : undefined}
+                    search={brandSearch}
+                    onSearchChange={setBrandSearch}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </main>
       </div>
+
+      {FEATURE_BRAND_BILLING && <ConfirmationModal {...archiveActions.confirmModalProps} />}
 
       <BrandGuidelineWizardModal
         isOpen={isWizardOpen}

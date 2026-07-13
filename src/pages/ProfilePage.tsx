@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, UserCircle } from 'lucide-react';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
@@ -12,8 +12,6 @@ import { referralService, type ReferralStats } from '../services/referralService
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { BackButton } from '../components/ui/BackButton';
 import { Button } from '../components/ui/button';
 import { ApiSettings } from '../components/profile/ApiSettings';
 import { SecuritySettings } from '../components/profile/SecuritySettings';
@@ -29,11 +27,14 @@ import { Input } from '../components/ui/input';
 import { ProfileOverview } from '../components/profile/ProfileOverview';
 import { UsageHistory } from '../components/profile/UsageHistory';
 import { API_BASE } from '@/config/api';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { cn } from '@/lib/utils';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isCheckingAuth } = useLayout();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const inShell = useInAppShell();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const deleteConfirmWord = t('profile.deleteDialog.confirmWord');
 
@@ -64,11 +65,6 @@ export const ProfilePage: React.FC = () => {
       setCurrentTab('overview');
     }
   }, [searchParams]);
-
-  const handleTabChange = (value: string) => {
-    setCurrentTab(value);
-    setSearchParams({ tab: value });
-  };
 
   // Load user data
   useEffect(() => {
@@ -218,7 +214,12 @@ export const ProfilePage: React.FC = () => {
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 flex items-center justify-center',
+          inShell ? 'min-h-full pt-6' : 'min-h-screen pt-12 md:pt-14'
+        )}
+      >
         <GlitchLoader size={32} />
       </div>
     );
@@ -229,17 +230,29 @@ export const ProfilePage: React.FC = () => {
       <PageShell
         pageId="profile-auth-error"
         width="5xl"
-        title={t('common.notAuthenticated') || 'Acesso Restrito'}
+        hideHeader
+        title={t('common.profile') || 'Perfil'}
+        seoTitle={t('common.profile')}
       >
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <p className="text-destructive font-mono mb-4">
+        <div className="flex flex-col items-center justify-center gap-6 py-24 px-6 text-center animate-in fade-in duration-300">
+          <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
+            <UserCircle size={28} className="text-brand-cyan" />
+          </div>
+          <div className="space-y-2 max-w-sm">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              {t('common.profile') || 'Perfil'}
+            </h1>
+            <p className="text-sm text-neutral-400 leading-relaxed">
               {t('common.notAuthenticated') || 'Please sign in to view your profile'}
             </p>
-            <BackButton
-              className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0"
-              to="/"
-            />
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button variant="brand" size="sm" onClick={() => navigate('/login')}>
+              {t('auth.signIn')}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+              {t('common.backToHome')}
+            </Button>
           </div>
         </div>
       </PageShell>
@@ -271,50 +284,30 @@ export const ProfilePage: React.FC = () => {
           </div>
         )}
 
-        <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-1 w-full sm:w-auto justify-start overflow-x-auto">
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-neutral-100 data-[state=active]:shadow-none px-4 sm:px-6 text-neutral-500 hover:text-neutral-300 transition-colors"
-            >
-              {t('common.tabs.overview')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-neutral-100 data-[state=active]:shadow-none px-4 sm:px-6 text-neutral-500 hover:text-neutral-300 transition-colors"
-            >
-              {t('common.tabs.history')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="configuration"
-              className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-neutral-100 data-[state=active]:shadow-none px-4 sm:px-6 text-neutral-500 hover:text-neutral-300 transition-colors"
-            >
-              {t('common.tabs.configuration')}
-            </TabsTrigger>
-          </TabsList>
+        {/* Sub-navegação vive no rail (CONTEXTO da seção profile, SSoT em
+            navConfig). Aqui só renderizamos o pane da aba corrente lida de
+            ?tab= — sem barra de abas horizontal (era redundante com o rail). */}
+        {currentTab === 'overview' && (
+          <ProfileOverview
+            user={user}
+            subscriptionStatus={subscriptionStatus}
+            referralStats={referralStats}
+            isLoadingReferral={isLoadingReferral}
+            onRefreshUserData={handleRefreshUserData}
+            onManageSubscription={handleManageSubscription}
+            onBuyCredits={() => setIsCreditPackagesModalOpen(true)}
+            onViewTransactions={() => setIsTransactionsModalOpen(true)}
+            onEditProfile={() => setIsEditProfileModalOpen(true)}
+            isUploadingPicture={isUploadingPicture}
+            onFileUpload={handleFileUpload}
+            avatarUrl={avatarUrl}
+          />
+        )}
 
-          <TabsContent value="overview">
-            <ProfileOverview
-              user={user}
-              subscriptionStatus={subscriptionStatus}
-              referralStats={referralStats}
-              isLoadingReferral={isLoadingReferral}
-              onRefreshUserData={handleRefreshUserData}
-              onManageSubscription={handleManageSubscription}
-              onBuyCredits={() => setIsCreditPackagesModalOpen(true)}
-              onViewTransactions={() => setIsTransactionsModalOpen(true)}
-              onEditProfile={() => setIsEditProfileModalOpen(true)}
-              isUploadingPicture={isUploadingPicture}
-              onFileUpload={handleFileUpload}
-              avatarUrl={avatarUrl}
-            />
-          </TabsContent>
+        {currentTab === 'history' && <UsageHistory isAuthenticated={true} />}
 
-          <TabsContent value="history">
-            <UsageHistory isAuthenticated={true} />
-          </TabsContent>
-
-          <TabsContent value="configuration" className="space-y-8">
+        {currentTab === 'configuration' && (
+          <div className="space-y-8">
             <ApiSettings />
 
             <SecuritySettings totpEnabled={user?.totpEnabled} />
@@ -335,8 +328,8 @@ export const ProfilePage: React.FC = () => {
                 {t('profile.danger.deleteAccount')}
               </Button>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
 
       <CreditPackagesModal

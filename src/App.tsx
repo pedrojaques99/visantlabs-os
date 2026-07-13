@@ -6,12 +6,23 @@ import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
+import { ActiveBrandProvider } from './contexts/ActiveBrandContext';
 import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 import { PremiumGate } from './components/shared/PremiumGate';
+import { FEATURE_COCKPIT, FEATURE_COPILOT } from './config/featureFlags';
+import { useLayout } from './hooks/useLayout';
+import { useLauncherApps } from './pages/HomePage';
+import { useActiveBrand } from './contexts/ActiveBrandContext';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() =>
   import('./pages/HomePage').then((m) => ({ default: m.HomePage }))
+);
+// Cockpit moved out of the home hijack into its own route (plano Revenue-Centric,
+// Fase 5): reuses HomePage's useLauncherApps (SSoT for the apps roster) so
+// BrandCockpit gets the exact same apps/onSelectApp it always has.
+const BrandCockpit = lazyWithRetry(() =>
+  import('./components/cockpit/BrandCockpit').then((m) => ({ default: m.BrandCockpit }))
 );
 const MockupMachinePage = lazyWithRetry(() =>
   import('./pages/MockupMachinePage').then((m) => ({ default: m.MockupMachinePage }))
@@ -141,9 +152,6 @@ const ApiKeysPage = lazyWithRetry(() =>
 const ConnectedAppsPage = lazyWithRetry(() =>
   import('./pages/ConnectedAppsPage').then((m) => ({ default: m.ConnectedAppsPage }))
 );
-const UsageDashboardPage = lazyWithRetry(() =>
-  import('./pages/UsageDashboardPage').then((m) => ({ default: m.UsageDashboardPage }))
-);
 const GettingStartedPage = lazyWithRetry(() =>
   import('./pages/GettingStartedPage').then((m) => ({ default: m.GettingStartedPage }))
 );
@@ -167,6 +175,9 @@ const CampaignsPage = lazyWithRetry(() =>
 );
 const AdminChatPage = lazyWithRetry(() =>
   import('./pages/AdminChatPage').then((m) => ({ default: m.AdminChatPage }))
+);
+const CopilotPage = lazyWithRetry(() =>
+  import('./pages/CopilotPage').then((m) => ({ default: m.CopilotPage }))
 );
 const OnboardPage = lazyWithRetry(() =>
   import('./pages/OnboardPage').then((m) => ({ default: m.OnboardPage }))
@@ -207,9 +218,6 @@ const PlaygroundGalleryPage = lazyWithRetry(() =>
 );
 const PlaygroundSharedPage = lazyWithRetry(() =>
   import('./pages/PlaygroundSharedPage').then((m) => ({ default: m.PlaygroundSharedPage }))
-);
-const DeveloperPortalPage = lazyWithRetry(() =>
-  import('./pages/DeveloperPortalPage').then((m) => ({ default: m.DeveloperPortalPage }))
 );
 const VerifyEmailPage = lazyWithRetry(() =>
   import('./pages/VerifyEmailPage').then((m) => ({ default: m.VerifyEmailPage }))
@@ -263,16 +271,46 @@ const LoadingFallback = () => (
   </div>
 );
 
+// /cockpit route (plano Revenue-Centric, Fase 5): the cockpit no longer
+// hijacks the home — it lives here instead, fed by the same apps roster
+// the TUI launcher uses. Gating is internal (matches the rest of the app):
+// signed-out visitors are bounced back to home instead of seeing a blank
+// cockpit.
+/**
+ * Início adaptativo (plano HOME-ADAPTIVE-IA): UMA casa. Com marca ativa → Cockpit
+ * da marca; sem marca / "Todas as marcas" (isAllBrands) → grid de marcas. Colapsa
+ * os antigos destinos Cockpit + Marcas num só. A flag FEATURE_COCKPIT decide
+ * cockpit-vs-grid aqui dentro (a rota /cockpit existe sempre).
+ */
+const HomeRoute: React.FC = () => {
+  const { isAuthenticated } = useLayout();
+  const { activeBrand, isAllBrands, isLoading } = useActiveBrand();
+  const { apps, handleSelect } = useLauncherApps();
+
+  if (isAuthenticated === false) {
+    return <Navigate to="/" replace />;
+  }
+  // Espera as marcas carregarem antes de decidir (evita flash cockpit↔grid).
+  if (isLoading) return null;
+
+  if (FEATURE_COCKPIT && activeBrand?.id && !isAllBrands) {
+    return <BrandCockpit apps={apps} onSelectApp={handleSelect} />;
+  }
+  return <Navigate to="/brand-guidelines" replace />;
+};
+
 const App: React.FC = () => {
   return (
     <ErrorBoundaryWrapper>
       <CanvasHeaderProvider>
         <ActiveBrandKitProvider>
-          <Layout>
+          <ActiveBrandProvider>
+            <Layout>
             <ErrorBoundaryWrapper>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/cockpit" element={<HomeRoute />} />
                   <Route path="/mockupmachine" element={<MockupMachinePage />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
@@ -370,11 +408,19 @@ const App: React.FC = () => {
                   <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
                   <Route path="/design-system" element={<DesignSystemPage />} />
                   <Route path="/docs" element={<DocsPage />} />
-                  <Route path="/developer" element={<DeveloperPortalPage />} />
+                  <Route path="/docs/getting-started" element={<GettingStartedPage />} />
                   <Route path="/settings/api-keys" element={<ApiKeysPage />} />
                   <Route path="/settings/connected-apps" element={<ConnectedAppsPage />} />
-                  <Route path="/developer/usage" element={<UsageDashboardPage />} />
-                  <Route path="/developer/getting-started" element={<GettingStartedPage />} />
+                  {/* Developer Portal dissolved: account → /profile, docs → /docs */}
+                  <Route path="/developer" element={<Navigate to="/profile" replace />} />
+                  <Route
+                    path="/developer/usage"
+                    element={<Navigate to="/profile?tab=overview" replace />}
+                  />
+                  <Route
+                    path="/developer/getting-started"
+                    element={<Navigate to="/docs/getting-started" replace />}
+                  />
                   <Route path="/connect/:token" element={<ConnectPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/auth" element={<AuthCallbackPage />} />
@@ -383,6 +429,8 @@ const App: React.FC = () => {
                   <Route path="/verify-email" element={<VerifyEmailPage />} />
                   <Route path="/welcome" element={<OnboardingWizardPage />} />
                   <Route path="/admin" element={<AdminPage />} />
+                  {/* Rota some com a flag desligada — kill-switch do rollout (plano §3.2) */}
+                  {FEATURE_COPILOT && <Route path="/copilot" element={<CopilotPage />} />}
                   <Route path="/admin/chat" element={<AdminChatPage />} />
                   <Route path="/admin/presets" element={<AdminPresetsPage />} />
                   <Route path="/admin/products" element={<AdminProductsPage />} />
@@ -425,7 +473,8 @@ const App: React.FC = () => {
                 </Routes>
               </Suspense>
             </ErrorBoundaryWrapper>
-          </Layout>
+            </Layout>
+          </ActiveBrandProvider>
         </ActiveBrandKitProvider>
       </CanvasHeaderProvider>
     </ErrorBoundaryWrapper>

@@ -26,7 +26,7 @@ const REVEAL_CHARS = 'abcdefghijklmnopqrstuvwxyz*•-□';
 interface PremiumGlitchLoaderProps {
   className?: string;
   color?: string;
-  steps?: string[];
+  steps?: readonly string[];
 }
 
 export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({

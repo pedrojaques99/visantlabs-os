@@ -31,6 +31,7 @@ import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { cn } from '@/lib/utils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { glassSurface } from '@/lib/ui/glass';
 type ExtractionMode = 'google' | 'url' | 'instagram' | 'document';
 
 /**
@@ -112,7 +113,7 @@ const ImageCard = memo<ImageCardProps>(
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className="group relative rounded-2xl overflow-hidden bg-white/[0.03] border border-neutral-800 hover:border-white/10 transition-all duration-300"
+        className={cn('group relative rounded-2xl overflow-hidden transition-all duration-300', glassSurface.panel)}
       >
         <div
           className="relative cursor-pointer overflow-hidden"
@@ -706,7 +707,7 @@ export default function ExtractorPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white/[0.03] border border-neutral-800 rounded-2xl backdrop-blur-xl"
+                  className={cn('grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl', glassSurface.panel)}
                 >
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">

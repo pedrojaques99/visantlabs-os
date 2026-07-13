@@ -18,6 +18,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
+import { glassSurface } from '@/lib/ui/glass';
 
 const SCALE_OPTIONS = [2, 3, 4] as const;
 
@@ -372,7 +373,7 @@ export const UpscalePage: React.FC = () => {
           /* ─── Empty / Upload state — vertically centered ─── */
           <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
             <motion.div
-              className="w-16 h-16 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex items-center justify-center"
+              className={cn('w-16 h-16 rounded-2xl flex items-center justify-center', glassSurface.panel)}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -426,7 +427,7 @@ export const UpscalePage: React.FC = () => {
           <motion.div
             key="workspace"
             {...fadeScale}
-            className="relative w-full max-w-3xl rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-950/40 min-h-[300px] flex items-center justify-center"
+            className={cn('relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center', glassSurface.panel)}
           >
             {previewItem ? (
               <>

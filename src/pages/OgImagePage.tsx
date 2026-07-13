@@ -13,6 +13,7 @@ import { loadImage } from '@/utils/imageUtils';
 import { copyImageAsPng, downloadBlob, copyToClipboard } from '@/utils/clipboard';
 import { validateFile } from '@/utils/fileUtils';
 import { Input } from '@/components/ui/input';
+import { glassSurface } from '@/lib/ui/glass';
 
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
@@ -517,7 +518,7 @@ export const OgImagePage: React.FC = () => {
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease }}
-        className="relative rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-950/40 shadow-2xl shadow-black/40 w-full max-w-2xl"
+        className={cn('relative rounded-2xl overflow-hidden shadow-2xl shadow-black/40 w-full max-w-2xl', glassSurface.panel)}
       >
         {previewUrl ? (
           <img

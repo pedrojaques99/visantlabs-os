@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useResizable } from '@/hooks/useResizable';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import { MessageSquare, Settings, X, Brush, Image as ImageIcon } from 'lucide-react';
@@ -75,11 +76,15 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
   backgroundColor = '#0C0C0C',
 }) => {
   const { t } = useTranslation();
-  const [panelWidth, setPanelWidth] = useState(width);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
-  const resizerRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const [isResizing, setIsResizing] = useState(false);
+
+  // Drag-to-resize via the shared SSoT hook (right-anchored panel → left edge).
+  const {
+    width: panelWidth,
+    isResizing,
+    handleProps: resizeHandleProps,
+  } = useResizable({ min: MIN_WIDTH, max: MAX_WIDTH, initial: width, edge: 'left', onChange: onResize });
 
   // Calculate text colors based on canvas background
   const textColors = useMemo(() => getTextColors(backgroundColor), [backgroundColor]);
@@ -109,38 +114,6 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
       setActiveTabId(null);
     }
   }, [validNodes.map((n) => n.id).join(',')]); // Depend on node IDs list
-
-  // Resizing logic
-  useEffect(() => {
-    const resizer = resizerRef.current;
-    if (!resizer) return;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      setIsResizing(true);
-      const startX = e.clientX;
-      const startWidth = sidebarRef.current?.offsetWidth || panelWidth;
-
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        const dx = startX - moveEvent.clientX; // Resize from right edge means pulling left increases width
-        const newWidth = Math.min(Math.max(startWidth + dx, MIN_WIDTH), MAX_WIDTH);
-        setPanelWidth(newWidth);
-        onResize?.(newWidth);
-      };
-
-      const handleMouseUp = () => {
-        setIsResizing(false);
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    };
-
-    resizer.addEventListener('mousedown', handleMouseDown);
-    return () => resizer.removeEventListener('mousedown', handleMouseDown);
-  }, [onResize, panelWidth]);
 
   // Determine what to render
   const renderContent = () => {
@@ -233,7 +206,11 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     >
       {/* Resizer Handle */}
       <div
-        ref={resizerRef}
+        {...resizeHandleProps}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize panel"
+        style={{ touchAction: 'none' }}
         className={cn(
           'absolute left-0 top-0 w-1 h-full cursor-col-resize transition-colors z-50 rounded-l-2xl',
           isLight ? 'hover:bg-neutral-400/50' : 'hover:bg-neutral-500/50'

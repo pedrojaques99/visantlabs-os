@@ -13,7 +13,8 @@ try {
 }
 
 import { createApp } from './app.js';
-import { connectToMongoDB } from './db/mongodb.js';
+import { connectToMongoDB, getDb } from './db/mongodb.js';
+import { ensureCoreIndexes } from './db/ensureIndexes.js';
 import { initPluginWebSocket } from './routes/plugin.js';
 import { initAdminChatWebSocket } from './routes/adminChat.js';
 import { initRedis } from './lib/redis.js';
@@ -85,6 +86,9 @@ if (!process.env.VERCEL) {
     if (!mongoConnected) {
       console.warn('⚠️  MongoDB connection failed, but server will start anyway');
       console.warn('⚠️  Make sure MONGODB_URI is set in your .env file');
+    } else {
+      // Ensure hot-path indexes once at startup (idempotent, non-blocking).
+      ensureCoreIndexes(getDb()).catch(() => {});
     }
 
     testPrismaConnection().catch(() => {

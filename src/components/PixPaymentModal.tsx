@@ -337,7 +337,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               <div className="text-4xl font-black text-brand-cyan font-mono tracking-tighter">
                 {credits}
               </div>
-              <MicroTitle className="text-neutral-500 uppercase tracking-widest">
+              <MicroTitle className="text-neutral-500">
                 {t('pix.credits') || 'CRÉDITOS'}
               </MicroTitle>
 

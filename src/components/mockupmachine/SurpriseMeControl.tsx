@@ -10,6 +10,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GlassPanel } from '../ui/GlassPanel';
 import { Button } from '@/components/ui/button';
+import { GenerationActionButton } from '@/components/shared/GenerationActionButton';
 import { useMockup } from './MockupContext';
 
 interface SurpriseMeControlProps {
@@ -44,7 +45,6 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const dark = theme === 'dark';
-  const isLight = !dark;
   const isInline = variant === 'inline';
 
   const { autoGenerate, selectedModel, resolution, mockupCount, imageProvider } = useMockup();
@@ -125,80 +125,49 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
   ) => {
     const isPrompt = label === t('mockup.promptShort');
     const isGenerate = label === t('mockup.outputsShort');
-    const isPrimarySurprise = btnVariant === 'surpriseMe';
-    const isPrimaryAction = isPrimarySurprise || isGenerate;
+    const isSurprise = btnVariant === 'surpriseMe';
 
-    const buttonContent = (
-      <Button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        className={cn(
-          'relative flex items-center justify-center rounded-xl border transition-all duration-300 font-bold',
-          'focus:outline-none focus:ring-2 focus:ring-brand-cyan/50',
-          'h-12 md:h-14 backdrop-blur-md',
-          label
-            ? 'flex-row px-3 md:px-5 gap-2 md:gap-2.5'
-            : 'w-12 md:w-14 items-center justify-center',
-          btnVariant === 'surpriseMe' && label && 'min-w-[120px] md:min-w-[140px]',
-          !disabled && isPrompt
-            ? 'bg-white border-white text-black shadow-lg hover:scale-[1.02] active:scale-[0.98] hover:bg-white/90'
-            : !disabled && isPrimaryAction
-              ? cn(
-                  'text-black',
-                  'shadow-xl hover:scale-[1.02] active:scale-[0.98] font-black',
-                  isPrimarySurprise
-                    ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
-                    : isPromptReady || autoGenerate
-                      ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90 ring-2 ring-brand-cyan/20 ring-offset-2 ring-offset-black transition-shadow duration-500 shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.15)]'
-                      : 'bg-neutral-800 border-white/10 text-neutral-400 hover:text-white hover:bg-neutral-700',
-                  isPrimarySurprise &&
-                    isActive &&
-                    'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
-                )
-              : !disabled && isActive
-                ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-md'
-                : isLight
-                  ? 'bg-neutral-100/80 border-neutral-300/50 hover:bg-neutral-200/50 hover:border-neutral-400/50 text-neutral-600 shadow-sm'
-                  : 'bg-neutral-900/80 border-neutral-800/50 hover:bg-neutral-800/60 hover:border-neutral-700/50 text-neutral-400 shadow-sm',
-          disabled && 'opacity-20 cursor-not-allowed pointer-events-none'
-        )}
-      >
-        <div
-          className={cn(
-            'flex items-center justify-center flex-shrink-0 transition-colors',
-            !disabled && (isPrimaryAction || isPrompt || isActive)
-              ? 'text-black'
-              : 'group-hover:text-white'
-          )}
-        >
-          {icon}
-        </div>
-        {label && (
-          <span
+    // The white "prompt" button stays bespoke — the shared CTA covers cyan +
+    // ghost. Everything else (surprise, generate) is the shared component so the
+    // mockup machine and the brand mockup dialog use the exact same button.
+    if (isPrompt) {
+      return (
+        <Tooltip content={tooltip} position="top">
+          <Button
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
             className={cn(
-              'flex items-center gap-1.5 text-[10px] md:text-xs font-mono uppercase tracking-[0.12em] whitespace-nowrap text-center leading-tight transition-colors font-bold',
-              !disabled && (isPrimaryAction || isPrompt || isActive)
-                ? 'text-black'
-                : dark
-                  ? 'text-neutral-400'
-                  : 'text-neutral-600'
+              'relative flex items-center justify-center rounded-xl border font-bold transition-all duration-300 h-12 md:h-14',
+              label ? 'px-4 gap-2 md:px-5' : 'w-12 md:w-14',
+              disabled
+                ? 'bg-neutral-800 border-white/10 text-neutral-500 opacity-40 cursor-not-allowed'
+                : 'bg-white border-white text-black shadow-lg hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98]'
             )}
           >
-            {label}
-            {creditsCount != null && creditsCount > 0 && (
-              <span className="text-[10px] md:text-[11px] font-semibold opacity-90">
-                {creditsCount} 💎
+            <span className="flex shrink-0 items-center justify-center">{icon}</span>
+            {label && (
+              <span className="text-xs font-mono font-bold uppercase tracking-[0.12em]">
+                {label}
               </span>
             )}
-          </span>
-        )}
-      </Button>
-    );
+          </Button>
+        </Tooltip>
+      );
+    }
 
     return (
       <Tooltip content={tooltip} position="top">
-        {buttonContent}
+        <GenerationActionButton
+          variant={isSurprise ? 'surprise' : isGenerate ? 'primary' : 'ghost'}
+          size="lg"
+          onClick={onClick}
+          disabled={disabled}
+          active={isSurprise && isActive}
+          icon={icon}
+          label={label}
+          credits={creditsCount}
+        />
       </Tooltip>
     );
   };

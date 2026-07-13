@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { FileText, X, Image as ImageIcon, Figma } from 'lucide-react';
 import { validatePdfFile } from '@/utils/pdfUtils';
 import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
+import { isBrandLimitError } from '@/hooks/queries/useBrandGuidelines';
+import { useLayout } from '@/hooks/useLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateFile } from '@/utils/fileUtils';
@@ -50,6 +52,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
 }) => {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const { onSubscriptionModalOpen } = useLayout();
   const isEditMode = !!editGuideline;
 
   const [name, setName] = useState('');
@@ -504,10 +507,22 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
         localStorage.removeItem(DRAFT_KEY);
         await qc.invalidateQueries({ queryKey: ['brand-guidelines'] });
         onSuccess(workingId);
-      } catch {
-        toast.error(
-          isEditMode ? t('mockup.brandWizardErrorEdit') : t('mockup.brandWizardErrorCreate')
-        );
+      } catch (err) {
+        // 402 brand_limit — abre o paywall de assinatura com contexto em vez de erro genérico.
+        if (isBrandLimitError(err)) {
+          onSubscriptionModalOpen({
+            reason: 'brand_limit',
+            message: t('brandQuota.limitMessage', {
+              used: err.used ?? '?',
+              max: err.max ?? '?',
+            }),
+          });
+          onClose();
+        } else {
+          toast.error(
+            isEditMode ? t('mockup.brandWizardErrorEdit') : t('mockup.brandWizardErrorCreate')
+          );
+        }
       } finally {
         setIsSubmitting(false);
         setIsIngesting(false);
@@ -522,6 +537,8 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
       hasUrl,
       pdfFile,
       onSuccess,
+      onClose,
+      onSubscriptionModalOpen,
       t,
       qc,
     ]

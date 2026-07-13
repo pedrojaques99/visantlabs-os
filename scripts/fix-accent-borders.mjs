@@ -39,10 +39,10 @@ const FILES = [
 // Lines/patterns that are SAFE to keep accent borders (outer container states, drawing mode)
 const ALLOW_PATTERNS = [
   /NodeContainer.*border-brand-cyan/,           // outer container selected state
-  /selected.*border-brand-cyan/,                // selected state
+  /selected.*border-brand-cyan/i,               // selected state (any case: isSelected, isOtherSelected)
   /border-brand-cyan.*shadow-\[0_0/,            // glow effect on selected
   /DrawingText/,                                // drawing mode intentionally uses cyan
-  /selected \? ['"].*border-brand-cyan/,        // ternary selected state
+  /selected \? ['"].*border-brand-cyan/i,       // ternary selected state (any case)
 ];
 
 const REPLACEMENTS = [

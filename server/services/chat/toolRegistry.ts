@@ -23,7 +23,14 @@ import {
 const INTERNAL_API_BASE =
   process.env.INTERNAL_API_URL || `http://localhost:${process.env.PORT || 3001}`;
 
-export type ChatToolScope = 'public' | 'admin';
+export type ChatToolScope = 'public' | 'paid' | 'admin';
+
+/** Caller identity used to resolve which tool scopes are visible. */
+export interface ChatToolUserContext {
+  isAdmin?: boolean;
+  /** Active subscriber (premium/pro) — unlocks 'paid' scope tools. */
+  isSubscriber?: boolean;
+}
 
 export interface ChatToolContext {
   userId: string;
@@ -667,13 +674,33 @@ for (const name of [
   }
 }
 
+// ── Promote admin tools to paid scope (Brand Copilot) ──
+// The highest-value agency tools become available to active subscribers via
+// /api/copilot. Admins keep access (admin sees everything by definition).
+for (const name of ['generate_or_update_mockup', 'propose_creative_plan', 'generate_in_figma']) {
+  if (REGISTRY[name]) {
+    REGISTRY[name].scope = 'paid';
+  }
+}
+
 /**
  * Tool declarations available to a role, in the Gemini SDK shape.
- * Admins get the union of public + admin tools.
+ * Admin → everything; active subscriber → public + paid; free → public only.
+ *
+ * Accepts a plain boolean for backward compat with legacy callers that passed
+ * `isAdmin` directly (true = admin, false = public-only).
  */
-export function getChatTools(isAdmin: boolean): Array<{ functionDeclarations: any[] }> {
+export function getChatTools(
+  user: boolean | ChatToolUserContext
+): Array<{ functionDeclarations: any[] }> {
+  const ctx: ChatToolUserContext = typeof user === 'boolean' ? { isAdmin: user } : user;
   const decls = Object.values(REGISTRY)
-    .filter((e) => isAdmin || e.scope === 'public')
+    .filter(
+      (e) =>
+        e.scope === 'public' ||
+        ctx.isAdmin === true ||
+        (e.scope === 'paid' && ctx.isSubscriber === true)
+    )
     .map((e) => e.declaration);
   return [{ functionDeclarations: decls }];
 }

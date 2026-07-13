@@ -76,7 +76,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             )}
           >
             #{tag}
-            <span className="text-neutral-800">{count}</span>
+            <span className="text-neutral-800 tabular-nums">{count}</span>
           </button>
         ))}
       </div>

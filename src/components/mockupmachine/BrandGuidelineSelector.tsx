@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { useLayout } from '@/hooks/useLayout';
 import { useMockup } from './MockupContext';
 import { BrandGuidelineWizardModal } from './BrandGuidelineWizardModal';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
@@ -16,6 +15,7 @@ import { SearchBar } from '../ui/SearchBar';
 import { useMemo } from 'react';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { glassSurface } from '@/lib/ui/glass';
 interface BrandGuidelineSelectorProps {
   variant?: 'default' | 'minimal';
   asButton?: boolean;
@@ -28,12 +28,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
   const isMinimal = variant === 'minimal' || asButton;
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { user } = useLayout();
   const { selectedBrandGuideline, setSelectedBrandGuideline } = useMockup();
-
-  const isAdmin = user?.isAdmin === true;
-  const isTester = user?.userCategory === 'tester' || user?.username === 'tester';
-  const canSelectBrand = isAdmin || isTester;
 
   const [searchQuery, setSearchQuery] = useState('');
   const { data: guidelines = [], isLoading, refetch } = useBrandGuidelines(true);
@@ -76,8 +71,6 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
   };
 
   const selectedGuidelineObj = guidelines.find((g) => g.id === selectedBrandGuideline);
-
-  if (!canSelectBrand) return null;
 
   return (
     <div className={cn('relative', isMinimal ? 'inline-flex' : 'flex flex-col w-full')}>
@@ -174,7 +167,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={t('mockup.searchBrand') || 'Buscar marca...'}
-              className="bg-neutral-900/60 border-neutral-800 focus:border-neutral-600"
+              className={cn('focus:border-neutral-600', glassSurface.control)}
               containerClassName="w-full"
             />
           </div>

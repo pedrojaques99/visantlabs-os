@@ -46,6 +46,7 @@ import {
   SLUG_TO_TAB,
   downloadBlob,
   safeFileName,
+  getBrandAvatar,
 } from '@/components/brand/brand-shared-config';
 import { buildMockTokens } from '@/components/brand/guidelines/preview/mockTokens';
 import { BrandOverviewBento } from '@/components/brand/guidelines/preview/BrandOverviewBento';
@@ -57,6 +58,8 @@ import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { BrandCompletenessPill } from '@/components/brand/guidelines/BrandCompletenessPill';
 import { BrandIngestButton } from '@/components/brand/guidelines/BrandIngestButton';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useConnectBrandToAI } from '@/hooks/useConnectBrandToAI';
+import { useTheme } from '@/hooks/useTheme';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -97,6 +100,11 @@ const BrandMockupDialog = lazyWithRetry(() =>
 const BrandInteractivePanel = lazyWithRetry(() =>
   import('@/components/brand/BrandInteractivePanel').then((m) => ({
     default: m.BrandInteractivePanel,
+  }))
+);
+const ChangeLogoDialog = lazyWithRetry(() =>
+  import('@/components/brand/ChangeLogoDialog').then((m) => ({
+    default: m.ChangeLogoDialog,
   }))
 );
 const BrandCreateShowcase = lazyWithRetry(() =>
@@ -159,10 +167,18 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // Nav collapses from top-bar → sidebar once the hero scrolls out of view.
   const [navCollapsed, setNavCollapsed] = useState(false);
   const heroSentinelRef = useRef<HTMLDivElement>(null);
-  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>('brand');
+  // In-app (owner opens by id) the portal mirrors the APP's light/dark — app in
+  // dark → the brand's dark theme. The public page (opened by slug) instead
+  // keeps the brand's curated presentation ('brand' or a saved default).
+  // `themePinnedRef` guards against overriding an explicit/curated pick.
+  const { theme: appTheme } = useTheme();
+  const [theme, setTheme] = useState<'brand' | 'light' | 'dark'>(() =>
+    idOverride ? appTheme : 'brand'
+  );
+  const themePinnedRef = useRef(false);
   const [editMode, setEditMode] = useState(!!idOverride);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
-  const [connecting, setConnecting] = useState(false);
+  const { connecting, connect } = useConnectBrandToAI();
   const [advancedEdit, setAdvancedEdit] = useState(false);
   // Owner action dialogs (ported from the admin editor)
   const [isAiPopulateOpen, setIsAiPopulateOpen] = useState(false);
@@ -217,16 +233,30 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   // Theme: owners persist their pick as the brand's default (loaded first next time).
   const chooseTheme = useCallback(
     (next: 'brand' | 'light' | 'dark') => {
+      themePinnedRef.current = true; // explicit viewer choice — stop following the app
       setTheme(next);
       if (canEdit && guideline?.id) handleSave({ defaultTheme: next } as Partial<BrandGuideline>);
     },
     [canEdit, guideline?.id, handleSave]
   );
 
-  // Load the brand's saved default theme on first load (once per brand).
+  // In-app only: follow the app's light/dark toggle until the viewer pins a
+  // choice. The public page ignores the visitor's app theme (curated view).
+  useEffect(() => {
+    if (idOverride && !themePinnedRef.current) setTheme(appTheme);
+  }, [appTheme, idOverride]);
+
+  // Saved default: on the PUBLIC page any saved theme is the curated default and
+  // pins it. In-app only an explicit 'brand' pick overrides the app-follow
+  // (a saved light/dark shouldn't fight the owner's live app theme).
   useEffect(() => {
     const dt = guideline?.defaultTheme;
-    if (dt === 'brand' || dt === 'light' || dt === 'dark') setTheme(dt);
+    const valid = dt === 'brand' || dt === 'light' || dt === 'dark';
+    if (!valid) return;
+    if (idOverride ? dt === 'brand' : true) {
+      themePinnedRef.current = true;
+      setTheme(dt);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guideline?.id]);
 
@@ -249,22 +279,15 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     [guideline, handleSave]
   );
 
+  // "Criar com esta marca" — a banda interativa saiu do fluxo do brand book
+  // (era ruído) e vive num dialog, aberto por este estado.
+  const [createOpen, setCreateOpen] = useState(false);
+  const [changeLogoOpen, setChangeLogoOpen] = useState(false);
+
   const handleConnect = async () => {
     // Admin context loads by id (no slug) — fall back to the brand's publicSlug.
-    const connectSlug = slug || guideline?.publicSlug;
-    if (!connectSlug) {
-      toast.error('Make the brand public first to connect it');
-      setIsShareOpen(true);
-      return;
-    }
-    setConnecting(true);
-    try {
-      const { connectUrl } = await brandGuidelineApi.getPublicConnectLink(connectSlug);
-      window.location.href = connectUrl;
-    } catch {
-      toast.error('Failed to generate connect link');
-      setConnecting(false);
-    }
+    // Mint + redirect live in the shared hook (also powers the home cockpit).
+    await connect(slug || guideline?.publicSlug, () => setIsShareOpen(true));
   };
 
   const handleDownloadJSON = () => {
@@ -283,6 +306,8 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
   const brandTheme = useMemo(() => extractBrandTheme(guideline, theme), [guideline, theme]);
   const tokens = useMemo(() => buildMockTokens(guideline), [guideline]);
+  // Canonical brand mark (logo → themed initial) for the hero lockup.
+  const avatar = useMemo(() => getBrandAvatar(guideline), [guideline]);
   // Brand theme CSS vars — also passed to portaled overlays (dropdown) so their
   // glass surfaces match the live page theme.
   const themeVars = useMemo(
@@ -355,7 +380,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           className="relative z-10 flex flex-col items-center gap-4"
         >
           <GlitchLoader size={40} />
-          <MicroTitle className="text-neutral-600 uppercase tracking-[0.1em]">
+          <MicroTitle className="text-neutral-600">
             {t('public.brand.guideline.decrypting_brand_assets')}
           </MicroTitle>
         </motion.div>
@@ -418,7 +443,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         // Admin (idOverride): cover the whole viewport over the native app header.
         // z-50 (tie with the header) wins by DOM order — same mechanism that lets
         // portaled overlays (dialogs/menus/sheets, z-50) render above this shell.
-        // Going higher (z-[60]) trapped every overlay behind the shell.
+        // Going higher (z-50) trapped every overlay behind the shell.
         idOverride ? 'fixed inset-0 z-50 overflow-y-auto' : 'min-h-screen'
       )}
       style={
@@ -682,21 +707,24 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         )}
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
-        {/* Dynamic Hero Section */}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-20 md:pt-24 pb-16 md:pb-24">
+        {/* Dynamic Hero Section — identity on the left, the brand mark on the
+            right. Bottom-aligned so the mark sits on the wordmark's baseline like
+            a brand card, killing the old empty gap below the title. */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: 'easeOut' }}
-          className="relative mb-32"
+          className="relative mb-12 md:mb-16"
         >
           {theme === 'dark' && brandTheme.isCustomBg && (
             <div className="absolute -top-40 -left-60 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[160px] opacity-20 pointer-events-none" />
           )}
 
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12">
-            <div className="space-y-6">
-              <MicroTitle className="text-[var(--accent)] tracking-[0.1em] font-bold opacity-60">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 md:gap-12">
+            {/* Identity column */}
+            <div className="space-y-5 min-w-0">
+              <MicroTitle className="text-[var(--accent)] font-bold opacity-60 normal-case">
                 <InlineEditable
                   as="span"
                   value={guideline.identity?.tagline || ''}
@@ -717,6 +745,106 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                   handleSave({ identity: { ...(guideline.identity || {}), name: v } })
                 }
               />
+
+              {/* Positioning — one line, from identity.description */}
+              {tokens.description && (
+                <p className="max-w-xl text-base md:text-lg leading-snug text-[var(--brand-text)]/60 line-clamp-2">
+                  {tokens.description}
+                </p>
+              )}
+
+              {/* Color signature — thin strip, click to copy */}
+              {tokens.palette.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5" aria-label="Brand colors">
+                  {tokens.palette.slice(0, 8).map((c, i) => (
+                    <button
+                      key={`${c.hex}-${i}`}
+                      type="button"
+                      onClick={() => {
+                        copyToClipboard(c.hex);
+                        toast.success(`Copied ${c.hex}`);
+                      }}
+                      title={`${c.name || ''} ${c.hex}`.trim()}
+                      aria-label={`Copy ${c.hex}${c.name ? ` — ${c.name}` : ''}`}
+                      className="w-8 h-8 rounded-lg border border-[var(--brand-text)]/10 shadow-sm transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Directed CTAs — lead with the category differentiator (Connect AI) */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleConnect}
+                  disabled={connecting}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-[var(--accent-text)] text-sm font-semibold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  <Plug size={15} />
+                  {connecting
+                    ? t('public.brand.guideline.connecting')
+                    : t('public.brand.guideline.connect_to_your_ai')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeTab('logos')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--brand-text)]/15 text-[var(--brand-text)]/70 text-sm font-medium transition-colors hover:border-[var(--brand-text)]/30 hover:text-[var(--brand-text)]"
+                >
+                  <ImageIcon size={15} />
+                  {t('public.brand.guideline.assets')}
+                </button>
+              </div>
+            </div>
+
+            {/* Brand mark — logo lockup, or themed initial when there's no logo.
+                Logo sits on a light plate (like a brand-kit chip) so dark/colored
+                marks stay visible on the dark hero instead of vanishing. */}
+            <div className="shrink-0">
+              {/* Logo clicável (só owner) → troca o logo principal (upload / da
+                  media / promover existente). Overlay "Trocar" no hover. */}
+              <button
+                type="button"
+                onClick={() => canEdit && setChangeLogoOpen(true)}
+                disabled={!canEdit}
+                title={canEdit ? 'Trocar logo' : undefined}
+                className={cn(
+                  'relative group/logo block rounded-3xl',
+                  canEdit
+                    ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40'
+                    : 'cursor-default'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex items-center justify-center rounded-3xl border px-8 py-7 min-w-[180px] md:min-w-[220px]',
+                    avatar.logoUrl
+                      ? 'bg-white border-black/5 shadow-sm'
+                      : 'bg-[var(--brand-text)]/[0.03] border-[var(--brand-text)]/10'
+                  )}
+                >
+                  {avatar.logoUrl ? (
+                    <img
+                      src={avatar.logoUrl}
+                      alt={`${tokens.name} logo`}
+                      className="max-h-24 md:max-h-28 max-w-[200px] object-contain"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span
+                      className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-black"
+                      style={{ backgroundColor: avatar.bg, color: avatar.fg }}
+                    >
+                      {avatar.initial}
+                    </span>
+                  )}
+                </div>
+                {canEdit && (
+                  <span className="absolute inset-0 flex items-center justify-center rounded-3xl bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity">
+                    <span className="text-xs font-medium text-white">Trocar logo</span>
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </motion.div>
@@ -739,19 +867,55 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           sectionsLabel={t('public.brand.guideline.brand_sections')}
         />
 
-        {/* Owner-only interactive band (seasonal ideas + connect-to-AI). Never on the
-            public/anonymous view; shown on the Overview tab for people who can edit. */}
-        {canEdit && activeTab === 'all' && guideline.id && (
+        {/* "Criar com esta marca" — a banda interativa (produção + MCP) saiu do
+            fluxo do brand book (era ruído no livro) e vive num dialog. Aparece pra
+            QUALQUER viewer quando a marca é compartilhada (isShared) — fundadores
+            sem cockpit também criam/conectam a IA. */}
+        {!!(guideline.isPublic || guideline.publicSlug) && activeTab === 'all' && guideline.id && (
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 my-8 flex justify-center">
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className="h-11 px-6 gap-2 bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 font-semibold"
+            >
+              Criar com esta marca
+            </Button>
+          </div>
+        )}
+
+        <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+          <SheetContent
+            side="bottom"
+            className="h-[88vh] overflow-y-auto bg-neutral-950 border-white/10 p-0"
+          >
+            <SheetHeader className="px-6 pt-6">
+              <SheetTitle className="text-neutral-200">
+                Criar com {guideline.identity?.name || guideline.name}
+              </SheetTitle>
+            </SheetHeader>
+            {guideline.id && (
+              <React.Suspense fallback={null}>
+                <BrandInteractivePanel
+                  guidelineId={guideline.id}
+                  isShared={!!(guideline.isPublic || guideline.publicSlug)}
+                  connecting={connecting}
+                  onConnect={handleConnect}
+                  onGenerate={(p) => {
+                    setMockupPrompt(p);
+                    setIsMockupOpen(true);
+                  }}
+                />
+              </React.Suspense>
+            )}
+          </SheetContent>
+        </Sheet>
+
+        {/* Trocar logo principal — só owner (o botão do logo é gated em canEdit). */}
+        {changeLogoOpen && guideline?.id && (
           <React.Suspense fallback={null}>
-            <BrandInteractivePanel
-              guidelineId={guideline.id}
-              isShared={!!(guideline.isPublic || guideline.publicSlug)}
-              connecting={connecting}
-              onConnect={handleConnect}
-              onGenerate={(p) => {
-                setMockupPrompt(p);
-                setIsMockupOpen(true);
-              }}
+            <ChangeLogoDialog
+              guideline={guideline}
+              open={changeLogoOpen}
+              onOpenChange={setChangeLogoOpen}
             />
           </React.Suspense>
         )}
@@ -770,7 +934,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             · Overview in edit mode + every other tab → BrandReadOnlyView sections
               (kept for inline section editing / focused detail views) */}
         {activeTab === 'preview' ? (
-          hasPreviewData && <BrandPreviewGallery tokens={tokens} brandName={brandName} />
+          hasPreviewData && (
+            <BrandPreviewGallery tokens={tokens} brandName={brandName} brandId={guideline.id} />
+          )
         ) : activeTab === 'all' && !(canEdit && editMode) ? (
           <BrandOverviewBento guideline={guideline} tokens={tokens} onOpenTab={changeTab} />
         ) : (
