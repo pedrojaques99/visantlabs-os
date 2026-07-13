@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import sharp from 'sharp';
 import {
   normalizePlacementSemantic,
   computeMechanics,
@@ -62,6 +61,7 @@ describe('normalizePlacementSemantic', () => {
 
 describe('computeMechanics (sharp, deterministic)', () => {
   it('measures aspect ratio and reports opaque images as non-transparent', async () => {
+    const sharp = (await import('sharp')).default;
     const png = await sharp({
       create: { width: 200, height: 100, channels: 3, background: { r: 10, g: 20, b: 200 } },
     })
@@ -80,6 +80,7 @@ describe('computeMechanics (sharp, deterministic)', () => {
   });
 
   it('detects real transparency (alpha channel with transparent pixels)', async () => {
+    const sharp = (await import('sharp')).default;
     const png = await sharp({
       create: { width: 50, height: 50, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
     })

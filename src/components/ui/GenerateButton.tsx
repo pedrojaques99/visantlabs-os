@@ -68,7 +68,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       }}
       variant="outline"
       className={cn(
-        'flex items-center justify-center gap-2 font-semibold border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan',
+        'flex items-center justify-center gap-2 font-semibold border-neutral-800 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan',
         variant === 'floating'
           ? embed
             ? 'h-12 px-4 py-2 text-sm'

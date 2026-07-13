@@ -38,7 +38,10 @@
     "apps.access.${key}",
     "apps.categories.${key}.label",
     "apps.categories.${key}.description",
-    "pricing.hero.tiers.${row.id}"
+    "pricing.hero.tiers.${row.id}",
+    "cockpit.depth.level.${depthLevel.key}",
+    "nav.${section}.label",
+    "nav.${origin.section}.label"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",

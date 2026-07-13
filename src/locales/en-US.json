@@ -138,6 +138,7 @@
       "connectedApps": "Connected apps"
     },
     "library": {
+      "label": "Library",
       "title": "LIBRARY",
       "creativeProjects": "My Creatives",
       "myOutputs": "My Mockups",
@@ -153,6 +154,7 @@
       "mine": "My refs"
     },
     "community": {
+      "label": "Community",
       "overview": "Overview",
       "all": "Explore all",
       "mockup": "Mockups",
@@ -2017,6 +2019,7 @@
     "askCopilot": "Ask Copilot: \"{query}\""
   },
   "cockpit": {
+    "changeLogo": "Change logo",
     "connectAI": "Connect AI",
     "settings": "Settings",
     "title": "Brand cockpit",
@@ -2100,6 +2103,7 @@
   },
   "common": {
     "add": "ADD",
+    "backToHome": "Back to home",
     "analysing": "Analysing...",
     "authenticationRequired": "Authentication required",
     "back": "Back",

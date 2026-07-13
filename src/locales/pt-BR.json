@@ -138,6 +138,7 @@
       "connectedApps": "Apps conectados"
     },
     "library": {
+      "label": "Biblioteca",
       "title": "BIBLIOTECA",
       "creativeProjects": "Meus Criativos",
       "myOutputs": "Meus Mockups",
@@ -153,6 +154,7 @@
       "mine": "Minhas refs"
     },
     "community": {
+      "label": "Comunidade",
       "overview": "Visão geral",
       "all": "Explorar tudo",
       "mockup": "Mockups",
@@ -2017,6 +2019,7 @@
     "askCopilot": "Perguntar ao Copilot: \"{query}\""
   },
   "cockpit": {
+    "changeLogo": "Trocar logo",
     "connectAI": "Conectar AI",
     "settings": "Configurações",
     "title": "Cockpit da marca",
@@ -2100,6 +2103,7 @@
   },
   "common": {
     "add": "ADICIONAR",
+    "backToHome": "Voltar ao início",
     "analysing": "Analisando...",
     "authenticationRequired": "Autenticação necessária",
     "back": "Voltar",
