@@ -22,8 +22,15 @@ export const FEATURE_BRAND_BILLING = readFlag(import.meta.env.VITE_FEATURE_BRAND
 /** Gate do onboarding brand-first (Fase 3): wizard v2, checklist v2 e banner de marca demo. */
 export const FEATURE_ONBOARDING_V2 = readFlag(import.meta.env.VITE_FEATURE_ONBOARDING_V2);
 
-/** Gate do cockpit de marca na home logada (Fase 4) — launcher TUI vira fallback. */
+/** Gate do cockpit de marca: rota /cockpit + entrada no launcher TUI. */
 export const FEATURE_COCKPIT = readFlag(import.meta.env.VITE_FEATURE_COCKPIT);
+
+/**
+ * Promove o cockpit a home logada de verdade (RCD §3.2): quando ligado, `/`
+ * redireciona pro cockpit em vez do launcher TUI. Reversível — desligado, a
+ * home volta a ser o TUI+3D. Depende de FEATURE_COCKPIT (registra a rota).
+ */
+export const FEATURE_COCKPIT_HOME = readFlag(import.meta.env.VITE_FEATURE_COCKPIT_HOME);
 
 /** Gate da higiene de funil nas free tools (Fase 5): banner "conecte sua marca" + save-to-brand. */
 export const FEATURE_FUNNEL_BANNER = readFlag(import.meta.env.VITE_FEATURE_FUNNEL_BANNER);

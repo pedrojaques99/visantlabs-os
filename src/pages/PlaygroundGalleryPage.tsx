@@ -9,6 +9,7 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { MiniAppCard, MINIAPP_CATEGORY_CONFIG } from '@/components/playground/MiniAppCard';
 import { getFeed, type MiniAppSummary } from '@/services/playgroundApi';
 import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 
 type SortKey = 'newest' | 'likes' | 'popular';
 
@@ -173,7 +174,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-neutral-800 bg-neutral-900/30 overflow-hidden"
+                className={cn('rounded-xl overflow-hidden', glassSurface.tile)}
               >
                 <SkeletonLoader variant="rectangular" height="140px" />
                 <div className="p-3 space-y-2">

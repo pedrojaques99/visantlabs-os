@@ -12,9 +12,40 @@ export interface BrandAssetDimensions {
   medium?: string[]; // treatment: photography, 3d, illustration, vector, flat, gradient, grain…
 }
 
+/** What KIND of asset this is — drives which scene surface it belongs on. */
+export type BrandAssetKind =
+  | 'logo' // full lockup (symbol + wordmark)
+  | 'wordmark' // text-only logotype
+  | 'symbol' // icon/mark only
+  | 'photo' // photograph
+  | 'pattern' // repeating motif
+  | 'texture' // surface/material
+  | 'graphic' // designed composition / campaign art
+  | 'illustration';
+
+/**
+ * Placement metadata — the mechanical facts needed to composite an asset onto a
+ * mockup surface WITHOUT it looking wrong. Distinct from the aesthetic
+ * `dimensions` (which feed AI prompts): placement feeds the deterministic
+ * scene matcher (`packages/psd-engine` renderScene). Semantic fields come from
+ * the vision model; measured fields (aspectRatio/hasTransparency/dominantColor)
+ * are computed deterministically via sharp.
+ */
+export interface BrandAssetPlacement {
+  kind?: BrandAssetKind; // LLM — what the asset is
+  luminance?: 'light' | 'dark' | 'mixed'; // LLM — overall light/dark of the art
+  hasText?: boolean; // LLM — is there legible text
+  text?: string; // LLM — the actual text, verbatim, if any
+  contrastSafeOn?: ('light' | 'dark')[]; // LLM — backgrounds it stays legible on
+  aspectRatio?: number; // sharp — width / height
+  hasTransparency?: boolean; // sharp — has real alpha (can be "pasted", no frame)
+  dominantColor?: string; // sharp — dominant hex, for contrast checks
+}
+
 export interface BrandAssetAnalysis {
   description?: string;
   dimensions?: BrandAssetDimensions;
+  placement?: BrandAssetPlacement;
   analyzedAt?: string;
   model?: string;
 }

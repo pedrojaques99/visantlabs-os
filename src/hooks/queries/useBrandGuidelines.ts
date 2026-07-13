@@ -7,6 +7,7 @@ export const BRAND_GUIDELINE_KEYS = {
   all: ['brand-guidelines'] as const,
   detail: (id: string) => ['brand-guidelines', id] as const,
   syncedTemplates: (id: string) => ['brand-guidelines', id, 'synced-templates'] as const,
+  mockupSuggestions: (id: string) => ['brand-guidelines', id, 'mockup-suggestions'] as const,
   quota: ['brand-quota'] as const,
 };
 const KEYS = BRAND_GUIDELINE_KEYS;
@@ -39,6 +40,20 @@ export function useSyncedTemplates(brandId: string | null | undefined) {
     queryFn: () => brandGuidelineApi.getSyncedTemplates(brandId as string),
     enabled: !!brandId,
     staleTime: 60_000,
+  });
+}
+
+/**
+ * Free "surprise-me" mockup suggestions for the active brand. Returns render
+ * recipes (scene + face + asset), rendered client-side (zero credits). Cached a
+ * few minutes since the ranking is deterministic for a given asset set.
+ */
+export function useMockupSuggestions(id: string | null | undefined, count = 12) {
+  return useQuery({
+    queryKey: KEYS.mockupSuggestions(id ?? ''),
+    queryFn: () => brandGuidelineApi.getMockupSuggestions(id as string, { count }),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
   });
 }
 

@@ -41,7 +41,10 @@ interface ActiveBrandContextValue {
   brands: BrandGuideline[];
   /** Lista bruta (inclui arquivadas), para telas que precisem do todo. */
   allBrands: BrandGuideline[];
-  setActiveBrand: (id: string) => void;
+  /** true quando o usuário escolheu "Todas as marcas" (sem escopo de marca). */
+  isAllBrands: boolean;
+  /** Troca a marca ativa. `null` = "Todas as marcas" (sem escopo). */
+  setActiveBrand: (id: string | null) => void;
   /** Ids de marcas visitadas recentemente (MRU, mais-recente-primeiro). */
   recentBrandIds: string[];
   isLoading: boolean;
@@ -68,10 +71,17 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return localStorage.getItem(ACTIVE_BRAND_LS_KEY) || null;
   });
 
+  // "Todas as marcas" (null intencional). Em memória (não persistido): ao
+  // recarregar, o usuário cai numa marca real de novo — "todas" é uma visão
+  // transitória de lista, não um estado default do app.
+  const [isAllBrands, setIsAllBrands] = useState(false);
+
   // Mantém o id válido: se o atual sumiu (ou nunca existiu), cai numa marca
-  // real preferindo não-demo — mesma regra do cockpit original.
+  // real preferindo não-demo — mesma regra do cockpit original. NÃO força
+  // fallback quando o usuário escolheu "Todas as marcas".
   useEffect(() => {
     if (brands.length === 0) return;
+    if (isAllBrands) return;
     const stillValid = activeBrandId && brands.some((g) => g.id === activeBrandId);
     if (!stillValid) {
       const fallback = brands.find((g) => !g.isDemo) ?? brands[0];
@@ -80,11 +90,19 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
         localStorage.setItem(ACTIVE_BRAND_LS_KEY, fallback.id);
       }
     }
-  }, [brands, activeBrandId]);
+  }, [brands, activeBrandId, isAllBrands]);
 
   const [recentBrandIds, setRecentBrandIds] = useState<string[]>(() => readRecent());
 
-  const setActiveBrand = useCallback((id: string) => {
+  const setActiveBrand = useCallback((id: string | null) => {
+    // null = "Todas as marcas" — sem escopo de marca (não persiste; ver acima).
+    if (id === null) {
+      setIsAllBrands(true);
+      setActiveBrandId(null);
+      if (typeof window !== 'undefined') localStorage.removeItem(ACTIVE_BRAND_LS_KEY);
+      return;
+    }
+    setIsAllBrands(false);
     setActiveBrandId(id);
     setRecentBrandIds((prev) => {
       const next = [id, ...prev.filter((x) => x !== id)].slice(0, RECENT_CAP);
@@ -106,11 +124,12 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
       activeBrand,
       brands,
       allBrands,
+      isAllBrands,
       setActiveBrand,
       recentBrandIds,
       isLoading,
     }),
-    [activeBrandId, activeBrand, brands, allBrands, setActiveBrand, recentBrandIds, isLoading]
+    [activeBrandId, activeBrand, brands, allBrands, isAllBrands, setActiveBrand, recentBrandIds, isLoading]
   );
 
   return <ActiveBrandContext.Provider value={value}>{children}</ActiveBrandContext.Provider>;

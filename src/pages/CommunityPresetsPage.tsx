@@ -28,6 +28,7 @@ import { migrateLegacyPreset } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { glassSurface } from '@/lib/ui/glass';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COMMUNITY_API = '/api/community/presets';
@@ -215,7 +216,7 @@ const PresetDetailModal: React.FC<{
                 }}
               />
             ) : (
-              <div className="w-full aspect-square rounded-xl border border-neutral-800 bg-neutral-900/30 flex items-center justify-center">
+              <div className={cn('w-full aspect-square rounded-xl flex items-center justify-center', glassSurface.tile)}>
                 <config.icon size={32} className={cn('opacity-20', config.color)} />
               </div>
             )}
@@ -234,12 +235,12 @@ const PresetDetailModal: React.FC<{
                 {config.label}
               </span>
               {migrated.aspectRatio && (
-                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800 text-neutral-600">
+                <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600', glassSurface.control)}>
                   {migrated.aspectRatio}
                 </span>
               )}
               {migrated.difficulty && (
-                <span className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800 text-neutral-600">
+                <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600', glassSurface.control)}>
                   {migrated.difficulty}
                 </span>
               )}
@@ -275,7 +276,7 @@ const PresetDetailModal: React.FC<{
                 {migrated.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800 text-neutral-700"
+                    className={cn('text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-700', glassSurface.control)}
                   >
                     #{tag}
                   </span>
@@ -731,7 +732,7 @@ export const CommunityPresetsPage: React.FC = () => {
   const headerActions = (
     <div className="flex items-center gap-2">
       {/* View toggle */}
-      <div className="flex bg-white/[0.03] p-0.5 rounded-lg border border-neutral-800">
+      <div className={cn('flex p-0.5 rounded-lg', glassSurface.control)}>
         {(['all', 'my'] as const).map((mode) => (
           <button
             key={mode}
@@ -788,7 +789,7 @@ export const CommunityPresetsPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('community.presets.search_presets')}
-              className="w-48 focus:w-64 pl-8 pr-8 py-2 bg-white/[0.03] border border-neutral-800 rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200"
+              className={cn('w-48 focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200', glassSurface.control)}
               aria-label={t('community.presets.search_presets_2')}
             />
             {searchQuery && (
@@ -852,7 +853,7 @@ export const CommunityPresetsPage: React.FC = () => {
             {Array.from({ length: 9 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-neutral-800 bg-neutral-900/20 overflow-hidden animate-pulse"
+                className={cn('rounded-xl overflow-hidden animate-pulse', glassSurface.tile)}
               >
                 <div className="aspect-[4/3] bg-neutral-900/50" />
                 <div className="p-3 space-y-2">
@@ -872,7 +873,7 @@ export const CommunityPresetsPage: React.FC = () => {
             animate={{ opacity: 1 }}
             className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20"
           >
-            <div className="p-6 rounded-full bg-white/[0.03] border border-neutral-800">
+            <div className={cn('p-6 rounded-full', glassSurface.control)}>
               <Layers size={28} strokeWidth={1} className="text-neutral-700" />
             </div>
             <div className="text-center space-y-2">

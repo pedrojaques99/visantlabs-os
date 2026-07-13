@@ -16,6 +16,7 @@ import {
   Key,
   ShieldCheck,
   BookOpen,
+  Info,
 } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
@@ -26,11 +27,15 @@ import { Input } from '@/components/ui/input';
 interface AuthButtonProps {
   subscriptionStatus?: SubscriptionStatus | null;
   onCreditsClick?: () => void;
+  /** Direção de abertura do dropdown. 'bottom' (padrão) abre pra baixo (topbar);
+   *  'top' abre pra cima — usado quando ancorado no rodapé do rail. */
+  menuPlacement?: 'top' | 'bottom';
 }
 
 export const AuthButton: React.FC<AuthButtonProps> = ({
   subscriptionStatus: propSubscriptionStatus,
   onCreditsClick,
+  menuPlacement = 'bottom',
 }) => {
   const { t } = useTranslation();
   // Try to get layout context, but don't fail if not available (e.g., in EditorApp)
@@ -350,7 +355,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 className={`md:w-3 md:h-3 ${isLowCredits ? 'text-warning' : 'text-brand-cyan'}`}
                 aria-hidden="true"
               />
-              <span>{availableCredits}</span>
+              <span className="tabular-nums">{availableCredits}</span>
             </Button>
           </>
         ) : null}
@@ -391,7 +396,11 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 }}
                 onClick={() => setIsDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-2 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[150px] py-1 dropdown-menu">
+              <div
+                className={`absolute right-0 ${
+                  menuPlacement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+                } bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[150px] py-1 dropdown-menu`}
+              >
                 <Button
                   variant="ghost"
                   onClick={handleProfileClick}
@@ -428,6 +437,18 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                 >
                   <BookOpen size={14} />
                   Docs
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    window.history.pushState({}, '', '/about');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
+                >
+                  <Info size={14} />
+                  {t('about.title') || 'About'}
                 </Button>
                 {user.isAdmin && (
                   <>

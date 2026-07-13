@@ -338,6 +338,43 @@ export const brandGuidelineApi = {
     return response.json();
   },
 
+  /**
+   * Free "surprise-me" mockup suggestions — render RECIPES (not images) matching the
+   * brand's assets to commercial scenes. The client renders each in the browser via
+   * the Scene Package engine (zero credits). `seen` excludes recently-shown pairs.
+   */
+  async getMockupSuggestions(
+    id: string,
+    opts: { cursor?: number; count?: number; seen?: string[] } = {}
+  ): Promise<{
+    suggestions: Array<{
+      psdFileName: string;
+      faceKey: string;
+      faceName: string;
+      assetUrl: string;
+      variant?: string;
+      surfaceKind: string;
+      score: number;
+    }>;
+    nextCursor: number | null;
+    total: number;
+    reason?: 'no_assets' | 'no_scenes';
+  }> {
+    const qs = new URLSearchParams();
+    if (opts.cursor) qs.set('cursor', String(opts.cursor));
+    if (opts.count) qs.set('count', String(opts.count));
+    if (opts.seen?.length) qs.set('seen', opts.seen.join(','));
+    const response = await fetch(
+      `${API_BASE_URL}/brand-guidelines/${id}/mockup-suggestions?${qs}`,
+      { headers: getAuthHeaders() }
+    );
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw codedError(body, 'Failed to load mockup suggestions');
+    }
+    return response.json();
+  },
+
   /** List the headless web preset templates available to render. */
   async getWebPresets(
     id: string

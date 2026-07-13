@@ -12,6 +12,8 @@ interface Props {
   canvasHeight: number;
   isSelected: boolean;
   accentColor: string; // accepted for future use — accent rendering deferred
+  /** Dentro de um grupo: o próprio nó não arrasta (o Group pai move tudo junto). */
+  inGroup?: boolean;
   registerNode: (id: string, node: Konva.Node | null) => void;
   onSelect: (id: string, extend: boolean) => void;
   onDragStart?: (id: string) => void;
@@ -26,6 +28,7 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
   canvasHeight,
   isSelected,
   accentColor,
+  inGroup = false,
   registerNode,
   onSelect,
   onDragStart,
@@ -164,6 +167,7 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
   return (
     <Text
       ref={shapeRef}
+      id={layer.id}
       text={displayText}
       x={data.position.x * canvasWidth}
       y={data.position.y * canvasHeight}
@@ -184,7 +188,7 @@ const KonvaTextLayerImpl: React.FC<Props> = ({
       shadowBlur={data.shadowBlur ?? 0}
       shadowOffsetX={data.shadowOffsetX ?? 0}
       shadowOffsetY={data.shadowOffsetY ?? 0}
-      draggable={!layer.locked}
+      draggable={!layer.locked && !inGroup}
       listening={!layer.locked}
       onMouseEnter={(e) => {
         const stage = e.target.getStage();
@@ -244,6 +248,7 @@ export const KonvaTextLayer = React.memo(
   (prev, next) =>
     prev.layer === next.layer &&
     prev.isSelected === next.isSelected &&
+    prev.inGroup === next.inGroup &&
     prev.canvasWidth === next.canvasWidth &&
     prev.canvasHeight === next.canvasHeight &&
     prev.accentColor === next.accentColor &&

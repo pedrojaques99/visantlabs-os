@@ -137,8 +137,3 @@ export interface CreativeAIResponse {
 export type CreativeStatus = 'setup' | 'generating' | 'editing';
 
 export type CreativeTool = 'select' | 'lasso';
-
-export type BackgroundLayerData = {
-  type: 'background';
-  url: string | null;
-};

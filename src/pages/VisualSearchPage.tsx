@@ -17,6 +17,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import {
   visualSearchApi,
   type VisualSearchResult,
@@ -25,6 +26,7 @@ import {
   type SearchIntent,
 } from '@/services/visualSearchApi';
 import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
+import { glassSurface } from '@/lib/ui/glass';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -76,6 +78,7 @@ function suggestTab(q: string): TabId | null {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export const VisualSearchPage: React.FC = () => {
+  const inShell = useInAppShell();
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [userPickedTab, setUserPickedTab] = useState(false);
@@ -295,7 +298,7 @@ export const VisualSearchPage: React.FC = () => {
             size="lg"
             placeholder="Search..."
             containerClassName="max-w-xl w-full"
-            className="bg-white/[0.03] border-neutral-800 focus:border-white/10"
+            className={cn('focus:border-white/10', glassSurface.control)}
             autoFocus
           />
           <div className="mt-4">{tabBar}</div>
@@ -303,7 +306,7 @@ export const VisualSearchPage: React.FC = () => {
       ) : (
         <>
           {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
-          <div className="sticky top-10 md:top-14 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800">
+          <div className={cn('sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800', inShell ? 'top-0' : 'top-10 md:top-14')}>
             <SearchBar
               ref={searchBarRef}
               value={query}
@@ -311,7 +314,7 @@ export const VisualSearchPage: React.FC = () => {
               size="md"
               placeholder="Search..."
               containerClassName="max-w-2xl"
-              className="bg-white/[0.03] border-neutral-800 focus:border-white/10"
+              className={cn('focus:border-white/10', glassSurface.control)}
             />
             {tabBar}
           </div>

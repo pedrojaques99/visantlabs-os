@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ralColorsData from '@/data/ralColors.json';
 import pantoneColorsData from '@/data/pantoneColors.json';
+import { glassSurface } from '@/lib/ui/glass';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 const fadeUp = {
@@ -110,7 +111,7 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
   return (
     <motion.div
       {...fadeUp}
-      className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 space-y-3"
+      className={cn('mt-6 rounded-xl p-4 space-y-3', glassSurface.tile)}
     >
       <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
         WCAG Contrast Check
@@ -422,7 +423,7 @@ function ColorRow({
   const { rgb, cmyk, hsl, hex } = color;
 
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 overflow-hidden">
+    <div className={cn('rounded-xl overflow-hidden', glassSurface.tile)}>
       {/* Main row */}
       <div className="flex items-center gap-3 p-3">
         {/* Swatch */}

@@ -459,7 +459,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
                     )}
                   </div>
                 </td>
-                <td className="text-center py-3 px-4">{deliverable.quantity}</td>
+                <td className="text-center py-3 px-4 tabular-nums">{deliverable.quantity}</td>
                 <td className="text-right py-3 px-4">{formatCurrency(deliverable.unitValue)}</td>
                 <td className="text-right py-3 px-4 font-semibold">
                   {formatCurrency(calculateTotal(deliverable))}

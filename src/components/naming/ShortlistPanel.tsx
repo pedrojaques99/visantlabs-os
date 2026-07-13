@@ -193,8 +193,8 @@ function ShortlistRow({
   return (
     <div
       className={cn(
-        'rounded-lg border bg-white/[0.02] transition-colors hover:bg-white/[0.035]',
-        highlighted ? 'border-brand-cyan/40' : 'border-white/[0.06]'
+        'rounded-lg border bg-white/[0.03] transition-colors hover:bg-white/[0.035]',
+        highlighted ? 'border-brand-cyan/40' : 'border-neutral-800'
       )}
     >
       <button
@@ -320,7 +320,7 @@ function ActionChip({
         'inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 transition-colors',
         destructive
           ? 'hover:border-destructive/40 hover:text-destructive'
-          : 'hover:border-brand-cyan/40 hover:text-brand-cyan'
+          : 'hover:border-neutral-700 hover:text-brand-cyan'
       )}
     >
       {icon}

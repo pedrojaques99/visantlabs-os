@@ -186,7 +186,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                 }
               >
                 <Heart size={12} className={isLiked ? 'fill-current' : ''} />
-                <span>{likesCount}</span>
+                <span className="tabular-nums">{likesCount}</span>
               </Button>
             )}
           </div>

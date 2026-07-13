@@ -26,6 +26,12 @@ import { brandSharedService } from '../services/brandSharedService.js';
 import { buildBrandContext, buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
 import { runBrandHealth, isBrandEmpty, buildEmptyBrandHealthReport } from '../lib/brandHealth.js';
 import { compileBrandTokens, type CompileFormat } from '../lib/brand-token-compiler.js';
+import { listScenes } from '../services/sceneStore.js';
+import {
+  rankSuggestions,
+  type AssetForMatch,
+  type SceneForMatch,
+} from '../services/sceneMatcher.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -1558,6 +1564,103 @@ router.get(
     } catch (error: any) {
       console.error('[Brand Asset Similar] Error:', error?.message || error);
       res.status(500).json({ error: 'Failed to find similar assets', message: error?.message });
+    }
+  }
+);
+
+/**
+ * GET /api/brand-guidelines/:id/mockup-suggestions
+ *
+ * The free "surprise-me" feed: deterministically matches the brand's own analyzed
+ * assets to commercial mockup scenes and returns render RECIPES — NOT images. The
+ * client renders each recipe in the browser via the Scene Package engine (zero AI,
+ * zero credits). Read-only, owner-gated, rate-limited.
+ *
+ * Query: ?cursor=<offset> &count=<1-30> &seen=<psd:face,psd:face> (MRU exclude).
+ * Returns { suggestions: Recipe[], nextCursor, total } where a Recipe is
+ * { psdFileName, faceKey, assetUrl, variant, surfaceKind, score }.
+ */
+router.get(
+  '/:id/mockup-suggestions',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+
+      // Build the asset pool from logos + image media. Placement metadata
+      // (from assetAnalysis) drives the match; missing placement degrades to a
+      // sane default so a not-yet-analyzed brand still gets suggestions.
+      const assets: AssetForMatch[] = [];
+      for (const l of (guideline.logos as any[]) || []) {
+        if (!l?.url) continue;
+        const p = l.analysis?.placement || {};
+        assets.push({
+          url: l.url,
+          variant: l.variant,
+          kind: p.kind || 'logo',
+          luminance: p.luminance,
+          contrastSafeOn: p.contrastSafeOn,
+          aspectRatio: p.aspectRatio,
+          // Logos are usually cut-out PNGs; default to transparent when unknown.
+          hasTransparency: p.hasTransparency ?? true,
+        });
+      }
+      for (const m of (guideline.media as any[]) || []) {
+        if (!m?.url || m.type === 'pdf') continue;
+        const p = m.analysis?.placement || {};
+        assets.push({
+          url: m.url,
+          kind: p.kind || 'graphic',
+          luminance: p.luminance,
+          contrastSafeOn: p.contrastSafeOn,
+          aspectRatio: p.aspectRatio,
+          hasTransparency: p.hasTransparency,
+        });
+      }
+
+      if (!assets.length) {
+        return res.json({ suggestions: [], nextCursor: null, total: 0, reason: 'no_assets' });
+      }
+
+      // Commercial scenes only (SSoT isComercial filter — never leaks paid studios).
+      const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+      await connectToMongoDB();
+      const db = getDb();
+      const sceneRows = await listScenes(db, { commercialOnly: true });
+      const scenes: SceneForMatch[] = sceneRows
+        .filter((s) => Array.isArray(s.faces) && s.faces.length > 0)
+        .map((s) => ({
+          psdFileName: s.psdFileName,
+          baseLuminance: s.baseLuminance,
+          faces: s.faces,
+        }));
+
+      if (!scenes.length) {
+        return res.json({ suggestions: [], nextCursor: null, total: 0, reason: 'no_scenes' });
+      }
+
+      const seen = String(req.query.seen || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const exclude = new Set(seen);
+
+      const ranked = rankSuggestions(assets, scenes, { exclude });
+
+      const cursor = Math.max(0, parseInt(String(req.query.cursor || '0'), 10) || 0);
+      const count = Math.min(Math.max(parseInt(String(req.query.count || '12'), 10) || 12, 1), 30);
+      const page = ranked.slice(cursor, cursor + count);
+      const nextCursor = cursor + count < ranked.length ? cursor + count : null;
+
+      res.json({ suggestions: page, nextCursor, total: ranked.length });
+    } catch (error: any) {
+      console.error('[Mockup Suggestions] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to load mockup suggestions', message: error?.message });
     }
   }
 );

@@ -27,6 +27,7 @@ import { FullScreenViewer } from '../../FullScreenViewer';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { copyToClipboard } from '@/utils/clipboard';
+import { glassSurface } from '@/lib/ui/glass';
 export interface ChatMessageProps {
   id?: string;
   role: 'user' | 'assistant' | 'model'; // 'model' is used in BrandingExpertChat
@@ -72,7 +73,7 @@ const CreativeProjectCard: React.FC<{
 }> = ({ project, onViewImage }) => {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="group space-y-3 p-4 bg-white/[0.03] rounded-xl border border-neutral-800 shadow-sm hover:border-white/10 transition-all duration-200">
+    <div className={cn('group space-y-3 p-4 rounded-xl shadow-sm transition-all duration-200', glassSurface.tile)}>
       <img
         src={project.imageUrl}
         alt={project.prompt}

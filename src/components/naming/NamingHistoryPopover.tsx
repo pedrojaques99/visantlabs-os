@@ -141,7 +141,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
                         'group flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 transition-colors',
                         s.id === currentId
                           ? 'border-brand-cyan/40 bg-brand-cyan/[0.06]'
-                          : 'border-white/[0.06] hover:bg-white/[0.035]'
+                          : 'border-neutral-800 hover:bg-white/[0.035]'
                       )}
                     >
                       <span

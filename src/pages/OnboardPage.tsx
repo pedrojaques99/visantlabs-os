@@ -31,6 +31,7 @@ import { PremiumButton } from '@/components/ui/PremiumButton';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { cn } from '@/lib/utils';
+import { glassSurface } from '@/lib/ui/glass';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -282,7 +283,7 @@ const CanvasSection: React.FC = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {CANVAS_NODES.map((node, i) => (
         <FadeIn key={node.label} delay={i * 0.04}>
-          <div className="group flex flex-col gap-2 p-4 rounded-xl border border-neutral-800 bg-neutral-900/30 hover:bg-neutral-900/60 hover:border-white/10 transition-all duration-200 cursor-default h-full">
+          <div className={cn('group flex flex-col gap-2 p-4 rounded-xl hover:bg-neutral-900/60 transition-all duration-200 cursor-default h-full', glassSurface.tile)}>
             <node.icon
               size={16}
               className="text-neutral-400 group-hover:text-brand-cyan transition-colors duration-200"
@@ -502,7 +503,7 @@ const AgencySection: React.FC = () => (
         ].map((item) => (
           <div
             key={item.label}
-            className="flex flex-col gap-1 p-4 rounded-xl border border-neutral-800 bg-neutral-900/20"
+            className={cn('flex flex-col gap-1 p-4 rounded-xl', glassSurface.tile)}
           >
             <p className="text-xs font-semibold text-neutral-300">{item.label}</p>
             <p className="text-[10px] text-neutral-600 font-mono">{item.desc}</p>

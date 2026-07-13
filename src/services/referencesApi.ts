@@ -262,3 +262,39 @@ export const collectionsApi = {
     if (!resp.ok) throw new Error('Failed to remove from collection');
   },
 };
+
+// ── Admin curation (admin-only; enforced server-side by validateAdmin) ─────────
+export interface ReferenceAdminPatch {
+  name?: string;
+  description?: string;
+  tags?: string[];
+  dimensions?: Record<string, string[]>;
+  designer?: string;
+  sourceUrl?: string;
+  country?: string;
+  region?: string;
+  isPublic?: boolean;
+  hiddenFromPublic?: boolean;
+}
+
+export const adminReferencesApi = {
+  async remove(id: string): Promise<void> {
+    const resp = await fetch(`/api/admin/references/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Failed to delete reference');
+  },
+
+  async update(id: string, patch: ReferenceAdminPatch): Promise<void> {
+    const resp = await fetch(`/api/admin/references/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: authHeaders(true),
+      body: JSON.stringify(patch),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to update reference');
+    }
+  },
+};

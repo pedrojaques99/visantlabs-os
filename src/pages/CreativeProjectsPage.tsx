@@ -18,8 +18,7 @@ import {
 import { useCreativeStore } from '@/components/creative/store/creativeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatDateShort } from '@/utils/localeUtils';
-import { useBrandFilter } from '@/hooks/useBrandFilter';
-import { BrandFilterChip } from '@/components/shell/BrandFilterChip';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 
 /**
  * Grid of the user's Creative Studio projects.
@@ -33,8 +32,8 @@ export const CreativeProjectsPage: React.FC = () => {
   const reset = useCreativeStore((s) => s.reset);
 
   // Filtro opcional pela marca ativa (default global; server-side via hook).
-  const { activeBrand, enabled: brandFilter, toggle: toggleBrandFilter, brandId } =
-    useBrandFilter('vsn_filter_creative');
+  // Lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas").
+  const { activeBrandId: brandId } = useActiveBrand();
   const { data: projects = [], isLoading, error } = useCreativeProjects(brandId ?? undefined);
   const deleteMutation = useDeleteCreativeProject();
   const updateMutation = useUpdateCreativeProject();
@@ -133,7 +132,6 @@ export const CreativeProjectsPage: React.FC = () => {
 
   const headerActions = (
     <div className="flex items-center gap-3">
-      <BrandFilterChip brand={activeBrand} enabled={brandFilter} onToggle={toggleBrandFilter} />
       <div className="relative">
         <Button
           variant="ghost"

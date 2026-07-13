@@ -199,7 +199,7 @@ export const AboutPage: React.FC = () => {
                 <motion.div key={member.name} {...inView(i * 0.08)}>
                   <Link
                     to={member.profile}
-                    className="group flex items-start gap-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-200"
+                    className="group flex items-start gap-4 p-4 rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] transition-all duration-200"
                     aria-label={member.name}
                   >
                     <div className="relative shrink-0">
@@ -246,7 +246,7 @@ export const AboutPage: React.FC = () => {
                 <motion.div key={tool.label} {...inView(i * 0.06)}>
                   <Link
                     to={tool.href}
-                    className="group flex flex-col rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] overflow-hidden transition-all duration-200"
+                    className="group flex flex-col rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] overflow-hidden transition-all duration-200"
                   >
                     <div className="aspect-video w-full overflow-hidden bg-neutral-900/50">
                       <img
@@ -281,7 +281,7 @@ export const AboutPage: React.FC = () => {
                     href={l.href!}
                     target={l.external ? '_blank' : undefined}
                     rel={l.external ? 'noopener noreferrer' : undefined}
-                    className="flex items-center gap-3 py-2.5 border-b border-white/[0.04] group transition-colors last:border-0"
+                    className="flex items-center gap-3 py-2.5 border-b border-neutral-800 group transition-colors last:border-0"
                     aria-label={l.label}
                   >
                     <span className="text-neutral-700 group-hover:text-neutral-400 transition-colors text-sm">
@@ -305,7 +305,7 @@ export const AboutPage: React.FC = () => {
           {/* ── Footer ───────────────────────────────────────────────────── */}
           <motion.div
             {...inView(0)}
-            className="mt-10 pt-6 border-t border-white/[0.06] flex items-center justify-between"
+            className="mt-10 pt-6 border-t border-neutral-800 flex items-center justify-between"
           >
             <span className="font-mono text-[10px] text-neutral-700 uppercase tracking-widest">
               {t('about.openSource.description') || 'Open source'}
@@ -337,7 +337,7 @@ export const AboutPage: React.FC = () => {
           aria-hidden
         >
           <RepellantText
-            className="text-[20vw] font-bold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-white/[0.04] to-white/[0.01]"
+            className="text-[20vw] font-bold leading-none tracking-tighter whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-b from-white/5 to-white/[0.03]"
             style={{ pointerEvents: 'auto' }}
           >
             VISANT

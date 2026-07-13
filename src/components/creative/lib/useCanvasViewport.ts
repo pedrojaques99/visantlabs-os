@@ -28,7 +28,6 @@ export interface UseCanvasViewport {
   zoomIn: () => void;
   zoomOut: () => void;
   zoomTo100: () => void;
-  fitToScreen: () => void;
 }
 
 export function useCanvasViewport(
@@ -180,7 +179,6 @@ export function useCanvasViewport(
   const zoomIn = useCallback(() => zoomBy(SCALE_STEP), [zoomBy]);
   const zoomOut = useCallback(() => zoomBy(1 / SCALE_STEP), [zoomBy]);
   const zoomTo100 = useCallback(() => setViewport({ scale: 1, x: 0, y: 0 }), []);
-  const fitToScreen = useCallback(() => setViewport({ scale: 1, x: 0, y: 0 }), []);
 
   return {
     viewport,
@@ -193,6 +191,5 @@ export function useCanvasViewport(
     zoomIn,
     zoomOut,
     zoomTo100,
-    fitToScreen,
   };
 }

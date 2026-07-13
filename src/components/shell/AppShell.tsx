@@ -9,6 +9,8 @@ import React, { useEffect, useState } from 'react';
 import { AppSidebar } from './AppSidebar';
 import { AppTopBar } from './AppTopBar';
 import { InAppShellContext } from './InAppShellContext';
+import { ShellHeaderContext } from './ShellHeaderContext';
+import { GlobalCommandPalette } from './GlobalCommandPalette';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -16,6 +18,8 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Slot pras ações da página (PageShell teleporta pra cá — ver ShellHeaderContext).
+  const [actionsSlot, setActionsSlot] = useState<HTMLElement | null>(null);
 
   // a11y do drawer mobile (P4): Escape fecha e o scroll do body trava enquanto
   // aberto (evita o conteúdo rolar atrás do overlay).
@@ -35,12 +39,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   return (
     <InAppShellContext.Provider value={true}>
+     <ShellHeaderContext.Provider value={{ actionsSlot, setActionsSlot }}>
       <div className="flex-1 min-h-0 flex">
         <AppSidebar />
         <div className="flex-1 min-w-0 flex flex-col">
           <AppTopBar onMenuClick={() => setMobileNavOpen(true)} />
           <main className="flex-1 min-h-0 overflow-auto relative">{children}</main>
         </div>
+
+        {/* Cmd+K global — navegar/trocar marca de qualquer rota do shell */}
+        <GlobalCommandPalette />
 
         {/* Drawer mobile — backdrop + rail deslizante (F5, a11y P4) */}
         {mobileNavOpen && (
@@ -61,6 +69,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </div>
         )}
       </div>
+     </ShellHeaderContext.Provider>
     </InAppShellContext.Provider>
   );
 };

@@ -172,7 +172,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
               rows={3}
               autoFocus
               placeholder="app de matchmaking para esportes de raquete…"
-              className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-3 text-base text-neutral-100 placeholder:text-neutral-600 focus:border-brand-cyan/40 focus:outline-none transition-colors"
+              className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-950/40 px-4 py-3 text-base text-neutral-100 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors"
             />
 
             <div className="flex items-center justify-between gap-3">
@@ -248,7 +248,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
                         setShowBrandPicker(false);
                       }}
                       autoFocus
-                      className="rounded-md border border-neutral-800 bg-neutral-950/40 px-2 py-1 text-xs text-neutral-300 outline-none focus:border-brand-cyan/40"
+                      className="rounded-md border border-neutral-800 bg-neutral-950/40 px-2 py-1 text-xs text-neutral-300 outline-none focus:border-neutral-600"
                     >
                       <option value="" disabled>
                         Escolher marca…
@@ -303,7 +303,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
                       <button
                         type="button"
                         onClick={() => setEditingKey(key)}
-                        className="group inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-white/[0.03] px-3 py-1.5 text-sm text-neutral-300 hover:border-brand-cyan/40 transition-colors"
+                        className="group inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-white/[0.03] px-3 py-1.5 text-sm text-neutral-300 hover:border-neutral-700 transition-colors"
                       >
                         {current}
                         <Pencil
@@ -387,7 +387,7 @@ function QuestionBody({
               whileTap={{ scale: 0.97 }}
               disabled={disabled}
               onClick={() => onAnswer(opt)}
-              className="rounded-2xl border border-neutral-800 bg-white/[0.03] px-4 py-10 text-lg font-medium text-neutral-200 hover:border-brand-cyan/40 hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="rounded-2xl border border-neutral-800 bg-white/[0.03] px-4 py-10 text-lg font-medium text-neutral-200 hover:border-neutral-700 hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               {opt}
             </motion.button>

@@ -11,10 +11,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
-import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
+import { GeneratingImageCard } from '@/components/ui/GeneratingImageCard';
 import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '@/hooks/useMockupLike';
 import { isSafeUrl, downloadImage } from '@/utils/imageUtils';
@@ -153,25 +151,16 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
       >
         {showSkeleton && (
           <div className="absolute inset-0">
-            <SkeletonLoader
-              width="100%"
-              height="100%"
+            <GeneratingImageCard
+              isLoading
+              showFrame={false}
               className="h-full w-full"
-              variant="rectangular"
+              steps={
+                isGeneratingPrompt
+                  ? ['Preparando', 'Analisando', 'Compondo', 'Conceituando', 'Sintetizando']
+                  : ['Criando', 'Desenhando', 'Esculpindo', 'Refinando', 'Moldando', 'Lapidando']
+              }
             />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:scale-110 transition-transform duration-700">
-              <GlitchPickaxe />
-            </div>
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[80%] max-w-[240px]">
-              <PremiumGlitchLoader
-                color="#00d2ff"
-                steps={
-                  isGeneratingPrompt
-                    ? ['Preparando', 'Analisando', 'Compondo', 'Conceituando', 'Sintetizando']
-                    : ['Criando', 'Desenhando', 'Esculpindo', 'Refinando', 'Moldando', 'Lapidando']
-                }
-              />
-            </div>
           </div>
         )}
 

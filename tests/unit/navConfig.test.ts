@@ -4,6 +4,8 @@ import {
   resolveShell,
   routeMode,
   isBrandContext,
+  isBrandScopedEditor,
+  editorHasOwnChrome,
   visibleSections,
   contextNavFor,
   NAV_SECTIONS,
@@ -73,14 +75,15 @@ describe('classifyRoute', () => {
     expect(classifyRoute('/cockpit').section).toBe('cockpit');
     expect(classifyRoute('/apps').section).toBe('apps');
     expect(classifyRoute('/copilot').section).toBe('copilot');
-    expect(classifyRoute('/brand-guidelines').section).toBe('brands');
+    // Início adaptativo: o grid de marcas destaca o MESMO item (cockpit=Início).
+    expect(classifyRoute('/brand-guidelines').section).toBe('cockpit');
     expect(classifyRoute('/my-brandings').section).toBe('brands');
     expect(classifyRoute('/settings/api-keys').section).toBe('profile');
-    expect(classifyRoute('/developer/usage').section).toBe('profile');
+    expect(classifyRoute('/settings/connected-apps').section).toBe('profile');
   });
 
   it('ignora query e trailing slash', () => {
-    expect(classifyRoute('/brand-guidelines?id=123').section).toBe('brands');
+    expect(classifyRoute('/brand-guidelines?id=123').section).toBe('cockpit');
     expect(classifyRoute('/apps/').section).toBe('apps');
   });
 });
@@ -125,18 +128,18 @@ describe('routeMode', () => {
 });
 
 describe('visibleSections', () => {
-  it('esconde cockpit e copilot quando as flags estão off', () => {
+  it('Início (cockpit) sempre visível; Copilot gated por flag; sem seção Marcas', () => {
     const ctx: NavCtx = { ...baseCtx, flags: { cockpit: false, copilot: false } };
     const ids = visibleSections(ctx).map((s) => s.id);
-    expect(ids).not.toContain('cockpit');
-    expect(ids).not.toContain('copilot');
-    expect(ids).toContain('brands');
+    expect(ids).not.toContain('copilot'); // flag off
+    expect(ids).toContain('cockpit'); // Início é a casa, sempre presente
     expect(ids).toContain('apps');
+    expect(ids).not.toContain('brands'); // colapsado no Início (HOME-ADAPTIVE-IA)
   });
 
   it('mostra tudo com as flags on', () => {
     const ids = visibleSections(baseCtx).map((s) => s.id);
-    expect(ids).toEqual(['cockpit', 'brands', 'copilot', 'apps']);
+    expect(ids).toEqual(['cockpit', 'copilot', 'canvas', 'apps']);
   });
 });
 
@@ -159,6 +162,53 @@ describe('contextNavFor', () => {
   it('todas as seções de nível 1 têm labelKey sob nav.*', () => {
     for (const s of NAV_SECTIONS) {
       expect(s.labelKey.startsWith('nav.')).toBe(true);
+    }
+  });
+});
+
+describe('isBrandScopedEditor', () => {
+  it('editores de produção operam sobre a marca (chip aparece)', () => {
+    for (const p of [
+      '/create',
+      '/canvas/abc123',
+      '/mockupmachine',
+      '/mockupmachine/expert',
+      '/image-lab',
+      '/3d-studio',
+      '/content-studio',
+      '/branding-machine',
+      '/moodboard',
+      '/playground/xyz',
+    ]) {
+      expect(isBrandScopedEditor(p)).toBe(true);
+    }
+  });
+
+  it('ferramentas utilitárias NÃO usam marca (chip some)', () => {
+    for (const p of ['/qrcode', '/compress', '/pdf-compress', '/converter', '/remove-bg', '/upscale', '/favicon']) {
+      expect(isBrandScopedEditor(p)).toBe(false);
+    }
+  });
+
+  it('/canvas (lista, dashboard) não é editor brand-scoped; /canvas/:id é', () => {
+    expect(isBrandScopedEditor('/canvas')).toBe(false);
+    expect(isBrandScopedEditor('/canvas/proj-1')).toBe(true);
+  });
+});
+
+describe('editorHasOwnChrome / naming = editor focus', () => {
+  it('/naming é editor focus (não dashboard) — sem rail/AppTopBar', () => {
+    expect(classifyRoute('/naming')).toMatchObject({ shell: 'app', mode: 'focus' });
+    expect(routeMode('/naming')).toBe('focus');
+  });
+
+  it('só o canvas tem header top-0 completo próprio → não recebe AppSpine', () => {
+    expect(editorHasOwnChrome('/canvas/abc')).toBe(true);
+  });
+
+  it('editores MiniAppShell/ToolEditorShell RESERVAM a faixa do topo → recebem AppSpine (senão buraco)', () => {
+    for (const p of ['/naming', '/image-lab', '/3d-studio', '/qrcode', '/compress', '/mockupmachine', '/create']) {
+      expect(editorHasOwnChrome(p)).toBe(false);
     }
   });
 });

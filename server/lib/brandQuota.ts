@@ -22,6 +22,12 @@ export interface BrandQuota {
   max: number | null;
   /** Effective tier used for the limit ('free' when the subscription isn't active). */
   tier: string;
+  /**
+   * ISO date até quando marcas em excesso seguem ativas após um downgrade
+   * (janela de tolerância de 7 dias). `null`/ausente = sem downgrade pendente.
+   * Alimenta o banner de grace no frontend (RCD §3.5 — moldura de perda).
+   */
+  graceUntil?: string | null;
 }
 
 /**
@@ -175,7 +181,13 @@ export async function getBrandQuota(user: QuotaUserShape): Promise<BrandQuota> {
     max = legacy;
   }
 
-  return { used, max, tier };
+  // Janela de tolerância de downgrade (só relevante enquanto ainda há excesso).
+  const graceUntil =
+    typeof meta.brandQuotaGraceUntil === 'string' && meta.brandQuotaGraceUntil
+      ? meta.brandQuotaGraceUntil
+      : null;
+
+  return { used, max, tier, graceUntil };
 }
 
 /** Load the user and compute the quota. */

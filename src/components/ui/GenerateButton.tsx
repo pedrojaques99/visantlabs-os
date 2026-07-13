@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pickaxe, RefreshCcw } from 'lucide-react';
+import { Pickaxe, RefreshCcw, Zap } from 'lucide-react';
 import { GlitchLoader } from './GlitchLoader';
 import { Button } from './button';
 import { Tooltip } from './Tooltip';
@@ -51,12 +51,39 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   // Determine disabled reason if not provided
   const computedDisabledReason =
     disabledReason ||
-    (noCredits ? 'Sem creditos disponíveis' : undefined) ||
+    (noCredits ? t('credits.noneAvailable') || 'Sem créditos disponíveis' : undefined) ||
     (disabled && !isGenerating && !isGeneratingPrompt
       ? t('mockup.selectModelToGenerate') || 'Select a model to generate'
       : undefined);
 
+  // Muro de crédito = maior disposição a pagar. Em vez de um botão morto com
+  // tooltip, oferece o upgrade no contexto (só quando o caller passa o handler;
+  // sem ele, comportamento inalterado).
+  const showUpgrade = noCredits && !!onUpgradeClick && !isGenerating && !isGeneratingPrompt;
+  const upgradeButton = (
+    <Button
+      onClick={(e) => {
+        e.stopPropagation();
+        onUpgradeClick?.();
+      }}
+      variant="outline"
+      className={cn(
+        'flex items-center justify-center gap-2 font-semibold border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan',
+        variant === 'floating'
+          ? embed
+            ? 'h-12 px-4 py-2 text-sm'
+            : 'fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30 py-3 px-6 text-sm shadow-2xl'
+          : 'w-full py-3 px-6 text-md mt-4'
+      )}
+      aria-label={t('credits.upgradeCta') || 'Fazer upgrade pra continuar'}
+    >
+      <Zap size={14} />
+      {t('credits.upgradeCta') || 'Fazer upgrade pra continuar'}
+    </Button>
+  );
+
   if (variant === 'floating') {
+    if (showUpgrade) return upgradeButton;
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       // Only stop propagation to prevent event bubbling
       // Don't use preventDefault() to avoid passive listener issues
@@ -205,6 +232,9 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       )}
     </Button>
   );
+
+  // Sem créditos + upsell disponível → CTA de upgrade no lugar do botão morto.
+  if (showUpgrade) return upgradeButton;
 
   // Wrap with tooltip if disabled and has a reason
   if (disabled && computedDisabledReason && !isGenerating && !isGeneratingPrompt) {

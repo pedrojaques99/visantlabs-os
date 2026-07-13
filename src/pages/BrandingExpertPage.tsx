@@ -5,6 +5,7 @@ import { SEO } from '@/components/SEO';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { glassSurface } from '@/lib/ui/glass';
 
 export const BrandingExpertPage: React.FC = () => {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ export const BrandingExpertPage: React.FC = () => {
       />
 
       <div className="flex-1 w-full h-full flex flex-col pt-16 md:p-8 md:pt-20 lg:p-12 lg:pt-24 overflow-hidden">
-        <div className="flex-1 w-full max-w-6xl mx-auto h-full flex flex-col shadow-2xl md:rounded-2xl border border-neutral-800 bg-neutral-950/20 backdrop-blur-xl transition-all overflow-hidden">
+        <div className={cn('flex-1 w-full max-w-6xl mx-auto h-full flex flex-col shadow-2xl md:rounded-2xl transition-all overflow-hidden', glassSurface.control)}>
           <BrandingExpertChat mode="inline" projectId={projectId} />
         </div>
       </div>

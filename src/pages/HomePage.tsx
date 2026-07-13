@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, NavigateFunction } from 'react-router-dom';
+import { useNavigate, NavigateFunction, Navigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -11,7 +11,7 @@ import { appsService, AppConfig } from '@/services/appsService';
 import { AuthModal } from '@/components/AuthModal';
 import { LandingHome } from '@/components/landing/LandingHome';
 import { GettingStartedChecklist } from '@/components/onboarding/GettingStartedChecklist';
-import { FEATURE_COCKPIT } from '@/config/featureFlags';
+import { FEATURE_COCKPIT, FEATURE_COCKPIT_HOME } from '@/config/featureFlags';
 
 const playTick = () => {
   const a = new Audio('/sounds/hihat.wav');
@@ -444,6 +444,15 @@ export const HomePage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authIsSignUp, setAuthIsSignUp] = useState(false);
 
+  // Deep-link: /?signup=1 abre o cadastro direto (o CTA do Starter no pricing
+  // aponta pra cá — corta o hop extra de valor entre "quero começar" e o form).
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('signup') === '1') {
+      setAuthIsSignUp(true);
+      setShowAuthModal(true);
+    }
+  }, []);
+
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [presetIndex, setPresetIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -503,6 +512,13 @@ export const HomePage: React.FC = () => {
     setAuthIsSignUp(signUp);
     setShowAuthModal(true);
   };
+
+  // Cockpit como home logada (RCD §3.2), atrás de flag reversível. Reusa a rota
+  // /cockpit já testada em vez de duplicar o wiring do BrandCockpit; desligada,
+  // a home segue sendo o launcher TUI+3D abaixo.
+  if (isAuthenticated === true && FEATURE_COCKPIT && FEATURE_COCKPIT_HOME) {
+    return <Navigate to="/cockpit" replace />;
+  }
 
   // Guest (confirmed not authenticated): scroll landing. While auth is still
   // resolving (undefined) or logged in, fall through to the TUI hero below.

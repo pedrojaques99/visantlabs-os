@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, CreditCard, Sparkles } from 'lucide-react';
+import { Check, CreditCard, Zap } from 'lucide-react';
 import { getUserLocale, type CurrencyInfo } from '@/utils/localeUtils';
 import { getCreditPackageLink } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -31,6 +31,7 @@ import {
   type Currency,
   type TierPricing,
 } from './pricing/pricingTiers';
+import { glassSurface } from '@/lib/ui/glass';
 
 export const PricingPage: React.FC = () => {
   const { locale } = useTranslation();
@@ -151,7 +152,7 @@ export const PricingPage: React.FC = () => {
 
           {/* Billing toggle — mensal / anual (anual = 2 meses grátis) */}
           <div className="flex justify-center mb-12">
-            <div className="relative inline-flex p-1 rounded-full border border-neutral-800 bg-neutral-900/50">
+            <div className={cn('relative inline-flex p-1 rounded-full', glassSurface.control)}>
               <div
                 className={cn(
                   'absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out',
@@ -235,7 +236,7 @@ export const PricingPage: React.FC = () => {
                         </Badge>
                       ) : (
                         <Badge className="bg-neutral-800 text-neutral-300 border-none text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
-                          <Sparkles size={10} />
+                          <Zap size={10} />
                           {copy.earlyAccess}
                         </Badge>
                       )}
@@ -278,8 +279,16 @@ export const PricingPage: React.FC = () => {
                     </p>
                   )}
 
-                  {/* Créditos — uma linha fair-use */}
+                  {/* Créditos — uma linha fair-use + tradução em resultado legível */}
                   <p className="mt-4 text-xs text-neutral-400 font-mono">{tc.credits}</p>
+                  <p
+                    className={cn(
+                      'mt-1 text-xs font-mono',
+                      tier.recommended ? 'text-brand-cyan' : 'text-neutral-500'
+                    )}
+                  >
+                    {tc.creditsOutcome}
+                  </p>
 
                   {/* BYOK — badge discreto */}
                   <div className="mt-2">
@@ -311,7 +320,7 @@ export const PricingPage: React.FC = () => {
                   <div className="mt-6">
                     {tier.free ? (
                       <Button variant="outline" className="w-full" asChild>
-                        <Link to="/">{tc.cta}</Link>
+                        <Link to="/?signup=1">{tc.cta}</Link>
                       </Button>
                     ) : (
                       <Button

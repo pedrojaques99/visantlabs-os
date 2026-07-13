@@ -52,8 +52,37 @@ function friendlyError(e: unknown): { code?: string; message: string } {
   return { code, message: e instanceof Error ? e.message : 'Could not load ideas.' };
 }
 
+// ── Client-side mirror of the last generated set ──────────────────────────────
+// The server already caches weekly in Redis; this local mirror means a returning
+// owner sees their ideas instantly with ZERO network + ZERO model spend, and the
+// set survives even if the server cache is evicted. Valid for a week.
+const LS_PREFIX = 'visant:brand-suggestions:';
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+type CachedIdeas = { savedAt: number; suggestions: BrandSuggestion[]; seasonal: SeasonalMoment | null };
+
+function readLocal(id: string): CachedIdeas | null {
+  try {
+    const raw = localStorage.getItem(LS_PREFIX + id);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedIdeas;
+    if (!parsed?.savedAt || Date.now() - parsed.savedAt > WEEK_MS) return null;
+    return Array.isArray(parsed.suggestions) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function writeLocal(id: string, suggestions: BrandSuggestion[], seasonal: SeasonalMoment | null) {
+  try {
+    localStorage.setItem(LS_PREFIX + id, JSON.stringify({ savedAt: Date.now(), suggestions, seasonal }));
+  } catch {
+    /* quota / private mode — non-fatal */
+  }
+}
+
 export function useBrandSuggestions(guidelineId: string | null | undefined, count = 4) {
-  const [loading, setLoading] = useState(true);
+  // Not loading by default — the panel opens on static starters, never on a spinner.
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [suggestions, setSuggestions] = useState<BrandSuggestion[]>([]);
   const [seasonal, setSeasonal] = useState<SeasonalMoment | null>(null);
@@ -65,10 +94,20 @@ export function useBrandSuggestions(guidelineId: string | null | undefined, coun
       if (force) setRefreshing(true);
       else setLoading(true);
       try {
-        const res = await brandGuidelineApi.getSuggestions(guidelineId, { count, force });
-        setSuggestions(res.suggestions || []);
-        setSeasonal(res.seasonal?.upcoming?.[0] || null);
+        // force=false → cache-only fetch (free: served from cache or falls back to
+        // static starters — never spends a model call). force=true → generate.
+        const res = await brandGuidelineApi.getSuggestions(guidelineId, {
+          count,
+          force,
+          cacheOnly: !force,
+        });
+        const next = res.suggestions || [];
+        const nextSeasonal = res.seasonal?.upcoming?.[0] || null;
+        setSuggestions(next);
+        setSeasonal(nextSeasonal);
         setError(null);
+        // Persist whatever the server gave us (only when it actually has ideas).
+        if (next.length) writeLocal(guidelineId, next, nextSeasonal);
       } catch (e) {
         setError(friendlyError(e).message);
       } finally {
@@ -80,8 +119,17 @@ export function useBrandSuggestions(guidelineId: string | null | undefined, coun
   );
 
   useEffect(() => {
+    if (!guidelineId) return;
+    // Instant paint from the local mirror — zero network, zero spend.
+    const cached = readLocal(guidelineId);
+    if (cached && cached.suggestions.length) {
+      setSuggestions(cached.suggestions);
+      setSeasonal(cached.seasonal);
+      return;
+    }
+    // No local copy → a free cache-only probe (server cache or starters).
     load(false);
-  }, [load]);
+  }, [guidelineId, load]);
 
   return { suggestions, seasonal, loading, refreshing, error, load };
 }

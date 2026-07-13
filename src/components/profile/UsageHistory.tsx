@@ -195,7 +195,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
       )}
 
       {/* Compact stats strip */}
-      <div className="flex divide-x divide-white/5 border border-white/5 rounded-xl overflow-hidden bg-white/[0.03]">
+      <div className="flex divide-x divide-white/5 border border-neutral-800 rounded-xl overflow-hidden bg-white/[0.03]">
         {[
           { value: usageStats.totalRecords, label: 'Total de Usos' },
           { value: usageStats.totalCredits, label: 'Créditos Gastos' },
@@ -217,7 +217,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
       {/* Filter strip + table — unified container */}
       <div className="border border-white/10 rounded-2xl overflow-hidden">
         {/* Filter strip */}
-        <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-white/5 bg-white/[0.03]">
+        <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-neutral-800 bg-white/[0.03]">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -243,7 +243,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/5 hover:bg-transparent">
+              <TableRow className="border-neutral-800 hover:bg-transparent">
                 <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
                   {t('usageHistory.date') || 'Data'}
                 </TableHead>
@@ -330,7 +330,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
 
         {/* Pagination */}
         {historyPagination.total > historyPagination.limit && (
-          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-white/5">
+          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-neutral-800">
             <p className="text-[10px] text-neutral-600 font-mono">
               {historyPagination.offset + 1}–
               {Math.min(

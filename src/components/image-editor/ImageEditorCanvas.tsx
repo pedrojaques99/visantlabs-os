@@ -176,13 +176,13 @@ export const ImageEditorCanvas: React.FC<Props> = ({ imageUrl, imageWidth, image
 
       // Draw all existing mask operations
       for (const op of ops) {
-        drawOp(op, 'rgba(82, 221, 235, 0.35)');
+        drawOp(op, IMAGE_EDITOR.mask.preview);
       }
 
       // Draw live stroke in progress
       if (livePoints && livePoints.length > 1) {
         ctx.globalCompositeOperation = activeTool === 'eraser' ? 'destination-out' : 'source-over';
-        ctx.fillStyle = 'rgba(82, 221, 235, 0.35)';
+        ctx.fillStyle = IMAGE_EDITOR.mask.preview;
         const currentBrushSize = useImageEditorStore.getState().brushSize;
         const stroke = getStroke(livePoints, {
           size: currentBrushSize,

@@ -20,10 +20,13 @@ import { useTheme } from '@/hooks/useTheme';
 import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 import { identifyUser } from '@/utils/analytics';
-import { resolveShell, routeMode } from '@/config/navConfig';
+import { resolveShell, routeMode, editorHasOwnChrome } from '@/config/navConfig';
 import { AppShell } from './shell/AppShell';
-import { FocusRail } from './shell/FocusRail';
+import { AppSpine } from './shell/AppSpine';
 import { InAppShellContext } from './shell/InAppShellContext';
+import { ShellHeaderContext } from './shell/ShellHeaderContext';
+import { useTrackEditorOrigin } from './shell/editorOrigin';
+import { FirstRunGuard } from './shell/FirstRunGuard';
 
 /** Contexto opcional do paywall — e.g. 402 brand_limit/seat_limit passa a mensagem e cai direto na aba de assinatura. `insufficient_credits` (free user no muro de crédito) abre o modal de upgrade de plano — Pro dá 10× créditos. */
 export type SubscriptionModalContext = {
@@ -93,6 +96,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     'carteira' | 'creditos' | 'assinatura'
   >('creditos');
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  // Slot de ações da AppSpine no modo focus (editores teleportam ações pra cá —
+  // portal universal, análogo ao do AppShell). Plano APP-SPINE-CONSOLIDATION.
+  const [focusActionsSlot, setFocusActionsSlot] = useState<HTMLElement | null>(null);
+  // Rastreia a última rota de dashboard p/ o "voltar" dos editores voltar à origem.
+  useTrackEditorOrigin();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() => {
     if (typeof window !== 'undefined') {
@@ -594,9 +602,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // de marketing some para o editor não parecer "site". CanvasHeader e o chrome
   // próprio de cada editor (ToolEditorShell/MiniAppShell) permanecem.
   const focusMode = shellKind === 'app' && routeMode(location.pathname) === 'focus';
+  // Editores focus (menos /canvas/:id, que tem CanvasHeader próprio) passam a
+  // exibir o Header real do app no topo — em vez do dock de ícones flutuante
+  // (FocusRail) que cobria a sidebar. A altura do Header (fixed) é reservada com
+  // padding-top no wrapper, então o editor fica shell-aware sem cada página
+  // precisar saber do chrome.
+  // Editor que já traz o próprio topo completo (CanvasHeader, MiniAppShell da
+  // Naming Machine…) NÃO recebe a AppSpine — senão empilha dois headers. Ver
+  // editorHasOwnChrome (navConfig). Os demais editores focus ganham a espinha.
+  const focusAppHeader = focusMode && !editorHasOwnChrome(location.pathname);
 
   return (
     <LayoutContext.Provider value={contextValue}>
+      <FirstRunGuard />
       <div className="h-screen bg-background text-foreground font-sans flex flex-col">
         <Toaster
           position="top-center"
@@ -758,15 +776,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           )}
 
-        {focusMode && <FocusRail />}
-
         {useAppShell ? (
           <AppShell>{children}</AppShell>
         ) : focusMode ? (
-          // Editor logado: sem Header de marketing acima. Sinaliza inShell pra
-          // as páginas dropar o offset de header antigo (pt-10/14). P (item 3).
+          // Editor logado com a AppSpine (modo focus) no topo — a MESMA espinha
+          // do dashboard, no lugar do antigo Header de marketing. Casa a altura
+          // fixed (h-10 md:h-14), então o wrapper mantém pt-10/14 e os offsets de
+          // cada editor seguem válidos. Sinaliza inShell pras páginas droparem o
+          // offset legado. /canvas/:id (focusAppHeader=false) mantém CanvasHeader.
+          // ShellHeaderContext universal: editores teleportam ações pra espinha.
           <InAppShellContext.Provider value={true}>
-            <div className="flex-1 relative overflow-hidden">{children}</div>
+            <ShellHeaderContext.Provider
+              value={{ actionsSlot: focusActionsSlot, setActionsSlot: setFocusActionsSlot }}
+            >
+              {focusAppHeader && <AppSpine variant="focus" />}
+              <div
+                className={cn(
+                  'flex-1 relative overflow-hidden',
+                  focusAppHeader && 'pt-10 md:pt-14'
+                )}
+              >
+                {children}
+              </div>
+            </ShellHeaderContext.Provider>
           </InAppShellContext.Provider>
         ) : (
           <div

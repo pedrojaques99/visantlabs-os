@@ -125,7 +125,7 @@ export const ConnectedAppsPage: React.FC = () => {
         <BreadcrumbWithBack className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/developer">Developer</BreadcrumbLink>
+              <BreadcrumbLink href="/profile">Profile</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

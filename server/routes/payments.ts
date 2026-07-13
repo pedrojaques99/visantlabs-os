@@ -560,8 +560,12 @@ router.get(
         getBrandQuota(user),
         getSeatOverview(user),
       ]);
-      const brandQuota: { used: number; max: number | null; tier: string } | null =
-        brandQuotaResult.status === 'fulfilled' ? brandQuotaResult.value : null;
+      const brandQuota: {
+        used: number;
+        max: number | null;
+        tier: string;
+        graceUntil?: string | null;
+      } | null = brandQuotaResult.status === 'fulfilled' ? brandQuotaResult.value : null;
       const seatQuota: { totalEditors: number; maxPerBrand: number | null; tier: string } | null =
         seatQuotaResult.status === 'fulfilled' ? seatQuotaResult.value : null;
 
@@ -704,6 +708,76 @@ router.get('/products', apiRateLimiter, async (_req, res, next) => {
 });
 
 // Get usage info
+// POST /claim-club — "reivindicar acesso": comprou o Fundador antes de ter conta,
+// então o webhook não achou o user. Aqui o membro logado busca no Stripe uma compra
+// de fundador (metadata.club) com o email dele e aplica o grant vitalício.
+router.post('/claim-club', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const userId = req.userId!;
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const clubTiers = ['club', 'fundador', 'visantista'];
+    if (user.subscriptionStatus === 'active' && clubTiers.includes((user.subscriptionTier || '').toLowerCase())) {
+      return res.json({ granted: true, already: true, tier: user.subscriptionTier });
+    }
+    if (!stripe) return res.status(500).json({ error: 'Stripe not configured' });
+
+    const email = (user.email || '').toLowerCase();
+    if (!email) return res.json({ granted: false, reason: 'no-email' });
+
+    // Procura uma sessão paga de fundador com esse email
+    let found: Stripe.Checkout.Session | null = null;
+    let starting_after: string | undefined;
+    for (let p = 0; p < 10; p++) {
+      const list = await stripe.checkout.sessions.list({
+        limit: 100,
+        status: 'complete',
+        ...(starting_after ? { starting_after } : {}),
+      });
+      for (const s of list.data) {
+        const sEmail = (s.customer_email || s.customer_details?.email || '').toLowerCase();
+        if (s.payment_status === 'paid' && s.metadata?.club && sEmail && sEmail === email) {
+          found = s;
+          break;
+        }
+      }
+      if (found || !list.has_more) break;
+      starting_after = list.data[list.data.length - 1].id;
+    }
+
+    if (!found) return res.json({ granted: false, reason: 'no-purchase' });
+
+    const grantTier = (found.metadata?.tier as string) || 'club';
+    const isLifetime = found.metadata?.lifetime === 'true';
+    const grantCredits = parseInt(found.metadata?.monthlyCredits || '1000', 10);
+    const resetDate = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
+    const farFuture = new Date('2100-01-01T00:00:00Z');
+    const custId = typeof found.customer === 'string' ? found.customer : undefined;
+
+    await db.collection('users').updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          subscriptionStatus: 'active',
+          subscriptionTier: grantTier,
+          subscriptionEndDate: isLifetime ? farFuture : resetDate,
+          monthlyCredits: grantCredits,
+          creditsUsed: 0,
+          creditsResetDate: resetDate,
+          ...(custId ? { stripeCustomerId: custId } : {}),
+          'metadata.clubFounder': isLifetime,
+        },
+      }
+    );
+    return res.json({ granted: true, tier: grantTier, lifetime: isLifetime });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
@@ -1968,6 +2042,85 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             if (!stripe) {
               console.error('❌ Stripe is not configured');
               break;
+            }
+
+            // ── Visant Club: grant de tier por pagamento ÚNICO (Fundador vitalício) ──
+            // A visantismo vende o Fundador como one-time com metadata.tier (ex: 'club')
+            // e metadata.lifetime='true'. Aqui viramos o tier do usuário e saímos —
+            // NÃO passa pelo fluxo de créditos abaixo.
+            if (session.metadata?.club) {
+              const grantTier = (session.metadata?.tier as string) || 'club';
+              const isLifetime = session.metadata?.lifetime === 'true';
+              const grantCredits = parseInt(session.metadata?.monthlyCredits || '1000', 10);
+              const resetDate = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
+              const farFuture = new Date('2100-01-01T00:00:00Z');
+
+              let clubUser = customerId
+                ? await db.collection('users').findOne({ stripeCustomerId: customerId })
+                : null;
+              if (!clubUser && customerEmail) {
+                clubUser = await db.collection('users').findOne({ email: customerEmail });
+                if (clubUser && customerId) {
+                  await db
+                    .collection('users')
+                    .updateOne({ _id: clubUser._id }, { $set: { stripeCustomerId: customerId } });
+                }
+              }
+
+              if (clubUser) {
+                // Idempotency: Stripe redelivers webhooks em timeout/5xx. Sem
+                // claim, um redelivery re-zera o `creditsUsed` do fundador (e
+                // re-grava a transação). Reivindica DEPOIS de achar o user —
+                // assim um redelivery antes do cadastro, ou o /claim-club
+                // manual, ainda conseguem aplicar o grant quando o user existir.
+                const claimed = await claimPaymentEvent(db, 'stripe', session.id);
+                if (!claimed) {
+                  console.log('⏭️ Visant Club: sessão já processada, pulando:', session.id);
+                  break;
+                }
+
+                try {
+                  await db.collection('users').updateOne(
+                    { _id: clubUser._id },
+                    {
+                      $set: {
+                        subscriptionStatus: 'active',
+                        subscriptionTier: grantTier,
+                        subscriptionEndDate: isLifetime ? farFuture : resetDate,
+                        monthlyCredits: grantCredits,
+                        creditsUsed: 0,
+                        creditsResetDate: resetDate,
+                        'metadata.clubFounder': isLifetime,
+                      },
+                    }
+                  );
+                } catch (grantError) {
+                  await releasePaymentEvent(db, 'stripe', session.id);
+                  throw grantError;
+                }
+                await recordTransaction(db, {
+                  userId: clubUser._id,
+                  type: 'subscription',
+                  status: session.payment_status || 'paid',
+                  credits: grantCredits,
+                  amount: session.amount_total ?? null,
+                  currency: session.currency,
+                  description: `Visant Club — ${grantTier}${isLifetime ? ' (vitalício)' : ''}`,
+                  stripeSessionId: session.id,
+                  stripeCustomerId: customerId || undefined,
+                });
+                console.log('✅ Visant Club grant aplicado:', {
+                  userId: clubUser._id,
+                  grantTier,
+                  isLifetime,
+                });
+              } else {
+                console.error('❌ Visant Club: usuário não encontrado para grant:', {
+                  customerId,
+                  customerEmail,
+                });
+              }
+              break; // não segue pro fluxo de créditos
             }
 
             // Get line items to extract product information

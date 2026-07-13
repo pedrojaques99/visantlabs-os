@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Zap, Lock, Image as ImageIcon, ClipboardList, Figma } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEO } from '@/components/SEO';
@@ -102,6 +102,9 @@ export const CopilotPage: React.FC = () => {
   const { theme } = useTheme();
   const { hasAccess, isLoading } = usePremiumAccess();
   const { onSubscriptionModalOpen } = useLayout();
+  // Prompt vindo do Cmd+K (ação agêntica) → semeia o input do Copilot.
+  const [searchParams] = useSearchParams();
+  const initialPrompt = searchParams.get('prompt') ?? undefined;
   // Dentro do AppShell o AppTopBar é o header: sem o offset pt-24 (do Header
   // antigo) e altura acompanha o <main>, não 100dvh. P (fix /copilot).
   const inShell = useInAppShell();
@@ -172,6 +175,7 @@ export const CopilotPage: React.FC = () => {
             sidebarIcon={<Zap className="h-4 w-4 text-brand-cyan" />}
             strings={strings}
             suggestions={suggestions}
+            initialInput={initialPrompt}
             onRequestError={handleRequestError}
           />
         ) : (

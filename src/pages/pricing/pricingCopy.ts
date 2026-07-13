@@ -19,6 +19,8 @@ interface TierCopy {
   tagline: string;
   /** Uma linha "fair-use" de créditos por card. */
   credits: string;
+  /** Tradução dos créditos em resultado legível (mockup on-brand = 1 crédito). */
+  creditsOutcome: string;
   /** Features da tabela travada (sem repetir créditos). */
   features: string[];
   cta: string;
@@ -75,6 +77,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Starter',
         tagline: 'Pra experimentar e lançar a primeira marca.',
         credits: '50 créditos/mês (resetam) · fair-use',
+        creditsOutcome: '≈ 50 mockups on-brand',
         features: [
           '1 marca ativa',
           '1 GB de storage',
@@ -88,6 +91,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Pro',
         tagline: 'Pra quem toca várias marcas em produção.',
         credits: '500 créditos/mês (resetam) · fair-use',
+        creditsOutcome: '≈ 500 mockups on-brand',
         features: [
           'Marcas ilimitadas',
           '20 GB de storage',
@@ -101,6 +105,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Vision',
         tagline: 'Topo de linha: prioridade e acesso antecipado.',
         credits: '1000 créditos/mês + fair-use',
+        creditsOutcome: '≈ 1000 mockups on-brand',
         features: [
           'Marcas ilimitadas',
           '100 GB de storage',
@@ -138,6 +143,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Starter',
         tagline: 'To try it out and launch your first brand.',
         credits: '50 credits/mo (reset) · fair-use',
+        creditsOutcome: '≈ 50 on-brand mockups',
         features: [
           '1 active brand',
           '1 GB storage',
@@ -151,6 +157,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Pro',
         tagline: 'For running several brands in production.',
         credits: '500 credits/mo (reset) · fair-use',
+        creditsOutcome: '≈ 500 on-brand mockups',
         features: [
           'Unlimited brands',
           '20 GB storage',
@@ -164,6 +171,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Vision',
         tagline: 'Top tier: priority and early access.',
         credits: '1000 credits/mo + fair-use',
+        creditsOutcome: '≈ 1000 on-brand mockups',
         features: [
           'Unlimited brands',
           '100 GB storage',

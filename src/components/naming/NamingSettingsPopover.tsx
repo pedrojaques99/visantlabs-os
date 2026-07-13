@@ -91,7 +91,7 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
                       className="justify-between"
                     >
                       <span>{r.label}</span>
-                      <span className="text-[9px] text-neutral-600">{r.desc}</span>
+                      <span className="text-[10px] text-neutral-600">{r.desc}</span>
                     </Chip>
                   ))}
                 </div>

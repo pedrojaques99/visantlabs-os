@@ -12,6 +12,7 @@ import { PremiumGate } from './components/shared/PremiumGate';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from './config/featureFlags';
 import { useLayout } from './hooks/useLayout';
 import { useLauncherApps } from './pages/HomePage';
+import { useActiveBrand } from './contexts/ActiveBrandContext';
 
 // Lazy load all pages for code-splitting with automatic retry
 const HomePage = lazyWithRetry(() =>
@@ -151,9 +152,6 @@ const ApiKeysPage = lazyWithRetry(() =>
 const ConnectedAppsPage = lazyWithRetry(() =>
   import('./pages/ConnectedAppsPage').then((m) => ({ default: m.ConnectedAppsPage }))
 );
-const UsageDashboardPage = lazyWithRetry(() =>
-  import('./pages/UsageDashboardPage').then((m) => ({ default: m.UsageDashboardPage }))
-);
 const GettingStartedPage = lazyWithRetry(() =>
   import('./pages/GettingStartedPage').then((m) => ({ default: m.GettingStartedPage }))
 );
@@ -221,9 +219,6 @@ const PlaygroundGalleryPage = lazyWithRetry(() =>
 const PlaygroundSharedPage = lazyWithRetry(() =>
   import('./pages/PlaygroundSharedPage').then((m) => ({ default: m.PlaygroundSharedPage }))
 );
-const DeveloperPortalPage = lazyWithRetry(() =>
-  import('./pages/DeveloperPortalPage').then((m) => ({ default: m.DeveloperPortalPage }))
-);
 const VerifyEmailPage = lazyWithRetry(() =>
   import('./pages/VerifyEmailPage').then((m) => ({ default: m.VerifyEmailPage }))
 );
@@ -281,15 +276,27 @@ const LoadingFallback = () => (
 // the TUI launcher uses. Gating is internal (matches the rest of the app):
 // signed-out visitors are bounced back to home instead of seeing a blank
 // cockpit.
-const CockpitRoute: React.FC = () => {
+/**
+ * Início adaptativo (plano HOME-ADAPTIVE-IA): UMA casa. Com marca ativa → Cockpit
+ * da marca; sem marca / "Todas as marcas" (isAllBrands) → grid de marcas. Colapsa
+ * os antigos destinos Cockpit + Marcas num só. A flag FEATURE_COCKPIT decide
+ * cockpit-vs-grid aqui dentro (a rota /cockpit existe sempre).
+ */
+const HomeRoute: React.FC = () => {
   const { isAuthenticated } = useLayout();
+  const { activeBrand, isAllBrands, isLoading } = useActiveBrand();
   const { apps, handleSelect } = useLauncherApps();
 
   if (isAuthenticated === false) {
     return <Navigate to="/" replace />;
   }
+  // Espera as marcas carregarem antes de decidir (evita flash cockpit↔grid).
+  if (isLoading) return null;
 
-  return <BrandCockpit apps={apps} onSelectApp={handleSelect} />;
+  if (FEATURE_COCKPIT && activeBrand?.id && !isAllBrands) {
+    return <BrandCockpit apps={apps} onSelectApp={handleSelect} />;
+  }
+  return <Navigate to="/brand-guidelines" replace />;
 };
 
 const App: React.FC = () => {
@@ -303,7 +310,7 @@ const App: React.FC = () => {
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
-                  {FEATURE_COCKPIT && <Route path="/cockpit" element={<CockpitRoute />} />}
+                  <Route path="/cockpit" element={<HomeRoute />} />
                   <Route path="/mockupmachine" element={<MockupMachinePage />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
@@ -401,11 +408,19 @@ const App: React.FC = () => {
                   <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
                   <Route path="/design-system" element={<DesignSystemPage />} />
                   <Route path="/docs" element={<DocsPage />} />
-                  <Route path="/developer" element={<DeveloperPortalPage />} />
+                  <Route path="/docs/getting-started" element={<GettingStartedPage />} />
                   <Route path="/settings/api-keys" element={<ApiKeysPage />} />
                   <Route path="/settings/connected-apps" element={<ConnectedAppsPage />} />
-                  <Route path="/developer/usage" element={<UsageDashboardPage />} />
-                  <Route path="/developer/getting-started" element={<GettingStartedPage />} />
+                  {/* Developer Portal dissolved: account → /profile, docs → /docs */}
+                  <Route path="/developer" element={<Navigate to="/profile" replace />} />
+                  <Route
+                    path="/developer/usage"
+                    element={<Navigate to="/profile?tab=overview" replace />}
+                  />
+                  <Route
+                    path="/developer/getting-started"
+                    element={<Navigate to="/docs/getting-started" replace />}
+                  />
                   <Route path="/connect/:token" element={<ConnectPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/auth" element={<AuthCallbackPage />} />

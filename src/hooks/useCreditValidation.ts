@@ -33,7 +33,7 @@ export const useCreditValidation = (
   mockupCount: number = 1,
   onCreditPackagesModalOpen?: () => void
 ) => {
-  const { subscriptionStatus, isAuthenticated } = useLayout();
+  const { subscriptionStatus, isAuthenticated, onSubscriptionModalOpen } = useLayout();
   const { t } = useTranslation();
 
   /**
@@ -140,8 +140,14 @@ export const useCreditValidation = (
               });
 
           toast.error(message, { duration: 5000 });
-          // Open credit packages modal first (default for users without credits)
-          onCreditPackagesModalOpen?.();
+          // Muro de crédito. Para o assinante, mais créditos = pacote avulso.
+          // Para o free/Starter, a alavanca é o upgrade de plano (Pro dá 10×
+          // créditos) — abre no upsell de plano com a mensagem de contexto.
+          if (subscriptionStatus.hasActiveSubscription) {
+            onCreditPackagesModalOpen?.();
+          } else {
+            onSubscriptionModalOpen({ reason: 'insufficient_credits', message });
+          }
           return false;
         }
       } else {
@@ -160,7 +166,14 @@ export const useCreditValidation = (
 
       return true;
     },
-    [subscriptionStatus, mockupCount, isAuthenticated, t, onCreditPackagesModalOpen]
+    [
+      subscriptionStatus,
+      mockupCount,
+      isAuthenticated,
+      t,
+      onCreditPackagesModalOpen,
+      onSubscriptionModalOpen,
+    ]
   );
 
   /**

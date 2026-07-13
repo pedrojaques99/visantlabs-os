@@ -12,8 +12,7 @@ import {
   Plus,
   ArrowRight,
   UserCog,
-  KeyRound,
-  Heart,
+  BarChart2,
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -29,6 +28,7 @@ import { formatDate } from '@/utils/localeUtils';
 import { copyToClipboard } from '@/utils/clipboard';
 import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';
+import { UsageDashboard } from './UsageDashboard';
 
 interface ProfileOverviewProps {
   user: UserType;
@@ -47,7 +47,7 @@ interface ProfileOverviewProps {
 
 // Shared surface for a card section.
 const cardClass = cn('rounded-2xl p-5 sm:p-6 flex flex-col gap-5', glassSurface.panel);
-const tileClass = cn('rounded-xl', glassSurface.tile);
+const tileClass = cn('rounded-xl', glassSurface.surface);
 const controlClass = cn('rounded-xl', glassSurface.control);
 
 // One navigation row — used for the profile shortcuts. Renders a Link or a button.
@@ -221,6 +221,8 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
           </div>
         </div>
 
+        {/* Só ações escopadas ao perfil. Meus Mockups / Comunidade viraram grupo
+            BIBLIOTECA no rail; API Keys vive no CONTEXTO (rail) da seção. */}
         <div className="flex flex-col gap-2.5">
           <NavRow icon={UserCog} label={t('profile.edit')} onClick={onEditProfile} />
           {user && (user.id || user.email) && (
@@ -230,9 +232,6 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
               to={`/profile/${user.username || user.id}`}
             />
           )}
-          <NavRow icon={Heart} label={t('profile.myMockups')} to="/my-outputs" />
-          <NavRow icon={Users} label={t('communityPresets.title')} to="/community" />
-          <NavRow icon={KeyRound} label={t('profile.apiKeys')} to="/settings/api-keys" />
         </div>
       </section>
 
@@ -409,6 +408,12 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </p>
           </div>
         )}
+      </section>
+
+      {/* ── Usage Analytics — full width ─────────────────────────── */}
+      <section className={cn(cardClass, 'lg:col-span-2')}>
+        <SectionHeader icon={BarChart2} title={t('profile.usageAnalytics')} />
+        <UsageDashboard />
       </section>
     </div>
   );

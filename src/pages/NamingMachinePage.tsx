@@ -754,7 +754,7 @@ export const NamingMachinePage: React.FC = () => {
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('like')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-100 transition-colors hover:border-white/25 hover:bg-white/[0.07]"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-neutral-100 transition-colors hover:border-white/25 hover:bg-white/10"
                   aria-label="Gostei (C)"
                 >
                   <Heart size={22} />
@@ -764,7 +764,7 @@ export const NamingMachinePage: React.FC = () => {
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('superlike')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-brand-cyan transition-colors hover:border-brand-cyan/50 hover:bg-brand-cyan/15"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-brand-cyan transition-colors hover:border-neutral-700 hover:bg-brand-cyan/15"
                   aria-label="Salvar (S)"
                 >
                   <Bookmark size={22} />

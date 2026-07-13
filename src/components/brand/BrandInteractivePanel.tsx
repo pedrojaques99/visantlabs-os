@@ -1,16 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import {
-  Sparkles,
-  RefreshCw,
-  Copy,
-  Wand2,
-  Plug,
-  FileCode,
-  CalendarClock,
-  Loader2,
-  Layout,
-} from 'lucide-react';
+import { RefreshCw, Copy, Loader2, Layout, ArrowUpRight, ArrowRight } from 'lucide-react';
 import { BrandRenderDialog } from '@/components/brand/guidelines/BrandRenderDialog';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -66,24 +56,78 @@ interface Props {
   isShared: boolean;
   /** Seed the mockup generator with a suggestion's prompt and open it. */
   onGenerate: (prompt: string) => void;
+  /** Optional: mostra um card "Mockup" persistente no topo de "Make something"
+   *  (usado no cockpit — mockup é ação de produção importante). */
+  onMockup?: () => void;
   /** Existing connect handler (mints MCP connect link, or prompts to share first). */
   onConnect: () => void;
   connecting?: boolean;
+  /** Full-bleed (cockpit): remove o max-w-6xl/mx-auto/my-8 do wrapper (que é da
+   *  view pública centralizada) — o painel ocupa a largura toda do host. */
+  fullWidth?: boolean;
   className?: string;
 }
 
 // Primary action: solid brand accent with the theme's computed contrast text
 // (`--accent-text`) — the page's contrast-safe pair, so it reads on any brand color
-// (no more dark-on-purple).
+// (no more dark-on-purple). `group/btn` lets the arrow nudge on hover.
 const primaryBtn =
-  'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium ' +
+  'group/btn inline-flex items-center gap-2 rounded-lg text-sm font-medium ' +
   'bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 transition-opacity disabled:opacity-40';
 
-// Secondary/ghost: readable brand text, thin border, surface fill on hover.
+// Secondary/ghost: readable brand text, hairline border, faint surface fill on hover.
 const ghostBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--brand-text)]/12 ' +
-  'text-[var(--brand-text)]/70 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.05] ' +
-  'hover:border-[var(--brand-text)]/20 transition-colors disabled:opacity-40';
+  'inline-flex items-center gap-2 rounded-lg border border-[var(--brand-text)]/12 text-sm ' +
+  'text-[var(--brand-text)]/70 hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.04] ' +
+  'hover:border-[var(--brand-text)]/25 transition-colors disabled:opacity-40';
+
+// Bare monochrome icon action revealed on card hover (render / copy).
+const iconBtn =
+  'flex items-center justify-center w-7 h-7 rounded-md text-[var(--brand-text)]/40 ' +
+  'hover:text-[var(--brand-text)] hover:bg-[var(--brand-text)]/[0.06] transition-colors';
+
+/**
+ * Idea tile — type-led, no decorative glyphs. The whole surface is the primary
+ * action; a corner arrow signals intent, and secondary tools fade in on hover.
+ * Vercel/Apple restraint: hairline border, one weight of type, accent used nowhere
+ * at rest.
+ */
+const IdeaCard: React.FC<{
+  kicker: string;
+  title: string;
+  body?: string;
+  onPrimary: () => void;
+  actions?: React.ReactNode;
+}> = ({ kicker, title, body, onPrimary, actions }) => (
+  <div className="group relative">
+    <button
+      onClick={onPrimary}
+      className="w-full min-h-[104px] flex flex-col text-left rounded-xl border border-[var(--brand-text)]/10 bg-transparent p-5 pr-11 hover:border-[var(--brand-text)]/25 hover:bg-[var(--brand-text)]/[0.02] transition-all"
+    >
+      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--brand-text)]/35">
+        {kicker}
+      </span>
+      <span className="mt-2 text-[15px] font-medium tracking-tight leading-snug text-[var(--brand-text)]">
+        {title}
+      </span>
+      {body && (
+        <span className="mt-1.5 text-[12px] leading-relaxed text-[var(--brand-text)]/45 line-clamp-2">
+          {body}
+        </span>
+      )}
+    </button>
+    <ArrowUpRight
+      size={15}
+      aria-hidden
+      className="pointer-events-none absolute top-5 right-4 text-[var(--brand-text)]/25 transition-all group-hover:text-[var(--brand-text)]/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+    />
+    {actions && (
+      <div className="absolute bottom-3 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        {actions}
+      </div>
+    )}
+  </div>
+);
 
 // Official assistant marks (reuse the same assets as the public connect page).
 const ASSISTANTS: Array<{ id: string; label: string; node: React.ReactNode }> = [
@@ -121,8 +165,10 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   guidelineId,
   isShared,
   onGenerate,
+  onMockup,
   onConnect,
   connecting,
+  fullWidth,
   className,
 }) => {
   // Seasonal suggestions — shared SSoT hook (also powers the home cockpit).
@@ -199,111 +245,105 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   return (
     <div
       className={cn(
-        'mx-auto w-full max-w-6xl px-4 sm:px-6 my-8 grid gap-4 lg:grid-cols-3',
+        'grid gap-4 lg:grid-cols-3',
+        fullWidth ? 'w-full' : 'mx-auto w-full max-w-6xl px-4 sm:px-6 my-8',
         className
       )}
     >
       {/* ── (A) Seasonal ideas ── */}
       <GlassPanel
-        padding="md"
+        padding="lg"
         className="lg:col-span-2 bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10"
       >
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <Sparkles size={13} className="text-[var(--accent)] shrink-0" />
-            <MicroTitle className="text-[var(--brand-text)]/50">Make something on-brand</MicroTitle>
+        <div className="flex items-baseline justify-between gap-4 mb-8">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <MicroTitle className="text-[var(--brand-text)]/50">Make something</MicroTitle>
             {seasonal && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-[var(--accent)]/80 bg-[var(--accent)]/8 px-2 py-0.5 rounded-full">
-                <CalendarClock size={10} />
-                {seasonal.label} · ~{seasonal.daysAway}d
+              <span className="hidden sm:inline truncate text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/30">
+                {seasonal.label} · {seasonal.daysAway}d out
               </span>
             )}
           </div>
-          <button
-            onClick={() => load(true)}
-            disabled={loading || refreshing}
-            className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/40 hover:text-[var(--accent)] transition-colors disabled:opacity-40"
-            aria-label="Refresh ideas"
-          >
-            <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
-            Refresh
-          </button>
+          {suggestions.length > 0 && (
+            <button
+              onClick={() => load(true)}
+              disabled={loading || refreshing}
+              className="flex items-center gap-1.5 shrink-0 text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/35 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
+              aria-label="Regenerate ideas"
+            >
+              <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+          )}
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-2 text-xs text-[var(--brand-text)]/45 py-10 justify-center">
-            <Loader2 size={13} className="animate-spin" /> Reading the brand + what’s coming up…
+        {/* Mockup — starter de produção persistente (não sazonal). Só aparece
+            quando o host passa onMockup (cockpit); a view pública não usa. */}
+        {onMockup && (
+          <div className="mb-3">
+            <IdeaCard
+              kicker="Mockup"
+              title="Aplicar a marca em produtos reais"
+              onPrimary={onMockup}
+            />
           </div>
-        ) : error && suggestions.length === 0 ? (
-          <div className="space-y-3">
-            <p className="flex items-center gap-1.5 text-[11px] text-[var(--brand-text)]/40">
-              <Sparkles size={11} className="text-[var(--accent)]/70" />
-              Live ideas are offline — start from a brand-ready template:
-            </p>
+        )}
+
+        {loading || refreshing ? (
+          // Skeletons while generating — reads as intent, never "stuck".
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-[104px] rounded-xl border border-[var(--brand-text)]/[0.06] bg-[var(--brand-text)]/[0.02] animate-pulse"
+              />
+            ))}
+          </div>
+        ) : suggestions.length === 0 ? (
+          // Default: obvious, always-on-brand starters — zero model spend. Tailored,
+          // seasonal ideas are generated only when the owner explicitly asks.
+          <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-3">
               {STATIC_STARTERS.map((s, i) => (
-                <button
+                <IdeaCard
                   key={i}
-                  onClick={() => onGenerate(s.prompt)}
-                  className="group flex flex-col gap-2 rounded-xl bg-[var(--brand-text)]/[0.03] p-4 text-left hover:bg-[var(--brand-text)]/[0.06] transition-colors"
-                >
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--brand-text)]/40">
-                    {s.label}
-                  </span>
-                  <span className="text-sm font-medium text-[var(--brand-text)] leading-snug">
-                    {s.title}
-                  </span>
-                  <span className={cn(primaryBtn, 'h-7 px-3 text-[11px] self-start mt-1')}>
-                    <Wand2 size={11} /> Generate
-                  </span>
-                </button>
+                  kicker={s.label}
+                  title={s.title}
+                  onPrimary={() => onGenerate(s.prompt)}
+                />
               ))}
             </div>
+            <button
+              onClick={() => load(true)}
+              disabled={refreshing}
+              className={cn(primaryBtn, 'h-9 px-4 w-full sm:w-auto justify-center')}
+            >
+              <span>
+                {seasonal ? `Generate ideas for ${seasonal.label}` : 'Generate tailored ideas'}
+              </span>
+              <ArrowRight
+                size={13}
+                className="transition-transform group-hover/btn:translate-x-0.5"
+              />
+            </button>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
             {suggestions.map((s, i) => {
               const meta = KIND_META[s.kind] || KIND_META.mockup;
-              const Icon = meta.Icon;
+              const isInline = meta.mode === 'inline';
               return (
-                <div
+                <IdeaCard
                   key={i}
-                  className="group flex flex-col gap-2.5 rounded-xl bg-[var(--brand-text)]/[0.03] p-4 hover:bg-[var(--brand-text)]/[0.06] transition-colors"
-                >
-                  <div className="flex items-center gap-1.5 text-[var(--brand-text)]/40">
-                    <Icon size={12} className="shrink-0" />
-                    <span className="text-[10px] font-mono uppercase tracking-wider">
-                      {meta.label}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-[var(--brand-text)] leading-snug">
-                    {s.title}
-                  </span>
-                  <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed line-clamp-2 flex-1">
-                    {s.rationale}
-                  </p>
-                  {/* One primary action leads; secondary tools reveal on hover so
-                      the card reads clean at rest. */}
-                  <div className="flex items-center justify-between gap-2 pt-0.5">
-                    {meta.mode === 'inline' ? (
+                  kicker={meta.label}
+                  title={s.title}
+                  body={s.rationale}
+                  onPrimary={() => (isInline ? onGenerate(s.prompt) : sendToAI(s))}
+                  actions={
+                    <>
                       <button
-                        onClick={() => onGenerate(s.prompt)}
-                        className={cn(primaryBtn, 'h-7 px-3 text-[11px]')}
-                      >
-                        <Wand2 size={11} /> Generate
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => sendToAI(s)}
-                        className={cn(primaryBtn, 'h-7 px-3 text-[11px]')}
-                        title="Copy the brief for your connected AI"
-                      >
-                        <Sparkles size={11} /> Use in AI
-                      </button>
-                    )}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setRenderInitial({
                             h1: s.title,
                             brief: `${s.title} — ${s.rationale}`,
@@ -311,23 +351,26 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                           });
                           setRenderOpen(true);
                         }}
-                        className={cn(ghostBtn, 'h-7 w-7')}
+                        className={iconBtn}
                         aria-label="Render on-brand"
                         title="Render on-brand (web — no Figma)"
                       >
-                        <Layout size={11} />
+                        <Layout size={12} />
                       </button>
                       <button
-                        onClick={() => copyPrompt(s.prompt)}
-                        className={cn(ghostBtn, 'h-7 w-7')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyPrompt(s.prompt);
+                        }}
+                        className={iconBtn}
                         aria-label="Copy prompt"
                         title="Copy prompt"
                       >
-                        <Copy size={11} />
+                        <Copy size={12} />
                       </button>
-                    </div>
-                  </div>
-                </div>
+                    </>
+                  }
+                />
               );
             })}
           </div>
@@ -336,73 +379,72 @@ export const BrandInteractivePanel: React.FC<Props> = ({
 
       {/* ── (B) Connect to your AI ── */}
       <GlassPanel
-        padding="md"
+        padding="lg"
         className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10 flex flex-col"
       >
-        <div className="flex items-center gap-2.5 mb-4">
-          <Plug size={13} className="text-[var(--accent)]" />
-          <MicroTitle className="text-[var(--brand-text)]/50">Use as live AI context</MicroTitle>
-        </div>
+        <MicroTitle className="text-[var(--brand-text)]/50 mb-6">Live AI context</MicroTitle>
 
-        {/* Visual hero: the assistants this brand plugs into. */}
-        <div className="inline-flex items-center gap-1 self-start p-1.5 mb-4 rounded-2xl bg-[var(--brand-text)]/[0.04] border border-[var(--brand-text)]/10">
+        {/* The assistants this brand plugs into — real marks, no chrome. */}
+        <div className="flex items-center gap-2 mb-6">
           {ASSISTANTS.map((a) => (
             <div
               key={a.id}
               title={a.label}
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--brand-surface)]/40"
+              className="w-11 h-11 rounded-xl flex items-center justify-center border border-[var(--brand-text)]/10 bg-[var(--brand-surface)]/40"
             >
               {a.node}
             </div>
           ))}
         </div>
 
-        <p className="text-[12px] text-[var(--brand-text)]/55 leading-relaxed mb-5">
-          On-brand by default — colors, fonts, logos & voice, automatically.
+        <p className="text-[13px] text-[var(--brand-text)]/50 leading-relaxed mb-6 max-w-xs">
+          Your colors, type, logos and voice — loaded into any assistant, automatically.
         </p>
 
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onConnect}
             disabled={connecting}
-            className={cn(primaryBtn, 'h-9 px-3 text-xs justify-start')}
+            className={cn(primaryBtn, 'h-10 px-4 justify-between')}
           >
-            {connecting ? <Loader2 size={13} className="animate-spin" /> : <Plug size={13} />}
-            {isShared ? 'Connect to your AI' : 'Share + connect to your AI'}
+            <span>{isShared ? 'Connect to your AI' : 'Share + connect'}</span>
+            {connecting ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <ArrowRight
+                size={14}
+                className="transition-transform group-hover/btn:translate-x-0.5"
+              />
+            )}
           </button>
           <button
             onClick={copyContext}
             disabled={busy === 'context'}
-            className={cn(ghostBtn, 'h-9 px-3 text-xs justify-start')}
+            className={cn(ghostBtn, 'h-10 px-4 justify-between')}
           >
-            {busy === 'context' ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : (
-              <Copy size={13} />
-            )}
-            Copy brand context
+            <span>Copy brand context</span>
+            {busy === 'context' ? <Loader2 size={13} className="animate-spin" /> : <Copy size={13} />}
           </button>
           <div className="flex gap-2">
             <button
               onClick={() => compileTokens('css')}
               disabled={busy === 'css'}
-              className={cn(ghostBtn, 'h-9 flex-1 text-[11px]')}
+              className={cn(ghostBtn, 'h-10 flex-1 justify-center text-xs font-mono')}
             >
-              <FileCode size={12} /> CSS
+              {busy === 'css' ? <Loader2 size={12} className="animate-spin" /> : 'CSS'}
             </button>
             <button
               onClick={() => compileTokens('tailwind')}
               disabled={busy === 'tailwind'}
-              className={cn(ghostBtn, 'h-9 flex-1 text-[11px]')}
+              className={cn(ghostBtn, 'h-10 flex-1 justify-center text-xs font-mono')}
             >
-              <FileCode size={12} /> Tailwind
+              {busy === 'tailwind' ? <Loader2 size={12} className="animate-spin" /> : 'Tailwind'}
             </button>
           </div>
         </div>
         {!aiConfigured && (
-          <p className="text-[10px] text-[var(--brand-text)]/40 mt-4 leading-relaxed">
-            Tip: set a cheap text-provider key (Groq / NVIDIA NIM) to unlock seasonal idea
-            suggestions.
+          <p className="text-[10px] text-[var(--brand-text)]/40 mt-5 leading-relaxed">
+            Set a cheap text-provider key (Groq / NVIDIA NIM) to unlock seasonal idea suggestions.
           </p>
         )}
       </GlassPanel>

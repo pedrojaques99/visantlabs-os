@@ -23,6 +23,8 @@ export interface SceneCatalogEntry {
   height: number;
   warnings: string[];
   updatedAt: string;
+  /** Clara/escura/mista da base — do matcher (só presente em scenes re-extraídas). */
+  baseLuminance?: 'light' | 'dark' | 'mixed';
 }
 
 export interface LoadedScene {
@@ -111,4 +113,13 @@ export { toBlob };
 /** Load a File/Blob (the user's uploaded art) into an HTMLImageElement. */
 export function loadArt(file: File | Blob): Promise<HTMLImageElement> {
   return loadImage(file);
+}
+
+/**
+ * Load a brand asset from its (R2/remote) URL into a CORS-enabled image, ready to
+ * composite onto a scene face. Used by the free suggestion feed — the asset URL
+ * comes from the mockup-suggestions recipe.
+ */
+export function loadArtFromUrl(url: string): Promise<HTMLImageElement> {
+  return loadImage(url);
 }

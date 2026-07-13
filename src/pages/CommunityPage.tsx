@@ -47,6 +47,7 @@ import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { Button } from '@/components/ui/button';
 import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { glassSurface } from '@/lib/ui/glass';
 
 // --- Components ---
 
@@ -569,7 +570,7 @@ export const CommunityPage: React.FC = () => {
               >
                 <GlassPanel
                   padding="sm"
-                  className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group"
+                  className={cn('group', glassSurface.control)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
@@ -593,7 +594,7 @@ export const CommunityPage: React.FC = () => {
 
                 <GlassPanel
                   padding="sm"
-                  className="bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group"
+                  className={cn('group', glassSurface.control)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
@@ -617,7 +618,7 @@ export const CommunityPage: React.FC = () => {
 
                 <GlassPanel
                   padding="sm"
-                  className="hidden sm:flex bg-white/[0.03] border-neutral-800 hover:border-white/10 transition-colors group"
+                  className={cn('hidden sm:flex group', glassSurface.control)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
@@ -833,7 +834,7 @@ export const CommunityPage: React.FC = () => {
                     animate={{ opacity: 1 }}
                     className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
                   >
-                    <div className="p-6 rounded-full bg-white/[0.03] border border-neutral-800">
+                    <div className={cn('p-6 rounded-full', glassSurface.control)}>
                       <Workflow size={32} strokeWidth={1} className="text-neutral-700" />
                     </div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
@@ -929,7 +930,7 @@ export const CommunityPage: React.FC = () => {
                     animate={{ opacity: 1 }}
                     className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
                   >
-                    <div className="p-6 rounded-full bg-white/[0.03] border border-neutral-800">
+                    <div className={cn('p-6 rounded-full', glassSurface.control)}>
                       <ImageIcon size={32} strokeWidth={1} className="text-neutral-700" />
                     </div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">

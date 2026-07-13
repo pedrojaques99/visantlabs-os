@@ -1,4 +1,95 @@
 {
+  "brandMockupDialog": {
+    "title": "Criar Mockup",
+    "description": "{brandName} · logos, cores e tipografia injetados automaticamente.",
+    "brandFallback": "Marca",
+    "mediaLabel": "Mockup — {label}",
+    "back": "Voltar",
+    "tryAgain": "Tentar de novo",
+    "form": {
+      "brandPreviewTitle": "Prévia da marca — {aspectRatio} · {resolution}",
+      "injectedFromBrand": "Injetado da marca · {aspectRatio}",
+      "scene": "Cena",
+      "surpriseMe": "Surpreenda-me",
+      "scenePlaceholder": "ex: cartão de visita em mesa de mármore, iluminação quente, flat lay...",
+      "model": "Modelo",
+      "resolution": "Resolução",
+      "aspectRatio": "Proporção",
+      "ifUnavailable": "Se indisponível",
+      "quality": "Qualidade",
+      "cost": "Custo",
+      "strategyCopy": {
+        "cost": "Se o modelo escolhido falhar, tentamos outro pelo menor custo.",
+        "quality": "Se o modelo escolhido falhar, tentamos outro pela melhor qualidade."
+      },
+      "summary": "{modelLabel} · {resolution} · {aspectRatio} · {credits} crédito{plural}",
+      "generate": "Gerar Mockup"
+    },
+    "error": {
+      "unavailable": {
+        "title": "Geração indisponível agora",
+        "detail": "Todos os modelos estão fora no momento. Tente de novo em instantes."
+      },
+      "safety": {
+        "title": "Cena bloqueada",
+        "detail": "O conteúdo foi sinalizado pela política de uso. Ajuste a descrição e tente de novo."
+      },
+      "generic": {
+        "title": "Não consegui gerar",
+        "detail": "Erro inesperado. Tente novamente."
+      },
+      "noImage": {
+        "title": "Nenhuma imagem retornada",
+        "detail": "Tente novamente em instantes."
+      },
+      "noCreditsCharged": "Nenhum crédito cobrado"
+    },
+    "suggestions": {
+      "select": "Selecione os mockups",
+      "none": "Nenhum",
+      "all": "Todos",
+      "creditsSummary": "{used}/{total} · {credits} cr",
+      "back": "← Voltar",
+      "generateCount": "Gerar {count} mockup{plural}"
+    },
+    "loading": {
+      "analyzing": "Analisando a marca…"
+    },
+    "generating": {
+      "single": "Gerando mockup…",
+      "slowHint": "Buscando o melhor modelo disponível por {strategy}…",
+      "byCost": "custo",
+      "byQuality": "qualidade",
+      "batch": "Gerando {done}/{total}",
+      "stop": "Parar",
+      "errorTile": "erro"
+    },
+    "result": {
+      "alt": "Mockup gerado",
+      "fellBack": "Gerado com {provider} — o modelo escolhido estava indisponível.",
+      "generateAnother": "Gerar outro",
+      "download": "Download",
+      "saved": "Salvo",
+      "saving": "Salvando…",
+      "saveToBrand": "Salvar na marca",
+      "batchCount": "{count} mockup{plural} gerado{plural}",
+      "new": "Novo",
+      "allSaved": "Todos salvos",
+      "saveAll": "Salvar todos ({count})",
+      "close": "Fechar"
+    },
+    "toast": {
+      "describeScene": "Descreva a cena do mockup",
+      "generated": "Mockup gerado ({count} crédito{plural})",
+      "suggestError": "Erro ao sugerir mockups",
+      "cancelled": "Cancelado — {count} mockup{plural} gerado{plural}",
+      "batchDone": "{count}/{total} mockups gerados",
+      "noneGenerated": "Nenhum mockup gerado",
+      "savedToMediaKit": "Salvo no Media Kit",
+      "saveError": "Erro ao salvar",
+      "savedAllToMediaKit": "{count} mockup{plural} salvo{plural} no Media Kit"
+    }
+  },
   "nav": {
     "context": "CONTEXTO",
     "allBrands": "Todas as marcas",
@@ -8,12 +99,15 @@
     "pinned": "FIXADOS",
     "unpin": "Desafixar",
     "pin": "Fixar no menu",
+    "settings": "Configurações",
     "collapse": "Recolher",
     "expand": "Expandir",
+    "back": "Voltar",
     "credits": "Créditos",
     "upgrade": "Assinar",
+    "lastBrand": "Última marca",
     "cockpit": {
-      "label": "Cockpit",
+      "label": "Início",
       "overview": "Visão geral",
       "campaigns": "Campanhas",
       "work": "Trabalhos"
@@ -28,6 +122,9 @@
     "copilot": {
       "label": "Copilot"
     },
+    "canvas": {
+      "label": "Canvas"
+    },
     "apps": {
       "label": "Aplicativos",
       "all": "Todos os apps"
@@ -36,8 +133,39 @@
       "label": "Perfil",
       "account": "Conta",
       "usage": "Uso e créditos",
+      "configuration": "Configurações",
       "apiKeys": "Chaves de API",
       "connectedApps": "Apps conectados"
+    },
+    "library": {
+      "title": "BIBLIOTECA",
+      "creativeProjects": "Meus Criativos",
+      "myOutputs": "Meus Mockups",
+      "references": "Referências",
+      "community": "Comunidade"
+    },
+    "references": {
+      "label": "Referências",
+      "library": "Biblioteca",
+      "logos": "Logos",
+      "mockups": "Mockups",
+      "collections": "Coleções",
+      "mine": "Minhas refs"
+    },
+    "community": {
+      "overview": "Visão geral",
+      "all": "Explorar tudo",
+      "mockup": "Mockups",
+      "angle": "Ângulos",
+      "texture": "Texturas",
+      "ambience": "Ambiências",
+      "luminance": "Luz",
+      "threeD": "3D",
+      "presets": "Presets",
+      "aesthetics": "Estéticas",
+      "themes": "Temas",
+      "uiPrompts": "UI Prompts",
+      "figmaPrompts": "Figma Prompts"
     }
   },
   "about": {
@@ -1133,6 +1261,12 @@
     }
   },
   "canvas": {
+    "community": {
+      "title": "Workflows da comunidade",
+      "subtitle": "Linke sua marca e rode um workflow pronto da comunidade.",
+      "viewAll": "Ver todos",
+      "empty": "Nenhum workflow da comunidade publicado ainda."
+    },
     "addedToFavorites": "Adicionado aos favoritos",
     "backgroundColor": "Cor de Fundo",
     "backgroundColorDescription": "Alterar cor de fundo do canvas",
@@ -1865,10 +1999,54 @@
     "title": "Ferramentas",
     "toggleDrawingMode": "Alternar Modo de Desenho"
   },
+  "command": {
+    "goto": "Ir para",
+    "apps": "Apps",
+    "switchBrand": "Trocar marca",
+    "actions": "Ações",
+    "search": "Buscar",
+    "hintNavigate": "Navegar",
+    "hintSelect": "Selecionar",
+    "hintBack": "Voltar",
+    "showMore": "Mostrar mais",
+    "recent": "Recentes",
+    "pinned": "Fixados",
+    "toggleTheme": "Trocar tema",
+    "toggleLanguage": "Trocar idioma",
+    "title": "Paleta de comandos",
+    "askCopilot": "Perguntar ao Copilot: \"{query}\""
+  },
   "cockpit": {
     "connectAI": "Conectar AI",
     "settings": "Configurações",
     "title": "Cockpit da marca",
+    "depth": {
+      "title": "Profundidade da marca",
+      "toNext": "{n}% pro próximo nível",
+      "complete": "Marca no máximo",
+      "level": {
+        "sketch": "Esboço",
+        "identity": "Identidade",
+        "system": "Sistema",
+        "production": "Produção",
+        "autopilot": "Autopilot"
+      }
+    },
+    "nba": {
+      "title": "Próximo passo",
+      "complete": "Marca completa, pronta como munição de IA."
+    },
+    "produce": {
+      "title": "Produzir",
+      "mockup": "Mockup",
+      "campaign": "Campanha",
+      "creative": "Criativo"
+    },
+    "viewGuidelines": "Ver guidelines",
+    "gallery": {
+      "title": "Galeria de outputs",
+      "viewAll": "Ver todos"
+    },
     "connect": {
       "subtitle": "On-brand por padrão, cores, fontes, logos e voz, automaticamente.",
       "title": "Conecte seu AI"
@@ -2249,6 +2427,64 @@
   "confirmationModal": {
     "defaultConfirm": "Continuar",
     "defaultTitle": "Confirmar Ação"
+  },
+  "chatShell": {
+    "newSession": "Nova sessão",
+    "sessions": "Sessões",
+    "loading": "Carregando…",
+    "noSessions": "Nenhuma sessão ainda.",
+    "deleteSession": "Deletar sessão",
+    "dropToAttach": "Solte para anexar",
+    "toggleSidebar": "Alternar sidebar",
+    "brandContext": "Marca contexto",
+    "newBrand": "Nova marca",
+    "hideMediaKit": "Ocultar media kit",
+    "showMediaKit": "Mostrar media kit",
+    "close": "Fechar",
+    "closePanel": "Fechar painel",
+    "saveToBrandMemory": "Salvar na memória da marca?",
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "proposedVariations": "Variações propostas",
+    "questions": "Perguntas",
+    "optionalAnswer": "Resposta opcional...",
+    "approveAndGenerate": "Aprovar e gerar",
+    "cancel": "Cancelar",
+    "removeAttachment": "Remover anexo",
+    "planMode": "Modo Plano",
+    "planModeTooltip": "Modo Plano: o agente propõe variações e faz perguntas antes de gerar",
+    "textModeLayers": "Layers",
+    "textModeImage": "Img",
+    "textModeBoth": "Ambos",
+    "textModeLayersTooltip": "Texto via layers editáveis (sem texto na imagem)",
+    "textModeImageTooltip": "Texto baked na imagem Gemini (sem layers de texto)",
+    "textModeBothTooltip": "Texto na imagem + layers (pode conflitar)",
+    "mediaKit": "Media Kit",
+    "prompts": "Prompts",
+    "importPdfImages": "Importar PDF ou imagens",
+    "importPdfImagesTooltip": "Importar PDF/imagens → extrai logos, cores, tipografia",
+    "clickOrDrag": "Clique ou arraste para o chat",
+    "roleAdmin": "Admin · Nível 4",
+    "roleAccount": "Conta",
+    "toolFailed": "falhou",
+    "lockBrandError": "Falha ao travar marca da sessão",
+    "createSessionError": "Erro ao criar sessão estratégica.",
+    "loadSessionError": "Erro ao carregar sessão.",
+    "sessionDeleted": "Sessão deletada.",
+    "deleteSessionError": "Erro ao deletar sessão.",
+    "docsIngested": "Documentos estratégicos ingeridos na sessão!",
+    "processFilesError": "Erro ao processar arquivos.",
+    "consultAssistantError": "Erro ao consultar o assistente estratégico.",
+    "attached": "Anexado: {name}",
+    "attachAssetError": "Falha ao anexar asset: {error}",
+    "genericError": "erro",
+    "savedToBrandMemory": "Salvo na memória da marca",
+    "approveError": "Falha ao aprovar",
+    "planApprovedWithAnswers": "Aprovado. {answers}. Pode gerar os mockups propostos.",
+    "planApproved": "Aprovado. Pode gerar os mockups propostos.",
+    "approvePlanError": "Erro ao aprovar plano.",
+    "rejected": "Rejeitado — nada salvo",
+    "rejectError": "Falha ao rejeitar"
   },
   "copilot": {
     "inputPlaceholder": "Pergunte qualquer coisa sobre a sua marca...",
@@ -3620,6 +3856,7 @@
     "updateError": "Falha ao atualizar perfil",
     "uploadFailed": "Falha no envio",
     "uploadPicture": "Clique para enviar foto",
+    "usageAnalytics": "Uso e Analytics",
     "viewAllTransactions": "Transações",
     "viewOutputs": "Ver resultados",
     "viewPublicProfile": "Ver Perfil Público",
@@ -4614,7 +4851,7 @@
     "by": "por",
     "exploreMockups": "Explorar",
     "loadingImage": "Carregando imagem...",
-    "magicHappens": "Envie seu logo ou design e veja a mágica acontecer",
+    "magicHappens": "Seu logo em mockups fotorrealistas, em segundos",
     "newBlankMockup": "",
     "pasteTip": "Dica: Você pode dar ctrl+v para colar imagens",
     "pasteTipSmall": "ou ctrl + v para colar",

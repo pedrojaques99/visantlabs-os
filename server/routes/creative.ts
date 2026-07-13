@@ -10,7 +10,7 @@ import {
 } from '../lib/creative-events-store.js';
 import { renderCreativePlan } from '../lib/creative-renderer.js';
 import { uploadCanvasImage } from '../services/r2Service.js';
-import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { authenticate, optionalAuthenticate, type AuthRequest } from '../middleware/auth.js';
 import { chargeCredits } from '../lib/credits.js';
 import { prisma } from '../db/prisma.js';
 import {
@@ -31,6 +31,10 @@ interface CreativePlanRequest {
   // media as background candidate, and snaps invented colors/fonts back to
   // the brand. The legacy minimal `brandContext` shape is no longer accepted.
   brandGuideline?: BrandGuideline;
+  // MCP/agent callers pass an id instead of the full object. When the object is
+  // absent but an id is present, the route resolves the user-owned brand from
+  // Prisma (requires an authenticated caller) and injects it as brandGuideline.
+  brandGuidelineId?: string;
 }
 
 async function getLearnedBiasLine(brandId?: string): Promise<string> {
@@ -48,9 +52,10 @@ async function getLearnedBiasLine(brandId?: string): Promise<string> {
   return '';
 }
 
-router.post('/plan', async (req, res) => {
+router.post('/plan', optionalAuthenticate, async (req: AuthRequest, res) => {
   try {
-    const { prompt, format, brandGuideline, brandId } = req.body as CreativePlanRequest;
+    const { prompt, format, brandGuideline, brandId, brandGuidelineId } =
+      req.body as CreativePlanRequest;
 
     if (!prompt || !format) {
       return res.status(400).json({ error: 'prompt and format are required' });
@@ -59,13 +64,28 @@ router.post('/plan', async (req, res) => {
       return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
+    // Client path passes the full `brandGuideline` object. Agent/MCP path passes
+    // only an id (`brandGuidelineId`, or legacy `brandId`) — resolve the
+    // user-owned brand from Prisma so brand context is actually injected instead
+    // of being silently dropped. Requires a trusted/authenticated caller.
+    let resolvedBrand: BrandGuideline | null = brandGuideline ?? null;
+    const brandRef = brandGuidelineId ?? brandId;
+    if (!resolvedBrand && brandRef && req.userId) {
+      const brand = await prisma.brandGuideline.findFirst({
+        where: { id: brandRef, userId: req.userId },
+      });
+      if (brand) {
+        resolvedBrand = brand as unknown as BrandGuideline;
+      }
+    }
+
     const learnedBiasLine = await getLearnedBiasLine(brandId);
 
     try {
       const { plan, pickedMedia } = await planFromBrand({
         prompt,
         format,
-        brandGuideline: brandGuideline ?? null,
+        brandGuideline: resolvedBrand,
         learnedBiasLine,
       });
       // pickedMedia carries the brand-media URL the engine selected for this

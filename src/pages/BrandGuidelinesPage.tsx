@@ -169,7 +169,7 @@ const BrandCard = ({
       )}
     >
       {/* Cover */}
-      <div className="relative w-full sm:w-full h-20 sm:h-24 shrink-0 overflow-hidden bg-neutral-800">
+      <div className="relative w-full sm:w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-neutral-800">
         {coverUrl && !coverLoaded && (
           <div className="absolute inset-0 animate-pulse bg-neutral-800" />
         )}

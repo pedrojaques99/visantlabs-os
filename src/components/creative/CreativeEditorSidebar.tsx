@@ -26,7 +26,9 @@ import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { Button } from '@/components/ui/button';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
+import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSelector';
 import type { CreativeFormat, CreativeLayerData } from './store/creativeTypes';
+import type { AspectRatio } from '@/types/types';
 import {
   useSaveCreativeProject,
   useUpdateCreativeProject,
@@ -35,7 +37,8 @@ import { snapshotCreativeFromStore } from './lib/persistCreative';
 import { isPersistedId } from './lib/layerUtils';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-const FORMATS: CreativeFormat[] = ['1:1', '9:16', '16:9', '4:5'];
+// Formatos do Creative Studio → AspectRatioSelector compartilhado (SSoT).
+const CREATIVE_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:5'];
 
 interface Props {
   onExport: () => void;
@@ -97,6 +100,13 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
   const [isEditingName, setIsEditingName] = useState(false);
 
   const isSaving = saveMutation.isPending || updateProjectMutation.isPending;
+
+  // Ids de layers que pertencem a um grupo — escondidos da lista flat (aparecem
+  // sob o grupo no canvas).
+  const groupedChildIds = React.useMemo(
+    () => new Set(layers.flatMap((l) => (l.data.type === 'group' ? l.data.children : []))),
+    [layers]
+  );
 
   const handleSave = async () => {
     const thumbnailUrl = (await onCaptureThumbnail?.()) ?? null;
@@ -309,12 +319,15 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             <p className="text-[11px] text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
           )}
           {[...layers].reverse().map((layer) => {
+            if (groupedChildIds.has(layer.id)) return null;
             const label =
               layer.data.type === 'text'
                 ? layer.data.content.replace(/<\/?accent>/g, '').slice(0, 20) || 'Texto'
                 : layer.data.type === 'logo'
                   ? 'Logo'
-                  : 'Shape';
+                  : layer.data.type === 'group'
+                    ? `Grupo · ${(layer.data as { children: string[] }).children.length}`
+                    : 'Shape';
             const isSelected = selectedLayerIds.includes(layer.id);
             return (
               <div
@@ -342,6 +355,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                   }}
                   className="text-neutral-600 hover:text-white"
                   title={layer.visible ? 'Ocultar' : 'Mostrar'}
+                  aria-label={layer.visible ? 'Ocultar camada' : 'Mostrar camada'}
                 >
                   {layer.visible ? <Eye size={12} /> : <EyeOff size={12} />}
                 </button>
@@ -354,6 +368,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     layer.locked ? 'text-brand-cyan' : 'text-neutral-600'
                   }`}
                   title={layer.locked ? 'Destravar' : 'Travar'}
+                  aria-label={layer.locked ? 'Destravar camada' : 'Travar camada'}
                 >
                   {layer.locked ? <Lock size={11} /> : <Unlock size={11} />}
                 </button>
@@ -364,6 +379,8 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     removeLayer(layer.id);
                   }}
                   className="text-neutral-700 hover:text-destructive"
+                  title="Remover"
+                  aria-label="Remover camada"
                 >
                   <Trash2 size={11} />
                 </button>
@@ -415,21 +432,11 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
             Formato
           </label>
-          <div className="grid grid-cols-4 gap-1.5">
-            {FORMATS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setFormat(f)}
-                className={`px-2 py-2 rounded text-[11px] font-mono border transition-all ${
-                  format === f
-                    ? 'bg-brand-cyan/10 border-brand-cyan/50 text-brand-cyan'
-                    : 'bg-neutral-900/60 border-white/10 text-neutral-500 hover:text-white'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+          <AspectRatioSelector
+            value={format as AspectRatio}
+            onChange={(r) => setFormat(r as CreativeFormat)}
+            ratios={CREATIVE_RATIOS}
+          />
         </div>
 
         {/* Auto-save indicator */}

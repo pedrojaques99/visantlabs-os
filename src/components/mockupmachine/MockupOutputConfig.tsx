@@ -32,6 +32,7 @@ import {
 } from '@/constants/ideogramModels';
 import { REVE_MODEL_LIST, REVE_MODEL_CONFIG, isReveModel } from '@/constants/reveModels';
 import { useAvailableProviders } from '@/hooks/useAvailableProviders';
+import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSelector';
 import type { Resolution, AspectRatio, ImageProvider } from '@/types/types';
 
 const GEMINI_RESOLUTIONS: Resolution[] = ['HD', '1K', '2K', '4K'];
@@ -244,17 +245,11 @@ export const MockupOutputConfig: React.FC = () => {
         </ToolPanelSection>
 
         <ToolPanelSection title={t('mockup.aspectRatioLabel') || 'Proporção'}>
-          <ToolPanelGrid cols={5}>
-            {ASPECT_RATIOS.map((ratio) => (
-              <ToolPanelChip
-                key={ratio}
-                active={aspectRatio === ratio}
-                onClick={() => setAspectRatio(ratio)}
-              >
-                {ratio}
-              </ToolPanelChip>
-            ))}
-          </ToolPanelGrid>
+          <AspectRatioSelector
+            value={aspectRatio}
+            onChange={setAspectRatio}
+            ratios={ASPECT_RATIOS}
+          />
         </ToolPanelSection>
       </div>
 

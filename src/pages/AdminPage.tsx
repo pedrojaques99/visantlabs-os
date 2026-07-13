@@ -95,6 +95,7 @@ import { DataTableEditableCell } from '../components/ui/data-table-editable-cell
 import { ColumnDef } from '@tanstack/react-table';
 import { getImagePricing } from '@/utils/pricing';
 import { cn } from '@/lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { formatDate } from '@/utils/localeUtils';
@@ -328,6 +329,7 @@ const SectionError: React.FC<{ onRetry: () => void; message?: string }> = ({
 
 export const AdminPage: React.FC = () => {
   const { t } = useTranslation();
+  const inShell = useInAppShell();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated: isUserAuthenticated, isCheckingAuth, user: layoutUser } = useLayout();
@@ -919,7 +921,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'creditsRemaining',
         header: t('admin.remaining'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono text-brand-cyan">{row.original.creditsRemaining}</span>
+          <span className="text-xs font-mono text-brand-cyan tabular-nums">{row.original.creditsRemaining}</span>
         ),
         size: 100,
         enableSorting: true,
@@ -943,7 +945,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'referralCount',
         header: t('admin.referrals'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono">{row.original.referralCount ?? 0}</span>
+          <span className="text-xs font-mono tabular-nums">{row.original.referralCount ?? 0}</span>
         ),
         size: 80,
         enableSorting: true,
@@ -1216,7 +1218,10 @@ export const AdminPage: React.FC = () => {
               }}
             />
 
-            <div className="min-h-screen max-lg:!pl-0" style={{ paddingLeft: `${sidebarWidth}px` }}>
+            <div
+              className={cn('max-lg:!pl-0', inShell ? 'min-h-full' : 'min-h-screen')}
+              style={{ paddingLeft: `${sidebarWidth}px` }}
+            >
               <div className="px-4 md:px-8 pt-6 pb-16 md:pb-24 relative z-10">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">

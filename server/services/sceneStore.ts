@@ -30,6 +30,11 @@ import {
   publicFolderIds,
 } from './driveService.js';
 import { uploadPrivateAsset, getSignedReadUrl, downloadAsset } from './spacesService.js';
+import {
+  resolveSceneLicense,
+  type SceneLicense,
+  type SceneLicenseOverride,
+} from './sceneLicense.js';
 
 export interface SceneFileEntry {
   /** ref usado no scene.json (ex.: "base-0", "over-1", "mask-0"). */
@@ -53,8 +58,63 @@ export interface SceneRecord {
   width: number;
   height: number;
   bytes: number;
+  /** Licença comercial — decide se a scene pode ser exposta ao user (SSoT isComercial). */
+  license: SceneLicense;
+  /** Estúdio pago de origem, quando license = 'studio-paid'. */
+  studio?: string;
+  /** Origem do PSD, quando conhecida. */
+  source?: 'boxy' | 'visant' | 'drive-import';
+  /** Luma médio (0-255) da base da cena — pro matcher escolher a variante do logo. */
+  baseLuma?: number;
+  /** Classificação clara/escura/mista da base, derivada de baseLuma. */
+  baseLuminance?: 'light' | 'dark' | 'mixed';
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * Luma médio (0-255) da base da cena, lido direto dos canvases node-canvas.
+ *
+ * Deliberadamente SEM sharp: a extração já roda node-canvas no mesmo processo, e
+ * sharp+node-canvas juntos disparam o clash libvips×Cairo no Linux ("out of memory"
+ * espúrio). getImageData é nativo do canvas — zero dependência extra.
+ *
+ * Só conta pixels opacos (alpha>128) pra que áreas transparentes da base não puxem
+ * a média pro escuro. Amostra em passo pra ser rápido em bases grandes.
+ */
+function computeBaseLuma(assets: AssetMap): number | undefined {
+  let sum = 0;
+  let count = 0;
+  for (const [ref, canvas] of Object.entries(assets)) {
+    if (!/^base/i.test(ref)) continue;
+    try {
+      const ctx = (canvas as any).getContext?.('2d');
+      const w = (canvas as any).width;
+      const h = (canvas as any).height;
+      if (!ctx || !w || !h) continue;
+      const { data } = ctx.getImageData(0, 0, w, h);
+      // step ~ every 4th pixel (16 bytes) to cap the read on huge bases.
+      const step = 16;
+      for (let i = 0; i < data.length; i += 4 * step) {
+        const a = data[i + 3];
+        if (a < 128) continue;
+        // Rec. 709 luma.
+        sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+        count++;
+      }
+    } catch {
+      /* unreadable canvas — skip */
+    }
+  }
+  return count > 0 ? sum / count : undefined;
+}
+
+/** Classifica a base em clara/escura/mista a partir do luma médio. */
+export function classifyLuminance(luma: number | undefined): 'light' | 'dark' | 'mixed' | undefined {
+  if (luma === undefined) return undefined;
+  if (luma < 90) return 'dark';
+  if (luma > 165) return 'light';
+  return 'mixed';
 }
 
 export const SCENES_COLLECTION = 'psd_scenes';
@@ -135,7 +195,8 @@ export interface ExtractAndStoreResult {
  */
 export async function extractSceneFromPsd(
   psdPath: string,
-  psdFileName: string
+  psdFileName: string,
+  licenseOverride?: SceneLicenseOverride
 ): Promise<ExtractAndStoreResult> {
   const mtimeMs = statSync(psdPath).mtimeMs;
   const hash = sceneHash(psdFileName, mtimeMs);
@@ -158,6 +219,8 @@ export async function extractSceneFromPsd(
   }
 
   const totalBytes = files.reduce((s, f) => s + f.bytes, 0);
+  const lic = resolveSceneLicense(psdFileName, licenseOverride);
+  const baseLuma = computeBaseLuma(assets);
   const record: Omit<SceneRecord, 'createdAt' | 'updatedAt'> = {
     psdFileName,
     hash,
@@ -169,6 +232,11 @@ export async function extractSceneFromPsd(
     width: doc.width,
     height: doc.height,
     bytes: totalBytes,
+    license: lic.license,
+    studio: lic.studio,
+    source: lic.source,
+    baseLuma: baseLuma !== undefined ? Math.round(baseLuma) : undefined,
+    baseLuminance: classifyLuminance(baseLuma),
   };
 
   return { record, uploads };
@@ -206,18 +274,30 @@ export async function deleteSceneRecord(db: any, psdFileName: string): Promise<b
   return res.deletedCount > 0;
 }
 
-/** Lista resumida pro catálogo (agente/Boxy). */
-export async function listScenes(db: any): Promise<
-  Array<{
-    psdFileName: string;
-    faces: SceneRecord['faces'];
-    width: number;
-    height: number;
-    warnings: string[];
-    updatedAt: Date;
-  }>
-> {
-  return db
+export interface SceneCatalogEntry {
+  psdFileName: string;
+  faces: SceneRecord['faces'];
+  width: number;
+  height: number;
+  warnings: string[];
+  updatedAt: Date;
+  license?: SceneLicense;
+  studio?: string;
+  baseLuminance?: 'light' | 'dark' | 'mixed';
+}
+
+/**
+ * Lista resumida pro catálogo (agente/Boxy/webapp).
+ *
+ * `commercialOnly` aplica o filtro isComercial no read: usa a license persistida OU,
+ * pra registros antigos sem o campo, resolve pelo nome do arquivo (fail-safe — um
+ * PSD de estúdio pago some mesmo sem migração). Sempre passe `true` no tier público.
+ */
+export async function listScenes(
+  db: any,
+  opts: { commercialOnly?: boolean } = {}
+): Promise<SceneCatalogEntry[]> {
+  const rows: SceneCatalogEntry[] = await db
     .collection(SCENES_COLLECTION)
     .find(
       {},
@@ -230,11 +310,17 @@ export async function listScenes(db: any): Promise<
           height: 1,
           warnings: 1,
           updatedAt: 1,
+          license: 1,
+          studio: 1,
+          baseLuminance: 1,
         },
       }
     )
     .sort({ updatedAt: -1 })
     .toArray();
+
+  if (!opts.commercialOnly) return rows;
+  return rows.filter((r) => (r.license ?? resolveSceneLicense(r.psdFileName).license) === 'commercial-free');
 }
 
 /**

@@ -131,6 +131,16 @@ function applyToActivePage(
 
 const defaultPageName = (idx: number) => `Página ${idx + 1}`;
 
+/** Nome legível pro projeto a partir do brief — a lista de criativos vira algo
+ *  útil em vez de "Untitled Creative". */
+const deriveCreativeName = (prompt: string): string => {
+  const clean = prompt.trim().replace(/\s+/g, ' ');
+  if (!clean) return 'Untitled Creative';
+  const firstSentence = clean.split(/[.!?\n]/)[0].trim() || clean;
+  const base = firstSentence.slice(0, 48);
+  return base.charAt(0).toUpperCase() + base.slice(1) + (firstSentence.length > 48 ? '…' : '');
+};
+
 export const useCreativeStore = create<CreativeStore>()(
   persist(
     temporal(
@@ -163,7 +173,16 @@ export const useCreativeStore = create<CreativeStore>()(
         setProjectName: (projectName) => set({ projectName }),
         setCreativeId: (creativeId) => set({ creativeId }),
         setPrompt: (prompt) => set({ prompt }),
-        setFormat: (format) => set({ format }),
+        // Mantém o formato da página ativa em sincronia com o root — senão o
+        // thumbnail da PagesPanel e o formato persistido por página divergem do
+        // preview/export.
+        setFormat: (format) =>
+          set((state) => ({
+            format,
+            pages: state.pages.map((p, i) =>
+              i === state.activePageIndex ? { ...p, format } : p
+            ),
+          })),
         setBackgroundMode: (backgroundMode) => set({ backgroundMode }),
         setUploadedBackgroundUrl: (uploadedBackgroundUrl) => set({ uploadedBackgroundUrl }),
         setModel: (modelId, provider) => set({ modelId, provider }),
@@ -243,8 +262,21 @@ export const useCreativeStore = create<CreativeStore>()(
           set((state) => {
             const src = state.pages[index];
             if (!src) return state;
-            // Re-id the layers so subsequent edits don't mutate both pages.
-            const cloneLayers = src.layers.map((l) => ({ ...l, id: nextLayerId() }));
+            // Re-id the layers so subsequent edits don't mutate both pages; um
+            // grupo clonado precisa reapontar `children` pros novos ids (senão o
+            // grupo da cópia referencia os layers da página original).
+            const idMap = new Map<string, string>();
+            src.layers.forEach((l) => idMap.set(l.id, nextLayerId()));
+            const cloneLayers = src.layers.map((l) => {
+              const base = { ...l, id: idMap.get(l.id)! };
+              if (l.data.type === 'group') {
+                return {
+                  ...base,
+                  data: { ...l.data, children: l.data.children.map((c) => idMap.get(c) ?? c) },
+                };
+              }
+              return base;
+            });
             const clone: CreativePage = {
               id: nextPageId(),
               name: src.name ? `${src.name} cópia` : defaultPageName(state.pages.length),
@@ -343,6 +375,11 @@ export const useCreativeStore = create<CreativeStore>()(
               activePageIndex: 0,
               status: 'editing',
               selectedLayerIds: [],
+              // Auto-nome pelo brief se o usuário não renomeou.
+              projectName:
+                state.projectName && state.projectName !== 'Untitled Creative'
+                  ? state.projectName
+                  : deriveCreativeName(state.prompt),
             };
           });
         },
@@ -431,6 +468,9 @@ export const useCreativeStore = create<CreativeStore>()(
         removeLayer: (id) =>
           set((state) => {
             const prev = state.layers.find((l) => l.id === id);
+            // Deletar um grupo remove também seus filhos (senão viram órfãos soltos).
+            const toRemove = new Set<string>([id]);
+            if (prev?.data.type === 'group') prev.data.children.forEach((c) => toRemove.add(c));
             if (prev && state.creativeId && state.status === 'editing') {
               trackCreativeEvent({
                 brandId: state.brandId,
@@ -442,8 +482,8 @@ export const useCreativeStore = create<CreativeStore>()(
                 isCorrection: true,
               });
             }
-            const layers = state.layers.filter((l) => l.id !== id);
-            const selectedLayerIds = state.selectedLayerIds.filter((sid) => sid !== id);
+            const layers = state.layers.filter((l) => !toRemove.has(l.id));
+            const selectedLayerIds = state.selectedLayerIds.filter((sid) => !toRemove.has(sid));
             const patch = applyToActivePage(state.pages, state.activePageIndex, { layers });
             return { ...(patch ?? { layers }), selectedLayerIds };
           }),
@@ -655,49 +695,43 @@ export const useCreativeStore = create<CreativeStore>()(
           }),
       }),
       {
+        // Trackeia a página ativa junto com o mirror de root: `pages` é a fonte
+        // de verdade e o root (layers/bg/overlay) é derivado dela. Sem `pages`
+        // aqui, o undo restaurava só o root e `pages` ficava defasado — o edit
+        // desfeito voltava ao salvar ou trocar de página.
         partialize: (state) => ({
           layers: state.layers,
           overlay: state.overlay,
           backgroundUrl: state.backgroundUrl,
+          pages: state.pages,
+          activePageIndex: state.activePageIndex,
         }),
         limit: 50,
       }
     ),
     {
       name: 'vsn-creative-setup-cache',
-      version: 1,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
-      // Older snapshots that predate the schema bump get dropped quietly —
-      // safer than restoring a partial shape that mismatches the runtime store.
+      // Caches < v3 persistiam brandId, estado de editor e CONTEÚDO de draft
+      // (prompt/fundo) — que contaminavam o próximo criativo (ex.: prompt de
+      // billboard da marca A num criativo novo da marca B). Dropar quieto.
       migrate: (persisted, version) => {
-        if (version === 1) return persisted as Partial<CreativeStore>;
-        return undefined;
+        if (version < 3) return undefined;
+        return persisted as Partial<CreativeStore>;
       },
-      partialize: (state) => {
-        // Blob URLs (blob:... from URL.createObjectURL) die with the page — persisting
-        // them causes ERR_FILE_NOT_FOUND on reload. Drop them; the user re-uploads.
-        const dropBlob = (u: string | null | undefined) =>
-          u && u.startsWith('blob:') ? null : (u ?? null);
-        return {
-          brandId: state.brandId,
-          prompt: state.prompt,
-          format: state.format,
-          backgroundMode: state.backgroundMode,
-          uploadedBackgroundUrl: dropBlob(state.uploadedBackgroundUrl),
-          modelId: state.modelId,
-          provider: state.provider,
-          resolution: state.resolution,
-          // Editor state — survives refresh until cloud save completes
-          status: state.status,
-          creativeId: state.creativeId,
-          projectName: state.projectName,
-          backgroundUrl: dropBlob(state.backgroundUrl),
-          overlay: state.overlay,
-          layers: state.layers,
-          pages: state.pages,
-          activePageIndex: state.activePageIndex,
-        };
-      },
+      // SSoT de marca = ActiveBrandContext ('vsn_active_brand'). O studio NÃO
+      // persiste `brandId` (senão fica sticky e ignora o cockpit — o bug do
+      // "persiste uma marca"), nem estado de editor (status/layers/pages/bg — o
+      // /create novo abre limpo no setup com a marca ativa; projeto salvo vem da
+      // nuvem via ?project=), nem CONTEÚDO de draft (prompt/fundo — cada
+      // criativo novo começa limpo, on-brand). Só prefs de UI sobrevivem.
+      partialize: (state) => ({
+        format: state.format,
+        modelId: state.modelId,
+        provider: state.provider,
+        resolution: state.resolution,
+      }),
     }
   )
 );

@@ -1,10 +1,9 @@
-// TODO: dívidas herdadas do AdminChat original (não corrigidas nesta passada
-// de tokens para não expandir o escopo):
-// 1. O backdrop do modal (~linha 666) é feito à mão (`fixed inset-0 ... bg-black/40`)
-//    em vez do componente `Modal` canônico — precisa migrar sem perder o modo
-//    'panel' (não-modal) que este shell também suporta.
-// 2. Várias strings estão em PT hardcoded (ex.: "Nova sessão", "Recentes",
-//    "Deletar sessão") em vez de passar por `t()` — falta i18n completo do arquivo.
+// TODO: dívida herdada do AdminChat original (não corrigida nesta passada
+// para não expandir o escopo):
+// - O backdrop do modal é feito à mão (`fixed inset-0 ... bg-black/40`)
+//   em vez do componente `Modal` canônico — precisa migrar sem perder o modo
+//   'panel' (não-modal) que este shell também suporta.
+// (i18n das strings hardcoded já resolvido — namespace `chatShell` em src/locales.)
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { getPreferredImageModel } from '@/utils/modelPreferences';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
@@ -41,8 +40,7 @@ import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
-import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
-import { GlitchPickaxe } from '@/components/ui/GlitchPickaxe';
+import { GeneratingImageCard } from '@/components/ui/GeneratingImageCard';
 import type { AspectRatio, Resolution } from '@/types/types';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { toast } from 'sonner';
@@ -55,6 +53,7 @@ import { BrandReadOnlyView } from '@/components/brand/BrandReadOnlyView';
 import { CommunityPresetsSidebar } from '@/components/canvas/CommunityPresetsSidebar';
 import { Diamond, PanelRightOpen, PanelRightClose, Upload } from 'lucide-react';
 import { useLayout } from '@/hooks/useLayout';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
@@ -97,6 +96,11 @@ export interface ChatShellProps {
    */
   suggestions?: string[];
   /**
+   * Semeia o input na montagem (ex.: comando agêntico do Cmd+K → `/copilot?prompt=`).
+   * Reflete no campo sem enviar — o usuário revisa e manda.
+   */
+  initialInput?: string;
+  /**
    * Intercept request failures (e.g. 403 subscription_required → upsell).
    * Return true when handled to suppress the default error toast.
    */
@@ -114,12 +118,16 @@ export const ChatShell: React.FC<ChatShellProps> = ({
   sidebarIcon,
   strings,
   suggestions,
+  initialInput,
   onRequestError,
 }) => {
   const { t } = useTranslation();
   const { data: brandGuidelines } = useBrandGuidelines();
   const queryClient = useQueryClient();
   const { user } = useLayout();
+  // Dentro do AppShell o rail já mostra o usuário (AuthButton no topbar): o
+  // footer de usuário do ChatShell viraria um 2º card redundante. Some.
+  const inShell = useInAppShell();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const isLargeScreen = useMediaQuery('(min-width: 1280px)');
 
@@ -132,7 +140,14 @@ export const ChatShell: React.FC<ChatShellProps> = ({
       timestamp: new Date().toISOString(),
     },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialInput ?? '');
+
+  // Semeia o input quando o prompt vem por fora (Cmd+K → ?prompt=). Só reflete
+  // no campo (não envia); reage a mudança de valor (nova navegação), sem
+  // sobrescrever o que o usuário digitou (mesmo valor → não refaz).
+  useEffect(() => {
+    if (initialInput) setInput(initialInput);
+  }, [initialInput]);
   const [isLoading, setIsLoading] = useState(false);
   const [isIngesting, setIsIngesting] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
@@ -149,21 +164,6 @@ export const ChatShell: React.FC<ChatShellProps> = ({
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [resolution, setResolution] = useState<Resolution>('2K');
   const [isDraggingFile, setIsDraggingFile] = useState(false);
-  const [genElapsed, setGenElapsed] = useState(0);
-  const genTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (isLoading) {
-      setGenElapsed(0);
-      genTimerRef.current = setInterval(() => setGenElapsed((t) => t + 1), 1000);
-    } else {
-      if (genTimerRef.current) clearInterval(genTimerRef.current);
-      genTimerRef.current = null;
-    }
-    return () => {
-      if (genTimerRef.current) clearInterval(genTimerRef.current);
-    };
-  }, [isLoading]);
   const [mediaPanelOpen, setMediaPanelOpen] = useState(true);
   const [panelTab, setPanelTab] = useState<'media' | 'prompts'>('media');
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -216,10 +216,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
         queryClient.invalidateQueries({ queryKey: [sessionsQueryKey] });
       } catch (err: any) {
         setSelectedBrandId(prev);
-        toast.error(err?.message || 'Falha ao travar marca da sessão');
+        toast.error(err?.message || t('chatShell.lockBrandError'));
       }
     },
-    [currentSessionId, selectedBrandId, queryClient, api, sessionsQueryKey]
+    [currentSessionId, selectedBrandId, queryClient, api, sessionsQueryKey, t]
   );
   const [inflightToolCalls, setInflightToolCalls] = useState<ToolCallRecord[]>([]);
   const [pendingApprovals, setPendingApprovals] = useState<PendingBrandKnowledgeApproval[]>([]);
@@ -347,7 +347,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
     } catch (error) {
       console.error('Session creation error:', error);
       if (!onRequestError?.(error)) {
-        toast.error('Erro ao criar sessão estratégica.');
+        toast.error(t('chatShell.createSessionError'));
       }
       throw error;
     }
@@ -375,7 +375,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
       }
     } catch (error) {
       console.error('Load session error:', error);
-      toast.error('Erro ao carregar sessão.');
+      toast.error(t('chatShell.loadSessionError'));
     }
   };
 
@@ -396,10 +396,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
         ]);
       }
       await refetchSessions();
-      toast.success('Sessão deletada.');
+      toast.success(t('chatShell.sessionDeleted'));
     } catch (error) {
       console.error('Delete session error:', error);
-      toast.error('Erro ao deletar sessão.');
+      toast.error(t('chatShell.deleteSessionError'));
     } finally {
       setDeletingSessionId(null);
     }
@@ -428,10 +428,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
             let source: 'pdf' | 'image' = file.type === 'application/pdf' ? 'pdf' : 'image';
             await api.uploadToSession(sessionId, source, base64, undefined, file.name);
           }
-          toast.success('Documentos estratégicos ingeridos na sessão!');
+          toast.success(t('chatShell.docsIngested'));
         } catch (error) {
           console.error('Ingestion error:', error);
-          toast.error('Erro ao processar arquivos.');
+          toast.error(t('chatShell.processFilesError'));
           setIsIngesting(false);
           return;
         }
@@ -516,7 +516,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
         console.error('Chat error:', error);
         setInflightToolCalls([]);
         if (!onRequestError?.(error)) {
-          toast.error('Erro ao consultar o assistente estratégico.');
+          toast.error(t('chatShell.consultAssistantError'));
         }
       }
     } finally {
@@ -551,11 +551,13 @@ export const ChatShell: React.FC<ChatShellProps> = ({
       const fileName = nameFromUrl.includes('.') ? nameFromUrl : `${nameFromUrl}.${ext}`;
       const file = new File([blob], fileName, { type: blob.type || 'image/png' });
       setAttachedFiles((prev) => [...prev, file]);
-      toast.success(`Anexado: ${fileName}`);
+      toast.success(t('chatShell.attached', { name: fileName }));
     } catch (err: any) {
-      toast.error(`Falha ao anexar asset: ${err?.message || 'erro'}`);
+      toast.error(
+        t('chatShell.attachAssetError', { error: err?.message || t('chatShell.genericError') })
+      );
     }
-  }, []);
+  }, [t]);
 
   // Drag & drop — accept image/pdf files AND asset URLs (from media kit panel)
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -601,9 +603,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
     setResolvingPendingId(pendingId);
     try {
       await api.approvePending(currentSessionId, pendingId);
-      toast.success('Salvo na memória da marca');
+      toast.success(t('chatShell.savedToBrandMemory'));
     } catch (err: any) {
-      toast.error(err?.message || 'Falha ao aprovar');
+      toast.error(err?.message || t('chatShell.approveError'));
     } finally {
       setResolvingPendingId(null);
     }
@@ -617,8 +619,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
       .filter(Boolean)
       .join(' | ');
     const msg = answers
-      ? `Aprovado. ${answers}. Pode gerar os mockups propostos.`
-      : 'Aprovado. Pode gerar os mockups propostos.';
+      ? t('chatShell.planApprovedWithAnswers', { answers })
+      : t('chatShell.planApproved');
     setPendingPlan(null);
     setPlanAnswers({});
     setInput(msg);
@@ -650,7 +652,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
       await refetchSessions();
     } catch (error) {
       if (!onRequestError?.(error)) {
-        toast.error('Erro ao aprovar plano.');
+        toast.error(t('chatShell.approvePlanError'));
       }
     } finally {
       setIsLoading(false);
@@ -662,9 +664,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
     setResolvingPendingId(pendingId);
     try {
       await api.rejectPending(currentSessionId, pendingId);
-      toast.info('Rejeitado — nada salvo');
+      toast.info(t('chatShell.rejected'));
     } catch (err: any) {
-      toast.error(err?.message || 'Falha ao rejeitar');
+      toast.error(err?.message || t('chatShell.rejectError'));
     } finally {
       setResolvingPendingId(null);
     }
@@ -732,22 +734,24 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
                   >
                     <Plus size={16} className="opacity-60" />
-                    <span>Nova sessão</span>
+                    <span>{t('chatShell.newSession')}</span>
                   </button>
                 </div>
 
                 {/* Sessions section */}
                 <div className="flex-1 overflow-y-auto px-3 pb-3">
                   <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
-                    Sessões
+                    {t('chatShell.sessions')}
                   </div>
                   {loadingSessions ? (
                     <div className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-500">
                       <GlitchLoader size={12} />
-                      Carregando…
+                      {t('chatShell.loading')}
                     </div>
                   ) : sessions.length === 0 ? (
-                    <div className="px-3 py-2 text-xs text-neutral-600">Nenhuma sessão ainda.</div>
+                    <div className="px-3 py-2 text-xs text-neutral-600">
+                      {t('chatShell.noSessions')}
+                    </div>
                   ) : (
                     <div className="space-y-0.5">
                       {sessions.map((session: any) => (
@@ -780,7 +784,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                 onClick={(e) => deleteSession(session._id, e)}
                                 disabled={deletingSessionId === session._id}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded shrink-0"
-                                aria-label="Deletar sessão"
+                                aria-label={t('chatShell.deleteSession')}
                               >
                                 <Trash2
                                   size={12}
@@ -795,8 +799,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                   )}
                 </div>
 
-                {/* User footer */}
-                {user && (
+                {/* User footer — some dentro do AppShell (rail já mostra) */}
+                {user && !inShell && (
                   <div className="p-3 border-t border-neutral-800">
                     <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg">
                       {user.picture ? (
@@ -815,7 +819,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           {user.name || user.email}
                         </div>
                         <div className="text-xs text-neutral-500 truncate leading-tight">
-                          {user.isAdmin ? 'Admin · Nível 4' : user.userCategory || 'Conta'}
+                          {user.isAdmin
+                            ? t('chatShell.roleAdmin')
+                            : user.userCategory || t('chatShell.roleAccount')}
                         </div>
                       </div>
                     </div>
@@ -834,7 +840,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/5 border-2 border-dashed border-white/20 rounded-lg pointer-events-none backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-2 text-neutral-300">
                       <Paperclip size={28} />
-                      <span className="text-xs">Solte para anexar</span>
+                      <span className="text-xs">{t('chatShell.dropToAttach')}</span>
                     </div>
                   </div>
                 )}
@@ -844,12 +850,13 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
                       className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-neutral-400 shrink-0"
-                      aria-label="Alternar sidebar"
+                      aria-label={t('chatShell.toggleSidebar')}
                     >
                       {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                     </button>
                     <h3 className="text-sm font-semibold text-neutral-200 truncate leading-tight">
-                      {sessions.find((s) => s._id === currentSessionId)?.title || 'Nova sessão'}
+                      {sessions.find((s) => s._id === currentSessionId)?.title ||
+                        t('chatShell.newSession')}
                     </h3>
                   </div>
 
@@ -863,7 +870,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         }))}
                         value={selectedBrandId}
                         onChange={handleBrandChange}
-                        placeholder="Marca contexto"
+                        placeholder={t('chatShell.brandContext')}
                         className="text-xs"
                         variant="node"
                         disabled={
@@ -876,7 +883,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             className="flex items-center gap-2 w-full px-2 py-2 text-[11px] font-medium text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40 transition-colors"
                           >
                             <Plus size={12} />
-                            Nova marca
+                            {t('chatShell.newBrand')}
                           </button>
                         }
                       />
@@ -888,7 +895,11 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         size="icon"
                         onClick={() => setMediaPanelOpen((v) => !v)}
                         className="hover:bg-white/10 h-8 w-8 shrink-0 text-neutral-400"
-                        aria-label={mediaPanelOpen ? 'Ocultar media kit' : 'Mostrar media kit'}
+                        aria-label={
+                          mediaPanelOpen
+                            ? t('chatShell.hideMediaKit')
+                            : t('chatShell.showMediaKit')
+                        }
                       >
                         {mediaPanelOpen ? (
                           <PanelRightClose size={16} />
@@ -902,7 +913,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Fechar"
+                        aria-label={t('chatShell.close')}
                         onClick={onClose}
                         className="hover:bg-white/10 h-8 w-8 shrink-0"
                       >
@@ -957,7 +968,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           <div className="flex-1 max-w-[85%] rounded-2xl border border-warning/30 bg-warning/[0.04] p-4 space-y-3">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-semibold text-warning/80">
-                                Salvar na memória da marca?
+                                {t('chatShell.saveToBrandMemory')}
                               </span>
                             </div>
                             <div>
@@ -982,7 +993,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 text-success text-xs rounded-md transition-colors"
                               >
                                 <Check size={12} />
-                                Aprovar
+                                {t('chatShell.approve')}
                               </Button>
                               <Button
                                 variant="ghost"
@@ -992,7 +1003,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive text-xs rounded-md transition-colors"
                               >
                                 <X size={12} />
-                                Rejeitar
+                                {t('chatShell.reject')}
                               </Button>
                               {resolvingPendingId === pending.id && <GlitchLoader size={12} />}
                             </div>
@@ -1017,7 +1028,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           {activePlan.proposals?.length > 0 && (
                             <div className="space-y-1.5">
                               <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">
-                                Variações propostas
+                                {t('chatShell.proposedVariations')}
                               </p>
                               {activePlan.proposals.map((p, i) => (
                                 <div
@@ -1045,7 +1056,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           {activePlan.questions && activePlan.questions.length > 0 && (
                             <div className="space-y-2.5">
                               <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">
-                                Perguntas
+                                {t('chatShell.questions')}
                               </p>
                               {activePlan.questions.map((q, i) => (
                                 <div key={i} className="space-y-1">
@@ -1056,7 +1067,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                     onChange={(e) =>
                                       setPlanAnswers((prev) => ({ ...prev, [i]: e.target.value }))
                                     }
-                                    placeholder="Resposta opcional..."
+                                    placeholder={t('chatShell.optionalAnswer')}
                                     className="w-full px-3 py-1.5 rounded-md bg-black/40 border border-white/10 text-xs text-neutral-200 placeholder-neutral-600 outline-none focus:border-white/20 transition-colors"
                                   />
                                 </div>
@@ -1073,7 +1084,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               className="flex items-center gap-1.5 px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 text-success text-xs rounded-md transition-colors"
                             >
                               {approvingPlan ? <GlitchLoader size={12} /> : <Check size={12} />}
-                              Aprovar e gerar
+                              {t('chatShell.approveAndGenerate')}
                             </Button>
                             <Button
                               variant="ghost"
@@ -1087,7 +1098,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive text-xs rounded-md transition-colors"
                             >
                               <X size={12} />
-                              Cancelar
+                              {t('chatShell.cancel')}
                             </Button>
                           </div>
                         </div>
@@ -1104,25 +1115,12 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           {inflightToolCalls.some(
                             (tc) => tc.name === 'generate_or_update_mockup'
                           ) && (
-                            <div className={cn('relative aspect-square w-full max-w-md overflow-hidden rounded-xl group', glassSurface.tile)}>
-                              <SkeletonLoader
-                                width="100%"
-                                height="100%"
-                                className="h-full w-full"
-                                variant="rectangular"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <GlitchPickaxe />
-                              </div>
-                              {genElapsed > 0 && (
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-                                  <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-neutral-800 text-neutral-400 text-[10px] font-mono shadow-xl">
-                                    {Math.floor(genElapsed / 60)}:
-                                    {(genElapsed % 60).toString().padStart(2, '0')}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+                            <GeneratingImageCard
+                              isLoading
+                              variant="tile"
+                              aspectRatio="1/1"
+                              className="w-full max-w-md"
+                            />
                           )}
                           {inflightToolCalls.length > 0 && (
                             <div className="space-y-1.5 pt-2 border-t border-neutral-800">
@@ -1148,7 +1146,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                   <span className="truncate flex-1">{tc.name}</span>
                                   <span className="text-xs opacity-60">
                                     {tc.status === 'error'
-                                      ? (tc.errorMessage || 'falhou').slice(0, 40)
+                                      ? (tc.errorMessage || t('chatShell.toolFailed')).slice(0, 40)
                                       : tc.summary || tc.status}
                                   </span>
                                 </div>
@@ -1178,7 +1176,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             <button
                               onClick={() => removeFile(i)}
                               className="hover:text-destructive ml-1"
-                              aria-label="Remover anexo"
+                              aria-label={t('chatShell.removeAttachment')}
                             >
                               <X size={12} />
                             </button>
@@ -1206,13 +1204,13 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             ? 'bg-success/10 border-success/30 text-success'
                             : 'bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
                         )}
-                        title="Modo Plano: o agente propõe variações e faz perguntas antes de gerar"
+                        title={t('chatShell.planModeTooltip')}
                       >
                         <Diamond
                           size={11}
                           className={planModeActive ? 'text-success' : 'opacity-50'}
                         />
-                        Modo Plano
+                        {t('chatShell.planMode')}
                       </button>
 
                       <div className="flex items-center rounded-md border border-white/10 overflow-hidden text-[11px] font-medium">
@@ -1229,13 +1227,17 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             )}
                             title={
                               mode === 'layers'
-                                ? 'Texto via layers editáveis (sem texto na imagem)'
+                                ? t('chatShell.textModeLayersTooltip')
                                 : mode === 'image'
-                                  ? 'Texto baked na imagem Gemini (sem layers de texto)'
-                                  : 'Texto na imagem + layers (pode conflitar)'
+                                  ? t('chatShell.textModeImageTooltip')
+                                  : t('chatShell.textModeBothTooltip')
                             }
                           >
-                            {mode === 'layers' ? 'Layers' : mode === 'image' ? 'Img' : 'Ambos'}
+                            {mode === 'layers'
+                              ? t('chatShell.textModeLayers')
+                              : mode === 'image'
+                                ? t('chatShell.textModeImage')
+                                : t('chatShell.textModeBoth')}
                           </button>
                         ))}
                       </div>
@@ -1281,7 +1283,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               : 'text-neutral-500 hover:text-neutral-300'
                           )}
                         >
-                          {tab === 'media' ? 'Media Kit' : 'Prompts'}
+                          {tab === 'media' ? t('chatShell.mediaKit') : t('chatShell.prompts')}
                         </button>
                       ))}
                     </div>
@@ -1300,8 +1302,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             onClick={() => brandImportInputRef.current?.click()}
                             disabled={brandImport.isPending}
                             className="p-1.5 rounded-md text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors disabled:opacity-50"
-                            aria-label="Importar PDF ou imagens"
-                            title="Importar PDF/imagens → extrai logos, cores, tipografia"
+                            aria-label={t('chatShell.importPdfImages')}
+                            title={t('chatShell.importPdfImagesTooltip')}
                           >
                             {brandImport.isPending ? (
                               <GlitchLoader size={14} />
@@ -1314,7 +1316,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                       <button
                         onClick={() => setMediaPanelOpen(false)}
                         className="p-1 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition-colors"
-                        aria-label="Fechar painel"
+                        aria-label={t('chatShell.closePanel')}
                       >
                         <X size={14} />
                       </button>
@@ -1324,7 +1326,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                   {panelTab === 'media' ? (
                     <div className="flex-1 overflow-y-auto scrollbar-thin p-3">
                       <p className="text-xs text-neutral-500 mb-3 px-1">
-                        Clique ou arraste para o chat
+                        {t('chatShell.clickOrDrag')}
                       </p>
                       <MediaKitGallery
                         guidelineId={(selectedBrand as any).id}

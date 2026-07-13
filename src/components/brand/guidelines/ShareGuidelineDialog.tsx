@@ -194,7 +194,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
               'rounded-2xl border p-4 transition-colors duration-300',
               isPublic
                 ? 'bg-brand-cyan/[0.06] border-brand-cyan/20'
-                : 'bg-white/[0.02] border-white/8'
+                : 'bg-white/[0.03] border-white/8'
             )}
           >
             <div className="flex items-center justify-between gap-3">

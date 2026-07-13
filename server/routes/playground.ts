@@ -7,6 +7,8 @@ import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { chargeCredits, refundCreditsWithRetry as refundCredits } from '../lib/credits.js';
 import { PLAYGROUND_SYSTEM_PROMPT, PLAYGROUND_ITERATE_PROMPT } from '../lib/playground-prompts.js';
+import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
+import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import { rateLimit } from 'express-rate-limit';
 import { isValidObjectId } from '../utils/validation.js';
 import crypto from 'crypto';
@@ -1136,47 +1138,18 @@ router.get('/brand-context/:guidelineId', authenticate, async (req: AuthRequest,
 
     if (!brandRes.ok) return res.status(404).json({ error: 'Brand not found' });
 
-    const brand = await brandRes.json();
+    const brand = (await brandRes.json()) as BrandGuideline & { brandName?: string };
 
-    const b = brand;
-    const brandName = b.identity?.name || b.brandName || '';
-    const parts: string[] = [];
+    const brandName = brand.identity?.name || brand.brandName || '';
 
-    if (brandName) parts.push(`Brand: ${brandName}`);
-    if (b.identity?.tagline || b.tagline)
-      parts.push(`Tagline: ${b.identity?.tagline || b.tagline}`);
-    if (b.identity?.description) parts.push(`Description: ${b.identity.description}`);
+    // Use the canonical brand-context primitive so playground generations get the
+    // SAME brand ammunition every other surface does (strategy, voice, tokens,
+    // themes, knowledge, visual signature) instead of a hand-rolled subset.
+    // `full` preset: playground miniapps are code/UI generation, so real font
+    // names + logo URLs are useful (unlike the image-gen preset which classifies
+    // typography to a vibe and drops logos).
+    const context = buildBrandContext(brand, { sections: BRAND_SECTION_PRESETS.full });
 
-    if (b.colors?.length) {
-      parts.push(
-        `Colors: ${b.colors.map((c: any) => `${c.hex} (${c.name || c.role || ''})`).join(', ')}`
-      );
-    }
-
-    if (b.typography?.length) {
-      const fonts = b.typography.filter((t: any) => t.fontFamily || t.family);
-      if (fonts.length)
-        parts.push(
-          `Typography: ${fonts
-            .map((t: any) => `${t.fontFamily || t.family} ${t.fontStyle || t.style || ''}`)
-            .join(', ')}`
-        );
-    }
-
-    const logo = b.logos?.find((l: any) => l.url);
-    if (logo?.url) parts.push(`Logo URL: ${logo.url}`);
-    if (b.logoUrl) parts.push(`Logo URL: ${b.logoUrl}`);
-
-    if (b.guidelines?.voice) parts.push(`Voice: ${b.guidelines.voice}`);
-    if (b.guidelines?.imagery) parts.push(`Imagery style: ${b.guidelines.imagery}`);
-    if (b.tags?.brand_values?.length) parts.push(`Brand values: ${b.tags.brand_values.join(', ')}`);
-    if (b.tags?.aesthetic?.length) parts.push(`Aesthetic: ${b.tags.aesthetic.join(', ')}`);
-    if (b.tags?.tone?.length) parts.push(`Tone: ${b.tags.tone.join(', ')}`);
-
-    if (b.strategy?.positioning?.length)
-      parts.push(`Positioning: ${b.strategy.positioning.join(' | ')}`);
-
-    const context = parts.join('\n');
     res.json({ context, brandName });
   } catch (err) {
     console.error('[playground/brand-context]', err);

@@ -22,6 +22,7 @@ import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
+import { glassSurface } from '@/lib/ui/glass';
 
 export interface MiniAppShellDragDrop {
   onDrop: (e: React.DragEvent) => void;
@@ -184,7 +185,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
 
       {hasPanel && !isMobile && (
         <AppShellPanel side="right" visible={panelVisible} width={panelWidth}>
-          <div className="h-full overflow-y-auto scrollbar-none rounded-2xl border border-neutral-800 bg-neutral-900/70 backdrop-blur-xl p-5">
+          <div className={cn('h-full overflow-y-auto scrollbar-none rounded-2xl p-5', glassSurface.panel)}>
             {panel}
           </div>
         </AppShellPanel>

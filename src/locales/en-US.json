@@ -1,4 +1,95 @@
 {
+  "brandMockupDialog": {
+    "title": "Create Mockup",
+    "description": "{brandName} · logos, colors and typography injected automatically.",
+    "brandFallback": "Brand",
+    "mediaLabel": "Mockup — {label}",
+    "back": "Back",
+    "tryAgain": "Try again",
+    "form": {
+      "brandPreviewTitle": "Brand preview — {aspectRatio} · {resolution}",
+      "injectedFromBrand": "Injected from brand · {aspectRatio}",
+      "scene": "Scene",
+      "surpriseMe": "Surprise me",
+      "scenePlaceholder": "e.g. business card on a marble table, warm lighting, flat lay...",
+      "model": "Model",
+      "resolution": "Resolution",
+      "aspectRatio": "Aspect ratio",
+      "ifUnavailable": "If unavailable",
+      "quality": "Quality",
+      "cost": "Cost",
+      "strategyCopy": {
+        "cost": "If the chosen model fails, we try another one by lowest cost.",
+        "quality": "If the chosen model fails, we try another one by best quality."
+      },
+      "summary": "{modelLabel} · {resolution} · {aspectRatio} · {credits} credit{plural}",
+      "generate": "Generate Mockup"
+    },
+    "error": {
+      "unavailable": {
+        "title": "Generation unavailable right now",
+        "detail": "All models are down at the moment. Try again in a few seconds."
+      },
+      "safety": {
+        "title": "Scene blocked",
+        "detail": "The content was flagged by the usage policy. Adjust the description and try again."
+      },
+      "generic": {
+        "title": "Couldn't generate",
+        "detail": "Unexpected error. Try again."
+      },
+      "noImage": {
+        "title": "No image returned",
+        "detail": "Try again in a few seconds."
+      },
+      "noCreditsCharged": "No credits charged"
+    },
+    "suggestions": {
+      "select": "Select mockups",
+      "none": "None",
+      "all": "All",
+      "creditsSummary": "{used}/{total} · {credits} cr",
+      "back": "← Back",
+      "generateCount": "Generate {count} mockup{plural}"
+    },
+    "loading": {
+      "analyzing": "Analyzing the brand…"
+    },
+    "generating": {
+      "single": "Generating mockup…",
+      "slowHint": "Finding the best available model by {strategy}…",
+      "byCost": "cost",
+      "byQuality": "quality",
+      "batch": "Generating {done}/{total}",
+      "stop": "Stop",
+      "errorTile": "error"
+    },
+    "result": {
+      "alt": "Generated mockup",
+      "fellBack": "Generated with {provider} — the chosen model was unavailable.",
+      "generateAnother": "Generate another",
+      "download": "Download",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveToBrand": "Save to brand",
+      "batchCount": "{count} mockup{plural} generated",
+      "new": "New",
+      "allSaved": "All saved",
+      "saveAll": "Save all ({count})",
+      "close": "Close"
+    },
+    "toast": {
+      "describeScene": "Describe the mockup scene",
+      "generated": "Mockup generated ({count} credit{plural})",
+      "suggestError": "Error suggesting mockups",
+      "cancelled": "Cancelled — {count} mockup{plural} generated",
+      "batchDone": "{count}/{total} mockups generated",
+      "noneGenerated": "No mockup generated",
+      "savedToMediaKit": "Saved to Media Kit",
+      "saveError": "Error saving",
+      "savedAllToMediaKit": "{count} mockup{plural} saved to Media Kit"
+    }
+  },
   "nav": {
     "context": "CONTEXT",
     "allBrands": "All brands",
@@ -8,12 +99,15 @@
     "pinned": "PINNED",
     "unpin": "Unpin",
     "pin": "Pin to sidebar",
+    "settings": "Settings",
     "collapse": "Collapse",
     "expand": "Expand",
+    "back": "Back",
     "credits": "Credits",
     "upgrade": "Upgrade",
+    "lastBrand": "Last brand",
     "cockpit": {
-      "label": "Cockpit",
+      "label": "Home",
       "overview": "Overview",
       "campaigns": "Campaigns",
       "work": "Work"
@@ -28,6 +122,9 @@
     "copilot": {
       "label": "Copilot"
     },
+    "canvas": {
+      "label": "Canvas"
+    },
     "apps": {
       "label": "Apps",
       "all": "All apps"
@@ -36,8 +133,39 @@
       "label": "Profile",
       "account": "Account",
       "usage": "Usage & credits",
+      "configuration": "Settings",
       "apiKeys": "API keys",
       "connectedApps": "Connected apps"
+    },
+    "library": {
+      "title": "LIBRARY",
+      "creativeProjects": "My Creatives",
+      "myOutputs": "My Mockups",
+      "references": "References",
+      "community": "Community"
+    },
+    "references": {
+      "label": "References",
+      "library": "Library",
+      "logos": "Logos",
+      "mockups": "Mockups",
+      "collections": "Collections",
+      "mine": "My refs"
+    },
+    "community": {
+      "overview": "Overview",
+      "all": "Explore all",
+      "mockup": "Mockups",
+      "angle": "Angles",
+      "texture": "Textures",
+      "ambience": "Ambience",
+      "luminance": "Lighting",
+      "threeD": "3D",
+      "presets": "Presets",
+      "aesthetics": "Aesthetics",
+      "themes": "Themes",
+      "uiPrompts": "UI Prompts",
+      "figmaPrompts": "Figma Prompts"
     }
   },
   "about": {
@@ -1133,6 +1261,12 @@
     }
   },
   "canvas": {
+    "community": {
+      "title": "Community workflows",
+      "subtitle": "Link your brand and run a ready-made workflow from the community.",
+      "viewAll": "Browse all",
+      "empty": "No community workflows published yet."
+    },
     "addedToFavorites": "Added to favorites",
     "backgroundColor": "Background Color",
     "backgroundColorDescription": "Change canvas background color",
@@ -1865,10 +1999,54 @@
     "title": "Tools",
     "toggleDrawingMode": "Toggle Drawing Mode"
   },
+  "command": {
+    "goto": "Go to",
+    "apps": "Apps",
+    "switchBrand": "Switch brand",
+    "actions": "Actions",
+    "search": "Search",
+    "hintNavigate": "Navigate",
+    "hintSelect": "Select",
+    "hintBack": "Back",
+    "showMore": "Show more",
+    "recent": "Recent",
+    "pinned": "Pinned",
+    "toggleTheme": "Toggle theme",
+    "toggleLanguage": "Switch language",
+    "title": "Command palette",
+    "askCopilot": "Ask Copilot: \"{query}\""
+  },
   "cockpit": {
     "connectAI": "Connect AI",
     "settings": "Settings",
     "title": "Brand cockpit",
+    "depth": {
+      "title": "Brand depth",
+      "toNext": "{n}% to next level",
+      "complete": "Brand maxed out",
+      "level": {
+        "sketch": "Sketch",
+        "identity": "Identity",
+        "system": "System",
+        "production": "Production",
+        "autopilot": "Autopilot"
+      }
+    },
+    "nba": {
+      "title": "Next best action",
+      "complete": "Brand complete, primed as AI ammunition."
+    },
+    "produce": {
+      "title": "Produce",
+      "mockup": "Mockup",
+      "campaign": "Campaign",
+      "creative": "Creative"
+    },
+    "viewGuidelines": "View guidelines",
+    "gallery": {
+      "title": "Output gallery",
+      "viewAll": "View all"
+    },
     "connect": {
       "subtitle": "On-brand by default, colors, fonts, logos & voice, automatically.",
       "title": "Connect your AI"
@@ -2249,6 +2427,64 @@
   "confirmationModal": {
     "defaultConfirm": "Continue",
     "defaultTitle": "Confirm Action"
+  },
+  "chatShell": {
+    "newSession": "New session",
+    "sessions": "Sessions",
+    "loading": "Loading…",
+    "noSessions": "No sessions yet.",
+    "deleteSession": "Delete session",
+    "dropToAttach": "Drop to attach",
+    "toggleSidebar": "Toggle sidebar",
+    "brandContext": "Context brand",
+    "newBrand": "New brand",
+    "hideMediaKit": "Hide media kit",
+    "showMediaKit": "Show media kit",
+    "close": "Close",
+    "closePanel": "Close panel",
+    "saveToBrandMemory": "Save to brand memory?",
+    "approve": "Approve",
+    "reject": "Reject",
+    "proposedVariations": "Proposed variations",
+    "questions": "Questions",
+    "optionalAnswer": "Optional answer...",
+    "approveAndGenerate": "Approve and generate",
+    "cancel": "Cancel",
+    "removeAttachment": "Remove attachment",
+    "planMode": "Plan Mode",
+    "planModeTooltip": "Plan Mode: the agent proposes variations and asks questions before generating",
+    "textModeLayers": "Layers",
+    "textModeImage": "Img",
+    "textModeBoth": "Both",
+    "textModeLayersTooltip": "Text via editable layers (no text baked into the image)",
+    "textModeImageTooltip": "Text baked into the Gemini image (no text layers)",
+    "textModeBothTooltip": "Text in the image + layers (may conflict)",
+    "mediaKit": "Media Kit",
+    "prompts": "Prompts",
+    "importPdfImages": "Import PDF or images",
+    "importPdfImagesTooltip": "Import PDF/images → extracts logos, colors, typography",
+    "clickOrDrag": "Click or drag to the chat",
+    "roleAdmin": "Admin · Level 4",
+    "roleAccount": "Account",
+    "toolFailed": "failed",
+    "lockBrandError": "Failed to lock session brand",
+    "createSessionError": "Error creating strategic session.",
+    "loadSessionError": "Error loading session.",
+    "sessionDeleted": "Session deleted.",
+    "deleteSessionError": "Error deleting session.",
+    "docsIngested": "Strategic documents ingested into the session!",
+    "processFilesError": "Error processing files.",
+    "consultAssistantError": "Error consulting the strategic assistant.",
+    "attached": "Attached: {name}",
+    "attachAssetError": "Failed to attach asset: {error}",
+    "genericError": "error",
+    "savedToBrandMemory": "Saved to brand memory",
+    "approveError": "Failed to approve",
+    "planApprovedWithAnswers": "Approved. {answers}. You can generate the proposed mockups.",
+    "planApproved": "Approved. You can generate the proposed mockups.",
+    "approvePlanError": "Error approving plan.",
+    "rejected": "Rejected — nothing saved",
+    "rejectError": "Failed to reject"
   },
   "copilot": {
     "inputPlaceholder": "Ask anything about your brand...",
@@ -3616,6 +3852,7 @@
     "updateError": "Failed to update profile",
     "uploadFailed": "Upload failed",
     "uploadPicture": "Click to upload picture",
+    "usageAnalytics": "Usage Analytics",
     "viewAllTransactions": "Transactions",
     "viewOutputs": "View outputs",
     "viewPublicProfile": "View Public Profile",
@@ -4610,7 +4847,7 @@
     "by": "by",
     "exploreMockups": "explore mockups",
     "loadingImage": "Loading image...",
-    "magicHappens": "and see the magic happen",
+    "magicHappens": "Your logo on photoreal mockups, in seconds",
     "newBlankMockup": "",
     "pasteTip": "Tip: You can press ctrl+v to paste images",
     "pasteTipSmall": "or ctrl + v to paste",

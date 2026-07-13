@@ -1,46 +1,69 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Sparkles,
   Settings,
   Plus,
-  RefreshCw,
   Wand2,
-  Loader2,
   Megaphone,
   Palette,
-  Compass,
-  ArrowRight,
-  AlertCircle,
-  Bot,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  ExternalLink,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
-import { ConnectAICard } from '@/components/cockpit/ConnectAICard';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
+import { extractBrandTheme } from '@/components/brand/BrandReadOnlyView';
+import { useTheme } from '@/hooks/useTheme';
 import { useBrandGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useCampaigns } from '@/hooks/queries/useCampaigns';
 import { useCreativeProjects } from '@/hooks/queries/useCreativeProjects';
-import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
+import { useBrandMockups } from '@/hooks/queries/useBrandMockups';
 import { useConnectBrandToAI } from '@/hooks/useConnectBrandToAI';
 import { useTranslation } from '@/hooks/useTranslation';
+import { computeBrandCompleteness, completenessLevel } from '@/lib/brandCompleteness';
+import { brandGapHint } from '@/lib/brandGapHints';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
 import type { AppConfig } from '@/services/appsService';
-import type { BrandSuggestion } from '@/services/brandGuidelineApi';
 
 // Mockup generator dialog — owner-only, loaded on demand (same as brand view).
 const BrandMockupDialog = lazyWithRetry(() =>
   import('@/components/brand/guidelines/BrandMockupDialog').then((m) => ({
     default: m.BrandMockupDialog,
+  }))
+);
+
+// Interactive band (ideias sazonais + connect-to-AI) — reusado da view pública
+// (SSoT). Substitui o painel de "Sugestões" próprio do cockpit (era duplicação).
+const BrandInteractivePanel = lazyWithRetry(() =>
+  import('@/components/brand/BrandInteractivePanel').then((m) => ({
+    default: m.BrandInteractivePanel,
+  }))
+);
+
+// Feed de mockups on-brand grátis (render no browser via Scene Packages) — on demand
+// pra manter o engine PSD fora do bundle inicial do cockpit.
+const SurpriseMockupHero = lazyWithRetry(() =>
+  import('@/components/cockpit/SurpriseMockupHero').then((m) => ({
+    default: m.SurpriseMockupHero,
+  }))
+);
+
+// Trocar logo principal (upload / da media / promover existente) — on demand.
+const ChangeLogoDialog = lazyWithRetry(() =>
+  import('@/components/brand/ChangeLogoDialog').then((m) => ({
+    default: m.ChangeLogoDialog,
   }))
 );
 
@@ -77,20 +100,44 @@ const cardCls = cn('rounded-2xl', glassSurface.panel);
 /** Inner tile inside a bento card (one radius step down from the card). */
 const tileCls = cn('rounded-xl', glassSurface.tile);
 
-export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp }) => {
+export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Marca ativa vem do SSoT global (ActiveBrandContext) — o cockpit não gere
   // mais o estado/localStorage localmente. O rail e o hero ficam em sincronia.
-  const { brands: activeBrands, activeBrand, isLoading: brandsLoading } = useActiveBrand();
+  const {
+    brands: activeBrands,
+    activeBrand,
+    isLoading: brandsLoading,
+  } = useActiveBrand();
   const hasBrand = !!activeBrand?.id;
+
+  // "Todas as marcas" (isAllBrands) → o HomeRoute mostra o grid, não o cockpit;
+  // então aqui a marca ativa é sempre concreta. Sem guard local (plano
+  // HOME-ADAPTIVE-IA: uma casa só decide o adaptativo).
 
   // Full guideline detail (colors, logos) for the hero — list rows are the
   // placeholder, so the header renders instantly and enriches when it lands.
   const { data: brandDetail } = useBrandGuideline(activeBrand?.id);
   const heroBrand = brandDetail ?? activeBrand;
   const brandName = heroBrand?.identity?.name || heroBrand?.name || '';
+
+  // Tema da marca (accent contrast-safe) — MESMO cálculo da view pública. Sem
+  // isso o BrandInteractivePanel usa o `--accent` default e os botões saem cinza
+  // ("Connect to your AI" morto) em vez da cor da marca.
+  const { theme } = useTheme();
+  const brandVars = useMemo(() => {
+    const bt = extractBrandTheme(heroBrand, theme);
+    return {
+      '--accent': bt.accent,
+      '--accent-rgb': bt.accentRgb,
+      '--accent-text': bt.accentText,
+      '--brand-bg': bt.bg,
+      '--brand-surface': bt.surface,
+      '--brand-text': bt.text,
+    } as React.CSSProperties;
+  }, [heroBrand, theme]);
 
   // Palette strip — the brand's real colors, most-used first (guideline data).
   const paletteColors = useMemo(() => {
@@ -110,6 +157,8 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
   // ── Work in progress (existing lists, brand-scoped, limit 5) ──
   const { data: campaigns = [] } = useCampaigns(activeBrand?.id, hasBrand);
   const { data: projects = [] } = useCreativeProjects(activeBrand?.id, hasBrand);
+  // Per-brand output gallery — every generated mockup persists against the brand.
+  const { data: brandMockups = [] } = useBrandMockups(activeBrand?.id, hasBrand);
   const workItems = useMemo<WorkItem[]>(() => {
     const items: WorkItem[] = [
       ...campaigns.map((c) => ({
@@ -145,78 +194,69 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
     [navigate, activeBrand]
   );
 
-  // ── Suggestions — same SSoT hook as the brand view panel ──
-  const { suggestions, seasonal, loading, refreshing, error, load } = useBrandSuggestions(
-    activeBrand?.id,
-    3
-  );
-
   const [mockupPrompt, setMockupPrompt] = useState<string | undefined>(undefined);
   const [isMockupOpen, setIsMockupOpen] = useState(false);
+  const [changeLogoOpen, setChangeLogoOpen] = useState(false);
 
-  const runSuggestion = useCallback(
-    async (s: BrandSuggestion) => {
-      const meta = SUGGESTION_KIND_META[s.kind] || SUGGESTION_KIND_META.mockup;
-      if (meta.mode === 'inline') {
-        // Same behavior as the brand view panel: seed the mockup generator.
-        setMockupPrompt(s.prompt);
-        setIsMockupOpen(true);
-        return;
-      }
-      try {
-        await navigator.clipboard.writeText(s.prompt);
-        toast.success(t('cockpit.suggestions.briefCopied'));
-      } catch {
-        toast.error(t('cockpit.suggestions.copyFailed'));
-      }
-    },
-    [t]
+  // "Próximo passo" é colapsável e PERSISTE fechado (o card SISTEMA % já mostra o
+  // progresso; quem fechou não quer ser incomodado de novo). Global por usuário.
+  const [nbaCollapsed, setNbaCollapsed] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('vsn_cockpit_nba_collapsed') === '1'
   );
+  const toggleNba = useCallback(() => {
+    setNbaCollapsed((prev) => {
+      const v = !prev;
+      if (typeof window !== 'undefined')
+        localStorage.setItem('vsn_cockpit_nba_collapsed', v ? '1' : '0');
+      return v;
+    });
+  }, []);
 
-  // ── Connect to AI (same mint/redirect flow as the brand view) ──
+  // Connect-to-AI — mesmo hook da view pública (SSoT). O BrandInteractivePanel
+  // (que substituiu o painel de sugestões) consome isto; se a marca não é
+  // compartilhável, o fallback abre a marca pra compartilhar antes de mintar o link.
   const { connecting, connect } = useConnectBrandToAI();
-  const handleConnect = useCallback(() => {
-    if (!activeBrand) return;
-    // Not public yet → land on the brand dashboard where sharing lives.
-    connect(activeBrand.publicSlug, () =>
-      navigate(activeBrand.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines')
+  const handleConnect = useCallback(async () => {
+    await connect(heroBrand?.publicSlug, () =>
+      navigate(activeBrand?.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines')
     );
-  }, [activeBrand, connect, navigate]);
+  }, [connect, heroBrand?.publicSlug, activeBrand?.id, navigate]);
 
-  // Concrete first steps when nothing is in progress — sell what IS possible.
-  const emptyWorkActions = useMemo(
-    () => [
-      {
-        key: 'mockups',
-        label: t('cockpit.work.ctaMockups'),
-        Icon: Wand2,
-        onClick: () => setIsMockupOpen(true),
-      },
-      {
-        key: 'campaign',
-        label: t('cockpit.work.ctaCampaign'),
-        Icon: Megaphone,
-        onClick: () =>
-          navigate(activeBrand?.id ? `/campaigns?brandId=${activeBrand.id}` : '/campaigns'),
-      },
-      FEATURE_COPILOT
-        ? {
-            key: 'copilot',
-            label: t('cockpit.work.ctaCopilot'),
-            Icon: Bot,
-            onClick: () => navigate('/copilot'),
-          }
-        : {
-            key: 'creative',
-            label: t('cockpit.work.ctaCreative'),
-            Icon: Palette,
-            onClick: () => navigate('/create'),
-          },
-    ],
-    [t, navigate, activeBrand]
+  // ── Brand Depth — the "save file" of the brand: how deep the guideline is,
+  // from the same completeness scorer the grid uses. Deterministic, zero backend.
+  // A deeper brand = better MCP ammunition for every generation surface.
+  const depthReport = useMemo(() => computeBrandCompleteness(brandDetail ?? null), [brandDetail]);
+  const depthLevel = useMemo(() => completenessLevel(depthReport.score), [depthReport.score]);
+  const nextActions = useMemo(
+    () => [...depthReport.missing].sort((a, b) => b.weight - a.weight).slice(0, 3),
+    [depthReport.missing]
   );
+  const openGuideline = useCallback(
+    () => navigate(activeBrand?.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines'),
+    [navigate, activeBrand]
+  );
+
+  // "Ver guidelines" — abre a rota pública numa nova aba (o que o cliente/mundo vê).
+  // Fallback pro editor do dono quando a marca ainda não foi publicada (sem slug).
+  const viewPublicGuidelines = useCallback(() => {
+    const slug = heroBrand?.publicSlug;
+    const url = slug
+      ? `/brand/${slug}`
+      : activeBrand?.id
+        ? `/brand-guidelines?id=${activeBrand.id}`
+        : '/brand-guidelines';
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }, [heroBrand?.publicSlug, activeBrand?.id]);
 
   // ── Render ──
+  // Guard defensivo FORA do AnimatePresence: o HomeRoute já garante marca ativa,
+  // mas se cair aqui sem marca, redireciona ANTES de montar o AnimatePresence.
+  // Um <Navigate> como filho do AnimatePresence dispara "removeChild" (o Navigate
+  // desmonta a rota enquanto o AnimatePresence ainda segura o nó de saída).
+  if (!brandsLoading && activeBrands.length === 0) {
+    return <Navigate to="/brand-guidelines" replace />;
+  }
+
   return (
     <div
       className="absolute inset-0 z-0 bg-neutral-950 overflow-y-auto"
@@ -243,44 +283,6 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
             >
               <GlitchLoader size={40} />
             </motion.div>
-          ) : activeBrands.length === 0 ? (
-            /* ── Empty state = onboarding step 1: ingest your brand ── */
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className={cn('rounded-3xl p-12 lg:p-24 flex flex-col items-center gap-8 text-center', glassSurface.panel)}
-            >
-              <div className="p-8 rounded-3xl bg-neutral-950/50 border border-white/10">
-                <Compass size={48} className="text-brand-cyan" strokeWidth={1.2} />
-              </div>
-              <div className="space-y-3">
-                <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
-                  {t('cockpit.empty.title')}
-                </h2>
-                <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-                  {t('cockpit.empty.subtitle')}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <Button
-                  variant="brand"
-                  className="h-12 px-8 rounded-full font-bold uppercase tracking-wider text-[11px]"
-                  onClick={() => navigate('/welcome')}
-                >
-                  {t('cockpit.empty.cta')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/brand-guidelines')}
-                  className="text-neutral-500 hover:text-neutral-200"
-                >
-                  {t('cockpit.empty.secondary')}
-                </Button>
-              </div>
-            </motion.div>
           ) : (
             <motion.div
               key="cockpit"
@@ -295,14 +297,28 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                 data-vsn-region="brand-hero"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <BrandAvatar
-                    brand={heroBrand}
-                    size={56}
-                    rounded="md"
-                    className="border-neutral-800 bg-neutral-900"
-                  />
+                  {/* Logo clicável → editor da marca (upload / selecionar da media /
+                      set-primary já existem no LogosSection). Dialog inline = follow-up. */}
+                  <button
+                    onClick={() => setChangeLogoOpen(true)}
+                    aria-label={t('cockpit.changeLogo') || 'Trocar logo'}
+                    title={t('cockpit.changeLogo') || 'Trocar logo'}
+                    className="relative group/logo shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/40"
+                  >
+                    <BrandAvatar
+                      brand={heroBrand}
+                      size={56}
+                      rounded="md"
+                      className="border-neutral-800 bg-neutral-900"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center rounded-md bg-black/55 opacity-0 group-hover/logo:opacity-100 transition-opacity">
+                      <ImageIcon size={16} className="text-white/90" />
+                    </span>
+                  </button>
                   <div className="min-w-0">
-                    <MicroTitle className="text-neutral-600">{t('cockpit.title')}</MicroTitle>
+                    {/* "Cockpit da marca" era ruído visual — vira só a11y (leitor
+                        de tela). O contexto já é óbvio pela marca + rail. */}
+                    <MicroTitle className="sr-only">{t('cockpit.title')}</MicroTitle>
                     <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate mt-0.5">
                       {brandName}
                     </h2>
@@ -324,9 +340,42 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                     )}
                   </div>
                 </div>
-                {/* Troca de marca agora vive no rail do AppShell (SSoT único) —
-                    o hero só mostra a marca ativa, sem switcher redundante. */}
+                {/* Troca de marca vive no rail (SSoT). Aqui: Brand Depth — nível
+                    nomeado + barra + distância pro próximo (goal-gradient do RCD). */}
                 <div className="flex items-center gap-2">
+                  {/* SISTEMA % — sinal DISCRETO inline (barra fina + %), não um card
+                      competindo com o nome. Detalhe (nível + próximo) vai no hover. */}
+                  {brandDetail && (
+                    <button
+                      onClick={openGuideline}
+                      aria-label={t('cockpit.depth.title')}
+                      title={`${t(`cockpit.depth.level.${depthLevel.key}`)} · ${
+                        depthLevel.nextAt !== null
+                          ? t('cockpit.depth.toNext', { n: depthLevel.toNext })
+                          : t('cockpit.depth.complete')
+                      }`}
+                      className="group flex items-center gap-2.5 px-1"
+                    >
+                      <div className="h-1 w-20 rounded-full bg-neutral-800 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-brand-cyan/70 transition-all"
+                          style={{ width: `${depthReport.score}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] tabular-nums text-neutral-500 group-hover:text-neutral-300 transition-colors">
+                        {depthReport.score}%
+                      </span>
+                    </button>
+                  )}
+                  <Button
+                    variant="surface"
+                    size="sm"
+                    onClick={viewPublicGuidelines}
+                    className="gap-2 font-sans"
+                  >
+                    <ExternalLink size={14} />
+                    {t('cockpit.viewGuidelines')}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon-md"
@@ -339,13 +388,107 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                 </div>
               </header>
 
-              {/* ── Bento grid ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 content-start">
-                {/* ── In progress (2 cols) ── */}
+              {/* ── Next Best Action — the gaps that deepen the brand, by weight.
+                  Deterministic from the completeness scorer; each opens the guideline. ── */}
+              {nextActions.length > 0 ? (
+                <section
+                  aria-label={t('cockpit.nba.title')}
+                  data-vsn-region="next-best-action"
+                  className={cn('px-1', !nbaCollapsed && 'pb-1')}
+                >
+                  <button
+                    onClick={toggleNba}
+                    aria-expanded={!nbaCollapsed}
+                    className="flex items-center justify-between gap-2 w-full text-left group/nba"
+                  >
+                    <MicroTitle className="text-neutral-500">{t('cockpit.nba.title')}</MicroTitle>
+                    <span className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-neutral-600 group-hover/nba:text-neutral-400 transition-colors">
+                      {nbaCollapsed && <span className="tabular-nums">{nextActions.length}</span>}
+                      <ChevronDown
+                        size={14}
+                        className={cn('transition-transform', nbaCollapsed && '-rotate-90')}
+                      />
+                    </span>
+                  </button>
+                  {/* Lista compacta, monocromática, 1 linha por gap — a dica vai no
+                      hover (title), não ocupa altura. Sem tile/accent (era slop). */}
+                  {!nbaCollapsed && (
+                    <ul className="mt-1.5 flex flex-col">
+                      {nextActions.map((rule) => (
+                        <li key={rule.id}>
+                          <button
+                            onClick={openGuideline}
+                            title={brandGapHint(rule.id)}
+                            className="group flex items-center justify-between gap-3 w-full py-1.5 text-left border-b border-white/[0.04] last:border-0"
+                          >
+                            <span className="text-xs text-neutral-400 group-hover:text-neutral-100 transition-colors truncate">
+                              {rule.label}
+                            </span>
+                            <ChevronRight
+                              size={12}
+                              className="shrink-0 text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                            />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              ) : brandDetail ? (
+                <section
+                  data-vsn-region="next-best-action"
+                  className={cn(cardCls, 'flex items-center gap-2.5 px-4 py-3')}
+                >
+                  <CheckCircle2 size={14} className="text-success shrink-0" />
+                  <span className="text-xs text-neutral-400">{t('cockpit.nba.complete')}</span>
+                </section>
+              ) : null}
+
+              {/* PRODUZIR removido — dedupe: as MAKE SOMETHING cards do
+                  BrandInteractivePanel (com o card Mockup) são a ÚNICA superfície
+                  de produção agora (outcome-first). Fim da briga de hierarquia. */}
+
+              {/* ── Bandas empilhadas full-width (igual à view pública): work em
+                     andamento em cima, BrandInteractivePanel (MAKE SOMETHING +
+                     LIVE AI CONTEXT) como faixa larga — ele precisa da largura
+                     cheia pras suas 2 colunas internas não espremerem. ── */}
+              <div className="flex flex-col gap-4 flex-1">
+                {/* ── Produção PRIMEIRO (RCD: o principal aparece atraente antes do
+                    resto): MAKE SOMETHING + Mockup + LIVE AI CONTEXT no topo. ── */}
+                {activeBrand?.id && (
+                  <div style={brandVars}>
+                    <React.Suspense fallback={null}>
+                      <BrandInteractivePanel
+                        guidelineId={activeBrand.id}
+                        fullWidth
+                        isShared={!!(heroBrand?.isPublic || heroBrand?.publicSlug)}
+                        connecting={connecting}
+                        onConnect={handleConnect}
+                        onMockup={() => setIsMockupOpen(true)}
+                        onGenerate={(p) => {
+                          setMockupPrompt(p);
+                          setIsMockupOpen(true);
+                        }}
+                      />
+                    </React.Suspense>
+                  </div>
+                )}
+
+                {/* ── Bento: mockup grátis (1 cel) + trabalho em progresso (1 cel).
+                    Antes o mockup era uma faixa full-width gigante; agora é uma
+                    célula contida do bento (menos é mais). ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
+                {activeBrand?.id && (
+                  <React.Suspense fallback={null}>
+                    <SurpriseMockupHero brandId={activeBrand.id} />
+                  </React.Suspense>
+                )}
+
+                {/* ── In progress ── */}
                 <section
                   aria-label={t('cockpit.work.title')}
                   data-vsn-region="in-progress"
-                  className={cn(cardCls, 'lg:col-span-2 p-5 flex flex-col')}
+                  className={cn(cardCls, 'p-5 flex flex-col')}
                 >
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <MicroTitle className="text-neutral-500">{t('cockpit.work.title')}</MicroTitle>
@@ -408,168 +551,58 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
                           {t('cockpit.work.emptySubtitle')}
                         </p>
                       </div>
-                      <div className="flex flex-wrap items-center justify-center gap-2">
-                        {emptyWorkActions.map(({ key, label, Icon, onClick }, i) => (
-                          <Button
-                            key={key}
-                            variant={i === 0 ? 'brand' : 'surface'}
-                            size="sm"
-                            onClick={onClick}
-                            className="gap-2 font-sans"
-                          >
-                            <Icon size={13} />
-                            {label}
-                          </Button>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </section>
-
-                {/* ── Connect your AI (1 col) ── */}
-                <ConnectAICard
-                  onConnect={handleConnect}
-                  connecting={connecting}
-                  disabled={!hasBrand}
-                />
-
-                {/* ── Brand suggestions (full width) ── */}
-                <section
-                  aria-label={t('cockpit.suggestions.title')}
-                  data-vsn-region="suggestions"
-                  className={cn(cardCls, 'lg:col-span-3 p-5')}
-                >
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Sparkles size={13} className="text-brand-cyan shrink-0" />
-                      <MicroTitle className="text-neutral-500">
-                        {t('cockpit.suggestions.title')}
-                      </MicroTitle>
-                      {seasonal && (
-                        <MicroTitle className="hidden sm:inline text-[10px] text-neutral-500">
-                          {seasonal.label} · ~{seasonal.daysAway}d
-                        </MicroTitle>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => load(true)}
-                      disabled={loading || refreshing}
-                      className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors disabled:opacity-40"
-                      aria-label={t('cockpit.suggestions.refresh')}
-                    >
-                      <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
-                      {t('cockpit.suggestions.refresh')}
-                    </button>
-                  </div>
-
-                  {loading ? (
-                    /* Skeleton tiles — keep the card structure while thinking. */
-                    <div className="grid sm:grid-cols-3 gap-3" aria-hidden="true">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className={cn(tileCls, 'p-4 space-y-3 animate-pulse')}>
-                          <div className="h-2.5 w-16 rounded bg-white/5" />
-                          <div className="h-3.5 w-3/4 rounded bg-white/10" />
-                          <div className="space-y-1.5">
-                            <div className="h-2.5 w-full rounded bg-white/5" />
-                            <div className="h-2.5 w-2/3 rounded bg-white/5" />
-                          </div>
-                          <div className="h-7 w-20 rounded-md bg-white/5" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : error && suggestions.length === 0 ? (
-                    /* Inline error — short message + retry, inside the frame. */
-                    <div
-                      className={cn(
-                        tileCls,
-                        'flex flex-col sm:flex-row items-center justify-center gap-3 px-5 py-6 text-center'
-                      )}
-                    >
-                      <div className="flex items-center gap-2 text-xs text-neutral-500 min-w-0">
-                        <AlertCircle size={13} className="text-warning shrink-0" />
-                        <span className="truncate">{t('cockpit.suggestions.errorTitle')}</span>
-                      </div>
-                      <Button
-                        variant="surface"
-                        size="xs"
-                        onClick={() => load(true)}
-                        className="gap-1.5"
-                      >
-                        <RefreshCw size={11} />
-                        {t('cockpit.suggestions.retry')}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="grid sm:grid-cols-3 gap-3">
-                      {suggestions.slice(0, 3).map((s, i) => {
-                        const meta = SUGGESTION_KIND_META[s.kind] || SUGGESTION_KIND_META.mockup;
-                        const Icon = meta.Icon;
-                        return (
-                          <div key={i} className={cn(tileCls, 'flex flex-col gap-2.5 p-4')}>
-                            <div className="flex items-center gap-1.5 text-neutral-500">
-                              <Icon size={12} className="shrink-0" />
-                              <span className="text-[10px] font-mono uppercase tracking-wider">
-                                {meta.label}
-                              </span>
-                            </div>
-                            <span className="text-sm font-medium text-neutral-200 leading-snug">
-                              {s.title}
-                            </span>
-                            <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 flex-1">
-                              {s.rationale}
-                            </p>
-                            <div className="pt-0.5">
-                              <Button
-                                variant="brand"
-                                size="xs"
-                                onClick={() => runSuggestion(s)}
-                                className="gap-1.5"
-                              >
-                                {meta.mode === 'inline' ? (
-                                  <Wand2 size={11} />
-                                ) : (
-                                  <Sparkles size={11} />
-                                )}
-                                {meta.mode === 'inline'
-                                  ? t('cockpit.suggestions.generate')
-                                  : t('cockpit.suggestions.useInAI')}
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
+                </div>
               </div>
 
-              {/* ── Shortcuts: the TUI launcher, shrunk to a footer row ── */}
-              <section
-                aria-label={t('cockpit.shortcuts.title')}
-                data-vsn-region="shortcuts"
-                className="flex items-center gap-2 flex-wrap pt-4 border-t border-neutral-800"
-              >
-                <MicroTitle className="text-neutral-600 mr-1">
-                  {t('cockpit.shortcuts.title')}
-                </MicroTitle>
-                {apps.map((app) => (
-                  <button
-                    key={app.appId}
-                    onClick={() => onSelectApp(app)}
-                    disabled={app.badgeVariant === 'comingSoon'}
-                    className="px-3.5 py-2 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {app.name}
-                  </button>
-                ))}
-                <button
-                  onClick={() => navigate('/apps')}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest text-neutral-600 hover:text-neutral-300 transition-colors"
+              {/* ── Output gallery — every generated asset, persisted per brand ── */}
+              {brandMockups.length > 0 && (
+                <section
+                  aria-label={t('cockpit.gallery.title')}
+                  data-vsn-region="output-gallery"
+                  className={cn(cardCls, 'p-5')}
                 >
-                  {t('cockpit.shortcuts.allApps')}
-                  <ArrowRight size={11} />
-                </button>
-              </section>
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <MicroTitle className="text-neutral-500">
+                      {t('cockpit.gallery.title')}
+                    </MicroTitle>
+                    <Button
+                      variant="surface"
+                      size="xs"
+                      onClick={() => navigate('/my-outputs')}
+                      className="gap-1.5"
+                    >
+                      {t('cockpit.gallery.viewAll')}
+                      <ChevronRight size={12} />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                    {brandMockups.slice(0, 12).map((m) => (
+                      <button
+                        key={m._id}
+                        onClick={() => navigate('/my-outputs')}
+                        title={m.prompt}
+                        className={cn(tileCls, 'group aspect-square overflow-hidden')}
+                      >
+                        {m.imageUrl ? (
+                          <img
+                            src={m.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Wand2 size={18} className="text-neutral-700" strokeWidth={1.2} />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -586,6 +619,17 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = ({ apps, onSelectApp })
             }}
             guideline={activeBrand}
             initialPrompt={mockupPrompt}
+          />
+        </React.Suspense>
+      )}
+
+      {/* Trocar logo principal — upload / da media / promover existente. */}
+      {changeLogoOpen && heroBrand && (
+        <React.Suspense fallback={null}>
+          <ChangeLogoDialog
+            guideline={heroBrand}
+            open={changeLogoOpen}
+            onOpenChange={setChangeLogoOpen}
           />
         </React.Suspense>
       )}

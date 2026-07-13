@@ -18,6 +18,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { Clipboard as ClipboardIcon } from 'lucide-react';
+import { glassSurface } from '@/lib/ui/glass';
 
 export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> =
   {
@@ -192,7 +193,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               className="flex items-center gap-1 shrink-0 text-neutral-600 hover:text-neutral-300 transition-colors"
             >
               <Heart size={11} className={isLiked ? 'fill-current text-neutral-400' : ''} />
-              {likesCount > 0 && <span className="text-[10px] font-mono">{likesCount}</span>}
+              {likesCount > 0 && <span className="text-[10px] font-mono tabular-nums">{likesCount}</span>}
             </button>
           )}
         </div>
@@ -227,13 +228,13 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               {migrated.difficulty.slice(0, 3)}
             </span>
           )}
-          <span className="text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800">
+          <span className={cn('text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded', glassSurface.control)}>
             {migrated.aspectRatio}
           </span>
           {migrated.tags?.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800"
+              className={cn('text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded', glassSurface.control)}
             >
               #{tag}
             </span>

@@ -10,6 +10,8 @@ interface Props {
   canvasWidth: number;
   canvasHeight: number;
   isSelected: boolean;
+  /** Dentro de um grupo: o próprio nó não arrasta (o Group pai move tudo junto). */
+  inGroup?: boolean;
   registerNode: (id: string, node: Konva.Node | null) => void;
   onSelect: (id: string, extend: boolean) => void;
   onDragStart?: (id: string) => void;
@@ -23,6 +25,7 @@ const KonvaShapeLayerImpl: React.FC<Props> = ({
   canvasWidth,
   canvasHeight,
   isSelected,
+  inGroup = false,
   registerNode,
   onSelect,
   onDragStart,
@@ -44,6 +47,7 @@ const KonvaShapeLayerImpl: React.FC<Props> = ({
   return (
     <Rect
       ref={shapeRef}
+      id={layer.id}
       x={data.position.x * canvasWidth}
       y={data.position.y * canvasHeight}
       width={data.size.w * canvasWidth}
@@ -59,7 +63,7 @@ const KonvaShapeLayerImpl: React.FC<Props> = ({
       shadowBlur={data.shadowBlur ?? 0}
       shadowOffsetX={data.shadowOffsetX ?? 0}
       shadowOffsetY={data.shadowOffsetY ?? 0}
-      draggable={!layer.locked}
+      draggable={!layer.locked && !inGroup}
       listening={!layer.locked}
       onMouseEnter={(e) => {
         const stage = e.target.getStage();
@@ -115,6 +119,7 @@ export const KonvaShapeLayer = React.memo(
   (prev, next) =>
     prev.layer === next.layer &&
     prev.isSelected === next.isSelected &&
+    prev.inGroup === next.inGroup &&
     prev.canvasWidth === next.canvasWidth &&
     prev.canvasHeight === next.canvasHeight &&
     prev.registerNode === next.registerNode &&

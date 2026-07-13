@@ -3,10 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Upload,
-  Smartphone,
-  Monitor,
-  Square,
-  LayoutTemplate,
   ChevronDown,
   Briefcase,
   ArrowLeft,
@@ -16,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { getProxiedUrl } from '@/utils/proxyUtils';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
@@ -31,15 +28,15 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useQueryClient } from '@tanstack/react-query';
 import { Gem } from 'lucide-react';
 import type { CreativeFormat } from './store/creativeTypes';
-import type { GeminiModel, SeedreamModel } from '@/types/types';
+import type { GeminiModel, SeedreamModel, AspectRatio } from '@/types/types';
+import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSelector';
 import { copyToClipboard } from '@/utils/clipboard';
+import { glassSurface } from '@/lib/ui/glass';
+import { cn } from '@/lib/utils';
 
-const FORMAT_OPTS = [
-  { id: '1:1', label: 'Quadrado', icon: Square, sub: 'Feed Social' },
-  { id: '4:5', label: 'Retrato', icon: LayoutTemplate, sub: 'Ads & Feed' },
-  { id: '9:16', label: 'Story', icon: Smartphone, sub: 'Reels & TT' },
-  { id: '16:9', label: 'Largo', icon: Monitor, sub: 'Desktop' },
-] as const;
+// Conjunto de formatos do Creative Studio — passado ao AspectRatioSelector
+// compartilhado (SSoT), sem fork de UI.
+const CREATIVE_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:5'];
 
 export const CreativeSetupSidebar: React.FC = () => {
   const {
@@ -66,7 +63,15 @@ export const CreativeSetupSidebar: React.FC = () => {
   const navigate = useNavigate();
   const { data: guidelines = [] } = useBrandGuidelines();
   const { activeGuideline } = useBrandKit();
+  const { setActiveBrand } = useActiveBrand();
   const queryClient = useQueryClient();
+
+  // A marca ativa do app é o SSoT: escolher marca aqui também atualiza o cockpit
+  // (e vice-versa). Sem isso, studio e cockpit divergem ("persiste uma marca").
+  const selectBrand = (id: string | null) => {
+    setBrandId(id);
+    if (id) setActiveBrand(id);
+  };
 
   const [wizardOpen, setWizardOpen] = useState(false);
   const [showVault, setShowVault] = useState(false);
@@ -88,15 +93,19 @@ export const CreativeSetupSidebar: React.FC = () => {
 
     setIsUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        await brandGuidelineApi.uploadMedia(selectedGuideline.id!, base64, file.name, file.type);
-        toast.success('Asset adicionado à Brand!');
-        queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] });
-        queryClient.invalidateQueries({ queryKey: ['brand-guideline', selectedGuideline.id] });
-      };
-      reader.readAsDataURL(file);
+      // Awaita o FileReader de verdade: antes o upload vivia dentro de
+      // reader.onloadend (não-awaited) — o loader mentia e a rejeição virava
+      // unhandled (o catch nunca via a falha real).
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      await brandGuidelineApi.uploadMedia(selectedGuideline.id!, base64, file.name, file.type);
+      toast.success('Asset adicionado à Brand!');
+      queryClient.invalidateQueries({ queryKey: ['brand-guidelines'] });
+      queryClient.invalidateQueries({ queryKey: ['brand-guideline', selectedGuideline.id] });
     } catch (err) {
       toast.error('Erro ao subir para o Vault');
     } finally {
@@ -134,6 +143,9 @@ export const CreativeSetupSidebar: React.FC = () => {
       });
 
       hydrateFromAI(result);
+      // O criativo recém-gerado é o baseline do undo — sem isso, um Ctrl+Z
+      // revertia a geração inteira e deixava o canvas vazio (LAYERS 0).
+      useCreativeStore.temporal.getState().clear();
     } catch (err: any) {
       toast.error(err?.message ?? 'Falha ao gerar criativo');
       setStatus('setup');
@@ -200,7 +212,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       setUploadedBackgroundUrl(logo.url!);
                       setShowVault(false);
                     }}
-                    className="aspect-square rounded-xl border border-neutral-800 bg-neutral-900/40 p-2 hover:border-neutral-700 transition-all group overflow-hidden"
+                    className={cn('aspect-square rounded-xl p-2 hover:border-neutral-700 transition-all group overflow-hidden', glassSurface.tile)}
                   >
                     <img
                       src={getProxiedUrl(logo.url)}
@@ -226,7 +238,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       setUploadedBackgroundUrl(media.url!);
                       setShowVault(false);
                     }}
-                    className="aspect-video rounded-xl border border-neutral-800 bg-neutral-900/40 p-1.5 hover:border-neutral-700 transition-all group overflow-hidden"
+                    className={cn('aspect-video rounded-xl p-1.5 hover:border-neutral-700 transition-all group overflow-hidden', glassSurface.tile)}
                   >
                     <img
                       src={getProxiedUrl(media.url)}
@@ -273,22 +285,12 @@ export const CreativeSetupSidebar: React.FC = () => {
       data-vsn-section="setup"
     >
       <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <h1 className="text-white font-bold text-sm tracking-[0.1em] uppercase">
-              Visant Labs<span className="text-brand-cyan">®</span>
-            </h1>
-            <span className="px-1.5 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-[10px] font-bold text-neutral-600 uppercase">
-              v1.1
-            </span>
-          </div>
-          <p className="text-[10px] text-neutral-600 font-mono mt-1 lowercase tracking-tight">
-            conceito → sincronia → produção
-          </p>
-        </div>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+          Novo criativo
+        </span>
         <button
           onClick={() => navigate('/create/projects')}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan transition-colors"
+          className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:border-neutral-700 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan', glassSurface.control)}
           title="My Creatives"
           data-vsn-action="open-projects"
         >
@@ -304,7 +306,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           <div className="relative flex-1 group">
             <Select
               value={brandId ?? ''}
-              onChange={(val) => setBrandId(val || null)}
+              onChange={(val) => selectBrand(val || null)}
               disabled={status !== 'setup'}
               placeholder="Selecione a marca..."
               variant="node"
@@ -318,7 +320,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           <button
             onClick={() => setWizardOpen(true)}
             disabled={status !== 'setup'}
-            className="w-12 h-12 shrink-0 bg-neutral-950/40 border border-neutral-800 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-all hover:bg-neutral-900/60 disabled:opacity-50"
+            className={cn('w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-all hover:bg-neutral-900/60 disabled:opacity-50', glassSurface.tile)}
             title="Nova marca"
           >
             <Plus size={18} />
@@ -336,8 +338,9 @@ export const CreativeSetupSidebar: React.FC = () => {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={status !== 'setup'}
             placeholder="O que você quer criar hoje?"
+            aria-label="Ideia do criativo"
             rows={4}
-            className="w-full bg-neutral-900/40 border border-neutral-800 rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50"
+            className={cn('w-full rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50', glassSurface.panel)}
             data-vsn-input="prompt"
           />
           <div className="absolute bottom-3 right-3 text-[10px] font-mono text-neutral-700 pointer-events-none uppercase tracking-tighter">
@@ -350,32 +353,12 @@ export const CreativeSetupSidebar: React.FC = () => {
         <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
           Formato
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          {FORMAT_OPTS.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => setFormat(opt.id as CreativeFormat)}
-              disabled={status !== 'setup'}
-              className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 group ${
-                format === opt.id
-                  ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/5'
-                  : 'bg-neutral-900/40 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-900/60 hover:border-white/10'
-              }`}
-            >
-              <opt.icon
-                size={18}
-                strokeWidth={format === opt.id ? 2 : 1.5}
-                className="transition-transform group-hover:scale-110"
-              />
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider">{opt.label}</span>
-                <span className="text-[10px] opacity-40 font-mono lowercase tracking-tighter">
-                  {opt.sub}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
+        <AspectRatioSelector
+          value={format as AspectRatio}
+          onChange={(r) => setFormat(r as CreativeFormat)}
+          disabled={status !== 'setup'}
+          ratios={CREATIVE_RATIOS}
+        />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -437,7 +420,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   <span className="uppercase tracking-widest">Subir Imagem Local</span>
                 </div>
               ) : (
-                <div className="relative w-full aspect-video rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-900/40 hover:border-neutral-700 transition-all shadow-2xl">
+                <div className={cn('relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl', glassSurface.tile)}>
                   <img
                     src={getProxiedUrl(uploadedBackgroundUrl)}
                     alt="Uploaded Asset"
@@ -478,7 +461,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             ) : (
               <div
                 onClick={() => setShowVault(true)}
-                className="group cursor-pointer relative w-full aspect-video rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-900/40 hover:border-neutral-700 transition-all shadow-2xl"
+                className={cn('group cursor-pointer relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl', glassSurface.tile)}
               >
                 <img
                   src={getProxiedUrl(uploadedBackgroundUrl)}
@@ -555,7 +538,7 @@ export const CreativeSetupSidebar: React.FC = () => {
         isOpen={wizardOpen}
         onClose={() => setWizardOpen(false)}
         onSuccess={(id) => {
-          setBrandId(id);
+          selectBrand(id);
           setWizardOpen(false);
         }}
       />

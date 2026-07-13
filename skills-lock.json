@@ -5,6 +5,12 @@
       "source": "firecrawl/cli",
       "sourceType": "github",
       "computedHash": "5c2919d5d65260b94efcf5aca83420e86d86c7f65028919a8a892419d298a644"
+    },
+    "revenue-centric-design": {
+      "source": "heliocosta-dev/revenue-centric-design",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "54906b2e77daabfd8adf57562dea9c2a174050ecf9c950342e4e5fa9b0b6e954"
     }
   }
 }

@@ -22,8 +22,7 @@ import {
 } from '../components/ui/BreadcrumbWithBack';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
-import { useBrandFilter } from '@/hooks/useBrandFilter';
-import { BrandFilterChip } from '@/components/shell/BrandFilterChip';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { cn } from '@/lib/utils';
 
@@ -38,8 +37,8 @@ export const MyOutputsPage: React.FC = () => {
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const inShell = useInAppShell();
   // Filtro opcional pela marca ativa — mockups guardam brandGuidelineId.
-  const { activeBrand, enabled: brandFilter, toggle: toggleBrandFilter, brandId } =
-    useBrandFilter('vsn_filter_outputs');
+  // Lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas").
+  const { activeBrandId: brandId } = useActiveBrand();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const { isAuthenticated, subscriptionStatus } = useLayout();
@@ -377,7 +376,12 @@ export const MyOutputsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300',
+          inShell ? 'min-h-full pt-6' : 'min-h-screen pt-12 md:pt-14'
+        )}
+      >
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
@@ -447,11 +451,6 @@ export const MyOutputsPage: React.FC = () => {
                   showBackButton={false}
                 />
               </div>
-              <BrandFilterChip
-                brand={activeBrand}
-                enabled={brandFilter}
-                onToggle={toggleBrandFilter}
-              />
             </div>
           </div>
         </div>

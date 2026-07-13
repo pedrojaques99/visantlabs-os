@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { CheckCircle2, AlertCircle, Brain } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Stethoscope } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -9,13 +9,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import {
-  computeBrandCompleteness,
-  completenessStatus,
-  type CompletenessRule,
-} from '@/lib/brandCompleteness';
+import { computeBrandCompleteness, completenessStatus } from '@/lib/brandCompleteness';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { brandGuidelineApi, type BrandHealthReport } from '@/services/brandGuidelineApi';
+import { BRAND_GAP_HINTS as WHY_BY_ID } from '@/lib/brandGapHints';
 import { BrandHealthDialog } from './BrandHealthDialog';
 
 interface BrandCompletenessPillProps {
@@ -30,15 +27,6 @@ const STATUS_STYLES = {
   medium: { ring: 'border-warning/20  bg-warning/[0.06]  text-warning', dot: 'bg-warning' },
   high: { ring: 'border-success/20 bg-success/[0.06] text-success', dot: 'bg-success' },
 } as const;
-
-const GROUP_LABELS: Record<CompletenessRule['group'], string> = {
-  identity: 'Identidade',
-  visual: 'Visual',
-  strategy: 'Estratégia',
-  voice: 'Voz',
-  tokens: 'Tokens',
-  assets: 'Assets',
-};
 
 export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ guideline }) => {
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
@@ -76,90 +64,76 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
               'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-all hover:opacity-90',
               style.ring
             )}
-            aria-label={`Brand completeness ${report.score}%`}
+            aria-label={`Prontidão pra IA ${report.score}%`}
           >
             <span className={cn('w-1.5 h-1.5 rounded-full', style.dot)} />
             <span className="font-bold tabular-nums">{report.score}%</span>
             <span className="opacity-50 hidden sm:inline">
-              {missingCount === 0 ? '· completa' : `· ${missingCount} pend.`}
+              {missingCount === 0 ? '· pronta' : `· ${missingCount} pend.`}
             </span>
           </button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
           align="end"
-          className="w-[320px] p-0 bg-neutral-950/95 backdrop-blur-xl border-white/10"
+          className="w-[340px] p-0 bg-neutral-950/95 backdrop-blur-xl border-white/10"
         >
+          {/* Header: enquadra pelo OUTPUT (não pela vaidade "% completo"). Sem as
+              6 barrinhas de grupo — não diziam nada e eram cara de dashboard slop. */}
           <div className="p-4 border-b border-neutral-800">
-            <div className="flex items-baseline justify-between mb-1">
-              <span className="text-[11px] font-medium text-neutral-500">Brand completeness</span>
-              <span
-                className={cn(
-                  'text-2xl font-bold tabular-nums',
-                  style.ring.split(' ').find((c) => c.startsWith('text-'))
-                )}
-              >
-                {report.score}%
-              </span>
+            <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+              Prontidão pra IA
             </div>
-            <p className="text-[11px] text-neutral-500 leading-relaxed">
-              Quanto desta marca está pronto para alimentar geração IA.
+            <p className="mt-1.5 text-[13px] text-neutral-300 leading-snug">
+              {missingCount === 0 ? (
+                'Marca pronta — a IA gera com todo o contexto.'
+              ) : (
+                <>
+                  Faltam <span className="font-semibold text-white tabular-nums">{missingCount}</span>{' '}
+                  {missingCount === 1 ? 'coisa' : 'coisas'} pra IA gerar mais no ponto.
+                </>
+              )}
             </p>
-
-            <div className="mt-3 grid grid-cols-3 gap-1.5">
-              {Object.entries(report.byGroup).map(([key, val]) => {
-                if (val.max === 0) return null;
-                const pct = Math.round((val.score / val.max) * 100);
-                return (
-                  <div key={key} className="flex flex-col gap-1">
-                    <span className="text-[10px] font-medium text-neutral-600">
-                      {GROUP_LABELS[key as CompletenessRule['group']]}
-                    </span>
-                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
-                      <div
-                        className={cn(
-                          'h-full transition-all',
-                          pct >= 75
-                            ? 'bg-success/60'
-                            : pct >= 40
-                              ? 'bg-warning/60'
-                              : 'bg-destructive/40'
-                        )}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
-          <div className="max-h-[260px] overflow-y-auto p-2">
+          {/* Gaps: cada um amarrado à CONSEQUÊNCIA de geração — sem "+N pontos". */}
+          <div className="max-h-[300px] overflow-y-auto p-2">
             {missingCount === 0 ? (
-              <div className="flex items-center gap-2 px-2 py-3 text-[11px] text-success">
+              <div className="flex items-center gap-2 px-2 py-3 text-[12px] text-success">
                 <CheckCircle2 size={14} />
-                Tudo preenchido. Brand pronta pra IA.
+                Tudo preenchido.
               </div>
             ) : (
-              <ul className="flex flex-col gap-0.5">
+              <ul className="flex flex-col">
                 {report.missing.map((rule) => (
                   <li
                     key={rule.id}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors"
+                    className="px-2 py-2 rounded-md hover:bg-white/[0.03] transition-colors"
                   >
-                    <AlertCircle size={12} className="text-warning/70 shrink-0" />
-                    <span className="text-[11px] text-neutral-300 flex-1 truncate">
-                      {rule.label}
-                    </span>
-                    <span className="text-[10px] font-mono text-neutral-600 tabular-nums">
-                      +{rule.weight}
-                    </span>
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className={cn('mt-[7px] w-1 h-1 rounded-full shrink-0', style.dot)}
+                        aria-hidden
+                      />
+                      <div className="min-w-0">
+                        <div className="text-[12.5px] text-neutral-200 leading-tight">
+                          {rule.label}
+                        </div>
+                        {WHY_BY_ID[rule.id] && (
+                          <div className="text-[11px] text-neutral-500 leading-snug mt-0.5">
+                            {WHY_BY_ID[rule.id]}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
+          {/* Auditoria profunda (relatório por IA). Nome pelo que FAZ — sem selo
+              "(IA)" nem ícone de cérebro (era sinalização de slop). */}
           {guideline.id && (
             <div className="p-2 border-t border-neutral-800">
               <Button
@@ -169,8 +143,11 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                 disabled={healthMutation.isPending}
                 className="w-full h-8 text-xs gap-2 text-brand-cyan/80 hover:text-brand-cyan hover:bg-brand-cyan/5"
               >
-                <Brain size={11} />
-                {healthMutation.isPending ? 'Analisando...' : 'Run Brand Health (IA)'}
+                <Stethoscope size={12} />
+                {healthMutation.isPending ? 'Analisando…' : 'Auditar a fundo'}
+                {!healthMutation.isPending && (
+                  <ArrowRight size={12} className="ml-auto opacity-50" />
+                )}
               </Button>
             </div>
           )}

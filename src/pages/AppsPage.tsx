@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { toast } from 'sonner';
 import { glassSurface } from '@/lib/ui/glass';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 
 // ─── Last-used tracking (shared with HomePage) ──────────────────────────────
 const LS_KEY = 'vsn_app_last_used';
@@ -374,7 +375,7 @@ function SectionHeader({
           {description && <p className="text-xs text-neutral-600">{description}</p>}
         </div>
       </div>
-      <span className="text-xs text-neutral-700 pb-0.5 shrink-0">{count}</span>
+      <span className="text-xs text-neutral-700 pb-0.5 shrink-0 tabular-nums">{count}</span>
     </div>
   );
 }
@@ -389,6 +390,11 @@ export const AppsPage: React.FC = () => {
   const { hasAccess } = usePremiumAccess();
   const { onSubscriptionModalOpen, user } = useLayout();
   const isAdmin = user?.isAdmin === true;
+  // Dentro do AppShell o <main> é o próprio container de scroll (não há Header
+  // global fixo por cima): o offset sticky vira 0. Fora dele, mantém o offset
+  // que limpa o Header do site (top-14). Sem isto o conteúdo passa POR CIMA da
+  // toolbar (bug do "Ferramentas Pro" vazando sobre a busca).
+  const inShell = useInAppShell();
 
   const [apps, setApps] = useState<AppConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -999,7 +1005,7 @@ export const AppsPage: React.FC = () => {
           role="navigation"
           aria-label={t('apps.categoriesLabel')}
         >
-          <div className="sticky top-14 space-y-1">
+          <div className={cn('sticky space-y-1', inShell ? 'top-4' : 'top-14')}>
             <MicroTitle className="text-neutral-500 px-3 mb-2 block">
               {t('apps.categoriesLabel')}
             </MicroTitle>
@@ -1057,7 +1063,7 @@ export const AppsPage: React.FC = () => {
           </div>
 
           {/* Sticky toolbar: search + access + sort */}
-          <div className="sticky top-10 md:top-14 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800">
+          <div className={cn('sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800', inShell ? 'top-0' : 'top-10 md:top-14')}>
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search
@@ -1219,7 +1225,7 @@ export const AppsPage: React.FC = () => {
                             <MicroTitle as="span" className="text-neutral-300">
                               {t('apps.quickTools')}
                             </MicroTitle>
-                            <span className="text-xs font-mono text-neutral-600">{utilityCount}</span>
+                            <span className="text-xs font-mono text-neutral-600 tabular-nums">{utilityCount}</span>
                             <ChevronRight
                               size={16}
                               className={cn(

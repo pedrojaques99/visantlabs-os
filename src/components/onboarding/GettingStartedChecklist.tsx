@@ -86,7 +86,7 @@ export const GettingStartedChecklist: React.FC = () => {
         {
           id: 'connect',
           label: t('onboarding.checklist.connectAgent'),
-          route: '/developer/getting-started',
+          route: '/docs/getting-started',
           done: progress!.hasConnectedAgent,
         },
       ]

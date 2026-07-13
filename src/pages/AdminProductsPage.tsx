@@ -40,6 +40,7 @@ import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SEO } from '../components/SEO';
 import { MicroTitle } from '../components/ui/MicroTitle';
@@ -89,6 +90,7 @@ export const AdminProductsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated: isUserAuthenticated, isCheckingAuth } = useLayout();
+  const inShell = useInAppShell();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -407,7 +409,12 @@ export const AdminProductsPage: React.FC = () => {
 
   if (!isCheckingAuth && isAdmin === false) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-neutral-950 text-white font-mono">
+      <div
+        className={cn(
+          'flex items-center justify-center bg-neutral-950 text-white font-mono',
+          inShell ? 'min-h-full' : 'min-h-screen'
+        )}
+      >
         Acesso negado. Administradores apenas.
       </div>
     );
@@ -416,7 +423,12 @@ export const AdminProductsPage: React.FC = () => {
   return (
     <>
       <SEO title={t('admin.products.admin_produtos')} noindex={true} />
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative pb-20">
+      <div
+        className={cn(
+          'bg-neutral-950 text-neutral-300 relative pb-20',
+          inShell ? 'min-h-full pt-6' : 'min-h-screen pt-14'
+        )}
+      >
         <div className="absolute inset-0 z-0"></div>
 
         <div className="max-w-7xl mx-auto px-4 pt-8 relative z-10">
@@ -544,7 +556,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b border-white/10">
                       <span className="text-neutral-500">{t('admin.products.crditos')}</span>
-                      <span className="text-brand-cyan font-mono">{product.credits}</span>
+                      <span className="text-brand-cyan font-mono tabular-nums">{product.credits}</span>
                     </div>
 
                     {/* Unlimited indicator for subscription plans */}

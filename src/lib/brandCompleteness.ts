@@ -216,3 +216,43 @@ export function completenessStatus(score: number): 'low' | 'medium' | 'high' {
   if (score < 75) return 'medium';
   return 'high';
 }
+
+/** Named brand-depth tiers — the "save file" ladder shown in the cockpit hero. */
+export type DepthLevelKey = 'sketch' | 'identity' | 'system' | 'production' | 'autopilot';
+
+const DEPTH_TIERS: { key: DepthLevelKey; min: number }[] = [
+  { key: 'sketch', min: 0 },
+  { key: 'identity', min: 25 },
+  { key: 'system', min: 50 },
+  { key: 'production', min: 75 },
+  { key: 'autopilot', min: 95 },
+];
+
+export interface DepthLevel {
+  /** i18n key stem — the component translates `cockpit.depth.level.${key}`. */
+  key: DepthLevelKey;
+  /** Score (0-100) at which the NEXT tier unlocks; null when already at the top. */
+  nextAt: number | null;
+  /** Points to the next tier (0 when maxed). */
+  toNext: number;
+}
+
+/**
+ * Score → named depth tier + distance to the next one. Pure (returns keys, not
+ * translated strings). Drives the cockpit hero's goal-gradient ("faltam N pts").
+ */
+export function completenessLevel(score: number): DepthLevel {
+  let idx = 0;
+  for (let i = DEPTH_TIERS.length - 1; i >= 0; i--) {
+    if (score >= DEPTH_TIERS[i].min) {
+      idx = i;
+      break;
+    }
+  }
+  const next = DEPTH_TIERS[idx + 1] ?? null;
+  return {
+    key: DEPTH_TIERS[idx].key,
+    nextAt: next?.min ?? null,
+    toNext: next ? Math.max(0, next.min - score) : 0,
+  };
+}

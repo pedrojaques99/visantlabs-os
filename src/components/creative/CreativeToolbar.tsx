@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
+import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
 import {
   AlignLeft,
   AlignCenter,
@@ -28,6 +29,7 @@ import {
   Image as ImageIcon,
   RefreshCcw,
   Upload,
+  Briefcase,
   Diamond,
   X,
   RotateCw,
@@ -52,6 +54,7 @@ const Btn: React.FC<{
   <button
     onClick={onClick}
     title={title}
+    aria-label={title}
     disabled={disabled}
     className={[
       'p-1.5 rounded transition-colors',
@@ -79,13 +82,24 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
   const backgroundUrl = useCreativeStore((s) => s.backgroundUrl);
   const setBackgroundUrl = useCreativeStore((s) => s.setBackgroundUrl);
   const setBackgroundSelected = useCreativeStore((s) => s.setBackgroundSelected);
+  const { activeGuideline } = useBrandKit();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showBrand, setShowBrand] = useState(false);
+
+  // Escolher fundo (igual Figma): enviar imagem OU puxar da biblioteca da marca.
+  const hasBrandMedia =
+    (activeGuideline?.media?.length ?? 0) + (activeGuideline?.logos?.length ?? 0) > 0;
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
+    setBackgroundUrl(URL.createObjectURL(file));
+    setShowBrand(false);
+  };
+
+  const pickAsset = (url: string) => {
     setBackgroundUrl(url);
+    setShowBrand(false);
   };
 
   return (
@@ -101,7 +115,40 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
       </div>
       <Divider />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      <Btn icon={Upload} onClick={() => fileRef.current?.click()} title="Trocar fundo" />
+      <Btn
+        icon={Upload}
+        onClick={() => {
+          setShowBrand(false);
+          fileRef.current?.click();
+        }}
+        title="Enviar imagem"
+      />
+      {/* Biblioteca da marca — popover com grid de media/logos */}
+      <div className="relative">
+        <Btn
+          icon={Briefcase}
+          onClick={() => setShowBrand((v) => !v)}
+          active={showBrand}
+          disabled={!hasBrandMedia}
+          title={hasBrandMedia ? 'Imagem da marca' : 'Marca sem media'}
+        />
+        {showBrand && hasBrandMedia && activeGuideline && (
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 max-h-72 overflow-y-auto p-2 bg-neutral-900/95 border border-white/10 rounded-lg backdrop-blur-md shadow-2xl custom-scrollbar">
+            {/* Grid de assets da marca = MediaKitGallery compartilhado (SSoT), não
+                um grid hand-rollado. onAssetClick vira o fundo. */}
+            <MediaKitGallery
+              guidelineId={activeGuideline.id ?? ''}
+              media={activeGuideline.media ?? []}
+              logos={activeGuideline.logos ?? []}
+              onMediaChange={() => {}}
+              onLogosChange={() => {}}
+              compact
+              readOnly
+              onAssetClick={(url) => pickAsset(url)}
+            />
+          </div>
+        )}
+      </div>
       {backgroundUrl && onEditAI && <Btn icon={Diamond} onClick={onEditAI} title="Editar com IA" />}
       <Divider />
       <Btn icon={X} onClick={() => setBackgroundSelected(false)} title="Fechar" />

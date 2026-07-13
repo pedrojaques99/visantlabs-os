@@ -330,7 +330,7 @@ export const GettingStartedPage: React.FC = () => {
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>
-                        <Link to="/api/docs">API Docs</Link>
+                        <Link to="/docs">Documentation</Link>
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
@@ -357,7 +357,7 @@ export const GettingStartedPage: React.FC = () => {
           <div className="flex gap-8">
             {/* Sidebar nav */}
             <aside className="hidden lg:block w-52 shrink-0">
-              <div className="sticky top-20 space-y-1">
+              <div className={cn('sticky space-y-1', inShell ? 'top-4' : 'top-20')}>
                 <p className="text-xs font-mono text-neutral-600 uppercase tracking-wider mb-3">
                   On this page
                 </p>
@@ -426,12 +426,12 @@ export const GettingStartedPage: React.FC = () => {
                         </code>{' '}
                         with dynamic client registration. See{' '}
                         <Link
-                          to="/developer"
+                          to="/settings/connected-apps"
                           className="text-brand-cyan hover:text-brand-cyan/80 transition-colors"
                         >
-                          Developer Portal
+                          Connected Apps
                         </Link>{' '}
-                        for full documentation.
+                        to manage authorized agents.
                       </p>
                     </div>
                     <div>
@@ -661,7 +661,7 @@ export const GettingStartedPage: React.FC = () => {
                         </p>
                       </Link>
                       <Link
-                        to="/developer/usage"
+                        to="/profile?tab=overview"
                         className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
                       >
                         <div className="flex items-center justify-between">

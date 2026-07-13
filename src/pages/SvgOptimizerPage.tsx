@@ -27,6 +27,7 @@ import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { formatBytes } from '@/utils/formatUtils';
 import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
+import { glassSurface } from '@/lib/ui/glass';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 const fadeUp = {
@@ -612,7 +613,7 @@ export const SvgOptimizerPage: React.FC = () => {
           <motion.div
             key="workspace"
             {...fadeScale}
-            className="relative w-full max-w-3xl rounded-2xl overflow-hidden border border-neutral-800 bg-neutral-950/40 min-h-[300px] flex flex-col"
+            className={cn('relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex flex-col', glassSurface.panel)}
           >
             {/* View mode toggle */}
             <motion.div

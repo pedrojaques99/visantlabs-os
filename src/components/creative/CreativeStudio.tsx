@@ -1,11 +1,15 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { Diamond, Paintbrush, Type as TypeIcon, Image as ImageIcon, Scan } from 'lucide-react';
+import { Diamond, Scan } from 'lucide-react';
 import { useCreativeStore } from './store/creativeStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useQueryClient } from '@tanstack/react-query';
 import { CREATIVE_PROJECT_KEYS } from '@/hooks/queries/useCreativeProjects';
 import { creativeProjectApi } from '@/services/creativeProjectApi';
-import { snapshotCreativeFromStore, saveCurrentCreativeAsNew } from './lib/persistCreative';
+import {
+  snapshotCreativeFromStore,
+  saveCurrentCreativeAsNew,
+  ensurePersistedBackground,
+} from './lib/persistCreative';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { CreativeSetupSidebar } from './CreativeSetupSidebar';
@@ -16,23 +20,19 @@ import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
 import { KeyboardCheatsheet } from './KeyboardCheatsheet';
 import { PagesPanel } from './PagesPanel';
 import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
-import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
+import { GeneratingImageCard } from '@/components/ui/GeneratingImageCard';
 import { exportCanvasAsPng } from './lib/exportPng';
 import { captureCanvasThumbnail } from './lib/captureThumbnail';
 import { getPreviewDimensions } from './lib/formatDimensions';
 import { isPersistedId } from './lib/layerUtils';
-import { Link } from 'react-router-dom';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/BreadcrumbWithBack';
+import { createPortal } from 'react-dom';
+import { useShellHeader } from '@/components/shell/ShellHeaderContext';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export const CreativeStudio: React.FC = () => {
+  // Portal das ações do editor pra AppSpine (espinha única). Ver return.
+  const shellHeader = useShellHeader();
   // State — atomic selectors so each field re-renders only when it changes.
   const status = useCreativeStore((s) => s.status);
   const format = useCreativeStore((s) => s.format);
@@ -69,10 +69,12 @@ export const CreativeStudio: React.FC = () => {
   const accentColor = currentGuideline?.colors?.[0]?.hex ?? colors[0]?.hex ?? '#00e5ff';
   const defaultFont = currentGuideline?.typography?.[0]?.family ?? 'Inter, sans-serif';
 
-  // Sync brandId with global CanvasHeader
+  // Espelha a marca do studio no BrandKit (toolbar swatches/fonts). Inclui o
+  // caso null: sem isso, abrir um projeto sem marca — ou trocar de marca —
+  // deixava os tokens da marca anterior ativos (fonte fantasma / dessync).
   const { setLinkedGuidelineId } = useCanvasHeader();
   useEffect(() => {
-    if (brandId) setLinkedGuidelineId(brandId);
+    setLinkedGuidelineId(brandId ?? null);
   }, [brandId, setLinkedGuidelineId]);
 
   // Compute preview dimensions
@@ -179,7 +181,16 @@ export const CreativeStudio: React.FC = () => {
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerIds.length > 0) {
         e.preventDefault();
-        selectedLayerIds.forEach((id) => removeLayer(id));
+        // Respeita o lock (igual ao arrow-nudge e ao drag no canvas).
+        const lockedIds = new Set(
+          useCreativeStore
+            .getState()
+            .layers.filter((l) => l.locked)
+            .map((l) => l.id)
+        );
+        selectedLayerIds.forEach((id) => {
+          if (!lockedIds.has(id)) removeLayer(id);
+        });
       }
 
       // Arrow nudge — 1px (default) / 10px (shift). Skips locked layers.
@@ -278,6 +289,10 @@ export const CreativeStudio: React.FC = () => {
         const persisted = isPersistedId(currentId);
 
         if (persisted) {
+          // Sobe qualquer bg `blob:` pro R2 antes de gravar, senão o servidor
+          // guarda uma URL morta (imagem some no reload).
+          await ensurePersistedBackground();
+          if (signal.aborted) return;
           await creativeProjectApi.update(
             currentId as string,
             { ...snapshotCreativeFromStore(), thumbnailUrl },
@@ -301,7 +316,7 @@ export const CreativeStudio: React.FC = () => {
   useEffect(() => () => saveAbortRef.current?.abort(), []);
 
   return (
-    <div className="flex h-[calc(100vh-1px)] bg-black overflow-hidden select-none">
+    <div className="flex h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] bg-black overflow-hidden select-none">
       {status === 'editing' ? (
         <CreativeEditorSidebar
           onExport={handleExport}
@@ -314,67 +329,34 @@ export const CreativeStudio: React.FC = () => {
       )}
 
       <main className="flex-1 flex flex-col overflow-hidden bg-neutral-950/50">
-        {/* ── Top header bar (breadcrumb left, actions right) ── */}
-        <div className="flex items-center justify-between px-6 py-3 shrink-0 border-b border-neutral-800 z-40">
-          <BreadcrumbWithBack to="/create/projects">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/create/projects">Creative Projects</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Creative Studio</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </BreadcrumbWithBack>
-
-          {status === 'editing' && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-px bg-neutral-900/60 border border-white/10 rounded-full p-1">
-                <button
-                  disabled
-                  className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed"
-                  title="Em breve"
-                >
-                  <Paintbrush size={12} className="text-neutral-700" /> Variar Cores
-                </button>
-                <button
-                  disabled
-                  className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed"
-                  title="Em breve"
-                >
-                  <ImageIcon size={12} className="text-neutral-700" /> Variar Imagens
-                </button>
-                <button
-                  disabled
-                  className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-neutral-600 flex items-center gap-2 cursor-not-allowed"
-                  title="Em breve"
-                >
-                  <TypeIcon size={12} className="text-neutral-700" /> Variar Copy
-                </button>
-              </div>
+        {/* Ações do editor teleportadas pra AppSpine (espinha única do app). O
+            "voltar" e o título "Creative Studio" já vivem na espinha — o
+            breadcrumb próprio era um segundo header. Plano APP-SPINE F2. */}
+        {status === 'editing' &&
+          shellHeader?.actionsSlot &&
+          createPortal(
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTool(activeTool === 'lasso' ? 'select' : 'lasso')}
-                className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-2 ${
+                className={cn(
+                  'px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-2',
                   activeTool === 'lasso'
                     ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan'
                     : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
-                }`}
+                )}
                 title="Laço — selecionar região para editar com IA"
               >
                 <Scan size={12} /> Laço
               </button>
               <button
                 onClick={() => setStatus('setup')}
-                className="px-5 py-2 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700 transition-all flex items-center gap-2"
+                className="px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700 transition-all flex items-center gap-2"
               >
                 <Diamond size={12} /> Gerar Novo
               </button>
-            </div>
+            </div>,
+            shellHeader.actionsSlot
           )}
-        </div>
 
         {/* ── Canvas area (fills remaining space, centers content) ── */}
         <div
@@ -389,11 +371,7 @@ export const CreativeStudio: React.FC = () => {
           }}
         >
           {status === 'generating' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 bg-black/80 backdrop-blur-xl animate-in fade-in">
-              <div className="p-8 rounded-3xl bg-neutral-900/40 border border-neutral-800 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]">
-                <PremiumGlitchLoader className="w-full" />
-              </div>
-            </div>
+            <GeneratingImageCard isLoading variant="overlay" className="z-50" />
           )}
 
           {status === 'setup' && previewSize.width > 0 && (

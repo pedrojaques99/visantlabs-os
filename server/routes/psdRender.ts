@@ -14,6 +14,7 @@ import {
   deleteSceneRecord,
   signedSceneResponse,
 } from '../services/sceneStore.js';
+import { effectiveLicense, type SceneLicense } from '../services/sceneLicense.js';
 
 const router = express.Router();
 
@@ -227,10 +228,21 @@ router.post(
   renderLimiter,
   resolveTier,
   async (req: TierRequest, res) => {
-    const { psdFileName } = req.body;
+    const { psdFileName, license, studio, source } = req.body;
     if (!validBareFileName(psdFileName)) {
       return res.status(400).json({ error: 'psdFileName must be a bare file name' });
     }
+    // License override só é confiável vindo do tier 'all' (admin/equipe). Um user
+    // público não pode marcar um PSD de estúdio pago como 'commercial-free'.
+    const VALID_LICENSES = ['commercial-free', 'studio-paid', 'internal'];
+    const licenseOverride =
+      req.psdTier === 'all' && typeof license === 'string' && VALID_LICENSES.includes(license)
+        ? {
+            license: license as SceneLicense,
+            studio: typeof studio === 'string' ? studio : undefined,
+            source: ['boxy', 'visant', 'drive-import'].includes(source) ? source : undefined,
+          }
+        : undefined;
 
     const active = await redisClient.get(SCENE_PREPARE_ACTIVE_KEY);
     if (active && parseInt(active, 10) >= SCENE_PREPARE_MAX) {
@@ -244,14 +256,20 @@ router.post(
     try {
       // resolvePsdPath aplica o escopo de pastas do tier — 403-equivalente vira erro.
       const psdPath = await resolvePsdPath(psdFileName, req.psdTier || 'public');
-      const { record, uploads } = await extractSceneFromPsd(psdPath, psdFileName);
+      const { record, uploads } = await extractSceneFromPsd(psdPath, psdFileName, licenseOverride);
       await uploadSceneAssets(uploads);
       const db = await getMongo();
       await saveSceneRecord(db, record);
 
       res.json({
         success: true,
-        scene: { hash: record.hash, faces: record.faces, warnings: record.warnings },
+        scene: {
+          hash: record.hash,
+          faces: record.faces,
+          warnings: record.warnings,
+          license: record.license,
+          studio: record.studio,
+        },
       });
     } catch (err: any) {
       console.error('[psd-render] scene-prepare error:', err.message || err);
@@ -264,11 +282,21 @@ router.post(
   }
 );
 
-/** GET /scenes — catálogo (resumo) das scenes disponíveis. */
-router.get('/scenes', authenticate, async (_req: AuthRequest, res) => {
+/**
+ * GET /scenes — catálogo (resumo) das scenes disponíveis.
+ *
+ * Filtro isComercial POR LICENÇA (não por pasta): o tier público só enxerga
+ * scenes 'commercial-free'; um PSD de estúdio pago fica de fora mesmo que esteja
+ * numa pasta pública. O tier 'all' (equipe/admin) vê tudo por padrão e pode
+ * filtrar com ?license=commercial-free.
+ */
+router.get('/scenes', authenticate, resolveTier, async (req: TierRequest, res) => {
   try {
     const db = await getMongo();
-    const scenes = await listScenes(db);
+    const isPublic = req.psdTier !== 'all';
+    const licenseQuery = typeof req.query.license === 'string' ? req.query.license : undefined;
+    const commercialOnly = isPublic || licenseQuery === 'commercial-free';
+    const scenes = await listScenes(db, { commercialOnly });
     res.json({ success: true, scenes });
   } catch (err: any) {
     console.error('[psd-render] list scenes error:', err.message || err);
@@ -291,6 +319,11 @@ router.get('/scenes/:psdFileName', authenticate, resolveTier, async (req: TierRe
     const record = await getSceneRecord(db, psdFileName);
     if (!record) {
       return res.status(404).json({ error: 'Scene not found' });
+    }
+    // Bloqueio por licença: um user público não pega uma scene de estúdio pago,
+    // mesmo que o PSD esteja numa pasta acessível (fail-safe contra vazamento).
+    if (req.psdTier !== 'all' && effectiveLicense(record).license !== 'commercial-free') {
+      return res.status(403).json({ error: 'Scene não disponível comercialmente' });
     }
     // Revalida o acesso ao PSD de origem (tier). resolvePsdPath lança se fora do escopo.
     try {

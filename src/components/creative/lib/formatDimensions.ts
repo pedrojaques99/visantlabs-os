@@ -21,7 +21,9 @@ export function getPreviewDimensions(
   maxWidth: number,
   maxHeight: number
 ): Dimensions {
-  const target = FORMAT_DIMENSIONS[format];
+  // Fallback defensivo: um formato fora do set (cache legado, valor inesperado)
+  // não pode derrubar o studio inteiro — cai no 1:1 em vez de crashar.
+  const target = FORMAT_DIMENSIONS[format] ?? FORMAT_DIMENSIONS['1:1'];
   const scale = Math.min(maxWidth / target.width, maxHeight / target.height, 1);
   return {
     width: Math.round(target.width * scale),

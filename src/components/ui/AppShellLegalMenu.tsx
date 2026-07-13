@@ -7,7 +7,10 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
-export const AppShellLegalMenu: React.FC<{ className?: string }> = ({ className }) => {
+export const AppShellLegalMenu: React.FC<{ className?: string; openUp?: boolean }> = ({
+  className,
+  openUp = false,
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -35,7 +38,12 @@ export const AppShellLegalMenu: React.FC<{ className?: string }> = ({ className 
         </Button>
       </Tooltip>
       {open && (
-        <div className="absolute right-0 top-full mt-1 min-w-[160px] rounded-md border border-neutral-800 bg-neutral-900/95 backdrop-blur-xl py-1 z-50 shadow-xl">
+        <div
+          className={cn(
+            'absolute right-0 min-w-[160px] rounded-md border border-neutral-800 bg-neutral-900/95 backdrop-blur-xl py-1 z-50 shadow-xl',
+            openUp ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}
+        >
           {items.map((item) => (
             <button
               key={item.path}

@@ -52,7 +52,7 @@ export const SEGMENTS: Segment[] = [
     label: 'Developer',
     desc: 'Codigo, integracoes, automacao',
     icon: Code,
-    route: '/developer/getting-started',
+    route: '/docs/getting-started',
     actionTitle: 'Conecte via API e MCP',
     actionDesc:
       'Design tokens como codigo e contexto de marca em qualquer agente. Comece pelos docs.',

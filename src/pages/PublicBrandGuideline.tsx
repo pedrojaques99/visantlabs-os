@@ -102,6 +102,11 @@ const BrandInteractivePanel = lazyWithRetry(() =>
     default: m.BrandInteractivePanel,
   }))
 );
+const ChangeLogoDialog = lazyWithRetry(() =>
+  import('@/components/brand/ChangeLogoDialog').then((m) => ({
+    default: m.ChangeLogoDialog,
+  }))
+);
 const BrandCreateShowcase = lazyWithRetry(() =>
   import('@/components/brand/BrandCreateShowcase').then((m) => ({
     default: m.BrandCreateShowcase,
@@ -273,6 +278,11 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     },
     [guideline, handleSave]
   );
+
+  // "Criar com esta marca" — a banda interativa saiu do fluxo do brand book
+  // (era ruído) e vive num dialog, aberto por este estado.
+  const [createOpen, setCreateOpen] = useState(false);
+  const [changeLogoOpen, setChangeLogoOpen] = useState(false);
 
   const handleConnect = async () => {
     // Admin context loads by id (no slug) — fall back to the brand's publicSlug.
@@ -791,30 +801,50 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                 Logo sits on a light plate (like a brand-kit chip) so dark/colored
                 marks stay visible on the dark hero instead of vanishing. */}
             <div className="shrink-0">
-              <div
+              {/* Logo clicável (só owner) → troca o logo principal (upload / da
+                  media / promover existente). Overlay "Trocar" no hover. */}
+              <button
+                type="button"
+                onClick={() => canEdit && setChangeLogoOpen(true)}
+                disabled={!canEdit}
+                title={canEdit ? 'Trocar logo' : undefined}
                 className={cn(
-                  'flex items-center justify-center rounded-3xl border px-8 py-7 min-w-[180px] md:min-w-[220px]',
-                  avatar.logoUrl
-                    ? 'bg-white border-black/5 shadow-sm'
-                    : 'bg-[var(--brand-text)]/[0.03] border-[var(--brand-text)]/10'
+                  'relative group/logo block rounded-3xl',
+                  canEdit
+                    ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40'
+                    : 'cursor-default'
                 )}
               >
-                {avatar.logoUrl ? (
-                  <img
-                    src={avatar.logoUrl}
-                    alt={`${tokens.name} logo`}
-                    className="max-h-24 md:max-h-28 max-w-[200px] object-contain"
-                    loading="lazy"
-                  />
-                ) : (
-                  <span
-                    className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-black"
-                    style={{ backgroundColor: avatar.bg, color: avatar.fg }}
-                  >
-                    {avatar.initial}
+                <div
+                  className={cn(
+                    'flex items-center justify-center rounded-3xl border px-8 py-7 min-w-[180px] md:min-w-[220px]',
+                    avatar.logoUrl
+                      ? 'bg-white border-black/5 shadow-sm'
+                      : 'bg-[var(--brand-text)]/[0.03] border-[var(--brand-text)]/10'
+                  )}
+                >
+                  {avatar.logoUrl ? (
+                    <img
+                      src={avatar.logoUrl}
+                      alt={`${tokens.name} logo`}
+                      className="max-h-24 md:max-h-28 max-w-[200px] object-contain"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span
+                      className="flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-2xl text-5xl md:text-6xl font-black"
+                      style={{ backgroundColor: avatar.bg, color: avatar.fg }}
+                    >
+                      {avatar.initial}
+                    </span>
+                  )}
+                </div>
+                {canEdit && (
+                  <span className="absolute inset-0 flex items-center justify-center rounded-3xl bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity">
+                    <span className="text-xs font-medium text-white">Trocar logo</span>
                   </span>
                 )}
-              </div>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -837,19 +867,55 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           sectionsLabel={t('public.brand.guideline.brand_sections')}
         />
 
-        {/* Owner-only interactive band (seasonal ideas + connect-to-AI). Never on the
-            public/anonymous view; shown on the Overview tab for people who can edit. */}
-        {canEdit && activeTab === 'all' && guideline.id && (
+        {/* "Criar com esta marca" — a banda interativa (produção + MCP) saiu do
+            fluxo do brand book (era ruído no livro) e vive num dialog. Aparece pra
+            QUALQUER viewer quando a marca é compartilhada (isShared) — fundadores
+            sem cockpit também criam/conectam a IA. */}
+        {!!(guideline.isPublic || guideline.publicSlug) && activeTab === 'all' && guideline.id && (
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 my-8 flex justify-center">
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className="h-11 px-6 gap-2 bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 font-semibold"
+            >
+              Criar com esta marca
+            </Button>
+          </div>
+        )}
+
+        <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+          <SheetContent
+            side="bottom"
+            className="h-[88vh] overflow-y-auto bg-neutral-950 border-white/10 p-0"
+          >
+            <SheetHeader className="px-6 pt-6">
+              <SheetTitle className="text-neutral-200">
+                Criar com {guideline.identity?.name || guideline.name}
+              </SheetTitle>
+            </SheetHeader>
+            {guideline.id && (
+              <React.Suspense fallback={null}>
+                <BrandInteractivePanel
+                  guidelineId={guideline.id}
+                  isShared={!!(guideline.isPublic || guideline.publicSlug)}
+                  connecting={connecting}
+                  onConnect={handleConnect}
+                  onGenerate={(p) => {
+                    setMockupPrompt(p);
+                    setIsMockupOpen(true);
+                  }}
+                />
+              </React.Suspense>
+            )}
+          </SheetContent>
+        </Sheet>
+
+        {/* Trocar logo principal — só owner (o botão do logo é gated em canEdit). */}
+        {changeLogoOpen && guideline?.id && (
           <React.Suspense fallback={null}>
-            <BrandInteractivePanel
-              guidelineId={guideline.id}
-              isShared={!!(guideline.isPublic || guideline.publicSlug)}
-              connecting={connecting}
-              onConnect={handleConnect}
-              onGenerate={(p) => {
-                setMockupPrompt(p);
-                setIsMockupOpen(true);
-              }}
+            <ChangeLogoDialog
+              guideline={guideline}
+              open={changeLogoOpen}
+              onOpenChange={setChangeLogoOpen}
             />
           </React.Suspense>
         )}
