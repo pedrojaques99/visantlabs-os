@@ -45,6 +45,8 @@ interface CommandPaletteProps {
   onClose?: () => void;
   /** Ação quando a busca não acha nada (ex.: "Perguntar ao Copilot: …"). */
   fallback?: (query: string) => SearchResult | null;
+  /** Placeholder do input — cada caller descreve o que ESTA paleta busca. */
+  placeholder?: string;
 }
 
 interface Group {
@@ -82,7 +84,12 @@ function flattenLeaves(items: SearchResult[]): SearchResult[] {
  * sub-lista continua pesquisável) e um **fallback** quando nada casa (→ Copilot).
  * Inspiração: Figma / Linear / Raycast.
  */
-export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose, fallback }) => {
+export const CommandPalette: React.FC<CommandPaletteProps> = ({
+  items,
+  onClose,
+  fallback,
+  placeholder,
+}) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -235,6 +242,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose, 
                       value={search}
                       onValueChange={setSearch}
                       placeholder={
+                        placeholder ||
                         t('designSystem.commandPalette.placeholder') ||
                         'Search components, colors, typography...'
                       }

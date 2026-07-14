@@ -26,5 +26,11 @@ export const GlobalCommandPalette: React.FC = () => {
       })
     : undefined;
 
-  return <CommandPalette items={items} fallback={fallback} />;
+  return (
+    <CommandPalette
+      items={items}
+      fallback={fallback}
+      placeholder={t('command.placeholder') || 'Buscar apps, marcas, ações…'}
+    />
+  );
 };

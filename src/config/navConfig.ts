@@ -248,6 +248,9 @@ function sectionFor(p: string): SectionId | null {
   // Início adaptativo: cockpit e grid de marcas são a MESMA casa → mesmo destaque
   // ('cockpit' = Início). Ver plano HOME-ADAPTIVE-IA.
   if (p === '/brand-guidelines' || p.startsWith('/brand-guidelines/')) return 'cockpit';
+  // Saídas de produção da marca (mockups/campanhas geradas) = área do cockpit
+  // (Início). Sem isso ficavam órfãs: shell sem breadcrumb nem destaque no rail.
+  if (p === '/mockups' || p === '/campaigns') return 'cockpit';
   // Branding Machine (gera identidade do zero) + lista de brandings = seção 'apps'
   // (ferramentas/gestão): dá âncora no rail e mantém "sem chip de marca" — a
   // ferramenta CRIA marca, não opera sobre a ativa. ('brands' nunca teve entrada

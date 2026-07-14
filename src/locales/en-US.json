@@ -738,6 +738,7 @@
   "auth": {
     "accountCreatedSuccess": "Account created successfully!",
     "adminPanel": "Admin",
+    "completeCaptchaHint": "Complete the verification above to continue",
     "alreadyHaveAccount": "Already have an account? Sign in",
     "and": "and",
     "authError": "Authentication error. Please sign in again.",
@@ -2002,6 +2003,7 @@
     "toggleDrawingMode": "Toggle Drawing Mode"
   },
   "command": {
+    "placeholder": "Search apps, brands, actions…",
     "goto": "Go to",
     "apps": "Apps",
     "switchBrand": "Switch brand",

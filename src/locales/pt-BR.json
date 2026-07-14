@@ -738,6 +738,7 @@
   "auth": {
     "accountCreatedSuccess": "Conta criada com sucesso!",
     "adminPanel": "Admin",
+    "completeCaptchaHint": "Complete a verificação acima para continuar",
     "alreadyHaveAccount": "Já tem uma conta? Entre",
     "and": "e",
     "authError": "Erro de autenticação. Por favor, entre novamente.",
@@ -2002,6 +2003,7 @@
     "toggleDrawingMode": "Alternar Modo de Desenho"
   },
   "command": {
+    "placeholder": "Buscar apps, marcas, ações…",
     "goto": "Ir para",
     "apps": "Apps",
     "switchBrand": "Trocar marca",

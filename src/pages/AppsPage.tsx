@@ -498,7 +498,10 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.contentStudio.description'),
         link: '/content-studio',
         badge: t('apps.badge.beta'),
-        badgeVariant: 'free',
+        // Pago (category 'pro', free:false) — variant 'premium' pra NÃO renderizar o
+        // badge verde "Grátis" (isFree deriva de badgeVariant==='free'); senão o card
+        // promete grátis e o clique cai no paywall.
+        badgeVariant: 'premium',
         category: 'pro',
         free: false,
       },
@@ -508,7 +511,8 @@ export const AppsPage: React.FC = () => {
         desc: t('apps.namingMachine.description'),
         link: '/naming',
         badge: t('apps.badge.new'),
-        badgeVariant: 'free',
+        // Pago — variant 'premium' (não 'free') pra não mostrar badge verde enganoso.
+        badgeVariant: 'premium',
         category: 'pro',
         free: false,
       },
