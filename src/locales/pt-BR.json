@@ -5555,6 +5555,38 @@
     }
   },
   "onboarding": {
+    "persona": {
+      "title": "O que você faz?",
+      "subtitle": "Isso nos leva direto à ferramenta certa pra você.",
+      "designer": {
+        "label": "Designer",
+        "desc": "UI/UX, branding, visual design",
+        "actionTitle": "Crie seu primeiro mockup",
+        "actionDesc": "Veja o poder da plataforma em ação — um mockup profissional em segundos.",
+        "actionCta": "Criar mockup"
+      },
+      "agency": {
+        "label": "Agência",
+        "desc": "Clientes, campanhas, entregas",
+        "actionTitle": "Centralize a marca dos seus clientes",
+        "actionDesc": "Uma fonte de verdade por cliente — compartilhe, gere e repita sem copiar hex na mão.",
+        "actionCta": "Criar brand guideline"
+      },
+      "marketing": {
+        "label": "Marketing",
+        "desc": "Redes sociais, conteúdo, growth",
+        "actionTitle": "Gere conteúdo para todas as redes",
+        "actionDesc": "Um brief, várias peças — copy e imagem consistentes com a marca, de uma vez.",
+        "actionCta": "Abrir Content Studio"
+      },
+      "developer": {
+        "label": "Developer",
+        "desc": "Código, integrações, automação",
+        "actionTitle": "Conecte via API e MCP",
+        "actionDesc": "Design tokens como código e contexto de marca em qualquer agente. Comece pelos docs.",
+        "actionCta": "Ver documentação"
+      }
+    },
     "step1Title": "Traga sua marca",
     "step1Subtitle": "Sua marca vira o contexto de tudo que voce gera, cores, tipografia, tom de voz.",
     "pathIngestTitle": "Tenho materiais da marca",

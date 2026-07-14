@@ -5551,6 +5551,38 @@
     }
   },
   "onboarding": {
+    "persona": {
+      "title": "What do you do?",
+      "subtitle": "This takes you straight to the right tool for you.",
+      "designer": {
+        "label": "Designer",
+        "desc": "UI/UX, branding, visual design",
+        "actionTitle": "Create your first mockup",
+        "actionDesc": "See the platform's power — a professional mockup in seconds.",
+        "actionCta": "Create mockup"
+      },
+      "agency": {
+        "label": "Agency",
+        "desc": "Clients, campaigns, deliverables",
+        "actionTitle": "Centralize your clients' brands",
+        "actionDesc": "One source of truth per client — share, generate and repeat without copying hex by hand.",
+        "actionCta": "Create brand guideline"
+      },
+      "marketing": {
+        "label": "Marketing",
+        "desc": "Social, content, growth",
+        "actionTitle": "Generate content for every channel",
+        "actionDesc": "One brief, many pieces — copy and imagery consistent with the brand, all at once.",
+        "actionCta": "Open Content Studio"
+      },
+      "developer": {
+        "label": "Developer",
+        "desc": "Code, integrations, automation",
+        "actionTitle": "Connect via API and MCP",
+        "actionDesc": "Design tokens as code and brand context in any agent. Start with the docs.",
+        "actionCta": "See the docs"
+      }
+    },
     "step1Title": "Bring your brand",
     "step1Subtitle": "Your brand becomes the context for everything you generate, colors, typography, tone of voice.",
     "pathIngestTitle": "I have brand materials",

@@ -188,9 +188,11 @@ export const OnboardingWizardV2: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <h2 className="text-xl font-semibold text-white font-mono mb-2">O que voce faz?</h2>
+              <h2 className="text-xl font-semibold text-white font-mono mb-2">
+                {t('onboarding.persona.title')}
+              </h2>
               <p className="text-neutral-400 text-sm font-mono mb-6">
-                Isso nos leva direto a ferramenta certa pra voce.
+                {t('onboarding.persona.subtitle')}
               </p>
 
               <PersonaGrid selectedId={selectedId} onSelect={setSelectedId} />
@@ -380,7 +382,7 @@ export const OnboardingWizardV2: React.FC = () => {
                     <selected.icon className="w-5 h-5 text-brand-cyan" />
                   </div>
                   <h2 className="text-xl font-semibold text-white font-mono">
-                    {selected.actionTitle}
+                    {t(`onboarding.persona.${selected.id}.actionTitle`) || selected.actionTitle}
                   </h2>
                 </div>
               ) : (
@@ -389,7 +391,9 @@ export const OnboardingWizardV2: React.FC = () => {
                 </h2>
               )}
               <p className="text-neutral-400 text-sm font-mono mb-2">
-                {selected ? selected.actionDesc : t('onboarding.step2Desc')}
+                {selected
+                  ? t(`onboarding.persona.${selected.id}.actionDesc`) || selected.actionDesc
+                  : t('onboarding.step2Desc')}
               </p>
               <p className="text-xs font-mono text-brand-cyan/80 mb-6">
                 {brandPath === 'demo'
@@ -403,7 +407,9 @@ export const OnboardingWizardV2: React.FC = () => {
                   disabled={isSubmitting}
                   className="flex-1 gap-2"
                 >
-                  {selected ? selected.actionCta : t('onboarding.continue')}{' '}
+                  {selected
+                    ? t(`onboarding.persona.${selected.id}.actionCta`) || selected.actionCta
+                    : t('onboarding.continue')}{' '}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
