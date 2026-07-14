@@ -9,6 +9,7 @@ import { authService } from '@/services/authService';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { onboardingApi } from '@/services/onboardingApi';
 import { isBrandLimitError } from '@/hooks/queries/useBrandGuidelines';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { ArrowRight, Upload, PencilLine, Compass, Loader2 } from 'lucide-react';
@@ -35,6 +36,7 @@ const routeFor = (seg: Segment | null, brandId: string | null): string => {
 export const OnboardingWizardV2: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { setActiveBrand } = useActiveBrand();
 
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -74,6 +76,10 @@ export const OnboardingWizardV2: React.FC = () => {
     const id = guideline.id ?? null;
     setBrandId(id);
     setBrandPath(path);
+    // Persiste a marca recém-criada como ATIVA (localStorage) já aqui — senão, na
+    // primeira visita a '/', o HomeRoute lê activeBrand=null e faz bounce pro grid
+    // em vez de abrir o cockpit (COCKPIT_HOME). Ver ActiveBrandContext (init lê LS).
+    if (id) setActiveBrand(id);
     onboardingApi.trackStep('brand', selectedId, path === 'demo');
     setStep(2);
   };

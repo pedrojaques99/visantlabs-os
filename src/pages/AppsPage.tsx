@@ -419,7 +419,7 @@ export const AppsPage: React.FC = () => {
         id: 'mockup-machine',
         name: t('apps.mockupMachine.name'),
         desc: t('apps.mockupMachine.description'),
-        link: '/',
+        link: '/mockupmachine',
         badge: t('apps.badge.featured'),
         badgeVariant: 'featured',
         thumbnail: '/tools/mockup-machine.webp',

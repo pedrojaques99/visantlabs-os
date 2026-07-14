@@ -3326,16 +3326,31 @@ Generate the new mockup image with the requested changes applied.`;
     return totalCredits > 0;
   }, [subscriptionStatus]);
 
-  // Disable button for: auth checking, not authenticated, currently generating, insufficient credits, or 0 credits
-  // Disable button for: auth checking, not authenticated, currently generating prompt, insufficient credits, or 0 credits
-  // We allow isGenerating (image generation) to enable queuing/concurrent generation
+  // Hard-disable reasons only (auth checking, not authed, generating a prompt).
+  // The CREDIT wall is deliberately NOT here: at 0 credits we keep the button
+  // live so the click opens the contextual upgrade modal instead of a dead grey
+  // button — the highest willingness-to-pay moment. We allow isGenerating (image
+  // generation) to enable queuing/concurrent generation.
   const isGenerateDisabled =
-    isCheckingAuth ||
-    isAuthenticated !== true ||
-    isGeneratingPrompt ||
-    isSuggestingPrompts ||
-    !hasAnyCredits ||
-    (creditsNeededForGeneration > 0 && !hasEnoughCredits(creditsNeededForGeneration));
+    isCheckingAuth || isAuthenticated !== true || isGeneratingPrompt || isSuggestingPrompts;
+
+  // Credit wall, computed separately so the CTA can route to the paywall.
+  const isOutOfCredits =
+    !isLocalDevelopment() &&
+    isAuthenticated === true &&
+    (!hasAnyCredits ||
+      (creditsNeededForGeneration > 0 && !hasEnoughCredits(creditsNeededForGeneration)));
+
+  // Contextual paywall: at the credit wall the CTA opens the upgrade modal
+  // (validateCredits routes free→plan upgrade, subscriber→credit packs) instead
+  // of no-op. Unlimited plans pass validateCredits and generate as usual.
+  const handleGenerateOrUpgrade = useCallback(async () => {
+    if (isOutOfCredits) {
+      const ok = await validateCredits({ creditsNeeded: creditsNeededForGeneration });
+      if (!ok) return;
+    }
+    handleGenerateClick();
+  }, [isOutOfCredits, validateCredits, creditsNeededForGeneration, handleGenerateClick]);
 
   // Disable edit operations if user doesn't have enough credits for a single edit operation or has 0 credits
   const isEditOperationDisabled =
@@ -3352,14 +3367,14 @@ Generate the new mockup image with the requested changes applied.`;
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         if (!isGenerateDisabled) {
-          handleGenerateClick();
+          handleGenerateOrUpgrade();
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isGenerateDisabled, handleGenerateClick]);
+  }, [isGenerateDisabled, handleGenerateOrUpgrade]);
 
   // Helper values for GenerateButton visibility
 
@@ -3449,7 +3464,7 @@ Generate the new mockup image with the requested changes applied.`;
                 onGenerateSmartPrompt={handleGenerateSmartPrompt}
                 onSimplify={handleSimplify}
                 onRegenerate={() => runGeneration()}
-                onGenerateClick={handleGenerateClick}
+                onGenerateClick={handleGenerateOrUpgrade}
                 onGenerateSuggestion={handleGenerateSuggestion}
                 onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
