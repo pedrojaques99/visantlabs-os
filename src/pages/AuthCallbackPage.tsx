@@ -35,7 +35,9 @@ export const AuthCallbackPage: React.FC = () => {
               const apiBase = import.meta.env.VITE_API_URL || 'https://api.visantlabs.com';
               window.location.href = `${apiBase}${redirectBack}&token=${encodeURIComponent(token)}`;
             } else {
-              navigate('/', { replace: true });
+              // New users (e.g. Google signup) must reach onboarding — otherwise the
+              // OAuth path skips the brand-first wizard and lands on a bare launcher.
+              navigate(user.onboardingCompleted ? '/' : '/welcome', { replace: true });
             }
           } else {
             setError(t('auth.authenticationFailed'));

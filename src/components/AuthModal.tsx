@@ -313,6 +313,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           )}
 
+          {/* Diz POR QUE o botão está desabilitado (captcha pendente) — senão o
+              usuário preenche tudo, vê o botão morto e desiste sem entender. */}
+          {isSignUp && captchaEnabled && !captchaToken && !authError && (
+            <p className="text-center text-[11px] text-neutral-500 font-mono">
+              {t('auth.completeCaptchaHint') || 'Complete a verificação acima para continuar'}
+            </p>
+          )}
+
           {authError && (
             <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
               <p className="text-xs text-destructive font-mono">{authError}</p>

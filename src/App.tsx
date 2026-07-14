@@ -284,7 +284,7 @@ const LoadingFallback = () => (
  */
 const HomeRoute: React.FC = () => {
   const { isAuthenticated } = useLayout();
-  const { activeBrand, isAllBrands, isLoading } = useActiveBrand();
+  const { activeBrand, brands, isAllBrands, isLoading } = useActiveBrand();
   const { apps, handleSelect } = useLauncherApps();
 
   if (isAuthenticated === false) {
@@ -292,6 +292,13 @@ const HomeRoute: React.FC = () => {
   }
   // Espera as marcas carregarem antes de decidir (evita flash cockpit↔grid).
   if (isLoading) return null;
+
+  // Marcas existem mas a ativa ainda não resolveu (o fallback do ActiveBrandContext
+  // roda pós-commit) — espera um tick em vez de bounce pro grid. Sem isso, o usuário
+  // recém-onboardado via '/' → cockpit cairia no grid de marcas por uma corrida.
+  if (FEATURE_COCKPIT && !isAllBrands && !activeBrand?.id && brands.length > 0) {
+    return null;
+  }
 
   if (FEATURE_COCKPIT && activeBrand?.id && !isAllBrands) {
     return <BrandCockpit apps={apps} onSelectApp={handleSelect} />;

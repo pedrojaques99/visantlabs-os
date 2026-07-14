@@ -14,6 +14,7 @@
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { flagEnabled } from './featureFlags.js';
+import { sendBrandQuotaDowngradeEmail } from '../services/emailService.js';
 
 export interface BrandQuota {
   /** Active (non-archived) brands OWNED by the user. Shared brands count on the owner. */
@@ -459,6 +460,8 @@ export async function enforceBrandQuotaOnDowngrade(
     where: { id: userId },
     select: {
       id: true,
+      email: true,
+      name: true,
       subscriptionStatus: true,
       subscriptionTier: true,
       isAdmin: true,
@@ -476,19 +479,45 @@ export async function enforceBrandQuotaOnDowngrade(
     // webhooks for the SAME excess) — but a NEW downgrade that increases the
     // excess (e.g. another Stripe quantity cut while already in grace) gets a
     // fresh 7-day window on the larger number, so the user isn't shortchanged.
+    const priorGrace =
+      typeof meta.brandQuotaGraceUntil === 'string' ? meta.brandQuotaGraceUntil : null;
     const storedExcess = Number(meta.brandQuotaExcess);
     const hasLargerExcess = Number.isFinite(storedExcess) && excess > storedExcess;
     const graceUntil =
-      typeof meta.brandQuotaGraceUntil === 'string' && meta.brandQuotaGraceUntil && !hasLargerExcess
-        ? meta.brandQuotaGraceUntil
+      priorGrace && !hasLargerExcess
+        ? priorGrace
         : new Date(Date.now() + GRACE_PERIOD_MS).toISOString();
     meta.brandQuotaGraceUntil = graceUntil;
     meta.brandQuotaExcess = excess;
     await prisma.user.update({ where: { id: userId }, data: { metadata: meta } });
-    // TODO(email): reuse server/services/emailService.ts with a dedicated
-    // "brand quota downgrade" template — list the brands at risk and link to
-    // /brand-guidelines so the user picks which ones to archive before the deadline.
     console.log('[BrandQuota] Downgrade grace window recorded', { userId, excess, graceUntil });
+
+    // Warn the user ONCE per fresh grace window (not on every repeated webhook).
+    // Non-blocking and non-throwing — the in-app banner is the fallback notice.
+    if (user.email && graceUntil !== priorGrace) {
+      try {
+        const atRisk = await prisma.brandGuideline.findMany({
+          where: { userId, ...ACTIVE_BRAND_WHERE },
+          orderBy: { updatedAt: 'asc' },
+          take: excess,
+          select: { identity: true },
+        });
+        const atRiskBrands = atRisk.map((b) => {
+          const name = (b.identity as any)?.name;
+          return typeof name === 'string' && name.trim() ? name.trim() : 'Marca sem nome';
+        });
+        await sendBrandQuotaDowngradeEmail({
+          email: user.email,
+          name: user.name ?? undefined,
+          atRiskBrands,
+          keepCount: quota.max ?? 0,
+          graceUntil,
+        });
+      } catch (err: any) {
+        console.error('[BrandQuota] downgrade email failed:', err?.message || err);
+      }
+    }
+
     return { excess, graceUntil };
   }
 

@@ -31,7 +31,7 @@ interface Step {
 
 const LEGACY_STEPS = [
   { id: 'brand', label: 'Criar sua marca', route: '/brand-guidelines' },
-  { id: 'generate', label: 'Gerar sua primeira peca', route: '/mockupmachine' },
+  { id: 'generate', label: 'Gerar sua primeira peça', route: '/mockupmachine' },
   { id: 'share', label: 'Compartilhar ou exportar', route: '/brand-guidelines' },
 ] as const;
 

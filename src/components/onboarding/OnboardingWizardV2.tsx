@@ -9,6 +9,7 @@ import { authService } from '@/services/authService';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { onboardingApi } from '@/services/onboardingApi';
 import { isBrandLimitError } from '@/hooks/queries/useBrandGuidelines';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { ArrowRight, Upload, PencilLine, Compass, Loader2 } from 'lucide-react';
@@ -35,6 +36,7 @@ const routeFor = (seg: Segment | null, brandId: string | null): string => {
 export const OnboardingWizardV2: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { setActiveBrand } = useActiveBrand();
 
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -74,6 +76,10 @@ export const OnboardingWizardV2: React.FC = () => {
     const id = guideline.id ?? null;
     setBrandId(id);
     setBrandPath(path);
+    // Persiste a marca recém-criada como ATIVA (localStorage) já aqui — senão, na
+    // primeira visita a '/', o HomeRoute lê activeBrand=null e faz bounce pro grid
+    // em vez de abrir o cockpit (COCKPIT_HOME). Ver ActiveBrandContext (init lê LS).
+    if (id) setActiveBrand(id);
     onboardingApi.trackStep('brand', selectedId, path === 'demo');
     setStep(2);
   };
@@ -182,9 +188,11 @@ export const OnboardingWizardV2: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <h2 className="text-xl font-semibold text-white font-mono mb-2">O que voce faz?</h2>
+              <h2 className="text-xl font-semibold text-white font-mono mb-2">
+                {t('onboarding.persona.title')}
+              </h2>
               <p className="text-neutral-400 text-sm font-mono mb-6">
-                Isso nos leva direto a ferramenta certa pra voce.
+                {t('onboarding.persona.subtitle')}
               </p>
 
               <PersonaGrid selectedId={selectedId} onSelect={setSelectedId} />
@@ -374,7 +382,7 @@ export const OnboardingWizardV2: React.FC = () => {
                     <selected.icon className="w-5 h-5 text-brand-cyan" />
                   </div>
                   <h2 className="text-xl font-semibold text-white font-mono">
-                    {selected.actionTitle}
+                    {t(`onboarding.persona.${selected.id}.actionTitle`) || selected.actionTitle}
                   </h2>
                 </div>
               ) : (
@@ -383,7 +391,9 @@ export const OnboardingWizardV2: React.FC = () => {
                 </h2>
               )}
               <p className="text-neutral-400 text-sm font-mono mb-2">
-                {selected ? selected.actionDesc : t('onboarding.step2Desc')}
+                {selected
+                  ? t(`onboarding.persona.${selected.id}.actionDesc`) || selected.actionDesc
+                  : t('onboarding.step2Desc')}
               </p>
               <p className="text-xs font-mono text-brand-cyan/80 mb-6">
                 {brandPath === 'demo'
@@ -397,7 +407,9 @@ export const OnboardingWizardV2: React.FC = () => {
                   disabled={isSubmitting}
                   className="flex-1 gap-2"
                 >
-                  {selected ? selected.actionCta : t('onboarding.continue')}{' '}
+                  {selected
+                    ? t(`onboarding.persona.${selected.id}.actionCta`) || selected.actionCta
+                    : t('onboarding.continue')}{' '}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

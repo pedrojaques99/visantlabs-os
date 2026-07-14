@@ -12,7 +12,9 @@
  * gerir o estado localmente.
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { isBrandScopedEditor } from '@/config/navConfig';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 /** Chave de persistência — herdada do BrandCockpit (SSoT). */
@@ -91,6 +93,21 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     }
   }, [brands, activeBrandId, isAllBrands]);
+
+  // "Todas as marcas" é uma visão de LISTA (filtro). Ao entrar num editor que
+  // PRODUZ para uma marca (guideline = INPUT), resolve numa marca concreta —
+  // senão o chip fica em branco e a geração roda sem contexto de marca.
+  const location = useLocation();
+  useEffect(() => {
+    if (!isAllBrands || brands.length === 0) return;
+    if (!isBrandScopedEditor(location.pathname)) return;
+    const pick = brands.find((g) => !g.isDemo) ?? brands[0];
+    if (pick?.id) {
+      setIsAllBrands(false);
+      setActiveBrandId(pick.id);
+      if (typeof window !== 'undefined') localStorage.setItem(ACTIVE_BRAND_LS_KEY, pick.id);
+    }
+  }, [location.pathname, isAllBrands, brands]);
 
   const [recentBrandIds, setRecentBrandIds] = useState<string[]>(() => readRecent());
 

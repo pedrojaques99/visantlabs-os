@@ -77,7 +77,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Starter',
         tagline: 'Pra experimentar e lançar a primeira marca.',
         credits: '50 créditos/mês (resetam) · fair-use',
-        creditsOutcome: '≈ 50 mockups on-brand',
+        creditsOutcome: '≈ 50 mockups on-brand no modelo padrão',
         features: [
           '1 marca ativa',
           '1 GB de storage',
@@ -91,7 +91,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Pro',
         tagline: 'Pra quem toca várias marcas em produção.',
         credits: '500 créditos/mês (resetam) · fair-use',
-        creditsOutcome: '≈ 500 mockups on-brand',
+        creditsOutcome: '≈ 500 mockups on-brand no modelo padrão',
         features: [
           'Marcas ilimitadas',
           '20 GB de storage',
@@ -105,7 +105,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Vision',
         tagline: 'Topo de linha: prioridade e acesso antecipado.',
         credits: '1000 créditos/mês + fair-use',
-        creditsOutcome: '≈ 1000 mockups on-brand',
+        creditsOutcome: '≈ 1000 mockups on-brand no modelo padrão',
         features: [
           'Marcas ilimitadas',
           '100 GB de storage',
@@ -134,7 +134,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
     recommended: 'Recommended',
     earlyAccess: 'Early access',
     launchLabel: 'launch price',
-    launchNote: 'for a limited time',
+    launchNote: 'until further notice',
     byokBadge: 'BYOK · use your key, save credits',
     moreCreditsQuestion: 'Need more credits?',
     moreCreditsCta: 'Buy a credit pack',
@@ -143,7 +143,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Starter',
         tagline: 'To try it out and launch your first brand.',
         credits: '50 credits/mo (reset) · fair-use',
-        creditsOutcome: '≈ 50 on-brand mockups',
+        creditsOutcome: '≈ 50 on-brand mockups on the default model',
         features: [
           '1 active brand',
           '1 GB storage',
@@ -157,7 +157,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Pro',
         tagline: 'For running several brands in production.',
         credits: '500 credits/mo (reset) · fair-use',
-        creditsOutcome: '≈ 500 on-brand mockups',
+        creditsOutcome: '≈ 500 on-brand mockups on the default model',
         features: [
           'Unlimited brands',
           '20 GB storage',
@@ -171,7 +171,7 @@ const PRICING_COPY: Record<PricingLang, PricingCopy> = {
         name: 'Vision',
         tagline: 'Top tier: priority and early access.',
         credits: '1000 credits/mo + fair-use',
-        creditsOutcome: '≈ 1000 on-brand mockups',
+        creditsOutcome: '≈ 1000 on-brand mockups on the default model',
         features: [
           'Unlimited brands',
           '100 GB storage',

@@ -236,7 +236,9 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
               </Button>
               <Button
                 variant="outline"
-                onClick={onGetStarted}
+                onClick={() =>
+                  document.getElementById('apps-preview')?.scrollIntoView({ behavior: 'smooth' })
+                }
                 className="h-12 rounded-full px-8 text-sm font-semibold"
               >
                 {t('landing.hero.ctaSecondary')}
@@ -308,7 +310,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       </section>
 
       {/* ── Bento ───────────────────────────────────────────────── */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <section id="apps-preview" className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28 scroll-mt-16">
         <div data-reveal className="mb-10 flex flex-col gap-3 text-center">
           <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
             {t('landing.bento.eyebrow')}

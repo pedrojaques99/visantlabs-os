@@ -13,6 +13,7 @@ const TEMPLATE_IDS = {
   creditsPurchased: process.env.RESEND_TEMPLATE_CREDITS_PURCHASED || '',
   newsletterWelcome: process.env.RESEND_TEMPLATE_NEWSLETTER_WELCOME || '',
   emailVerification: process.env.RESEND_TEMPLATE_EMAIL_VERIFICATION || '',
+  brandQuotaDowngrade: process.env.RESEND_TEMPLATE_BRAND_QUOTA_DOWNGRADE || '',
 };
 
 let resend: Resend | null = null;
@@ -89,6 +90,29 @@ const newsletterWelcomeHtml = (whatsappUrl: string) =>
   baseHtml(`<h2>Obrigado por se inscrever!</h2>
 <p>Você está na lista de espera da Visant Labs. Entraremos em contato em breve.</p>
 ${whatsappUrl ? `<a class="btn" href="${whatsappUrl}">Entrar no grupo do WhatsApp</a>` : ''}`);
+
+// Escapa nomes de marca vindos do usuário antes de injetar no HTML do e-mail.
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const brandQuotaDowngradeHtml = (
+  userName: string,
+  atRiskBrands: string[],
+  keepCount: number,
+  deadlineText: string,
+  manageUrl: string
+) =>
+  baseHtml(`<h2>Suas marcas continuam ativas — por enquanto</h2>
+<p>Olá, <strong>${escapeHtml(userName)}</strong>.</p>
+<p>Seu plano mudou e agora comporta <strong>${keepCount} marca${keepCount === 1 ? '' : 's'} ativa${
+    keepCount === 1 ? '' : 's'
+  }</strong>. Você tem até <strong>${deadlineText}</strong> para escolher quais manter — nada é apagado, nunca.</p>
+<p>Se você não fizer nada, estas marcas (as menos usadas) passam a <strong>somente leitura</strong> depois do prazo. Você reativa qualquer uma a qualquer momento fazendo upgrade:</p>
+<ul style="color:#a3a3a3;line-height:1.8">
+${atRiskBrands.map((b) => `<li>${escapeHtml(b)}</li>`).join('\n')}
+</ul>
+<a class="btn" href="${manageUrl}">Escolher quais manter</a>
+<p style="margin-top:20px;font-size:13px">Seus dados ficam guardados. Arquivar ≠ apagar — é só pausar o acesso de edição e geração.</p>`);
 
 // ---------------------------------------------------------------------------
 // Helpers to build send payload (template if configured, HTML otherwise)
@@ -266,6 +290,69 @@ export const sendVerificationEmail = async (params: SendVerificationEmailParams)
   } catch (error: any) {
     console.error('Error sending verification email:', error);
     throw new Error(`Failed to send verification email: ${error.message || 'Unknown error'}`);
+  }
+};
+
+export interface SendBrandQuotaDowngradeEmailParams {
+  email: string;
+  name?: string;
+  /** Names of the brands that will be archived if the user does nothing. */
+  atRiskBrands: string[];
+  /** How many brands the new tier keeps active. */
+  keepCount: number;
+  /** ISO date the grace window ends. */
+  graceUntil: string;
+}
+
+/**
+ * Heads-up sent when a downgrade puts a user over their brand quota. Best-effort
+ * and NON-throwing: it runs off a Stripe webhook, so a mail failure or missing
+ * config must never break billing. Returns true if a send was attempted.
+ */
+export const sendBrandQuotaDowngradeEmail = async (
+  params: SendBrandQuotaDowngradeEmailParams
+): Promise<boolean> => {
+  const { email, name, atRiskBrands, keepCount, graceUntil } = params;
+
+  const emailService = getEmailService();
+  if (!emailService) {
+    console.warn('[email] brand-quota downgrade notice skipped — email service not configured');
+    return false;
+  }
+
+  const manageUrl = `${FRONTEND_URL}/brand-guidelines`;
+  const userName = name || email.split('@')[0];
+  const deadlineText = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(graceUntil));
+
+  try {
+    await emailService.emails.send(
+      withTemplate(
+        {
+          from: RESEND_FROM_EMAIL,
+          to: email,
+          subject: 'Suas marcas continuam ativas — escolha quais manter · Visant Labs',
+        },
+        TEMPLATE_IDS.brandQuotaDowngrade,
+        {
+          USER_NAME: userName,
+          AT_RISK_BRANDS: atRiskBrands,
+          KEEP_COUNT: keepCount,
+          DEADLINE: deadlineText,
+          MANAGE_URL: manageUrl,
+        },
+        brandQuotaDowngradeHtml(userName, atRiskBrands, keepCount, deadlineText, manageUrl)
+      )
+    );
+    return true;
+  } catch (error: any) {
+    // Never throw — the downgrade grace window is already recorded; the in-app
+    // banner is the fallback notice.
+    console.error('[email] brand-quota downgrade notice failed:', error?.message || error);
+    return false;
   }
 };
 

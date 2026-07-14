@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 import { SEGMENTS } from './onboardingSegments';
 
 interface PersonaGridProps {
@@ -14,6 +15,7 @@ interface PersonaGridProps {
  * were byte-identical. Zero visual/behavioral change from either original.
  */
 export const PersonaGrid: React.FC<PersonaGridProps> = ({ selectedId, onSelect, className }) => {
+  const { t } = useTranslation();
   return (
     <div className={cn('grid grid-cols-2 gap-3 mb-6', className)}>
       {SEGMENTS.map((seg) => (
@@ -28,8 +30,12 @@ export const PersonaGrid: React.FC<PersonaGridProps> = ({ selectedId, onSelect, 
           )}
         >
           <seg.icon className="w-6 h-6" />
-          <span className="text-sm font-mono font-medium">{seg.label}</span>
-          <span className="text-xs text-neutral-500">{seg.desc}</span>
+          <span className="text-sm font-mono font-medium">
+            {t(`onboarding.persona.${seg.id}.label`) || seg.label}
+          </span>
+          <span className="text-xs text-neutral-500">
+            {t(`onboarding.persona.${seg.id}.desc`) || seg.desc}
+          </span>
         </button>
       ))}
     </div>
