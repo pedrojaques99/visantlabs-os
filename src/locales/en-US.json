@@ -5487,6 +5487,11 @@
       "ctaPrimary": "Start free",
       "ctaSecondary": "See the apps"
     },
+    "proof": {
+      "eyebrow": "Real output",
+      "title": "One brand. Every format. Always on-brand.",
+      "subtitle": "Every piece below was generated from a live brand guideline — nothing redesigned by hand. From coffee bag to dashboard, it all pulls the same identity."
+    },
     "howItWorks": {
       "eyebrow": "How it works",
       "title": "Three steps. Zero rework.",
