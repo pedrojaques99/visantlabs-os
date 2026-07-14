@@ -28,6 +28,8 @@ export interface MockupRecipe {
 interface SurpriseMockupHeroProps {
   brandId: string;
   className?: string;
+  /** Marca sem logo/arte → CTA pra adicionar (em vez de beco sem saída). */
+  onAddAsset?: () => void;
 }
 
 const pairKey = (r: MockupRecipe) => `${r.psdFileName}:${r.faceKey}`;
@@ -39,7 +41,11 @@ const pairKey = (r: MockupRecipe) => `${r.psdFileName}:${r.faceKey}`;
  * Recipes come from the deterministic matcher (`/mockup-suggestions`); the pixel
  * work happens here on the client. Sits as one cell in the cockpit bento.
  */
-export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({ brandId, className }) => {
+export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
+  brandId,
+  className,
+  onAddAsset,
+}) => {
   const { data, isLoading: loadingRecipes, error: recipesError } = useMockupSuggestions(brandId);
 
   const [recipes, setRecipes] = useState<MockupRecipe[]>([]);
@@ -190,12 +196,20 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({ brandId,
       {emptyCopy ? (
         <div
           className={cn(
-            'rounded-xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-center px-6',
+            'rounded-xl aspect-[4/3] flex flex-col items-center justify-center gap-2.5 text-center px-6',
             glassSurface.tile
           )}
         >
           <ImageOff className="size-6 opacity-40" />
           <p className="text-sm opacity-70">{emptyCopy}</p>
+          {/* Beco sem saída → CTA: sem logo, o único render grátis fica vazio.
+              Aqui o usuário adiciona um asset e o tile passa a produzir. */}
+          {reason === 'no_assets' && onAddAsset && (
+            <Button size="xs" variant="secondary" onClick={onAddAsset} className="mt-1 gap-1.5">
+              <Sparkles className="size-3.5" />
+              Adicionar logo
+            </Button>
+          )}
         </div>
       ) : (
         <GeneratingImageCard

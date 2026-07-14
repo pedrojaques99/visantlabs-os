@@ -480,7 +480,10 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
                 {activeBrand?.id && (
                   <React.Suspense fallback={null}>
-                    <SurpriseMockupHero brandId={activeBrand.id} />
+                    <SurpriseMockupHero
+                      brandId={activeBrand.id}
+                      onAddAsset={() => setChangeLogoOpen(true)}
+                    />
                   </React.Suspense>
                 )}
 
