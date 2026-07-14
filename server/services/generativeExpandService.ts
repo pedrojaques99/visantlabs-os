@@ -10,6 +10,7 @@
  * Engine: OpenAI GPT Image 2 (images.edit) — best quality for photographic outpainting.
  */
 import { uploadImage } from './r2Service.js';
+import { prisma } from '../db/prisma.js';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
 import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 
@@ -222,7 +223,18 @@ export async function generativeExpand(
   if (!resultData?.b64_json) throw new Error('Generative expand returned no image data.');
 
   const resultDataUrl = `data:image/png;base64,${resultData.b64_json}`;
-  const publicUrl = await uploadImage(resultDataUrl, userId);
+  // Pass tier/isAdmin so admins & premium users bypass the free storage cap.
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionTier: true, isAdmin: true },
+  });
+  const publicUrl = await uploadImage(
+    resultDataUrl,
+    userId,
+    undefined,
+    user?.subscriptionTier || undefined,
+    user?.isAdmin || undefined
+  );
 
   return {
     imageUrl: publicUrl,

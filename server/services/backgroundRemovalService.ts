@@ -10,6 +10,7 @@ import { writeFile, readFile, unlink, mkdtemp } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { uploadImage } from './r2Service.js';
+import { prisma } from '../db/prisma.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -103,7 +104,19 @@ export async function removeBackgroundFromImage(
 
   const mimeType = format === 'webp' ? 'image/webp' : 'image/png';
   const dataUrl = `data:${mimeType};base64,${resultBuf.toString('base64')}`;
-  const publicUrl = await uploadImage(dataUrl, userId);
+  // Pass tier/isAdmin so admins & premium users bypass the free storage cap
+  // (MCP/plugin auth only sets userId, never tier/isAdmin).
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionTier: true, isAdmin: true },
+  });
+  const publicUrl = await uploadImage(
+    dataUrl,
+    userId,
+    undefined,
+    user?.subscriptionTier || undefined,
+    user?.isAdmin || undefined
+  );
 
   return {
     imageUrl: publicUrl,

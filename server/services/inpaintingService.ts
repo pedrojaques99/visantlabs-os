@@ -15,6 +15,7 @@
  */
 import OpenAI from 'openai';
 import { uploadImage } from './r2Service.js';
+import { prisma } from '../db/prisma.js';
 import { stripDataUriPrefix } from '../lib/dataUri.js';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
 import {
@@ -237,7 +238,19 @@ export async function inpaint(req: InpaintRequest, userId: string): Promise<Inpa
   if (!result?.b64_json) throw new Error('Inpainting returned no image data.');
 
   const dataUrl = `data:image/png;base64,${result.b64_json}`;
-  const publicUrl = await uploadImage(dataUrl, userId);
+  // Resolve the user's tier/isAdmin so admins & premium users don't hit the
+  // free storage cap (MCP/plugin auth only sets userId, never tier/isAdmin).
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionTier: true, isAdmin: true },
+  });
+  const publicUrl = await uploadImage(
+    dataUrl,
+    userId,
+    undefined,
+    user?.subscriptionTier || undefined,
+    user?.isAdmin || undefined
+  );
 
   return {
     imageUrl: publicUrl,
