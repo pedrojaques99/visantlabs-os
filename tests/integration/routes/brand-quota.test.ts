@@ -314,7 +314,8 @@ describe('Brand billing — active brand quota (money gates)', () => {
       .get('/api/payments/subscription-status')
       .set('Authorization', tokenFor(user));
     expect(res.status).toBe(200);
-    expect(res.body.brandQuota).toEqual({ used: 1, max: 1, tier: 'free' });
+    // graceUntil is part of the quota payload (feeds the downgrade banner); null when no downgrade is pending.
+    expect(res.body.brandQuota).toEqual({ used: 1, max: 1, tier: 'free', graceUntil: null });
   });
 
   it('pricing v3 tiers: starter/pro/vision resolve maxBrands via getBrandQuota fallbacks', async () => {
