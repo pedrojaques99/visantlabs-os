@@ -28,11 +28,31 @@ const MARQUEE = [
   'ascii-vortex',
 ];
 
-const Marquee: React.FC<{ names: string[]; reverse?: boolean; speed?: number }> = ({
-  names,
-  reverse = false,
-  speed = 55,
-}) => {
+// On-brand proof — real outputs generated from live brand guidelines (one brand → every format).
+const PROOF = [
+  'oz',
+  'kastrup',
+  'padoo',
+  'clube-influencia',
+  'quadraclub',
+  'mizz',
+  'build-partners',
+  'feira-2026',
+  'days-n-days',
+  'sports-248',
+  'comunicart',
+  'movitera',
+  'visant',
+  'aurora-coffee',
+];
+
+const Marquee: React.FC<{
+  names: string[];
+  reverse?: boolean;
+  speed?: number;
+  srcOf?: (name: string) => string;
+  tall?: boolean;
+}> = ({ names, reverse = false, speed = 55, srcOf = (name) => `/tools/${name}.webp`, tall = false }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -52,10 +72,12 @@ const Marquee: React.FC<{ names: string[]; reverse?: boolean; speed?: number }> 
         {[...names, ...names].map((name, i) => (
           <div
             key={`${name}-${i}`}
-            className="shrink-0 w-[200px] md:w-[280px] h-32 md:h-44 rounded-xl overflow-hidden border border-white/10 bg-neutral-900"
+            className={`shrink-0 overflow-hidden rounded-xl border border-white/10 bg-neutral-900 ${
+              tall ? 'w-[190px] md:w-[240px] h-56 md:h-72' : 'w-[200px] md:w-[280px] h-32 md:h-44'
+            }`}
           >
             <img
-              src={`/tools/${name}.webp`}
+              src={srcOf(name)}
               alt=""
               aria-hidden
               loading="lazy"
@@ -223,6 +245,22 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           </div>
         </div>
       </header>
+
+      {/* ── On-brand proof ──────────────────────────────────────── */}
+      <section className="relative z-10 py-16 sm:py-20">
+        <div data-reveal className="mx-auto mb-10 flex max-w-6xl flex-col gap-3 px-6 text-center">
+          <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+            {t('landing.proof.eyebrow')}
+          </span>
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            {t('landing.proof.title')}
+          </h2>
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-neutral-500">
+            {t('landing.proof.subtitle')}
+          </p>
+        </div>
+        <Marquee names={PROOF} speed={90} tall srcOf={(name) => `/proof/brand-${name}.webp`} />
+      </section>
 
       {/* ── How It Works ────────────────────────────────────────── */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28">
