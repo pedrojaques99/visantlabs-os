@@ -18,6 +18,7 @@ export { notifyContextChange } from './context';
 export { getTemplates, extractTemplateSchemas } from './templates';
 export { scaffoldAgentLibrary } from './scaffold';
 export { pasteGeneratedImage, deleteSelection } from './image';
+export { exportNodes } from './photoSequence';
 export {
   saveApiKey,
   getApiKey,

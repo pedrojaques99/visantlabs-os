@@ -3,8 +3,9 @@ import { BrandSection } from '../brand/BrandSection';
 import { ExportSection } from './ExportSection';
 import { FontSwapSection } from './FontSwapSection';
 import { AutomationSection } from './AutomationSection';
-import { Download, Type, Zap, Users } from 'lucide-react';
+import { Download, Type, Zap, Users, Film } from 'lucide-react';
 import { BulkCardsSection } from './BulkCardsSection';
+import { PhotoSequencerSection } from './PhotoSequencerSection';
 
 const SECTIONS = [
   {
@@ -22,6 +23,14 @@ const SECTIONS = [
     description: 'Color variations, presets, and social frames',
     component: AutomationSection,
     defaultOpen: true,
+  },
+  {
+    id: 'photoseq',
+    title: 'Photo Sequencer',
+    icon: Film,
+    description: 'Fotos do canvas em sequência → vídeo',
+    component: PhotoSequencerSection,
+    defaultOpen: false,
   },
   {
     id: 'fontswap',

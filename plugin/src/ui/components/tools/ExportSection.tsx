@@ -2,18 +2,9 @@ import React from 'react';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { useClient } from '../../lib/ClientProvider';
+import { downloadFile } from '../../lib/download';
 import { OpButton } from '../common/OpButton';
 import { Download, Copy, LayoutGrid, Smartphone, FileText, Braces, Table } from 'lucide-react';
-
-function downloadFile(content: string, filename: string, mimeType = 'text/markdown') {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 export function ExportSection() {
   const isGenerating = usePluginStore((s) => s.isGenerating);

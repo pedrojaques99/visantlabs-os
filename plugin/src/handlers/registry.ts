@@ -32,6 +32,9 @@ export const registry: Registry = {
   'context.get': async () => getEnrichedContext(),
   'context.getEnriched': async () => getEnrichedContext(),
 
+  // Images
+  'image.exportNodes': async (p) => H.exportNodes(p),
+
   // Components / Templates
   'components.getInFile': async () => H.getComponentsInCurrentFile() as any,
   'components.getAgent': async () => H.getAgentComponents() as any,
