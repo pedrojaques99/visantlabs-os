@@ -91,6 +91,8 @@ export function mergeBrandGuidelines(
       merged.strategy.personas = incoming.strategy.personas;
     if (!merged.strategy.voiceValues?.length && incoming.strategy.voiceValues?.length)
       merged.strategy.voiceValues = incoming.strategy.voiceValues;
+    if (!merged.strategy.copyExamples?.length && incoming.strategy.copyExamples?.length)
+      merged.strategy.copyExamples = incoming.strategy.copyExamples;
     if (!merged.strategy.marketResearch && incoming.strategy.marketResearch)
       merged.strategy.marketResearch = incoming.strategy.marketResearch;
     if (!merged.strategy.graphicSystem && incoming.strategy.graphicSystem)

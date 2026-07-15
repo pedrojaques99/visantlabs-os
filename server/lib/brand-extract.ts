@@ -30,6 +30,9 @@ Schema:
     ],
     "voiceValues": [
       { "title": "Voice Quality Name", "description": "how it sounds in practice", "example": "Example phrase in this voice" }
+    ],
+    "copyExamples": [
+      { "text": "A real headline exactly as it appears in the source", "type": "headline|tagline|cta|body" }
     ]
   },
   "assetClassifications": [
@@ -51,6 +54,7 @@ Rules:
 - Font families must be exact names (e.g., "Inter", not "sans-serif")
 - For strategy documents: extract ALL personas, archetypes, tone of voice values, positioning, manifesto, brand values
 - archetypes/personas/voiceValues MUST be objects (not plain strings)
+- copyExamples: transcribe real copy VERBATIM — headlines, taglines, CTAs the brand actually published in the source. Never write new copy, never improve or translate one, and skip generic UI text ("Saiba mais", "Enviar"). These are fed back as few-shot for generation, so an invented line teaches the model to imitate a fake brand. Omit the field entirely rather than pad it.
 - assetClassifications must have one entry per image, in the same order images were provided
 - Return ONLY valid JSON, no markdown fences, no explanation`;
 
@@ -133,7 +137,8 @@ function extractJson(text: string): string {
   throw new Error('No JSON in LLM response');
 }
 
-function validateExtracted(data: any): ExtractedBrandData {
+/** Exported for tests — pure, and the only thing standing between an LLM's JSON and the DB. */
+export function validateExtracted(data: any): ExtractedBrandData {
   const result: ExtractedBrandData = {};
 
   if (data.identity && typeof data.identity === 'object') {
@@ -209,6 +214,23 @@ function validateExtracted(data: any): ExtractedBrandData {
       result.strategy.voiceValues = s.voiceValues
         .filter((x: any) => typeof x === 'string' || (typeof x === 'object' && x.title))
         .map((x: any) => (typeof x === 'string' ? { title: x, description: '', example: '' } : x));
+    }
+
+    if (Array.isArray(s.copyExamples)) {
+      const TYPES = ['headline', 'tagline', 'cta', 'body'];
+      const seen = new Set<string>();
+      const copies = s.copyExamples
+        .map((x: any) => (typeof x === 'string' ? { text: x } : x))
+        .filter((x: any) => x && typeof x.text === 'string' && x.text.trim())
+        .map((x: any) => ({
+          text: x.text.trim(),
+          // Drop a type the model invented rather than persist a value the
+          // union doesn't allow — the copy itself is what matters.
+          ...(TYPES.includes(x.type) ? { type: x.type } : {}),
+        }))
+        // Same line twice teaches nothing and costs tokens on every prompt.
+        .filter((x: any) => !seen.has(x.text.toLowerCase()) && seen.add(x.text.toLowerCase()));
+      if (copies.length) result.strategy.copyExamples = copies;
     }
   }
 
