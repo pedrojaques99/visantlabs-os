@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
@@ -21,7 +21,7 @@ export const GlobalCommandPalette: React.FC = () => {
         id: 'copilot-fallback',
         label: t('command.askCopilot', { query }) || `Perguntar ao Copilot: "${query}"`,
         category: '',
-        icon: <Sparkles className="h-4 w-4" />,
+        icon: <Zap className="h-4 w-4" />,
         onClick: () => navigate(`/copilot?prompt=${encodeURIComponent(query)}`),
       })
     : undefined;

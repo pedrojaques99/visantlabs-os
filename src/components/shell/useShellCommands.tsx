@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { LayoutGrid, Sparkles, Check, SunMoon, Languages, ArrowUpRight } from 'lucide-react';
+import { LayoutGrid, Zap, Check, SunMoon, Languages, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
@@ -155,7 +155,7 @@ export function useShellCommands(): ShellCommand[] {
               id: a.id,
               label: `${a.prompt}${suffix}`,
               category: actionsLabel,
-              icon: <Sparkles className="h-4 w-4" />,
+              icon: <Zap className="h-4 w-4" />,
               onClick: act(a.id, () =>
                 navigate(`/copilot?prompt=${encodeURIComponent(a.prompt)}`)
               ),
