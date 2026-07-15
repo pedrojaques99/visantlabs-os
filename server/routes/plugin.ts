@@ -2414,13 +2414,15 @@ router.post(
  * Unified endpoint: auto-detects image type and generates appropriate prompt
  * - mode: 'figma-plugin' → generates FigmaOperation[] JSON
  * - mode: 'image-gen' (default) → generates image generation prompt
- * Admin only
+ *
+ * Custa 1 crédito (BYOK não paga). Era `requireAdmin`, o que contradizia a tool
+ * MCP `smart-analyze` — anunciada como pública e gratuita — e dava 403 pra todo
+ * usuário não-admin. O gate virou custo, não cargo.
  */
 router.post(
   '/smart-analyze',
   imageAnalysisLimiter,
   authenticate,
-  requireAdmin,
   async (req: AuthRequest, res: Response) => {
     try {
       const {
@@ -2441,6 +2443,10 @@ router.post(
       if (!validation.valid) {
         return res.status(400).json({ error: validation.error });
       }
+
+      // Cobra só depois de validar a imagem — requisição malformada não queima
+      // crédito do usuário.
+      await chargeCredits(req.userId!, 1);
 
       const imageData = [{ mimeType: image.mimeType || 'image/png', data: image.base64 }];
 
