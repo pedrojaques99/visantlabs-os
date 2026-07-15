@@ -127,7 +127,7 @@ function validateImageInput(image: any): { valid: boolean; error?: string } {
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
-import { buildBrandContext, buildEnforcedPrompt } from '../lib/brandContextBuilder.js';
+import { buildEnforcedPrompt } from '../lib/brandContextBuilder.js';
 import { buildTokenRegistry } from '../lib/tokenRegistry.js';
 import { validateOperations, formatCorrections } from '../lib/tokenValidator.js';
 import { resolveBrandGuideline, buildGuidelineChoiceContext } from '../lib/brandResolver.js';
