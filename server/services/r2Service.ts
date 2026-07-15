@@ -63,12 +63,27 @@ async function checkStorageLimitIfNeeded(
 /**
  * Upload image to R2 storage
  */
+/** Extensão de arquivo por content-type. Fora daqui, trata como png. */
+const EXT_BY_CONTENT_TYPE: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+  'image/svg+xml': 'svg',
+};
+
 export async function uploadImage(
   base64Image: string,
   userId: string,
   mockupId?: string,
   subscriptionTier?: string,
-  isAdmin?: boolean
+  isAdmin?: boolean,
+  /**
+   * Content-type real do buffer. Antes isto não existia e todo objeto era
+   * gravado como `.png`/`image/png` — um webp/jpeg/svg subia rotulado errado
+   * (funcionava só porque o browser fareja o conteúdo). Opcional e no fim da
+   * assinatura pra não mexer nos callers existentes, que seguem em png.
+   */
+  contentType?: string
 ): Promise<string> {
   const bucketName = process.env.R2_BUCKET_NAME;
   const publicUrl = process.env.R2_PUBLIC_URL;
@@ -79,8 +94,11 @@ export async function uploadImage(
 
   await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
 
+  const resolvedType = contentType && EXT_BY_CONTENT_TYPE[contentType] ? contentType : 'image/png';
+  const ext = EXT_BY_CONTENT_TYPE[resolvedType];
+
   const timestamp = Date.now();
-  const key = `${userId}/${mockupId || timestamp}-${timestamp}.png`;
+  const key = `${userId}/${mockupId || timestamp}-${timestamp}.${ext}`;
 
   const client = getR2Client();
 
@@ -90,7 +108,7 @@ export async function uploadImage(
         Bucket: bucketName,
         Key: key,
         Body: buffer,
-        ContentType: 'image/png',
+        ContentType: resolvedType,
       })
     );
 
@@ -696,6 +714,54 @@ export async function uploadCanvasVideo(
     return `${publicUrl}/${key}`;
   } catch (error: unknown) {
     throw new Error(`Failed to upload canvas video to R2: ${getErrorMessage(error)}`);
+  }
+}
+
+const SEQUENCE_CONTENT_TYPE: Record<string, string> = {
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  gif: 'image/gif',
+};
+
+/**
+ * Upload a Photo Sequencer render to R2 storage.
+ *
+ * Deliberately not `uploadCanvasVideo`: this output has no canvas, and GIF is an
+ * `image/*` type — that function infers the format from a `data:video/` prefix and
+ * would label a GIF `video/mp4`. Takes the format explicitly instead of sniffing it.
+ */
+export async function uploadSequenceVideo(
+  buffer: Buffer,
+  userId: string,
+  format: 'mp4' | 'webm' | 'gif',
+  subscriptionTier?: string,
+  isAdmin?: boolean
+): Promise<string> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
+
+  await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
+
+  const timestamp = Date.now();
+  const key = `sequencer/${userId}/sequence-${timestamp}.${format}`;
+
+  const client = getR2Client();
+
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: SEQUENCE_CONTENT_TYPE[format],
+      })
+    );
+
+    await incrementUserStorage(userId, buffer.length);
+    return `${publicUrl}/${key}`;
+  } catch (error: unknown) {
+    throw new Error(`Failed to upload sequence video to R2: ${getErrorMessage(error)}`);
   }
 }
 

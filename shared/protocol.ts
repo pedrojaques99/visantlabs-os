@@ -67,6 +67,11 @@ export interface OpMap {
   // ── Images ──
   'image.paste': { payload: { data: string; mimeType?: string }; result: { ok: boolean } };
   'image.exportNode': { payload: { nodeId: string; format?: string }; result: { data: string } };
+  /** Batch export. `nodeIds: []` means "whatever is selected right now". */
+  'image.exportNodes': {
+    payload: { nodeIds?: string[]; format?: 'PNG' | 'JPG'; scale?: number };
+    result: { images: ExportedNodeImage[] };
+  };
 
   // ── Storage (plugin clientStorage) ──
   'storage.get': { payload: { key: string }; result: { value: unknown } };
@@ -164,6 +169,23 @@ export interface FontSwapEntry {
   oldStyle: string;
   newFamily: string;
   newStyle: string;
+}
+
+export interface ExportedNodeImage {
+  nodeId: string;
+  name: string;
+  /** `data:image/png;base64,…` — absent when `error` is set. */
+  data?: string;
+  width: number;
+  height: number;
+  /**
+   * Absolute canvas position. Figma returns a selection in layer order, not the order
+   * the user clicked, so callers that care about visual sequence sort on this.
+   */
+  x: number;
+  y: number;
+  /** Per-node failure; the batch as a whole still succeeds. */
+  error?: string;
 }
 
 export type OpName = keyof OpMap;

@@ -3,7 +3,7 @@
  * Every export format (CSS, Tailwind, Markdown, DESIGN.md) reads from this registry.
  * When a new section is added to BrandGuideline, add it here ONCE — all exports update.
  */
-import type { BrandGuideline } from './figma-types';
+import type { BrandGuideline, BrandStrategy } from './figma-types';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -112,35 +112,53 @@ export interface ExportVoice {
   accessibility?: string;
 }
 
-export interface ExportStrategy {
-  manifesto?: { provocation?: string; tension?: string; promise?: string; full?: string } | string;
-  positioning?: string[];
-  coreMessage?: { product: string; differential: string; emotionalBond: string };
-  pillars?: Array<{ value: string; description: string }>;
-  archetypes?: Array<{ name: string; role?: string; description: string; examples?: string[] }>;
-  personas?: Array<{
-    name: string;
-    age?: number;
-    occupation?: string;
-    traits?: string[];
-    bio?: string;
-    desires?: string[];
-    painPoints?: string[];
-  }>;
-  voiceValues?: Array<{ title: string; description: string; example: string }>;
-  marketResearch?: {
-    competitors?: string[];
-    gaps?: string[];
-    opportunities?: string[];
-    notes?: string;
-  };
-  graphicSystem?: {
-    patterns?: string[];
-    grafisms?: string[];
-    imageRules?: string[];
-    editorialGrid?: string;
-  };
-}
+/** The guideline's own strategy — re-typed here it would just drift. */
+export type ExportStrategy = BrandStrategy;
+
+/**
+ * Every strategy field the exports carry.
+ *
+ * This file used to list them four separate times (this extractor plus two
+ * `hasStrategy` guards plus a hand-written type), and the copies had already
+ * drifted apart — one guard had silently lost marketResearch and graphicSystem,
+ * so a brand carrying only those exported an empty Strategy section. Now the
+ * list lives once and the check below makes the compiler enforce it.
+ */
+const STRATEGY_FIELDS = [
+  'manifesto',
+  'positioning',
+  'coreMessage',
+  'pillars',
+  'archetypes',
+  'personas',
+  'voiceValues',
+  'copyExamples',
+  'marketResearch',
+  'graphicSystem',
+] as const satisfies readonly (keyof BrandStrategy)[];
+
+// Add a field to BrandStrategy and forget it here → this stops compiling, and
+// the error names the field you missed ("Type 'true' is not assignable to type
+// '<field>'"). That's the whole point.
+type UncoveredStrategyField = Exclude<keyof BrandStrategy, (typeof STRATEGY_FIELDS)[number]>;
+const _strategyFieldsAreExhaustive: [UncoveredStrategyField] extends [never]
+  ? true
+  : UncoveredStrategyField = true;
+void _strategyFieldsAreExhaustive;
+
+const hasAnyStrategy = (st: ExportStrategy): boolean =>
+  STRATEGY_FIELDS.some((f) => {
+    const v = st[f];
+    return Array.isArray(v) ? v.length > 0 : v != null;
+  });
+
+const pickStrategy = (s: BrandStrategy | undefined): ExportStrategy => {
+  const out: Record<string, unknown> = {};
+  for (const f of STRATEGY_FIELDS) {
+    if (s?.[f] !== undefined) out[f] = s[f];
+  }
+  return out as ExportStrategy;
+};
 
 export interface ExportTags {
   [category: string]: string[];
@@ -312,17 +330,7 @@ export function extractExportData(g: BrandGuideline): GuidelineExportData {
       accessibility: g.guidelines?.accessibility,
     },
 
-    strategy: {
-      manifesto: g.strategy?.manifesto,
-      positioning: g.strategy?.positioning,
-      coreMessage: g.strategy?.coreMessage,
-      pillars: g.strategy?.pillars,
-      archetypes: g.strategy?.archetypes,
-      personas: g.strategy?.personas,
-      voiceValues: g.strategy?.voiceValues,
-      marketResearch: g.strategy?.marketResearch,
-      graphicSystem: g.strategy?.graphicSystem,
-    },
+    strategy: pickStrategy(g.strategy),
 
     tags: g.tags || {},
   };
@@ -502,17 +510,7 @@ export function renderMarkdown(d: GuidelineExportData): string {
 
   // Strategy
   const st = d.strategy;
-  const hasStrategy =
-    st.manifesto ||
-    st.positioning?.length ||
-    st.coreMessage ||
-    st.pillars?.length ||
-    st.archetypes?.length ||
-    st.personas?.length ||
-    st.voiceValues?.length ||
-    st.marketResearch ||
-    st.graphicSystem;
-  if (hasStrategy) {
+  if (hasAnyStrategy(st)) {
     h2('Strategy');
 
     if (st.coreMessage) {
@@ -562,6 +560,12 @@ export function renderMarkdown(d: GuidelineExportData): string {
     if (st.voiceValues?.length) {
       h3('Tone of Voice');
       st.voiceValues.forEach((v) => push(`- **${v.title}:** ${v.description} — _"${v.example}"_`));
+      blank();
+    }
+
+    if (st.copyExamples?.length) {
+      h3('Copy Examples');
+      st.copyExamples.forEach((c) => push(`- ${c.type ? `**[${c.type}]** ` : ''}_"${c.text}"_`));
       blank();
     }
 
@@ -864,15 +868,7 @@ export function renderDesignMd(d: GuidelineExportData): string {
 
   // Strategy — critical for AI context
   const st = d.strategy;
-  const hasStrategy =
-    st.manifesto ||
-    st.positioning?.length ||
-    st.coreMessage ||
-    st.pillars?.length ||
-    st.archetypes?.length ||
-    st.personas?.length ||
-    st.voiceValues?.length;
-  if (hasStrategy) {
+  if (hasAnyStrategy(st)) {
     push('## Brand Strategy');
     blank();
 
@@ -923,6 +919,13 @@ export function renderDesignMd(d: GuidelineExportData): string {
     if (st.voiceValues?.length) {
       push('### Tone of Voice');
       st.voiceValues.forEach((v) => push(`- **${v.title}:** ${v.description} — _"${v.example}"_`));
+      blank();
+    }
+
+    if (st.copyExamples?.length) {
+      push('### Copy Examples');
+      push("The brand's own voice — match the register and rhythm, never reuse verbatim.");
+      st.copyExamples.forEach((c) => push(`- ${c.type ? `**[${c.type}]** ` : ''}_"${c.text}"_`));
       blank();
     }
 

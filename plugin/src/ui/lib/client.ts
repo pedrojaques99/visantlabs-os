@@ -45,6 +45,7 @@ const ROUTE: Record<OpName, Channel> = {
   'variables.getFontFamilies': 'figma',
   'image.paste': 'figma',
   'image.exportNode': 'figma',
+  'image.exportNodes': 'figma',
   'storage.get': 'figma',
   'storage.set': 'figma',
   'storage.delete': 'figma',

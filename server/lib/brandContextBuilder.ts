@@ -10,7 +10,7 @@
  * - AI generation features
  */
 
-import type { BrandGuideline } from '../../src/lib/figma-types.js';
+import type { BrandGuideline, BrandStrategy } from '../../src/lib/figma-types.js';
 import type { TokenRegistry } from './tokenRegistry.js';
 import { redisClient } from './redis.js';
 import { CACHE_TTL, CacheKey } from './cache-utils.js';
@@ -72,6 +72,48 @@ function shouldInclude(
   section: BrandContextSection
 ): boolean {
   return !sections || sections.includes(section);
+}
+
+/**
+ * Which BrandGuideline row fields each section owns.
+ *
+ * Needed because the MCP "structured" format returns the persisted row shape,
+ * not the normalized BrandContextJSON — so it can't reuse `shouldInclude`.
+ */
+export const BRAND_SECTION_FIELDS: Record<BrandContextSection, string[]> = {
+  identity: ['identity'],
+  colors: ['colors'],
+  typography: ['typography'],
+  voice: ['guidelines'],
+  strategy: ['strategy'],
+  tokens: ['tokens'],
+  logos: ['logos'],
+  media: ['media'],
+  tags: ['tags'],
+  themes: ['colorThemes'],
+  knowledge: ['knowledgeFiles'],
+};
+
+/**
+ * Filter a raw BrandGuideline row down to the requested sections.
+ *
+ * Only fields claimed by some section are filterable; anything unclaimed
+ * (id, publicSlug, gradients, shadows, motion, borders, ...) always passes
+ * through, so callers keep their metadata and no field silently disappears
+ * just because no section happens to own it yet.
+ */
+export function pickBrandSections<T extends Record<string, any>>(
+  row: T,
+  sections?: BrandContextSection[]
+): Partial<T> {
+  if (!sections) return row;
+  const claimed = new Set(Object.values(BRAND_SECTION_FIELDS).flat());
+  const requested = new Set(sections.flatMap((s) => BRAND_SECTION_FIELDS[s] ?? []));
+  const out: Record<string, any> = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (!claimed.has(key) || requested.has(key)) out[key] = value;
+  }
+  return out as Partial<T>;
 }
 
 // ═══════════════════════════════════════════
@@ -137,6 +179,7 @@ export interface BrandContextJSON {
       desires?: string[];
       painPoints?: string[];
     }>;
+    copyExamples?: Array<{ text: string; type?: string }>;
     marketResearch?: {
       competitors?: string[];
       gaps?: string[];
@@ -213,7 +256,14 @@ export function buildBrandContextJSON(
         : undefined,
     strategy:
       s('strategy') && bg.strategy
-        ? {
+        ? // The `satisfies` below makes this a compile-time exhaustive map: add
+          // a field to BrandStrategy and forget it here and the build fails
+          // naming it. Silent omission here is the worst kind — the field saves
+          // fine and simply never reaches the model. voiceValues is excluded on
+          // purpose (it renders under `voice`); archetypes/personas are
+          // re-mapped rather than passed through because image/gender/
+          // attribution are UI concerns that would only cost tokens.
+          ({
             manifesto: bg.strategy.manifesto,
             positioning: bg.strategy.positioning,
             coreMessage: bg.strategy.coreMessage,
@@ -233,9 +283,10 @@ export function buildBrandContextJSON(
               desires: p.desires,
               painPoints: p.painPoints,
             })),
+            copyExamples: bg.strategy.copyExamples,
             marketResearch: bg.strategy.marketResearch,
             graphicSystem: bg.strategy.graphicSystem,
-          }
+          } satisfies Record<Exclude<keyof BrandStrategy, 'voiceValues'>, unknown>)
         : undefined,
     tokens:
       s('tokens') && bg.tokens
@@ -273,6 +324,7 @@ const BRAND_INSTRUCTIONS = `INSTRUCTIONS:
 - If strategy.manifesto exists (structured or text), let the provocation→tension→promise arc guide the narrative.
 - If strategy.marketResearch exists, leverage gaps and opportunities for differentiation.
 - If strategy.graphicSystem exists, follow patterns, grafisms, and image rules for visual consistency.
+- If strategy.copyExamples exist, treat them as the brand's own voice on the page: match their register, rhythm and recurring metaphors, and reuse their devices on new subjects. Never copy one verbatim into new output.
 - If voice.values exist, apply them to any copy or text elements.
 - If tokens (spacing, radius) exist, use them for consistent layout rhythm.
 - If brand_knowledge exists, use it as additional context for brand-consistent outputs — it contains source material the brand owner uploaded.`;
@@ -505,6 +557,12 @@ export function buildBrandContext(
       if (gs.grafisms?.length) lines.push(`GRAFISMS: ${gs.grafisms.join(' | ')}`);
       if (gs.imageRules?.length) lines.push(`IMAGE RULES: ${gs.imageRules.join(' | ')}`);
       if (gs.editorialGrid) lines.push(`EDITORIAL GRID: ${gs.editorialGrid}`);
+    }
+    if (bg.strategy.copyExamples?.length) {
+      lines.push("COPY EXAMPLES (the brand's own voice — match register and rhythm, never reuse verbatim):");
+      for (const c of bg.strategy.copyExamples) {
+        if (c.text) lines.push(`  ${c.type ? `[${c.type}] ` : ''}"${c.text}"`);
+      }
     }
     lines.push('');
   }

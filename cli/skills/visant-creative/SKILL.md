@@ -24,8 +24,8 @@ Gerar criativos brand-aware pela infra Visant. **Antes de qualquer geração:** 
 ## Passo 0 — Pegar o contexto da marca
 
 ```
-brand-guidelines-list                  # achar o id
-brand-guidelines-get { id, sections: "visual" }   # cor/typo/tokens p/ inspecionar
+brand-guidelines-list { search: "Urban Stay" }     # achar o id (não liste tudo)
+brand-guidelines-get { id, sections: "visual" }    # cor/typo/tokens p/ inspecionar
 ```
 
 Guarde `id`, paleta (roles text/accent/bg), `typography[].family`, logos.

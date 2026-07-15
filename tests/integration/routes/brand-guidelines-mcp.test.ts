@@ -50,6 +50,22 @@ async function callTool(token: string, name: string, args: Record<string, unknow
   return { status: res.status, parsed: text ? JSON.parse(text) : undefined };
 }
 
+// Validation errors come back as plain text (the SDK stringifies the ZodError
+// before we ever see it), so they can't go through callTool's JSON.parse.
+async function callToolRaw(token: string, name: string, args: Record<string, unknown>) {
+  const agent = await request();
+  const res = await agent
+    .post('/api/mcp')
+    .set('Authorization', `Bearer ${token}`)
+    .set('Accept', 'application/json')
+    .set('Content-Type', 'application/json')
+    .send({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } });
+  return {
+    isError: res.body?.result?.isError === true,
+    text: String(res.body?.result?.content?.[0]?.text ?? ''),
+  };
+}
+
 const slimOk = (meta: any) =>
   meta === null ||
   meta === undefined ||
@@ -98,6 +114,234 @@ describe('Brand Guidelines — MCP transport (/api/mcp)', () => {
     expect('userId' in exported.parsed).toBe(false);
     expect('publicViews' in exported.parsed).toBe(false);
     expect('lastViewedAt' in exported.parsed).toBe(false);
+  });
+});
+
+// The `sections` param was inert for every default-format call: the preset
+// resolved, then the handler returned the whole Prisma row anyway. Nothing
+// asserted that a preset actually shrinks the payload, which is why it went
+// unnoticed — so these assert the filtering, not just the plumbing.
+describe('Brand Guidelines — MCP `sections` filtering (structured format)', () => {
+  it('preset "copy" drops the visual sections instead of returning the full brand', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({
+      userId: user.id,
+      name: 'Sections Probe Co.',
+      logos: [{ id: 'l1', url: 'https://example.com/logo.png', variant: 'primary' }],
+      media: [{ id: 'm1', url: 'https://example.com/shot.png', type: 'image' }],
+    });
+
+    const got = await callTool(token, 'brand-guidelines-get', {
+      id: guideline.id,
+      sections: 'copy',
+    });
+
+    // Asked for voice/strategy — must not pay for the visual payload.
+    expect('colors' in got.parsed).toBe(false);
+    expect('typography' in got.parsed).toBe(false);
+    expect('logos' in got.parsed).toBe(false);
+    expect('media' in got.parsed).toBe(false);
+
+    // "copy" = identity + voice + strategy, so identity survives.
+    expect(got.parsed.identity?.name).toBe('Sections Probe Co.');
+
+    // The agent needs to see which filter actually landed.
+    expect(got.parsed.sections).toEqual(['identity', 'voice', 'strategy']);
+  });
+
+  it('an explicit array keeps only what it names', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Array Probe Co.' });
+
+    const got = await callTool(token, 'brand-guidelines-get', {
+      id: guideline.id,
+      sections: ['colors'],
+    });
+
+    expect(Array.isArray(got.parsed.colors)).toBe(true);
+    expect('typography' in got.parsed).toBe(false);
+    expect('identity' in got.parsed).toBe(false); // identity is a section like any other
+    expect(got.parsed.id).toBe(guideline.id); // metadata is never section-filtered
+  });
+
+  it('omitting sections still returns the full brand (no silent narrowing)', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Full Probe Co.' });
+
+    const got = await callTool(token, 'brand-guidelines-get', { id: guideline.id });
+
+    expect(got.parsed.identity?.name).toBe('Full Probe Co.');
+    expect(Array.isArray(got.parsed.colors)).toBe(true);
+    expect(Array.isArray(got.parsed.typography)).toBe(true);
+    expect('sections' in got.parsed).toBe(false); // nothing was filtered, so nothing to echo
+  });
+
+  it('a bad sections value explains the contract instead of dumping the union', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Zod Probe Co.' });
+
+    const res = await callToolRaw(token, 'brand-guidelines-get', {
+      id: guideline.id,
+      sections: 'kopy', // typo'd preset
+    });
+
+    expect(res.isError).toBe(true);
+    expect(res.text).toMatch(/sections takes either an array of sections/);
+    expect(res.text).toMatch(/visual, copy, minimal, imageGen, full/);
+
+    // The point isn't the nice sentence — it's that the union dump is gone.
+    // A z.union rejection lists every arm's errors (~850 chars), which is what
+    // burned a turn in the first place.
+    expect(res.text).not.toMatch(/invalid_union/);
+    expect(res.text.length).toBeLessThan(500);
+  });
+
+  // The SDK validates upstream of the handler wrapper that does the tracking,
+  // so rejected input used to leave no trace at all — the one failure mode that
+  // reliably costs an agent a turn was the one we couldn't see.
+  it('records the rejection in telemetry (it used to vanish)', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Telemetry Probe' });
+
+    // Connect before the call — tracking no-ops when Mongo isn't up yet.
+    const { connectToMongoDB, getDb } = await import('../../../server/db/mongodb.js');
+    await connectToMongoDB();
+    const calls = getDb().collection('mcp_tool_calls');
+
+    await callToolRaw(token, 'brand-guidelines-get', { id: guideline.id, sections: 'kopy' });
+
+    // trackMcpToolCall is fire-and-forget, so give the insert a moment to land.
+    let doc: any = null;
+    for (let i = 0; i < 20 && !doc; i++) {
+      doc = await calls.findOne({ toolName: 'brand-guidelines-get', errorKind: 'validation' });
+      if (!doc) await new Promise((r) => setTimeout(r, 50));
+    }
+
+    expect(doc).toBeTruthy();
+    expect(doc.success).toBe(false);
+    expect(doc.scope).toBe('read');
+    expect(doc.userId).toBe(user.id);
+  });
+});
+
+// strategy is a Json column, but it had two independent hard-coded whitelists
+// around it (the tool's zod shape and mergeStrategy). A field missing from
+// either was accepted and then silently dropped, with a 200 and no warning.
+describe('Brand Guidelines — MCP writes strategy.copyExamples', () => {
+  it('round-trips copy examples instead of silently dropping them', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Copy Probe Co.' });
+
+    const updated = await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: {
+        copyExamples: [
+          { text: 'A CIDADE PINTA. A GENTE EMOLDURA.', type: 'headline' },
+          { text: 'BC EM TELA CHEIA.', type: 'headline' },
+        ],
+      },
+    });
+    expect(updated.parsed?.error).toBeUndefined();
+
+    const got = await callTool(token, 'brand-guidelines-get', { id: guideline.id });
+    expect(got.parsed.strategy?.copyExamples).toHaveLength(2);
+    expect(got.parsed.strategy.copyExamples[0].text).toBe('A CIDADE PINTA. A GENTE EMOLDURA.');
+    expect(got.parsed.strategy.copyExamples[0].type).toBe('headline');
+  });
+
+  it('merging copy examples leaves the rest of strategy alone', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Merge Probe Co.' });
+
+    await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: { positioning: ['keep me'] },
+    });
+    await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: { copyExamples: [{ text: 'A VISTA É SUA. A MOLDURA É NOSSA.' }] },
+    });
+
+    const got = await callTool(token, 'brand-guidelines-get', { id: guideline.id });
+    expect(got.parsed.strategy.positioning).toEqual(['keep me']);
+    expect(got.parsed.strategy.copyExamples).toHaveLength(1);
+  });
+
+  it('reaches the prompt context, which is the whole point', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Prompt Probe Co.' });
+
+    await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: { copyExamples: [{ text: 'SEM ÁUDIO-GUIA. SÓ ABRE A CORTINA.', type: 'headline' }] },
+    });
+
+    const ctx = await callTool(token, 'brand-guidelines-get', {
+      id: guideline.id,
+      format: 'prompt',
+      sections: 'copy',
+    });
+    expect(ctx.parsed.context).toContain('SEM ÁUDIO-GUIA. SÓ ABRE A CORTINA.');
+  });
+});
+
+describe('Brand Guidelines — MCP list pagination + search', () => {
+  it('paginates instead of dumping every brand', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    for (const name of ['Brand A', 'Brand B', 'Brand C']) {
+      await createBrandGuideline({ userId: user.id, name });
+    }
+
+    const page = await callTool(token, 'brand-guidelines-list', { limit: 2, skip: 0 });
+
+    expect(page.parsed.guidelines).toHaveLength(2);
+    expect(page.parsed.total).toBe(3); // real count, not the array length
+    expect(page.parsed.page).toEqual({ limit: 2, skip: 0, hasMore: true });
+
+    const last = await callTool(token, 'brand-guidelines-list', { limit: 2, skip: 2 });
+    expect(last.parsed.guidelines).toHaveLength(1);
+    expect(last.parsed.page.hasMore).toBe(false);
+  });
+
+  it('finds a brand by name without reading the whole list', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    await createBrandGuideline({ userId: user.id, name: 'Urban Stay' });
+    await createBrandGuideline({ userId: user.id, name: 'Rural Inn' });
+
+    const found = await callTool(token, 'brand-guidelines-list', { search: 'urban' }); // case-insensitive
+
+    expect(found.parsed.total).toBe(1);
+    expect(found.parsed.guidelines).toHaveLength(1);
+    expect(found.parsed.guidelines[0].identity.name).toBe('Urban Stay');
+  });
+
+  it('pages the filtered set, not the unfiltered one', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    await createBrandGuideline({ userId: user.id, name: 'Urban Stay' });
+    await createBrandGuideline({ userId: user.id, name: 'Rural Inn' });
+    await createBrandGuideline({ userId: user.id, name: 'Urban Loft' });
+
+    const page = await callTool(token, 'brand-guidelines-list', {
+      search: 'urban',
+      limit: 1,
+      skip: 1,
+    });
+
+    // Would return 0 rows if skip were applied before the name filter.
+    expect(page.parsed.total).toBe(2);
+    expect(page.parsed.guidelines).toHaveLength(1);
+    expect(page.parsed.guidelines[0].identity.name).toMatch(/^Urban /);
   });
 });
 

@@ -922,6 +922,18 @@ export interface BrandToneOfVoiceValue {
   example: string;
 }
 
+/**
+ * Real copy the brand has shipped, kept verbatim as few-shot material for
+ * generation. Distinct from voiceValues (which describe the tone in the
+ * abstract) and from dos/donts (which are rules): these are the artifacts to
+ * imitate — register, rhythm and recurring metaphor come across in a way no
+ * description of them does.
+ */
+export interface BrandCopyExample {
+  text: string;
+  type?: 'headline' | 'tagline' | 'cta' | 'body';
+}
+
 export interface BrandPillar {
   value: string;
   description: string;
@@ -952,6 +964,23 @@ export interface BrandGraphicSystem {
   grafisms?: string[];
   imageRules?: string[];
   editorialGrid?: string;
+}
+
+/**
+ * Named so the server can re-export it instead of keeping a second copy.
+ * Adding a field here is the only place it needs to be added.
+ */
+export interface BrandStrategy {
+  manifesto?: string | BrandManifesto;
+  positioning?: string[];
+  coreMessage?: BrandCoreMessage;
+  pillars?: BrandPillar[];
+  archetypes?: BrandArchetype[];
+  personas?: BrandPersona[];
+  voiceValues?: BrandToneOfVoiceValue[];
+  copyExamples?: BrandCopyExample[];
+  marketResearch?: BrandMarketResearch;
+  graphicSystem?: BrandGraphicSystem;
 }
 
 export interface BrandGuideline {
@@ -1018,17 +1047,7 @@ export interface BrandGuideline {
   motion?: BrandGuidelineMotion;
   borders?: BrandGuidelineBorder[];
   validation?: Record<string, 'pending' | 'approved' | 'needs_work'>;
-  strategy?: {
-    manifesto?: string | BrandManifesto;
-    positioning?: string[];
-    coreMessage?: BrandCoreMessage;
-    pillars?: BrandPillar[];
-    archetypes?: BrandArchetype[];
-    personas?: BrandPersona[];
-    voiceValues?: BrandToneOfVoiceValue[];
-    marketResearch?: BrandMarketResearch;
-    graphicSystem?: BrandGraphicSystem;
-  };
+  strategy?: BrandStrategy;
   _extraction?: {
     sources: Array<{
       type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine';

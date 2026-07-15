@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Sparkles, RefreshCw, ImageOff } from 'lucide-react';
+import { Zap, RefreshCw, ImageOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GeneratingImageCard } from '@/components/ui/GeneratingImageCard';
@@ -178,7 +178,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
     >
       <div className="flex items-center justify-between gap-3">
         <MicroTitle className="flex items-center gap-1.5">
-          <Sparkles className="size-3.5" />
+          <Zap className="size-3.5" />
           Mockups grátis
         </MicroTitle>
         <Button
@@ -206,7 +206,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
               Aqui o usuário adiciona um asset e o tile passa a produzir. */}
           {reason === 'no_assets' && onAddAsset && (
             <Button size="xs" variant="secondary" onClick={onAddAsset} className="mt-1 gap-1.5">
-              <Sparkles className="size-3.5" />
+              <Zap className="size-3.5" />
               Adicionar logo
             </Button>
           )}

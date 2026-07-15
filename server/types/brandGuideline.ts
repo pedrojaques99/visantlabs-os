@@ -7,38 +7,22 @@ export interface BrandGuidelineIdentity {
   description?: string;
 }
 
-/** LLM-derived visual analysis persisted on a brand asset (logo/media). */
-export interface BrandAssetAnalysis {
-  description?: string;
-  dimensions?: {
-    vibe?: string[];
-    aesthetic?: string[];
-    theme?: string[];
-    mood?: string[];
-    medium?: string[];
-  };
-  /** Placement metadata — how the asset composites onto a mockup surface. */
-  placement?: {
-    kind?:
-      | 'logo'
-      | 'wordmark'
-      | 'symbol'
-      | 'photo'
-      | 'pattern'
-      | 'texture'
-      | 'graphic'
-      | 'illustration';
-    luminance?: 'light' | 'dark' | 'mixed';
-    hasText?: boolean;
-    text?: string;
-    contrastSafeOn?: ('light' | 'dark')[];
-    aspectRatio?: number;
-    hasTransparency?: boolean;
-    dominantColor?: string;
-  };
-  analyzedAt?: string;
-  model?: string;
-}
+/**
+ * LLM-derived visual analysis persisted on a brand asset (logo/media).
+ *
+ * Fonte única em `lib/brand/visualSignature.ts`. Este arquivo mantinha uma
+ * SEGUNDA definição, estruturalmente igual e sem nada garantindo a sincronia —
+ * duas verdades pro mesmo dado persistido. Reexportar mata a duplicata: quem
+ * acrescentar campo lá (ex.: placement.textBox) não precisa lembrar daqui.
+ */
+export type {
+  BrandAssetAnalysis,
+  BrandAssetPlacement,
+  BrandAssetKind,
+  BrandAssetDimensions,
+} from '../lib/brand/visualSignature.js';
+
+import type { BrandAssetAnalysis, BrandAssetKind } from '../lib/brand/visualSignature.js';
 
 export interface BrandGuidelineLogo {
   id: string;
@@ -116,12 +100,49 @@ export interface BrandGuidelineBorder {
   css?: string;
 }
 
+export type BrandMediaCategory =
+  | 'background' // gradiente / arte de fundo, extensível
+  | 'graphic' // composição autoral / peça de campanha
+  | 'stock' // fotografia
+  | 'product' // mockup / produto aplicado
+  | 'texture' // material / padrão repetido
+  | 'other';
+
+/**
+ * Deriva a `category` do media a partir do `placement.kind` que o analisador de
+ * asset já produz. Preferimos essa fonte à `assetClassifications.category` do
+ * ingest: o kind é por-asset, vem do modelo olhando a imagem, e é reavaliado
+ * quando a análise roda de novo — em vez de um rótulo fixo do momento do upload.
+ */
+export function mediaCategoryFromKind(
+  kind: BrandAssetKind | undefined
+): BrandMediaCategory | undefined {
+  switch (kind) {
+    case 'photo':
+      return 'stock';
+    case 'pattern':
+      return 'background'; // gradiente/arte de fundo
+    case 'texture':
+      return 'texture';
+    case 'graphic':
+    case 'illustration':
+      return 'graphic';
+    default:
+      return undefined; // logo/wordmark/symbol vivem em logos[], não em media[]
+  }
+}
+
 export interface BrandGuidelineMedia {
   id: string;
   url: string;
   type: 'image' | 'pdf';
   label?: string;
-  category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
+  /**
+   * Escrita a partir de `analysis.placement.kind` (ver `mediaCategoryFromKind`).
+   * Antes era declarada e NUNCA escrita — o ingest classificava o asset, usava a
+   * classe só pra separar logo de media, e jogava fora.
+   */
+  category?: BrandMediaCategory;
   analysis?: BrandAssetAnalysis;
   /** Dedup fingerprints: sha256 (exact) + byte size + dHash (near-dup). */
   hash?: string;
@@ -159,74 +180,30 @@ export interface BrandGuidelineExtraction {
   completeness: number; // 0-100
 }
 
-export interface BrandArchetype {
-  name: string;
-  role?: 'primary' | 'secondary';
-  description: string;
-  image?: string;
-  examples?: string[];
-}
+/**
+ * Brand strategy — same story as BrandAssetAnalysis above. This file kept a
+ * second, hand-maintained copy of the whole family, and it had already drifted:
+ * BrandPersona lost `gender` and `imageAttribution`, which the other copy has
+ * and the persisted data carries. Re-exporting leaves one definition, so a new
+ * field (e.g. copyExamples) lands in both by construction.
+ *
+ * Source is figma-types because that's what brandContextBuilder — the thing
+ * that turns a guideline into AI context — already imports.
+ */
+export type {
+  BrandArchetype,
+  BrandPersona,
+  BrandToneOfVoiceValue,
+  BrandCopyExample,
+  BrandPillar,
+  BrandCoreMessage,
+  BrandManifesto,
+  BrandMarketResearch,
+  BrandGraphicSystem,
+  BrandStrategy as BrandGuidelineStrategy,
+} from '../../src/lib/figma-types.js';
 
-export interface BrandPersona {
-  name: string;
-  age?: number;
-  occupation?: string;
-  traits?: string[];
-  bio?: string;
-  desires?: string[];
-  painPoints?: string[];
-  image?: string;
-}
-
-export interface BrandToneOfVoiceValue {
-  title: string;
-  description: string;
-  example: string;
-}
-
-export interface BrandPillar {
-  value: string;
-  description: string;
-}
-
-export interface BrandCoreMessage {
-  product: string;
-  differential: string;
-  emotionalBond: string;
-}
-
-export interface BrandManifesto {
-  provocation?: string;
-  tension?: string;
-  promise?: string;
-  full?: string;
-}
-
-export interface BrandMarketResearch {
-  competitors?: string[];
-  gaps?: string[];
-  opportunities?: string[];
-  notes?: string;
-}
-
-export interface BrandGraphicSystem {
-  patterns?: string[];
-  grafisms?: string[];
-  imageRules?: string[];
-  editorialGrid?: string;
-}
-
-export interface BrandGuidelineStrategy {
-  manifesto?: string | BrandManifesto;
-  positioning?: string[];
-  coreMessage?: BrandCoreMessage;
-  pillars?: BrandPillar[];
-  archetypes?: BrandArchetype[];
-  personas?: BrandPersona[];
-  voiceValues?: BrandToneOfVoiceValue[];
-  marketResearch?: BrandMarketResearch;
-  graphicSystem?: BrandGraphicSystem;
-}
+import type { BrandStrategy } from '../../src/lib/figma-types.js';
 
 export interface BrandGuideline {
   id?: string;
@@ -239,7 +216,7 @@ export interface BrandGuideline {
   media?: BrandGuidelineMedia[];
   tokens?: BrandGuidelineTokens;
   guidelines?: BrandGuidelineGuidelines;
-  strategy?: BrandGuidelineStrategy;
+  strategy?: BrandStrategy;
   extraction?: BrandGuidelineExtraction;
   // Design tokens
   gradients?: BrandGuidelineGradient[];

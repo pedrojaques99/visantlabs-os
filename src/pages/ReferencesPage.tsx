@@ -1480,7 +1480,7 @@ const CardContextMenu: React.FC<{
     >
       {/* Invisible 0×0 anchor placed at the cursor. */}
       <DropdownMenuTrigger asChild>
-        <span aria-hidden style={{ position: 'fixed', left: x, top: y }} />
+        <span aria-hidden className="fixed" style={{ left: x, top: y }} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
         <DropdownMenuLabel className="truncate">{refTitle(item)}</DropdownMenuLabel>

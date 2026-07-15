@@ -14,6 +14,7 @@ import {
   BrandGuidelineMedia,
   BrandGuidelineLogo,
   calculateCompleteness,
+  mediaCategoryFromKind,
 } from '../types/brandGuideline.js';
 import { renderBrandBookPdf } from '../services/brandBookRenderer.js';
 import { parseUrl, parsePdf, parseImage, parseJson, parseText } from '../lib/brand-parse.js';
@@ -300,6 +301,14 @@ async function analyzeGuidelineAssets(
           const result = await withTimeout(analyzeAssetImage(asset.url), ASSET_TIMEOUT_MS);
           if (result) {
             asset.analysis = result.analysis;
+            // `category` era declarada no tipo e nunca escrita. Derivamos do
+            // placement.kind (por-asset, do modelo olhando a imagem) em vez da
+            // classe do ingest, que é um rótulo fixo do momento do upload.
+            // Só media tem category — logos vivem noutro array.
+            if (kind === 'media') {
+              const cat = mediaCategoryFromKind(result.analysis.placement?.kind);
+              if (cat) (asset as BrandGuidelineMedia).category = cat;
+            }
             analyzed++;
             const prov = String(result.analysis.model || '').startsWith('replicate')
               ? 'replicate'

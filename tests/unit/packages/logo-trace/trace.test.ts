@@ -94,6 +94,12 @@ describe('@visant/logo-trace — trace', () => {
   let png: Buffer;
   beforeAll(async () => {
     png = await blackSquarePng(32);
+    // Warm the lazy imports (sharp / potrace / svgo): `traceImage` loads them via
+    // dynamic import on first use, so whichever test traced first paid the whole
+    // ~2.5s cold start and flaked against the 10s testTimeout under full-suite
+    // parallel load. Paying it here keeps every `it` measuring real work only —
+    // hookTimeout (30s) has the headroom for it.
+    await trace(png, { preset: 'logo' });
   });
 
   it('traces a raster buffer to an SVG string with a path', async () => {

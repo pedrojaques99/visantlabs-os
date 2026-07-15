@@ -1,10 +1,16 @@
 import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
+import { MicroTitle } from '@/components/ui/MicroTitle';
+import { Select } from '@/components/ui/select';
 import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Plus, Trash2 } from 'lucide-react';
-import type { BrandGuideline, BrandToneOfVoiceValue } from '@/lib/figma-types';
+import type {
+  BrandGuideline,
+  BrandToneOfVoiceValue,
+  BrandCopyExample,
+} from '@/lib/figma-types';
 
 interface VoiceSectionProps {
   guideline: BrandGuideline;
@@ -12,12 +18,27 @@ interface VoiceSectionProps {
   span?: string;
 }
 
+const COPY_TYPE_OPTIONS = [
+  { value: 'headline', label: 'Headline' },
+  { value: 'tagline', label: 'Tagline' },
+  { value: 'cta', label: 'CTA' },
+  { value: 'body', label: 'Body' },
+];
+
 export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate, span }) => {
   const values = guideline.strategy?.voiceValues || [];
+  const copies = guideline.strategy?.copyExamples || [];
 
   const persist = useCallback(
     (next: BrandToneOfVoiceValue[]) => {
       onUpdate({ strategy: { ...guideline.strategy, voiceValues: next } });
+    },
+    [onUpdate, guideline.strategy]
+  );
+
+  const persistCopies = useCallback(
+    (next: BrandCopyExample[]) => {
+      onUpdate({ strategy: { ...guideline.strategy, copyExamples: next } });
     },
     [onUpdate, guideline.strategy]
   );
@@ -28,6 +49,13 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
     persist(values.map((v, idx) => (idx === i ? { ...v, ...patch } : v)));
 
   const remove = (i: number) => persist(values.filter((_, idx) => idx !== i));
+
+  const addCopy = () => persistCopies([...copies, { text: '', type: 'headline' }]);
+
+  const setCopy = (i: number, patch: Partial<BrandCopyExample>) =>
+    persistCopies(copies.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+
+  const removeCopy = (i: number) => persistCopies(copies.filter((_, idx) => idx !== i));
 
   const handleAiResult = useCallback(
     (patch: Record<string, any>) => {
@@ -99,6 +127,52 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
               className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-all shrink-0 mt-0.5"
               onClick={() => remove(i)}
               aria-label="Remove"
+            >
+              <Trash2 size={10} />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {/* Copy examples — real shipped copy, fed to generation as few-shot. */}
+      <div className="space-y-1.5 pt-3 mt-2 border-t border-neutral-800">
+        <div className="flex items-center justify-between">
+          <MicroTitle className="text-neutral-600">Copy examples</MicroTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5"
+            onClick={addCopy}
+            aria-label="Add copy example"
+          >
+            <Plus size={11} />
+          </Button>
+        </div>
+        {copies.length === 0 && (
+          <p className="text-[11px] text-neutral-700 py-1">
+            Real copy the brand has shipped. The AI matches its register when writing new copy.
+          </p>
+        )}
+        {copies.map((c, i) => (
+          <div key={i} className="flex gap-2 items-center group/copy">
+            <Select
+              options={COPY_TYPE_OPTIONS}
+              value={c.type || 'headline'}
+              onChange={(value) => setCopy(i, { type: value as BrandCopyExample['type'] })}
+              className="w-24 shrink-0"
+            />
+            <Input
+              value={c.text}
+              onChange={(e) => setCopy(i, { text: e.target.value })}
+              className="h-6 bg-transparent border-none px-0 text-xs text-neutral-400 focus-visible:ring-0 placeholder:text-neutral-800"
+              placeholder='"A cidade pinta. A gente emoldura."'
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/copy:opacity-100 transition-all shrink-0"
+              onClick={() => removeCopy(i)}
+              aria-label="Remove copy example"
             >
               <Trash2 size={10} />
             </Button>
