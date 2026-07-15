@@ -21,8 +21,19 @@ const baseCtx: NavCtx = {
 
 describe('classifyRoute', () => {
   it('classifica website público como marketing/full', () => {
-    for (const p of ['/', '/pricing', '/about', '/docs', '/docs/getting-started', '/community', '/community/presets']) {
+    for (const p of ['/', '/pricing', '/about', '/docs', '/docs/getting-started']) {
       expect(classifyRoute(p)).toMatchObject({ shell: 'marketing', mode: 'full' });
+    }
+  });
+
+  // /community é item da BIBLIOTECA (LIBRARY_ITEMS), não website: logado ganha o
+  // AppShell (rail + drill-in COMMUNITY_NAV); deslogado cai no MarketingShell via
+  // resolveShell (auth gating), não via classifyRoute.
+  it('community é app/full (biblioteca) e só cai em marketing deslogado', () => {
+    for (const p of ['/community', '/community/presets']) {
+      expect(classifyRoute(p)).toMatchObject({ shell: 'app', mode: 'full', section: 'community' });
+      expect(resolveShell(p, true)).toBe('app');
+      expect(resolveShell(p, false)).toBe('marketing');
     }
   });
 
@@ -62,8 +73,10 @@ describe('classifyRoute', () => {
   });
 
   it('distingue /canvas (dashboard) de /canvas/:id (editor)', () => {
-    expect(classifyRoute('/canvas')).toMatchObject({ shell: 'app', mode: 'full', section: null });
-    expect(classifyRoute('/canvas/abc')).toMatchObject({ shell: 'app', mode: 'focus' });
+    // Ambos destacam a seção 'canvas' no rail (há item L1 em NAV_SECTIONS); o que
+    // difere é o modo: lista = full, editor = focus.
+    expect(classifyRoute('/canvas')).toMatchObject({ shell: 'app', mode: 'full', section: 'canvas' });
+    expect(classifyRoute('/canvas/abc')).toMatchObject({ shell: 'app', mode: 'focus', section: 'canvas' });
   });
 
   it('distingue /create (editor) de /create/projects (dashboard)', () => {
@@ -77,7 +90,10 @@ describe('classifyRoute', () => {
     expect(classifyRoute('/copilot').section).toBe('copilot');
     // Início adaptativo: o grid de marcas destaca o MESMO item (cockpit=Início).
     expect(classifyRoute('/brand-guidelines').section).toBe('cockpit');
-    expect(classifyRoute('/my-brandings').section).toBe('brands');
+    // Branding Machine CRIA marca (não opera sobre a ativa) → ancora em 'apps'.
+    // 'brands' não tem entrada em NAV_SECTIONS: ancorar ali = rail sem destaque.
+    expect(classifyRoute('/my-brandings').section).toBe('apps');
+    expect(classifyRoute('/branding-machine').section).toBe('apps');
     expect(classifyRoute('/settings/api-keys').section).toBe('profile');
     expect(classifyRoute('/settings/connected-apps').section).toBe('profile');
   });
@@ -145,7 +161,9 @@ describe('visibleSections', () => {
 
 describe('contextNavFor', () => {
   it('retorna [] em rota sem seção', () => {
-    expect(contextNavFor('/canvas', baseCtx)).toEqual([]);
+    // /mockupmachine é editor sem seção L1 (sectionFor → null).
+    expect(classifyRoute('/mockupmachine').section).toBe(null);
+    expect(contextNavFor('/mockupmachine', baseCtx)).toEqual([]);
   });
 
   it('brands/apps/cockpit têm L2 vazia (a própria página traz a sub-nav)', () => {
@@ -154,9 +172,12 @@ describe('contextNavFor', () => {
     expect(contextNavFor('/cockpit', baseCtx)).toEqual([]);
   });
 
-  it('sub-nav de profile lista conta, uso, api-keys e connected-apps', () => {
+  // SSoT do índice de profile: as abas horizontais in-page foram removidas, então
+  // `configuration` (BYOK + segurança + zona de perigo, ProfilePage ?tab=configuration)
+  // só é alcançável por aqui.
+  it('sub-nav de profile lista conta, uso, configurações, api-keys e connected-apps', () => {
     const ids = contextNavFor('/profile', baseCtx).map((i) => i.id);
-    expect(ids).toEqual(['account', 'usage', 'api-keys', 'connected-apps']);
+    expect(ids).toEqual(['account', 'usage', 'configuration', 'api-keys', 'connected-apps']);
   });
 
   it('todas as seções de nível 1 têm labelKey sob nav.*', () => {
