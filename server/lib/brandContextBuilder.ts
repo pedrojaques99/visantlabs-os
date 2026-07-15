@@ -10,7 +10,7 @@
  * - AI generation features
  */
 
-import type { BrandGuideline } from '../../src/lib/figma-types.js';
+import type { BrandGuideline, BrandStrategy } from '../../src/lib/figma-types.js';
 import type { TokenRegistry } from './tokenRegistry.js';
 import { redisClient } from './redis.js';
 import { CACHE_TTL, CacheKey } from './cache-utils.js';
@@ -256,7 +256,14 @@ export function buildBrandContextJSON(
         : undefined,
     strategy:
       s('strategy') && bg.strategy
-        ? {
+        ? // The `satisfies` below makes this a compile-time exhaustive map: add
+          // a field to BrandStrategy and forget it here and the build fails
+          // naming it. Silent omission here is the worst kind — the field saves
+          // fine and simply never reaches the model. voiceValues is excluded on
+          // purpose (it renders under `voice`); archetypes/personas are
+          // re-mapped rather than passed through because image/gender/
+          // attribution are UI concerns that would only cost tokens.
+          ({
             manifesto: bg.strategy.manifesto,
             positioning: bg.strategy.positioning,
             coreMessage: bg.strategy.coreMessage,
@@ -279,7 +286,7 @@ export function buildBrandContextJSON(
             copyExamples: bg.strategy.copyExamples,
             marketResearch: bg.strategy.marketResearch,
             graphicSystem: bg.strategy.graphicSystem,
-          }
+          } satisfies Record<Exclude<keyof BrandStrategy, 'voiceValues'>, unknown>)
         : undefined,
     tokens:
       s('tokens') && bg.tokens

@@ -27,6 +27,7 @@ import {
   pickBrandSections,
   type BrandContextSection,
 } from '../lib/brandContextBuilder.js';
+import type { BrandStrategy } from '../../src/lib/figma-types.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
 import {
   IMAGE_MODEL_IDS,
@@ -66,6 +67,113 @@ function validateColors(colors?: Array<{ hex: string; name: string; role?: strin
 }
 
 // ─── Strategy deep merge ──────────────────────────────────────────────────────
+/**
+ * Input contract for a brand's strategy.
+ *
+ * `satisfies Record<keyof BrandStrategy, ...>` keeps it honest: add a field to
+ * BrandStrategy and forget it here and this stops compiling, naming it. Without
+ * that the tool accepts the write, zod strips the unknown key, and the caller
+ * gets a 200 for data that was never saved. That already happened once —
+ * manifesto only accepted a string here while the type and the prompt renderer
+ * both supported the structured form, so agents could never send one.
+ */
+const STRATEGY_INPUT_SHAPE = {
+  manifesto: z
+    .union([
+      z.string(),
+      z.object({
+        provocation: z.string().optional(),
+        tension: z.string().optional(),
+        promise: z.string().optional(),
+        full: z.string().optional(),
+      }),
+    ])
+    .optional()
+    .describe('Brand manifesto: plain text, or the provocation/tension/promise arc.'),
+  positioning: z.array(z.string()).optional(),
+  archetypes: z
+    .array(
+      z.object({
+        name: z.string(),
+        role: z.enum(['primary', 'secondary']).optional(),
+        description: z.string(),
+        examples: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
+  personas: z
+    .array(
+      z.object({
+        name: z.string(),
+        age: z.number().optional(),
+        occupation: z.string().optional(),
+        traits: z.array(z.string()).optional(),
+        bio: z.string().optional(),
+        desires: z.array(z.string()).optional(),
+        painPoints: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
+  voiceValues: z
+    .array(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+        example: z.string(),
+      })
+    )
+    .optional(),
+  copyExamples: z
+    .array(
+      z.object({
+        text: z.string().describe('The copy, verbatim.'),
+        type: z
+          .enum(['headline', 'tagline', 'cta', 'body'])
+          .optional()
+          .describe('What kind of copy this is.'),
+      })
+    )
+    .optional()
+    .describe(
+      "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate."
+    ),
+  coreMessage: z
+    .object({
+      product: z.string(),
+      differential: z.string(),
+      emotionalBond: z.string(),
+    })
+    .optional()
+    .describe('Core brand message: what the product is, how it differs, emotional connection.'),
+  pillars: z
+    .array(
+      z.object({
+        value: z.string(),
+        description: z.string(),
+      })
+    )
+    .optional()
+    .describe('Brand pillars / core values.'),
+  marketResearch: z
+    .object({
+      competitors: z.array(z.string()).optional(),
+      gaps: z.array(z.string()).optional(),
+      opportunities: z.array(z.string()).optional(),
+      notes: z.string().optional(),
+    })
+    .optional()
+    .describe('Competitive landscape and market opportunities.'),
+  graphicSystem: z
+    .object({
+      patterns: z.array(z.string()).optional(),
+      grafisms: z.array(z.string()).optional(),
+      imageRules: z.array(z.string()).optional(),
+      editorialGrid: z.string().optional(),
+    })
+    .optional()
+    .describe('Graphic system rules: patterns, grafisms, image guidelines, editorial grid.'),
+} satisfies Record<keyof BrandStrategy, z.ZodTypeAny>;
+
 function mergeStrategy(existing: any, patch: any): any {
   if (!patch) return existing;
   const merged = { ...(existing || {}) };
@@ -2423,97 +2531,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
             .describe('Capitalization rules, e.g. "Always capitalize product name"'),
         })
         .optional(),
-      strategy: z
-        .object({
-          manifesto: z.string().optional(),
-          positioning: z.array(z.string()).optional(),
-          archetypes: z
-            .array(
-              z.object({
-                name: z.string(),
-                role: z.enum(['primary', 'secondary']).optional(),
-                description: z.string(),
-                examples: z.array(z.string()).optional(),
-              })
-            )
-            .optional(),
-          personas: z
-            .array(
-              z.object({
-                name: z.string(),
-                age: z.number().optional(),
-                occupation: z.string().optional(),
-                traits: z.array(z.string()).optional(),
-                bio: z.string().optional(),
-                desires: z.array(z.string()).optional(),
-                painPoints: z.array(z.string()).optional(),
-              })
-            )
-            .optional(),
-          voiceValues: z
-            .array(
-              z.object({
-                title: z.string(),
-                description: z.string(),
-                example: z.string(),
-              })
-            )
-            .optional(),
-          copyExamples: z
-            .array(
-              z.object({
-                text: z.string().describe('The copy, verbatim.'),
-                type: z
-                  .enum(['headline', 'tagline', 'cta', 'body'])
-                  .optional()
-                  .describe('What kind of copy this is.'),
-              })
-            )
-            .optional()
-            .describe(
-              "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate."
-            ),
-          coreMessage: z
-            .object({
-              product: z.string(),
-              differential: z.string(),
-              emotionalBond: z.string(),
-            })
-            .optional()
-            .describe(
-              'Core brand message: what the product is, how it differs, emotional connection.'
-            ),
-          pillars: z
-            .array(
-              z.object({
-                value: z.string(),
-                description: z.string(),
-              })
-            )
-            .optional()
-            .describe('Brand pillars / core values.'),
-          marketResearch: z
-            .object({
-              competitors: z.array(z.string()).optional(),
-              gaps: z.array(z.string()).optional(),
-              opportunities: z.array(z.string()).optional(),
-              notes: z.string().optional(),
-            })
-            .optional()
-            .describe('Competitive landscape and market opportunities.'),
-          graphicSystem: z
-            .object({
-              patterns: z.array(z.string()).optional(),
-              grafisms: z.array(z.string()).optional(),
-              imageRules: z.array(z.string()).optional(),
-              editorialGrid: z.string().optional(),
-            })
-            .optional()
-            .describe(
-              'Graphic system rules: patterns, grafisms, image guidelines, editorial grid.'
-            ),
-        })
-        .optional(),
+      strategy: z.object(STRATEGY_INPUT_SHAPE).optional(),
       tokens: z
         .object({
           spacing: z.record(z.string(), z.number()).optional(),

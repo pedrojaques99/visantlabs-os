@@ -180,86 +180,30 @@ export interface BrandGuidelineExtraction {
   completeness: number; // 0-100
 }
 
-export interface BrandArchetype {
-  name: string;
-  role?: 'primary' | 'secondary';
-  description: string;
-  image?: string;
-  examples?: string[];
-}
-
-export interface BrandPersona {
-  name: string;
-  age?: number;
-  occupation?: string;
-  traits?: string[];
-  bio?: string;
-  desires?: string[];
-  painPoints?: string[];
-  image?: string;
-}
-
-export interface BrandToneOfVoiceValue {
-  title: string;
-  description: string;
-  example: string;
-}
-
 /**
- * Real copy the brand has shipped, kept verbatim as few-shot material for
- * generation. Distinct from voiceValues (which describe the tone in the
- * abstract) and from dos/donts (which are rules): these are the artifacts to
- * imitate.
+ * Brand strategy — same story as BrandAssetAnalysis above. This file kept a
+ * second, hand-maintained copy of the whole family, and it had already drifted:
+ * BrandPersona lost `gender` and `imageAttribution`, which the other copy has
+ * and the persisted data carries. Re-exporting leaves one definition, so a new
+ * field (e.g. copyExamples) lands in both by construction.
+ *
+ * Source is figma-types because that's what brandContextBuilder — the thing
+ * that turns a guideline into AI context — already imports.
  */
-export interface BrandCopyExample {
-  text: string;
-  type?: 'headline' | 'tagline' | 'cta' | 'body';
-}
+export type {
+  BrandArchetype,
+  BrandPersona,
+  BrandToneOfVoiceValue,
+  BrandCopyExample,
+  BrandPillar,
+  BrandCoreMessage,
+  BrandManifesto,
+  BrandMarketResearch,
+  BrandGraphicSystem,
+  BrandStrategy as BrandGuidelineStrategy,
+} from '../../src/lib/figma-types.js';
 
-export interface BrandPillar {
-  value: string;
-  description: string;
-}
-
-export interface BrandCoreMessage {
-  product: string;
-  differential: string;
-  emotionalBond: string;
-}
-
-export interface BrandManifesto {
-  provocation?: string;
-  tension?: string;
-  promise?: string;
-  full?: string;
-}
-
-export interface BrandMarketResearch {
-  competitors?: string[];
-  gaps?: string[];
-  opportunities?: string[];
-  notes?: string;
-}
-
-export interface BrandGraphicSystem {
-  patterns?: string[];
-  grafisms?: string[];
-  imageRules?: string[];
-  editorialGrid?: string;
-}
-
-export interface BrandGuidelineStrategy {
-  manifesto?: string | BrandManifesto;
-  positioning?: string[];
-  coreMessage?: BrandCoreMessage;
-  pillars?: BrandPillar[];
-  archetypes?: BrandArchetype[];
-  personas?: BrandPersona[];
-  voiceValues?: BrandToneOfVoiceValue[];
-  copyExamples?: BrandCopyExample[];
-  marketResearch?: BrandMarketResearch;
-  graphicSystem?: BrandGraphicSystem;
-}
+import type { BrandStrategy } from '../../src/lib/figma-types.js';
 
 export interface BrandGuideline {
   id?: string;
@@ -272,7 +216,7 @@ export interface BrandGuideline {
   media?: BrandGuidelineMedia[];
   tokens?: BrandGuidelineTokens;
   guidelines?: BrandGuidelineGuidelines;
-  strategy?: BrandGuidelineStrategy;
+  strategy?: BrandStrategy;
   extraction?: BrandGuidelineExtraction;
   // Design tokens
   gradients?: BrandGuidelineGradient[];

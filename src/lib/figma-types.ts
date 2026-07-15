@@ -966,6 +966,23 @@ export interface BrandGraphicSystem {
   editorialGrid?: string;
 }
 
+/**
+ * Named so the server can re-export it instead of keeping a second copy.
+ * Adding a field here is the only place it needs to be added.
+ */
+export interface BrandStrategy {
+  manifesto?: string | BrandManifesto;
+  positioning?: string[];
+  coreMessage?: BrandCoreMessage;
+  pillars?: BrandPillar[];
+  archetypes?: BrandArchetype[];
+  personas?: BrandPersona[];
+  voiceValues?: BrandToneOfVoiceValue[];
+  copyExamples?: BrandCopyExample[];
+  marketResearch?: BrandMarketResearch;
+  graphicSystem?: BrandGraphicSystem;
+}
+
 export interface BrandGuideline {
   id?: string;
   userId?: string;
@@ -1030,18 +1047,7 @@ export interface BrandGuideline {
   motion?: BrandGuidelineMotion;
   borders?: BrandGuidelineBorder[];
   validation?: Record<string, 'pending' | 'approved' | 'needs_work'>;
-  strategy?: {
-    manifesto?: string | BrandManifesto;
-    positioning?: string[];
-    coreMessage?: BrandCoreMessage;
-    pillars?: BrandPillar[];
-    archetypes?: BrandArchetype[];
-    personas?: BrandPersona[];
-    voiceValues?: BrandToneOfVoiceValue[];
-    copyExamples?: BrandCopyExample[];
-    marketResearch?: BrandMarketResearch;
-    graphicSystem?: BrandGraphicSystem;
-  };
+  strategy?: BrandStrategy;
   _extraction?: {
     sources: Array<{
       type: 'url' | 'pdf' | 'image' | 'images' | 'json' | 'manual' | 'branding_machine';
