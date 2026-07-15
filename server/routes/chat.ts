@@ -7,7 +7,7 @@ import { chatWithLLM } from '../services/llmRouter.js';
 import { env } from '../config/env.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { knowledgeService } from '../services/knowledgeService.js';
-import { buildBrandContextCached } from '../lib/brandContextBuilder.js';
+import { buildBrandContextCached, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { prisma } from '../db/prisma.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
@@ -65,7 +65,14 @@ REPERTÓRIO METODOLÓGICO (use para auditar e gerar com profundidade):
 - Manifesto: Provocação → Tensão → Promessa. Frase final vira candidata a slogan.
 - Cascata: cada etapa alimenta a próxima. Pular etapas enfraquece a marca.
 
-${brandContext ? `CONTEXTO DE MARCA:\n${sanitizeForPrompt(brandContext, 10000)}\n` : ''}
+${
+  brandContext
+    ? `CONTEXTO DE MARCA (resumo: identidade, cores, tipografia):
+${sanitizeForPrompt(brandContext, 10000)}
+Este resumo é parcial, de propósito. Para voz, estratégia, exemplos de copy, logos, mídia ou conhecimento, chame get_brand_context com a seção que precisar (presets: "copy", "visual", "imageGen", "full").
+`
+    : ''
+}
 ${ragContext ? `DOCUMENTOS INGERIDOS:\n${sanitizeForPrompt(ragContext, 10000)}\n` : ''}
 FERRAMENTAS DISPONÍVEIS:
 - suggest_mockup_ideas: Analisa brand guideline + cruza com biblioteca curada de referências world-class → sugere mockups certeiros para a marca. Use SEMPRE que o usuário pedir ideias de mockup ou material visual.
@@ -255,7 +262,12 @@ router.post(
         enforceOwnerId: req.userId!,
       });
       if (guideline) {
-        brandContext = await buildBrandContextCached(guideline as any);
+        // Summary only — the rest is a get_brand_context call away. Injecting
+        // the whole brand every turn spends context on sections most questions
+        // never touch.
+        brandContext = await buildBrandContextCached(guideline as any, {
+          sections: BRAND_SECTION_PRESETS.minimal,
+        });
       }
 
       // 3. System prompt

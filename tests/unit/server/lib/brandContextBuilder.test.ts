@@ -162,6 +162,15 @@ describe('strategy.copyExamples', () => {
     const json = buildBrandContextJSON(brand as any, BRAND_SECTION_PRESETS.copy);
     expect(json.strategy?.copyExamples).toHaveLength(2);
   });
+
+  it('stays out of the minimal preset the chat leans on', () => {
+    // The chat surfaces inject `minimal` and fetch the rest via
+    // get_brand_context. If minimal ever grew to carry strategy, every chat
+    // turn would silently pay for the brand's whole copy bank again.
+    const text = buildBrandContext(brand as any, { sections: BRAND_SECTION_PRESETS.minimal });
+    expect(text).not.toContain('COPY EXAMPLES');
+    expect(text).toContain('Urban Stay'); // identity still there
+  });
 });
 
 describe('pickBrandSections', () => {

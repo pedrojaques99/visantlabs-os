@@ -11,7 +11,7 @@ import { AuthRequest } from '../../middleware/auth.js';
 import { chatWithLLM } from '../llmRouter.js';
 import { knowledgeService } from '../knowledgeService.js';
 import { sanitizeForPrompt } from '../../utils/promptSanitize.js';
-import { buildBrandContextCached } from '../../lib/brandContextBuilder.js';
+import { buildBrandContextCached, BRAND_SECTION_PRESETS } from '../../lib/brandContextBuilder.js';
 import { parseUrl } from '../../lib/brand-parse.js';
 import { getDb, connectToMongoDB } from '../../db/mongodb.js';
 import { prisma } from '../../db/prisma.js';
@@ -216,7 +216,14 @@ REPERTÓRIO METODOLÓGICO (use para auditar e gerar com profundidade):
 MEMÓRIA DA SESSÃO:
 ${memoryStr}
 
-${brandContext ? `CONTEXTO DE MARCA:\n${brandContext}\n` : ''}
+${
+  brandContext
+    ? `CONTEXTO DE MARCA (resumo: identidade, cores, tipografia):
+${brandContext}
+Este resumo é parcial, de propósito — a marca inteira em todo prompt custa contexto que raramente se usa. Para voz, estratégia, exemplos de copy, logos, mídia, tokens ou conhecimento, chame get_brand_context com a seção que precisar (presets: "copy", "visual", "imageGen", "full"). Não responda sobre o que não está acima sem buscar antes.
+`
+    : ''
+}
 ${ragContext ? `DOCUMENTOS INGERIDOS (use como base):\n${ragContext}\n` : ''}
 
 FERRAMENTAS DISPONÍVEIS:
@@ -804,7 +811,9 @@ export function createChatSessionRouter(opts: ChatRouterOptions): express.Router
       let brandContext = '';
       const { ragUserId, ragProjectId, guideline } = await resolveRagScope(session, req.userId!);
       if (guideline) {
-        brandContext = await buildBrandContextCached(guideline as any);
+        brandContext = await buildBrandContextCached(guideline as any, {
+          sections: BRAND_SECTION_PRESETS.minimal,
+        });
       }
 
       // 2. RAG: query the resolved universe (brand-scoped when available)
@@ -977,7 +986,10 @@ export function createChatSessionRouter(opts: ChatRouterOptions): express.Router
 
         const { ragUserId, ragProjectId, guideline } = await resolveRagScope(session, req.userId!);
         let brandContext = '';
-        if (guideline) brandContext = await buildBrandContextCached(guideline as any);
+        if (guideline)
+          brandContext = await buildBrandContextCached(guideline as any, {
+            sections: BRAND_SECTION_PRESETS.minimal,
+          });
 
         let ragContext = '';
         if (session.attachments.length > 0 || session.brandGuidelineId) {
