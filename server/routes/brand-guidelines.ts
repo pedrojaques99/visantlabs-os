@@ -2517,7 +2517,9 @@ router.post('/:id/ai-populate', apiRateLimiter, authenticate, async (req: AuthRe
       return res.json({ patch: {}, generated: [] });
     }
 
-    // Build existing brand context for LLM
+    // Full on purpose: this generates the brand's missing strategy/voice fields
+    // and has to stay consistent with everything already there, so narrowing the
+    // context would make the output worse. One-shot call, not per-turn.
     const brandContext = buildBrandContext(bg);
 
     const systemPrompt = `You are a brand strategist using the Metodologia Visant.
@@ -2624,7 +2626,12 @@ router.post('/:id/suggest-mockups', apiRateLimiter, authenticate, async (req: Au
     const apiKey = await getGeminiApiKey(req.userId);
     if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' });
 
-    const brandContext = buildBrandContext(guideline as any);
+    // The prompt below forbids naming the brand or describing the logo — this
+    // asks for physical scenes only. Voice, strategy, personas and knowledge
+    // can't reach the output, so sending them is pure cost. imageGen is the
+    // preset for exactly this, and campaign.ts/creative-plan-engine.ts already
+    // use it for the same reason.
+    const brandContext = buildBrandContextForImageGen(guideline as any);
     const count = Math.min(Math.max(req.body.count || 10, 3), 15);
 
     const systemPrompt = `You are a creative director for a branding agency. Given a brand's identity, suggest ${count} compelling mockup scene prompts.
@@ -2768,6 +2775,9 @@ router.get('/:id/suggestions', apiRateLimiter, authenticate, async (req: AuthReq
     }
 
     const seasonalLine = seasonalPromptLine(seasonal);
+    // Full on purpose: these suggestions span mockups AND campaign/naming
+    // instructions, so they need the visual side and the voice/strategy side at
+    // once — no preset covers both. One-shot call, not per-turn.
     const brandContext = buildBrandContext(guideline as any);
 
     const system = `You are a brand creative director. Propose ${count} concrete, on-brand things the team could make in the near term — a MIX of formats, not all the same. Ground each in the brand's identity (archetype, voice, vibe) AND the upcoming commercial moment when relevant. Be specific — no generic filler.
