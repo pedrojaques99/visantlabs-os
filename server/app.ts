@@ -89,7 +89,9 @@ import {
   setMcpScopes,
   getMcpToolNames,
   getMcpToolCount,
+  scopeForTool,
 } from './mcp/platform-mcp.js';
+import { trackMcpValidationFailures } from './mcp/mcp-tracking.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { authenticateApiKey } from './middleware/apiKeyAuth.js';
@@ -574,6 +576,12 @@ export function createApp() {
         sessionIdGenerator: undefined,
         enableJsonResponse: wantsJson,
       });
+      trackMcpValidationFailures(
+        transport,
+        req.body,
+        ((req as any).userId as string | null) ?? null,
+        scopeForTool
+      );
       res.on('close', () => {
         transport.close().catch((e) => console.error('[MCP] transport close error:', e.message));
         server.close().catch((e) => console.error('[MCP] server close error:', e.message));

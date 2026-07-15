@@ -74,6 +74,48 @@ function shouldInclude(
   return !sections || sections.includes(section);
 }
 
+/**
+ * Which BrandGuideline row fields each section owns.
+ *
+ * Needed because the MCP "structured" format returns the persisted row shape,
+ * not the normalized BrandContextJSON — so it can't reuse `shouldInclude`.
+ */
+export const BRAND_SECTION_FIELDS: Record<BrandContextSection, string[]> = {
+  identity: ['identity'],
+  colors: ['colors'],
+  typography: ['typography'],
+  voice: ['guidelines'],
+  strategy: ['strategy'],
+  tokens: ['tokens'],
+  logos: ['logos'],
+  media: ['media'],
+  tags: ['tags'],
+  themes: ['colorThemes'],
+  knowledge: ['knowledgeFiles'],
+};
+
+/**
+ * Filter a raw BrandGuideline row down to the requested sections.
+ *
+ * Only fields claimed by some section are filterable; anything unclaimed
+ * (id, publicSlug, gradients, shadows, motion, borders, ...) always passes
+ * through, so callers keep their metadata and no field silently disappears
+ * just because no section happens to own it yet.
+ */
+export function pickBrandSections<T extends Record<string, any>>(
+  row: T,
+  sections?: BrandContextSection[]
+): Partial<T> {
+  if (!sections) return row;
+  const claimed = new Set(Object.values(BRAND_SECTION_FIELDS).flat());
+  const requested = new Set(sections.flatMap((s) => BRAND_SECTION_FIELDS[s] ?? []));
+  const out: Record<string, any> = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (!claimed.has(key) || requested.has(key)) out[key] = value;
+  }
+  return out as Partial<T>;
+}
+
 // ═══════════════════════════════════════════
 // Hex to RGB conversion utility
 // ═══════════════════════════════════════════

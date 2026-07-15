@@ -340,9 +340,14 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   // ---- Branding ----
   {
     name: 'branding-list',
-    description: 'List branding projects owned by the authenticated user.',
+    description:
+      'List branding projects owned by the authenticated user. Supports pagination and name search.',
     required: [],
-    properties: {},
+    properties: {
+      limit: { type: 'number', default: 20 },
+      skip: { type: 'number', default: 0 },
+      search: { type: 'string' },
+    },
     cost: 'free',
     category: 'branding',
     auth: true,
@@ -395,9 +400,14 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   // ---- Brand Guidelines ----
   {
     name: 'brand-guidelines-list',
-    description: 'List all brand guidelines (identity vaults) owned by the authenticated user.',
+    description:
+      'List brand guidelines (identity vaults) owned by the authenticated user. Supports pagination and name search — use "search" to find a brand by name instead of listing every one.',
     required: [],
-    properties: {},
+    properties: {
+      limit: { type: 'number', default: 20 },
+      skip: { type: 'number', default: 0 },
+      search: { type: 'string' },
+    },
     cost: 'free',
     category: 'brand-guidelines',
     auth: true,
@@ -405,11 +415,33 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   {
     name: 'brand-guidelines-get',
     description:
-      'Get a detailed brand guideline by ID, including colors, typography, logos, and strategy context.',
+      'Get a detailed brand guideline by ID, including colors, typography, logos, and strategy context. Use "sections" to fetch only what you need.',
     required: ['id'],
     properties: {
       id: { type: 'string' },
       format: { type: 'string', enum: ['structured', 'prompt'], default: 'structured' },
+      sections: {
+        type: ['array', 'string'],
+        items: {
+          type: 'string',
+          enum: [
+            'identity',
+            'colors',
+            'typography',
+            'voice',
+            'strategy',
+            'tokens',
+            'logos',
+            'media',
+            'tags',
+            'themes',
+            'knowledge',
+          ],
+        },
+        enum: ['visual', 'copy', 'minimal', 'imageGen', 'full'],
+        description:
+          'Array of sections, or a preset name (visual, copy, minimal, imageGen, full). Omit for full context.',
+      },
     },
     cost: 'free',
     category: 'brand-guidelines',
@@ -583,9 +615,14 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   // ---- Canvas ----
   {
     name: 'canvas-list',
-    description: 'List canvas (whiteboard) projects owned by the authenticated user.',
+    description:
+      'List canvas (whiteboard) projects owned by the authenticated user. Supports pagination and name search.',
     required: [],
-    properties: {},
+    properties: {
+      limit: { type: 'number', default: 20 },
+      skip: { type: 'number', default: 0 },
+      search: { type: 'string' },
+    },
     cost: 'free',
     category: 'canvas',
     auth: true,
@@ -681,9 +718,14 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   // ---- Budget ----
   {
     name: 'budget-list',
-    description: 'List budget documents created by the authenticated user.',
+    description:
+      'List budget documents created by the authenticated user. Supports pagination and search by budget or client name.',
     required: [],
-    properties: {},
+    properties: {
+      limit: { type: 'number', default: 20 },
+      skip: { type: 'number', default: 0 },
+      search: { type: 'string' },
+    },
     cost: 'free',
     category: 'budget',
     auth: true,

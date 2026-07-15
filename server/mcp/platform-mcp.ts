@@ -24,6 +24,7 @@ import {
 import {
   buildBrandContext,
   BRAND_SECTION_PRESETS,
+  pickBrandSections,
   type BrandContextSection,
 } from '../lib/brandContextBuilder.js';
 import { GEMINI_MODELS, AVAILABLE_IMAGE_MODELS } from '../../src/constants/geminiModels.js';
@@ -392,6 +393,47 @@ export function getMcpToolCount(): number {
   return _registeredToolNames.length;
 }
 
+const GENERATE_TOOLS_SET = new Set([
+  'mockup-generate',
+  'creative-generate',
+  'creative-full',
+  'branding-generate',
+  'ai-generate-image',
+  'ai-generate-naming',
+  'ai-improve-prompt',
+  'ai-suggest-prompt-variations',
+  'ai-change-object',
+  'ai-apply-theme',
+  'moodboard-upscale',
+  'moodboard-suggest',
+  'video-generate',
+  'campaign-generate',
+  'playground-generate',
+  'psd-scene-prepare',
+  'psd-mockup-produce',
+]);
+
+const WRITE_PATTERN =
+  /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart|revoke)($|-)/;
+const WRITE_PREFIXES = /^(auth-|pdf-|images-to-)/;
+const READ_OVERRIDES = new Set([
+  'api-key-list',
+  'brand-guidelines-compile',
+  'brand-guidelines-export',
+  'brand-guidelines-compare-versions',
+]);
+
+/**
+ * Scope a tool name requires. Module-scoped (not per-server) so the transport
+ * layer can classify calls the SDK rejects before any handler runs.
+ */
+export function scopeForTool(name: string): 'read' | 'write' | 'generate' {
+  if (GENERATE_TOOLS_SET.has(name)) return 'generate';
+  if (READ_OVERRIDES.has(name)) return 'read';
+  if (WRITE_PATTERN.test(name) || WRITE_PREFIXES.test(name)) return 'write';
+  return 'read';
+}
+
 /**
  * Creates and returns a Platform MCP server with all tools registered.
  */
@@ -535,43 +577,6 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
   const collectedNames: string[] = [];
   const originalTool = server.tool.bind(server);
 
-  const GENERATE_TOOLS_SET = new Set([
-    'mockup-generate',
-    'creative-generate',
-    'creative-full',
-    'branding-generate',
-    'ai-generate-image',
-    'ai-generate-naming',
-    'ai-improve-prompt',
-    'ai-suggest-prompt-variations',
-    'ai-change-object',
-    'ai-apply-theme',
-    'moodboard-upscale',
-    'moodboard-suggest',
-    'video-generate',
-    'campaign-generate',
-    'playground-generate',
-    'psd-scene-prepare',
-    'psd-mockup-produce',
-  ]);
-
-  const WRITE_PATTERN =
-    /-(create|update|delete|remove|save|duplicate|invite|share|upload|restore|fork|publish|link|sync|ingest|render|iterate|like|quickstart|revoke)($|-)/;
-  const WRITE_PREFIXES = /^(auth-|pdf-|images-to-)/;
-  const READ_OVERRIDES = new Set([
-    'api-key-list',
-    'brand-guidelines-compile',
-    'brand-guidelines-export',
-    'brand-guidelines-compare-versions',
-  ]);
-
-  function scopeForTool(name: string): 'read' | 'write' | 'generate' {
-    if (GENERATE_TOOLS_SET.has(name)) return 'generate';
-    if (READ_OVERRIDES.has(name)) return 'read';
-    if (WRITE_PATTERN.test(name) || WRITE_PREFIXES.test(name)) return 'write';
-    return 'read';
-  }
-
   (server as any).tool = (name: string, ...rest: any[]) => {
     collectedNames.push(name);
     // Intercept the handler (last arg) to add scope checking
@@ -588,7 +593,7 @@ The deep-link URL opens the 3D Studio with the scene pre-loaded. Users can then 
           trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, true);
           return result;
         } catch (err) {
-          trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, false);
+          trackMcpToolCall(name, getCurrentUserId(), scope, Date.now() - start, false, 'handler');
           throw err;
         }
       };
@@ -1433,20 +1438,42 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'branding-list',
-    'List branding projects owned by the authenticated user.',
-    {},
+    'List branding projects owned by the authenticated user. Supports pagination and name search.',
+    {
+      limit: z.number().int().min(1).max(100).default(20).describe('Max items to return (1-100).'),
+      skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
+      search: z
+        .string()
+        .max(200)
+        .optional()
+        .describe('Filter by project name (case-insensitive, partial match).'),
+    },
     { title: 'List Brand Identities', readOnlyHint: true },
-    async () => {
+    async ({ limit, skip, search }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const projects = await prisma.brandingProject.findMany({
-          where: { userId: currentUserId },
-          orderBy: { createdAt: 'desc' },
-          select: { id: true, name: true, prompt: true, createdAt: true },
-        });
+        const where = {
+          userId: currentUserId,
+          ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
+        };
+        const [projects, total] = await Promise.all([
+          prisma.brandingProject.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, prompt: true, createdAt: true },
+            take: limit,
+            skip,
+          }),
+          prisma.brandingProject.count({ where }),
+        ]);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ projects, total: projects.length, _meta: slimMeta(quota) });
+        return jsonResponse({
+          projects,
+          total,
+          page: { limit, skip, hasMore: skip + projects.length < total },
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1625,20 +1652,42 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'canvas-list',
-    'List canvas (whiteboard) projects owned by the authenticated user.',
-    {},
+    'List canvas (whiteboard) projects owned by the authenticated user. Supports pagination and name search.',
+    {
+      limit: z.number().int().min(1).max(100).default(20).describe('Max items to return (1-100).'),
+      skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
+      search: z
+        .string()
+        .max(200)
+        .optional()
+        .describe('Filter by canvas name (case-insensitive, partial match).'),
+    },
     { title: 'List Canvases', readOnlyHint: true },
-    async () => {
+    async ({ limit, skip, search }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const projects = await prisma.canvasProject.findMany({
-          where: { userId: currentUserId },
-          orderBy: { createdAt: 'desc' },
-          select: { id: true, name: true, createdAt: true, shareId: true },
-        });
+        const where = {
+          userId: currentUserId,
+          ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
+        };
+        const [projects, total] = await Promise.all([
+          prisma.canvasProject.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, createdAt: true, shareId: true },
+            take: limit,
+            skip,
+          }),
+          prisma.canvasProject.count({ where }),
+        ]);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ projects, total: projects.length, _meta: slimMeta(quota) });
+        return jsonResponse({
+          projects,
+          total,
+          page: { limit, skip, hasMore: skip + projects.length < total },
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1696,20 +1745,49 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'budget-list',
-    'List budget documents created by the authenticated user.',
-    {},
+    'List budget documents created by the authenticated user. Supports pagination and search by budget or client name.',
+    {
+      limit: z.number().int().min(1).max(100).default(20).describe('Max items to return (1-100).'),
+      skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
+      search: z
+        .string()
+        .max(200)
+        .optional()
+        .describe('Filter by budget or client name (case-insensitive, partial match).'),
+    },
     { title: 'List Budgets', readOnlyHint: true },
-    async () => {
+    async ({ limit, skip, search }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const budgets = await prisma.budgetProject.findMany({
-          where: { userId: currentUserId },
-          orderBy: { createdAt: 'desc' },
-          select: { id: true, name: true, clientName: true, template: true, createdAt: true },
-        });
+        const where = {
+          userId: currentUserId,
+          ...(search
+            ? {
+                OR: [
+                  { name: { contains: search, mode: 'insensitive' as const } },
+                  { clientName: { contains: search, mode: 'insensitive' as const } },
+                ],
+              }
+            : {}),
+        };
+        const [budgets, total] = await Promise.all([
+          prisma.budgetProject.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, clientName: true, template: true, createdAt: true },
+            take: limit,
+            skip,
+          }),
+          prisma.budgetProject.count({ where }),
+        ]);
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ budgets, total: budgets.length, _meta: slimMeta(quota) });
+        return jsonResponse({
+          budgets,
+          total,
+          page: { limit, skip, hasMore: skip + budgets.length < total },
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1944,20 +2022,70 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'brand-guidelines-list',
-    'List all brand guidelines (identity vaults) owned by the authenticated user.',
-    {},
+    'List brand guidelines (identity vaults) owned by the authenticated user. Supports pagination and name search — use "search" to find a brand by name instead of listing every one.',
+    {
+      limit: z.number().int().min(1).max(100).default(20).describe('Max items to return (1-100).'),
+      skip: z.number().int().min(0).default(0).describe('Number of items to skip for pagination.'),
+      search: z
+        .string()
+        .max(200)
+        .optional()
+        .describe('Filter by brand name (case-insensitive, partial match).'),
+    },
     { title: 'List Brand Guidelines', readOnlyHint: true },
-    async () => {
+    async ({ limit, skip, search }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
-        const guidelines = await prisma.brandGuideline.findMany({
-          where: { userId: currentUserId },
-          orderBy: { updatedAt: 'desc' },
-          select: { id: true, identity: true, isPublic: true, publicSlug: true, updatedAt: true },
-        });
+        const where = { userId: currentUserId };
+        const select = {
+          id: true,
+          identity: true,
+          isPublic: true,
+          publicSlug: true,
+          updatedAt: true,
+        };
+
+        let guidelines: any[];
+        let total: number;
+
+        if (search) {
+          // The brand name lives inside `identity` (a Json column), which Mongo
+          // can't filter on — so search matches in memory, and paging has to run
+          // after the filter or skip would page through the unfiltered set.
+          const all = await prisma.brandGuideline.findMany({
+            where,
+            orderBy: { updatedAt: 'desc' },
+            select,
+          });
+          const needle = search.toLowerCase();
+          const matched = all.filter((g: any) =>
+            String(g.identity?.name ?? '')
+              .toLowerCase()
+              .includes(needle)
+          );
+          total = matched.length;
+          guidelines = matched.slice(skip, skip + limit);
+        } else {
+          [guidelines, total] = await Promise.all([
+            prisma.brandGuideline.findMany({
+              where,
+              orderBy: { updatedAt: 'desc' },
+              select,
+              take: limit,
+              skip,
+            }),
+            prisma.brandGuideline.count({ where }),
+          ]);
+        }
+
         const quota = await getQuotaMeta(currentUserId);
-        return jsonResponse({ guidelines, total: guidelines.length, _meta: slimMeta(quota) });
+        return jsonResponse({
+          guidelines,
+          total,
+          page: { limit, skip, hasMore: skip + guidelines.length < total },
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1973,8 +2101,16 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .enum(['structured', 'prompt'])
         .default('structured')
         .describe('Output format: "structured" (JSON) or "prompt" (LLM-ready text).'),
+      // A preset resolves to its array up front rather than being a second
+      // union arm: a union rejection dumps every arm's errors (~850 chars of
+      // `invalid_union` noise), which costs an agent a turn to read. One array
+      // schema fails in one line instead.
       sections: z
-        .union([
+        .preprocess(
+          (v) =>
+            typeof v === 'string' && v in BRAND_SECTION_PRESETS
+              ? BRAND_SECTION_PRESETS[v as keyof typeof BRAND_SECTION_PRESETS]
+              : v,
           z.array(
             z.enum([
               'identity',
@@ -1988,17 +2124,20 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
               'tags',
               'themes',
               'knowledge',
-            ])
-          ),
-          z.enum(['visual', 'copy', 'full', 'imageGen', 'minimal']),
-        ])
+            ]),
+            {
+              error:
+                'sections takes either an array of sections (identity, colors, typography, voice, strategy, tokens, logos, media, tags, themes, knowledge) or a preset name: visual, copy, minimal, imageGen, full.',
+            }
+          )
+        )
         .optional()
         .describe(
-          'Which brand sections to include. Pass an array of specific sections or a preset name. Omit for full context.'
+          'Which brand sections to include. Pass an array of specific sections, or a preset name: "visual", "copy", "minimal", "imageGen", "full". Omit for full context.'
         ),
     },
     { title: 'Get Brand Guideline', readOnlyHint: true },
-    async ({ id, format, sections: sectionsInput }) => {
+    async ({ id, format, sections }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       try {
@@ -2009,8 +2148,8 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
         const quota = await getQuotaMeta(currentUserId);
 
-        const resolvedSections: BrandContextSection[] | undefined =
-          typeof sectionsInput === 'string' ? BRAND_SECTION_PRESETS[sectionsInput] : sectionsInput;
+        // Presets are already expanded by the schema's preprocess step.
+        const resolvedSections = sections as BrandContextSection[] | undefined;
 
         if (format === 'prompt') {
           const context = buildBrandContext(guideline as any, { sections: resolvedSections });
@@ -2022,7 +2161,12 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           });
         }
 
-        return jsonResponse({ ...stripNullish(guideline as any), _meta: slimMeta(quota) });
+        const filtered = pickBrandSections(guideline as any, resolvedSections);
+        return jsonResponse({
+          ...stripNullish(filtered),
+          ...(resolvedSections ? { sections: resolvedSections } : {}),
+          _meta: slimMeta(quota),
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -5659,7 +5803,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
   // ─── Smart Analyze ─────────────────────────────────────────────────────────
   server.tool(
     'smart-analyze',
-    'AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Free (no credits).',
+    'AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Costs 1 credit.',
     {
       base64: z.string().describe('Base64-encoded image to analyze.'),
       mimeType: z.string().default('image/png').describe('Image MIME type.'),
