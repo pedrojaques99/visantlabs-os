@@ -981,7 +981,10 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
 
 export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, compact }) => {
   const voiceValues = guideline.strategy?.voiceValues || [];
-  if (voiceValues.length === 0) return null;
+  // Copy examples share this section: voiceValues describe the tone, these show
+  // it. A brand can have one without the other.
+  const copyExamples = (guideline.strategy?.copyExamples || []).filter((c) => c.text);
+  if (voiceValues.length === 0 && copyExamples.length === 0) return null;
 
   if (compact) {
     return (
@@ -998,6 +1001,11 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
               )}
             </div>
           ))}
+          {copyExamples.map((c, i) => (
+            <p key={`copy-${i}`} className="text-[11px] text-neutral-500 leading-snug italic">
+              "{c.text}"
+            </p>
+          ))}
         </div>
       </div>
     );
@@ -1011,7 +1019,7 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
   return (
     <div className="space-y-16">
       <FullSectionHeader label="Tone of Voice" />
-      <div className={cn('grid grid-cols-1 gap-6', cols)}>
+      <div className={cn('grid grid-cols-1 gap-6', cols, voiceValues.length === 0 && 'hidden')}>
         {voiceValues.map((v, i) => (
           <div
             key={i}
@@ -1036,6 +1044,27 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
           </div>
         ))}
       </div>
+
+      {copyExamples.length > 0 && (
+        <div className="space-y-6">
+          <p className="text-xs uppercase tracking-[0.2em] opacity-40">Copy examples</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {copyExamples.map((c, i) => (
+              <div
+                key={i}
+                className="p-6 rounded-[24px] border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5"
+              >
+                {c.type && (
+                  <span className="text-[10px] font-mono uppercase tracking-wider opacity-30">
+                    {c.type}
+                  </span>
+                )}
+                <p className="text-lg font-medium leading-snug opacity-80 mt-1">"{c.text}"</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -229,6 +229,70 @@ describe('Brand Guidelines — MCP `sections` filtering (structured format)', ()
   });
 });
 
+// strategy is a Json column, but it had two independent hard-coded whitelists
+// around it (the tool's zod shape and mergeStrategy). A field missing from
+// either was accepted and then silently dropped, with a 200 and no warning.
+describe('Brand Guidelines — MCP writes strategy.copyExamples', () => {
+  it('round-trips copy examples instead of silently dropping them', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Copy Probe Co.' });
+
+    const updated = await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: {
+        copyExamples: [
+          { text: 'A CIDADE PINTA. A GENTE EMOLDURA.', type: 'headline' },
+          { text: 'BC EM TELA CHEIA.', type: 'headline' },
+        ],
+      },
+    });
+    expect(updated.parsed?.error).toBeUndefined();
+
+    const got = await callTool(token, 'brand-guidelines-get', { id: guideline.id });
+    expect(got.parsed.strategy?.copyExamples).toHaveLength(2);
+    expect(got.parsed.strategy.copyExamples[0].text).toBe('A CIDADE PINTA. A GENTE EMOLDURA.');
+    expect(got.parsed.strategy.copyExamples[0].type).toBe('headline');
+  });
+
+  it('merging copy examples leaves the rest of strategy alone', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Merge Probe Co.' });
+
+    await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: { positioning: ['keep me'] },
+    });
+    await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: { copyExamples: [{ text: 'A VISTA É SUA. A MOLDURA É NOSSA.' }] },
+    });
+
+    const got = await callTool(token, 'brand-guidelines-get', { id: guideline.id });
+    expect(got.parsed.strategy.positioning).toEqual(['keep me']);
+    expect(got.parsed.strategy.copyExamples).toHaveLength(1);
+  });
+
+  it('reaches the prompt context, which is the whole point', async () => {
+    const { user } = await createUser();
+    const token = mintToken(user.id);
+    const { guideline } = await createBrandGuideline({ userId: user.id, name: 'Prompt Probe Co.' });
+
+    await callTool(token, 'brand-guidelines-update', {
+      id: guideline.id,
+      strategy: { copyExamples: [{ text: 'SEM ÁUDIO-GUIA. SÓ ABRE A CORTINA.', type: 'headline' }] },
+    });
+
+    const ctx = await callTool(token, 'brand-guidelines-get', {
+      id: guideline.id,
+      format: 'prompt',
+      sections: 'copy',
+    });
+    expect(ctx.parsed.context).toContain('SEM ÁUDIO-GUIA. SÓ ABRE A CORTINA.');
+  });
+});
+
 describe('Brand Guidelines — MCP list pagination + search', () => {
   it('paginates instead of dumping every brand', async () => {
     const { user } = await createUser();

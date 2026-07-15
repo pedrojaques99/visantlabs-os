@@ -922,6 +922,18 @@ export interface BrandToneOfVoiceValue {
   example: string;
 }
 
+/**
+ * Real copy the brand has shipped, kept verbatim as few-shot material for
+ * generation. Distinct from voiceValues (which describe the tone in the
+ * abstract) and from dos/donts (which are rules): these are the artifacts to
+ * imitate — register, rhythm and recurring metaphor come across in a way no
+ * description of them does.
+ */
+export interface BrandCopyExample {
+  text: string;
+  type?: 'headline' | 'tagline' | 'cta' | 'body';
+}
+
 export interface BrandPillar {
   value: string;
   description: string;
@@ -1026,6 +1038,7 @@ export interface BrandGuideline {
     archetypes?: BrandArchetype[];
     personas?: BrandPersona[];
     voiceValues?: BrandToneOfVoiceValue[];
+    copyExamples?: BrandCopyExample[];
     marketResearch?: BrandMarketResearch;
     graphicSystem?: BrandGraphicSystem;
   };

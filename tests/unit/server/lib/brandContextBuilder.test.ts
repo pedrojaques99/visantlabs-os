@@ -4,6 +4,8 @@ import {
   buildBrandContextJSONString,
   buildBrandContext,
   buildBrandContextForImageGen,
+  pickBrandSections,
+  BRAND_SECTION_PRESETS,
 } from '@server/lib/brandContextBuilder';
 
 describe('buildBrandContextJSON (Structured Output)', () => {
@@ -106,5 +108,102 @@ describe('buildBrandContextForImageGen', () => {
 
     expect(text).toContain('COLORS:');
     expect(text).not.toContain('LOGOS:');
+  });
+});
+
+// The whole point of copyExamples: real shipped copy reaches the model as
+// few-shot material. It's stored inside `strategy`, so it rides that section's
+// presets — which is what keeps it out of image prompts.
+describe('strategy.copyExamples', () => {
+  const brand = {
+    identity: { name: 'Urban Stay' },
+    colors: [{ name: 'primary', hex: '#000000', role: 'primary' }],
+    typography: [{ role: 'body', family: 'Arial' }],
+    strategy: {
+      copyExamples: [
+        { text: 'A CIDADE PINTA. A GENTE EMOLDURA.', type: 'headline' },
+        { text: 'BC EM TELA CHEIA.', type: 'headline' },
+      ],
+    },
+  };
+
+  it('reaches the JSON context under strategy', () => {
+    const json = buildBrandContextJSON(brand as any);
+    expect(json.strategy?.copyExamples).toHaveLength(2);
+    expect(json.strategy?.copyExamples?.[0].text).toBe('A CIDADE PINTA. A GENTE EMOLDURA.');
+  });
+
+  it('reaches the text context with the copy verbatim', () => {
+    const text = buildBrandContext(brand as any);
+    expect(text).toContain('COPY EXAMPLES');
+    expect(text).toContain('A CIDADE PINTA. A GENTE EMOLDURA.');
+    expect(text).toContain('[headline]');
+  });
+
+  it('ships an instruction telling the model what to do with it', () => {
+    // Data with no instruction gets ignored — the model needs to be told these
+    // are voice samples to imitate, not text to reuse.
+    const str = buildBrandContextJSONString(brand as any);
+    expect(str).toMatch(/strategy\.copyExamples/);
+    expect(str).toMatch(/never copy one verbatim/i);
+  });
+
+  it('stays out of image generation prompts', () => {
+    // imageGen omits 'strategy' on purpose — copy would be dead weight (and
+    // tokens) in a prompt that only draws.
+    expect(BRAND_SECTION_PRESETS.imageGen).not.toContain('strategy');
+    const text = buildBrandContextForImageGen(brand as any);
+    expect(text).not.toContain('COPY EXAMPLES');
+    expect(text).not.toContain('A CIDADE PINTA');
+  });
+
+  it('is carried by the copy preset', () => {
+    expect(BRAND_SECTION_PRESETS.copy).toContain('strategy');
+    const json = buildBrandContextJSON(brand as any, BRAND_SECTION_PRESETS.copy);
+    expect(json.strategy?.copyExamples).toHaveLength(2);
+  });
+});
+
+describe('pickBrandSections', () => {
+  const row = {
+    id: 'abc',
+    identity: { name: 'Urban Stay' },
+    colors: [{ hex: '#000' }],
+    typography: [{ family: 'Arial' }],
+    guidelines: { voice: 'direct' },
+    strategy: { positioning: ['x'] },
+    logos: [{ url: 'l' }],
+    media: [{ url: 'm' }],
+    colorThemes: [{ name: 't' }],
+    knowledgeFiles: [{ fileName: 'k' }],
+    gradients: [{ name: 'g' }],
+  };
+
+  it('keeps only the requested sections', () => {
+    const out = pickBrandSections(row, BRAND_SECTION_PRESETS.copy) as any;
+    expect(out.identity).toBeDefined();
+    expect(out.guidelines).toBeDefined(); // voice
+    expect(out.strategy).toBeDefined();
+    expect('colors' in out).toBe(false);
+    expect('logos' in out).toBe(false);
+    expect('media' in out).toBe(false);
+  });
+
+  it('maps sections to the row fields that actually hold them', () => {
+    const out = pickBrandSections(row, ['themes', 'knowledge']) as any;
+    expect(out.colorThemes).toBeDefined();
+    expect(out.knowledgeFiles).toBeDefined();
+    expect('identity' in out).toBe(false);
+  });
+
+  it('passes through fields no section claims, rather than dropping them', () => {
+    // gradients has no section — filtering must not make it disappear.
+    const out = pickBrandSections(row, ['colors']) as any;
+    expect(out.id).toBe('abc');
+    expect(out.gradients).toBeDefined();
+  });
+
+  it('returns everything when no sections are given', () => {
+    expect(pickBrandSections(row, undefined)).toBe(row);
   });
 });

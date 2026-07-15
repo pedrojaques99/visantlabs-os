@@ -32,6 +32,7 @@ interface EditorialSectionProps {
 type LocalState = {
   voice: string;
   dos: string[];
+  donts: string[];
   casingRules: string[];
   person: Person | undefined;
   emojiPolicy: EmojiPolicy | undefined;
@@ -46,6 +47,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
   const local: LocalState = {
     voice: g.voice || '',
     dos: g.dos || [],
+    donts: g.donts || [],
     casingRules: g.casingRules || [],
     person: g.person,
     emojiPolicy: g.emojiPolicy,
@@ -58,6 +60,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
           ...guideline.guidelines,
           voice: state.voice,
           dos: state.dos,
+          donts: state.donts,
           casingRules: state.casingRules,
           person: state.person,
           emojiPolicy: state.emojiPolicy,
@@ -81,6 +84,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
       const next = { ...local };
       if (gl.voice) next.voice = gl.voice;
       if (Array.isArray(gl.dos)) next.dos = gl.dos;
+      if (Array.isArray(gl.donts)) next.donts = gl.donts;
       persist(next);
     },
     [persist, local]
@@ -172,6 +176,17 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
             values={local.dos}
             onChange={(next) => update({ dos: next })}
             placeholder="Best practice..."
+            inputWidth={180}
+          />
+        </div>
+
+        {/* Don'ts */}
+        <div className="space-y-1.5">
+          <MicroTitle className="text-neutral-600">Don'ts</MicroTitle>
+          <InlineTags
+            values={local.donts}
+            onChange={(next) => update({ donts: next })}
+            placeholder="Never say..."
             inputWidth={180}
           />
         </div>

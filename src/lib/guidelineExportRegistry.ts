@@ -128,6 +128,7 @@ export interface ExportStrategy {
     painPoints?: string[];
   }>;
   voiceValues?: Array<{ title: string; description: string; example: string }>;
+  copyExamples?: Array<{ text: string; type?: string }>;
   marketResearch?: {
     competitors?: string[];
     gaps?: string[];
@@ -320,6 +321,7 @@ export function extractExportData(g: BrandGuideline): GuidelineExportData {
       archetypes: g.strategy?.archetypes,
       personas: g.strategy?.personas,
       voiceValues: g.strategy?.voiceValues,
+      copyExamples: g.strategy?.copyExamples,
       marketResearch: g.strategy?.marketResearch,
       graphicSystem: g.strategy?.graphicSystem,
     },
@@ -510,6 +512,7 @@ export function renderMarkdown(d: GuidelineExportData): string {
     st.archetypes?.length ||
     st.personas?.length ||
     st.voiceValues?.length ||
+    st.copyExamples?.length ||
     st.marketResearch ||
     st.graphicSystem;
   if (hasStrategy) {
@@ -562,6 +565,12 @@ export function renderMarkdown(d: GuidelineExportData): string {
     if (st.voiceValues?.length) {
       h3('Tone of Voice');
       st.voiceValues.forEach((v) => push(`- **${v.title}:** ${v.description} — _"${v.example}"_`));
+      blank();
+    }
+
+    if (st.copyExamples?.length) {
+      h3('Copy Examples');
+      st.copyExamples.forEach((c) => push(`- ${c.type ? `**[${c.type}]** ` : ''}_"${c.text}"_`));
       blank();
     }
 
@@ -871,7 +880,10 @@ export function renderDesignMd(d: GuidelineExportData): string {
     st.pillars?.length ||
     st.archetypes?.length ||
     st.personas?.length ||
-    st.voiceValues?.length;
+    st.voiceValues?.length ||
+    st.copyExamples?.length ||
+    st.marketResearch ||
+    st.graphicSystem;
   if (hasStrategy) {
     push('## Brand Strategy');
     blank();
@@ -923,6 +935,13 @@ export function renderDesignMd(d: GuidelineExportData): string {
     if (st.voiceValues?.length) {
       push('### Tone of Voice');
       st.voiceValues.forEach((v) => push(`- **${v.title}:** ${v.description} — _"${v.example}"_`));
+      blank();
+    }
+
+    if (st.copyExamples?.length) {
+      push('### Copy Examples');
+      push("The brand's own voice — match the register and rhythm, never reuse verbatim.");
+      st.copyExamples.forEach((c) => push(`- ${c.type ? `**[${c.type}]** ` : ''}_"${c.text}"_`));
       blank();
     }
 

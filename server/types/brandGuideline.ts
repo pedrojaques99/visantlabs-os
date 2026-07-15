@@ -7,38 +7,22 @@ export interface BrandGuidelineIdentity {
   description?: string;
 }
 
-/** LLM-derived visual analysis persisted on a brand asset (logo/media). */
-export interface BrandAssetAnalysis {
-  description?: string;
-  dimensions?: {
-    vibe?: string[];
-    aesthetic?: string[];
-    theme?: string[];
-    mood?: string[];
-    medium?: string[];
-  };
-  /** Placement metadata — how the asset composites onto a mockup surface. */
-  placement?: {
-    kind?:
-      | 'logo'
-      | 'wordmark'
-      | 'symbol'
-      | 'photo'
-      | 'pattern'
-      | 'texture'
-      | 'graphic'
-      | 'illustration';
-    luminance?: 'light' | 'dark' | 'mixed';
-    hasText?: boolean;
-    text?: string;
-    contrastSafeOn?: ('light' | 'dark')[];
-    aspectRatio?: number;
-    hasTransparency?: boolean;
-    dominantColor?: string;
-  };
-  analyzedAt?: string;
-  model?: string;
-}
+/**
+ * LLM-derived visual analysis persisted on a brand asset (logo/media).
+ *
+ * Fonte única em `lib/brand/visualSignature.ts`. Este arquivo mantinha uma
+ * SEGUNDA definição, estruturalmente igual e sem nada garantindo a sincronia —
+ * duas verdades pro mesmo dado persistido. Reexportar mata a duplicata: quem
+ * acrescentar campo lá (ex.: placement.textBox) não precisa lembrar daqui.
+ */
+export type {
+  BrandAssetAnalysis,
+  BrandAssetPlacement,
+  BrandAssetKind,
+  BrandAssetDimensions,
+} from '../lib/brand/visualSignature.js';
+
+import type { BrandAssetAnalysis, BrandAssetKind } from '../lib/brand/visualSignature.js';
 
 export interface BrandGuidelineLogo {
   id: string;
@@ -116,12 +100,49 @@ export interface BrandGuidelineBorder {
   css?: string;
 }
 
+export type BrandMediaCategory =
+  | 'background' // gradiente / arte de fundo, extensível
+  | 'graphic' // composição autoral / peça de campanha
+  | 'stock' // fotografia
+  | 'product' // mockup / produto aplicado
+  | 'texture' // material / padrão repetido
+  | 'other';
+
+/**
+ * Deriva a `category` do media a partir do `placement.kind` que o analisador de
+ * asset já produz. Preferimos essa fonte à `assetClassifications.category` do
+ * ingest: o kind é por-asset, vem do modelo olhando a imagem, e é reavaliado
+ * quando a análise roda de novo — em vez de um rótulo fixo do momento do upload.
+ */
+export function mediaCategoryFromKind(
+  kind: BrandAssetKind | undefined
+): BrandMediaCategory | undefined {
+  switch (kind) {
+    case 'photo':
+      return 'stock';
+    case 'pattern':
+      return 'background'; // gradiente/arte de fundo
+    case 'texture':
+      return 'texture';
+    case 'graphic':
+    case 'illustration':
+      return 'graphic';
+    default:
+      return undefined; // logo/wordmark/symbol vivem em logos[], não em media[]
+  }
+}
+
 export interface BrandGuidelineMedia {
   id: string;
   url: string;
   type: 'image' | 'pdf';
   label?: string;
-  category?: 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
+  /**
+   * Escrita a partir de `analysis.placement.kind` (ver `mediaCategoryFromKind`).
+   * Antes era declarada e NUNCA escrita — o ingest classificava o asset, usava a
+   * classe só pra separar logo de media, e jogava fora.
+   */
+  category?: BrandMediaCategory;
   analysis?: BrandAssetAnalysis;
   /** Dedup fingerprints: sha256 (exact) + byte size + dHash (near-dup). */
   hash?: string;
@@ -184,6 +205,17 @@ export interface BrandToneOfVoiceValue {
   example: string;
 }
 
+/**
+ * Real copy the brand has shipped, kept verbatim as few-shot material for
+ * generation. Distinct from voiceValues (which describe the tone in the
+ * abstract) and from dos/donts (which are rules): these are the artifacts to
+ * imitate.
+ */
+export interface BrandCopyExample {
+  text: string;
+  type?: 'headline' | 'tagline' | 'cta' | 'body';
+}
+
 export interface BrandPillar {
   value: string;
   description: string;
@@ -224,6 +256,7 @@ export interface BrandGuidelineStrategy {
   archetypes?: BrandArchetype[];
   personas?: BrandPersona[];
   voiceValues?: BrandToneOfVoiceValue[];
+  copyExamples?: BrandCopyExample[];
   marketResearch?: BrandMarketResearch;
   graphicSystem?: BrandGraphicSystem;
 }

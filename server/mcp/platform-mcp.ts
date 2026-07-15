@@ -68,21 +68,13 @@ function validateColors(colors?: Array<{ hex: string; name: string; role?: strin
 // ─── Strategy deep merge ──────────────────────────────────────────────────────
 function mergeStrategy(existing: any, patch: any): any {
   if (!patch) return existing;
-  const base = existing || {};
-  const merged = { ...base };
-  const keys = [
-    'manifesto',
-    'positioning',
-    'archetypes',
-    'personas',
-    'voiceValues',
-    'coreMessage',
-    'pillars',
-    'marketResearch',
-    'graphicSystem',
-  ];
-  for (const key of keys) {
-    if (patch[key] !== undefined) merged[key] = patch[key];
+  const merged = { ...(existing || {}) };
+  // The patch has already been through the tool's zod schema, which strips
+  // unknown keys — so its keys are exactly the supported ones. This used to
+  // re-list them, which meant a field added to the schema was still dropped
+  // here, silently, until someone noticed the write had no effect.
+  for (const [key, value] of Object.entries(patch)) {
+    if (value !== undefined) merged[key] = value;
   }
   return merged;
 }
@@ -2467,6 +2459,20 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
               })
             )
             .optional(),
+          copyExamples: z
+            .array(
+              z.object({
+                text: z.string().describe('The copy, verbatim.'),
+                type: z
+                  .enum(['headline', 'tagline', 'cta', 'body'])
+                  .optional()
+                  .describe('What kind of copy this is.'),
+              })
+            )
+            .optional()
+            .describe(
+              "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate."
+            ),
           coreMessage: z
             .object({
               product: z.string(),

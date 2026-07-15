@@ -179,6 +179,7 @@ export interface BrandContextJSON {
       desires?: string[];
       painPoints?: string[];
     }>;
+    copyExamples?: Array<{ text: string; type?: string }>;
     marketResearch?: {
       competitors?: string[];
       gaps?: string[];
@@ -275,6 +276,7 @@ export function buildBrandContextJSON(
               desires: p.desires,
               painPoints: p.painPoints,
             })),
+            copyExamples: bg.strategy.copyExamples,
             marketResearch: bg.strategy.marketResearch,
             graphicSystem: bg.strategy.graphicSystem,
           }
@@ -315,6 +317,7 @@ const BRAND_INSTRUCTIONS = `INSTRUCTIONS:
 - If strategy.manifesto exists (structured or text), let the provocation→tension→promise arc guide the narrative.
 - If strategy.marketResearch exists, leverage gaps and opportunities for differentiation.
 - If strategy.graphicSystem exists, follow patterns, grafisms, and image rules for visual consistency.
+- If strategy.copyExamples exist, treat them as the brand's own voice on the page: match their register, rhythm and recurring metaphors, and reuse their devices on new subjects. Never copy one verbatim into new output.
 - If voice.values exist, apply them to any copy or text elements.
 - If tokens (spacing, radius) exist, use them for consistent layout rhythm.
 - If brand_knowledge exists, use it as additional context for brand-consistent outputs — it contains source material the brand owner uploaded.`;
@@ -547,6 +550,12 @@ export function buildBrandContext(
       if (gs.grafisms?.length) lines.push(`GRAFISMS: ${gs.grafisms.join(' | ')}`);
       if (gs.imageRules?.length) lines.push(`IMAGE RULES: ${gs.imageRules.join(' | ')}`);
       if (gs.editorialGrid) lines.push(`EDITORIAL GRID: ${gs.editorialGrid}`);
+    }
+    if (bg.strategy.copyExamples?.length) {
+      lines.push("COPY EXAMPLES (the brand's own voice — match register and rhythm, never reuse verbatim):");
+      for (const c of bg.strategy.copyExamples) {
+        if (c.text) lines.push(`  ${c.type ? `[${c.type}] ` : ''}"${c.text}"`);
+      }
     }
     lines.push('');
   }
