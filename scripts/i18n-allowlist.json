@@ -41,10 +41,16 @@
     "pricing.hero.tiers.${row.id}",
     "cockpit.depth.level.${depthLevel.key}",
     "nav.${section}.label",
-    "nav.${origin.section}.label"
+    "nav.${origin.section}.label",
+    "onboarding.persona.${seg.id}.label",
+    "onboarding.persona.${seg.id}.desc",
+    "onboarding.persona.${selected.id}.actionTitle",
+    "onboarding.persona.${selected.id}.actionDesc",
+    "onboarding.persona.${selected.id}.actionCta"
   ],
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
-    "budget.myBudgets.*": "Collision: budget.myBudgets is used both as a leaf string AND as a namespace prefix in src. JSON cannot represent both. Refactor required: rename one usage."
+    "budget.myBudgets.*": "Collision: budget.myBudgets is used both as a leaf string AND as a namespace prefix in src. JSON cannot represent both. Refactor required: rename one usage.",
+    "onboarding.persona.${...}": "Keyed by SEGMENTS[].id — designer|agency|marketing|developer. All 20 resolved keys verified present in both locales. Adding a segment means adding its 5 keys to en-US and pt-BR; the scanner cannot catch that for you."
   }
 }
