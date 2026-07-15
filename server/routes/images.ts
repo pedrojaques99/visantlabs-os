@@ -1204,7 +1204,8 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
       userId,
       imageId,
       user?.subscriptionTier || undefined,
-      user?.isAdmin || undefined
+      user?.isAdmin || undefined,
+      contentType
     );
 
     return res.json({

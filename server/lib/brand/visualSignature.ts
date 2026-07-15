@@ -29,7 +29,10 @@ export type BrandAssetKind =
  * `dimensions` (which feed AI prompts): placement feeds the deterministic
  * scene matcher (`packages/psd-engine` renderScene). Semantic fields come from
  * the vision model; measured fields (aspectRatio/hasTransparency/dominantColor)
- * are computed deterministically via sharp.
+ * are computed deterministically via sharp; textBox/safeCrop vêm de OCR.
+ *
+ * A divisão não é estilística — é o que os dados mostraram: o modelo de visão
+ * acerta o QUE a peça é e erra ONDE as coisas estão (ver textBox).
  */
 export interface BrandAssetPlacement {
   kind?: BrandAssetKind; // LLM — what the asset is
@@ -40,6 +43,26 @@ export interface BrandAssetPlacement {
   aspectRatio?: number; // sharp — width / height
   hasTransparency?: boolean; // sharp — has real alpha (can be "pasted", no frame)
   dominantColor?: string; // sharp — dominant hex, for contrast checks
+
+  /**
+   * Caixa (normalizada 0..1) que engloba todo texto/logo. É o "onde" que o
+   * `hasText` não responde. Ausente = não medido ou leitura descartada.
+   *
+   * Vem do Gemini via `box_2d` (convenção nativa dele: [ymin,xmin,ymax,xmax] em
+   * 0-1000). Isso NÃO vale pra qualquer modelo de visão: medimos claude-haiku
+   * devolvendo caixas quantizadas (0.10/0.90 repetidas) com confidence 0.95 —
+   * prior, não medição. Num bake-off de 30 artes, Gemini respondeu 30/30 com
+   * erro de 0.9pp contra gabarito medido; tesseract 15/30 com 0.4pp.
+   */
+  textBox?: { x0: number; y0: number; x1: number; y1: number };
+  /**
+   * Fração TOTAL da arte que o `cover` pode descartar sem tocar no texto.
+   * O corte é centrado, então cada lado perde metade → 2× a menor margem.
+   * Ausente = desconhecido; o caller deve assumir o conservador (não cortar).
+   */
+  safeCrop?: number;
+  /** Proveniência — `geometry` é fallback e costuma subestimar. */
+  safeCropSource?: 'vision' | 'ocr' | 'geometry';
 }
 
 export interface BrandAssetAnalysis {

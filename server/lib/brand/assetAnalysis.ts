@@ -14,6 +14,7 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { safeFetch } from '../../utils/securityValidation.js';
 import { shouldRetry } from '../ai-resilience.js';
+import { GEMINI_MODELS } from '../../../src/constants/geminiModels.js';
 import type { BrandAssetAnalysis } from './visualSignature.js';
 
 export type {
@@ -23,7 +24,12 @@ export type {
 } from './visualSignature.js';
 export { aggregateVisualSignature, hasSignature } from './visualSignature.js';
 
-const MODEL = 'gemini-2.5-flash';
+// SSoT dos IDs de modelo. Era 'gemini-2.5-flash' hardcoded — mesmo valor, mas
+// fora da constante ninguém enxerga que MODEL_CONFIG marca esse como
+// `deprecated: true`. Migrar pra GEMINI_MODELS.TEXT (gemini-3-flash-preview,
+// o que o resto do server usa) muda a saída do analisador, então fica como
+// decisão explícita e não como efeito colateral desta correção.
+const MODEL = GEMINI_MODELS.FLASH_2_5;
 
 const ANALYSIS_PROMPT = `You are a brand designer cataloguing a brand's own visual asset (a logo, graphic, photo, pattern or mockup).
 
@@ -42,13 +48,15 @@ Emit the fields in EXACTLY this order (description LAST):
     "luminance": "ONE of: light (art is mostly light/white) | dark (mostly dark/black) | mixed",
     "hasText": true or false (is there any legible text/lettering),
     "text": "the exact text if any, verbatim; empty string if none",
-    "contrastSafeOn": ["which backgrounds it stays legible on: 'light' and/or 'dark'"]
+    "contrastSafeOn": ["which backgrounds it stays legible on: 'light' and/or 'dark'"],
+    "box_2d": [ymin, xmin, ymax, xmax]
   },
   "description": "MAX 15 words. One short phrase (English). NEVER transcribe text in the image. No lists, no line breaks."
 }
 
 kind: 'logo' = symbol + wordmark lockup; 'wordmark' = text-only logotype; 'symbol' = icon/mark only; 'graphic' = a designed campaign composition; 'photo' = a photograph.
 contrastSafeOn: a white/light mark is safe on 'dark'; a black/dark mark is safe on 'light'; a full-bleed photo or framed graphic is safe on both.
+box_2d: the MINIMAL box containing ALL legible text and logo, in normalized 0-1000 coords, order [ymin, xmin, ymax, xmax]. Ignore photos, gradients, textures and decorative graphics — only text and logo matter. Omit box_2d entirely when hasText is false and there is no logo. Be precise: this becomes a crop tolerance — too loose decapitates the headline, too tight discards usable scenes.
 Each dimension array should have 1-3 precise, lowercase values. Judge only what is visible.`;
 
 const RESPONSE_SCHEMA = {
@@ -75,6 +83,10 @@ const RESPONSE_SCHEMA = {
         hasText: { type: Type.BOOLEAN },
         text: { type: Type.STRING },
         contrastSafeOn: { type: Type.ARRAY, items: { type: Type.STRING } },
+        // Convenção NATIVA de detecção do Gemini: [ymin, xmin, ymax, xmax] em
+        // 0-1000, y antes de x. Pedir noutro formato degrada a resposta — o
+        // modelo foi treinado nesta. Convertido pra textBox em normalizePlacementSemantic.
+        box_2d: { type: Type.ARRAY, items: { type: Type.NUMBER } },
       },
     },
     description: { type: Type.STRING },
@@ -125,13 +137,46 @@ export function normalizePlacementSemantic(
   let text = typeof raw.text === 'string' ? raw.text.trim() : undefined;
   // Models sometimes echo a sentinel ("false"/"none"/"n/a") instead of real text.
   if (text && /^(false|true|none|n\/?a|null|no text)$/i.test(text)) text = undefined;
+
+  const box = parseBox2d(raw.box_2d);
   return {
     kind: (VALID_KINDS as readonly string[]).includes(kind) ? (kind as any) : undefined,
     luminance: lum === 'light' || lum === 'dark' || lum === 'mixed' ? (lum as any) : undefined,
     hasText: typeof raw.hasText === 'boolean' ? raw.hasText : text ? text.length > 0 : undefined,
     text: text || undefined,
     contrastSafeOn: safe && safe.length ? Array.from(new Set(safe)) : undefined,
+    ...(box ? { textBox: box, safeCrop: safeCropFromBox(box), safeCropSource: 'vision' as const } : {}),
   };
+}
+
+/**
+ * Converte o `box_2d` do Gemini ([ymin, xmin, ymax, xmax] em 0-1000, y antes de
+ * x) pro nosso {x0,y0,x1,y1} em 0..1. Retorna null se vier malformado ou
+ * degenerado — melhor não ter o dado do que ter um errado, porque o caller usa
+ * a ausência como "não corte".
+ */
+function parseBox2d(raw: unknown): { x0: number; y0: number; x1: number; y1: number } | null {
+  if (!Array.isArray(raw) || raw.length !== 4) return null;
+  const n = raw.map(Number);
+  if (!n.every((v) => Number.isFinite(v) && v >= 0 && v <= 1000)) return null;
+  let [y0, x0, y1, x1] = n.map((v) => v / 1000);
+  // O modelo às vezes troca os cantos — ordena em vez de descartar a leitura.
+  if (x1 < x0) [x0, x1] = [x1, x0];
+  if (y1 < y0) [y0, y1] = [y1, y0];
+  // Caixa vazia = leitura inútil; caixa cobrindo tudo = não protege nada, mas é
+  // informação válida (safeCrop 0 → não corte).
+  if (x1 - x0 <= 0 || y1 - y0 <= 0) return null;
+  return { x0, y0, x1, y1 };
+}
+
+/**
+ * Fração TOTAL da arte que um `cover` pode descartar sem tocar na caixa. O corte
+ * é centrado, então cada lado perde metade do total → 2× a menor margem.
+ */
+export function safeCropFromBox(box: { x0: number; y0: number; x1: number; y1: number }): number {
+  const mX = Math.min(box.x0, 1 - box.x1);
+  const mY = Math.min(box.y0, 1 - box.y1);
+  return +Math.max(0, Math.min(2 * mX, 2 * mY)).toFixed(4);
 }
 
 function geminiKey(): string {
