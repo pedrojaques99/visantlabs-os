@@ -173,6 +173,77 @@ describe('strategy.copyExamples', () => {
   });
 });
 
+// The chat used to inject the whole brand on every turn. These lock the size of
+// what each surface actually pays for, so a future "just add it to the preset"
+// shows up as a failing number instead of a slow bill.
+describe('context size by preset', () => {
+  const heavyBrand = {
+    identity: { name: 'Urban Stay', tagline: 'A vista é sua', website: 'urbanstay.com' },
+    colors: Array.from({ length: 8 }, (_, i) => ({
+      name: `c${i}`,
+      hex: '#112233',
+      role: 'primary',
+    })),
+    typography: [{ role: 'heading', family: 'Inter', style: 'Bold' }],
+    guidelines: {
+      voice: 'Direto, sensorial',
+      dos: ['Falar da vista', 'Usar a metáfora da moldura'],
+      donts: ['Prometer o que a janela não entrega'],
+    },
+    strategy: {
+      manifesto: { provocation: 'A cidade é obra.', tension: 'Ninguém olha.', promise: 'Emoldure.' },
+      positioning: ['hotel-galeria'],
+      coreMessage: { product: 'Hotel', differential: 'Vista', emotionalBond: 'Contemplação' },
+      pillars: Array.from({ length: 3 }, (_, i) => ({ value: `p${i}`, description: 'x'.repeat(80) })),
+      personas: Array.from({ length: 3 }, (_, i) => ({
+        name: `Persona ${i}`,
+        age: 30,
+        occupation: 'Arquiteta',
+        bio: 'x'.repeat(200),
+        traits: ['a', 'b', 'c'],
+        desires: ['x'.repeat(60)],
+        painPoints: ['x'.repeat(60)],
+      })),
+      marketResearch: {
+        competitors: Array.from({ length: 6 }, (_, i) => `Concorrente ${i}`),
+        gaps: ['x'.repeat(120)],
+        opportunities: ['x'.repeat(120)],
+        notes: 'x'.repeat(300),
+      },
+      copyExamples: Array.from({ length: 20 }, (_, i) => ({
+        text: `Headline número ${i} — a cidade pinta, a gente emoldura.`,
+        type: 'headline',
+      })),
+    },
+    media: Array.from({ length: 11 }, (_, i) => ({
+      id: `m${i}`,
+      url: `https://cdn.example.com/very/long/media/path/asset-${i}.png`,
+      type: 'image',
+    })),
+    knowledgeFiles: Array.from({ length: 4 }, (_, i) => ({ fileName: `doc-${i}.pdf`, source: 'pdf' })),
+  };
+
+  it('minimal is a fraction of full — that gap is the whole point', () => {
+    const full = buildBrandContext(heavyBrand as any).length;
+    const minimal = buildBrandContext(heavyBrand as any, {
+      sections: BRAND_SECTION_PRESETS.minimal,
+    }).length;
+
+    // Measured on this brand: 5096 chars (~1274 tok) full vs 293 (~73 tok)
+    // minimal — 6%. Recorded so the win is a number, not a claim.
+    expect(full).toBeGreaterThan(4500);
+    expect(minimal).toBeLessThan(full / 10);
+  });
+
+  it('a big copy bank never reaches an image prompt', () => {
+    const imageGen = buildBrandContext(heavyBrand as any, {
+      sections: BRAND_SECTION_PRESETS.imageGen,
+    });
+    expect(imageGen).not.toContain('Headline número');
+    expect(imageGen).not.toContain('COPY EXAMPLES');
+  });
+});
+
 describe('pickBrandSections', () => {
   const row = {
     id: 'abc',

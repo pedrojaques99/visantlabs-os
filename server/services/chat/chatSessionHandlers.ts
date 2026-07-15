@@ -183,7 +183,8 @@ Especialidades: posicionamento, naming, tom de voz, paletas visuais, referência
 Trabalhe SEMPRE a partir do contexto da marca do usuário. Seja direto, estratégico e minimalista. Responda no idioma do usuário. Jamais use emojis.`,
 };
 
-function buildSystemPrompt(
+/** Exported for tests: the partial-context notice is load-bearing, so it needs one. */
+export function buildSystemPrompt(
   memory: SessionMemory,
   brandContext: string,
   ragContext: string,
