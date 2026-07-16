@@ -200,13 +200,17 @@ async function uploadRenderOutput(
 }
 
 export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult> {
-  const activeCount = await redisClient.get(ACTIVE_KEY);
-  if (activeCount && parseInt(activeCount, 10) >= MAX_CONCURRENT) {
+  // Reserva atômica de slot: INCR primeiro (o Redis garante que cada request
+  // concorrente recebe um número distinto), depois compara. Checar-com-GET-e-só-
+  // -então-INCR abre um TOCTOU — dois requests liam o mesmo valor "sob o limite"
+  // e ambos passavam, estourando MAX_CONCURRENT (o OOM que o processo-filho evita).
+  // Se o slot que peguei passou do teto, devolvo (DECR) e rejeito.
+  const active = await redisClient.incr(ACTIVE_KEY);
+  await redisClient.expire(ACTIVE_KEY, 300);
+  if (active > MAX_CONCURRENT) {
+    await redisClient.decr(ACTIVE_KEY);
     throw new Error('Render queue is full. Try again in a moment.');
   }
-
-  await redisClient.incr(ACTIVE_KEY);
-  await redisClient.expire(ACTIVE_KEY, 300);
 
   const jobId = randomUUID();
   const jobDir = path.join(TMP_DIR, jobId);
