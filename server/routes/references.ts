@@ -21,6 +21,7 @@ import {
   REFERENCE_DIMENSION_KEYS,
   FACET_DIMENSION_KEYS,
 } from '../../src/constants/referenceDimensions.js';
+import { rankReferences } from '../lib/references/feedRanking.js';
 
 const router = express.Router();
 
@@ -107,6 +108,52 @@ function buildLibraryFilter(query: Request['query']): Record<string, any> {
   return filter;
 }
 
+// Feed ranking pulls the newest N candidates and scores them in memory. The
+// library is curated (hundreds–low thousands), so this is cheap; if it ever
+// outgrows the cap we log it rather than silently truncate.
+const CANDIDATE_CAP = 1500;
+
+/** Parse the comma-joined brand descriptor tokens into a normalized Set. */
+function parseBrandTerms(raw: unknown): Set<string> | undefined {
+  if (typeof raw !== 'string' || !raw.trim()) return undefined;
+  const set = new Set(
+    raw
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter((t) => t.length >= 2)
+      .slice(0, 40)
+  );
+  return set.size ? set : undefined;
+}
+
+/** Derive the user's taste vocabulary + saved-id set from their collections. */
+async function loadUserSignals(
+  db: ReturnType<typeof getDb>,
+  userId?: string | number
+): Promise<{ tasteValues?: Set<string>; savedIds?: Set<string> }> {
+  if (!userId) return {};
+  const cols = await db
+    .collection('reference_collections')
+    .find({ userId: String(userId) })
+    .project({ refIds: 1 })
+    .toArray();
+  const savedIds = new Set<string>(cols.flatMap((c: any) => c.refIds || []));
+  if (savedIds.size === 0) return {};
+
+  const docs = await db
+    .collection('community_presets')
+    .find({ id: { $in: [...savedIds] }, category: 'reference' })
+    .project({ _id: 0, dimensions: 1 })
+    .toArray();
+  const tasteValues = new Set<string>();
+  for (const d of docs) {
+    for (const vals of Object.values((d as any).dimensions || {})) {
+      if (Array.isArray(vals)) for (const v of vals) tasteValues.add(String(v).toLowerCase());
+    }
+  }
+  return { tasteValues: tasteValues.size ? tasteValues : undefined, savedIds };
+}
+
 // ── POST /upload — user uploads images, pipeline tags + populates ────────────
 router.post('/upload', ingestRateLimiter, authenticate, async (req: AuthRequest, res: Response) => {
   try {
@@ -181,8 +228,12 @@ router.post('/upload', ingestRateLimiter, authenticate, async (req: AuthRequest,
   }
 });
 
-// ── GET / — public browse ────────────────────────────────────────────────────
-router.get('/', apiRateLimiter, async (req: Request, res: Response) => {
+// ── GET / — public browse (intelligent feed) ─────────────────────────────────
+// Without `seed`: legacy deterministic newest-first (back-compat). With `seed`:
+// a blended ranking (session freshness + recency + brand affinity + user taste),
+// so the feed is fresh per visit and personalized to the active brand. Auth is
+// optional — a logged-in user contributes taste + novelty signals.
+router.get('/', apiRateLimiter, optionalAuthenticate, async (req: AuthRequest, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -190,22 +241,54 @@ router.get('/', apiRateLimiter, async (req: Request, res: Response) => {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(60, Math.max(1, parseInt(req.query.limit as string) || 30));
     const skip = (page - 1) * limit;
-
     const filter = buildLibraryFilter(req.query);
+    const seed = typeof req.query.seed === 'string' ? req.query.seed.slice(0, 32) : '';
 
-    const [refs, total] = await Promise.all([
+    // Legacy path — no seed → newest-first, offset-paginated (unchanged).
+    if (!seed) {
+      const [refs, total] = await Promise.all([
+        db
+          .collection('community_presets')
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .project(PUBLIC_PROJECTION)
+          .toArray(),
+        db.collection('community_presets').countDocuments(filter),
+      ]);
+      return res.json({ references: refs, total, page, limit, pages: Math.ceil(total / limit) });
+    }
+
+    // Ranked path — pull newest CANDIDATE_CAP, score in memory, then paginate.
+    const brandTerms = parseBrandTerms(req.query.brandTerms);
+    const { tasteValues, savedIds } = await loadUserSignals(db, req.userId);
+
+    const [candidates, total] = await Promise.all([
       db
         .collection('community_presets')
         .find(filter)
         .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
+        .limit(CANDIDATE_CAP)
         .project(PUBLIC_PROJECTION)
         .toArray(),
       db.collection('community_presets').countDocuments(filter),
     ]);
+    if (total > CANDIDATE_CAP) {
+      console.warn(`[references] feed ranking capped at ${CANDIDATE_CAP}/${total} candidates`);
+    }
 
-    return res.json({ references: refs, total, page, limit, pages: Math.ceil(total / limit) });
+    const ranked = rankReferences(candidates as any[], {
+      seed,
+      brandTerms,
+      tasteValues,
+      savedIds,
+      now: Date.now(),
+    });
+    const pageItems = ranked.slice(skip, skip + limit);
+    // pages reflect the ranked candidate set so infinite scroll stops cleanly.
+    const pages = Math.ceil(Math.min(total, CANDIDATE_CAP) / limit);
+    return res.json({ references: pageItems, total, page, limit, pages });
   } catch (error: any) {
     console.error('[references] list error:', error);
     return res.status(500).json({ error: 'Failed to list references' });
@@ -571,43 +654,44 @@ router.get(
   apiRateLimiter,
   optionalAuthenticate,
   async (req: AuthRequest, res: Response) => {
-  try {
-    if (!isSafeRefId(req.params.id))
-      return res.status(400).json({ error: 'Invalid collection id' });
-    await connectToMongoDB();
-    const db = getDb();
-    const col = await db.collection('reference_collections').findOne({ id: req.params.id });
-    if (!col) return res.status(404).json({ error: 'Collection not found' });
-    if (!col.isPublic && String(col.userId) !== String(req.userId || '')) {
-      return res.status(403).json({ error: 'This collection is private' });
+    try {
+      if (!isSafeRefId(req.params.id))
+        return res.status(400).json({ error: 'Invalid collection id' });
+      await connectToMongoDB();
+      const db = getDb();
+      const col = await db.collection('reference_collections').findOne({ id: req.params.id });
+      if (!col) return res.status(404).json({ error: 'Collection not found' });
+      if (!col.isPublic && String(col.userId) !== String(req.userId || '')) {
+        return res.status(403).json({ error: 'This collection is private' });
+      }
+      const refIds: string[] = col.refIds || [];
+      const docs = refIds.length
+        ? await db
+            .collection('community_presets')
+            .find({ id: { $in: refIds }, category: 'reference' })
+            .project(PUBLIC_PROJECTION)
+            .toArray()
+        : [];
+      // preserve insertion order
+      const byId = new Map(docs.map((d: any) => [d.id, d]));
+      const items = refIds.map((id) => byId.get(id)).filter(Boolean);
+      return res.json({
+        collection: {
+          id: col.id,
+          name: col.name,
+          isPublic: !!col.isPublic,
+          count: items.length,
+          isOwner: String(col.userId) === String(req.userId || ''),
+          createdAt: col.createdAt,
+        },
+        items,
+      });
+    } catch (error: any) {
+      console.error('[references] collection detail error:', error);
+      return res.status(500).json({ error: 'Failed to load collection' });
     }
-    const refIds: string[] = col.refIds || [];
-    const docs = refIds.length
-      ? await db
-          .collection('community_presets')
-          .find({ id: { $in: refIds }, category: 'reference' })
-          .project(PUBLIC_PROJECTION)
-          .toArray()
-      : [];
-    // preserve insertion order
-    const byId = new Map(docs.map((d: any) => [d.id, d]));
-    const items = refIds.map((id) => byId.get(id)).filter(Boolean);
-    return res.json({
-      collection: {
-        id: col.id,
-        name: col.name,
-        isPublic: !!col.isPublic,
-        count: items.length,
-        isOwner: String(col.userId) === String(req.userId || ''),
-        createdAt: col.createdAt,
-      },
-      items,
-    });
-  } catch (error: any) {
-    console.error('[references] collection detail error:', error);
-    return res.status(500).json({ error: 'Failed to load collection' });
   }
-});
+);
 
 // PATCH /collections/:id — rename / toggle public
 router.patch(

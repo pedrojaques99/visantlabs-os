@@ -479,7 +479,7 @@ export const CommunityPage: React.FC = () => {
     >
       <div className="relative z-10">
         {/* Hero Section */}
-        <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
+        <div className="relative mb-16 min-h-[380px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
@@ -487,8 +487,8 @@ export const CommunityPage: React.FC = () => {
             </Suspense>
           </div>
 
-          {/* Content */}
-          <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 py-16">
+          {/* Content — full-width padding so it lines up with the sections below */}
+          <div className="relative z-10 w-full px-6 md:px-10 py-12">
             <div className="max-w-2xl">
               {/* Badge - Premium Styling */}
               <motion.div
@@ -497,10 +497,8 @@ export const CommunityPage: React.FC = () => {
                 className="mb-6"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
-                  <span className="text-[10px] font-bold font-mono text-neutral-400 uppercase tracking-widest">
-                    Comunidade Ativa
-                  </span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
+                  <span className="text-[11px] text-neutral-400">Comunidade ativa</span>
                 </div>
               </motion.div>
 
@@ -509,7 +507,7 @@ export const CommunityPage: React.FC = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-5xl md:text-7xl font-bold text-white mb-4 leading-[1.1] font-manrope tracking-tight"
+                className="text-4xl md:text-5xl font-bold text-white mb-4 leading-[1.1] font-manrope tracking-tight"
               >
                 {t('communityPresets.title')}
               </motion.h1>
@@ -519,7 +517,7 @@ export const CommunityPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-neutral-400 text-base md:text-lg mb-10 max-w-lg leading-relaxed font-manrope"
+                className="text-neutral-400 text-sm md:text-base mb-8 max-w-lg leading-relaxed font-manrope"
               >
                 {t('communityPresets.subtitle')}
               </motion.p>
@@ -533,7 +531,7 @@ export const CommunityPage: React.FC = () => {
               >
                 <PremiumButton
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-2 h-12 px-6 text-sm min-w-[200px]"
+                  className="flex items-center gap-2 h-11 px-5 text-sm"
                 >
                   <Plus size={18} />
                   <span>{t('community.criar_um_novo_prompt')}</span>
@@ -566,11 +564,11 @@ export const CommunityPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
+                className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-10 max-w-lg"
               >
                 <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                    <span className="text-[11px] font-medium text-neutral-500 font-manrope">
                       {t('community.membros')}
                     </span>
                     <TrendingUp
@@ -591,7 +589,7 @@ export const CommunityPage: React.FC = () => {
 
                 <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                    <span className="text-[11px] font-medium text-neutral-500 font-manrope">
                       {t('community.criaes')}
                     </span>
                     <Diamond
@@ -615,7 +613,7 @@ export const CommunityPage: React.FC = () => {
                   className={cn('hidden sm:flex group', glassSurface.control)}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                    <span className="text-[11px] font-medium text-neutral-500 font-manrope">
                       {t('community.publicado')}
                     </span>
                     <ImageIcon
@@ -640,7 +638,7 @@ export const CommunityPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-neutral-400 font-mono">{t('common.loading')}</p>
+            <p className="text-neutral-400 text-sm">{t('common.loading')}</p>
           </div>
         )}
 
@@ -732,7 +730,7 @@ export const CommunityPage: React.FC = () => {
                   <h2 className="text-2xl font-bold text-white font-manrope">
                     {t('community.workflows_da_comunidade')}
                   </h2>
-                  <p className="text-neutral-500 font-mono text-sm max-w-lg mt-2">
+                  <p className="text-neutral-500 text-sm max-w-lg mt-2">
                     Workflows completos criados pela comunidade. Salve, compartilhe e reutilize
                     estruturas de canvas inteiras.
                   </p>
@@ -862,7 +860,7 @@ export const CommunityPage: React.FC = () => {
                   <h2 className="text-3xl font-bold text-white font-manrope">
                     {t('community.galeria_da_comunidade')}
                   </h2>
-                  <p className="text-neutral-500 font-mono text-sm max-w-lg">
+                  <p className="text-neutral-500 text-sm max-w-lg">
                     Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
                   </p>
                 </div>

@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, X, ImageIcon, Trash2, Minus, Plus } from '@/lib/ui/icons';
+import { Search, X, ImageIcon, Trash2, Minus, Plus, Sparkles } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { getImageUrl } from '@/utils/imageUtils';
 import { useNavigate, Link } from 'react-router-dom';
 import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
@@ -386,9 +385,7 @@ export const MyOutputsPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">
-                {t('my.outputs.loading_your_outputs')}
-              </p>
+              <p className="text-neutral-400 text-sm">{t('my.outputs.loading_your_outputs')}</p>
             </div>
           </div>
         </div>
@@ -409,11 +406,6 @@ export const MyOutputsPage: React.FC = () => {
           inShell ? 'min-h-full' : 'min-h-screen'
         )}
       >
-        {/* Background */}
-        <div
-          className={cn('inset-0 z-0 pointer-events-none', inShell ? 'absolute' : 'fixed')}
-        ></div>
-
         {/* Header with Controls and Sidebar */}
         <div className={cn('relative z-30 pb-6', inShell ? 'pt-6' : 'pt-16 md:pt-20')}>
           <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -492,14 +484,34 @@ export const MyOutputsPage: React.FC = () => {
           {filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <ImageIcon size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-                {mockups.length === 0 ? 'NO OUTPUTS YET' : 'NO MATCHES FOUND'}
+              <h2 className="text-lg font-semibold text-neutral-200 mb-1.5">
+                {mockups.length === 0 ? 'No outputs yet' : 'No results'}
               </h2>
-              <p className="text-sm text-neutral-600 font-mono mb-4">
+              <p className="text-sm text-neutral-500 mb-5">
                 {mockups.length === 0
-                  ? 'Generate mockups to see them here.'
-                  : 'Try adjusting your search or filter.'}
+                  ? 'Generate your first mockup and it shows up here.'
+                  : 'Adjust your search or filter.'}
               </p>
+              {mockups.length === 0 ? (
+                <Button
+                  onClick={() => navigate('/mockupmachine')}
+                  className="bg-brand-cyan text-black hover:bg-brand-cyan/80"
+                >
+                  <Sparkles size={16} className="mr-1.5" />
+                  Generate my first mockup
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilterTag(null);
+                  }}
+                  className="border-neutral-700 text-neutral-300"
+                >
+                  Clear filters
+                </Button>
+              )}
             </div>
           ) : (
             <div className={getGridClasses()} style={getGridStyle()}>
@@ -510,7 +522,7 @@ export const MyOutputsPage: React.FC = () => {
                 return (
                   <GlassPanel
                     key={mockup._id}
-                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative overflow-hidden hover:border-white/15 transition-all duration-300"
                   >
                     {/* Image */}
                     <div
@@ -533,7 +545,7 @@ export const MyOutputsPage: React.FC = () => {
                               handleDelete(mockup._id);
                             }}
                             disabled={deletingId === mockup._id}
-                            className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-xs font-mono text-destructive hover:text-destructive hover:border-destructive/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
+                            className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-xs text-destructive hover:text-destructive hover:border-destructive/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
                             aria-label={t('my.outputs.delete_output')}
                           >
                             <Trash2 size={14} />
@@ -580,6 +592,9 @@ export const MyOutputsPage: React.FC = () => {
               }
             }}
             isLiked={selectedMockup.isLiked || false}
+            // RCD: activate the re-imagine/credit loop from the library — the wiring
+            // below was built but hidden (showActions defaults to false).
+            showActions={isAuthenticated === true}
             onZoomIn={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-in')}
             onZoomOut={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-out')}
             onNewAngle={(angle) =>

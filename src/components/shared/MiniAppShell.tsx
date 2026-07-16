@@ -21,6 +21,7 @@ import {
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { DropOverlay } from '@/components/ui/DropOverlay';
 import { useIsMobile } from '@/hooks/use-media-query';
+import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { glassSurface } from '@/lib/ui/glass';
 
@@ -87,6 +88,10 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  // Dentro do app shell o header (AppSpine, com brand-select) já existe no topo —
+  // o header próprio do mini-app empilharia dois. Só mostramos back+título quando
+  // rodando FORA do shell (ex.: tool standalone). Ver DESIGN §6 (sem header duplo).
+  const inShell = useInAppShell();
   const hasPanel = !!panel;
   const [panelVisible, setPanelVisible] = useState(defaultPanelVisible);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
@@ -114,21 +119,23 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
     <AppShell className={className}>
       <AppShellTopBar
         left={
-          <>
-            <Tooltip content="Back to apps">
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Back to apps"
-                className="h-7 w-7 text-neutral-500"
-                onClick={() => navigate(backTo)}
-              >
-                <ChevronLeft size={16} />
-              </Button>
-            </Tooltip>
-            {Icon && <Icon size={14} className="text-brand-cyan ml-0.5" />}
-            <MicroTitle className="text-[10px] text-neutral-500 ml-1.5">{title}</MicroTitle>
-          </>
+          inShell ? null : (
+            <>
+              <Tooltip content="Back to apps">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Back to apps"
+                  className="h-7 w-7 text-neutral-500"
+                  onClick={() => navigate(backTo)}
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+              </Tooltip>
+              {Icon && <Icon size={14} className="text-brand-cyan ml-0.5" />}
+              <MicroTitle className="text-[10px] text-neutral-500 ml-1.5">{title}</MicroTitle>
+            </>
+          )
         }
         right={
           <>

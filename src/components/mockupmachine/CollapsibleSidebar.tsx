@@ -87,9 +87,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         title="Show filters"
       >
         <Menu size={16} className="text-sidebar-foreground/50 flex-shrink-0" />
-        <span className="text-xs font-mono text-sidebar-foreground/50 uppercase truncate">
-          {title}
-        </span>
+        <span className="text-xs text-sidebar-foreground/60 truncate">{title}</span>
       </Button>
     );
   }
@@ -100,10 +98,10 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       <div className="flex items-center justify-between gap-2 md:gap-3 mb-2">
         <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 min-w-0">
           {showBackButton && <BackButton className="mb-0" />}
-          <h1 className="text-xs font-medium font-mono uppercase text-sidebar-foreground/50 whitespace-nowrap">
+          <h1 className="text-sm font-semibold text-sidebar-foreground whitespace-nowrap">
             {title}
           </h1>
-          <span className="text-xs text-sidebar-foreground/50 font-mono whitespace-nowrap">
+          <span className="text-xs text-sidebar-foreground/50 whitespace-nowrap">
             {count} {countLabel}
           </span>
         </div>
@@ -116,7 +114,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                   onChange={(value) => onSearchChange?.(value)}
                   placeholder="Search..."
                   iconSize={12}
-                  className="bg-sidebar backdrop-blur-sm border-sidebar-border w-40 text-xs font-mono"
+                  className="bg-sidebar backdrop-blur-sm border-sidebar-border w-40 text-xs"
                   containerClassName="w-40"
                   autoFocus
                 />
@@ -124,7 +122,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                 <Button
                   variant="ghost"
                   onClick={onToggleSearch}
-                  className="p-1.5 text-sidebar-foreground/50 hover:text-brand-cyan transition-colors"
+                  className="p-1.5 text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
                   title="Search"
                 >
                   <Search size={14} />
@@ -156,9 +154,9 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           <Button
             variant="ghost"
             onClick={(e) => handleTagClick(null, e)}
-            className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${
+            className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-all ${
               filterTag === null
-                ? 'text-brand-cyan border-brand-cyan/40 bg-brand-cyan/10'
+                ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
                 : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'
             }`}
           >
@@ -169,9 +167,9 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               variant="ghost"
               key={tag}
               onClick={(e) => handleTagClick(tag, e)}
-              className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-all ${
                 filterTag === tag
-                  ? 'text-brand-cyan border-brand-cyan/40 bg-brand-cyan/10'
+                  ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
                   : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'
               }`}
             >

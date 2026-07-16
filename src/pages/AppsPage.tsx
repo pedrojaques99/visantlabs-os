@@ -168,23 +168,11 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         </div>
       )}
 
-      {/* Fixar no rail (star estilo Figma) — aparece no hover, fica se fixado */}
-      <button
-        onClick={togglePin}
-        aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
-        title={pinned ? t('nav.unpin') : t('nav.pin')}
-        className={cn(
-          'absolute top-2 left-2 z-40 p-1.5 rounded-md bg-black/40 backdrop-blur-sm transition-all',
-          pinned
-            ? 'opacity-100 text-brand-cyan'
-            : 'opacity-0 group-hover:opacity-100 text-white/70 hover:text-white'
-        )}
-      >
-        <Star size={14} className={pinned ? 'fill-brand-cyan' : ''} />
-      </button>
-
       {/* Thumbnail — superfície levemente iluminada + separador embaixo para
-          definir a arte escura contra o card (contraste). */}
+          definir a arte escura contra o card (contraste). Todos os controles de
+          overlay (star, lock, edit, Abrir) vivem AQUI dentro, no mesmo contexto
+          de empilhamento, pra os z-index serem coerentes (star não flutua mais
+          por cima do resto). */}
       <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-b from-neutral-800/50 to-neutral-950/70 border-b border-white/5">
         {app.thumbnail ? (
           <>

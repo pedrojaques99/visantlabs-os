@@ -14,6 +14,7 @@ import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { CreativeSetupSidebar } from './CreativeSetupSidebar';
 import { CreativeEditorSidebar } from './CreativeEditorSidebar';
+import { CreativeActivationCanvas } from './CreativeActivationCanvas';
 import { KonvaCanvas } from './KonvaCanvas';
 import type Konva from 'konva';
 import { CreativeToolbar, BackgroundToolbar } from './CreativeToolbar';
@@ -374,12 +375,7 @@ export const CreativeStudio: React.FC = () => {
             <GeneratingImageCard isLoading variant="overlay" className="z-50" />
           )}
 
-          {status === 'setup' && previewSize.width > 0 && (
-            <div
-              className="border border-dashed border-white/10 rounded-lg bg-neutral-900/20"
-              style={{ width: previewSize.width, height: previewSize.height }}
-            />
-          )}
+          {status === 'setup' && <CreativeActivationCanvas />}
 
           {/* ── Single canvas — viewport drives multi-page via active page ── */}
           {status === 'editing' && previewSize.width > 0 && (

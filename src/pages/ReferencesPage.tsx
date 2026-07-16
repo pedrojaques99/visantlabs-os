@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -32,6 +33,7 @@ import {
   Square,
   Save,
   ChevronDown,
+  Shuffle,
 } from '@/lib/ui/icons';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
@@ -39,6 +41,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Modal } from '@/components/ui/Modal';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -51,6 +54,9 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
 import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryFlag } from '@/lib/references/taxonomy';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
+import { useRailSlot } from '@/components/shell/RailSlotContext';
+import { brandRankingTerms } from '@/lib/references/brandTerms';
 import {
   FACET_DIMENSION_KEYS,
   DIMENSION_LABELS,
@@ -69,6 +75,21 @@ import {
 } from '@/services/referencesApi';
 
 const PAGE_SIZE = 30;
+
+// Per-session feed seed — persisted so the order is stable across pages/reloads
+// within a browser session, but fresh on a new session (or when reshuffled).
+const REF_SEED_KEY = 'vsn_ref_seed';
+function getSessionSeed(): string {
+  try {
+    const existing = sessionStorage.getItem(REF_SEED_KEY);
+    if (existing) return existing;
+    const fresh = Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem(REF_SEED_KEY, fresh);
+    return fresh;
+  } catch {
+    return Math.random().toString(36).slice(2, 10);
+  }
+}
 
 const REGION_OPTIONS = [
   { value: '', label: 'Todas as regiões' },
@@ -167,6 +188,17 @@ export const ReferencesPage: React.FC = () => {
     if (v) initialDims[k] = v;
   }
 
+  // Active brand feeds the feed RANKING (not a hard filter): the BrandSwitcher in
+  // the shell is the control. "Todas as marcas" (activeBrandId null) → neutral feed.
+  const activeBrand = useActiveBrandSafe();
+  const activeBrandId = activeBrand?.activeBrandId ?? null;
+  const brandTerms = useMemo(
+    () => brandRankingTerms(activeBrand?.activeBrand),
+    [activeBrand?.activeBrand]
+  );
+  // Rail slot — the tag facets live in the drill-in rail, below the categories.
+  const railSlot = useRailSlot()?.railSlot ?? null;
+
   const [items, setItems] = useState<ReferenceItem[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -179,6 +211,18 @@ export const ReferencesPage: React.FC = () => {
     (searchParams.get('scope') as 'library' | 'collections' | 'mine') || 'library'
   );
   const [reloadNonce, setReloadNonce] = useState(0);
+  // Session seed — makes the feed order fresh per visit (deterministic WITHIN a
+  // session so infinite-scroll pagination stays consistent). Reshuffle = new seed.
+  const [seed, setSeed] = useState<string>(getSessionSeed);
+  const reshuffle = useCallback(() => {
+    const next = Math.random().toString(36).slice(2, 10);
+    try {
+      sessionStorage.setItem(REF_SEED_KEY, next);
+    } catch {
+      /* private mode — seed stays in memory only */
+    }
+    setSeed(next);
+  }, []);
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('q') || '');
   const [country, setCountry] = useState(searchParams.get('country') || '');
@@ -276,6 +320,9 @@ export const ReferencesPage: React.FC = () => {
                 tag: activeTag || undefined,
                 kind,
                 dimensions: dims,
+                seed,
+                brandId: activeBrandId || undefined,
+                brandTerms: brandTerms || undefined,
               });
         setItems((prev) => {
           if (!append) return data.references;
@@ -293,7 +340,18 @@ export const ReferencesPage: React.FC = () => {
         setIsLoadingMore(false);
       }
     },
-    [scope, debouncedSearch, country, region, activeTag, kind, dims]
+    [
+      scope,
+      debouncedSearch,
+      country,
+      region,
+      activeTag,
+      kind,
+      dims,
+      seed,
+      activeBrandId,
+      brandTerms,
+    ]
   );
 
   // facets once
@@ -343,6 +401,9 @@ export const ReferencesPage: React.FC = () => {
     similar,
     collectionView,
     reloadNonce,
+    seed,
+    activeBrandId,
+    brandTerms,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── URL → estado (rail drill-in) ──────────────────────────────────────────
@@ -749,9 +810,9 @@ export const ReferencesPage: React.FC = () => {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2.5"
+              className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5"
             >
-              <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
+              <span className="flex items-center gap-2 text-xs text-neutral-300 truncate">
                 <ScanSearch className="h-3.5 w-3.5 shrink-0" />
                 {similarLoading
                   ? 'Buscando parecidas...'
@@ -772,8 +833,8 @@ export const ReferencesPage: React.FC = () => {
 
         {/* Collection (board) banner */}
         {collectionView && (
-          <div className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2.5">
-            <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
+          <div className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5">
+            <span className="flex items-center gap-2 text-xs text-neutral-300 truncate">
               <Folder className="h-3.5 w-3.5 shrink-0" />
               {collectionView.collection.name} · {collectionView.items.length}
             </span>
@@ -824,79 +885,30 @@ export const ReferencesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Scope toggle + filters */}
+        {/* Workbench — busca + país/região + filtros + embaralhar numa barra só.
+            Scope (Biblioteca/Coleções/Minhas refs) e kind (Logos/Mockups) são
+            NAVEGAÇÃO: vivem na rail drill-in (navConfig REFERENCES_NAV), não aqui. */}
         {!similar && !collectionView && (
           <div className="space-y-3 mb-6">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
-                {(['library', 'collections', 'mine'] as const).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => {
-                      if (s !== 'library' && !authService.isAuthenticated()) {
-                        toast.error('Faça login para ver isso');
-                        return;
-                      }
-                      setScope(s);
-                    }}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                      scope === s
-                        ? 'bg-neutral-800 text-neutral-100'
-                        : 'text-neutral-500 hover:text-neutral-300'
-                    )}
-                  >
-                    {s === 'library'
-                      ? 'Biblioteca'
-                      : s === 'collections'
-                        ? 'Coleções'
-                        : 'Minhas refs'}
-                  </button>
-                ))}
-                {/* Kind filter — logos vs mockups */}
-                {scope === 'library' && (
-                  <div className="ml-2 flex items-center gap-1 border-l border-neutral-800 pl-2">
-                    {(['all', 'branding', 'mockup'] as const).map((k) => (
-                      <button
-                        key={k}
-                        onClick={() => setKind(k)}
-                        className={cn(
-                          'px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                          kind === k
-                            ? 'bg-neutral-800 text-neutral-100'
-                            : 'text-neutral-500 hover:text-neutral-300'
-                        )}
-                      >
-                        {k === 'all' ? 'Tudo' : k === 'branding' ? 'Logos' : 'Mockups'}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Mobile filter trigger */}
-              {scope === 'library' && (
+            {scope === 'library' && (
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">{filterControls}</div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="md:hidden h-8 bg-neutral-900 border-neutral-700 text-xs"
-                  onClick={() => setFilterSheet(true)}
+                  aria-label="Embaralhar feed"
+                  title="Embaralhar"
+                  className="h-9 shrink-0 border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-neutral-100 text-xs"
+                  onClick={reshuffle}
                 >
-                  <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
-                  Filtros
+                  <Shuffle className="h-3.5 w-3.5" />
                 </Button>
-              )}
-            </div>
-
-            {/* Desktop inline filters + progressive-disclosure toggle */}
-            {scope === 'library' && (
-              <div className="hidden md:flex items-center gap-2">
-                <div className="flex-1">{filterControls}</div>
                 <Button
                   variant="outline"
                   size="sm"
                   aria-expanded={filtersOpen}
                   className={cn(
-                    'h-9 shrink-0 border-neutral-700 text-xs transition-colors',
+                    'hidden md:inline-flex h-9 shrink-0 border-neutral-800 text-xs transition-colors',
                     filtersOpen
                       ? 'bg-neutral-800 text-neutral-100'
                       : 'bg-neutral-900 text-neutral-400'
@@ -912,20 +924,27 @@ export const ReferencesPage: React.FC = () => {
                     )}
                   />
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Filtros"
+                  className="md:hidden h-9 shrink-0 border-neutral-800 bg-neutral-900 text-neutral-400 text-xs"
+                  onClick={() => setFilterSheet(true)}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                </Button>
               </div>
             )}
 
             {/* Semantic suggestion — based on what the user has saved */}
             {scope === 'library' && !hasActiveFilters && taste.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-                  Pra você
-                </span>
+                <span className="text-xs text-neutral-500">Pra você</span>
                 {taste.map((t) => (
                   <Badge
                     key={t.key + t.value}
                     variant="outline"
-                    className="cursor-pointer border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10 text-[10px]"
+                    className="cursor-pointer border-white/10 bg-white/5 text-neutral-300 hover:bg-white/10 hover:text-neutral-100 text-xs"
                     onClick={() => setDim(t.key, t.value)}
                   >
                     {t.value}
@@ -937,7 +956,7 @@ export const ReferencesPage: React.FC = () => {
             {/* Active filters summary + result count */}
             {scope === 'library' && hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="mr-1 text-[11px] font-mono text-neutral-500">
+                <span className="mr-1 text-xs text-neutral-500">
                   {total.toLocaleString('pt-BR')} {total === 1 ? 'ref' : 'refs'}
                 </span>
                 {kind !== 'all' && (
@@ -962,7 +981,7 @@ export const ReferencesPage: React.FC = () => {
                 ))}
                 <button
                   onClick={clearAllFilters}
-                  className="ml-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-brand-cyan transition-colors"
+                  className="ml-1 text-xs text-neutral-500 hover:text-neutral-200 transition-colors"
                 >
                   Limpar tudo
                 </button>
@@ -981,7 +1000,7 @@ export const ReferencesPage: React.FC = () => {
                   if (!vals || !vals.length) return null;
                   return (
                     <div key={dk} className="flex flex-wrap items-center gap-1.5">
-                      <span className="w-[88px] shrink-0 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                      <span className="w-[88px] shrink-0 text-xs text-neutral-500">
                         {DIM_LABELS[dk]}
                       </span>
                       {vals.slice(0, 10).map((v) => {
@@ -991,10 +1010,10 @@ export const ReferencesPage: React.FC = () => {
                             key={v.value}
                             variant={active ? 'secondary' : 'outline'}
                             className={cn(
-                              'cursor-pointer text-[10px]',
+                              'cursor-pointer text-xs',
                               active
-                                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30'
-                                : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan'
+                                ? 'bg-white/10 text-neutral-100 border-white/10'
+                                : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-neutral-200'
                             )}
                             onClick={() => setDim(dk, v.value)}
                           >
@@ -1012,36 +1031,7 @@ export const ReferencesPage: React.FC = () => {
                 })}
               </motion.div>
             )}
-
-            {/* Tag facets — folded until "Filtros" is opened */}
-            {scope === 'library' && filtersOpen && facets && facets.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {activeTag && (
-                  <Badge
-                    variant="secondary"
-                    className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px]"
-                    onClick={() => setActiveTag('')}
-                  >
-                    {activeTag}
-                    <X className="h-2.5 w-2.5 ml-1" />
-                  </Badge>
-                )}
-                {facets.tags
-                  .filter((t) => t.value !== activeTag)
-                  .slice(0, 18)
-                  .map((t) => (
-                    <Badge
-                      key={t.value}
-                      variant="outline"
-                      className="cursor-pointer border-neutral-700 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan text-[10px]"
-                      onClick={() => setActiveTag(t.value)}
-                    >
-                      {t.value}
-                      <span className="ml-1 text-neutral-600 tabular-nums">{t.count}</span>
-                    </Badge>
-                  ))}
-              </div>
-            )}
+            {/* Os tag facets migraram pra rail (portal abaixo das categorias) — ver railTags. */}
           </div>
         )}
 
@@ -1163,7 +1153,7 @@ export const ReferencesPage: React.FC = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
           >
-            <div className="flex flex-col items-center gap-3 text-brand-cyan border-2 border-dashed border-brand-cyan/50 rounded-2xl px-12 py-10">
+            <div className="flex flex-col items-center gap-3 text-neutral-200 border-2 border-dashed border-white/20 rounded-2xl px-12 py-10">
               <ImageIcon className="h-8 w-8" />
               <p className="text-sm font-medium">Solte a imagem para achar parecidas</p>
             </div>
@@ -1249,6 +1239,44 @@ export const ReferencesPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Tag facets — portaled INTO the drill-in rail, below the categories. Tags
+          read like sub-categories, so they belong in the nav rail (not the body).
+          Clicking one filters the feed via activeTag. */}
+      {railSlot &&
+        scope === 'library' &&
+        !similar &&
+        !collectionView &&
+        !!facets?.tags?.length &&
+        createPortal(
+          <div className="px-2 pb-3">
+            <p className="px-1 pb-1.5 text-[11px] text-sidebar-foreground/50">Tags</p>
+            <div className="flex flex-wrap gap-1">
+              {activeTag && (
+                <button
+                  onClick={() => setActiveTag('')}
+                  className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-[11px]"
+                >
+                  {activeTag}
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              )}
+              {facets.tags
+                .filter((t) => t.value !== activeTag)
+                .slice(0, 24)
+                .map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => setActiveTag(t.value)}
+                    className="rounded-md px-1.5 py-0.5 text-[11px] text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                  >
+                    {t.value}
+                  </button>
+                ))}
+            </div>
+          </div>,
+          railSlot
+        )}
     </div>
   );
 };
@@ -1283,7 +1311,7 @@ const CollectionsGrid: React.FC<{
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {creating ? (
-        <div className="aspect-[4/3] rounded-xl border border-brand-cyan/30 bg-neutral-900 p-3 flex flex-col justify-center gap-2">
+        <div className="aspect-[4/3] rounded-xl border border-white/10 bg-neutral-900 p-3 flex flex-col justify-center gap-2">
           <Input
             autoFocus
             value={name}
@@ -1317,10 +1345,10 @@ const CollectionsGrid: React.FC<{
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-neutral-700 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
+          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 transition-colors flex flex-col items-center justify-center gap-2"
         >
           <FolderPlus className="h-6 w-6" />
-          <span className="text-xs font-mono uppercase tracking-wider">Nova coleção</span>
+          <span className="text-xs">Nova coleção</span>
         </button>
       )}
 
@@ -1571,7 +1599,7 @@ const BatchActionBar: React.FC<{
     {count < total && (
       <button
         onClick={onSelectAll}
-        className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 hover:text-brand-cyan transition-colors"
+        className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 hover:text-neutral-200 transition-colors"
       >
         Tudo
       </button>
@@ -1636,69 +1664,67 @@ const EditReferenceDialog: React.FC<{
   };
 
   return (
-    <Dialog open onOpenChange={() => !saving && onClose()}>
-      <DialogContent className="max-w-md bg-neutral-950 border-neutral-800">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">
-            Editar referência
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase">Nome</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-neutral-900 border-neutral-700 text-sm h-9"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase">Descrição</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-md text-sm p-2 text-neutral-200 resize-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase">
-              Tags (separadas por vírgula)
-            </label>
-            <Input
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="minimalist, line art, warm..."
-              className="bg-neutral-900 border-neutral-700 text-sm h-9"
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-neutral-900 border-neutral-700 text-xs"
-              disabled={saving}
-              onClick={onClose}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-              disabled={saving}
-              onClick={save}
-            >
-              {saving ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-              ) : (
-                <Save className="h-3.5 w-3.5 mr-1.5" />
-              )}
-              Salvar
-            </Button>
-          </div>
+    <Modal
+      isOpen
+      onClose={() => !saving && onClose()}
+      title="Editar referência"
+      size="sm"
+      footer={
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-neutral-300"
+            disabled={saving}
+            onClick={onClose}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="sm"
+            className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+            disabled={saving}
+            onClick={save}
+          >
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+            )}
+            Salvar
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-xs text-neutral-400">Nome</label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="bg-neutral-900 border-neutral-700 text-sm h-9"
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+        <div className="space-y-1.5">
+          <label className="text-xs text-neutral-400">Descrição</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full bg-neutral-900 border border-neutral-700 rounded-md text-sm p-2 text-neutral-200 resize-none"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs text-neutral-400">Tags (separadas por vírgula)</label>
+          <Input
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            placeholder="minimalist, line art, warm..."
+            className="bg-neutral-900 border-neutral-700 text-sm h-9"
+          />
+        </div>
+      </div>
+    </Modal>
   );
 };
 
@@ -1706,7 +1732,7 @@ const EditReferenceDialog: React.FC<{
 const FilterChip: React.FC<{ label: string; onRemove: () => void }> = ({ label, onRemove }) => (
   <Badge
     variant="secondary"
-    className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px]"
+    className="cursor-pointer bg-white/10 text-neutral-100 border-white/10 text-xs"
     onClick={onRemove}
   >
     {label}
@@ -1864,7 +1890,7 @@ const MasonryCard: React.FC<{
               </span>
             )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-brand-cyan/90 px-1.5 py-0.5 text-[10px] font-mono text-black">
+              <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur px-1.5 py-0.5 text-[10px] font-mono text-neutral-100">
                 {Math.round(item.score * 100)}%
               </span>
             )}
@@ -1884,7 +1910,7 @@ const MasonryCard: React.FC<{
             className={cn(
               'absolute top-1.5 left-1.5 z-10 h-6 w-6 grid place-items-center rounded-md bg-black/60 backdrop-blur transition-opacity',
               selected || selectionActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-              selected ? 'text-brand-cyan' : 'text-neutral-200 hover:text-brand-cyan'
+              selected ? 'text-brand-cyan' : 'text-neutral-200 hover:text-neutral-100'
             )}
           >
             {selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
@@ -1901,7 +1927,7 @@ const MasonryCard: React.FC<{
             onClick={onSimilar}
             title="Ver parecidas"
             aria-label="Ver parecidas"
-            className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+            className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-neutral-100"
           >
             <Images className="h-3.5 w-3.5" />
           </button>
@@ -1919,7 +1945,7 @@ const MasonryCard: React.FC<{
               onClick={onSave}
               title="Salvar em coleção"
               aria-label="Salvar em coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-neutral-100"
             >
               <Bookmark className="h-3.5 w-3.5" />
             </button>
@@ -2068,16 +2094,14 @@ const Lightbox: React.FC<{
                 (() => {
                   const shared = sharedDimensions(similarSource, item);
                   return shared.length ? (
-                    <div className="rounded-lg border border-brand-cyan/20 bg-brand-cyan/5 p-3">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-brand-cyan/70 mb-1.5">
-                        Por que combina
-                      </p>
+                    <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+                      <p className="text-xs text-neutral-400 mb-1.5">Por que combina</p>
                       <div className="flex flex-wrap gap-1">
                         {shared.map((s) => (
                           <Badge
                             key={s}
                             variant="outline"
-                            className="border-brand-cyan/30 text-brand-cyan text-[10px]"
+                            className="border-white/10 bg-white/5 text-neutral-300 text-xs"
                           >
                             {s}
                           </Badge>
@@ -2155,7 +2179,7 @@ const Lightbox: React.FC<{
                         variant="outline"
                         className={cn(
                           'text-[10px] px-1.5 py-0 border-neutral-700 text-neutral-400 transition-colors',
-                          onTag && 'cursor-pointer hover:border-brand-cyan/40 hover:text-brand-cyan'
+                          onTag && 'cursor-pointer hover:border-neutral-600 hover:text-neutral-200'
                         )}
                         onClick={onTag ? () => onTag(t) : undefined}
                       >
@@ -2165,7 +2189,7 @@ const Lightbox: React.FC<{
                     {!showAllTags && item.tags.length > 6 && (
                       <button
                         onClick={() => setShowAllTags(true)}
-                        className="text-[10px] font-mono text-neutral-500 hover:text-brand-cyan px-1 transition-colors"
+                        className="text-[10px] font-mono text-neutral-500 hover:text-neutral-200 px-1 transition-colors"
                       >
                         +{item.tags.length - 6}
                       </button>
@@ -2187,7 +2211,7 @@ const Lightbox: React.FC<{
                         variant="outline"
                         className={cn(
                           'text-[10px] px-1.5 py-0 border-neutral-800 text-neutral-400 transition-colors',
-                          onTag && 'cursor-pointer hover:border-brand-cyan/40 hover:text-brand-cyan'
+                          onTag && 'cursor-pointer hover:border-neutral-600 hover:text-neutral-200'
                         )}
                         onClick={onTag ? () => onTag(v) : undefined}
                       >
@@ -2245,7 +2269,7 @@ const Lightbox: React.FC<{
                     href={item.sourceUrl || prov.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 text-xs text-neutral-400 hover:text-brand-cyan"
+                    className="inline-flex items-center justify-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     Ver fonte original

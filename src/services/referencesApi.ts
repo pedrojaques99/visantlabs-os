@@ -103,6 +103,12 @@ export interface ReferenceListParams {
   kind?: 'all' | 'branding' | 'mockup';
   /** Structured dimension filters, e.g. { type_style: 'serif', vibe: 'premium' }. */
   dimensions?: Record<string, string>;
+  /** Per-session seed — makes the feed order fresh per visit (see ReferencesPage). */
+  seed?: string;
+  /** Active brand id — used for ranking novelty/telemetry, not as a hard filter. */
+  brandId?: string;
+  /** Descriptive brand tokens — boost references that match the active brand. */
+  brandTerms?: string;
 }
 
 const BASE = '/api/references';
@@ -130,6 +136,9 @@ export const referencesApi = {
         if (v) qs.set(k, v);
       }
     }
+    if (params.seed) qs.set('seed', params.seed);
+    if (params.brandId) qs.set('brandId', params.brandId);
+    if (params.brandTerms) qs.set('brandTerms', params.brandTerms);
     const resp = await fetch(`${BASE}?${qs}`, { headers: authHeaders() });
     if (!resp.ok) throw new Error('Failed to load references');
     return resp.json();
