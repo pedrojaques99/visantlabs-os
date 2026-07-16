@@ -301,7 +301,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Identity" />
         {identity.tagline && (
-          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-cyan/80">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-300">
             {identity.tagline}
           </p>
         )}

@@ -202,7 +202,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <div className="relative">
-              <div className="absolute inset-0 bg-brand-cyan/20 rounded-md blur-xl"></div>
+              <div className="absolute inset-0 bg-neutral-500/20 rounded-md blur-xl"></div>
               <CheckCircle size={80} className="text-brand-cyan relative" />
             </div>
           </div>
@@ -232,7 +232,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         {creditsConfirmed && (
           <div className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-6">
-              <Pickaxe size={24} className="text-brand-cyan" />
+              <Pickaxe size={24} className="text-neutral-500" />
               <h2 className="text-xl font-semibold font-mono text-neutral-200">
                 {t('creditRechargeSuccess.creditsPurchased')}
               </h2>
@@ -240,7 +240,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
             {creditsPurchased && creditsConfirmed && (
               <div className="mb-6">
-                <div className="text-center py-4 bg-brand-cyan/10 border border-[brand-cyan]/30 rounded-md">
+                <div className="text-center py-4 bg-brand-cyan/10 border border-neutral-600/30 rounded-md">
                   <div className="text-5xl font-bold font-mono text-brand-cyan mb-2">
                     +{animatedCreditsPurchased}
                   </div>
@@ -267,12 +267,12 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               {/* Arrow indicator */}
               {previousCredits !== null && (
                 <div className="flex justify-center">
-                  <ArrowRight size={20} className="text-brand-cyan/50 rotate-90" />
+                  <ArrowRight size={20} className="text-neutral-500 rotate-90" />
                 </div>
               )}
 
               {/* Total Credits */}
-              <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-[brand-cyan]/20 rounded-md">
+              <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-neutral-600/20 rounded-md">
                 <span className="text-neutral-300 font-mono text-sm font-semibold">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>

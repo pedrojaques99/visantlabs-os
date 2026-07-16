@@ -130,9 +130,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                 </span>
               </div>
             ) : (
-              <span className="text-[11px] font-mono text-neutral-600 uppercase">
-                Selecionar Projeto
-              </span>
+              <span className="text-[11px] text-neutral-600">Selecionar Projeto</span>
             )}
           </div>
 
@@ -290,7 +288,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
             ) : searchQuery ? (
               <div className="py-20 flex flex-col items-center justify-center text-neutral-600 gap-3">
                 <Search size={24} className="opacity-20" />
-                <span className="text-[10px] font-mono uppercase tracking-widest">
+                <span className="text-[10px]">
                   {t('mockup.noResults') || 'Nenhuma marca encontrada'}
                 </span>
                 <button
@@ -329,7 +327,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
       {selectedBrandGuideline && selectedGuidelineObj && (
         <div className="mt-2 px-1 flex items-center justify-between opacity-40">
           {selectedGuidelineObj.extraction && (
-            <span className="text-[10px] font-mono text-brand-cyan uppercase tracking-tighter">
+            <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-tighter">
               DNA {selectedGuidelineObj.extraction.completeness}%
             </span>
           )}

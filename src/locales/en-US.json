@@ -153,6 +153,9 @@
       "collections": "Collections",
       "mine": "My refs"
     },
+    "my-outputs": {
+      "label": "Saved"
+    },
     "community": {
       "label": "Community",
       "overview": "Overview",

@@ -57,7 +57,8 @@ export type SectionId =
   | 'apps'
   | 'profile'
   | 'community'
-  | 'references';
+  | 'references'
+  | 'my-outputs';
 
 /** Flags de navegação — subconjunto de `src/config/featureFlags.ts`, injetado
  *  como dado (não importado direto) para as funções continuarem puras/testáveis. */
@@ -247,6 +248,9 @@ function sectionFor(p: string): SectionId | null {
   if (p === '/community' || p.startsWith('/community/')) return 'community';
   // /references — biblioteca de referências (drill-in: scope/kind viram a rail).
   if (p === '/references' || p.startsWith('/references/')) return 'references';
+  // /my-outputs — galeria pessoal (drill-in: a tag cloud vira a L2 no rail,
+  // mesmo padrão SSoT da /references via RailSlotContext).
+  if (p === '/my-outputs') return 'my-outputs';
   // Início adaptativo: cockpit e grid de marcas são a MESMA casa → mesmo destaque
   // ('cockpit' = Início). Ver plano HOME-ADAPTIVE-IA.
   if (p === '/brand-guidelines' || p.startsWith('/brand-guidelines/')) return 'cockpit';
@@ -465,14 +469,25 @@ export const REFERENCES_NAV: ContextNavItem[] = [
  * secundários ricos (biblioteca/descoberta). Destinos L1 (apps) ficam com
  * categorias in-page — trocar a rail-mãe deles esconderia a navegação primária.
  */
-const DRILL_IN_SECTIONS = new Set<SectionId>(['community', 'references']);
+const DRILL_IN_SECTIONS = new Set<SectionId>(['community', 'references', 'my-outputs', 'apps']);
 export function isDrillInSection(section: SectionId | null): boolean {
   return section != null && DRILL_IN_SECTIONS.has(section);
 }
+
+// Seções cuja L2 é DINÂMICA e injetada pela página no rail (tag cloud, categorias)
+// via RailSlotContext, em vez de itens estáticos do navConfig. Elas entram em
+// drill-in mesmo sem `contextNav` fixa, e o rail renderiza o slot host pra elas.
+const RAIL_SLOT_SECTIONS = new Set<SectionId>(['references', 'my-outputs', 'apps']);
+export function sectionUsesRailSlot(section: SectionId | null): boolean {
+  return section != null && RAIL_SLOT_SECTIONS.has(section);
+}
+
 /** Título (labelKey) do header de voltar de cada seção drill-in. */
 export const DRILL_TITLES: Partial<Record<SectionId, string>> = {
   community: 'nav.library.community',
   references: 'nav.library.references',
+  'my-outputs': 'nav.library.myOutputs',
+  apps: 'nav.apps.label',
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

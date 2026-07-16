@@ -191,10 +191,8 @@ export const ColorPalettePage: React.FC = () => {
       <div className="w-full max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-2">
-          <Palette size={16} className="text-brand-cyan" />
-          <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
-            Color Palette
-          </h1>
+          <Palette size={16} className="text-neutral-400" />
+          <h1 className="text-sm font-semibold text-neutral-200">Color Palette</h1>
           {imageUrl && (
             <button
               onClick={reset}
@@ -217,7 +215,7 @@ export const ColorPalettePage: React.FC = () => {
             )}
           >
             <Upload size={24} className="text-neutral-500" />
-            <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+            <span className="text-xs font-medium text-neutral-500">
               Drop an image or click to upload
             </span>
             <input
@@ -333,7 +331,7 @@ export const ColorPalettePage: React.FC = () => {
             <div className="space-y-4">
               {/* Max colors slider */}
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase">Max Colors</span>
+                <span className="text-xs font-medium text-neutral-500">Max Colors</span>
                 <input
                   type="range"
                   min="5"
@@ -354,7 +352,7 @@ export const ColorPalettePage: React.FC = () => {
                 <Button
                   onClick={() => runExtraction(false)}
                   disabled={isExtracting}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
                 >
                   <RefreshCw size={14} />
                   <span className="ml-2">Re-extract</span>
@@ -362,7 +360,7 @@ export const ColorPalettePage: React.FC = () => {
                 <Button
                   onClick={() => runExtraction(true)}
                   disabled={isExtracting}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
                 >
                   <Shuffle size={14} />
                   <span className="ml-2">Randomize</span>
@@ -373,35 +371,33 @@ export const ColorPalettePage: React.FC = () => {
             {/* Export section */}
             {colors.length > 0 && (
               <div className="space-y-3">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-                  Export
-                </span>
+                <span className="text-xs font-medium text-neutral-500">Export</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={exportCSS}
                     variant="outline"
-                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                    className="text-xs font-medium border-neutral-700"
                   >
                     <Copy size={12} className="mr-1.5" /> CSS Variables
                   </Button>
                   <Button
                     onClick={exportTailwind}
                     variant="outline"
-                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                    className="text-xs font-medium border-neutral-700"
                   >
                     <Copy size={12} className="mr-1.5" /> Tailwind
                   </Button>
                   <Button
                     onClick={exportJSON}
                     variant="outline"
-                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                    className="text-xs font-medium border-neutral-700"
                   >
                     <Copy size={12} className="mr-1.5" /> JSON
                   </Button>
                   <Button
                     onClick={exportAll}
                     variant="outline"
-                    className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                    className="text-xs font-medium border-neutral-700"
                   >
                     <Copy size={12} className="mr-1.5" /> Copy All
                   </Button>
@@ -413,9 +409,7 @@ export const ColorPalettePage: React.FC = () => {
             {/* WCAG Contrast Grid */}
             {colors.length >= 2 && (
               <div className="space-y-2">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-                  WCAG Contrast Grid
-                </span>
+                <span className="text-xs font-medium text-neutral-500">WCAG Contrast Grid</span>
                 <div className="overflow-x-auto">
                   <table className="border-collapse">
                     <thead>

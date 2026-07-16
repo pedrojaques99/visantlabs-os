@@ -110,7 +110,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
-              <Diamond size={16} className="text-brand-cyan" />
+              <Diamond size={16} className="text-neutral-400" />
             </div>
             <MicroTitle className="text-neutral-200">
               {t('mockup.vibeSelect') || 'ESTILO DO MOCKUP'}

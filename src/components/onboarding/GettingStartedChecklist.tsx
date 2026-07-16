@@ -135,9 +135,7 @@ export const GettingStartedChecklist: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Rocket size={12} className="text-neutral-500" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
-              Primeiros passos
-            </span>
+            <span className="text-xs font-medium text-neutral-300">Primeiros passos</span>
           </div>
           <button
             onClick={dismiss}
@@ -165,10 +163,10 @@ export const GettingStartedChecklist: React.FC = () => {
 
         {allDone ? (
           <div className="flex items-center justify-between pt-1">
-            <span className="font-mono text-[11px] text-brand-cyan">Tudo pronto.</span>
+            <span className="text-xs font-medium text-neutral-300">Tudo pronto.</span>
             <button
               onClick={dismiss}
-              className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
             >
               Fechar
             </button>

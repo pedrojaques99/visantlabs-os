@@ -562,7 +562,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           <SkeletonText loading={isGenerating}>
             <h3
               className={cn(
-                'text-[10px] font-mono uppercase tracking-widest font-medium',
+                'text-[10px] font-medium',
                 theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
               )}
             >
@@ -618,7 +618,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
-                    'text-[10px] font-mono uppercase ',
+                    'text-[10px]',
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                   )}
                 >

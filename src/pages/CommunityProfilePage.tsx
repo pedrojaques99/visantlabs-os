@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Instagram,
   Youtube,
@@ -15,7 +15,6 @@ import {
   Share2,
 } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { userProfileService, type UserProfile } from '../services/userProfileService';
 import { mockupApi, type Mockup } from '../services/mockupApi';
@@ -32,14 +31,6 @@ import { TexturePresetModal } from '../components/TexturePresetModal';
 import { AnglePresetModal } from '../components/AnglePresetModal';
 import { AmbiencePresetModal } from '../components/AmbiencePresetModal';
 import { LuminancePresetModal } from '../components/LuminancePresetModal';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/BreadcrumbWithBack';
 import { BackButton } from '../components/ui/BackButton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
@@ -336,7 +327,7 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-neutral-700 hover:bg-neutral-900/80 hover:text-brand-cyan transition-all duration-200"
+        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-neutral-700 hover:bg-neutral-900/80 hover:text-neutral-200 transition-all duration-200"
         title={label}
       >
         {icon}
@@ -352,9 +343,7 @@ export const CommunityProfilePage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">
-                {t('community.profile.loading_profile')}
-              </p>
+              <p className="text-neutral-400 text-sm">{t('community.profile.loading_profile')}</p>
             </div>
           </div>
         </div>
@@ -369,7 +358,7 @@ export const CommunityProfilePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <p className="text-destructive font-mono mb-4">{error || 'User not found'}</p>
+              <p className="text-destructive mb-4">{error || 'User not found'}</p>
               <BackButton className="mb-0" />
             </div>
           </div>
@@ -397,31 +386,6 @@ export const CommunityProfilePage: React.FC = () => {
         {/* Content */}
         <div className="relative z-10 pt-20 md:pt-24 pb-12">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
-            {/* Breadcrumb */}
-            <div className="mb-6">
-              <BreadcrumbWithBack to="/community">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/">{t('common.home')}</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/community">{t('common.community')}</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>
-                      {profile?.name || profile?.username || t('common.user')}
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </BreadcrumbWithBack>
-            </div>
-
             {/* Profile Header Card */}
             <div className="relative mb-8 rounded-md overflow-hidden bg-neutral-900/20 border border-white/10">
               {/* Cover Image */}
@@ -470,7 +434,7 @@ export const CommunityProfilePage: React.FC = () => {
                     </h1>
 
                     {profile.bio && (
-                      <p className="text-neutral-400 font-mono text-sm md:text-base mb-4 max-w-2xl line-clamp-3">
+                      <p className="text-neutral-400 text-sm md:text-base mb-4 max-w-2xl line-clamp-3">
                         {profile.bio}
                       </p>
                     )}
@@ -491,7 +455,7 @@ export const CommunityProfilePage: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setIsEditModalOpen(true)}
-                          className="ml-2 gap-2 border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan hover:border-neutral-700"
+                          className="ml-2 gap-2 border-neutral-800/60 text-neutral-300 hover:bg-neutral-900/80 hover:text-neutral-100 hover:border-neutral-700"
                         >
                           <Edit size={14} />
                           Edit Profile
@@ -575,10 +539,8 @@ export const CommunityProfilePage: React.FC = () => {
                 {mockups.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <ImageIcon size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
-                      No mockups yet
-                    </h2>
-                    <p className="text-sm text-neutral-600 font-mono max-w-sm">
+                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">No mockups yet</h2>
+                    <p className="text-sm text-neutral-500 max-w-sm">
                       This user hasn't published any mockups yet.
                     </p>
                   </div>
@@ -591,7 +553,7 @@ export const CommunityProfilePage: React.FC = () => {
                       return (
                         <div
                           key={mockup._id}
-                          className="group relative bg-neutral-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-neutral-700 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
+                          className="group relative bg-neutral-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-neutral-700 hover:shadow-lg transition-all duration-300 aspect-square cursor-pointer"
                           onClick={() => handleView(mockup)}
                         >
                           <img
@@ -628,10 +590,10 @@ export const CommunityProfilePage: React.FC = () => {
                 {workflows.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <Workflow size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
+                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">
                       No workflows yet
                     </h2>
-                    <p className="text-sm text-neutral-600 font-mono max-w-sm">
+                    <p className="text-sm text-neutral-500 max-w-sm">
                       This user hasn't published any workflows yet.
                     </p>
                   </div>
@@ -696,14 +658,14 @@ export const CommunityProfilePage: React.FC = () => {
                         <CardContent className="p-4 flex flex-col flex-1">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <h3
-                              className="font-semibold text-neutral-200 line-clamp-1 group-hover:text-brand-cyan transition-colors cursor-pointer"
+                              className="font-semibold text-neutral-200 line-clamp-1 group-hover:text-neutral-100 transition-colors cursor-pointer"
                               onClick={() => navigate(`/canvas/${workflow._id}`)}
                             >
                               {workflow.name}
                             </h3>
                           </div>
 
-                          <p className="text-sm text-neutral-500 font-mono line-clamp-2 mb-4 flex-1">
+                          <p className="text-sm text-neutral-500 line-clamp-2 mb-4 flex-1">
                             {workflow.description}
                           </p>
 
@@ -746,10 +708,8 @@ export const CommunityProfilePage: React.FC = () => {
                 {allPresets.length === 0 ? (
                   <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
                     <Diamond size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
-                      No presets yet
-                    </h2>
-                    <p className="text-sm text-neutral-600 font-mono max-w-sm">
+                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">No presets yet</h2>
+                    <p className="text-sm text-neutral-500 max-w-sm">
                       This user hasn't published any presets yet.
                     </p>
                   </div>
@@ -785,11 +745,11 @@ export const CommunityProfilePage: React.FC = () => {
                             </div>
                           </div>
                           <div className="p-4 flex flex-col flex-1 w-full">
-                            <h3 className="font-semibold text-neutral-200 font-mono text-sm mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
+                            <h3 className="font-semibold text-neutral-200 text-sm mb-1 line-clamp-1 group-hover:text-neutral-100 transition-colors">
                               {preset.name}
                             </h3>
                             {preset.description && (
-                              <p className="text-xs text-neutral-500 font-mono line-clamp-2 mt-1">
+                              <p className="text-xs text-neutral-500 line-clamp-2 mt-1">
                                 {preset.description}
                               </p>
                             )}

@@ -232,7 +232,7 @@ const BrandSection: React.FC = () => (
             padding="md"
             className="group hover:border-white/10 transition-colors duration-300 h-full"
           >
-            <cap.icon size={18} className="text-brand-cyan mb-3 shrink-0" />
+            <cap.icon size={18} className="text-neutral-400 mb-3 shrink-0" />
             <p className="text-sm font-semibold text-neutral-200 mb-1">{cap.title}</p>
             <p className="text-xs text-neutral-500 leading-relaxed">{cap.desc}</p>
           </GlassPanel>
@@ -241,11 +241,11 @@ const BrandSection: React.FC = () => (
     </div>
 
     <FadeIn delay={0.3}>
-      <GlassPanel padding="md" className="border-brand-cyan/20 bg-brand-cyan/5">
+      <GlassPanel padding="md" className="border-white/10 bg-white/[0.03]">
         <div className="flex items-start gap-3">
-          <div className="w-1 h-full bg-brand-cyan rounded-full shrink-0 self-stretch min-h-[2rem]" />
+          <div className="w-1 h-full bg-neutral-600 rounded-full shrink-0 self-stretch min-h-[2rem]" />
           <div>
-            <p className="text-sm font-semibold text-brand-cyan mb-1">
+            <p className="text-sm font-semibold text-neutral-200 mb-1">
               Diferencial único de mercado
             </p>
             <p className="text-xs text-neutral-400 leading-relaxed">
@@ -390,7 +390,7 @@ const CampaignSection: React.FC = () => {
                 },
               ].map(({ method, detail, icon: Icon }) => (
                 <div key={method} className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03]">
-                  <Icon size={14} className="text-brand-cyan shrink-0 mt-0.5" />
+                  <Icon size={14} className="text-neutral-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs font-semibold text-neutral-300">{method}</p>
                     <p className="text-[10px] text-neutral-600 font-mono mt-0.5 leading-relaxed">
@@ -432,7 +432,7 @@ const IntegrationsSection: React.FC = () => (
             className="flex flex-col gap-4 h-full hover:border-white/10 transition-colors duration-300"
           >
             <div className="flex items-center gap-2">
-              <integ.icon size={16} className="text-brand-cyan" />
+              <integ.icon size={16} className="text-neutral-400" />
               <p className="text-sm font-semibold text-neutral-200">{integ.title}</p>
             </div>
             <ul className="flex flex-col gap-2">

@@ -159,8 +159,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                   !hasAnalyzed && 'cursor-pointer',
                   isSelected
                     ? theme === 'dark'
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                      : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-neutral-600/30 shadow-sm shadow-neutral-600/10'
+                      : 'bg-brand-cyan/20 text-neutral-800 border-neutral-600/30 shadow-sm shadow-neutral-600/10'
                     : theme === 'dark'
                       ? isSuggested
                         ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-brand-cyan/50 hover:text-white'
@@ -187,7 +187,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               onBlur={handleBlur}
               placeholder={t('mockup.customStylePlaceholder')}
               className={cn(
-                'px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono',
+                'px-3 py-1.5 text-xs font-medium transition-all duration-200 border-neutral-600/30 focus:ring-0 min-w-[120px] font-mono',
                 theme === 'dark'
                   ? 'bg-brand-cyan/20 text-brand-cyan'
                   : 'bg-brand-cyan/20 text-neutral-800'

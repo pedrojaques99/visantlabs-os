@@ -313,7 +313,7 @@ export const ApiKeysPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <Key className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+                    <Key className="h-6 w-6 md:h-8 md:w-8 text-neutral-400" />
                     <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
                       API Keys
                     </h1>
@@ -396,7 +396,7 @@ export const ApiKeysPage: React.FC = () => {
             <Card className="bg-neutral-900 border border-white/10 rounded-xl">
               <CardContent className="p-4 md:p-6">
                 <h2 className="text-lg font-semibold text-neutral-200 mb-4 flex items-center gap-2">
-                  <Shield size={18} className="text-brand-cyan" />
+                  <Shield size={18} className="text-neutral-400" />
                   Create New API Key
                 </h2>
                 <form onSubmit={handleCreateKey} className="space-y-4">
@@ -501,25 +501,23 @@ export const ApiKeysPage: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10">
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
-                          Name
-                        </th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                        <th className="text-left p-4 text-neutral-500 font-medium text-xs">Name</th>
+                        <th className="text-left p-4 text-neutral-500 font-medium text-xs">
                           {t('api.keys.key')}
                         </th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                        <th className="text-left p-4 text-neutral-500 font-medium text-xs">
                           {t('api.keys.scopes_2')}
                         </th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">
+                        <th className="text-left p-4 text-neutral-500 font-medium text-xs hidden md:table-cell">
                           {t('api.keys.last_used')}
                         </th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase  hidden md:table-cell">
+                        <th className="text-left p-4 text-neutral-500 font-medium text-xs hidden md:table-cell">
                           {t('api.keys.created')}
                         </th>
-                        <th className="text-left p-4 text-neutral-500 font-medium font-mono text-xs uppercase ">
+                        <th className="text-left p-4 text-neutral-500 font-medium text-xs">
                           {t('api.keys.status')}
                         </th>
-                        <th className="text-right p-4 text-neutral-500 font-medium font-mono text-xs uppercase "></th>
+                        <th className="text-right p-4 text-neutral-500 font-medium text-xs"></th>
                       </tr>
                     </thead>
                     <tbody>

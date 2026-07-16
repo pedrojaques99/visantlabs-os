@@ -100,7 +100,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <span
               className={cn(
-                'text-[10px] font-mono uppercase tracking-widest',
+                'text-xs font-medium',
                 theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
               )}
             >
@@ -588,7 +588,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   'text-sm',
                   isAnalyzing
                     ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 cursor-not-allowed'
-                    : 'bg-brand-cyan/10 border-[brand-cyan]/30 text-brand-cyan hover:bg-brand-cyan/20'
+                    : 'bg-brand-cyan/10 border-neutral-600/30 text-brand-cyan hover:bg-brand-cyan/20'
                 )}
               >
                 {isAnalyzing ? (
@@ -780,7 +780,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   <div className="bg-neutral-800/20 border border-neutral-700/30 rounded-md p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <FileText size={14} className="text-neutral-400 flex-shrink-0" />
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      <span className="text-xs font-medium text-neutral-500">
                         {t('mockup.generatedPrompt') || 'Generated Prompt'}
                       </span>
                     </div>

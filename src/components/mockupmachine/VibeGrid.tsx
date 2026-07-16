@@ -61,8 +61,8 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
       {/* 1. SEGMENT SELECTION */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 px-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan/50" />
-          <span className="text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-[0.2em]">
+          <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
+          <span className="text-[10px] font-medium text-neutral-400">
             {t('mockup.segmentTitle') || '01. SEGMENTO'}
           </span>
         </div>
@@ -117,8 +117,8 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
       {/* 2. STYLE SELECTION */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 px-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan/50" />
-          <span className="text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-[0.2em]">
+          <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
+          <span className="text-[10px] font-medium text-neutral-400">
             {t('mockup.vibeTitle') || '02. VIBE / DIREÇÃO'}
           </span>
         </div>

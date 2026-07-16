@@ -166,12 +166,8 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
           <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center mb-3 border border-dashed border-neutral-800">
             <LayoutGrid className="text-neutral-600" size={20} />
           </div>
-          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-            No Brand Selected
-          </p>
-          <p className="text-[10px] text-neutral-700 mt-1 font-mono">
-            Select a brand or browse References.
-          </p>
+          <p className="text-xs font-medium text-neutral-500">No Brand Selected</p>
+          <p className="text-[10px] text-neutral-700 mt-1">Select a brand or browse References.</p>
         </div>
       </div>
     );
@@ -341,7 +337,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   {refSearch.activeFilterCount > 0 && (
                     <button
                       onClick={refSearch.clearFilters}
-                      className="text-[9px] text-brand-cyan/60 hover:text-brand-cyan font-mono uppercase flex items-center gap-0.5"
+                      className="text-[9px] text-brand-cyan/60 hover:text-brand-cyan flex items-center gap-0.5"
                     >
                       <X size={8} /> Clear
                     </button>
@@ -409,9 +405,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                     <GlitchLoader size={16} />
                   </div>
                 ) : refSearch.results.length === 0 ? (
-                  <p className="text-[10px] font-mono text-neutral-700 text-center py-10 uppercase tracking-widest">
-                    No references found
-                  </p>
+                  <p className="text-xs text-neutral-700 text-center py-10">No references found</p>
                 ) : (
                   <div
                     className={cn(
@@ -584,7 +578,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   <button
                     onClick={() => refSearch.loadMore()}
                     disabled={refSearch.isLoading}
-                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all disabled:opacity-50"
+                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-[10px] text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all disabled:opacity-50"
                   >
                     {refSearch.isLoading ? (
                       <GlitchLoader size={10} className="mx-auto" />
@@ -600,9 +594,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
               !filteredLogos.length &&
               !filteredMedia.length &&
               !colors.length && (
-                <p className="text-[10px] font-mono text-neutral-700 text-center py-10 uppercase tracking-widest">
-                  No assets found
-                </p>
+                <p className="text-xs text-neutral-700 text-center py-10">No assets found</p>
               )}
           </div>
         )}

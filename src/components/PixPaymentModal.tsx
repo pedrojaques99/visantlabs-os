@@ -325,16 +325,13 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         <div className="space-y-6">
           <div className="text-center">
             <div className="flex flex-col items-center justify-center gap-2 mb-4">
-              <QrCode
-                size={32}
-                className="text-brand-cyan/60 drop-shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 20%)]"
-              />
+              <QrCode size={32} className="text-neutral-500" />
               <h2 className="text-2xl font-bold tracking-tight text-neutral-100">
                 {t('pix.title') || 'Pagar com PIX'}
               </h2>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <div className="text-4xl font-black text-brand-cyan font-mono tracking-tighter">
+              <div className="text-4xl font-black text-neutral-100 font-mono tracking-tighter">
                 {credits}
               </div>
               <MicroTitle className="text-neutral-500">{t('pix.credits') || 'CRÉDITOS'}</MicroTitle>
@@ -342,7 +339,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
                 <span>REPASSE_TRANSPARENTE</span>
                 <span className="w-1 h-1 bg-neutral-800 rounded-full" />
-                <span className="text-brand-cyan/40">$0.067 Google + $0.013 Visant</span>
+                <span className="text-neutral-500">$0.067 Google + $0.013 Visant</span>
               </div>
             </div>
           </div>
@@ -379,7 +376,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       setError(null);
                     }}
                     placeholder={t('pix.taxIdPlaceholder') || 'Digite seu CPF ou CNPJ'}
-                    className="w-full bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-[brand-cyan] focus:ring-1 focus:ring-[brand-cyan] transition-all"
+                    className="w-full bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 transition-all"
                     maxLength={18}
                     required
                   />
@@ -390,7 +387,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                 <Button
                   variant="brand"
                   type="submit"
-                  className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20"
+                  className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-neutral-600/20"
                 >
                   {t('pix.continue') || 'Continuar'}
                 </Button>
@@ -419,7 +416,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                         href={paymentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
+                        className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-neutral-600/20 flex items-center justify-center gap-2"
                       >
                         {t('pix.openPaymentLink') || 'Abrir link de pagamento'}
                         <svg
@@ -442,7 +439,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                         <Button
                           variant="ghost"
                           onClick={() => setShowQrCodeModal(true)}
-                          className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+                          className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                           title={t('pix.showQrCode') || 'Mostrar QR Code'}
                           aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
                         >
@@ -456,7 +453,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => setShowQrCodeModal(true)}
-                        className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-neutral-600/20 flex items-center justify-center gap-2"
                         title={t('pix.showQrCode') || 'Mostrar QR Code'}
                       >
                         <QrCode size={20} />
@@ -517,7 +514,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       <Button
                         variant="brand"
                         onClick={handleCopyCode}
-                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
                         title={t('pix.copy') || 'Copiar código PIX'}
                         aria-label={t('pix.copy') || 'Copiar código PIX'}
                       >

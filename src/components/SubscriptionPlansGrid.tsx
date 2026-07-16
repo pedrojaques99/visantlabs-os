@@ -122,7 +122,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                 <CardContent className="flex-1 flex flex-col p-6 pt-2 relative z-10">
                   <div className="text-center mb-6">
                     <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold text-brand-cyan font-mono">
+                      <span className="text-4xl font-bold text-neutral-100 font-mono">
                         {formatPrice(
                           currencyInfo?.currency === 'USD' && plan.priceUSD
                             ? plan.priceUSD
@@ -138,7 +138,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase ">
-                      <Pickaxe size={12} className="text-brand-cyan/60" />
+                      <Pickaxe size={12} className="text-neutral-500" />
                       <span>
                         {plan.credits} {t('pricing.creditsLabel')}
                       </span>
@@ -149,16 +149,16 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                       return (
                         <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-neutral-500">
                           <div className="flex items-center gap-1">
-                            <Image size={10} className="text-brand-cyan/50" />
+                            <Image size={10} className="text-neutral-500" />
                             <span>~{estimate.imagesHD} HD</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Image size={10} className="text-brand-cyan/50" />
+                            <Image size={10} className="text-neutral-500" />
                             <span>~{estimate.images4K} 4K</span>
                           </div>
                           {estimate.videosFast > 0 && (
                             <div className="flex items-center gap-1">
-                              <Video size={10} className="text-brand-cyan/50" />
+                              <Video size={10} className="text-neutral-500" />
                               <span>~{estimate.videosFast} vídeos</span>
                             </div>
                           )}
@@ -177,7 +177,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                           >
                             <CheckCircle2
                               size={16}
-                              className="text-brand-cyan mt-0.5 flex-shrink-0"
+                              className="text-neutral-500 mt-0.5 flex-shrink-0"
                             />
                             <span>{benefit.trim()}</span>
                           </div>
@@ -190,7 +190,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                             >
                               <CheckCircle2
                                 size={16}
-                                className="text-brand-cyan mt-0.5 flex-shrink-0"
+                                className="text-neutral-500 mt-0.5 flex-shrink-0"
                               />
                               <span>{benefit.trim()}</span>
                             </div>

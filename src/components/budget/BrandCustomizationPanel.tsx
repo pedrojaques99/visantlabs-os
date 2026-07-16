@@ -164,7 +164,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             p-2
             bg-neutral-900 border border-neutral-800 rounded-xl
             text-neutral-200 hover:text-brand-cyan
-            hover:bg-neutral-900/90 hover:border-[brand-cyan]/50
+            hover:bg-neutral-900/90 hover:border-neutral-600/50
             transition-all duration-300
             shadow-lg
             ${isOpen ? 'hidden' : ''}
@@ -232,7 +232,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               <div className="space-y-3 mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs text-neutral-400 font-mono">Formato do Documento</label>
-                  <span className="font-mono text-brand-cyan font-semibold text-xs">
+                  <span className="font-mono text-neutral-300 font-semibold text-xs">
                     {data.contentWidth || 800}px
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(595)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                       data.contentWidth === 595
-                        ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
+                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -256,7 +256,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(842)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                       data.contentWidth === 842
-                        ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
+                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -269,7 +269,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(612)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                       data.contentWidth === 612
-                        ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
+                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -282,7 +282,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(800)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                       data.contentWidth === 800 || !data.contentWidth
-                        ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
+                        ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                     }`}
                   >
@@ -301,7 +301,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                       value={data.contentWidth}
                       onChange={(e) => handleContentWidthChange(Number(e.target.value))}
                       placeholder="Largura customizada"
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-xs text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan]"
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-xs text-neutral-200 font-mono focus:outline-none focus:border-neutral-600"
                     />
                   </div>
                 )}
@@ -327,7 +327,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                         }
                       }}
                       placeholder="Auto"
-                      className="w-20 px-2 py-1 bg-neutral-950/70 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300"
+                      className="w-20 px-2 py-1 bg-neutral-950/70 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-neutral-600/70 transition-all duration-300"
                     />
                     <span className="text-xs text-neutral-500">px</span>
                     {data.contentHeight && (
@@ -350,7 +350,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     step="50"
                     value={data.contentHeight}
                     onChange={(e) => handleContentHeightChange(Number(e.target.value))}
-                    className="w-full h-2 bg-neutral-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]"
+                    className="w-full h-2 bg-neutral-800 rounded-md appearance-none cursor-pointer accent-neutral-600"
                   />
                 ) : (
                   <p className="text-xs text-neutral-500 ">
@@ -377,7 +377,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 <Button
                   variant="ghost"
                   onClick={() => setShowSaveModal(true)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-600/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
                 >
                   <Save size={16} />
                   Salvar como Template
@@ -409,7 +409,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="Nome do template"
-              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan] mb-4"
+              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-neutral-200 font-mono focus:outline-none focus:border-neutral-600 mb-4"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

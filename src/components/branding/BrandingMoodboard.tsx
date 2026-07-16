@@ -246,7 +246,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onKeyDown={handleNameKeyDown}
                       onFocus={(e) => e.target.select()}
                       placeholder={t('branding.projectNamePlaceholder') || 'Nome do projeto'}
-                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[brand-cyan]/50 focus:border-[brand-cyan] focus:outline-none pb-1 transition-colors ${
+                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-neutral-600/50 focus:border-neutral-600 focus:outline-none pb-1 transition-colors ${
                         theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                       }`}
                       autoFocus
@@ -325,7 +325,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     variant="ghost"
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
-                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${
+                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-neutral-600/50 hover:text-brand-cyan ${
                       theme === 'dark'
                         ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
                         : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
@@ -338,7 +338,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleGeneratePDF}
-                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${
+                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-neutral-600/50 hover:text-brand-cyan ${
                     theme === 'dark'
                       ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'

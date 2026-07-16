@@ -174,8 +174,8 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
         >
           {/* Header */}
           <motion.div variants={item} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-cyan/10 ring-1 ring-brand-cyan/20 flex items-center justify-center shrink-0">
-              <Share2 size={17} className="text-brand-cyan" />
+            <div className="w-10 h-10 rounded-xl bg-white/5 ring-1 ring-white/10 flex items-center justify-center shrink-0">
+              <Share2 size={17} className="text-neutral-300" />
             </div>
             <div className="min-w-0">
               <h2 className="text-[15px] font-semibold text-neutral-100 tracking-tight">
@@ -239,7 +239,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                   className="flex items-center gap-2 overflow-hidden"
                 >
                   <div className="flex-1 min-w-0 flex items-center gap-2 h-10 px-3 rounded-xl bg-neutral-900/60 border border-white/8">
-                    <Globe size={13} className="text-brand-cyan/70 shrink-0" />
+                    <Globe size={13} className="text-neutral-500 shrink-0" />
                     <span className="text-[12px] font-mono text-neutral-400 truncate">
                       {shareUrl.replace(/^https?:\/\//, '')}
                     </span>
@@ -360,7 +360,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                         className={cn(
                           'text-[10px] font-mono px-2 py-0.5 rounded-md',
                           c.role === 'editor'
-                            ? 'bg-brand-cyan/10 text-brand-cyan'
+                            ? 'bg-white/10 text-neutral-300'
                             : 'bg-white/5 text-neutral-500'
                         )}
                       >

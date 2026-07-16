@@ -108,7 +108,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
       className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-neutral-900/95 border border-white/10 rounded-lg px-3 py-2 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-top-2"
     >
       <div className="flex items-center gap-1.5 pr-1">
-        <ImageIcon size={12} className="text-brand-cyan" />
+        <ImageIcon size={12} className="text-neutral-400" />
         <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
           Fundo
         </span>
@@ -203,7 +203,7 @@ export const CreativeToolbar: React.FC = () => {
       {selectedCount > 1 ? (
         <>
           <div className="flex items-center gap-1.5 pr-1">
-            <Layers size={12} className="text-brand-cyan" />
+            <Layers size={12} className="text-neutral-400" />
             <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
               {selectedCount}
             </span>
@@ -389,9 +389,7 @@ export const CreativeToolbar: React.FC = () => {
 
           {/* Stroke width + color */}
           <div className="flex items-center gap-1 pl-1" title="Borda">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-              B
-            </span>
+            <span className="text-[10px] font-medium text-neutral-500">B</span>
             <input
               type="number"
               value={Math.round(shapeData.strokeWidth ?? 0)}

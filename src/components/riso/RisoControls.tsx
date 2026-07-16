@@ -397,7 +397,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         setInkSearch('');
                         setInkCategory(null);
                       }}
-                      className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
+                      className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
                     >
                       <Palette size={12} />
                       Riso Ink Catalog
@@ -481,7 +481,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     {onExportLayer && (
                       <button
                         onClick={() => onExportLayer(i)}
-                        className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
+                        className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
                       >
                         <Layers size={12} />
                         Export Layer Separation

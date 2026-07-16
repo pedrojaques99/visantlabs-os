@@ -158,9 +158,7 @@ export function IconReviewPage() {
               )}
               <div className="font-mono text-xs text-white/80">{name}</div>
               {overridden && (
-                <div className="font-mono text-[10px] uppercase tracking-wide text-brand-cyan">
-                  → {overridden}
-                </div>
+                <div className="font-mono text-[10px] text-neutral-400">→ {overridden}</div>
               )}
             </button>
           );
@@ -188,9 +186,7 @@ export function IconReviewPage() {
                 })()}
                 <div>
                   <div className="font-mono text-sm text-white">{editing}</div>
-                  <div className="font-mono text-[10px] uppercase tracking-wide text-white/40">
-                    escolha o glifo Phosphor
-                  </div>
+                  <div className="text-[11px] text-white/40">escolha o glifo Phosphor</div>
                 </div>
               </div>
               <button

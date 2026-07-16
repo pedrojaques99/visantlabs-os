@@ -35,6 +35,8 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { toast } from 'sonner';
 import { glassSurface } from '@/lib/ui/glass';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { useRailSlot } from '@/components/shell/RailSlotContext';
+import { createPortal } from 'react-dom';
 
 // ─── Last-used tracking (shared with HomePage) ──────────────────────────────
 const LS_KEY = 'vsn_app_last_used';
@@ -194,41 +196,55 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-80" />
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-neutral-950/40 backdrop-blur-[3px]">
+        {/* Hover overlay (Abrir) — z-10, atrás dos botões de canto */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-neutral-950/40 backdrop-blur-[3px]">
           <span className="text-sm font-medium text-white px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-2 shadow-lg">
             {isExternal ? t('apps.launch') : t('apps.open')}
             {isExternal ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
           </span>
         </div>
 
-        {/* Top-right access indicator */}
-        {isPremium && !hasAccess && (
-          <div className="absolute top-3 right-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan">
-            <Lock size={12} />
-          </div>
-        )}
-        {isExternal && !(isPremium && !hasAccess) && (
-          <div className="absolute top-3 right-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-400">
-            <ExternalLink size={12} />
-          </div>
-        )}
+        {/* Favoritar/fixar (star estilo Figma) — top-left, aparece no hover ou
+            fica se fixado. Mesmo contexto de empilhamento dos outros controles. */}
+        <button
+          onClick={togglePin}
+          aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
+          title={pinned ? t('nav.unpin') : t('nav.pin')}
+          className={cn(
+            'absolute top-3 left-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 transition-all',
+            pinned
+              ? 'opacity-100 text-brand-cyan'
+              : 'opacity-0 group-hover:opacity-100 text-white/70 hover:text-white'
+          )}
+        >
+          <Star size={12} className={pinned ? 'fill-brand-cyan' : ''} />
+        </button>
 
-        {/* Admin Edit */}
-        {isAdmin && (
-          <div className="absolute top-3 left-3 z-30">
+        {/* Cluster top-right — edit (admin) + indicador de acesso, lado a lado
+            num flex pra nunca se sobreporem. */}
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+          {isAdmin && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(app);
               }}
               aria-label={t('apps.edit_app')}
-              className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100"
+              className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-300 hover:text-white hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100"
             >
               <Edit3 size={12} />
             </button>
-          </div>
-        )}
+          )}
+          {isPremium && !hasAccess ? (
+            <div className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan">
+              <Lock size={12} />
+            </div>
+          ) : isExternal ? (
+            <div className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-400">
+              <ExternalLink size={12} />
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* Body */}
@@ -289,32 +305,6 @@ interface RailItemProps {
   count: number;
   active: boolean;
   onClick: () => void;
-}
-
-function RailItem({ icon: Icon, label, count, active, onClick }: RailItemProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full flex items-center gap-3 rounded-md px-3 py-2.5 border font-mono text-xs transition-all',
-        active
-          ? 'text-neutral-200 bg-white/5 border-white/10 shadow-lg'
-          : 'text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.03] border-transparent'
-      )}
-    >
-      {active && (
-        <span className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.6)] shrink-0" />
-      )}
-      <Icon
-        size={14}
-        className={cn('shrink-0', active ? 'text-neutral-200' : 'text-neutral-500')}
-      />
-      <span className="truncate flex-1 text-left">{label}</span>
-      <span className={cn('text-[10px]', active ? 'text-neutral-400' : 'text-neutral-600')}>
-        {count}
-      </span>
-    </button>
-  );
 }
 
 // ─── Category chip (mobile rail) ────────────────────────────────────────────
@@ -383,6 +373,8 @@ export const AppsPage: React.FC = () => {
   // que limpa o Header do site (top-14). Sem isto o conteúdo passa POR CIMA da
   // toolbar (bug do "Ferramentas Pro" vazando sobre a busca).
   const inShell = useInAppShell();
+  // Categorias viram L2 no rail (SSoT igual references/my-outputs) via RailSlot.
+  const railSlot = useRailSlot()?.railSlot ?? null;
 
   const [apps, setApps] = useState<AppConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -989,44 +981,63 @@ export const AppsPage: React.FC = () => {
         ) : undefined
       }
     >
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-        {/* ─── Sidebar rail (desktop) ─────────────────────────────────── */}
-        <aside
-          className="hidden lg:block w-56 xl:w-60 shrink-0"
-          data-vsn-region="sidebar"
-          role="navigation"
-          aria-label={t('apps.categoriesLabel')}
-        >
-          <div className={cn('sticky space-y-1', inShell ? 'top-4' : 'top-14')}>
-            <MicroTitle className="text-neutral-500 px-3 mb-2 block">
-              {t('apps.categoriesLabel')}
-            </MicroTitle>
-            <RailItem
-              icon={LayoutGrid}
-              label={t('apps.allApps')}
-              count={totalApps}
-              active={!activeCategory}
-              onClick={() => setActiveCategory(null)}
-            />
-            {categories.map((cat) => {
-              const count = categoryCounts[cat.key] || 0;
-              if (count === 0 && cat.key !== 'admin') return null;
-              return (
-                <RailItem
-                  key={cat.key}
-                  icon={cat.icon}
-                  label={catLabel(cat.key)}
-                  count={count}
-                  active={activeCategory === cat.key}
-                  onClick={() => setActiveCategory(activeCategory === cat.key ? null : cat.key)}
-                />
-              );
-            })}
-          </div>
-        </aside>
+      <div className="min-w-0">
+        {/* ─── Categorias → L2 no rail (SSoT igual references/my-outputs) ──────
+            A lista in-page de desktop virou portal pro rail drill-in. Mobile
+            mantém os chips (rail some no mobile). */}
+        {railSlot &&
+          createPortal(
+            <nav className="space-y-0.5">
+              <p className="px-2.5 pb-1.5 text-[11px] text-sidebar-foreground/50">
+                {t('apps.categoriesLabel')}
+              </p>
+              {[
+                {
+                  key: null as string | null,
+                  icon: LayoutGrid,
+                  label: t('apps.allApps'),
+                  count: totalApps,
+                },
+                ...categories
+                  .filter((cat) => (categoryCounts[cat.key] || 0) > 0 || cat.key === 'admin')
+                  .map((cat) => ({
+                    key: cat.key,
+                    icon: cat.icon,
+                    label: catLabel(cat.key),
+                    count: categoryCounts[cat.key] || 0,
+                  })),
+              ].map((item) => {
+                const active = item.key === null ? !activeCategory : activeCategory === item.key;
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.key ?? 'all'}
+                    onClick={() =>
+                      setActiveCategory(
+                        item.key === null ? null : activeCategory === item.key ? null : item.key
+                      )
+                    }
+                    className={cn(
+                      'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                      active
+                        ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    )}
+                  >
+                    <Icon size={14} className="shrink-0" />
+                    <span className="flex-1 truncate text-left">{item.label}</span>
+                    <span className="text-[11px] tabular-nums text-sidebar-foreground/40">
+                      {item.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>,
+            railSlot
+          )}
 
         {/* ─── Main column ────────────────────────────────────────────── */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           {/* Mobile category chips */}
           <div className="lg:hidden -mx-4 sm:-mx-6 px-4 sm:px-6 mb-4 overflow-x-auto scrollbar-none">
             <div className="flex items-center gap-2 w-max">

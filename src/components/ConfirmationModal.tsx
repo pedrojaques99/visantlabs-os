@@ -64,7 +64,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     info: {
       icon: 'text-brand-cyan',
       button:
-        'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50',
+        'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-neutral-600/30 hover:border-neutral-600/50',
     },
   };
 
@@ -134,7 +134,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 }
               }}
               disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-neutral-600/30 hover:border-neutral-600/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>

@@ -153,10 +153,10 @@ function ProgressBar({ value, phase }: { value: number; phase?: string }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider truncate">
+        <span className="text-[11px] font-medium text-neutral-500 truncate">
           {phase || 'Processing'}
         </span>
-        <span className="text-[10px] font-mono text-brand-cyan tabular-nums">
+        <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
           {Math.round(value * 100)}%
         </span>
       </div>
@@ -485,7 +485,7 @@ export const BgRemovePage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <StatusBadge status={item.status} />
                 {item.status === 'processing' && item.progressValue != null && (
-                  <span className="text-[10px] font-mono text-brand-cyan tabular-nums">
+                  <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
                     {Math.round(item.progressValue * 100)}%
                   </span>
                 )}
@@ -530,7 +530,7 @@ export const BgRemovePage: React.FC = () => {
               <AnimatePresence>
                 {focusRegion && (
                   <motion.div
-                    className="flex items-center gap-1 text-[10px] font-mono text-brand-cyan"
+                    className="flex items-center gap-1 text-[10px] font-mono text-neutral-400"
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
@@ -561,9 +561,7 @@ export const BgRemovePage: React.FC = () => {
               {/* Threshold */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase">
-                    Threshold
-                  </span>
+                  <span className="text-xs font-medium text-neutral-500">Threshold</span>
                   <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
                     {threshold}%
                   </span>
@@ -582,7 +580,7 @@ export const BgRemovePage: React.FC = () => {
               {/* Feather */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase">Feather</span>
+                  <span className="text-xs font-medium text-neutral-500">Feather</span>
                   <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
                     {feather}px
                   </span>
@@ -619,7 +617,7 @@ export const BgRemovePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest transition-all duration-200"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-all duration-200"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -735,7 +733,7 @@ export const BgRemovePage: React.FC = () => {
               whileTap={{ scale: 0.99 }}
             >
               <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-neutral-500">
                 Drop images or click to upload
               </span>
               <input

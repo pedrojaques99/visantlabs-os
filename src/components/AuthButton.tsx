@@ -504,7 +504,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto">
           <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
+              <h2 className="text-lg font-semibold text-neutral-200">
                 {isSignUp ? t('auth.signUp') : t('auth.signIn')}
               </h2>
               <Button
@@ -538,7 +538,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                    className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
                     placeholder={t('auth.namePlaceholder')}
                   />
                 </div>
@@ -553,7 +553,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
                   placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
@@ -568,7 +568,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
                   placeholder={t('auth.passwordPlaceholder')}
                 />
                 {isSignUp && (

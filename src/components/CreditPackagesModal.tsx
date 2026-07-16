@@ -335,7 +335,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <span className="text-4xl sm:text-5xl font-black font-mono text-white leading-none tabular-nums">
                                 {animatedCredits}
                               </span>
-                              <span className="text-xs font-mono text-brand-cyan/70 uppercase">
+                              <span className="text-xs font-mono text-neutral-500 uppercase">
                                 créditos
                               </span>
                             </div>
@@ -404,7 +404,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <span className="text-[10px] font-mono text-brand-cyan/50 uppercase tracking-widest text-right leading-relaxed">
+                            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest text-right leading-relaxed">
                               $0.067 Google
                               <br />
                               $0.013 Infra
@@ -421,7 +421,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           aria-expanded={showPackageCosts}
                         >
                           <span className="flex items-center gap-2">
-                            <Pickaxe size={11} className="text-brand-cyan/70" />
+                            <Pickaxe size={11} className="text-neutral-500" />
                             Quanto rende por modelo
                           </span>
                           {showPackageCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -439,7 +439,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 className="flex justify-between text-[10px] font-mono items-center"
                               >
                                 <span className="text-neutral-300">{item.label}</span>
-                                <span className="text-brand-cyan font-bold tabular-nums">
+                                <span className="text-neutral-200 font-bold tabular-nums">
                                   {Math.floor(currentPackage.credits / item.cost)}
                                 </span>
                               </div>
@@ -575,7 +575,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     </span>
                                     {plan.metadata?.storageMB &&
                                       parseInt(plan.metadata.storageMB) >= 5120 && (
-                                        <Badge className="bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 text-[10px] px-1">
+                                        <Badge className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[10px] px-1">
                                           BYOK
                                         </Badge>
                                       )}
@@ -596,7 +596,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       currencyInfo?.locale || 'pt-BR'
                                     )}
                                   </span>
-                                  <div className="flex items-center gap-1 text-[10px] font-mono text-brand-cyan/60 uppercase mt-1">
+                                  <div className="flex items-center gap-1 text-[10px] font-mono text-neutral-500 uppercase mt-1">
                                     <Pickaxe size={9} />
                                     <span>
                                       {plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}
@@ -613,7 +613,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     >
                                       <CheckCircle2
                                         size={11}
-                                        className="text-brand-cyan flex-shrink-0 mt-0.5"
+                                        className="text-neutral-500 flex-shrink-0 mt-0.5"
                                       />
                                       <span>{benefit.trim()}</span>
                                     </div>
@@ -695,13 +695,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 <span className="text-4xl sm:text-5xl font-black font-mono text-white leading-none">
                                   {totalCreditsAvailable}
                                 </span>
-                                <span className="text-xs font-mono text-brand-cyan/70 uppercase">
+                                <span className="text-xs font-mono text-neutral-500 uppercase">
                                   créditos
                                 </span>
                               </div>
                             </div>
                             {subscriptionTier && (
-                              <Badge className="bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1">
+                              <Badge className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1">
                                 {subscriptionTier}
                               </Badge>
                             )}
@@ -718,7 +718,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               </div>
                               <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-brand-cyan/70 rounded-full transition-all duration-500"
+                                  className="h-full bg-neutral-500 rounded-full transition-all duration-500"
                                   style={{ width: `${usedPercentage}%` }}
                                 />
                               </div>
@@ -743,7 +743,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             aria-expanded={showStatusCosts}
                           >
                             <span className="flex items-center gap-2">
-                              <Pickaxe size={11} className="text-brand-cyan/70" />
+                              <Pickaxe size={11} className="text-neutral-500" />
                               Quanto rende por modelo
                             </span>
                             {showStatusCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -761,14 +761,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   className="flex justify-between text-[10px] font-mono items-center"
                                 >
                                   <span className="text-neutral-300">{item.label}</span>
-                                  <span className="text-brand-cyan font-bold tabular-nums">
+                                  <span className="text-neutral-200 font-bold tabular-nums">
                                     {Math.floor(totalCreditsAvailable / item.cost)}
                                   </span>
                                 </div>
                               ))}
                               <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-neutral-800/50 mt-1">
                                 <span className="text-neutral-300">Veo 3 (Vídeo)</span>
-                                <span className="text-brand-cyan font-bold tabular-nums">
+                                <span className="text-neutral-200 font-bold tabular-nums">
                                   {Math.floor(totalCreditsAvailable / 15)} vídeos
                                 </span>
                               </div>

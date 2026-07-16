@@ -99,7 +99,7 @@ export { Crosshair } from '@phosphor-icons/react';
 export { Crown } from '@phosphor-icons/react';
 export { Coffee as CupSoda } from '@phosphor-icons/react'; // REVIEW
 export { Database } from '@phosphor-icons/react';
-export { Diamond } from '@phosphor-icons/react';
+export { DiamondsFour as Diamond } from '@phosphor-icons/react';
 export { DiceFive as Dices } from '@phosphor-icons/react'; // REVIEW
 export { Dna } from '@phosphor-icons/react';
 export { CurrencyDollar as DollarSign } from '@phosphor-icons/react';
@@ -134,7 +134,7 @@ export { FolderOpen } from '@phosphor-icons/react';
 export { FolderPlus } from '@phosphor-icons/react';
 export { FrameCorners as Frame } from '@phosphor-icons/react'; // REVIEW
 export { Gauge } from '@phosphor-icons/react';
-export { Diamond as Gem } from '@phosphor-icons/react'; // REVIEW
+export { DiamondsFour as Gem } from '@phosphor-icons/react';
 export { GitBranch } from '@phosphor-icons/react';
 export { GitDiff as GitCompareArrows } from '@phosphor-icons/react'; // REVIEW
 export { GitFork } from '@phosphor-icons/react';
@@ -238,7 +238,7 @@ export { Rocket } from '@phosphor-icons/react';
 export { ArrowCounterClockwise as RotateCcw } from '@phosphor-icons/react';
 export { ArrowClockwise as RotateCw } from '@phosphor-icons/react';
 export { FloppyDisk as Save } from '@phosphor-icons/react';
-export { Scales as Scale } from '@phosphor-icons/react';
+export { Resize as Scale } from '@phosphor-icons/react';
 export { Scan } from '@phosphor-icons/react';
 export { MagnifyingGlass as ScanSearch } from '@phosphor-icons/react'; // REVIEW
 export { Scissors } from '@phosphor-icons/react';

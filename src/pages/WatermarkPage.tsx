@@ -455,7 +455,7 @@ export const WatermarkPage: React.FC = () => {
 
         {/* Type toggle */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Type</span>
+          <span className="text-xs font-medium text-neutral-500">Type</span>
           <div className="flex gap-1">
             {(['text', 'logo'] as const).map((t) => (
               <motion.button
@@ -481,7 +481,7 @@ export const WatermarkPage: React.FC = () => {
         {/* Text input + color OR logo upload */}
         {watermarkType === 'text' ? (
           <div className="space-y-1.5">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Text</span>
+            <span className="text-xs font-medium text-neutral-500">Text</span>
             <div className="flex items-center gap-2">
               <Input
                 value={text}
@@ -507,7 +507,7 @@ export const WatermarkPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-1.5">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Logo</span>
+            <span className="text-xs font-medium text-neutral-500">Logo</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => logoInputRef.current?.click()}
@@ -542,7 +542,7 @@ export const WatermarkPage: React.FC = () => {
 
         {/* Position grid */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Position</span>
+          <span className="text-xs font-medium text-neutral-500">Position</span>
           <div className="space-y-1">
             <div className="grid grid-cols-3 gap-1 w-fit">
               {POSITION_GRID.flat().map((pos) => (
@@ -589,7 +589,7 @@ export const WatermarkPage: React.FC = () => {
         {/* Opacity slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Opacity</span>
+            <span className="text-xs font-medium text-neutral-500">Opacity</span>
             <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
               {Math.round(opacity * 100)}%
             </span>
@@ -609,7 +609,7 @@ export const WatermarkPage: React.FC = () => {
         {/* Size slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Size</span>
+            <span className="text-xs font-medium text-neutral-500">Size</span>
             <span className="text-[10px] font-mono text-neutral-500 tabular-nums">{scale}%</span>
           </div>
           <input
@@ -627,7 +627,7 @@ export const WatermarkPage: React.FC = () => {
         {/* Rotation slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Rotation</span>
+            <span className="text-xs font-medium text-neutral-500">Rotation</span>
             <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
               {rotation}deg
             </span>
@@ -655,7 +655,7 @@ export const WatermarkPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -767,7 +767,7 @@ export const WatermarkPage: React.FC = () => {
               whileTap={{ scale: 0.99 }}
             >
               <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-neutral-500">
                 Drop images or click — batch supported
               </span>
               <input
@@ -817,7 +817,7 @@ export const WatermarkPage: React.FC = () => {
                     <motion.span
                       key="done-badge"
                       {...fadeScale}
-                      className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded"
+                      className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded"
                     >
                       WM
                     </motion.span>

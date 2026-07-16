@@ -429,7 +429,7 @@ export const MockupsPage: React.FC = () => {
                 return (
                   <GlassPanel
                     key={mockup._id}
-                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative overflow-hidden hover:border-neutral-600/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div

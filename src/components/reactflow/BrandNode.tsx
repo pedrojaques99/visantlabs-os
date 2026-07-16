@@ -577,7 +577,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] font-mono text-brand-cyan/70">
+                <div className="text-[10px] text-neutral-400">
                   {connectedLogo
                     ? t('common.connected')
                     : t('common.localSource') || 'Local Source'}
@@ -626,10 +626,10 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl ? (
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-md bg-neutral-950/50 border-node border-neutral-700/30">
-                <FileText size={18} className="text-brand-cyan/70" />
+                <FileText size={18} className="text-neutral-400" />
               </div>
               <div className="flex-1 overflow-hidden">
-                <div className="text-[10px] font-mono text-brand-cyan/70">
+                <div className="text-[10px] text-neutral-400">
                   {t('common.fileFound') || 'File found'}
                 </div>
                 <div className="text-[10px] text-neutral-500">
@@ -680,7 +680,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex items-center justify-between"
             >
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">
+              <span className="text-[10px] font-medium text-neutral-500">
                 {t('canvasNodes.brandNode.extractedIdentity') || 'Extracted Identity'}
               </span>
               {isExpanded ? (

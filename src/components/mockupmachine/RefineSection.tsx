@@ -273,7 +273,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <span
-                    className={`text-[10px] font-mono uppercase tracking-widest ${
+                    className={`text-[10px] ${
                       theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                     }`}
                   >

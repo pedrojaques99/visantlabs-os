@@ -155,9 +155,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-neutral-800">
                 <SkeletonText loading={isGenerating}>
-                  <span className="text-[12px] font-mono text-neutral-500 uppercase tracking-widest">
-                    Empty
-                  </span>
+                  <span className="text-[12px] text-neutral-500">Empty</span>
                 </SkeletonText>
               </div>
             )}
@@ -165,9 +163,9 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             {/* Detected Language Badge */}
             {detectedLanguage && !isAnalyzing && (
               <div className="absolute top-2 left-2 z-20 pointer-events-none">
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 backdrop-blur-md rounded border border-brand-cyan/30 shadow-lg animate-fade-in">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
-                  <span className="text-[10px] font-mono text-brand-cyan/90 uppercase tracking-widest">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 backdrop-blur-md rounded border border-white/10 shadow-lg animate-fade-in">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-pulse" />
+                  <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
                     {detectedLanguage}
                   </span>
                 </div>

@@ -1630,7 +1630,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             <div className="flex items-center justify-between mb-4 shrink-0 px-1">
               <span className="text-xs font-mono text-neutral-300 font-medium">
                 {t('canvasNodes.strategyNode.generatedSections')}{' '}
-                <span className="text-brand-cyan">
+                <span className="text-neutral-400">
                   ({sections.filter((s) => hasSectionData(s.type)).length}/{sections.length})
                 </span>
               </span>

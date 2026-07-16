@@ -41,6 +41,7 @@ import {
   visibleSections,
   contextNavFor,
   isDrillInSection,
+  sectionUsesRailSlot,
   DRILL_TITLES,
   LIBRARY_ITEMS,
   type NavCtx,
@@ -106,7 +107,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   // Modo "drill": seções ricas (community, references) SUBSTITUEM a rail-mãe pelas
   // suas tabs + uma seta de voltar, em vez de empilhar um bloco L2 embaixo de tudo
   // (ficava muita coisa). Voltar leva pra Início, onde a rail-mãe reaparece.
-  const drillIn = isDrillInSection(activeSection) && contextItems.length > 0;
+  // Seções rail-slot (my-outputs, apps) entram em drill-in sem itens estáticos:
+  // a L2 delas é dinâmica (tag cloud / categorias), injetada via RailSlot. As
+  // demais (references/community) têm nav fixa.
+  const drillIn =
+    isDrillInSection(activeSection) &&
+    (contextItems.length > 0 || sectionUsesRailSlot(activeSection));
   const drillTitleKey = activeSection ? DRILL_TITLES[activeSection] : undefined;
 
   // Active-state do L2 genérico por query (?tab no profile, ?type na comunidade):
@@ -441,9 +447,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                 </button>
               );
             })}
-            {/* Slot da página — a rota injeta conteúdo aqui, abaixo das categorias
-                (ex.: /references portaleia suas tags). Só desktop expandido. */}
-            {!collapsed && !isMobile && activeSection === 'references' && (
+            {/* Slot da página — a rota injeta sua L2 dinâmica aqui, abaixo da nav
+                (tags da /references, /my-outputs; categorias do /apps). Desktop
+                expandido só. */}
+            {!collapsed && !isMobile && sectionUsesRailSlot(activeSection) && (
               <div ref={railSlotCtx?.setRailSlot} className="pt-2" />
             )}
           </nav>

@@ -517,7 +517,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           )}
           {/* Title with thumbnail in same div */}
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-mono truncate text-brand-cyan">
+            <div className="text-xs font-mono truncate text-neutral-200">
               {selectedPreset?.name ||
                 selectedMockup?.prompt?.substring(0, 30) ||
                 t('canvasNodes.mockupNode.selectPreset')}
@@ -568,7 +568,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
         )}
         {connectedTextDirection && (
           <div className="p-2 rounded border-node border-neutral-800 bg-brand-cyan/5">
-            <div className="text-xs font-mono text-brand-cyan mb-1">
+            <div className="text-xs font-mono text-neutral-400 mb-1">
               {t('canvasNodes.mockupNode.textDirectionFromBrandCore')}
             </div>
             <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>

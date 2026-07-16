@@ -323,7 +323,7 @@ const ChatMessages: React.FC<{
         key={i}
         className={cn(
           'text-[12px] leading-relaxed',
-          msg.role === 'user' ? 'text-neutral-400' : 'text-brand-cyan/70'
+          msg.role === 'user' ? 'text-neutral-400' : 'text-neutral-300'
         )}
       >
         <span className="font-mono text-neutral-700 mr-1.5 select-none">
@@ -388,9 +388,7 @@ const SidebarDisclosure: React.FC<{
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.03] transition-colors"
       >
-        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-          {label}
-        </span>
+        <span className="text-[11px] font-medium text-neutral-500">{label}</span>
         <div className="flex items-center gap-1.5">
           {badge && (
             <span className="text-[10px] font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
@@ -854,7 +852,7 @@ export const PlaygroundPage: React.FC = () => {
           className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-neutral-400 group/chip"
         >
           {file.type.startsWith('image/') ? (
-            <ImageIcon size={12} className="text-brand-cyan/60" />
+            <ImageIcon size={12} className="text-neutral-400" />
           ) : (
             <FileText size={12} className="text-neutral-500" />
           )}
@@ -1407,7 +1405,7 @@ export const PlaygroundPage: React.FC = () => {
           variant="ghost"
           size="xs"
           onClick={() => setExpertMode(false)}
-          className="text-brand-cyan"
+          className="text-neutral-500 hover:text-brand-cyan"
         >
           <Eye className="w-3 h-3 mr-1" /> Simple
         </Button>
@@ -1425,7 +1423,7 @@ export const PlaygroundPage: React.FC = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                'px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition-colors border-b -mb-px',
+                'px-3 py-1.5 text-[11px] font-medium transition-colors border-b -mb-px',
                 activeTab === tab
                   ? 'text-neutral-200 border-brand-cyan'
                   : 'text-neutral-600 border-transparent hover:text-neutral-400'

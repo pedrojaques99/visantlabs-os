@@ -86,7 +86,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                   <div className="w-full h-full animate-pulse bg-white/5" />
                 )}
               </div>
-              <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+              <span className="text-[9px] text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
                 {preset.label}
               </span>
             </button>
@@ -105,7 +105,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
             <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-cyan-500/30 group-hover:border-cyan-500/50 flex items-center justify-center transition-colors">
               <Shuffle size={16} className="text-cyan-400" />
             </div>
-            <span className="text-[8px] font-mono uppercase tracking-wider text-cyan-500 group-hover:text-cyan-300 transition-colors max-w-14 truncate">
+            <span className="text-[9px] text-cyan-500 group-hover:text-cyan-300 transition-colors max-w-14 truncate">
               Random
             </span>
           </button>
@@ -141,7 +141,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                     }}
                   />
                 </div>
-                <span className="text-[8px] font-mono uppercase tracking-wider text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                <span className="text-[9px] text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
                   {scene.label}
                 </span>
               </button>

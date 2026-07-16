@@ -189,7 +189,7 @@ export const UpscalePage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-all duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -214,7 +214,7 @@ export const UpscalePage: React.FC = () => {
             className={cn(
               'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
               previewItem?.id === item.id
-                ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
+                ? 'bg-neutral-800/60 ring-1 ring-neutral-600'
                 : 'hover:bg-neutral-900/60'
             )}
           >
@@ -246,7 +246,7 @@ export const UpscalePage: React.FC = () => {
       <div className="space-y-4">
         {/* Scale buttons */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Scale</span>
+          <span className="text-xs font-medium text-neutral-500">Scale</span>
           <div className="flex gap-1">
             {SCALE_OPTIONS.map((s) => (
               <motion.button
@@ -272,8 +272,8 @@ export const UpscalePage: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Diamond size={10} className="text-brand-cyan" />
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">Sharpening</span>
+              <Diamond size={10} className="text-neutral-500" />
+              <span className="text-xs font-medium text-neutral-500">Sharpening</span>
             </div>
             <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
               {Math.round(sharpening * 100)}%
@@ -302,7 +302,7 @@ export const UpscalePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest transition-all duration-200"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-all duration-200"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -412,7 +412,7 @@ export const UpscalePage: React.FC = () => {
               whileTap={{ scale: 0.99 }}
             >
               <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-neutral-500">
                 Drop images or click to upload
               </span>
               <input

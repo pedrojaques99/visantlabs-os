@@ -113,7 +113,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   }
 
   if (isEditing) {
-    const inputClassName = `outline-none border-2 border-[brand-cyan] rounded px-2 py-1 bg-white text-neutral-900 ${className}`;
+    const inputClassName = `outline-none border-2 border-neutral-600 rounded px-2 py-1 bg-white text-neutral-900 ${className}`;
 
     if (type === 'textarea' || multiline) {
       // Calculate rows based on content

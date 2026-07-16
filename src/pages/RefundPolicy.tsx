@@ -75,7 +75,7 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
                   return (
                     <li key={idx}>
                       {item.split('contato@visant.co')[0]}
-                      <strong className="text-brand-cyan">
+                      <strong className="text-neutral-200">
                         {t('refund.policy.contatovisantco')}
                       </strong>
                       {item.split('contato@visant.co')[1]}
@@ -207,13 +207,13 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
             <p className="text-neutral-400 mb-3">{t('refund.sections.contact.intro')}</p>
             <ul className="list-none space-y-2 text-neutral-400 ml-0 mb-4">
               <li>
-                <strong className="text-brand-cyan">
+                <strong className="text-neutral-200">
                   {t('refund.sections.contact.email').split(':')[0]}:
                 </strong>{' '}
                 {t('refund.sections.contact.email').split(':')[1]}
               </li>
               <li>
-                <strong className="text-brand-cyan">
+                <strong className="text-neutral-200">
                   {t('refund.sections.contact.responseTime').split(':')[0]}:
                 </strong>{' '}
                 {t('refund.sections.contact.responseTime').split(':')[1]}

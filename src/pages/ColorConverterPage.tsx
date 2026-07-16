@@ -110,9 +110,7 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
 
   return (
     <motion.div {...fadeUp} className={cn('mt-6 rounded-xl p-4 space-y-3', glassSurface.tile)}>
-      <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
-        WCAG Contrast Check
-      </h3>
+      <h3 className="text-xs font-semibold text-neutral-400">WCAG Contrast Check</h3>
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-[10px] font-mono text-neutral-500">
           Color A
@@ -267,9 +265,7 @@ export const ColorConverterPage: React.FC = () => {
   /* Panel: input + batch actions + WCAG contrast */
   const panel = (
     <div className="space-y-6">
-      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-        Color Input
-      </h2>
+      <h2 className="text-xs font-medium text-neutral-500">Color Input</h2>
 
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Enter Color</label>
@@ -289,7 +285,7 @@ export const ColorConverterPage: React.FC = () => {
           />
         </div>
         {inputColor.trim() && (
-          <p className="mt-1 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+          <p className="mt-1 text-[10px] uppercase tracking-wider text-neutral-600">
             {inputFormat}
           </p>
         )}
@@ -298,7 +294,7 @@ export const ColorConverterPage: React.FC = () => {
       <Button
         onClick={() => inputColor.trim() && addColor(inputColor)}
         disabled={!inputColor.trim()}
-        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
       >
         Add Color
       </Button>
@@ -306,21 +302,19 @@ export const ColorConverterPage: React.FC = () => {
       <AnimatePresence>
         {colors.length > 0 && (
           <motion.div {...fadeUp} exit={{ opacity: 0, y: 8 }} className="space-y-3">
-            <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              Export
-            </h2>
+            <h2 className="text-xs font-medium text-neutral-500">Export</h2>
             <div className="flex gap-2 flex-wrap">
               <Button
                 onClick={() => handleCopyAll('json')}
                 variant="outline"
-                className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                className="text-xs font-medium border-neutral-700"
               >
                 <Copy size={12} className="mr-1" /> Copy JSON
               </Button>
               <Button
                 onClick={() => handleCopyAll('csv')}
                 variant="outline"
-                className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+                className="text-xs font-medium border-neutral-700"
               >
                 <Copy size={12} className="mr-1" /> Copy CSV
               </Button>
@@ -332,9 +326,7 @@ export const ColorConverterPage: React.FC = () => {
       <AnimatePresence>
         {colors.length >= 2 && (
           <motion.div {...fadeUp} exit={{ opacity: 0, y: 8 }}>
-            <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
-              Contrast
-            </h2>
+            <h2 className="text-xs font-medium text-neutral-500 mb-3">Contrast</h2>
             <ContrastPanel colors={colors} />
           </motion.div>
         )}
@@ -390,9 +382,7 @@ export const ColorConverterPage: React.FC = () => {
               className="flex flex-col items-center justify-center py-24 text-center text-neutral-600"
             >
               <Pipette className="w-16 h-16 mx-auto mb-4 opacity-30" />
-              <p className="font-mono text-xs uppercase tracking-widest">
-                Enter a color in the panel to begin
-              </p>
+              <p className="text-xs font-medium">Enter a color in the panel to begin</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -498,7 +488,7 @@ function ColorRow({
 function ValueCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1 min-w-0">
-      <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 w-8 flex-shrink-0">
+      <span className="text-[10px] uppercase tracking-wider text-neutral-600 w-8 flex-shrink-0">
         {label}
       </span>
       <span className="text-[11px] font-mono text-neutral-300 truncate">{value}</span>

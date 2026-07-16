@@ -1679,7 +1679,7 @@ export const AdminPresetsPage: React.FC = () => {
                   className={`font-mono transition-all h-8 text-xs ${
                     activeTab === tab.id
                       ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                      : 'border-neutral-700/60 hover:border-[brand-cyan]/30 text-neutral-400'
+                      : 'border-neutral-700/60 hover:border-neutral-600/30 text-neutral-400'
                   }`}
                 >
                   {tab.label}
@@ -1777,7 +1777,7 @@ export const AdminPresetsPage: React.FC = () => {
                             setError(null);
                           }}
                           rows={12}
-                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
+                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50 resize-none"
                           placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": GEMINI_MODELS.FLASH\n  }\n]`}
                         />
                       </div>
@@ -1819,7 +1819,7 @@ export const AdminPresetsPage: React.FC = () => {
                         onClick={handleValidateJson}
                         disabled={isLoading || !batchJson.trim()}
                         variant="outline"
-                        className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
+                        className="font-mono border-neutral-700/60 hover:border-neutral-600/30"
                       >
                         {t('adminPresets.validateJson')}
                       </Button>
@@ -1835,7 +1835,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleCloseBatchModal}
                         variant="outline"
-                        className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
+                        className="font-mono border-neutral-700/60 hover:border-neutral-600/30"
                       >
                         {t('common.close')}
                       </Button>
@@ -2005,7 +2005,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 setFormData({ ...formData, referenceImageUrl: e.target.value });
                                 setImageUploadError(null);
                               }}
-                              className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                              className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50"
                               placeholder="https://..."
                             />
                           </div>
@@ -2021,7 +2021,7 @@ export const AdminPresetsPage: React.FC = () => {
                           onChange={(e) =>
                             setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })
                           }
-                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50"
                         >
                           {ASPECT_RATIOS.map((ratio) => (
                             <option key={ratio} value={ratio}>
@@ -2042,7 +2042,7 @@ export const AdminPresetsPage: React.FC = () => {
                               model: (e.target.value as GeminiModel) || undefined,
                             })
                           }
-                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50"
                         >
                           <option value="">{t('admin.presets.nenhum')}</option>
                           {AVAILABLE_MODELS.map((model) => (
@@ -2063,7 +2063,7 @@ export const AdminPresetsPage: React.FC = () => {
                             onChange={(e) =>
                               setFormData({ ...formData, mockupCategoryId: e.target.value })
                             }
-                            className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                            className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50"
                           >
                             <option value="">{t('admin.presets.nenhuma')}</option>
                             {mockupCategories.map((c) => (
@@ -2099,7 +2099,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 }
                               }}
                               placeholder={t('admin.presets.digite_uma_tag_e_pressione_enter')}
-                              className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                              className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-neutral-600/50"
                             />
                             <Button
                               variant="ghost"
@@ -2113,7 +2113,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   setTagInput('');
                                 }
                               }}
-                              className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
+                              className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
                             >
                               Adicionar
                             </Button>
@@ -2160,7 +2160,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleCancel}
                         variant="outline"
-                        className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
+                        className="font-mono border-neutral-700/60 hover:border-neutral-600/30"
                       >
                         Cancelar
                       </Button>

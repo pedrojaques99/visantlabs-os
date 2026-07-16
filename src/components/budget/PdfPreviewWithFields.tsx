@@ -880,7 +880,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Pending field position indicator - top */}
         {pendingFieldPosition && editable && (
           <div className="sticky top-0 z-40 mb-4">
-            <div className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+            <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
               <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo
@@ -901,7 +901,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Positioning mode indicator - top */}
         {isPositioningMode && editable && positioningFieldId && (
           <div className="sticky top-0 z-40 mb-4">
-            <div className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+            <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
               <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Clique no PDF para posicionar:{' '}
@@ -1030,7 +1030,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-200/80 z-30">
               <div className="text-center">
                 <div className="text-neutral-600 font-mono text-sm mb-2">Recarregando PDF...</div>
-                <div className="w-8 h-8 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin mx-auto"></div>
+                <div className="w-8 h-8 border-2 border-neutral-600 border-t-transparent rounded-md animate-spin mx-auto"></div>
               </div>
             </div>
           )}
@@ -1438,8 +1438,8 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     <div
       ref={setNodeRef}
       data-field-id={instanceId}
-      className={`absolute ${isPositioning ? 'ring-2 ring-[brand-cyan]' : ''} ${
-        isSelected ? 'ring-2 ring-[brand-cyan]' : ''
+      className={`absolute ${isPositioning ? 'ring-2 ring-neutral-600' : ''} ${
+        isSelected ? 'ring-2 ring-neutral-600' : ''
       } ${fontFamilyClass}`}
       style={style}
       onClick={(e) => {

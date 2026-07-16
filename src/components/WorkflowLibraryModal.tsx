@@ -216,9 +216,9 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
             <div className="flex items-center gap-2">
-              <Layout size={20} className="text-brand-cyan" />
+              <Layout size={20} className="text-neutral-400" />
               <div>
-                <h2 className="text-sm font-mono text-neutral-300 uppercase ">
+                <h2 className="text-sm font-medium text-neutral-200">
                   {t('workflows.library.title') || 'Workflow Library'}
                 </h2>
                 <p className="text-[10px] text-neutral-500 font-mono hidden sm:block">
@@ -244,7 +244,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
               className={cn(
                 'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                 activeTab === 'community'
-                  ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
+                  ? 'text-brand-cyan border-neutral-600 bg-brand-cyan/5'
                   : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
               )}
             >
@@ -259,7 +259,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                 className={cn(
                   'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                   activeTab === 'my'
-                    ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
+                    ? 'text-brand-cyan border-neutral-600 bg-brand-cyan/5'
                     : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
                 )}
               >

@@ -159,7 +159,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
           <DialogTitle className="text-3xl font-black font-redhatmono tracking-tighter text-white">
             {app ? 'EDIT APP CONFIG //' : 'NEW APP CONFIG //'}
           </DialogTitle>
-          <DialogDescription className="text-neutral-500 font-mono text-xs uppercase tracking-widest">
+          <DialogDescription className="text-neutral-500 text-xs">
             Configure application metadata and database identity
           </DialogDescription>
         </DialogHeader>

@@ -193,7 +193,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           >
             <ArrowLeft size={14} /> Voltar
           </button>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-brand-cyan px-2 py-1 bg-brand-cyan/10 rounded-full border border-brand-cyan/20">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-2 py-1 bg-white/5 rounded-full border border-white/10">
             Brand Vault
           </div>
         </header>
@@ -322,9 +322,7 @@ export const CreativeSetupSidebar: React.FC = () => {
       data-vsn-section="setup"
     >
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-          Novo criativo
-        </span>
+        <span className="text-xs font-medium text-neutral-500">Novo criativo</span>
         <button
           onClick={() => navigate('/create/projects')}
           className={cn(
@@ -524,13 +522,13 @@ export const CreativeSetupSidebar: React.FC = () => {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                          <Upload size={18} className="text-brand-cyan" />
+                          <Upload size={18} className="text-white" />
                           <span className="text-[10px] font-bold uppercase tracking-widest text-white">
                             Trocar Arquivo
                           </span>
                         </div>
                         <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-300">
                             Local File
                           </span>
                         </div>
@@ -569,13 +567,13 @@ export const CreativeSetupSidebar: React.FC = () => {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                        <Briefcase size={18} className="text-brand-cyan" />
+                        <Briefcase size={18} className="text-white" />
                         <span className="text-[10px] font-bold uppercase tracking-widest text-white">
                           Trocar Asset
                         </span>
                       </div>
                       <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-300">
                           Vault Asset
                         </span>
                       </div>
