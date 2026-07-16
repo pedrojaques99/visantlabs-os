@@ -6,7 +6,10 @@
 
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 
-// Fields to track for change detection
+// Fields to track for change detection.
+// `strategy` belongs here: without it a strategy-only ingest reports back
+// "no new brand data was found" even though the write landed, and snapshots
+// silently drop strategy so restore-version can't bring it back.
 const TRACKABLE_FIELDS = [
   'identity',
   'logos',
@@ -16,6 +19,7 @@ const TRACKABLE_FIELDS = [
   'media',
   'tokens',
   'guidelines',
+  'strategy',
   'folder',
 ] as const;
 
@@ -73,6 +77,7 @@ function formatFieldName(field: string): string {
     media: 'media kit',
     tokens: 'design tokens',
     guidelines: 'editorial guidelines',
+    strategy: 'brand strategy',
     folder: 'folder',
   };
   return names[field] || field;

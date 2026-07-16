@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import type { FigStreamState } from './useExtractFigStream';
 import { buildBrandIngestPayload } from './queries/useBrandImport';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { manifestoText } from '@/lib/brandManifesto';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 /**
@@ -27,7 +28,9 @@ function toFigState(preview: BrandGuideline, images?: string[]): FigStreamState 
     components: [],
     images: images || [],
     strategy: {
-      manifesto: p.strategy?.manifesto,
+      // Flatten: the preview renders this as a JSX child, and ingest can now
+      // return the structured arc, not just a string.
+      manifesto: manifestoText(p.strategy?.manifesto),
       tagline: p.identity?.tagline,
       description: p.identity?.description,
       // strategy.positioning is the canonical field for claims/statements;

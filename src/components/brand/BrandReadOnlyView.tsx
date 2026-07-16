@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Masonry } from '@/components/ui/Masonry';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { manifestoText } from '@/lib/brandManifesto';
 import { FullScreenViewer } from '@/components/FullScreenViewer';
 import { copyToClipboard, copyImageAsPng } from '@/utils/clipboard';
 import { getProxiedUrl } from '@/utils/proxyUtils';
@@ -520,12 +522,7 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
   if (!editable && !raw) return null;
 
   const isStructured = typeof raw === 'object' && raw !== null;
-  const fullText = isStructured
-    ? (raw as any).full ||
-      [(raw as any).provocation, (raw as any).tension, (raw as any).promise]
-        .filter(Boolean)
-        .join('\n\n')
-    : (raw as string);
+  const fullText = manifestoText(raw);
   if (!editable && !fullText) return null;
 
   // Structured object used for inline editing (seed legacy string into `full`).
@@ -533,6 +530,8 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
     isStructured ? (raw as any) : typeof raw === 'string' && raw ? { full: raw } : {};
   const setManifesto = (key: 'provocation' | 'tension' | 'promise') => (v: string) =>
     onPatch?.({ strategy: { ...guideline.strategy, manifesto: { ...m, [key]: v } } });
+  const setFull = (v: string) =>
+    onPatch?.({ strategy: { ...guideline.strategy, manifesto: { ...m, full: v } } });
 
   if (compact) {
     return (
@@ -545,21 +544,26 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
     );
   }
 
-  if (editable || (isStructured && (m.provocation || m.tension || m.promise))) {
-    const fields: Array<['provocation' | 'tension' | 'promise', string, string]> = [
-      ['provocation', 'Provocação', m.provocation || ''],
-      ['tension', 'Tensão', m.tension || ''],
-      ['promise', 'Promessa', m.promise || ''],
-    ];
-    const hasContent = !!(m.provocation || m.tension || m.promise);
-    const visible = fields.filter(([, , value]) => editable || value);
+  const fields: Array<['provocation' | 'tension' | 'promise', string, string]> = [
+    ['provocation', 'Provocação', m.provocation || ''],
+    ['tension', 'Tensão', m.tension || ''],
+    ['promise', 'Promessa', m.promise || ''],
+  ];
+  const hasContent = !!(m.provocation || m.tension || m.promise);
 
-    const header = (
-      <div className="flex items-center gap-4">
-        <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-        <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
-      </div>
-    );
+  const header = (
+    <div className="flex items-center gap-4">
+      <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
+      <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
+    </div>
+  );
+
+  // Pillars own the section when they exist, or when there's nothing at all to
+  // show and the owner is editing (three fields to fill beats a blank hero).
+  // NOT on `editable` alone: that short-circuit meant an owner in edit mode saw
+  // three empty placeholders while a perfectly good `full` text rendered nowhere.
+  if (hasContent || (editable && !fullText)) {
+    const visible = fields.filter(([, , value]) => editable || value);
 
     // Empty + editable → compact light fields instead of three tall placeholders.
     if (editable && !hasContent) {
@@ -617,28 +621,66 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
     );
   }
 
+  // The manifesto is running text — render it as the hero it is.
   const [firstLine, ...rest] = fullText.split('\n');
   return (
     <div className="space-y-12">
-      <div className="flex items-center gap-4">
-        <div className="h-[1px] w-12 bg-[var(--accent)]/30" />
-        <MicroTitle className="text-[var(--accent)]/60">[Manifesto]</MicroTitle>
-      </div>
+      {header}
       <div className="relative group">
         <div className="absolute -inset-8 bg-[var(--accent)]/[0.02] blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        <h3 className="text-4xl md:text-6xl font-bold tracking-tight font-manrope leading-[1.1] opacity-90">
-          {firstLine}
-        </h3>
-        {rest.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
-            {rest.map((para, i) => (
-              <p key={i} className="text-lg md:text-xl leading-relaxed font-light opacity-60">
-                {para}
-              </p>
-            ))}
-          </div>
+        {editable ? (
+          // Edit the whole text as one field — the first-line/rest split below is
+          // presentation, not structure, so editing it piecewise would be a lie.
+          <InlineEditable
+            as="p"
+            multiline
+            editable
+            value={fullText}
+            placeholder="Manifesto…"
+            onCommit={setFull}
+            className="text-2xl md:text-3xl leading-relaxed font-light opacity-80 whitespace-pre-line"
+          />
+        ) : (
+          <>
+            <h3 className="text-4xl md:text-6xl font-bold tracking-tight font-manrope leading-[1.1] opacity-90">
+              {firstLine}
+            </h3>
+            {rest.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
+                {rest.map((para, i) => (
+                  <p key={i} className="text-lg md:text-xl leading-relaxed font-light opacity-60">
+                    {para}
+                  </p>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* Owner still needs a way to add the provocação/tensão/promessa arc on top
+          of an ingested text — otherwise the pillars would be unreachable here. */}
+      {editable && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {fields.map(([key, label, value]) => (
+            <div
+              key={key}
+              className="rounded-xl bg-[var(--brand-surface)]/10 border border-[var(--brand-text)]/[0.06] px-4 py-3"
+            >
+              <MicroTitle className="text-[var(--accent)]/40 mb-1.5">{label}</MicroTitle>
+              <InlineEditable
+                as="p"
+                multiline
+                editable
+                value={value}
+                placeholder={`${label}…`}
+                onCommit={setManifesto(key)}
+                className="text-sm leading-relaxed font-light opacity-70"
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -1579,6 +1621,9 @@ export interface BrandMediaViewProps extends SectionCommonProps {
   onAssetDragStart?: BrandReadOnlyViewProps['onAssetDragStart'];
 }
 
+/** How many assets the gallery shows before "ver toda a galeria". */
+const MEDIA_GRID_LIMIT = 12;
+
 /** Compact vibe/aesthetic chips from an asset's LLM analysis (read-only). */
 const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[]> } }> = ({
   analysis,
@@ -1601,6 +1646,72 @@ const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[
   );
 };
 
+/**
+ * One asset tile. The art sets its own height — a fixed aspect box + object-cover
+ * used to crop every piece — and the label/chips only surface on hover, so at rest
+ * the grid is nothing but the work. Mirrors the reference library's card.
+ */
+const BrandMediaCard: React.FC<{
+  item: any;
+  index: number;
+  onOpen: () => void;
+  onDownload: () => void;
+  onError: () => void;
+  onDragStart?: (e: React.DragEvent) => void;
+}> = ({ item, index, onOpen, onDownload, onError, onDragStart }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="group relative rounded-2xl overflow-hidden border border-white/[0.04] bg-neutral-900/40 cursor-pointer transition-colors hover:border-white/10"
+      draggable={!!onDragStart}
+      // motion.div types onDragStart as its own pan gesture; the HTML drag event
+      // is what we actually get, hence the cast (same as the pre-masonry code).
+      onDragStart={(e) => onDragStart?.(e as unknown as React.DragEvent)}
+      onClick={onOpen}
+    >
+      <img
+        src={item.url}
+        alt={item.label || 'Media'}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={onError}
+        className="w-full h-auto block"
+        // Placeholder ratio only until the real one is known — dropped on load so
+        // the art keeps its own proportions.
+        style={{ aspectRatio: loaded ? undefined : '4 / 5' }}
+      />
+
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+        <Button
+          size="icon"
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 pointer-events-auto"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDownload();
+          }}
+          aria-label="Download"
+        >
+          <Download size={15} />
+        </Button>
+        <div className="absolute bottom-3 left-3 right-3 space-y-1">
+          <p className="text-xs font-bold text-white tracking-tight truncate">
+            {item.label || 'Production File'}
+          </p>
+          <AssetTagChips analysis={item.analysis} />
+          <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">
+            Asset // {String(index + 1).padStart(2, '0')}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
   guideline,
   compact,
@@ -1609,14 +1720,26 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
   onAssetDragStart,
 }) => {
   const media = guideline.media || [];
-  const filtered = useMemo(
-    () =>
-      media.filter((m) => !searchTerm || m.label?.toLowerCase().includes(searchTerm.toLowerCase())),
-    [media, searchTerm]
-  );
-
   const [fullScreenIdx, setFullScreenIdx] = useState<number | null>(null);
   const [failed, setFailed] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState(false);
+
+  // Broken assets are dropped from the list, not rendered as null: the masonry
+  // distributes by index, so a hole would unbalance the columns and throw off
+  // both the "Asset // NN" numbering and the +N count on the button.
+  const filtered = useMemo(
+    () =>
+      media.filter(
+        (m) =>
+          !failed.has(m.id) &&
+          (!searchTerm || m.label?.toLowerCase().includes(searchTerm.toLowerCase()))
+      ),
+    [media, searchTerm, failed]
+  );
+
+  const visible = expanded ? filtered : filtered.slice(0, MEDIA_GRID_LIMIT);
+  const hidden = filtered.length - visible.length;
+
   const markFailed = useCallback((id: string) => {
     setFailed((prev) => {
       if (prev.has(id)) return prev;
@@ -1686,60 +1809,35 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
           <FullSectionHeader label="Media Library" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((item, i) => {
-            if (failed.has(item.id)) return null;
-            return (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="group relative flex flex-col gap-4"
-                draggable={!!onAssetDragStart}
-                onDragStart={(e) =>
-                  onAssetDragStart?.(e as unknown as React.DragEvent, item.url, 'media')
-                }
-              >
-                <div
-                  className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-white/[0.04] shadow-2xl transition-all group-hover:scale-[1.02] group-hover:border-white/10 cursor-pointer"
-                  onClick={() => handleClick(item, i)}
-                >
-                  <img
-                    src={item.url}
-                    alt={item.label || 'Media'}
-                    onError={() => markFailed(item.id)}
-                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
+        <Masonry
+          items={visible}
+          getKey={(item) => item.id}
+          breakpoints={{ base: 1, sm: 2, lg: 3, xl: 3 }}
+          gap={16}
+          renderItem={(item, i) => (
+            <BrandMediaCard
+              item={item}
+              index={i}
+              onOpen={() => handleClick(item, i)}
+              onDownload={() => handleDownload(item)}
+              onError={() => markFailed(item.id)}
+              onDragStart={
+                onAssetDragStart
+                  ? (e) => onAssetDragStart(e as unknown as React.DragEvent, item.url, 'media')
+                  : undefined
+              }
+            />
+          )}
+        />
 
-                  <Button
-                    size="icon"
-                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-sm border border-white/10 opacity-100 can-hover:opacity-0 can-hover:group-hover:opacity-100 transition-all z-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownload(item);
-                    }}
-                  >
-                    <Download size={16} />
-                  </Button>
-
-                  <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-2">
-                    <div className="space-y-1 min-w-0">
-                      <p className="text-sm font-bold text-white tracking-tight truncate">
-                        {item.label || 'Production File'}
-                      </p>
-                      <AssetTagChips analysis={item.analysis} />
-                      <span className="text-[10px] font-mono text-white/50 uppercase tracking-widest">
-                        Asset // {String(i + 1).padStart(2, '0')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        {hidden > 0 && (
+          <div className="flex justify-center">
+            <Button variant="subtle" onClick={() => setExpanded(true)} className="gap-2">
+              Ver toda a galeria
+              <span className="text-[10px] font-mono opacity-50">+{hidden}</span>
+            </Button>
+          </div>
+        )}
 
         {fullScreenIdx !== null && (
           <FullScreenViewer
