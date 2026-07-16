@@ -3,11 +3,19 @@ import { BrandSection } from '../brand/BrandSection';
 import { ExportSection } from './ExportSection';
 import { FontSwapSection } from './FontSwapSection';
 import { AutomationSection } from './AutomationSection';
-import { Download, Type, Zap, Users, Film } from 'lucide-react';
+import { Download, Type, Zap, Users, Film, type LucideIcon } from 'lucide-react';
 import { BulkCardsSection } from './BulkCardsSection';
 import { PhotoSequencerSection } from './PhotoSequencerSection';
 
-const SECTIONS = [
+const SECTIONS: Array<{
+  id: string;
+  title: string;
+  icon: LucideIcon;
+  description: string;
+  component: () => React.JSX.Element;
+  defaultOpen: boolean;
+  badge?: string;
+}> = [
   {
     id: 'bulkcards',
     title: 'Bulk Cards',

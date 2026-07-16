@@ -523,6 +523,7 @@ export type FigmaOperation =
         opacity?: number;
       };
       textOverrides?: Array<{ name: string; content: string }>;
+      imageOverrides?: Array<{ layerName: string; sourceNodeName: string }>;
     }
   | {
       type: 'REORDER_CHILD';
