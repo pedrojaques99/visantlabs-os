@@ -12,7 +12,7 @@
  * um tipo). Tudo são dados + funções puras de `(pathname | NavCtx)`. A UI
  * (AppSidebar/AppShell) consome; nenhum componente decide navegação por conta.
  */
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
 import {
   Home,
   Bot,
@@ -41,7 +41,7 @@ import {
   FolderOpen,
   Bookmark,
   PenTool,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos
@@ -226,7 +226,9 @@ export function editorHasOwnChrome(pathname: string): boolean {
 // Listas de produção filtráveis por marca. Nelas o BrandSwitcher VIRA o filtro
 // (ganha a opção "Todas as marcas") — unifica o antigo BrandFilterChip. A lista
 // segue a marca ativa (SSoT ActiveBrandContext); null = todas.
-const BRAND_FILTERED_LISTS = ['/canvas', '/my-outputs', '/create/projects'];
+// `/references`: o switcher não FILTRA a lista (biblioteca é global), mas RANQUEIA
+// o feed pela marca ativa (feed inteligente). "Todas as marcas" = feed neutro.
+const BRAND_FILTERED_LISTS = ['/canvas', '/my-outputs', '/create/projects', '/references'];
 
 /** Rota de lista onde o switcher oferece "Todas as marcas" e filtra a lista. */
 export function isBrandFilteredList(pathname: string): boolean {

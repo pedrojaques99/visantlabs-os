@@ -4,7 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useResizable } from '@/hooks/useResizable';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
-import { MessageSquare, Settings, X, Brush, Image as ImageIcon } from 'lucide-react';
+import { MessageSquare, Settings, X, Brush, Image as ImageIcon } from '@/lib/ui/icons';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
 
 // Import child components

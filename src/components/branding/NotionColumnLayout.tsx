@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import type { SectionLayout } from '@/types/types';
 import { Button } from '@/components/ui/button';

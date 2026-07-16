@@ -17,7 +17,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Download,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag, formatDateShort } from '@/utils/localeUtils';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, CreditCard, Zap } from 'lucide-react';
+import { Check, CreditCard, Zap } from '@/lib/ui/icons';
 import { getUserLocale, type CurrencyInfo } from '@/utils/localeUtils';
 import { getCreditPackageLink } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';

@@ -21,7 +21,7 @@ import {
   Factory,
   ChevronRight,
   Trophy,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 interface VibeGridProps {
   selectedSegment: VibeSegment | null;

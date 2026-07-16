@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette } from 'lucide-react';
+import { Palette } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';

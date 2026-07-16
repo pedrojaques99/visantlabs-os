@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers, Gem } from 'lucide-react';
+import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers, Gem } from '@/lib/ui/icons';
 import { useLocation, Link } from 'react-router-dom';
 import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';

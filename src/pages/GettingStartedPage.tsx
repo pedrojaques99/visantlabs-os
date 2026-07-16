@@ -10,7 +10,7 @@ import {
   Palette,
   ChevronRight,
   ExternalLink,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';
 import { useLayout } from '@/hooks/useLayout';

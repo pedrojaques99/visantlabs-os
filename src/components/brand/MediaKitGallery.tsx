@@ -13,7 +13,7 @@ import {
   Check,
   MousePointerClick,
   ChevronDown,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';

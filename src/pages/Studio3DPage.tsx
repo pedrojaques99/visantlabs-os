@@ -53,7 +53,7 @@ import {
   Maximize2,
   Minimize2,
   Share2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 

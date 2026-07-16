@@ -30,7 +30,7 @@ import {
   ChevronRight,
   MessageSquare,
   Activity,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import {
   Area,
   AreaChart,

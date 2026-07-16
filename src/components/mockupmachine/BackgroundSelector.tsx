@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MapPin, ChevronDown } from 'lucide-react';
+import { MapPin, ChevronDown } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { useClickOutside } from '@/hooks/useClickOutside';

@@ -8,7 +8,7 @@ import { PremiumButton } from '../ui/PremiumButton';
 import { Button } from '../ui/button';
 import { MicroTitle } from '../ui/MicroTitle';
 import { cn } from '@/lib/utils';
-import { ArrowRight, Cpu, Scan, X } from 'lucide-react';
+import { ArrowRight, Cpu, Scan, X } from '@/lib/ui/icons';
 import { PremiumGlitchLoader } from '../ui/PremiumGlitchLoader';
 
 interface SidebarSetupSectionProps {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X } from 'lucide-react';
+import { X } from '@/lib/ui/icons';
 import { FormInput } from '@/components/ui/form-input';
 import type { BudgetData } from '@/types/types';
 import { Button } from '@/components/ui/button';

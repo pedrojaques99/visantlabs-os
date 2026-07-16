@@ -13,7 +13,7 @@ import {
   Diamond,
   Bot,
   Coins,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { NavigationItem } from '@/components/ui/NavigationSidebar';
 
 export const DOCS_NAVIGATION_ITEMS: NavigationItem[] = [

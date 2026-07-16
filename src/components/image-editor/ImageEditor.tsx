@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Check } from 'lucide-react';
+import { X, Check } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useImageEditorStore, type EditorAction } from '@/stores/imageEditorStore';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';

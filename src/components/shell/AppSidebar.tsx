@@ -25,7 +25,7 @@ import {
   Star,
   ArrowLeft,
   User as UserIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';

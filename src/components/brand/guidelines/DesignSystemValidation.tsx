@@ -12,7 +12,7 @@ import {
   FileText,
   Shapes,
   Upload,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ComponentPreviewCard, type ValidationState } from './ComponentPreviewCard';

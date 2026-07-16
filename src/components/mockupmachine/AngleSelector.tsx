@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Camera, ChevronDown } from 'lucide-react';
+import { Camera, ChevronDown } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { useClickOutside } from '@/hooks/useClickOutside';

@@ -14,7 +14,7 @@ import {
   Cpu,
   RefreshCw,
   Diamond,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';

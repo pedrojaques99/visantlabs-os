@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers } from 'lucide-react';
+import { Layers } from '@/lib/ui/icons';
 import type { TexturePresetType } from '../types/texturePresets';
 import { getAllTexturePresets } from '../services/texturePresetsService';
 import { GenericPresetModal } from './shared/GenericPresetModal';

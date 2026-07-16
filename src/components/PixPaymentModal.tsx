@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, Copy, Check, QrCode, Clock, AlertCircle } from 'lucide-react';
+import { X, Copy, Check, QrCode, Clock, AlertCircle } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { abacatepayService } from '../services/abacatepayService';
 import { formatPixCode, copyPixToClipboard, formatExpirationTime } from '@/utils/pixHelpers';

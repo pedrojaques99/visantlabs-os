@@ -9,7 +9,7 @@ import {
   Loader2,
   Download,
   AlertCircle,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/hooks/useLayout';
 import { useInAppShell } from '@/components/shell/InAppShellContext';

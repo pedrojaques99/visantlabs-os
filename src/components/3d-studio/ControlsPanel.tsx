@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { SendToButton } from '@/components/shared/SendToButton';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-media-query';
-import { Download } from 'lucide-react';
+import { Download } from '@/lib/ui/icons';
 import { ToolPanel, ToolPanelContent } from '@/components/shared/ToolPanel';
 import { EssentialsTab } from './panels/EssentialsTab';
 import { SceneTab } from './panels/SceneTab';

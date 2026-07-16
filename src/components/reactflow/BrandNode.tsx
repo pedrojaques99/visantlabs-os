@@ -12,7 +12,7 @@ import {
   Trash2,
   Edit2,
   Check,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandNodeData, BrandIdentity } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';

@@ -1,4 +1,4 @@
-import { Palette, Megaphone, Code, Building2, LucideIcon } from 'lucide-react';
+import { Palette, Megaphone, Code, Building2, LucideIcon } from '@/lib/ui/icons';
 
 // Each persona gets a tailored first action + destination route. This is the core
 // of brand-first onboarding: send the user to the tool that matches their job,

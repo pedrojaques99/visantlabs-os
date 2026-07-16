@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Image as ImageIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GridDotsBackground } from '@/components/ui/GridDotsBackground';

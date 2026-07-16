@@ -32,7 +32,7 @@ import {
   BookOpen,
   Check,
   Sparkles,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { fileToBase64 } from '@/utils/fileUtils';
@@ -51,7 +51,7 @@ import { Select } from '@/components/ui/select';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
 import { BrandReadOnlyView } from '@/components/brand/BrandReadOnlyView';
 import { CommunityPresetsSidebar } from '@/components/canvas/CommunityPresetsSidebar';
-import { Diamond, PanelRightOpen, PanelRightClose, Upload } from 'lucide-react';
+import { Diamond, PanelRightOpen, PanelRightClose, Upload } from '@/lib/ui/icons';
 import { useLayout } from '@/hooks/useLayout';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useMediaQuery } from '@/hooks/use-media-query';

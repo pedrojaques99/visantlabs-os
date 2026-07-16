@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ImagePlus, Loader2, Check, Pencil, Palette, X } from 'lucide-react';
+import { ArrowRight, ImagePlus, Loader2, Check, Pencil, Palette, X } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

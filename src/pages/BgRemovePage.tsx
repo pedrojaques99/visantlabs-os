@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Eraser, Upload, X, Eye, EyeOff, Cpu, Zap, Crosshair } from 'lucide-react';
+import { Eraser, Upload, X, Eye, EyeOff, Cpu, Zap, Crosshair } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';

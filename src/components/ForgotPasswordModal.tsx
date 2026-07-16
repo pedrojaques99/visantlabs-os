@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, Mail } from 'lucide-react';
+import { X, Mail } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';

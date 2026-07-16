@@ -1,7 +1,7 @@
 import React from 'react';
 import type { BudgetData, PaymentMethod } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
-import { CreditCard } from 'lucide-react';
+import { CreditCard } from '@/lib/ui/icons';
 
 interface VisantPaymentPageProps {
   data: BudgetData;

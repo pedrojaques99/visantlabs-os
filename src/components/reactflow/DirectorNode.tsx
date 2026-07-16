@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { type NodeProps, Position, NodeResizer } from '@xyflow/react';
-import { Compass, PanelRight, Image as ImageIcon, Check, Dices, Zap } from 'lucide-react';
+import { Compass, PanelRight, Image as ImageIcon, Check, Dices, Zap } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import type { DirectorNodeData } from '@/types/reactFlow';

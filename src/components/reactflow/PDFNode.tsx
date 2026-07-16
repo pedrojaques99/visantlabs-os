@@ -1,6 +1,6 @@
 import React, { useRef, memo, useState, useEffect, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react';
-import { FileText, UploadCloud } from 'lucide-react';
+import { FileText, UploadCloud } from '@/lib/ui/icons';
 import type { PDFNodeData } from '@/types/reactFlow';
 import { pdfToBase64 } from '@/utils/pdfUtils';
 import { toast } from 'sonner';

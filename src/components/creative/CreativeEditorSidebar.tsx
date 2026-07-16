@@ -20,7 +20,7 @@ import {
   Palette,
   Lock,
   Unlock,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { AutoSaveStatus } from '@/hooks/useAutoSave';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';

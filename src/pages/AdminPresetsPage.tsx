@@ -19,7 +19,7 @@ import {
   Users,
   LayoutGrid,
   Table as TableIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { DataTable } from '../components/ui/data-table';
 import { DataTableEditableCell } from '../components/ui/data-table-editable-cell';
 import { ColumnDef } from '@tanstack/react-table';

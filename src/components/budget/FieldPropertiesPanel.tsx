@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Bold, AlignLeft, AlignCenter, AlignRight, Trash2, Type, Check } from 'lucide-react';
+import { X, Bold, AlignLeft, AlignCenter, AlignRight, Trash2, Type, Check } from '@/lib/ui/icons';
 import { FormInput } from '@/components/ui/form-input';
 import { Select } from '@/components/ui/select';
 import type { PdfFieldMapping } from '@/types/types';

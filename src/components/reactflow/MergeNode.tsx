@@ -7,7 +7,7 @@ import {
   useReactFlow,
   NodeResizer,
 } from '@xyflow/react';
-import { Wrench, Diamond } from 'lucide-react';
+import { Wrench, Diamond } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { MergeNodeData } from '@/types/reactFlow';

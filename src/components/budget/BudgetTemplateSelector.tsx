@@ -6,7 +6,7 @@ import { BUDGET_TEMPLATES } from '@/utils/budgetTemplates';
 import { budgetApi, type BudgetProject } from '@/services/budgetApi';
 import type { CustomPdfPreset } from '@/types/types';
 import { ConfirmationModal } from '../ConfirmationModal';
-import { Check, Upload, FileText, Edit, Trash2, Calendar } from 'lucide-react';
+import { Check, Upload, FileText, Edit, Trash2, Calendar } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';

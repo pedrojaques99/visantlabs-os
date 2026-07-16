@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, Lock, Shield, Key, AlertCircle, ExternalLink } from 'lucide-react';
+import { X, Lock, Shield, Key, AlertCircle, ExternalLink } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface ApiKeyPolicyModalProps {

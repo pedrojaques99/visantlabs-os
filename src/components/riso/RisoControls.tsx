@@ -39,7 +39,7 @@ import {
   FileType,
   Layers,
   Copy,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 const RISO_PRESET_ITEMS = Object.entries(RISO_FULL_PRESETS).map(([name, p]) => ({
   name,

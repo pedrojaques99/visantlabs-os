@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dices, PenLine, Pickaxe } from 'lucide-react';
+import { Dices, PenLine, Pickaxe } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';

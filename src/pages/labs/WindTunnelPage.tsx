@@ -17,7 +17,7 @@ import {
   Share2,
   ClipboardCopy,
   ClipboardPaste,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { loadImageFromFile } from '@/components/labs/wind-tunnel/ImageObstacles';
 import { Button } from '@/components/ui/button';

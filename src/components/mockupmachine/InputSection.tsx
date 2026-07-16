@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, CheckCircle2, ArrowLeftRight } from 'lucide-react';
+import { X, Plus, CheckCircle2, ArrowLeftRight } from '@/lib/ui/icons';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -12,7 +12,7 @@ import { MicroTitle } from '../ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Diamond, MessageSquare, Share2 } from 'lucide-react';
+import { Diamond, MessageSquare, Share2 } from '@/lib/ui/icons';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from '@/hooks/useMockup';
 import { MockupCard } from './MockupCard';

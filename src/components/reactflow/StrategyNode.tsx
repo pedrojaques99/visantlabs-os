@@ -12,7 +12,7 @@ import {
   FolderOpen,
   Plus,
   Lock,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { StrategyNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';

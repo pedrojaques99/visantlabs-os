@@ -11,7 +11,7 @@ import {
   Brain,
   Check,
   ClipboardCheck,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';

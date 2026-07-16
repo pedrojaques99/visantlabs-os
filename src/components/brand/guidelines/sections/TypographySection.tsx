@@ -3,7 +3,7 @@ import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { GoogleFontPicker } from '@/components/ui/GoogleFontPicker';
-import { Type, Plus, Trash2 } from 'lucide-react';
+import { Type, Plus, Trash2 } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface TypographySectionProps {

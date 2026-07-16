@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, QrCode } from 'lucide-react';
+import { Download, QrCode } from '@/lib/ui/icons';
 import { loadImage } from '@/utils/imageUtils';
 import { FormInput } from '../components/ui/form-input';
 import { Select } from '../components/ui/select';

@@ -11,7 +11,7 @@
  * (`SidebarSectionLabel`, `SidebarItem`) para markup pronto.
  */
 import React from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 // Usa a família de tokens shadcn `--sidebar-*` (superfície/foreground/accent/

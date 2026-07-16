@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/lib/ui/icons';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTranslations, getCurrentLocale } from '@/utils/localeUtils';

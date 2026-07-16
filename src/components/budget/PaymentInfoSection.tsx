@@ -4,7 +4,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { Select } from '@/components/ui/select';
 import type { PaymentInfo, PaymentMethod } from '@/types/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface PaymentInfoSectionProps {

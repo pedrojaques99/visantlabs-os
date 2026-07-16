@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Menu, ChevronUp, Search } from 'lucide-react';
+import { Menu, ChevronUp, Search } from '@/lib/ui/icons';
 import { BackButton } from '@/components/ui/BackButton';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Button } from '@/components/ui/button';

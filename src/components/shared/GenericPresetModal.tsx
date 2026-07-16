@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronDown, ChevronUp, Users, LucideIcon } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Users, LucideIcon } from '@/lib/ui/icons';
 import { getCommunityPresetsByType } from '@/services/communityPresetsService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

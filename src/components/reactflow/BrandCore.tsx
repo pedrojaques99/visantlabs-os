@@ -11,7 +11,7 @@ import {
   FileText,
   X,
   Maximize2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandCoreData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';

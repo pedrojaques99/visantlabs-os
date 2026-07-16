@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { Diamond, Scan } from 'lucide-react';
+import { Diamond, Scan } from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useQueryClient } from '@tanstack/react-query';

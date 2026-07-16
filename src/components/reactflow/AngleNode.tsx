@@ -1,4 +1,4 @@
-import { Camera } from 'lucide-react';
+import { Camera } from '@/lib/ui/icons';
 import type { AngleNodeData } from '@/types/reactFlow';
 import { getAllAnglePresets, getAnglePreset } from '@/services/anglePresetsService';
 import { AnglePresetModal } from '../AnglePresetModal';

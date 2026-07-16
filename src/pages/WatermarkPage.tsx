@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Stamp, Upload, X, Type, Image } from 'lucide-react';
+import { Stamp, Upload, X, Type, Image } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';

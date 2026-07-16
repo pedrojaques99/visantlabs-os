@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
-import { Plus, Trash2, Braces } from 'lucide-react';
+import { Plus, Trash2, Braces } from '@/lib/ui/icons';
 import type { VariablesNodeData } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeButton } from './shared/node-button';

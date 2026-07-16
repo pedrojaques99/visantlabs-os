@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Download, Edit2, Trash2, Heart, Play } from 'lucide-react';
+import { Copy, Download, Edit2, Trash2, Heart, Play } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { authService } from '../services/authService';

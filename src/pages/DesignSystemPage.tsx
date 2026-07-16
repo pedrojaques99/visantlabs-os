@@ -14,7 +14,7 @@ import {
   Users,
   Search,
   Command,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useResolvedTokens } from '@/hooks/useResolvedTokens';

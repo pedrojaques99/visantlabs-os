@@ -16,7 +16,7 @@ import {
   Box,
   LayoutGrid,
   Diamond,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { MockupNodeData } from '@/types/reactFlow';

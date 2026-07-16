@@ -9,7 +9,7 @@ import {
   Search,
   Filter,
   Image as ImageIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { exportImageWithScale } from '@/utils/exportUtils';
 import { toast } from 'sonner';

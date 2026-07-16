@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Bold, Italic, List, Palette } from 'lucide-react';
+import { Bold, Italic, List, Palette } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import {
   applyBold,

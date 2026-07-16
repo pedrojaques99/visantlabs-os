@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTranslations, getCurrentLocale } from '@/utils/localeUtils';
 import { Button } from '@/components/ui/button';

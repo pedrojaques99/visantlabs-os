@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Heart, Sun, Moon, FilePenLine, Plus, Search, Info, Globe } from 'lucide-react';
+import { UserPlus, Heart, Sun, Moon, FilePenLine, Plus, Search, Info, Globe } from '@/lib/ui/icons';
 import { useLocation } from 'react-router-dom';
 import { AuthButton } from './AuthButton';
 import { AuthModal } from './AuthModal';

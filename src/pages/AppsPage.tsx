@@ -21,7 +21,7 @@ import {
   X,
   LayoutGrid,
   Star,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { motion, AnimatePresence } from 'framer-motion';

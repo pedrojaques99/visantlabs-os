@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { CheckCircle2, ArrowRight, Stethoscope } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Stethoscope } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,

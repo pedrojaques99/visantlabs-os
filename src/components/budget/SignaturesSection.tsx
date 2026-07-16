@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import type { Signature } from '@/types/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface SignaturesSectionProps {

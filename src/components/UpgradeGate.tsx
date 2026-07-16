@@ -2,7 +2,7 @@ import React from 'react';
 import { useLayout } from '@/hooks/useLayout';
 import { GlassPanel } from './ui/GlassPanel';
 import { Button } from './ui/button';
-import { Lock } from 'lucide-react';
+import { Lock } from '@/lib/ui/icons';
 
 interface UpgradeGateProps {
   feature: string;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { X, FileText } from 'lucide-react';
+import { X, FileText } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 // Configure PDF.js worker

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookmarkPlus } from 'lucide-react';
+import { BookmarkPlus } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';

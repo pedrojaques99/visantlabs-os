@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { CheckCircle, Pickaxe, ArrowRight } from 'lucide-react';
+import { CheckCircle, Pickaxe, ArrowRight } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';

@@ -6,7 +6,7 @@ import { BrandGuidelineWizardModal } from './BrandGuidelineWizardModal';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
-import { ChevronRight, Plus, Check, Pencil, Gem, Search } from 'lucide-react';
+import { ChevronRight, Plus, Check, Pencil, Gem, Search } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { MicroTitle } from '../ui/MicroTitle';
 import { Button } from '@/components/ui/button';

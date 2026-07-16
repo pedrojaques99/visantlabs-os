@@ -18,7 +18,7 @@ import {
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
-import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from 'lucide-react';
+import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from '@/lib/ui/icons';
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button';

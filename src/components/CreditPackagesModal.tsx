@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { SegmentedControl } from '@/components/shared/ToolPanel';
 import {
   getUserLocale,

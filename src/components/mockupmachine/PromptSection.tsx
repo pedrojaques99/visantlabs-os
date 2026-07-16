@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { Info, Pickaxe, Diamond, ArrowLeftRight, PlusIcon } from 'lucide-react';
+import { Info, Pickaxe, Diamond, ArrowLeftRight, PlusIcon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -10,7 +10,7 @@ import { getTranslations } from '@/utils/localeUtils';
 import { useMockup } from './MockupContext';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from '@/lib/ui/icons';
 import { useByokStatus } from '@/hooks/useByokStatus';
 import { ByokCostIndicator } from '@/components/ui/ByokBadge';
 

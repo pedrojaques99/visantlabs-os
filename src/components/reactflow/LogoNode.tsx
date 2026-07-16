@@ -1,6 +1,6 @@
 import React, { useRef, memo, useCallback, useState, useEffect } from 'react';
 import { Position, NodeResizer, type NodeProps, useReactFlow, Handle } from '@xyflow/react';
-import { UploadCloud, X } from 'lucide-react';
+import { UploadCloud, X } from '@/lib/ui/icons';
 import type { LogoNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { fileToBase64, validateFile } from '@/utils/fileUtils';

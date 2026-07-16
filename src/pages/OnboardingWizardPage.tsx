@@ -6,7 +6,7 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/lib/ui/icons';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { OnboardingWizardV2 } from '@/components/onboarding/OnboardingWizardV2';
 import { PersonaGrid } from '@/components/onboarding/PersonaGrid';

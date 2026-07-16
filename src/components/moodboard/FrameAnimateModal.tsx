@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Film, Send, Image as ImageIcon, Volume2, VolumeX } from 'lucide-react';
+import { X, Upload, Film, Send, Image as ImageIcon, Volume2, VolumeX } from '@/lib/ui/icons';
 import { Button } from '../ui/button';
 
 const PROMPT_PRESETS = [

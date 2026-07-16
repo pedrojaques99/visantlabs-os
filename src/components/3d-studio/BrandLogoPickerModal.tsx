@@ -3,7 +3,7 @@ import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
-import { ChevronLeft, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, Image as ImageIcon } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 function isSvgUrl(url: string | undefined): boolean {

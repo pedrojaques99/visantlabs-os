@@ -6,7 +6,7 @@ import { trackEvent } from '@/utils/analytics';
 import { Card, CardHeader, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
-import { Pickaxe, CheckCircle2, CreditCard, Image, Video } from 'lucide-react';
+import { Pickaxe, CheckCircle2, CreditCard, Image, Video } from '@/lib/ui/icons';
 import { getCreditsEstimate } from '@/pages/docs/data/pricingData';
 import { PremiumButton } from './ui/PremiumButton';
 import { Button } from '@/components/ui/button';

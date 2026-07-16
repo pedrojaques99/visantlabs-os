@@ -9,7 +9,7 @@ import {
   Palette,
   Settings,
   ChevronRight,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { SeedControl } from './shared/SeedControl';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useBlocker, useLocation, useSearchParams } from 'react-router-dom';
-import { Menu, PanelLeftOpen, Pickaxe, X } from 'lucide-react';
+import { Menu, PanelLeftOpen, Pickaxe, X } from '@/lib/ui/icons';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { cn } from '@/lib/utils';
 import { useInAppShell } from '@/components/shell/InAppShellContext';

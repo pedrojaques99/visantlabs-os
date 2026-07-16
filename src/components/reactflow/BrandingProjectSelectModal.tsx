@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, FolderOpen, Plus } from 'lucide-react';
+import { X, FolderOpen, Plus } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';

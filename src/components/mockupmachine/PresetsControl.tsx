@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, FolderOpen, MoreVertical, Trash2, Check, X } from 'lucide-react';
+import { Save, FolderOpen, MoreVertical, Trash2, Check, X } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';

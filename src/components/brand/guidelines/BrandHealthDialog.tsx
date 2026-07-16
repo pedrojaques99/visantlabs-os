@@ -8,7 +8,7 @@ import {
   DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
+import { Stethoscope, CheckCircle2, AlertTriangle, XOctagon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandHealthReport, BrandHealthInsight } from '@/services/brandGuidelineApi';
 import { formatDateTime } from '@/utils/localeUtils';

@@ -12,7 +12,7 @@ import {
   Clock,
   Eye,
   EyeOff,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';

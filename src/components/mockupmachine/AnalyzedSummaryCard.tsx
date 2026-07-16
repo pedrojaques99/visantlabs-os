@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ArrowLeftRight, Plus, X } from 'lucide-react';
+import { ArrowLeftRight, Plus, X } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isSafeUrl } from '@/utils/imageUtils';

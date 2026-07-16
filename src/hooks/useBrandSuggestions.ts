@@ -7,7 +7,7 @@ import {
   FileText,
   Type,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import {
   brandGuidelineApi,
   type BrandSuggestion,

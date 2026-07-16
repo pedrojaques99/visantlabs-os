@@ -9,7 +9,7 @@ import {
   Image as ImageIcon,
   FolderOpen,
   Diamond,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
@@ -26,7 +26,7 @@ import { Select } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useQueryClient } from '@tanstack/react-query';
-import { Gem } from 'lucide-react';
+import { Gem } from '@/lib/ui/icons';
 import type { CreativeFormat } from './store/creativeTypes';
 import type { GeminiModel, SeedreamModel, AspectRatio } from '@/types/types';
 import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSelector';

@@ -9,7 +9,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Copy, Check, ThumbsUp, ThumbsDown, Image as ImageIcon } from 'lucide-react';
+import { Upload, Copy, Check, ThumbsUp, ThumbsDown, Image as ImageIcon } from '@/lib/ui/icons';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { copyToClipboard } from '@/utils/clipboard';

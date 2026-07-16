@@ -9,7 +9,7 @@
  */
 import React, { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload } from '@/lib/ui/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,

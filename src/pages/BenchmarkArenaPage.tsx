@@ -13,7 +13,7 @@ import {
   CreditCard,
   Timer,
   Sparkles,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { PageShell } from '../components/ui/PageShell';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { MicroTitle } from '../components/ui/MicroTitle';

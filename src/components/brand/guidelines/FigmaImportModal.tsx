@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Check, X, Palette, Type, Image as ImageIcon } from 'lucide-react';
+import { Check, X, Palette, Type, Image as ImageIcon } from '@/lib/ui/icons';
 
 interface FigmaImportModalProps {
   isOpen: boolean;

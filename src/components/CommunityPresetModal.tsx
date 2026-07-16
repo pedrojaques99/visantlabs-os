@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Image as ImageIcon } from 'lucide-react';
+import { X, Save, Image as ImageIcon } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';

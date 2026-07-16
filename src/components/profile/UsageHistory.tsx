@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FileText, Image, Palette, ImageIcon, X } from 'lucide-react';
+import { FileText, Image, Palette, ImageIcon, X } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   usageHistoryService,

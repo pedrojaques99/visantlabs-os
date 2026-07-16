@@ -10,7 +10,7 @@ import {
   RefreshCw,
   AlertCircle,
   PenTool,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';

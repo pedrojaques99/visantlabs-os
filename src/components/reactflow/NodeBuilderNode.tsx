@@ -16,7 +16,7 @@ import {
   Brain,
   Cpu,
   Layers,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 const PROCESSING_STEPS = [
   { icon: Brain, label: 'ANALYZING INTENT...' },

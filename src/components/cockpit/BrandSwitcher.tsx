@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Layers } from 'lucide-react';
+import { Plus, Layers } from '@/lib/ui/icons';
 import { Select, type SelectOption } from '@/components/ui/select';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { useTranslation } from '@/hooks/useTranslation';

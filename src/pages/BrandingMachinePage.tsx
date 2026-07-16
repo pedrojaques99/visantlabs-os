@@ -4,7 +4,7 @@ import { BrandingWelcomeScreen } from '../components/branding/BrandingWelcomeScr
 import { BrandingMoodboard } from '../components/branding/BrandingMoodboard';
 import { BrandingExpertChat } from '../components/branding/BrandingExpertChat';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import { Target as BowArrow, Diamond } from 'lucide-react';
+import { Target as BowArrow, Diamond } from '@/lib/ui/icons';
 import { authService } from '../services/authService';
 import { brandingApi } from '../services/brandingApi';
 import { subscriptionService } from '../services/subscriptionService';

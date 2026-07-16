@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Zap, Lock, Image as ImageIcon, ClipboardList, Figma } from 'lucide-react';
+import { Zap, Lock, Image as ImageIcon, ClipboardList, Figma } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { SEO } from '@/components/SEO';
 import { Button } from '@/components/ui/button';

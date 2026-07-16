@@ -19,7 +19,7 @@ import {
   FileJson,
   Search,
   Globe,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { SearchBar } from '../components/ui/SearchBar';

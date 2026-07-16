@@ -10,7 +10,7 @@
 import React, { useRef, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Shuffle, RotateCcw, Maximize2, X } from 'lucide-react';
+import { Download, Shuffle, RotateCcw, Maximize2, X } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';

@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback } from 'react';
 import { Position, type NodeProps } from '@xyflow/react';
-import { Play, Zap, BookmarkPlus, type LucideIcon } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import { Play, Zap, BookmarkPlus, type LucideIcon } from '@/lib/ui/icons';
+import * as Icons from '@/lib/ui/icons';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';

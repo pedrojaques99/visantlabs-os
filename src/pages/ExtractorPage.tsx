@@ -17,7 +17,7 @@ import {
   Zap,
   Diamond,
   Copy,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageShell } from '../components/ui/PageShell';
 import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/imageApi';

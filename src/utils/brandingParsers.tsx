@@ -8,7 +8,7 @@ import {
   MapPin,
   Heart,
   ShoppingBag,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 export interface ParsedSection {
   title: string;

@@ -11,7 +11,7 @@ import type { Spec } from '@json-render/react';
 import { registry, handlers as createHandlers } from '@/lib/playground/registry';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { GitFork, ArrowLeft, Heart, Eye } from 'lucide-react';
+import { GitFork, ArrowLeft, Heart, Eye } from '@/lib/ui/icons';
 import { forkMiniApp, likeMiniApp } from '@/services/playgroundApi';
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';

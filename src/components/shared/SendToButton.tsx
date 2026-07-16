@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Send } from 'lucide-react';
+import { Send } from '@/lib/ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { pipelineApi, type AssetSource } from '@/services/pipelineApi';

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useCreativeStore } from './store/creativeStore';
-import { Diamond, Plus, X } from 'lucide-react';
+import { Diamond, Plus, X } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { mockupApi } from '@/services/mockupApi';
 import { canvasApi } from '@/services/canvasApi';

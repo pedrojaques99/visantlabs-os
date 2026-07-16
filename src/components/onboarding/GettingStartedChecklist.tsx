@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, ArrowRight, Rocket } from 'lucide-react';
+import { Check, X, ArrowRight, Rocket } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { onboardingApi } from '@/services/onboardingApi';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';

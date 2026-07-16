@@ -20,7 +20,7 @@ import {
   Zap,
   X,
   Eraser,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { toast } from 'sonner';

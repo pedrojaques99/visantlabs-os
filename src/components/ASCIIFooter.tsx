@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Globe, ChevronDown, Clock, Shield, Scale } from 'lucide-react';
+import { Globe, ChevronDown, Clock, Shield, Scale } from '@/lib/ui/icons';
 import { UniversalFooter } from './ui/UniversalFooter';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Locale } from '@/utils/localeUtils';

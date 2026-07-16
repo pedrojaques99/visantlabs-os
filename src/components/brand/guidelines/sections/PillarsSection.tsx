@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
-import { Shield, Plus, Trash2 } from 'lucide-react';
+import { Shield, Plus, Trash2 } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandPillar } from '@/lib/figma-types';
 
 interface PillarsSectionProps {

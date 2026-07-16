@@ -24,7 +24,7 @@ import {
   Pin,
   HelpCircle,
   ChevronDown,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';

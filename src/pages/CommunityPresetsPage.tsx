@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, SlidersHorizontal, X, Heart, Layers } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, X, Heart, Layers } from '@/lib/ui/icons';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import FuseLib from 'fuse.js';
 import { copyToClipboard } from '@/utils/clipboard';

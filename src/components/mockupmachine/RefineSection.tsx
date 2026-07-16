@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Sliders, Palette as PaletteIcon, X, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sliders, Palette as PaletteIcon, X, Plus } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '@/hooks/useTranslation';

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
 import {
   Heart,
   GitFork,
@@ -12,7 +12,7 @@ import {
   Layers,
   Link2,
   Check,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import {
   likeMiniApp,

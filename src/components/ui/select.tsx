@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 export interface SelectOption {

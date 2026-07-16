@@ -11,7 +11,7 @@ import {
   Hash,
   AlertCircle,
   ArrowLeft,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/hooks/useLayout';
 import { useAuthGuard } from '@/hooks/useAuthGuard';

@@ -15,7 +15,7 @@ import {
   Bot,
   Coins,
   Zap,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {

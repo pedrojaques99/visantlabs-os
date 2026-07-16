@@ -23,7 +23,7 @@ import {
   Cpu,
   Lightbulb,
   Box,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';

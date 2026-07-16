@@ -34,10 +34,10 @@ import {
   X,
   RotateCw,
   Square as SquareIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { TextLayerData, ShapeLayerData, LogoLayerData } from './store/creativeTypes';
 import { LogoFiltersPopover } from './LogoFiltersPopover';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
 
 // ── Tiny reusable pieces ──────────────────────────────────────────────
 

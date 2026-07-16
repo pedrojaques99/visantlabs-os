@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize2, Download, Video, Film, Trash2, X } from 'lucide-react';
+import { Maximize2, Download, Video, Film, Trash2, X } from '@/lib/ui/icons';
 import { AnimationPreset } from '../../types/moodboard';
 
 interface BatchToolbarProps {

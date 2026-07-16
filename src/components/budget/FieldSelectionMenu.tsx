@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { X, Search } from 'lucide-react';
+import { X, Search } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 

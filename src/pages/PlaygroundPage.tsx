@@ -33,7 +33,7 @@ import {
   X,
   Maximize2,
   Minimize2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
@@ -66,7 +66,7 @@ import { CHAT_MODELS } from '@/constants/geminiModels';
 import { usePasteImage } from '@/hooks/usePasteImage';
 import { useResizable } from '@/hooks/useResizable';
 import { fileToBase64 } from '@/utils/fileUtils';
-import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check, ChevronDown } from 'lucide-react';
+import { ImageIcon, FileText, RefreshCw, Globe, Link2, Check, ChevronDown } from '@/lib/ui/icons';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 
 const SandpackPreview = React.lazy(() =>

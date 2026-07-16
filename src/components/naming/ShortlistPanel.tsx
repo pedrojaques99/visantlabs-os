@@ -10,7 +10,7 @@ import {
   Pencil,
   SearchCheck,
   BookmarkPlus,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';

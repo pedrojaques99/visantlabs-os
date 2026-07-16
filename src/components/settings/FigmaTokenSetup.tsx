@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { ExternalLink, CheckCircle2, Figma, Trash2 } from 'lucide-react';
+import { ExternalLink, CheckCircle2, Figma, Trash2 } from '@/lib/ui/icons';
 
 export const FigmaTokenSetup: React.FC = () => {
   const [token, setToken] = useState('');

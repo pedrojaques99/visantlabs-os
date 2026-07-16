@@ -23,7 +23,7 @@ import {
   LayoutGrid,
   Workflow,
   MonitorSmartphone,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';

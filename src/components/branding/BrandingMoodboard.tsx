@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Save, FileDown, Zap, Edit2, Check, X } from 'lucide-react';
+import { Save, FileDown, Zap, Edit2, Check, X } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { generateBrandingPDF } from '@/utils/generateBrandingPDF';

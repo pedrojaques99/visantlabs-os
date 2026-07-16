@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from 'lucide-react';
+import { X, Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from '@/lib/ui/icons';
 import { Input } from './ui/input';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';

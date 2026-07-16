@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Layers } from 'lucide-react';
+import { Layers } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface TokensSectionProps {

@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Textarea } from '@/components/ui/textarea';
-import { Search } from 'lucide-react';
+import { Search } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandMarketResearch } from '@/lib/figma-types';
 
 interface MarketResearchSectionProps {

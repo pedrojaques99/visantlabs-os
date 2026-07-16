@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import type { BudgetData, GiftOption, UploadedImage } from '@/types/types';
 import { InlineEditor } from '../InlineEditor';
 import { budgetApi } from '@/services/budgetApi';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

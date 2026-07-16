@@ -11,7 +11,7 @@ import {
   Trash2,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useDraggable, useDroppable, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { BudgetData, PdfFieldMapping } from '@/types/types';

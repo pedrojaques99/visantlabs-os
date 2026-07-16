@@ -7,7 +7,7 @@ import { getCombinedVibeConfig } from '@/constants/mockupVibes';
 import { MicroTitle } from '../ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
-import { Gem, Diamond, ChevronRight, MessageSquareText } from 'lucide-react';
+import { Gem, Diamond, ChevronRight, MessageSquareText } from '@/lib/ui/icons';
 import { MockupOutputConfig } from './MockupOutputConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import { glassSurface } from '@/lib/ui/glass';

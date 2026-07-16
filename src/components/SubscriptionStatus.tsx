@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { CSSProperties } from 'react';
-import { CreditCard, ExternalLink } from 'lucide-react';
+import { CreditCard, ExternalLink } from '@/lib/ui/icons';
 import { subscriptionService } from '../services/subscriptionService';
 import type { SubscriptionStatus as SubscriptionStatusType } from '../services/subscriptionService';
 import { formatDateShort } from '@/utils/localeUtils';

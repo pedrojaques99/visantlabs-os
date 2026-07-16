@@ -20,7 +20,7 @@ import {
   X,
   ChevronDown,
   ExternalLink,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { copyToClipboard } from '@/utils/clipboard';

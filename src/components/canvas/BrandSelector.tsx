@@ -1,7 +1,7 @@
 import React from 'react';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { Select, SelectOption } from '@/components/ui/select';
-import { Palette, Plus } from 'lucide-react';
+import { Palette, Plus } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 

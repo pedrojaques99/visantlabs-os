@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colord } from 'colord';
-import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from 'lucide-react';
+import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

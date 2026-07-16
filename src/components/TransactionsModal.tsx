@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, CreditCard } from 'lucide-react';
+import { X, CreditCard } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { subscriptionService, type TransactionRecord } from '../services/subscriptionService';
 import { useTranslation } from '@/hooks/useTranslation';

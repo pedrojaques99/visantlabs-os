@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, ExternalLink } from 'lucide-react';
+import { Plus, X, ExternalLink } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';

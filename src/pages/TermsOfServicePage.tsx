@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { useTranslation } from '@/hooks/useTranslation';

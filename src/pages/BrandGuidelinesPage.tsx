@@ -35,7 +35,7 @@ import {
   ChevronDown,
   AlertTriangle,
   Pencil,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';

@@ -17,7 +17,7 @@ import {
   AlertCircle,
   ChevronRight,
   Layout,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { AVAILABLE_IMAGE_MODELS, getModelDisplayName } from '../constants/geminiModels';
 import { SearchBar } from '../components/ui/SearchBar';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';

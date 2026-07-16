@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@/lib/ui/icons';
 import type { AmbiencePresetType } from '../types/ambiencePresets';
 import { getAllAmbiencePresets } from '../services/ambiencePresetsService';
 import { GenericPresetModal } from './shared/GenericPresetModal';

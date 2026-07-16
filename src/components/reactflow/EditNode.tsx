@@ -3,7 +3,7 @@ import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
 import type { EditNodeData } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
-import { Wrench } from 'lucide-react';
+import { Wrench } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 

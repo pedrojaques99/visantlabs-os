@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   BookOpen,
   Info,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';

@@ -27,7 +27,7 @@ import {
   LayoutTemplate,
   Globe,
   Smartphone,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { BrandViewSection } from './BrandReadOnlyView';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { getBrandLogoUrl, getBrandInitial } from '@/utils/brandLogo';

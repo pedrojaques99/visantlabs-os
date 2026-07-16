@@ -13,7 +13,7 @@ import {
   Play,
   Heart,
   Share2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { FullScreenViewer } from '../components/FullScreenViewer';

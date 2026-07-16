@@ -7,7 +7,7 @@ import {
   ChevronRight,
   Diamond,
   Volume2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { SeedControl } from './shared/SeedControl';
 import type { VideoNodeData, GenerateVideoParams } from '@/types/reactFlow';
 import { GenerationMode, type Resolution, type AspectRatio } from '@/types/types';

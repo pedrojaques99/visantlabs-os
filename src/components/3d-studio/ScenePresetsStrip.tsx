@@ -6,7 +6,7 @@
  */
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Shuffle, Palette } from 'lucide-react';
+import { Shuffle, Palette } from '@/lib/ui/icons';
 import { useShallow } from 'zustand/react/shallow';
 import { useStudio3DStore, SCENE_PRESETS } from '@/stores/studio3dStore';
 import { ToolPanelDisclosure, ToolPanelSection } from '@/components/shared/ToolPanel';

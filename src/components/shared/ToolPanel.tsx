@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy } from '@/lib/ui/icons';
 import { HexColorPicker } from 'react-colorful';
 
 export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string }> = ({

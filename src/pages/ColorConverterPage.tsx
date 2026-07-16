@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pipette, Copy, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Pipette, Copy, Trash2, Check, ChevronDown, ChevronUp } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useColorConverterStore, type ConvertedColor } from '@/stores/colorConverterStore';

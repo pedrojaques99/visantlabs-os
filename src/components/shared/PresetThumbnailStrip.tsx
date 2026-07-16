@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/lib/ui/icons';
 
 export interface PresetThumbnailItem {
   name: string;

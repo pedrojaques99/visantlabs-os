@@ -9,7 +9,7 @@ import {
   Sparkles,
   TrendingUp,
   Users,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import {
   Area,
   AreaChart,

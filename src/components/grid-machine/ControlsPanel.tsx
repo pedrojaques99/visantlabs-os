@@ -11,7 +11,7 @@ import {
   SlidersHorizontal,
   Palette as PaletteIcon,
   Square,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [

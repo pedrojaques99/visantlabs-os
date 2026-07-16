@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Share2, Tags, Folder, FileType, Info, Globe } from 'lucide-react';
+import { X, Save, Share2, Tags, Folder, FileType, Info, Globe } from '@/lib/ui/icons';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';

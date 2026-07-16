@@ -1,6 +1,6 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
-import { Download, Maximize2, Layers, Image as ImageIcon } from 'lucide-react';
+import { Download, Maximize2, Layers, Image as ImageIcon } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { NodeHeader } from './shared/node-header';
 import type { TextureFilterNodeData } from '@/types/reactFlow';

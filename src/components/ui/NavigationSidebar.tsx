@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Menu, X, ChevronRight, ChevronDown, LucideIcon, GripVertical } from 'lucide-react';
+import { Menu, X, ChevronRight, ChevronDown, LucideIcon, GripVertical } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useResizable } from '@/hooks/useResizable';

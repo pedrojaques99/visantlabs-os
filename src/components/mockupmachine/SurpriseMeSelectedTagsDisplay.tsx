@@ -15,7 +15,7 @@ import {
   Grid3x3,
   Settings2,
   Diamond,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';

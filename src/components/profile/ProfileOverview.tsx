@@ -14,7 +14,7 @@ import {
   UserCog,
   BarChart2,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { type User as UserType } from '@/services/authService';
 import { type SubscriptionStatus } from '@/services/subscriptionService';

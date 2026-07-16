@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, AlertTriangle, Heart } from 'lucide-react';
+import { X, AlertTriangle, Heart } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';

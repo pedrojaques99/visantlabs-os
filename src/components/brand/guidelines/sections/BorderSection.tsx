@@ -3,7 +3,7 @@ import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Frame, Plus, Trash2 } from 'lucide-react';
+import { Frame, Plus, Trash2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline, BrandGuidelineBorder } from '@/lib/figma-types';
 import { buildBorderCss } from '@/utils/brand-css';

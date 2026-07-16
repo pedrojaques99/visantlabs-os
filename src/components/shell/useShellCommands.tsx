@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { LayoutGrid, Zap, Check, SunMoon, Languages, ArrowUpRight } from 'lucide-react';
+import { LayoutGrid, Zap, Check, SunMoon, Languages, ArrowUpRight } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';

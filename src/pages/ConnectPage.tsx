@@ -6,7 +6,7 @@ import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '../hooks/useLayout';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
-import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from 'lucide-react';
+import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from '@/lib/ui/icons';
 import { getCurrentLocale } from '../utils/localeUtils';
 
 const API = (import.meta as any).env?.VITE_API_URL || '/api';

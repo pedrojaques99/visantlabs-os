@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon } from '@/lib/ui/icons';
 import { MicroTitle } from './MicroTitle';
 import { Button } from './button';
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Zap, RefreshCw, ImageOff, Download, Bookmark, Check } from 'lucide-react';
+import { Zap, RefreshCw, ImageOff, Download, Bookmark, Check } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';

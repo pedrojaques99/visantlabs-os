@@ -11,7 +11,7 @@ import {
   TEXTURE_FILTER_DEFAULTS,
   type TextureFilterSettings,
 } from '@/stores/textureFilterStore';
-import { UploadIcon, Layers, Blend, Move, RotateCw, Grid, Palette } from 'lucide-react';
+import { UploadIcon, Layers, Blend, Move, RotateCw, Grid, Palette } from '@/lib/ui/icons';
 import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
 
 const SECTION_NAV: SectionNavItem[] = [

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Diamond, Type, Copy, Check } from 'lucide-react';
+import { Diamond, Type, Copy, Check } from '@/lib/ui/icons';
 import { NodeHeader } from './shared/node-header';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { TextNodeData } from '@/types/reactFlow';

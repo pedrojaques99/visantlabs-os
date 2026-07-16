@@ -7,7 +7,7 @@ import {
   RotateCcw,
   Undo2,
   Redo2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { MicroTitle } from '@/components/ui/MicroTitle';

@@ -10,7 +10,7 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { transitions } from '@/lib/ui/motion';

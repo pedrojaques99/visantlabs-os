@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { Tag, Plus, X } from 'lucide-react';
+import { Tag, Plus, X } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface TagsSectionProps {

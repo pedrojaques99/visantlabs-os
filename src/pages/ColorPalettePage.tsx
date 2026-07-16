@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Palette, Upload, Lock, Unlock, Copy, X, Plus, RefreshCw, Shuffle } from 'lucide-react';
+import { Palette, Upload, Lock, Unlock, Copy, X, Plus, RefreshCw, Shuffle } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useColorPaletteStore, type PaletteColor } from '@/stores/colorPaletteStore';

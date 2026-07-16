@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { MessageSquare, CheckCircle2, Diamond, Settings2, PanelRight } from 'lucide-react';
+import { MessageSquare, CheckCircle2, Diamond, Settings2, PanelRight } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ChatNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';

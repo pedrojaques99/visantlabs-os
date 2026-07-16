@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { BudgetData } from '@/types/types';
-import { Palette, X, Save, FolderOpen, Trash2 } from 'lucide-react';
+import { Palette, X, Save, FolderOpen, Trash2 } from '@/lib/ui/icons';
 import { BrandCustomizationSection } from './BrandCustomizationSection';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';

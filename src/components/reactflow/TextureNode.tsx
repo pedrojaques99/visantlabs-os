@@ -1,4 +1,4 @@
-import { Layers } from 'lucide-react';
+import { Layers } from '@/lib/ui/icons';
 import type { TextureNodeData } from '@/types/reactFlow';
 import { getAllTexturePresets, getTexturePreset } from '@/services/texturePresetsService';
 import { TexturePresetModal } from '../TexturePresetModal';

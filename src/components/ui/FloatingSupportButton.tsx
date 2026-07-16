@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export interface FloatingSupportButtonProps {

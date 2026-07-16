@@ -11,7 +11,7 @@ import {
   AlertCircle,
   ChevronDown,
   Pencil,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Button } from '@/components/ui/button';
