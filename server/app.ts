@@ -194,6 +194,15 @@ export function createApp() {
     ? process.env.FRONTEND_URL.split(',').map((u) => u.trim())
     : ['http://localhost:3000', 'http://localhost:3002'];
 
+  // Production web origins — always allowed regardless of FRONTEND_URL, so users on
+  // the www subdomain aren't CORS-blocked when auth calls hit api.visantlabs.com.
+  // Kept in sync with validateMcpOrigin() and the helmet/vercel.json CSP allowlists.
+  const productionWebOrigins = [
+    'https://visantlabs.com',
+    'https://www.visantlabs.com',
+    'https://app.visantlabs.com',
+  ];
+
   const claudeOrigins = [
     'https://claude.ai',
     'https://www.claude.ai',
@@ -223,6 +232,7 @@ export function createApp() {
   const allAllowedOrigins = [
     ...new Set([
       ...envFrontendOrigins,
+      ...productionWebOrigins,
       ...claudeOrigins,
       ...openaiOrigins,
       ...devOrigins,

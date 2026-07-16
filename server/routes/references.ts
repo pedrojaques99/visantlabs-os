@@ -13,7 +13,7 @@
 import { randomUUID } from 'crypto';
 import express, { type Request, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { authenticate, type AuthRequest } from '../middleware/auth.js';
+import { authenticate, optionalAuthenticate, type AuthRequest } from '../middleware/auth.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { chargeCredits } from '../lib/credits.js';
 import { regionForCountry, normalizeCountry } from '../../src/lib/references/taxonomy.js';
@@ -564,7 +564,13 @@ router.get(
 );
 
 // GET /collections/:id — board detail + hydrated reference items (owner, or public)
-router.get('/collections/:id', apiRateLimiter, async (req: AuthRequest, res: Response) => {
+// optionalAuthenticate resolves req.userId when a token is present so the owner can
+// read their own (private-by-default) board; anonymous requests still see public boards.
+router.get(
+  '/collections/:id',
+  apiRateLimiter,
+  optionalAuthenticate,
+  async (req: AuthRequest, res: Response) => {
   try {
     if (!isSafeRefId(req.params.id))
       return res.status(400).json({ error: 'Invalid collection id' });
