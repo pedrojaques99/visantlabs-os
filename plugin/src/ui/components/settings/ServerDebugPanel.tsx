@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useClient } from '../../lib/ClientProvider';
 import { usePluginStore } from '../../store';
+import { apiUrl } from '../../config';
 import { AlertCircle, CheckCircle2, Loader2, Save } from 'lucide-react';
 import { RpcPilotPanel } from './RpcPilotPanel';
 
@@ -12,12 +13,6 @@ export function ServerDebugPanel() {
 
   const [urlDraft, setUrlDraft] = useState(serverUrl);
   const [saving, setSaving] = useState(false);
-
-  const apiUrl = (path: string) => {
-    const base = serverUrl.replace(/\/$/, '');
-    const p = path.startsWith('/') ? path : `/${path}`;
-    return `${base}/api${p}`;
-  };
 
   const [testResults, setTestResults] = useState<{
     [key: string]: { status: 'idle' | 'loading' | 'success' | 'error'; message?: string };
@@ -175,7 +170,7 @@ export function ServerDebugPanel() {
           <ul className="list-disc list-inside space-y-1">
             <li>
               All tests fail → Backend não está rodando. Execute:{' '}
-              <code className="bg-black/40 px-1">npm run dev</code>
+              <code className="bg-black/40 px-1">npm run dev:server</code>
             </li>
             <li>CORS fails → Verifique cors middleware em server/index.ts</li>
             <li>/auth/status fails → Verifique se o endpoint existe em server/routes</li>

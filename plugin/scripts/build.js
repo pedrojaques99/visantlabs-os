@@ -77,6 +77,23 @@ async function build() {
     const jsContent = fs.readFileSync(path.join(distDir, 'ui-bundle.js'), 'utf-8');
     const cssContent = fs.readFileSync(path.join(distDir, 'ui-bundle.css'), 'utf-8');
 
+    // Only bake an API URL when explicitly overridden. With no override the bundle
+    // stays URL-free and src/ui/apiBase.ts supplies the production default — so the
+    // prod URL lives in exactly one place, and a stale build can never silently ship
+    // a localhost override.
+    const apiUrlOverride = process.env.VISANT_API_URL;
+    const apiUrlInjection = apiUrlOverride
+      ? `    window.__VISANT_API_URL__ = ${JSON.stringify(apiUrlOverride)};`
+      : '    // No VISANT_API_URL override — falls back to src/ui/apiBase.ts (production).';
+
+    if (apiUrlOverride) {
+      console.log('');
+      console.log('  ⚠️  VISANT_API_URL OVERRIDE ATIVO');
+      console.log(`     Este build aponta para: ${apiUrlOverride}`);
+      console.log('     NÃO publique este bundle. Rode `npm run build` sem a env var para produção.');
+      console.log('');
+    }
+
     // Step 3: Assemble self-contained HTML
     const htmlContent = `<!DOCTYPE html>
 <html class="dark">
@@ -124,7 +141,7 @@ body {
       try { Object.defineProperty(window, 'localStorage', { value: mem, writable: true, configurable: true }); } catch(e) { window.localStorage = mem; }
       try { Object.defineProperty(window, 'sessionStorage', { value: mem, writable: true, configurable: true }); } catch(e) { window.sessionStorage = mem; }
     })();
-    window.__VISANT_API_URL__ = '${process.env.VISANT_API_URL || 'https://api.visantlabs.com'}';
+${apiUrlInjection}
   </script>
   <script>
 ${jsContent}

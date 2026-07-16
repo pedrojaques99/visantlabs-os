@@ -19,14 +19,10 @@ import {
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { useSmartAnalyze } from '../../hooks/useSmartAnalyze';
 import { usePluginStore } from '../../store';
+import { API_PRESETS, PRODUCTION_API_BASE_URL, joinApiUrl, normalizeBaseUrl } from '../../apiBase';
 import { OpButton } from '../common/OpButton';
 import { BrandSection } from '../brand/BrandSection';
 import { useClient } from '../../lib/ClientProvider';
-
-const PRESETS = [
-  { label: 'Production', url: 'https://api.visantlabs.com' },
-  { label: 'Local', url: 'http://localhost:3001' },
-];
 
 function ServerSection() {
   const serverUrl = usePluginStore((s) => s.serverUrl);
@@ -37,7 +33,7 @@ function ServerSection() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const save = async (url: string) => {
-    const normalized = url.replace(/\/$/, '');
+    const normalized = normalizeBaseUrl(url);
     setSaving(true);
     try {
       setServerUrl(normalized);
@@ -51,7 +47,7 @@ function ServerSection() {
   const ping = async () => {
     setStatus('loading');
     try {
-      const res = await fetch(`${draft.replace(/\/$/, '')}/api/plugin/auth/status`);
+      const res = await fetch(joinApiUrl(draft, '/plugin/auth/status'));
       setStatus(res.ok ? 'success' : 'error');
     } catch {
       setStatus('error');
@@ -62,7 +58,7 @@ function ServerSection() {
     <BrandSection title="Server Connection" icon={Server} collapsible defaultOpen={true}>
       <div className="space-y-3">
         <div className="flex gap-1">
-          {PRESETS.map((p) => (
+          {API_PRESETS.map((p) => (
             <Button
               key={p.url}
               variant={draft === p.url ? 'default' : 'outline'}
@@ -79,7 +75,7 @@ function ServerSection() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             className="text-xs h-7 font-mono"
-            placeholder="https://api.visantlabs.com"
+            placeholder={PRODUCTION_API_BASE_URL}
           />
           <Button
             onClick={() => save(draft)}
