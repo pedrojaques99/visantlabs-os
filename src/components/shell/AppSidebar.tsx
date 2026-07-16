@@ -69,9 +69,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   const recentBrands = useMemo(
     () =>
       [...brands]
-        .sort(
-          (a, b) => new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime()
-        )
+        .sort((a, b) => new Date(b.updatedAt ?? 0).getTime() - new Date(a.updatedAt ?? 0).getTime())
         .slice(0, 5),
     [brands]
   );
@@ -152,246 +150,246 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           por completo e dá lugar às tabs da seção (ver bloco `drillIn` abaixo). */}
       {!drillIn && (
         <>
-      {/* Nível 1 — destinos globais */}
-      <nav className={cn('p-2 space-y-0.5', collapsed && 'flex flex-col items-center')}>
-        {sections.map((s) => {
-          const Icon = s.icon;
-          const active = activeSection === s.id;
-          return (
-            <button
-              key={s.id}
-              onClick={() => go(s.to)}
-              title={collapsed ? t(s.labelKey) : undefined}
-              className={cn(
-                'flex items-center rounded-md text-sm transition-colors',
-                collapsed ? 'h-9 w-9 justify-center' : 'w-full gap-2.5 px-2.5 py-1.5',
-                active
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-              )}
-            >
-              <Icon size={16} className="shrink-0" />
-              {!collapsed && <span className="truncate">{t(s.labelKey)}</span>}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Biblioteca — acervo pessoal + descoberta (Meus Mockups · Comunidade).
-          Grupo fixo, dirigido pelo SSoT navConfig (LIBRARY_ITEMS). */}
-      {collapsed ? (
-        <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
-          {LIBRARY_ITEMS.map((i) => {
-            const Icon = i.icon;
-            const active = location.pathname === i.to.split('?')[0];
-            return (
-              <button
-                key={i.id}
-                onClick={() => go(i.to)}
-                title={t(i.labelKey)}
-                className={cn(
-                  'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
-                  active
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                )}
-              >
-                {Icon && <Icon size={16} className="shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-          <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
-            {t('nav.library.title')}
-          </div>
-          <nav className="space-y-0.5">
-            {LIBRARY_ITEMS.map((i) => {
-              const Icon = i.icon;
-              const active = location.pathname === i.to.split('?')[0];
+          {/* Nível 1 — destinos globais */}
+          <nav className={cn('p-2 space-y-0.5', collapsed && 'flex flex-col items-center')}>
+            {sections.map((s) => {
+              const Icon = s.icon;
+              const active = activeSection === s.id;
               return (
                 <button
-                  key={i.id}
-                  onClick={() => go(i.to)}
+                  key={s.id}
+                  onClick={() => go(s.to)}
+                  title={collapsed ? t(s.labelKey) : undefined}
                   className={cn(
-                    'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                    'flex items-center rounded-md text-sm transition-colors',
+                    collapsed ? 'h-9 w-9 justify-center' : 'w-full gap-2.5 px-2.5 py-1.5',
                     active
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   )}
                 >
-                  {Icon && <Icon size={14} className="shrink-0" />}
-                  <span className="truncate">{t(i.labelKey)}</span>
+                  <Icon size={16} className="shrink-0" />
+                  {!collapsed && <span className="truncate">{t(s.labelKey)}</span>}
                 </button>
               );
             })}
           </nav>
-        </div>
-      )}
 
-      {/* Favoritos — itens fixados pelo usuário (star estilo Figma) */}
-      {pinned.length > 0 &&
-        (collapsed ? (
-          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
-            {pinned.map((p) => {
-              const PinIcon = p.type === 'brand' ? Palette : getLucideIcon(p.icon) ?? Gem;
-              const active = location.pathname === p.to.split('?')[0];
-              return (
-                <button
-                  key={`${p.type}:${p.id}`}
-                  onClick={() => go(p.to)}
-                  title={p.label}
-                  className={cn(
-                    'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
-                    active
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )}
-                >
-                  <PinIcon size={16} className="shrink-0" />
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
-              {t('nav.pinned')}
-            </div>
-            <nav className="space-y-0.5">
-              {pinned.map((p) => {
-                const PinIcon = p.type === 'brand' ? Palette : getLucideIcon(p.icon) ?? Gem;
-                const active = location.pathname === p.to.split('?')[0];
+          {/* Biblioteca — acervo pessoal + descoberta (Meus Mockups · Comunidade).
+          Grupo fixo, dirigido pelo SSoT navConfig (LIBRARY_ITEMS). */}
+          {collapsed ? (
+            <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
+              {LIBRARY_ITEMS.map((i) => {
+                const Icon = i.icon;
+                const active = location.pathname === i.to.split('?')[0];
                 return (
-                  <div key={`${p.type}:${p.id}`} className="group relative flex items-center">
-                    <button
-                      onClick={() => go(p.to)}
-                      className={cn(
-                        'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
-                        active
-                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                      )}
-                    >
-                      <PinIcon size={14} className="shrink-0" />
-                      <span className="truncate">{p.label}</span>
-                    </button>
-                    <button
-                      onClick={() => unpin(p.type, p.id)}
-                      aria-label={t('nav.unpin')}
-                      title={t('nav.unpin')}
-                      className="absolute right-1 opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-opacity"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
+                  <button
+                    key={i.id}
+                    onClick={() => go(i.to)}
+                    title={t(i.labelKey)}
+                    className={cn(
+                      'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
+                      active
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    )}
+                  >
+                    {Icon && <Icon size={16} className="shrink-0" />}
+                  </button>
                 );
               })}
-            </nav>
-          </div>
-        ))}
-
-      {/* Recentes — acesso rápido às marcas (ativa destacada; star fixa/desafixa) */}
-      {recentBrands.length > 0 &&
-        (collapsed ? (
-          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
-            {recentBrands.map((b) => (
-              <button
-                key={b.id}
-                onClick={() => openBrand(b.id!)}
-                title={b.identity?.name || b.name || 'Brand'}
-                className={cn(
-                  'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
-                  b.id === activeBrandId ? 'ring-1 ring-brand-cyan/60' : 'hover:bg-muted'
-                )}
-              >
-                <BrandAvatar brand={b} size={20} rounded="md" />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
-              {t('nav.recent')}
             </div>
-            <nav className="space-y-0.5">
-              {recentBrands.map((b) => {
-                const label = b.identity?.name || b.name || 'Brand';
-                const active = b.id === activeBrandId;
-                const pinnedBrand = isPinned('brand', b.id!);
-                return (
-                  <div key={b.id} className="group relative flex items-center">
+          ) : (
+            <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+              <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                {t('nav.library.title')}
+              </div>
+              <nav className="space-y-0.5">
+                {LIBRARY_ITEMS.map((i) => {
+                  const Icon = i.icon;
+                  const active = location.pathname === i.to.split('?')[0];
+                  return (
                     <button
-                      onClick={() => openBrand(b.id!)}
+                      key={i.id}
+                      onClick={() => go(i.to)}
                       className={cn(
-                        'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                        'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
                         active
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
                           : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       )}
                     >
-                      <BrandAvatar brand={b} size={16} rounded="sm" />
-                      <span className="truncate">{label}</span>
+                      {Icon && <Icon size={14} className="shrink-0" />}
+                      <span className="truncate">{t(i.labelKey)}</span>
                     </button>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
+
+          {/* Favoritos — itens fixados pelo usuário (star estilo Figma) */}
+          {pinned.length > 0 &&
+            (collapsed ? (
+              <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
+                {pinned.map((p) => {
+                  const PinIcon = p.type === 'brand' ? Palette : (getLucideIcon(p.icon) ?? Gem);
+                  const active = location.pathname === p.to.split('?')[0];
+                  return (
                     <button
-                      onClick={() =>
-                        togglePin({
-                          type: 'brand',
-                          id: b.id!,
-                          label,
-                          to: `/brand-guidelines?id=${b.id}`,
-                        })
-                      }
-                      aria-label={pinnedBrand ? t('nav.unpin') : t('nav.pin')}
-                      title={pinnedBrand ? t('nav.unpin') : t('nav.pin')}
+                      key={`${p.type}:${p.id}`}
+                      onClick={() => go(p.to)}
+                      title={p.label}
                       className={cn(
-                        'absolute right-1 p-1 rounded transition-opacity hover:bg-muted',
-                        pinnedBrand
-                          ? 'opacity-100 text-brand-cyan'
-                          : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground'
+                        'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
+                        active
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       )}
                     >
-                      <Star size={12} className={pinnedBrand ? 'fill-brand-cyan' : ''} />
+                      <PinIcon size={16} className="shrink-0" />
                     </button>
-                  </div>
-                );
-              })}
-            </nav>
-          </div>
-        ))}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+                <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                  {t('nav.pinned')}
+                </div>
+                <nav className="space-y-0.5">
+                  {pinned.map((p) => {
+                    const PinIcon = p.type === 'brand' ? Palette : (getLucideIcon(p.icon) ?? Gem);
+                    const active = location.pathname === p.to.split('?')[0];
+                    return (
+                      <div key={`${p.type}:${p.id}`} className="group relative flex items-center">
+                        <button
+                          onClick={() => go(p.to)}
+                          className={cn(
+                            'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                            active
+                              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                          )}
+                        >
+                          <PinIcon size={14} className="shrink-0" />
+                          <span className="truncate">{p.label}</span>
+                        </button>
+                        <button
+                          onClick={() => unpin(p.type, p.id)}
+                          aria-label={t('nav.unpin')}
+                          title={t('nav.unpin')}
+                          className="absolute right-1 opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-opacity"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </nav>
+              </div>
+            ))}
 
-      {/* Nível 2 — contexto da seção atual (escondido quando colapsado) */}
-      {!collapsed && contextItems.length > 0 && (
-        <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-          <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
-            {t('nav.context')}
-          </div>
-          {/* Cap + scroll: seções com muitos itens (categorias da comunidade)
+          {/* Recentes — acesso rápido às marcas (ativa destacada; star fixa/desafixa) */}
+          {recentBrands.length > 0 &&
+            (collapsed ? (
+              <div className="px-2 pt-2 mt-1 border-t border-sidebar-border flex flex-col items-center gap-1">
+                {recentBrands.map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => openBrand(b.id!)}
+                    title={b.identity?.name || b.name || 'Brand'}
+                    className={cn(
+                      'h-9 w-9 flex items-center justify-center rounded-md transition-colors',
+                      b.id === activeBrandId ? 'ring-1 ring-brand-cyan/60' : 'hover:bg-muted'
+                    )}
+                  >
+                    <BrandAvatar brand={b} size={20} rounded="md" />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+                <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                  {t('nav.recent')}
+                </div>
+                <nav className="space-y-0.5">
+                  {recentBrands.map((b) => {
+                    const label = b.identity?.name || b.name || 'Brand';
+                    const active = b.id === activeBrandId;
+                    const pinnedBrand = isPinned('brand', b.id!);
+                    return (
+                      <div key={b.id} className="group relative flex items-center">
+                        <button
+                          onClick={() => openBrand(b.id!)}
+                          className={cn(
+                            'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                            active
+                              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                          )}
+                        >
+                          <BrandAvatar brand={b} size={16} rounded="sm" />
+                          <span className="truncate">{label}</span>
+                        </button>
+                        <button
+                          onClick={() =>
+                            togglePin({
+                              type: 'brand',
+                              id: b.id!,
+                              label,
+                              to: `/brand-guidelines?id=${b.id}`,
+                            })
+                          }
+                          aria-label={pinnedBrand ? t('nav.unpin') : t('nav.pin')}
+                          title={pinnedBrand ? t('nav.unpin') : t('nav.pin')}
+                          className={cn(
+                            'absolute right-1 p-1 rounded transition-opacity hover:bg-muted',
+                            pinnedBrand
+                              ? 'opacity-100 text-brand-cyan'
+                              : 'opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground'
+                          )}
+                        >
+                          <Star size={12} className={pinnedBrand ? 'fill-brand-cyan' : ''} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </nav>
+              </div>
+            ))}
+
+          {/* Nível 2 — contexto da seção atual (escondido quando colapsado) */}
+          {!collapsed && contextItems.length > 0 && (
+            <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
+              <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                {t('nav.context')}
+              </div>
+              {/* Cap + scroll: seções com muitos itens (categorias da comunidade)
               não podem empurrar o rodapé/conta pra fora da viewport. */}
-          <nav className="space-y-0.5 max-h-[42vh] overflow-y-auto scrollbar-none">
-            {contextItems.map((i) => {
-              const Icon = i.icon;
-              const active = isSubActive(i.to);
-              return (
-                <button
-                  key={i.id}
-                  onClick={() => go(i.to)}
-                  className={cn(
-                    'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
-                    active
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )}
-                >
-                  {Icon && <Icon size={14} className="shrink-0" />}
-                  <span className="truncate">{t(i.labelKey)}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      )}
+              <nav className="space-y-0.5 max-h-[42vh] overflow-y-auto scrollbar-none">
+                {contextItems.map((i) => {
+                  const Icon = i.icon;
+                  const active = isSubActive(i.to);
+                  return (
+                    <button
+                      key={i.id}
+                      onClick={() => go(i.to)}
+                      className={cn(
+                        'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                        active
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                      )}
+                    >
+                      {Icon && <Icon size={14} className="shrink-0" />}
+                      <span className="truncate">{t(i.labelKey)}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          )}
         </>
       )}
 
@@ -467,11 +465,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
               <UserIcon size={15} />
             )}
           </button>
-          <button onClick={() => go('/profile?tab=configuration')} aria-label={t('nav.settings')} title={t('nav.settings')} className={iconBtn}>
+          <button
+            onClick={() => go('/profile?tab=configuration')}
+            aria-label={t('nav.settings')}
+            title={t('nav.settings')}
+            className={iconBtn}
+          >
             <Settings size={15} />
           </button>
           <AppShellLegalMenu openUp />
-          <button onClick={toggleCollapsed} aria-label="expand sidebar" title={t('nav.expand')} className={iconBtn}>
+          <button
+            onClick={toggleCollapsed}
+            aria-label="expand sidebar"
+            title={t('nav.expand')}
+            className={iconBtn}
+          >
             <PanelLeftOpen size={15} />
           </button>
         </div>
@@ -498,7 +506,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             </button>
             <AppShellLegalMenu openUp />
             {!isMobile && (
-              <button onClick={toggleCollapsed} aria-label="collapse sidebar" title={t('nav.collapse')} className={iconBtn}>
+              <button
+                onClick={toggleCollapsed}
+                aria-label="collapse sidebar"
+                title={t('nav.collapse')}
+                className={iconBtn}
+              >
                 <PanelLeftClose size={15} />
               </button>
             )}

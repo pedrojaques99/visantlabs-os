@@ -28,8 +28,7 @@ export const sb = {
   sectionLabel:
     'px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50',
   /** Item de navegação — estado ocioso. */
-  item:
-    'w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+  item: 'w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
   /** Item ativo (destino atual). */
   itemActive: 'bg-sidebar-accent text-sidebar-accent-foreground',
   /** Item primário ativo (destino de nível 1). */

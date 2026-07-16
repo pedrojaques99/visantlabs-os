@@ -42,7 +42,8 @@ function write(items: PinnedItem[]) {
   }
 }
 
-const same = (a: PinnedItem, type: PinnedItem['type'], id: string) => a.type === type && a.id === id;
+const same = (a: PinnedItem, type: PinnedItem['type'], id: string) =>
+  a.type === type && a.id === id;
 
 function subscribe(cb: () => void) {
   const local = () => cb(); // evento próprio: cache já está fresco (write o atualizou)

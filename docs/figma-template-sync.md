@@ -29,10 +29,10 @@ React per layout**. Edit the frame, re-sync, the preview reflects.
    to them. This is what makes the layout **brand-agnostic**: swap the brand → the whole
    thing recolors.
 
-   | Kind  | Variable names |
-   |-------|----------------|
+   | Kind  | Variable names                                                                         |
+   | ----- | -------------------------------------------------------------------------------------- |
    | Color | `accent`, `accent-text`, `primary`, `secondary`, `bg`, `surface`, `text`, `text-muted` |
-   | Font  | `heading-font`, `body-font` (STRING) |
+   | Font  | `heading-font`, `body-font` (STRING)                                                   |
 
 3. **Mark editable text with a `#slot` name** (see the map in §2). `?` = optional
    (hidden when empty), `[]` = list.
@@ -52,18 +52,19 @@ code**.
 Matching is case- and separator-insensitive (`#Sub-Title` == `#subtitle`) and speaks
 EN + PT:
 
-| Content (from the brand) | Name the slot any of… |
-|--------------------------|------------------------|
-| headline (1st sentence of the manifesto) | `#h1` `#headline` `#title` `#hero` `#manchete` `#titulo` |
-| brand name / wordmark | `#brand` `#name` `#wordmark` `#logotype` `#marca` `#nome` |
-| tagline | `#tagline` `#slogan` `#eyebrow` `#kicker` |
-| body (1st sentence of the description) | `#body` `#description` `#paragraph` `#subtitle` `#corpo` `#texto` `#descricao` |
-| short caption | `#caption` `#legenda` `#label` |
-| split tagline halves | `#tagL` / `#tagR` |
-| keyword N (1-based, from values/aesthetic tags) | `#kw1` `#keyword2` `#tag3` … |
-| brand photo / logo | `#photo1` `#logo` (image slot) |
+| Content (from the brand)                        | Name the slot any of…                                                          |
+| ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| headline (1st sentence of the manifesto)        | `#h1` `#headline` `#title` `#hero` `#manchete` `#titulo`                       |
+| brand name / wordmark                           | `#brand` `#name` `#wordmark` `#logotype` `#marca` `#nome`                      |
+| tagline                                         | `#tagline` `#slogan` `#eyebrow` `#kicker`                                      |
+| body (1st sentence of the description)          | `#body` `#description` `#paragraph` `#subtitle` `#corpo` `#texto` `#descricao` |
+| short caption                                   | `#caption` `#legenda` `#label`                                                 |
+| split tagline halves                            | `#tagL` / `#tagR`                                                              |
+| keyword N (1-based, from values/aesthetic tags) | `#kw1` `#keyword2` `#tag3` …                                                   |
+| brand photo / logo                              | `#photo1` `#logo` (image slot)                                                 |
 
 **Fallbacks (why it never breaks):**
+
 - An **unknown** slot (`#somethingNew`) → renders the layer's own literal text. Ship it,
   refine the alias later.
 - A **known** slot whose brand field is empty → also falls back to the literal text.
@@ -101,13 +102,13 @@ _Programmatic path (agents/scripts): call the `templates.extractSchema` op, then
 
 ## 4. What gets captured
 
-| Captured ✅ | Not captured ⚠️ |
-|---|---|
-| Position + size + **rotation** (as a transform matrix) | Drop shadows / blur / other effects |
-| Corner radius, opacity, clip | Gradients, image fills baked in the frame |
-| Solid fills → **bound variable name** (or literal hex) | Strokes (add if needed) |
+| Captured ✅                                                                     | Not captured ⚠️                                             |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Position + size + **rotation** (as a transform matrix)                          | Drop shadows / blur / other effects                         |
+| Corner radius, opacity, clip                                                    | Gradients, image fills baked in the frame                   |
+| Solid fills → **bound variable name** (or literal hex)                          | Strokes (add if needed)                                     |
 | Text: content, font family/style/size, align, case, letter-spacing, line-height | Auto-layout is **baked to absolute** positions at sync time |
-| `#slot` bindings + font-variable bindings (`heading-font`/`body-font`) | |
+| `#slot` bindings + font-variable bindings (`heading-font`/`body-font`)          |                                                             |
 
 Auto-layout is fine to design with — it's flattened to fixed positions when synced. If you
 change content lengths later, re-sync.
@@ -144,13 +145,13 @@ change content lengths later, re-sync.
 
 ## 7. Architecture (for maintainers)
 
-| Piece | File |
-|---|---|
-| Schema + pure parser | `src/lib/figma-template-schema.ts` (`frameToSchema`) |
-| Naming/variable SSoT | `src/lib/figma-slots.ts` (`parseSlotName`, `BRAND_TOKEN_VARS`) |
-| Plugin producer | `plugin/src/handlers/templates.ts` (`extractTemplateSchemas`, op `templates.extractSchema`) |
-| Server store | `server/routes/brand-guidelines.ts` (`GET/POST /:id/synced-templates`), `prisma` `syncedTemplates` |
-| Webapp fetch | `src/services/brandGuidelineApi.ts` + `src/hooks/queries/useBrandGuidelines.ts` (`useSyncedTemplates`) |
-| Renderer | `src/components/brand/guidelines/preview/TemplateRenderer.tsx` + `templateResolve.ts` |
+| Piece                | File                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------ |
+| Schema + pure parser | `src/lib/figma-template-schema.ts` (`frameToSchema`)                                                   |
+| Naming/variable SSoT | `src/lib/figma-slots.ts` (`parseSlotName`, `BRAND_TOKEN_VARS`)                                         |
+| Plugin producer      | `plugin/src/handlers/templates.ts` (`extractTemplateSchemas`, op `templates.extractSchema`)            |
+| Server store         | `server/routes/brand-guidelines.ts` (`GET/POST /:id/synced-templates`), `prisma` `syncedTemplates`     |
+| Webapp fetch         | `src/services/brandGuidelineApi.ts` + `src/hooks/queries/useBrandGuidelines.ts` (`useSyncedTemplates`) |
+| Renderer             | `src/components/brand/guidelines/preview/TemplateRenderer.tsx` + `templateResolve.ts`                  |
 
 Adding a template = design it in Figma + sync. No React. That's the point.

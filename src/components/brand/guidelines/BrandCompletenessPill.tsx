@@ -89,7 +89,8 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                 'Marca pronta — a IA gera com todo o contexto.'
               ) : (
                 <>
-                  Faltam <span className="font-semibold text-white tabular-nums">{missingCount}</span>{' '}
+                  Faltam{' '}
+                  <span className="font-semibold text-white tabular-nums">{missingCount}</span>{' '}
                   {missingCount === 1 ? 'coisa' : 'coisas'} pra IA gerar mais no ponto.
                 </>
               )}

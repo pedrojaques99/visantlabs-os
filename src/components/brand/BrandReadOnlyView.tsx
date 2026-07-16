@@ -438,7 +438,9 @@ export const BrandCoreMessageView: React.FC<SectionCommonProps> = ({
   return (
     <div className="space-y-8">
       <FullSectionHeader label="Mensagem Central" />
-      <div className={cn('grid grid-cols-1 gap-8', TRIPLET_COLS[visible.length] || 'md:grid-cols-3')}>
+      <div
+        className={cn('grid grid-cols-1 gap-8', TRIPLET_COLS[visible.length] || 'md:grid-cols-3')}
+      >
         {visible.map(([key, label, ph]) => (
           <GlassPanel
             key={key}
@@ -596,7 +598,12 @@ export const BrandManifestoView: React.FC<SectionCommonProps> = ({
     return (
       <div className="space-y-12">
         {header}
-        <div className={cn('grid grid-cols-1 gap-12', TRIPLET_COLS[visible.length] || 'md:grid-cols-3')}>
+        <div
+          className={cn(
+            'grid grid-cols-1 gap-12',
+            TRIPLET_COLS[visible.length] || 'md:grid-cols-3'
+          )}
+        >
           {visible.map(([key, label, value]) => (
             <div key={key} className="space-y-3">
               <MicroTitle className="text-[var(--accent)]/40">{label}</MicroTitle>
@@ -945,7 +952,9 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                   <h4 className="text-2xl md:text-3xl tracking-tight text-balance">
                     <span className="font-bold opacity-90">{displayName}</span>
-                    {persona.age ? <span className="font-light opacity-60">, {persona.age}</span> : null}
+                    {persona.age ? (
+                      <span className="font-light opacity-60">, {persona.age}</span>
+                    ) : null}
                   </h4>
                   {persona.traits && persona.traits.length > 0 && (
                     <div className="flex flex-wrap gap-2">

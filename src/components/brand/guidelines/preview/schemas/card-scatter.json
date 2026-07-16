@@ -14,29 +14,206 @@
     "clip": true,
     "fill": { "opacity": 1, "varName": "text" },
     "children": [
-      { "name": "Rectangle", "type": "RECTANGLE", "m": [0.9781476259231567, 0.2079116851091385, -0.2079116851091385, 0.9781476259231567, -120, -150], "w": 460, "h": 288, "cornerRadius": 20, "fill": { "opacity": 1, "varName": "accent" } },
-      { "name": "Rectangle", "type": "RECTANGLE", "m": [0.9848077893257141, -0.1736481934785843, 0.1736481934785843, 0.9848077893257141, 1120, -210], "w": 460, "h": 288, "cornerRadius": 20, "fill": { "opacity": 1, "varName": "surface" } },
-      { "name": "Rectangle", "type": "RECTANGLE", "m": [0.9902681112289429, 0.13917312026023865, -0.13917312026023865, 0.9902681112289429, 1500, 340], "w": 460, "h": 288, "cornerRadius": 20, "fill": { "opacity": 1, "varName": "accent" } },
-      { "name": "Rectangle", "type": "RECTANGLE", "m": [0.9902681112289429, -0.13917312026023865, 0.13917312026023865, 0.9902681112289429, 0, 600], "w": 460, "h": 288, "cornerRadius": 20, "fill": { "opacity": 1, "varName": "surface" } },
-      { "name": "Rectangle", "type": "RECTANGLE", "m": [0.9702957272529602, 0.24192190170288086, -0.24192190170288086, 0.9702957272529602, 560, 800], "w": 460, "h": 288, "cornerRadius": 20, "fill": { "opacity": 1, "varName": "accent" } },
-      { "name": "Rectangle", "type": "RECTANGLE", "m": [0.9781476259231567, -0.2079116851091385, 0.2079116851091385, 0.9781476259231567, 1220, 720], "w": 460, "h": 288, "cornerRadius": 20, "fill": { "opacity": 1, "varName": "surface" } },
       {
-        "name": "hero-card", "type": "FRAME", "m": [1, 0, 0, 1, 570, 381.5], "w": 780, "h": 317, "cornerRadius": 28, "clip": true, "fill": { "opacity": 1, "varName": "surface" },
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "m": [
+          0.9781476259231567, 0.2079116851091385, -0.2079116851091385, 0.9781476259231567, -120,
+          -150
+        ],
+        "w": 460,
+        "h": 288,
+        "cornerRadius": 20,
+        "fill": { "opacity": 1, "varName": "accent" }
+      },
+      {
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "m": [
+          0.9848077893257141, -0.1736481934785843, 0.1736481934785843, 0.9848077893257141, 1120,
+          -210
+        ],
+        "w": 460,
+        "h": 288,
+        "cornerRadius": 20,
+        "fill": { "opacity": 1, "varName": "surface" }
+      },
+      {
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "m": [
+          0.9902681112289429, 0.13917312026023865, -0.13917312026023865, 0.9902681112289429, 1500,
+          340
+        ],
+        "w": 460,
+        "h": 288,
+        "cornerRadius": 20,
+        "fill": { "opacity": 1, "varName": "accent" }
+      },
+      {
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "m": [
+          0.9902681112289429, -0.13917312026023865, 0.13917312026023865, 0.9902681112289429, 0, 600
+        ],
+        "w": 460,
+        "h": 288,
+        "cornerRadius": 20,
+        "fill": { "opacity": 1, "varName": "surface" }
+      },
+      {
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "m": [
+          0.9702957272529602, 0.24192190170288086, -0.24192190170288086, 0.9702957272529602, 560,
+          800
+        ],
+        "w": 460,
+        "h": 288,
+        "cornerRadius": 20,
+        "fill": { "opacity": 1, "varName": "accent" }
+      },
+      {
+        "name": "Rectangle",
+        "type": "RECTANGLE",
+        "m": [
+          0.9781476259231567, -0.2079116851091385, 0.2079116851091385, 0.9781476259231567, 1220, 720
+        ],
+        "w": 460,
+        "h": 288,
+        "cornerRadius": 20,
+        "fill": { "opacity": 1, "varName": "surface" }
+      },
+      {
+        "name": "hero-card",
+        "type": "FRAME",
+        "m": [1, 0, 0, 1, 570, 381.5],
+        "w": 780,
+        "h": 317,
+        "cornerRadius": 28,
+        "clip": true,
+        "fill": { "opacity": 1, "varName": "surface" },
         "children": [
           {
-            "name": "Frame", "type": "FRAME", "m": [1, 0, 0, 1, 56, 44], "w": 668, "h": 22, "clip": true,
+            "name": "Frame",
+            "type": "FRAME",
+            "m": [1, 0, 0, 1, 56, 44],
+            "w": 668,
+            "h": 22,
+            "clip": true,
             "children": [
-              { "name": "label", "type": "TEXT", "m": [1, 0, 0, 1, 0, 0], "w": 54, "h": 22, "fill": { "opacity": 1, "varName": "accent" }, "text": { "chars": "Padoo", "family": "Kumbh Sans", "style": "Regular", "size": 18, "align": "LEFT", "tcase": "ORIGINAL", "letter": { "unit": "PERCENT", "value": 0 }, "fontVar": "body-font" } },
-              { "name": "©2026", "type": "TEXT", "m": [1, 0, 0, 1, 614, 0], "w": 54, "h": 22, "fill": { "opacity": 1, "varName": "accent" }, "text": { "chars": "©2026", "family": "Kumbh Sans", "style": "Regular", "size": 18, "align": "LEFT", "tcase": "ORIGINAL", "letter": { "unit": "PERCENT", "value": 0 }, "fontVar": "body-font" } }
+              {
+                "name": "label",
+                "type": "TEXT",
+                "m": [1, 0, 0, 1, 0, 0],
+                "w": 54,
+                "h": 22,
+                "fill": { "opacity": 1, "varName": "accent" },
+                "text": {
+                  "chars": "Padoo",
+                  "family": "Kumbh Sans",
+                  "style": "Regular",
+                  "size": 18,
+                  "align": "LEFT",
+                  "tcase": "ORIGINAL",
+                  "letter": { "unit": "PERCENT", "value": 0 },
+                  "fontVar": "body-font"
+                }
+              },
+              {
+                "name": "©2026",
+                "type": "TEXT",
+                "m": [1, 0, 0, 1, 614, 0],
+                "w": 54,
+                "h": 22,
+                "fill": { "opacity": 1, "varName": "accent" },
+                "text": {
+                  "chars": "©2026",
+                  "family": "Kumbh Sans",
+                  "style": "Regular",
+                  "size": 18,
+                  "align": "LEFT",
+                  "tcase": "ORIGINAL",
+                  "letter": { "unit": "PERCENT", "value": 0 },
+                  "fontVar": "body-font"
+                }
+              }
             ]
           },
-          { "name": "#brand", "type": "TEXT", "m": [1, 0, 0, 1, 56, 82], "w": 668, "h": 132, "fill": { "opacity": 1, "varName": "text" }, "slot": { "id": "brand", "optional": false, "list": false }, "text": { "chars": "Padoo", "family": "Unbounded", "style": "Bold", "size": 132, "align": "CENTER", "tcase": "ORIGINAL", "letter": { "unit": "PERCENT", "value": -2 }, "lhPct": 100, "fontVar": "heading-font" } },
-          { "name": "Rectangle", "type": "RECTANGLE", "m": [1, 0, 0, 1, 56, 230], "w": 668, "h": 2, "fill": { "opacity": 1, "varName": "text" } },
           {
-            "name": "Frame", "type": "FRAME", "m": [1, 0, 0, 1, 56, 248], "w": 668, "h": 25, "clip": true,
+            "name": "#brand",
+            "type": "TEXT",
+            "m": [1, 0, 0, 1, 56, 82],
+            "w": 668,
+            "h": 132,
+            "fill": { "opacity": 1, "varName": "text" },
+            "slot": { "id": "brand", "optional": false, "list": false },
+            "text": {
+              "chars": "Padoo",
+              "family": "Unbounded",
+              "style": "Bold",
+              "size": 132,
+              "align": "CENTER",
+              "tcase": "ORIGINAL",
+              "letter": { "unit": "PERCENT", "value": -2 },
+              "lhPct": 100,
+              "fontVar": "heading-font"
+            }
+          },
+          {
+            "name": "Rectangle",
+            "type": "RECTANGLE",
+            "m": [1, 0, 0, 1, 56, 230],
+            "w": 668,
+            "h": 2,
+            "fill": { "opacity": 1, "varName": "text" }
+          },
+          {
+            "name": "Frame",
+            "type": "FRAME",
+            "m": [1, 0, 0, 1, 56, 248],
+            "w": 668,
+            "h": 25,
+            "clip": true,
             "children": [
-              { "name": "#tagL?", "type": "TEXT", "m": [1, 0, 0, 1, 0, 0], "w": 113, "h": 25, "fill": { "opacity": 1, "varName": "text" }, "slot": { "id": "tagL", "optional": true, "list": false }, "text": { "chars": "A vó mais", "family": "Kumbh Sans", "style": "Regular", "size": 20, "align": "LEFT", "tcase": "UPPER", "letter": { "unit": "PIXELS", "value": 1 }, "fontVar": "body-font" } },
-              { "name": "#tagR?", "type": "TEXT", "m": [1, 0, 0, 1, 406, 0], "w": 262, "h": 25, "fill": { "opacity": 1, "varName": "accent" }, "slot": { "id": "tagR", "optional": true, "list": false }, "text": { "chars": "descolada do bairro", "family": "Kumbh Sans", "style": "Regular", "size": 20, "align": "LEFT", "tcase": "UPPER", "letter": { "unit": "PIXELS", "value": 1 }, "fontVar": "body-font" } }
+              {
+                "name": "#tagL?",
+                "type": "TEXT",
+                "m": [1, 0, 0, 1, 0, 0],
+                "w": 113,
+                "h": 25,
+                "fill": { "opacity": 1, "varName": "text" },
+                "slot": { "id": "tagL", "optional": true, "list": false },
+                "text": {
+                  "chars": "A vó mais",
+                  "family": "Kumbh Sans",
+                  "style": "Regular",
+                  "size": 20,
+                  "align": "LEFT",
+                  "tcase": "UPPER",
+                  "letter": { "unit": "PIXELS", "value": 1 },
+                  "fontVar": "body-font"
+                }
+              },
+              {
+                "name": "#tagR?",
+                "type": "TEXT",
+                "m": [1, 0, 0, 1, 406, 0],
+                "w": 262,
+                "h": 25,
+                "fill": { "opacity": 1, "varName": "accent" },
+                "slot": { "id": "tagR", "optional": true, "list": false },
+                "text": {
+                  "chars": "descolada do bairro",
+                  "family": "Kumbh Sans",
+                  "style": "Regular",
+                  "size": 20,
+                  "align": "LEFT",
+                  "tcase": "UPPER",
+                  "letter": { "unit": "PIXELS", "value": 1 },
+                  "fontVar": "body-font"
+                }
+              }
             ]
           }
         ]

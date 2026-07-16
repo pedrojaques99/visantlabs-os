@@ -52,7 +52,13 @@ const Marquee: React.FC<{
   speed?: number;
   srcOf?: (name: string) => string;
   tall?: boolean;
-}> = ({ names, reverse = false, speed = 55, srcOf = (name) => `/tools/${name}.webp`, tall = false }) => {
+}> = ({
+  names,
+  reverse = false,
+  speed = 55,
+  srcOf = (name) => `/tools/${name}.webp`,
+  tall = false,
+}) => {
   const trackRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -310,7 +316,10 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       </section>
 
       {/* ── Bento ───────────────────────────────────────────────── */}
-      <section id="apps-preview" className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28 scroll-mt-16">
+      <section
+        id="apps-preview"
+        className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28 scroll-mt-16"
+      >
         <div data-reveal className="mb-10 flex flex-col gap-3 text-center">
           <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
             {t('landing.bento.eyebrow')}

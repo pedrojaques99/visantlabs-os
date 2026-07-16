@@ -283,7 +283,12 @@ const CanvasSection: React.FC = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {CANVAS_NODES.map((node, i) => (
         <FadeIn key={node.label} delay={i * 0.04}>
-          <div className={cn('group flex flex-col gap-2 p-4 rounded-xl hover:bg-neutral-900/60 transition-all duration-200 cursor-default h-full', glassSurface.tile)}>
+          <div
+            className={cn(
+              'group flex flex-col gap-2 p-4 rounded-xl hover:bg-neutral-900/60 transition-all duration-200 cursor-default h-full',
+              glassSurface.tile
+            )}
+          >
             <node.icon
               size={16}
               className="text-neutral-400 group-hover:text-brand-cyan transition-colors duration-200"

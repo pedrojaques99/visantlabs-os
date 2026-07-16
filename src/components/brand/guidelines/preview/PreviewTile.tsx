@@ -148,7 +148,12 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
             >
               <Shuffle size={12} />
             </button>
-            <button type="button" className={ICON_BTN} title="Expandir e editar" onClick={() => setFocused(true)}>
+            <button
+              type="button"
+              className={ICON_BTN}
+              title="Expandir e editar"
+              onClick={() => setFocused(true)}
+            >
               <Maximize2 size={12} />
             </button>
           </div>
@@ -178,15 +183,27 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
                   {/* Stage */}
                   <div className="flex min-w-0 flex-1 items-center justify-center">
                     <div className="w-full max-w-3xl">
-                      <Mock tokens={tokens} exportRef={focusRef} variant={variant} overrides={overrides} />
+                      <Mock
+                        tokens={tokens}
+                        exportRef={focusRef}
+                        variant={variant}
+                        overrides={overrides}
+                      />
                     </div>
                   </div>
 
                   {/* Controls */}
                   <div className="flex w-full shrink-0 flex-col gap-4 md:w-72">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-[var(--brand-text)]/85">{item.label}</span>
-                      <button type="button" className={ICON_BTN} title="Fechar" onClick={() => setFocused(false)}>
+                      <span className="text-sm font-semibold text-[var(--brand-text)]/85">
+                        {item.label}
+                      </span>
+                      <button
+                        type="button"
+                        className={ICON_BTN}
+                        title="Fechar"
+                        onClick={() => setFocused(false)}
+                      >
                         <X size={14} />
                       </button>
                     </div>

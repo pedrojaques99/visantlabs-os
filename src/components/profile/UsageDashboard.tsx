@@ -154,7 +154,9 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
       <Card className="bg-neutral-900 border border-white/10 rounded-xl">
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-            <h2 className="text-base font-semibold text-neutral-200 font-manrope">30-Day History</h2>
+            <h2 className="text-base font-semibold text-neutral-200 font-manrope">
+              30-Day History
+            </h2>
             <div className="flex items-center gap-2 flex-wrap">
               {/* Feature filter */}
               <select

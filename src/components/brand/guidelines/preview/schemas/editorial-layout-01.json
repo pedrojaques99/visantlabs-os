@@ -1,18 +1,373 @@
 {
-  "id": "21:1132", "name": "Layout #01", "width": 1920, "height": 1080, "aspect": "16:9",
-  "root": { "name": "Layout #01", "type": "FRAME", "m": [1,0,0,1,0,0], "w": 1920, "h": 1080, "clip": true, "fill": {"opacity":1,"hex":"#ffffff"}, "children": [
-    { "name": "F", "type": "FRAME", "m": [1,0,0,1,138,95], "w": 146, "h": 42, "children": [ {"name":"01 → 05","type":"TEXT","m":[1,0,0,1,0,0],"w":146,"h":42,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"01 → 05","family":"Red Hat Mono","style":"Regular","size":31.6,"align":"LEFT","tcase":"ORIGINAL"}} ] },
-    { "name": "F", "type": "FRAME", "m": [1,0,0,1,1167,95], "w": 146, "h": 42, "children": [ {"name":"01 → 05","type":"TEXT","m":[1,0,0,1,0,0],"w":146,"h":42,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"01 → 05","family":"Red Hat Mono","style":"Regular","size":31.6,"align":"LEFT","tcase":"ORIGINAL"}} ] },
-    { "name": "col", "type": "FRAME", "m": [1,0,0,1,138,253], "w": 583, "h": 580, "children": [
-      { "name": "t", "type": "FRAME", "m": [1,0,0,1,0,0], "w": 405, "h": 116, "children": [ {"name":"Título","type":"TEXT","m":[1,0,0,1,0,0],"w":405,"h":116,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Título da \npágina respectiva.","family":"Almarai","style":"Regular","size":51.6,"align":"LEFT","tcase":"ORIGINAL"}} ] },
-      { "name": "rows", "type": "FRAME", "m": [1,0,0,1,0,214], "w": 583, "h": 366, "children": [
-        { "name": "r", "type": "FRAME", "m": [1,0,0,1,0,0], "w": 583, "h": 60, "children": [ {"name":"Line","type":"LINE","m":[1,0,0,1,0,0],"w":583,"h":0,"stroke":{"opacity":1,"weight":1,"hex":"#000000"}}, {"name":"n","type":"TEXT","m":[1,0,0,1,0,10],"w":28,"h":35,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"01","family":"Almarai","style":"Regular","size":31.6,"align":"LEFT","tcase":"ORIGINAL"}}, {"name":"x","type":"TEXT","m":[1,0,0,1,105,10],"w":459,"h":50,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.","family":"Almarai","style":"Regular","size":22.6,"align":"LEFT","tcase":"ORIGINAL"}} ] },
-        { "name": "r", "type": "FRAME", "m": [1,0,0,1,0,102], "w": 583, "h": 60, "children": [ {"name":"Line","type":"LINE","m":[1,0,0,1,0,0],"w":583,"h":0,"stroke":{"opacity":1,"weight":1,"hex":"#000000"}}, {"name":"n","type":"TEXT","m":[1,0,0,1,0,10],"w":32,"h":35,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"02","family":"Almarai","style":"Regular","size":31.6,"align":"LEFT","tcase":"ORIGINAL"}}, {"name":"x","type":"TEXT","m":[1,0,0,1,109,10],"w":459,"h":50,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.","family":"Almarai","style":"Regular","size":22.6,"align":"LEFT","tcase":"ORIGINAL"}} ] },
-        { "name": "r", "type": "FRAME", "m": [1,0,0,1,0,204], "w": 583, "h": 60, "children": [ {"name":"Line","type":"LINE","m":[1,0,0,1,0,0],"w":583,"h":0,"stroke":{"opacity":1,"weight":1,"hex":"#000000"}}, {"name":"n","type":"TEXT","m":[1,0,0,1,0,10],"w":32,"h":35,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"03","family":"Almarai","style":"Regular","size":31.6,"align":"LEFT","tcase":"ORIGINAL"}}, {"name":"x","type":"TEXT","m":[1,0,0,1,109,10],"w":459,"h":50,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.","family":"Almarai","style":"Regular","size":22.6,"align":"LEFT","tcase":"ORIGINAL"}} ] },
-        { "name": "r", "type": "FRAME", "m": [1,0,0,1,0,306], "w": 583, "h": 60, "children": [ {"name":"Line","type":"LINE","m":[1,0,0,1,0,0],"w":583,"h":0,"stroke":{"opacity":1,"weight":1,"hex":"#000000"}}, {"name":"n","type":"TEXT","m":[1,0,0,1,0,10],"w":34,"h":35,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"04","family":"Almarai","style":"Regular","size":31.6,"align":"LEFT","tcase":"ORIGINAL"}}, {"name":"x","type":"TEXT","m":[1,0,0,1,111,10],"w":459,"h":50,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.","family":"Almarai","style":"Regular","size":22.6,"align":"LEFT","tcase":"ORIGINAL"}} ] }
-      ] }
-    ] },
-    { "name": "foot", "type": "FRAME", "m": [1,0,0,1,138,949], "w": 1612, "h": 29, "children": [ {"name":"VISANT","type":"TEXT","m":[1,0,0,1,0,0],"w":80,"h":29,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"VISANT","family":"Red Hat Mono","style":"Regular","size":22,"align":"LEFT","tcase":"UPPER"}}, {"name":"tag","type":"TEXT","m":[1,0,0,1,1400,0],"w":212,"h":29,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Design editorial","family":"Red Hat Mono","style":"Regular","size":22,"align":"LEFT","tcase":"UPPER"}} ] },
-    { "name": "col2", "type": "FRAME", "m": [1,0,0,1,1167,253], "w": 583, "h": 116, "children": [ {"name":"Título","type":"TEXT","m":[1,0,0,1,0,0],"w":405,"h":116,"fill":{"opacity":1,"hex":"#000000"},"text":{"chars":"Título da \npágina respectiva.","family":"Almarai","style":"Regular","size":51.6,"align":"LEFT","tcase":"ORIGINAL"}} ] }
-  ] }
+  "id": "21:1132",
+  "name": "Layout #01",
+  "width": 1920,
+  "height": 1080,
+  "aspect": "16:9",
+  "root": {
+    "name": "Layout #01",
+    "type": "FRAME",
+    "m": [1, 0, 0, 1, 0, 0],
+    "w": 1920,
+    "h": 1080,
+    "clip": true,
+    "fill": { "opacity": 1, "hex": "#ffffff" },
+    "children": [
+      {
+        "name": "F",
+        "type": "FRAME",
+        "m": [1, 0, 0, 1, 138, 95],
+        "w": 146,
+        "h": 42,
+        "children": [
+          {
+            "name": "01 → 05",
+            "type": "TEXT",
+            "m": [1, 0, 0, 1, 0, 0],
+            "w": 146,
+            "h": 42,
+            "fill": { "opacity": 1, "hex": "#000000" },
+            "text": {
+              "chars": "01 → 05",
+              "family": "Red Hat Mono",
+              "style": "Regular",
+              "size": 31.6,
+              "align": "LEFT",
+              "tcase": "ORIGINAL"
+            }
+          }
+        ]
+      },
+      {
+        "name": "F",
+        "type": "FRAME",
+        "m": [1, 0, 0, 1, 1167, 95],
+        "w": 146,
+        "h": 42,
+        "children": [
+          {
+            "name": "01 → 05",
+            "type": "TEXT",
+            "m": [1, 0, 0, 1, 0, 0],
+            "w": 146,
+            "h": 42,
+            "fill": { "opacity": 1, "hex": "#000000" },
+            "text": {
+              "chars": "01 → 05",
+              "family": "Red Hat Mono",
+              "style": "Regular",
+              "size": 31.6,
+              "align": "LEFT",
+              "tcase": "ORIGINAL"
+            }
+          }
+        ]
+      },
+      {
+        "name": "col",
+        "type": "FRAME",
+        "m": [1, 0, 0, 1, 138, 253],
+        "w": 583,
+        "h": 580,
+        "children": [
+          {
+            "name": "t",
+            "type": "FRAME",
+            "m": [1, 0, 0, 1, 0, 0],
+            "w": 405,
+            "h": 116,
+            "children": [
+              {
+                "name": "Título",
+                "type": "TEXT",
+                "m": [1, 0, 0, 1, 0, 0],
+                "w": 405,
+                "h": 116,
+                "fill": { "opacity": 1, "hex": "#000000" },
+                "text": {
+                  "chars": "Título da \npágina respectiva.",
+                  "family": "Almarai",
+                  "style": "Regular",
+                  "size": 51.6,
+                  "align": "LEFT",
+                  "tcase": "ORIGINAL"
+                }
+              }
+            ]
+          },
+          {
+            "name": "rows",
+            "type": "FRAME",
+            "m": [1, 0, 0, 1, 0, 214],
+            "w": 583,
+            "h": 366,
+            "children": [
+              {
+                "name": "r",
+                "type": "FRAME",
+                "m": [1, 0, 0, 1, 0, 0],
+                "w": 583,
+                "h": 60,
+                "children": [
+                  {
+                    "name": "Line",
+                    "type": "LINE",
+                    "m": [1, 0, 0, 1, 0, 0],
+                    "w": 583,
+                    "h": 0,
+                    "stroke": { "opacity": 1, "weight": 1, "hex": "#000000" }
+                  },
+                  {
+                    "name": "n",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 0, 10],
+                    "w": 28,
+                    "h": 35,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "01",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 31.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  },
+                  {
+                    "name": "x",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 105, 10],
+                    "w": 459,
+                    "h": 50,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 22.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "r",
+                "type": "FRAME",
+                "m": [1, 0, 0, 1, 0, 102],
+                "w": 583,
+                "h": 60,
+                "children": [
+                  {
+                    "name": "Line",
+                    "type": "LINE",
+                    "m": [1, 0, 0, 1, 0, 0],
+                    "w": 583,
+                    "h": 0,
+                    "stroke": { "opacity": 1, "weight": 1, "hex": "#000000" }
+                  },
+                  {
+                    "name": "n",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 0, 10],
+                    "w": 32,
+                    "h": 35,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "02",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 31.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  },
+                  {
+                    "name": "x",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 109, 10],
+                    "w": 459,
+                    "h": 50,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 22.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "r",
+                "type": "FRAME",
+                "m": [1, 0, 0, 1, 0, 204],
+                "w": 583,
+                "h": 60,
+                "children": [
+                  {
+                    "name": "Line",
+                    "type": "LINE",
+                    "m": [1, 0, 0, 1, 0, 0],
+                    "w": 583,
+                    "h": 0,
+                    "stroke": { "opacity": 1, "weight": 1, "hex": "#000000" }
+                  },
+                  {
+                    "name": "n",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 0, 10],
+                    "w": 32,
+                    "h": 35,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "03",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 31.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  },
+                  {
+                    "name": "x",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 109, 10],
+                    "w": 459,
+                    "h": 50,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 22.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "r",
+                "type": "FRAME",
+                "m": [1, 0, 0, 1, 0, 306],
+                "w": 583,
+                "h": 60,
+                "children": [
+                  {
+                    "name": "Line",
+                    "type": "LINE",
+                    "m": [1, 0, 0, 1, 0, 0],
+                    "w": 583,
+                    "h": 0,
+                    "stroke": { "opacity": 1, "weight": 1, "hex": "#000000" }
+                  },
+                  {
+                    "name": "n",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 0, 10],
+                    "w": 34,
+                    "h": 35,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "04",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 31.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  },
+                  {
+                    "name": "x",
+                    "type": "TEXT",
+                    "m": [1, 0, 0, 1, 111, 10],
+                    "w": 459,
+                    "h": 50,
+                    "fill": { "opacity": 1, "hex": "#000000" },
+                    "text": {
+                      "chars": "Lorem ipsum dolor set inum. Dars cabin moro it les avac topam.",
+                      "family": "Almarai",
+                      "style": "Regular",
+                      "size": 22.6,
+                      "align": "LEFT",
+                      "tcase": "ORIGINAL"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "foot",
+        "type": "FRAME",
+        "m": [1, 0, 0, 1, 138, 949],
+        "w": 1612,
+        "h": 29,
+        "children": [
+          {
+            "name": "VISANT",
+            "type": "TEXT",
+            "m": [1, 0, 0, 1, 0, 0],
+            "w": 80,
+            "h": 29,
+            "fill": { "opacity": 1, "hex": "#000000" },
+            "text": {
+              "chars": "VISANT",
+              "family": "Red Hat Mono",
+              "style": "Regular",
+              "size": 22,
+              "align": "LEFT",
+              "tcase": "UPPER"
+            }
+          },
+          {
+            "name": "tag",
+            "type": "TEXT",
+            "m": [1, 0, 0, 1, 1400, 0],
+            "w": 212,
+            "h": 29,
+            "fill": { "opacity": 1, "hex": "#000000" },
+            "text": {
+              "chars": "Design editorial",
+              "family": "Red Hat Mono",
+              "style": "Regular",
+              "size": 22,
+              "align": "LEFT",
+              "tcase": "UPPER"
+            }
+          }
+        ]
+      },
+      {
+        "name": "col2",
+        "type": "FRAME",
+        "m": [1, 0, 0, 1, 1167, 253],
+        "w": 583,
+        "h": 116,
+        "children": [
+          {
+            "name": "Título",
+            "type": "TEXT",
+            "m": [1, 0, 0, 1, 0, 0],
+            "w": 405,
+            "h": 116,
+            "fill": { "opacity": 1, "hex": "#000000" },
+            "text": {
+              "chars": "Título da \npágina respectiva.",
+              "family": "Almarai",
+              "style": "Regular",
+              "size": 51.6,
+              "align": "LEFT",
+              "tcase": "ORIGINAL"
+            }
+          }
+        ]
+      }
+    ]
+  }
 }

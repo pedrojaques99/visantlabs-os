@@ -478,7 +478,10 @@ export const ConverterPage: React.FC = () => {
           /* ── Empty / Upload state ── */
           <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
             <motion.div
-              className={cn('w-16 h-16 rounded-2xl flex items-center justify-center', glassSurface.panel)}
+              className={cn(
+                'w-16 h-16 rounded-2xl flex items-center justify-center',
+                glassSurface.panel
+              )}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -530,7 +533,10 @@ export const ConverterPage: React.FC = () => {
           <motion.div
             key="workspace"
             {...fadeScale}
-            className={cn('relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center', glassSurface.panel)}
+            className={cn(
+              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center',
+              glassSurface.panel
+            )}
           >
             {previewItem ? (
               <>

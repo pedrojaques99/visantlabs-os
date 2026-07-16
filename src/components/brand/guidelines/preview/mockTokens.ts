@@ -110,7 +110,9 @@ export function buildMockTokens(g: BrandGuideline | null | undefined): MockToken
   const fontKey = (t: unknown): string =>
     `${(t as { role?: string; name?: string })?.role || (t as { name?: string })?.name || ''}`;
   const findFontByRole = (...roles: string[]) =>
-    g?.typography?.find((t) => roles.some((r) => fontKey(t).toLowerCase().includes(r.toLowerCase())));
+    g?.typography?.find((t) =>
+      roles.some((r) => fontKey(t).toLowerCase().includes(r.toLowerCase()))
+    );
   const heading =
     findFontByRole('heading', 'display', 'title', 'primary', 'h1', 'h2') || g?.typography?.[0];
   const body =

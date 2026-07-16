@@ -613,7 +613,9 @@ const BrandGrid = ({
       {filtered.length === 0 && search.trim() && (
         <div className="flex flex-col items-center py-12 gap-3">
           <Search size={20} className="text-neutral-700" />
-          <p className="text-xs text-neutral-600">{t('brandGuidelines.noMatch', { term: search })}</p>
+          <p className="text-xs text-neutral-600">
+            {t('brandGuidelines.noMatch', { term: search })}
+          </p>
         </div>
       )}
 
@@ -800,10 +802,7 @@ export const BrandGuidelinesPage: React.FC = () => {
             </div>
 
             {FEATURE_BRAND_BILLING && brandQuota?.graceUntil && (
-              <BrandGraceBanner
-                graceUntil={brandQuota.graceUntil}
-                onUpgrade={handleQuotaUpgrade}
-              />
+              <BrandGraceBanner graceUntil={brandQuota.graceUntil} onUpgrade={handleQuotaUpgrade} />
             )}
 
             {/* Content — dashboard/list. The per-brand editor lives in the unified

@@ -63,10 +63,7 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // visitante deslogado — o provider é seguro de montar acima das rotas.
   const { data: allBrands = [], isLoading } = useBrandGuidelines(hasAuthToken());
 
-  const brands = useMemo(
-    () => allBrands.filter((g) => g.status !== 'archived'),
-    [allBrands]
-  );
+  const brands = useMemo(() => allBrands.filter((g) => g.status !== 'archived'), [allBrands]);
 
   const [activeBrandId, setActiveBrandId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -146,7 +143,16 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
       recentBrandIds,
       isLoading,
     }),
-    [activeBrandId, activeBrand, brands, allBrands, isAllBrands, setActiveBrand, recentBrandIds, isLoading]
+    [
+      activeBrandId,
+      activeBrand,
+      brands,
+      allBrands,
+      isAllBrands,
+      setActiveBrand,
+      recentBrandIds,
+      isLoading,
+    ]
   );
 
   return <ActiveBrandContext.Provider value={value}>{children}</ActiveBrandContext.Provider>;

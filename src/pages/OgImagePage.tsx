@@ -518,7 +518,10 @@ export const OgImagePage: React.FC = () => {
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease }}
-        className={cn('relative rounded-2xl overflow-hidden shadow-2xl shadow-black/40 w-full max-w-2xl', glassSurface.panel)}
+        className={cn(
+          'relative rounded-2xl overflow-hidden shadow-2xl shadow-black/40 w-full max-w-2xl',
+          glassSurface.panel
+        )}
       >
         {previewUrl ? (
           <img

@@ -54,15 +54,18 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
     });
   }, [refresh]);
 
-  const handleDelete = useCallback(async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setSessions((s) => s.filter((x) => x.id !== id)); // otimista
-    try {
-      await namingSessionApi.remove(id);
-    } catch {
-      void refresh(); // desfaz o otimista se falhar
-    }
-  }, [refresh]);
+  const handleDelete = useCallback(
+    async (e: React.MouseEvent, id: string) => {
+      e.stopPropagation();
+      setSessions((s) => s.filter((x) => x.id !== id)); // otimista
+      try {
+        await namingSessionApi.remove(id);
+      } catch {
+        void refresh(); // desfaz o otimista se falhar
+      }
+    },
+    [refresh]
+  );
 
   const restore = useCallback(
     (id: string) => {

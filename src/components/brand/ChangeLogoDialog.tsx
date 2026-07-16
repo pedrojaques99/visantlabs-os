@@ -2,12 +2,7 @@ import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Upload, Gem } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -112,7 +107,10 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
         </SheetHeader>
 
         <div
-          className={cn('mx-auto w-full max-w-3xl px-1 py-4 space-y-6', busy && 'opacity-60 pointer-events-none')}
+          className={cn(
+            'mx-auto w-full max-w-3xl px-1 py-4 space-y-6',
+            busy && 'opacity-60 pointer-events-none'
+          )}
         >
           {/* Upload */}
           <button
@@ -139,7 +137,9 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                   <button
                     key={l.id}
                     onClick={() => onPickExisting(l.id)}
-                    title={l.variant === 'primary' ? 'Logo principal atual' : 'Definir como principal'}
+                    title={
+                      l.variant === 'primary' ? 'Logo principal atual' : 'Definir como principal'
+                    }
                     className={cn(
                       'relative aspect-square rounded-md border p-2 flex items-center justify-center bg-white/[0.03] transition-colors',
                       l.variant === 'primary'
@@ -149,7 +149,10 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                   >
                     <img src={l.url} alt="" className="max-h-full max-w-full object-contain" />
                     {l.variant === 'primary' && (
-                      <Gem size={11} className="absolute top-1 left-1 text-brand-cyan fill-brand-cyan" />
+                      <Gem
+                        size={11}
+                        className="absolute top-1 left-1 text-brand-cyan fill-brand-cyan"
+                      />
                     )}
                   </button>
                 ))}

@@ -106,75 +106,75 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
               active && 'cursor-grab shadow-2xl shadow-black/40'
             )}
           >
-          {/* Indicadores de gesto */}
-          {active && (
-            <>
-              <motion.div
-                style={{ opacity: nopeOpacity }}
-                className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-lg border border-destructive/60 px-2.5 py-1 text-destructive"
-              >
-                <X size={16} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
-                  Nope
-                </span>
-              </motion.div>
-              <motion.div
-                style={{ opacity: likeOpacity }}
-                className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-lg border border-success/60 px-2.5 py-1 text-success"
-              >
-                <Heart size={16} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
-                  Curti
-                </span>
-              </motion.div>
-              <motion.div
-                style={{ opacity: superOpacity }}
-                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-brand-cyan"
-              >
-                <Gem size={18} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
-                  Superlike
-                </span>
-              </motion.div>
-            </>
-          )}
+            {/* Indicadores de gesto */}
+            {active && (
+              <>
+                <motion.div
+                  style={{ opacity: nopeOpacity }}
+                  className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-lg border border-destructive/60 px-2.5 py-1 text-destructive"
+                >
+                  <X size={16} />
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                    Nope
+                  </span>
+                </motion.div>
+                <motion.div
+                  style={{ opacity: likeOpacity }}
+                  className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-lg border border-success/60 px-2.5 py-1 text-success"
+                >
+                  <Heart size={16} />
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                    Curti
+                  </span>
+                </motion.div>
+                <motion.div
+                  style={{ opacity: superOpacity }}
+                  className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-brand-cyan"
+                >
+                  <Gem size={18} />
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+                    Superlike
+                  </span>
+                </motion.div>
+              </>
+            )}
 
-          {/* Conteúdo só no card ativo — o GlassPanel é translúcido e o texto
+            {/* Conteúdo só no card ativo — o GlassPanel é translúcido e o texto
               do preview vazaria por baixo; o card de trás fica como moldura vazia. */}
-          {active && (
-            <>
-              {/* Território — pill suave (não mono cru) */}
-              <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-                {formatTag(card.territory)}
-              </span>
-
-              {/* Nome */}
-              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
-                {card.name}
-              </h2>
-
-              {/* Divisor — dá âncora ao nome e mata o "card oco" */}
-              <span className="my-5 h-px w-10 bg-white/10" />
-
-              {/* Defesa */}
-              <p className="max-w-xs text-sm leading-relaxed text-neutral-400">
-                {card.rationale}
-              </p>
-
-              {/* Técnica — mono só aqui (label técnico de verdade) */}
-              <span className="mt-6 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-                {formatTag(card.technique)}
-              </span>
-
-              {/* Flag de risco */}
-              {card.riskFlag && (
-                <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
-                  <AlertTriangle size={11} />
-                  {card.riskFlag}
+            {active && (
+              <>
+                {/* Território — pill suave (não mono cru) */}
+                <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+                  {formatTag(card.territory)}
                 </span>
-              )}
-            </>
-          )}
+
+                {/* Nome */}
+                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-50 break-words">
+                  {card.name}
+                </h2>
+
+                {/* Divisor — dá âncora ao nome e mata o "card oco" */}
+                <span className="my-5 h-px w-10 bg-white/10" />
+
+                {/* Defesa */}
+                <p className="max-w-xs text-sm leading-relaxed text-neutral-400">
+                  {card.rationale}
+                </p>
+
+                {/* Técnica — mono só aqui (label técnico de verdade) */}
+                <span className="mt-6 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                  {formatTag(card.technique)}
+                </span>
+
+                {/* Flag de risco */}
+                {card.riskFlag && (
+                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
+                    <AlertTriangle size={11} />
+                    {card.riskFlag}
+                  </span>
+                )}
+              </>
+            )}
           </GlassPanel>
         </motion.div>
       </motion.div>

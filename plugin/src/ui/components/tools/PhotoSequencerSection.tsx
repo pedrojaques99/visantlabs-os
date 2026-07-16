@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Download, Film, LayoutGrid, SquareMousePointer, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Download,
+  Film,
+  LayoutGrid,
+  SquareMousePointer,
+  X,
+} from 'lucide-react';
 import type { ExportedNodeImage } from '@shared/protocol';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';

@@ -187,11 +187,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                     className="relative aspect-square rounded-md overflow-hidden border border-neutral-800 group"
                     title={`${h.label || ''} · ${Math.round(h.score * 100)}% match`}
                   >
-                    <img
-                      src={h.url}
-                      alt={h.label || ''}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={h.url} alt={h.label || ''} className="w-full h-full object-cover" />
                     <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-[10px] font-mono text-white/80">
                       {Math.round(h.score * 100)}%
                     </span>

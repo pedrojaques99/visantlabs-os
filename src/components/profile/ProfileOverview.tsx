@@ -380,7 +380,12 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-auto">
-              <div className={cn(tileClass, 'p-4 flex flex-col items-center justify-center text-center')}>
+              <div
+                className={cn(
+                  tileClass,
+                  'p-4 flex flex-col items-center justify-center text-center'
+                )}
+              >
                 <Users className="text-neutral-500 mb-2" size={20} />
                 <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
                   {referralStats.referredUsersCount || 0}
@@ -389,7 +394,12 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   {t('referral.friendsReferred')}
                 </MicroTitle>
               </div>
-              <div className={cn(tileClass, 'p-4 flex flex-col items-center justify-center text-center')}>
+              <div
+                className={cn(
+                  tileClass,
+                  'p-4 flex flex-col items-center justify-center text-center'
+                )}
+              >
                 <CreditCard className="text-brand-cyan/60 mb-2" size={20} />
                 <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}

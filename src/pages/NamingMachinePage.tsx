@@ -503,11 +503,10 @@ export const NamingMachinePage: React.FC = () => {
   // Setas (legado) + letras da ref (N/C/S/D) como aliases.
   useHotkeys('left,n', () => phase === 'deck' && triggerVerdict('nope'), [phase, triggerVerdict]);
   useHotkeys('right,c', () => phase === 'deck' && triggerVerdict('like'), [phase, triggerVerdict]);
-  useHotkeys(
-    'up,s',
-    () => phase === 'deck' && triggerVerdict('superlike'),
-    [phase, triggerVerdict]
-  );
+  useHotkeys('up,s', () => phase === 'deck' && triggerVerdict('superlike'), [
+    phase,
+    triggerVerdict,
+  ]);
   useHotkeys('z,d', () => phase === 'deck' && undoKey(), [phase, undoKey]);
 
   /* ── Shortlist callbacks ────────────────────────────────────────────── */

@@ -135,7 +135,7 @@ const STRATEGY_INPUT_SHAPE = {
     )
     .optional()
     .describe(
-      "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate."
+      'Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate.'
     ),
   coreMessage: z
     .object({

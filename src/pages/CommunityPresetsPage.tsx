@@ -216,7 +216,12 @@ const PresetDetailModal: React.FC<{
                 }}
               />
             ) : (
-              <div className={cn('w-full aspect-square rounded-xl flex items-center justify-center', glassSurface.tile)}>
+              <div
+                className={cn(
+                  'w-full aspect-square rounded-xl flex items-center justify-center',
+                  glassSurface.tile
+                )}
+              >
                 <config.icon size={32} className={cn('opacity-20', config.color)} />
               </div>
             )}
@@ -235,12 +240,22 @@ const PresetDetailModal: React.FC<{
                 {config.label}
               </span>
               {migrated.aspectRatio && (
-                <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600', glassSurface.control)}>
+                <span
+                  className={cn(
+                    'text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600',
+                    glassSurface.control
+                  )}
+                >
                   {migrated.aspectRatio}
                 </span>
               )}
               {migrated.difficulty && (
-                <span className={cn('text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600', glassSurface.control)}>
+                <span
+                  className={cn(
+                    'text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600',
+                    glassSurface.control
+                  )}
+                >
                   {migrated.difficulty}
                 </span>
               )}
@@ -276,7 +291,10 @@ const PresetDetailModal: React.FC<{
                 {migrated.tags.map((tag) => (
                   <span
                     key={tag}
-                    className={cn('text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-700', glassSurface.control)}
+                    className={cn(
+                      'text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-700',
+                      glassSurface.control
+                    )}
                   >
                     #{tag}
                   </span>
@@ -789,7 +807,10 @@ export const CommunityPresetsPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('community.presets.search_presets')}
-              className={cn('w-48 focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200', glassSurface.control)}
+              className={cn(
+                'w-48 focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200',
+                glassSurface.control
+              )}
               aria-label={t('community.presets.search_presets_2')}
             />
             {searchQuery && (

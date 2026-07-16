@@ -515,7 +515,18 @@ export const ReferencesPage: React.FC = () => {
   // Clear selection whenever the underlying result set changes.
   useEffect(() => {
     clearSelection();
-  }, [scope, debouncedSearch, country, region, activeTag, kind, dims, similar, collectionView, clearSelection]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    scope,
+    debouncedSearch,
+    country,
+    region,
+    activeTag,
+    kind,
+    dims,
+    similar,
+    collectionView,
+    clearSelection,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Admin delete (single or batch) — optimistic, with a 5s Undo window ─────────
   const unhide = useCallback((ids: string[]) => {
@@ -636,7 +647,17 @@ export const ReferencesPage: React.FC = () => {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [grid, cols, focusedIndex, lightboxIndex, saveTarget, scope, collectionView, selected, clearSelection]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    grid,
+    cols,
+    focusedIndex,
+    lightboxIndex,
+    saveTarget,
+    scope,
+    collectionView,
+    selected,
+    clearSelection,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset grid focus whenever the result set changes.
   useEffect(() => {
@@ -1449,7 +1470,9 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
                 {savedIds.has(c.id) ? (
                   <Check className="h-4 w-4 text-brand-cyan shrink-0" />
                 ) : (
-                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">{c.count}</span>
+                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">
+                    {c.count}
+                  </span>
                 )}
               </button>
             ))
@@ -1616,7 +1639,9 @@ const EditReferenceDialog: React.FC<{
     <Dialog open onOpenChange={() => !saving && onClose()}>
       <DialogContent className="max-w-md bg-neutral-950 border-neutral-800">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">Editar referência</DialogTitle>
+          <DialogTitle className="text-sm font-mono text-neutral-300">
+            Editar referência
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
@@ -1771,7 +1796,11 @@ const MasonryCard: React.FC<{
         }}
       >
         <button
-          aria-label={selectionActive ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item)}` : `Abrir ${refTitle(item)}`}
+          aria-label={
+            selectionActive
+              ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item)}`
+              : `Abrir ${refTitle(item)}`
+          }
           onClick={(e) => {
             // Once anything is selected, clicking a card toggles it (fast multi-select).
             if (selectionActive) onToggleSelect?.(e.shiftKey);
@@ -1827,9 +1856,7 @@ const MasonryCard: React.FC<{
               <span
                 className={cn(
                   'absolute top-2 left-2 text-base leading-none drop-shadow transition-opacity',
-                  selected || selectionActive
-                    ? 'opacity-0'
-                    : 'opacity-100 group-hover:opacity-0'
+                  selected || selectionActive ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'
                 )}
                 title={item.country}
               >

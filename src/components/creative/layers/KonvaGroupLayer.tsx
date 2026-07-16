@@ -70,10 +70,7 @@ const KonvaGroupLayerImpl: React.FC<Props> = ({
           position,
           rotation: absRot,
           fontSize: Math.max(8, (src.data as TextLayerData).fontSize * fontScale),
-          size: normalizeSize(
-            { w: child.width() * sx, h: child.height() * sy },
-            dims
-          ),
+          size: normalizeSize({ w: child.width() * sx, h: child.height() * sy }, dims),
         } as Partial<TextLayerData>);
       } else {
         updateLayer(id, {

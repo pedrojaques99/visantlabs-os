@@ -172,10 +172,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className={cn('rounded-xl overflow-hidden', glassSurface.tile)}
-              >
+              <div key={i} className={cn('rounded-xl overflow-hidden', glassSurface.tile)}>
                 <SkeletonLoader variant="rectangular" height="140px" />
                 <div className="p-3 space-y-2">
                   <SkeletonLoader variant="text" width="60%" />

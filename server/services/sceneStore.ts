@@ -110,7 +110,9 @@ function computeBaseLuma(assets: AssetMap): number | undefined {
 }
 
 /** Classifica a base em clara/escura/mista a partir do luma médio. */
-export function classifyLuminance(luma: number | undefined): 'light' | 'dark' | 'mixed' | undefined {
+export function classifyLuminance(
+  luma: number | undefined
+): 'light' | 'dark' | 'mixed' | undefined {
   if (luma === undefined) return undefined;
   if (luma < 90) return 'dark';
   if (luma > 165) return 'light';
@@ -320,7 +322,9 @@ export async function listScenes(
     .toArray();
 
   if (!opts.commercialOnly) return rows;
-  return rows.filter((r) => (r.license ?? resolveSceneLicense(r.psdFileName).license) === 'commercial-free');
+  return rows.filter(
+    (r) => (r.license ?? resolveSceneLicense(r.psdFileName).license) === 'commercial-free'
+  );
 }
 
 /**

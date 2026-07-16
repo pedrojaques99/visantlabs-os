@@ -48,7 +48,15 @@ describe('classifyRoute', () => {
   });
 
   it('rotas de auth e retorno de checkout são marketing', () => {
-    for (const p of ['/login', '/auth', '/welcome', '/onboard', '/thank-you', '/thank-you-pro', '/connect/abc123']) {
+    for (const p of [
+      '/login',
+      '/auth',
+      '/welcome',
+      '/onboard',
+      '/thank-you',
+      '/thank-you-pro',
+      '/connect/abc123',
+    ]) {
       expect(classifyRoute(p).shell).toBe('marketing');
     }
   });
@@ -60,7 +68,16 @@ describe('classifyRoute', () => {
   });
 
   it('editores são app/focus', () => {
-    for (const p of ['/mockupmachine', '/3d-studio', '/image-lab', '/create', '/canvas/abc', '/qrcode', '/compress', '/labs/wind-tunnel']) {
+    for (const p of [
+      '/mockupmachine',
+      '/3d-studio',
+      '/image-lab',
+      '/create',
+      '/canvas/abc',
+      '/qrcode',
+      '/compress',
+      '/labs/wind-tunnel',
+    ]) {
       expect(classifyRoute(p)).toMatchObject({ shell: 'app', mode: 'focus' });
     }
   });
@@ -75,8 +92,16 @@ describe('classifyRoute', () => {
   it('distingue /canvas (dashboard) de /canvas/:id (editor)', () => {
     // Ambos destacam a seção 'canvas' no rail (há item L1 em NAV_SECTIONS); o que
     // difere é o modo: lista = full, editor = focus.
-    expect(classifyRoute('/canvas')).toMatchObject({ shell: 'app', mode: 'full', section: 'canvas' });
-    expect(classifyRoute('/canvas/abc')).toMatchObject({ shell: 'app', mode: 'focus', section: 'canvas' });
+    expect(classifyRoute('/canvas')).toMatchObject({
+      shell: 'app',
+      mode: 'full',
+      section: 'canvas',
+    });
+    expect(classifyRoute('/canvas/abc')).toMatchObject({
+      shell: 'app',
+      mode: 'focus',
+      section: 'canvas',
+    });
   });
 
   it('distingue /create (editor) de /create/projects (dashboard)', () => {
@@ -124,13 +149,30 @@ describe('resolveShell', () => {
 
 describe('isBrandContext', () => {
   it('marca aparece em produção (cockpit, copilot, canvas, criativos, campanhas)', () => {
-    for (const p of ['/cockpit', '/copilot', '/canvas/abc', '/create', '/create/projects', '/campaigns', '/mockupmachine']) {
+    for (const p of [
+      '/cockpit',
+      '/copilot',
+      '/canvas/abc',
+      '/create',
+      '/create/projects',
+      '/campaigns',
+      '/mockupmachine',
+    ]) {
       expect(isBrandContext(p)).toBe(true);
     }
   });
 
   it('marca some na gestão (biblioteca de marcas, apps, profile, admin)', () => {
-    for (const p of ['/brand-guidelines', '/brand-guidelines?id=x', '/my-brandings', '/apps', '/profile', '/settings/api-keys', '/admin', '/admin/products']) {
+    for (const p of [
+      '/brand-guidelines',
+      '/brand-guidelines?id=x',
+      '/my-brandings',
+      '/apps',
+      '/profile',
+      '/settings/api-keys',
+      '/admin',
+      '/admin/products',
+    ]) {
       expect(isBrandContext(p)).toBe(false);
     }
   });
@@ -206,7 +248,15 @@ describe('isBrandScopedEditor', () => {
   });
 
   it('ferramentas utilitárias NÃO usam marca (chip some)', () => {
-    for (const p of ['/qrcode', '/compress', '/pdf-compress', '/converter', '/remove-bg', '/upscale', '/favicon']) {
+    for (const p of [
+      '/qrcode',
+      '/compress',
+      '/pdf-compress',
+      '/converter',
+      '/remove-bg',
+      '/upscale',
+      '/favicon',
+    ]) {
       expect(isBrandScopedEditor(p)).toBe(false);
     }
   });
@@ -228,7 +278,15 @@ describe('editorHasOwnChrome / naming = editor focus', () => {
   });
 
   it('editores MiniAppShell/ToolEditorShell RESERVAM a faixa do topo → recebem AppSpine (senão buraco)', () => {
-    for (const p of ['/naming', '/image-lab', '/3d-studio', '/qrcode', '/compress', '/mockupmachine', '/create']) {
+    for (const p of [
+      '/naming',
+      '/image-lab',
+      '/3d-studio',
+      '/qrcode',
+      '/compress',
+      '/mockupmachine',
+      '/create',
+    ]) {
       expect(editorHasOwnChrome(p)).toBe(false);
     }
   });

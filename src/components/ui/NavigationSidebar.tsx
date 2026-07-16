@@ -102,7 +102,6 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     }
   }, [activeSectionId]);
 
-
   const toggleItem = (itemId: string) => {
     setExpandedItems((prev) => {
       const newSet = new Set(prev);
@@ -170,79 +169,79 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                   </div>
                 )}
                 <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => {
-                      onItemClick(item.id);
-                      onToggleOpen(false);
-                    }}
-                    className={cn(
-                      'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
-                      isActive
-                        ? 'bg-neutral-800/50 text-neutral-200 border border-neutral-700'
-                        : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
-                    )}
-                  >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="flex-1 text-left">{item.label}</span>
-                  </button>
-                  {hasSections && (
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleItem(item.id);
+                      onClick={() => {
+                        onItemClick(item.id);
+                        onToggleOpen(false);
                       }}
                       className={cn(
-                        'p-1.5 rounded-md text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 transition-colors',
-                        isExpanded && 'text-neutral-200'
+                        'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
+                        isActive
+                          ? 'bg-neutral-800/50 text-neutral-200 border border-neutral-700'
+                          : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
                       )}
-                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                      title={isExpanded ? 'Collapse' : 'Expand'}
                     >
-                      {isExpanded ? (
-                        <ChevronDown className="w-4 h-4" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4" />
-                      )}
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <span className="flex-1 text-left">{item.label}</span>
                     </button>
-                  )}
-                </div>
-                {isExpanded && hasSections && (
-                  <div className="ml-6 space-y-1 mt-1">
-                    {item.sections?.map((section) => {
-                      /* section rendering */
-                      const isSectionActive =
-                        activeSectionId === section.id && activeItemId === item.id;
-                      return (
-                        <button
-                          key={section.id}
-                          ref={(el) => {
-                            if (el) {
-                              sectionRefs.current.set(section.id, el);
-                            } else {
-                              sectionRefs.current.delete(section.id);
-                            }
-                          }}
-                          onClick={() => {
-                            onItemClick(item.id, section.id);
-                            onToggleOpen(false);
-                          }}
-                          className={cn(
-                            'w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative',
-                            isSectionActive
-                              ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
-                              : activeItemId === item.id
-                                ? 'text-neutral-300 hover:text-neutral-200'
-                                : 'text-neutral-500 hover:text-neutral-300',
-                            'hover:bg-neutral-800/30'
-                          )}
-                        >
-                          {section.label}
-                        </button>
-                      );
-                    })}
+                    {hasSections && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleItem(item.id);
+                        }}
+                        className={cn(
+                          'p-1.5 rounded-md text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 transition-colors',
+                          isExpanded && 'text-neutral-200'
+                        )}
+                        aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                        title={isExpanded ? 'Collapse' : 'Expand'}
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
-                )}
+                  {isExpanded && hasSections && (
+                    <div className="ml-6 space-y-1 mt-1">
+                      {item.sections?.map((section) => {
+                        /* section rendering */
+                        const isSectionActive =
+                          activeSectionId === section.id && activeItemId === item.id;
+                        return (
+                          <button
+                            key={section.id}
+                            ref={(el) => {
+                              if (el) {
+                                sectionRefs.current.set(section.id, el);
+                              } else {
+                                sectionRefs.current.delete(section.id);
+                              }
+                            }}
+                            onClick={() => {
+                              onItemClick(item.id, section.id);
+                              onToggleOpen(false);
+                            }}
+                            className={cn(
+                              'w-full text-left px-3 py-1.5 text-xs font-mono rounded transition-colors relative',
+                              isSectionActive
+                                ? 'text-neutral-200 bg-neutral-800/30 border-l-2 border-neutral-500'
+                                : activeItemId === item.id
+                                  ? 'text-neutral-300 hover:text-neutral-200'
+                                  : 'text-neutral-500 hover:text-neutral-300',
+                              'hover:bg-neutral-800/30'
+                            )}
+                          >
+                            {section.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </React.Fragment>
             );

@@ -142,12 +142,16 @@ export const InstagramFeedMock: React.FC<MockProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo tokens={tokens} size={64} />
-          <span style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 4, opacity: 0.5 }}>
+          <span
+            style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 4, opacity: 0.5 }}
+          >
             01 / Brand
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20 }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20 }}
+        >
           <span
             style={{
               fontFamily: tokens.bodyFamily,
@@ -179,10 +183,15 @@ export const InstagramFeedMock: React.FC<MockProps> = ({
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             {swatches.map((hex, i) => (
-              <span key={i} style={{ width: 30, height: 30, borderRadius: '50%', background: hex }} />
+              <span
+                key={i}
+                style={{ width: 30, height: 30, borderRadius: '50%', background: hex }}
+              />
             ))}
           </div>
-          <span style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 4, opacity: 0.45 }}>
+          <span
+            style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 4, opacity: 0.45 }}
+          >
             @{c.name.toLowerCase().replace(/\s+/g, '')}
           </span>
         </div>
@@ -327,12 +336,24 @@ export const PosterMock: React.FC<MockProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span
-            style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 4, textTransform: 'uppercase', opacity: 0.6 }}
+            style={{
+              fontFamily: tokens.bodyFamily,
+              fontSize: 22,
+              letterSpacing: 4,
+              textTransform: 'uppercase',
+              opacity: 0.6,
+            }}
           >
             {c.name}
           </span>
           <span
-            style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 4, textTransform: 'uppercase', opacity: 0.4 }}
+            style={{
+              fontFamily: tokens.bodyFamily,
+              fontSize: 22,
+              letterSpacing: 4,
+              textTransform: 'uppercase',
+              opacity: 0.4,
+            }}
           >
             {new Date().getFullYear()}
           </span>
@@ -388,7 +409,13 @@ export const PosterMock: React.FC<MockProps> = ({
             ))}
           </div>
           <span
-            style={{ fontFamily: tokens.bodyFamily, fontSize: 20, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.4 }}
+            style={{
+              fontFamily: tokens.bodyFamily,
+              fontSize: 20,
+              letterSpacing: 3,
+              textTransform: 'uppercase',
+              opacity: 0.4,
+            }}
           >
             #{c.name.toLowerCase().replace(/\s+/g, '')}
           </span>
@@ -441,7 +468,12 @@ export const StoriesMock: React.FC<MockProps> = ({
                 }}
               >
                 <span
-                  style={{ position: 'absolute', inset: 0, width: i === 0 ? '60%' : '0%', background: t.primary }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: i === 0 ? '60%' : '0%',
+                    background: t.primary,
+                  }}
                 />
               </span>
             ))}
@@ -461,14 +493,32 @@ export const StoriesMock: React.FC<MockProps> = ({
               }}
             >
               {avatarLogo ? (
-                <img src={avatarLogo.url} alt="" style={{ width: '62%', height: '62%', objectFit: 'contain' }} />
+                <img
+                  src={avatarLogo.url}
+                  alt=""
+                  style={{ width: '62%', height: '62%', objectFit: 'contain' }}
+                />
               ) : (
-                <span style={{ fontFamily: tokens.headingFamily, fontWeight: 500, fontSize: 34, color: t.primary }}>
+                <span
+                  style={{
+                    fontFamily: tokens.headingFamily,
+                    fontWeight: 500,
+                    fontSize: 34,
+                    color: t.primary,
+                  }}
+                >
                   {c.name.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
-            <span style={{ fontFamily: tokens.bodyFamily, fontSize: 30, fontWeight: 600, color: t.text }}>
+            <span
+              style={{
+                fontFamily: tokens.bodyFamily,
+                fontSize: 30,
+                fontWeight: 600,
+                color: t.text,
+              }}
+            >
               {c.name.toLowerCase()}
             </span>
           </div>
@@ -509,7 +559,13 @@ export const StoriesMock: React.FC<MockProps> = ({
             Ver mais
           </span>
           <span
-            style={{ fontFamily: tokens.bodyFamily, fontSize: 20, letterSpacing: 4, textTransform: 'uppercase', opacity: 0.4 }}
+            style={{
+              fontFamily: tokens.bodyFamily,
+              fontSize: 20,
+              letterSpacing: 4,
+              textTransform: 'uppercase',
+              opacity: 0.4,
+            }}
           >
             arraste pra cima
           </span>
@@ -531,7 +587,12 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({
   const t = buildRoleTheme(tokens, variant);
   const c = resolveContent(tokens, overrides);
   const swatches = [t.primary, t.secondary, t.accent, t.textMuted, t.text];
-  const link = { fontFamily: tokens.bodyFamily, fontSize: 20, letterSpacing: 2, textTransform: 'uppercase' as const };
+  const link = {
+    fontFamily: tokens.bodyFamily,
+    fontSize: 20,
+    letterSpacing: 2,
+    textTransform: 'uppercase' as const,
+  };
   const btn = {
     padding: '16px 32px',
     borderRadius: 12,
@@ -554,7 +615,14 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({
           borderRadius: 32,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '40px 64px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '40px 64px',
+          }}
+        >
           <Logo tokens={tokens} size={48} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
             {['Sobre', 'Produto', 'Contato'].map((l) => (
@@ -566,10 +634,25 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 100px' }}>
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '0 100px',
+          }}
+        >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1180 }}>
             <span
-              style={{ fontFamily: tokens.bodyFamily, fontSize: 22, letterSpacing: 6, textTransform: 'uppercase', opacity: 0.85, color: t.accent }}
+              style={{
+                fontFamily: tokens.bodyFamily,
+                fontSize: 22,
+                letterSpacing: 6,
+                textTransform: 'uppercase',
+                opacity: 0.85,
+                color: t.accent,
+              }}
             >
               {c.tagline || c.name}
             </span>
@@ -588,26 +671,59 @@ export const WebsiteHeroMock: React.FC<MockProps> = ({
             >
               {c.headline}
             </FitText>
-            <p style={{ fontFamily: tokens.bodyFamily, fontSize: 28, lineHeight: 1.4, maxWidth: 1000, color: t.textMuted }}>
+            <p
+              style={{
+                fontFamily: tokens.bodyFamily,
+                fontSize: 28,
+                lineHeight: 1.4,
+                maxWidth: 1000,
+                color: t.textMuted,
+              }}
+            >
               {c.body || 'Build something extraordinary with a brand that stands out.'}
             </p>
             <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-              <span style={{ ...btn, background: t.primary, color: t.accentText }}>Começar agora</span>
-              <span style={{ ...btn, background: 'transparent', color: t.text, border: `2px solid ${t.text}40` }}>
+              <span style={{ ...btn, background: t.primary, color: t.accentText }}>
+                Começar agora
+              </span>
+              <span
+                style={{
+                  ...btn,
+                  background: 'transparent',
+                  color: t.text,
+                  border: `2px solid ${t.text}40`,
+                }}
+              >
                 Saiba mais
               </span>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 64px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '32px 64px',
+          }}
+        >
           <div style={{ display: 'flex', gap: 12 }}>
             {swatches.map((hex, i) => (
-              <span key={i} style={{ width: 22, height: 22, borderRadius: '50%', background: hex }} />
+              <span
+                key={i}
+                style={{ width: 22, height: 22, borderRadius: '50%', background: hex }}
+              />
             ))}
           </div>
           <span
-            style={{ fontFamily: tokens.bodyFamily, fontSize: 18, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.4 }}
+            style={{
+              fontFamily: tokens.bodyFamily,
+              fontSize: 18,
+              letterSpacing: 3,
+              textTransform: 'uppercase',
+              opacity: 0.4,
+            }}
           >
             {c.name} · {new Date().getFullYear()}
           </span>
@@ -656,17 +772,33 @@ export const BusinessCardMock: React.FC<MockProps> = ({
             <Logo tokens={tokens} size={48} />
             <div style={{ display: 'flex', gap: 8 }}>
               {dots.map((hex, i) => (
-                <span key={i} style={{ width: 16, height: 16, borderRadius: '50%', background: hex }} />
+                <span
+                  key={i}
+                  style={{ width: 16, height: 16, borderRadius: '50%', background: hex }}
+                />
               ))}
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <h3 style={{ fontFamily: tokens.headingFamily, fontWeight: 500, fontSize: 46, color: t.text }}>
+            <h3
+              style={{
+                fontFamily: tokens.headingFamily,
+                fontWeight: 500,
+                fontSize: 46,
+                color: t.text,
+              }}
+            >
               Jane Doe
             </h3>
             <p
-              style={{ fontFamily: tokens.bodyFamily, fontSize: 20, letterSpacing: 4, textTransform: 'uppercase', color: t.accent }}
+              style={{
+                fontFamily: tokens.bodyFamily,
+                fontSize: 20,
+                letterSpacing: 4,
+                textTransform: 'uppercase',
+                color: t.accent,
+              }}
             >
               Creative Director
             </p>
@@ -677,10 +809,19 @@ export const BusinessCardMock: React.FC<MockProps> = ({
               <p style={{ fontFamily: tokens.bodyFamily, fontSize: 18, opacity: 0.5 }}>
                 hello@{c.name.toLowerCase().replace(/\s+/g, '')}.com
               </p>
-              <p style={{ fontFamily: tokens.bodyFamily, fontSize: 18, opacity: 0.5 }}>+1 (555) 000-0000</p>
+              <p style={{ fontFamily: tokens.bodyFamily, fontSize: 18, opacity: 0.5 }}>
+                +1 (555) 000-0000
+              </p>
             </div>
             <span
-              style={{ fontFamily: tokens.bodyFamily, fontSize: 18, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.35 }}
+              style={{
+                fontFamily: tokens.bodyFamily,
+                fontSize: 18,
+                fontWeight: 600,
+                letterSpacing: 3,
+                textTransform: 'uppercase',
+                opacity: 0.35,
+              }}
             >
               {c.name}
             </span>
@@ -1250,7 +1391,14 @@ export const EmailHeaderMock: React.FC<MockProps> = ({
         </div>
 
         <div
-          style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 48px', gap: 12 }}
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '0 48px',
+            gap: 12,
+          }}
         >
           <FitText
             maxFontSize={40}
@@ -1262,13 +1410,26 @@ export const EmailHeaderMock: React.FC<MockProps> = ({
           >
             {c.tagline || `${c.name} Newsletter`}
           </FitText>
-          <p style={{ fontFamily: tokens.bodyFamily, fontSize: 22, lineHeight: 1.35, color: t.textMuted }}>
+          <p
+            style={{
+              fontFamily: tokens.bodyFamily,
+              fontSize: 22,
+              lineHeight: 1.35,
+              color: t.textMuted,
+            }}
+          >
             {c.body || 'Stay updated with the latest from our team.'}
           </p>
         </div>
 
         <div
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12, paddingRight: 48 }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 12,
+            paddingRight: 48,
+          }}
         >
           <span
             style={{
@@ -1285,7 +1446,9 @@ export const EmailHeaderMock: React.FC<MockProps> = ({
           >
             Ler mais
           </span>
-          <span style={{ fontFamily: tokens.bodyFamily, fontSize: 16, opacity: 0.35 }}>Descadastrar</span>
+          <span style={{ fontFamily: tokens.bodyFamily, fontSize: 16, opacity: 0.35 }}>
+            Descadastrar
+          </span>
         </div>
       </div>
     </Artboard>
@@ -1318,7 +1481,10 @@ export const EditorialStoryMock: React.FC<MockProps> = ({
     overrides?.body?.trim() || tokens.manifesto || c.body || tokens.description || c.tagline;
   const words = tokens.keywords.length
     ? tokens.keywords
-    : (c.tagline || c.name).split(/\s+/).filter((w) => w.length > 3).slice(0, 4);
+    : (c.tagline || c.name)
+        .split(/\s+/)
+        .filter((w) => w.length > 3)
+        .slice(0, 4);
   const lines = Array.from({ length: 16 }, (_, i) => ({
     y: 70 + i * 108,
     x: 560 + ((i * 91) % 340),
@@ -1326,7 +1492,9 @@ export const EditorialStoryMock: React.FC<MockProps> = ({
   }));
   return (
     <Artboard w={1080} h={1920} className={className} exportRef={exportRef}>
-      <div style={{ position: 'absolute', inset: 0, background: bg, color: fg, overflow: 'hidden' }}>
+      <div
+        style={{ position: 'absolute', inset: 0, background: bg, color: fg, overflow: 'hidden' }}
+      >
         <svg
           viewBox="0 0 1080 1920"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.14 }}
@@ -1342,7 +1510,12 @@ export const EditorialStoryMock: React.FC<MockProps> = ({
 
         <div style={{ position: 'absolute', top: 96, left: 96, right: 96 }}>
           <div
-            style={{ fontFamily: tokens.headingFamily, fontWeight: 600, fontSize: 40, letterSpacing: '0.02em' }}
+            style={{
+              fontFamily: tokens.headingFamily,
+              fontWeight: 600,
+              fontSize: 40,
+              letterSpacing: '0.02em',
+            }}
           >
             {c.name}
           </div>
@@ -1448,7 +1621,13 @@ export const CardScatterMock: React.FC<MockProps> = ({
         {scatter.map((s, i) => (
           <div
             key={i}
-            style={{ position: 'absolute', left: s.l, top: s.top, transform: `rotate(${s.r}deg)`, opacity: 0.5 }}
+            style={{
+              position: 'absolute',
+              left: s.l,
+              top: s.top,
+              transform: `rotate(${s.r}deg)`,
+              opacity: 0.5,
+            }}
           >
             <Card light={s.light} />
           </div>
@@ -1537,7 +1716,15 @@ export const EditorialHeroMock: React.FC<MockProps> = ({
   const caption = c.tagline || c.body;
   return (
     <Artboard w={1920} h={1080} className={className} exportRef={exportRef}>
-      <div style={{ position: 'absolute', inset: 0, background: t.bg, color: t.text, overflow: 'hidden' }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: t.bg,
+          color: t.text,
+          overflow: 'hidden',
+        }}
+      >
         <div
           style={{
             position: 'absolute',
@@ -1553,12 +1740,30 @@ export const EditorialHeroMock: React.FC<MockProps> = ({
           {photo ? (
             <img src={photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Logo tokens={tokens} size={96} mode="auto" />
             </div>
           )}
         </div>
-        <div style={{ position: 'absolute', left: 64, top: 120, background: t.bg, paddingRight: 48, paddingBottom: 28, maxWidth: 1040 }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: 64,
+            top: 120,
+            background: t.bg,
+            paddingRight: 48,
+            paddingBottom: 28,
+            maxWidth: 1040,
+          }}
+        >
           <FitText
             maxFontSize={130}
             minFontSize={52}

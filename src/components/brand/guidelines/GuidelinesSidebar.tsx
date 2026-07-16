@@ -268,7 +268,9 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       >
                         <Star
                           size={12}
-                          className={isPinned('brand', g.id!) ? 'fill-brand-cyan text-brand-cyan' : ''}
+                          className={
+                            isPinned('brand', g.id!) ? 'fill-brand-cyan text-brand-cyan' : ''
+                          }
                         />
                         {isPinned('brand', g.id!) ? t('nav.unpin') : t('nav.pin')}
                       </DropdownMenuItem>

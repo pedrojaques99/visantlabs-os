@@ -42,7 +42,12 @@ describe('parseTemplateNode', () => {
       height: 10,
       relativeTransform: T(),
       fills: [
-        { type: 'SOLID', opacity: 1, color: { r: 0, g: 0, b: 0 }, boundVariables: { color: { id: 'v-accent' } } },
+        {
+          type: 'SOLID',
+          opacity: 1,
+          color: { r: 0, g: 0, b: 0 },
+          boundVariables: { color: { id: 'v-accent' } },
+        },
       ],
     };
     expect(parseTemplateNode(node, varName).fill).toEqual({ opacity: 1, varName: 'accent' });
@@ -75,7 +80,14 @@ describe('parseTemplateNode', () => {
       letterSpacing: { unit: 'PERCENT', value: -2 },
       lineHeight: { unit: 'PERCENT', value: 100 },
       boundVariables: { fontFamily: { id: 'v-head' } },
-      fills: [{ type: 'SOLID', opacity: 1, color: { r: 0, g: 0, b: 0 }, boundVariables: { color: { id: 'v-text' } } }],
+      fills: [
+        {
+          type: 'SOLID',
+          opacity: 1,
+          color: { r: 0, g: 0, b: 0 },
+          boundVariables: { color: { id: 'v-text' } },
+        },
+      ],
     };
     const out = parseTemplateNode(node, varName);
     expect(out.slot).toEqual({ id: 'h1', variant: undefined, optional: false, list: false });
@@ -116,7 +128,14 @@ describe('parseTemplateNode', () => {
       relativeTransform: T(),
       children: [
         { name: 'a', type: 'RECTANGLE', width: 5, height: 5, relativeTransform: T(1, 1) },
-        { name: 'hidden', type: 'RECTANGLE', width: 5, height: 5, relativeTransform: T(), visible: false },
+        {
+          name: 'hidden',
+          type: 'RECTANGLE',
+          width: 5,
+          height: 5,
+          relativeTransform: T(),
+          visible: false,
+        },
       ],
     };
     const out = parseTemplateNode(node, varName);
@@ -133,10 +152,23 @@ describe('frameToSchema', () => {
       width: 1920,
       height: 1080,
       relativeTransform: T(120, 300),
-      fills: [{ type: 'SOLID', opacity: 1, color: { r: 1, g: 1, b: 1 }, boundVariables: { color: { id: 'v-text' } } }],
+      fills: [
+        {
+          type: 'SOLID',
+          opacity: 1,
+          color: { r: 1, g: 1, b: 1 },
+          boundVariables: { color: { id: 'v-text' } },
+        },
+      ],
     };
     const schema = frameToSchema(frame, varName, '10:20');
-    expect(schema).toMatchObject({ id: '10:20', name: '[Template] Hero', width: 1920, height: 1080, aspect: '16:9' });
+    expect(schema).toMatchObject({
+      id: '10:20',
+      name: '[Template] Hero',
+      width: 1920,
+      height: 1080,
+      aspect: '16:9',
+    });
     expect(schema.root.fill).toEqual({ opacity: 1, varName: 'text' });
   });
 });

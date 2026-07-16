@@ -9,8 +9,7 @@ process.env.FEATURE_BRAND_BILLING = 'true';
 // other export real (the app sends welcome/verification mails elsewhere).
 const sendSpy = vi.fn().mockResolvedValue(true);
 vi.mock('../../../server/services/emailService.js', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../../../server/services/emailService.js')>();
+  const actual = await importOriginal<typeof import('../../../server/services/emailService.js')>();
   return { ...actual, sendBrandQuotaDowngradeEmail: sendSpy };
 });
 

@@ -689,31 +689,31 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           !focusMode &&
           !location.pathname.startsWith('/canvas/') &&
           !location.pathname.startsWith('/brand/') && (
-          <Header
-            subscriptionStatus={subscriptionStatus}
-            onPricingClick={() => navigate('/pricing')}
-            onJoinClick={() => setIsSubscriptionModalOpen(true)}
-            onCreditsClick={() => {
-              setCreditPackagesModalTab('carteira');
-              setIsCreditPackagesModalOpen(true);
-            }}
-            onLogoClick={() => {
-              // This will be intercepted by Header if there are unsaved outputs
-              const unsavedInfo = getUnsavedOutputsInfo();
-              if (!unsavedInfo?.hasUnsaved) {
-                handleReset();
-                navigate('/');
-              }
-            }}
-            onLogoClickWithReset={handleReset}
-            getUnsavedOutputsInfo={getUnsavedOutputsInfo}
-            navigateToHome={() => navigate('/')}
-            onMockupsClick={() => navigate('/mockups')}
-            onCreateNewMockup={() => navigate('/mockupmachine')}
-            onMyOutputsClick={() => navigate('/my-outputs')}
-            onMyBrandingsClick={() => navigate('/my-brandings')}
-          />
-        )}
+            <Header
+              subscriptionStatus={subscriptionStatus}
+              onPricingClick={() => navigate('/pricing')}
+              onJoinClick={() => setIsSubscriptionModalOpen(true)}
+              onCreditsClick={() => {
+                setCreditPackagesModalTab('carteira');
+                setIsCreditPackagesModalOpen(true);
+              }}
+              onLogoClick={() => {
+                // This will be intercepted by Header if there are unsaved outputs
+                const unsavedInfo = getUnsavedOutputsInfo();
+                if (!unsavedInfo?.hasUnsaved) {
+                  handleReset();
+                  navigate('/');
+                }
+              }}
+              onLogoClickWithReset={handleReset}
+              getUnsavedOutputsInfo={getUnsavedOutputsInfo}
+              navigateToHome={() => navigate('/')}
+              onMockupsClick={() => navigate('/mockups')}
+              onCreateNewMockup={() => navigate('/mockupmachine')}
+              onMyOutputsClick={() => navigate('/my-outputs')}
+              onMyBrandingsClick={() => navigate('/my-brandings')}
+            />
+          )}
 
         {!useAppShell && location.pathname.startsWith('/canvas/') && (
           <CanvasHeader onBack={() => navigate('/canvas')} />

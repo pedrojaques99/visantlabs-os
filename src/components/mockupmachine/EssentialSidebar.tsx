@@ -189,7 +189,10 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
                   t('mockup.scenarioPlaceholder') ||
                   'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'
                 }
-                className={cn('w-full h-24 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-all resize-none', glassSurface.tile)}
+                className={cn(
+                  'w-full h-24 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-all resize-none',
+                  glassSurface.tile
+                )}
               />
             </motion.div>
           )}

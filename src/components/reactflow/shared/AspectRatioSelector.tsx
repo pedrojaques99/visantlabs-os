@@ -52,7 +52,8 @@ const RatioTile: React.FC<{
       className={cn(
         'group flex flex-col items-center justify-center gap-1.5 rounded-xl border transition-colors',
         compact ? 'w-12 py-2' : 'flex-1 py-3',
-        selected ? 'border-brand-cyan/40 bg-brand-cyan/[0.08]'
+        selected
+          ? 'border-brand-cyan/40 bg-brand-cyan/[0.08]'
           : 'border-neutral-800 bg-white/[0.02] hover:border-neutral-700',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
@@ -62,7 +63,8 @@ const RatioTile: React.FC<{
           style={{ width, height }}
           className={cn(
             'rounded-[3px] border transition-colors',
-            selected ? 'border-brand-cyan bg-brand-cyan/25'
+            selected
+              ? 'border-brand-cyan bg-brand-cyan/25'
               : 'border-neutral-500 group-hover:border-neutral-400'
           )}
         />
@@ -133,7 +135,8 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
           onMouseDown={(e) => e.stopPropagation()}
           className={cn(
             'flex w-12 flex-col items-center justify-center rounded-xl border py-2 transition-colors',
-            isOtherSelected ? 'border-brand-cyan/40 bg-brand-cyan/[0.08] text-brand-cyan'
+            isOtherSelected
+              ? 'border-brand-cyan/40 bg-brand-cyan/[0.08] text-brand-cyan'
               : 'border-neutral-800 bg-white/[0.02] text-neutral-500 hover:border-neutral-700',
             disabled && 'opacity-50 cursor-not-allowed'
           )}

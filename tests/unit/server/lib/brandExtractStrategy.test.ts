@@ -40,7 +40,9 @@ describe('validateExtracted — strategy.manifesto', () => {
   });
 
   it('omits an empty manifesto rather than persisting a hollow object', () => {
-    expect(validateExtracted({ strategy: { manifesto: '   ' } }).strategy?.manifesto).toBeUndefined();
+    expect(
+      validateExtracted({ strategy: { manifesto: '   ' } }).strategy?.manifesto
+    ).toBeUndefined();
     expect(
       validateExtracted({ strategy: { manifesto: { full: '' } } }).strategy?.manifesto
     ).toBeUndefined();

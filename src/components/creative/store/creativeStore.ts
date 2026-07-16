@@ -179,9 +179,7 @@ export const useCreativeStore = create<CreativeStore>()(
         setFormat: (format) =>
           set((state) => ({
             format,
-            pages: state.pages.map((p, i) =>
-              i === state.activePageIndex ? { ...p, format } : p
-            ),
+            pages: state.pages.map((p, i) => (i === state.activePageIndex ? { ...p, format } : p)),
           })),
         setBackgroundMode: (backgroundMode) => set({ backgroundMode }),
         setUploadedBackgroundUrl: (uploadedBackgroundUrl) => set({ uploadedBackgroundUrl }),

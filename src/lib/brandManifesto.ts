@@ -10,7 +10,5 @@ import type { BrandManifesto } from './figma-types';
 export function manifestoText(raw: string | BrandManifesto | null | undefined): string {
   if (!raw) return '';
   if (typeof raw === 'string') return raw;
-  return (
-    raw.full || [raw.provocation, raw.tension, raw.promise].filter(Boolean).join('\n\n') || ''
-  );
+  return raw.full || [raw.provocation, raw.tension, raw.promise].filter(Boolean).join('\n\n') || '';
 }

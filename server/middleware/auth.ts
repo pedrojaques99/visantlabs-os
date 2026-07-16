@@ -167,8 +167,7 @@ export const optionalAuthenticate = async (
     // OAuth 2.1 access token path — has `sub` + `aud` (MCP resource)
     const aud = decoded.aud;
     const isOAuthToken =
-      decoded.sub &&
-      (aud === MCP_ENDPOINT || (Array.isArray(aud) && aud.includes(MCP_ENDPOINT)));
+      decoded.sub && (aud === MCP_ENDPOINT || (Array.isArray(aud) && aud.includes(MCP_ENDPOINT)));
 
     if (isOAuthToken && decoded.sub) {
       req.userId = decoded.sub;

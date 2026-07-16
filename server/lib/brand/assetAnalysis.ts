@@ -121,14 +121,25 @@ export function parseAnalysisJson(text: string): any {
 
 // Vision returns free-form strings; clamp to our unions so the matcher can trust them.
 const VALID_KINDS = [
-  'logo', 'wordmark', 'symbol', 'photo', 'pattern', 'texture', 'graphic', 'illustration',
+  'logo',
+  'wordmark',
+  'symbol',
+  'photo',
+  'pattern',
+  'texture',
+  'graphic',
+  'illustration',
 ] as const;
 export function normalizePlacementSemantic(
   raw: any
 ): import('./visualSignature.js').BrandAssetPlacement {
   if (!raw || typeof raw !== 'object') return {};
-  const kind = String(raw.kind || '').toLowerCase().trim();
-  const lum = String(raw.luminance || '').toLowerCase().trim();
+  const kind = String(raw.kind || '')
+    .toLowerCase()
+    .trim();
+  const lum = String(raw.luminance || '')
+    .toLowerCase()
+    .trim();
   const safe = Array.isArray(raw.contrastSafeOn)
     ? raw.contrastSafeOn
         .map((s: unknown) => String(s).toLowerCase().trim())
@@ -145,7 +156,9 @@ export function normalizePlacementSemantic(
     hasText: typeof raw.hasText === 'boolean' ? raw.hasText : text ? text.length > 0 : undefined,
     text: text || undefined,
     contrastSafeOn: safe && safe.length ? Array.from(new Set(safe)) : undefined,
-    ...(box ? { textBox: box, safeCrop: safeCropFromBox(box), safeCropSource: 'vision' as const } : {}),
+    ...(box
+      ? { textBox: box, safeCrop: safeCropFromBox(box), safeCropSource: 'vision' as const }
+      : {}),
   };
 }
 
@@ -262,10 +275,12 @@ async function fetchAsBase64(
  */
 export async function computeMechanics(
   raster: Buffer
-): Promise<Pick<
-  import('./visualSignature.js').BrandAssetPlacement,
-  'aspectRatio' | 'hasTransparency' | 'dominantColor'
->> {
+): Promise<
+  Pick<
+    import('./visualSignature.js').BrandAssetPlacement,
+    'aspectRatio' | 'hasTransparency' | 'dominantColor'
+  >
+> {
   try {
     const { default: sharp } = await import('sharp');
     const img = sharp(raster);

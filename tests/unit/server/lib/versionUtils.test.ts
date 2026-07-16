@@ -21,8 +21,14 @@ describe('calculateChangedFields', () => {
 
   it('detects a nested strategy edit', () => {
     const changed = calculateChangedFields(
-      { strategy: { coreMessage: { product: 'Hospedagem', differential: 'a', emotionalBond: 'b' } } } as any,
-      { strategy: { coreMessage: { product: 'Hospedagem urbana', differential: 'a', emotionalBond: 'b' } } } as any
+      {
+        strategy: { coreMessage: { product: 'Hospedagem', differential: 'a', emotionalBond: 'b' } },
+      } as any,
+      {
+        strategy: {
+          coreMessage: { product: 'Hospedagem urbana', differential: 'a', emotionalBond: 'b' },
+        },
+      } as any
     );
     expect(changed).toEqual(['strategy']);
   });

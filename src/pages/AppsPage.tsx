@@ -1067,7 +1067,12 @@ export const AppsPage: React.FC = () => {
           </div>
 
           {/* Sticky toolbar: search + access + sort */}
-          <div className={cn('sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800', inShell ? 'top-0' : 'top-10 md:top-14')}>
+          <div
+            className={cn(
+              'sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800',
+              inShell ? 'top-0' : 'top-10 md:top-14'
+            )}
+          >
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search
@@ -1079,7 +1084,10 @@ export const AppsPage: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('apps.searchPlaceholder')}
-                  className={cn('w-full pl-9 pr-9 py-2 text-sm rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all', glassSurface.tile)}
+                  className={cn(
+                    'w-full pl-9 pr-9 py-2 text-sm rounded-xl text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-white/15 focus:bg-white/5 transition-all',
+                    glassSurface.tile
+                  )}
                 />
                 {search && (
                   <button
@@ -1093,7 +1101,12 @@ export const AppsPage: React.FC = () => {
               </div>
 
               {/* Access segmented control */}
-              <div className={cn('hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl shrink-0', glassSurface.tile)}>
+              <div
+                className={cn(
+                  'hidden sm:flex items-center gap-0.5 p-0.5 rounded-xl shrink-0',
+                  glassSurface.tile
+                )}
+              >
                 {(['all', 'free', 'premium'] as AccessFilter[]).map((key) => (
                   <button
                     key={key}
@@ -1229,7 +1242,9 @@ export const AppsPage: React.FC = () => {
                             <MicroTitle as="span" className="text-neutral-300">
                               {t('apps.quickTools')}
                             </MicroTitle>
-                            <span className="text-xs font-mono text-neutral-600 tabular-nums">{utilityCount}</span>
+                            <span className="text-xs font-mono text-neutral-600 tabular-nums">
+                              {utilityCount}
+                            </span>
                             <ChevronRight
                               size={16}
                               className={cn(
@@ -1239,7 +1254,9 @@ export const AppsPage: React.FC = () => {
                             />
                           </button>
                           {!showUtilities && (
-                            <p className="mt-2 text-sm text-neutral-600">{t('apps.quickToolsDesc')}</p>
+                            <p className="mt-2 text-sm text-neutral-600">
+                              {t('apps.quickToolsDesc')}
+                            </p>
                           )}
                           {showUtilities && (
                             <div className="mt-8 space-y-12">

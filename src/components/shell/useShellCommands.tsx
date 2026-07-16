@@ -156,9 +156,7 @@ export function useShellCommands(): ShellCommand[] {
               label: `${a.prompt}${suffix}`,
               category: actionsLabel,
               icon: <Zap className="h-4 w-4" />,
-              onClick: act(a.id, () =>
-                navigate(`/copilot?prompt=${encodeURIComponent(a.prompt)}`)
-              ),
+              onClick: act(a.id, () => navigate(`/copilot?prompt=${encodeURIComponent(a.prompt)}`)),
             }))
         : [];
 
@@ -200,7 +198,7 @@ export function useShellCommands(): ShellCommand[] {
 
     const pinnedLabel = t('command.pinned') || 'Fixados';
     const pinnedCmds: ShellCommand[] = pinned.map((p) => {
-      const Icon = p.type === 'app' ? getLucideIcon(p.icon) ?? LayoutGrid : undefined;
+      const Icon = p.type === 'app' ? (getLucideIcon(p.icon) ?? LayoutGrid) : undefined;
       return {
         id: `pinned:${p.type}:${p.id}`,
         label: p.label,

@@ -95,8 +95,13 @@ describe('GET /:id/mockup-suggestions', () => {
   it('returns no_scenes when assets exist but no commercial scene is available', async () => {
     const { user, token } = await seedUser();
     // Only a paid-studio scene exists → filtered out → no_scenes.
-    await seedScenes([sceneDoc({ psdFileName: 'Mockup-Hazard_poster.psd', license: 'studio-paid' })]);
-    const { guideline } = await createBrandGuideline({ userId: user.id, logos: [logoWithPlacement] });
+    await seedScenes([
+      sceneDoc({ psdFileName: 'Mockup-Hazard_poster.psd', license: 'studio-paid' }),
+    ]);
+    const { guideline } = await createBrandGuideline({
+      userId: user.id,
+      logos: [logoWithPlacement],
+    });
     const res = await (await request())
       .get(`${BASE}/${guideline.id}/mockup-suggestions`)
       .set('Authorization', bearer(token));
@@ -120,7 +125,10 @@ describe('GET /:id/mockup-suggestions', () => {
         faces: [{ key: 'f1', name: 'Poster', innerW: 800, innerH: 1200 }],
       }),
     ]);
-    const { guideline } = await createBrandGuideline({ userId: user.id, logos: [logoWithPlacement] });
+    const { guideline } = await createBrandGuideline({
+      userId: user.id,
+      logos: [logoWithPlacement],
+    });
 
     const res = await (await request())
       .get(`${BASE}/${guideline.id}/mockup-suggestions`)
@@ -136,9 +144,7 @@ describe('GET /:id/mockup-suggestions', () => {
     expect(s.surfaceKind).toBe('apparel');
     expect(typeof s.score).toBe('number');
     // The paid-studio poster must never appear.
-    expect(
-      res.body.suggestions.find((x: any) => x.psdFileName.includes('Hazard'))
-    ).toBeUndefined();
+    expect(res.body.suggestions.find((x: any) => x.psdFileName.includes('Hazard'))).toBeUndefined();
   });
 
   it('honors the seen exclude and cursor paging', async () => {
@@ -147,7 +153,10 @@ describe('GET /:id/mockup-suggestions', () => {
       sceneDoc({ psdFileName: 'tshirt_a.psd', license: 'commercial-free', baseLuminance: 'dark' }),
       sceneDoc({ psdFileName: 'poster_b.psd', license: 'commercial-free', baseLuminance: 'light' }),
     ]);
-    const { guideline } = await createBrandGuideline({ userId: user.id, logos: [logoWithPlacement] });
+    const { guideline } = await createBrandGuideline({
+      userId: user.id,
+      logos: [logoWithPlacement],
+    });
 
     const res = await (await request())
       .get(`${BASE}/${guideline.id}/mockup-suggestions?seen=tshirt_a.psd:f1`)

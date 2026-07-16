@@ -313,173 +313,173 @@ const App: React.FC = () => {
         <ActiveBrandKitProvider>
           <ActiveBrandProvider>
             <Layout>
-            <ErrorBoundaryWrapper>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/cockpit" element={<HomeRoute />} />
-                  <Route path="/mockupmachine" element={<MockupMachinePage />} />
-                  <Route path="/pricing" element={<PricingPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/thank-you" element={<ThankYouPage />} />
-                  <Route path="/thank-you-pro" element={<ThankYouProPage />} />
-                  <Route path="/thank-you-pro-anual" element={<ThankYouProAnualPage />} />
-                  <Route path="/thank-you-vision" element={<ThankYouVisionPage />} />
-                  <Route path="/thank-you-vision-anual" element={<ThankYouVisionAnualPage />} />
-                  <Route path="/recharge-success" element={<CreditRechargeSuccessPage />} />
-                  <Route path="/mockups" element={<MockupsPage />} />
-                  <Route path="/my-outputs" element={<MyOutputsPage />} />
-                  <Route path="/canvas" element={<CanvasProjectsPage />} />
-                  <Route path="/canvas/shared/:shareId" element={<CanvasSharedPage />} />
-                  <Route
-                    path="/canvas/:id"
-                    element={
-                      <DesktopOnlyGate toolName="Canvas">
-                        <CanvasPage />
-                      </DesktopOnlyGate>
-                    }
-                  />
-                  <Route path="/branding-machine" element={<BrandingMachinePage />} />
-                  <Route
-                    path="/my-brandings"
-                    element={
-                      <PremiumGate toolName="My Brandings">
-                        <MyBrandingsPage />
-                      </PremiumGate>
-                    }
-                  />
-                  <Route path="/branding-expert" element={<BrandingExpertPage />} />
-                  <Route path="/budget-machine" element={<BudgetMachinePage />} />
-                  <Route path="/my-budgets" element={<MyBudgetsPage />} />
-                  <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
-                  <Route path="/apps" element={<AppsPage />} />
-                  <Route path="/extractor" element={<ExtractorPage />} />
-                  <Route
-                    path="/moodboard"
-                    element={
-                      <DesktopOnlyGate toolName="Moodboard Studio">
-                        <MoodboardStudioPage />
-                      </DesktopOnlyGate>
-                    }
-                  />
-                  <Route path="/visual-search" element={<VisualSearchPage />} />
-                  <Route path="/references" element={<ReferencesPage />} />
-                  <Route path="/upscale" element={<UpscalePage />} />
-                  <Route path="/favicon" element={<FaviconPage />} />
-                  <Route path="/color-converter" element={<ColorConverterPage />} />
-                  <Route path="/naming" element={<NamingMachinePage />} />
-                  <Route path="/compress" element={<CompressPage />} />
-                  <Route path="/pdf-compress" element={<PdfCompressPage />} />
-                  <Route path="/color-palette" element={<ColorPalettePage />} />
-                  <Route path="/converter" element={<ConverterPage />} />
-                  <Route path="/svg-optimizer" element={<SvgOptimizerPage />} />
-                  <Route path="/og-image" element={<OgImagePage />} />
-                  <Route path="/watermark" element={<WatermarkPage />} />
-                  <Route path="/remove-bg" element={<BgRemovePage />} />
-                  <Route
-                    path="/instagram-extractor"
-                    element={<Navigate to="/extractor" replace />}
-                  />
-                  <Route path="/qrcode" element={<QRCodePage />} />
-                  <Route path="/grid-paint" element={<GridPaintPage />} />
-                  <Route path="/3d-studio" element={<Studio3DPage />} />
-                  <Route path="/image-lab" element={<ImageLabPage />} />
-                  <Route path="/editor" element={<EditorPage />} />
-                  <Route path="/cmyk-halftone" element={<Navigate to="/image-lab" replace />} />
-                  <Route path="/texture-filter" element={<Navigate to="/image-lab" replace />} />
-                  <Route
-                    path="/grid-machine"
-                    element={
-                      <DesktopOnlyGate toolName="Grid Machine">
-                        <GridMachinePage />
-                      </DesktopOnlyGate>
-                    }
-                  />
-                  <Route path="/riso-machine" element={<Navigate to="/image-lab" replace />} />
-                  <Route path="/labs" element={<LabsPage />} />
-                  <Route
-                    path="/labs/wind-tunnel"
-                    element={
-                      <DesktopOnlyGate toolName="Wind Tunnel">
-                        <WindTunnelPage />
-                      </DesktopOnlyGate>
-                    }
-                  />
-                  <Route path="/labs/benchmark" element={<BenchmarkArenaPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/onboard" element={<OnboardPage />} />
-                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
-                  <Route path="/terms" element={<TermsOfServicePage />} />
-                  <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
-                  <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
-                  <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
-                  <Route path="/design-system" element={<DesignSystemPage />} />
-                  <Route path="/docs" element={<DocsPage />} />
-                  <Route path="/docs/getting-started" element={<GettingStartedPage />} />
-                  <Route path="/settings/api-keys" element={<ApiKeysPage />} />
-                  <Route path="/settings/connected-apps" element={<ConnectedAppsPage />} />
-                  {/* Developer Portal dissolved: account → /profile, docs → /docs */}
-                  <Route path="/developer" element={<Navigate to="/profile" replace />} />
-                  <Route
-                    path="/developer/usage"
-                    element={<Navigate to="/profile?tab=overview" replace />}
-                  />
-                  <Route
-                    path="/developer/getting-started"
-                    element={<Navigate to="/docs/getting-started" replace />}
-                  />
-                  <Route path="/connect/:token" element={<ConnectPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/auth" element={<AuthCallbackPage />} />
-                  <Route path="/waitlist" element={<WaitlistPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/verify-email" element={<VerifyEmailPage />} />
-                  <Route path="/welcome" element={<OnboardingWizardPage />} />
-                  <Route path="/admin" element={<AdminPage />} />
-                  {/* Rota some com a flag desligada — kill-switch do rollout (plano §3.2) */}
-                  {FEATURE_COPILOT && <Route path="/copilot" element={<CopilotPage />} />}
-                  <Route path="/admin/chat" element={<AdminChatPage />} />
-                  <Route path="/admin/presets" element={<AdminPresetsPage />} />
-                  <Route path="/admin/products" element={<AdminProductsPage />} />
-                  <Route path="/admin/psd-scene" element={<PsdSceneRenderPage />} />
-                  <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
+              <ErrorBoundaryWrapper>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/cockpit" element={<HomeRoute />} />
+                    <Route path="/mockupmachine" element={<MockupMachinePage />} />
+                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/thank-you" element={<ThankYouPage />} />
+                    <Route path="/thank-you-pro" element={<ThankYouProPage />} />
+                    <Route path="/thank-you-pro-anual" element={<ThankYouProAnualPage />} />
+                    <Route path="/thank-you-vision" element={<ThankYouVisionPage />} />
+                    <Route path="/thank-you-vision-anual" element={<ThankYouVisionAnualPage />} />
+                    <Route path="/recharge-success" element={<CreditRechargeSuccessPage />} />
+                    <Route path="/mockups" element={<MockupsPage />} />
+                    <Route path="/my-outputs" element={<MyOutputsPage />} />
+                    <Route path="/canvas" element={<CanvasProjectsPage />} />
+                    <Route path="/canvas/shared/:shareId" element={<CanvasSharedPage />} />
+                    <Route
+                      path="/canvas/:id"
+                      element={
+                        <DesktopOnlyGate toolName="Canvas">
+                          <CanvasPage />
+                        </DesktopOnlyGate>
+                      }
+                    />
+                    <Route path="/branding-machine" element={<BrandingMachinePage />} />
+                    <Route
+                      path="/my-brandings"
+                      element={
+                        <PremiumGate toolName="My Brandings">
+                          <MyBrandingsPage />
+                        </PremiumGate>
+                      }
+                    />
+                    <Route path="/branding-expert" element={<BrandingExpertPage />} />
+                    <Route path="/budget-machine" element={<BudgetMachinePage />} />
+                    <Route path="/my-budgets" element={<MyBudgetsPage />} />
+                    <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
+                    <Route path="/apps" element={<AppsPage />} />
+                    <Route path="/extractor" element={<ExtractorPage />} />
+                    <Route
+                      path="/moodboard"
+                      element={
+                        <DesktopOnlyGate toolName="Moodboard Studio">
+                          <MoodboardStudioPage />
+                        </DesktopOnlyGate>
+                      }
+                    />
+                    <Route path="/visual-search" element={<VisualSearchPage />} />
+                    <Route path="/references" element={<ReferencesPage />} />
+                    <Route path="/upscale" element={<UpscalePage />} />
+                    <Route path="/favicon" element={<FaviconPage />} />
+                    <Route path="/color-converter" element={<ColorConverterPage />} />
+                    <Route path="/naming" element={<NamingMachinePage />} />
+                    <Route path="/compress" element={<CompressPage />} />
+                    <Route path="/pdf-compress" element={<PdfCompressPage />} />
+                    <Route path="/color-palette" element={<ColorPalettePage />} />
+                    <Route path="/converter" element={<ConverterPage />} />
+                    <Route path="/svg-optimizer" element={<SvgOptimizerPage />} />
+                    <Route path="/og-image" element={<OgImagePage />} />
+                    <Route path="/watermark" element={<WatermarkPage />} />
+                    <Route path="/remove-bg" element={<BgRemovePage />} />
+                    <Route
+                      path="/instagram-extractor"
+                      element={<Navigate to="/extractor" replace />}
+                    />
+                    <Route path="/qrcode" element={<QRCodePage />} />
+                    <Route path="/grid-paint" element={<GridPaintPage />} />
+                    <Route path="/3d-studio" element={<Studio3DPage />} />
+                    <Route path="/image-lab" element={<ImageLabPage />} />
+                    <Route path="/editor" element={<EditorPage />} />
+                    <Route path="/cmyk-halftone" element={<Navigate to="/image-lab" replace />} />
+                    <Route path="/texture-filter" element={<Navigate to="/image-lab" replace />} />
+                    <Route
+                      path="/grid-machine"
+                      element={
+                        <DesktopOnlyGate toolName="Grid Machine">
+                          <GridMachinePage />
+                        </DesktopOnlyGate>
+                      }
+                    />
+                    <Route path="/riso-machine" element={<Navigate to="/image-lab" replace />} />
+                    <Route path="/labs" element={<LabsPage />} />
+                    <Route
+                      path="/labs/wind-tunnel"
+                      element={
+                        <DesktopOnlyGate toolName="Wind Tunnel">
+                          <WindTunnelPage />
+                        </DesktopOnlyGate>
+                      }
+                    />
+                    <Route path="/labs/benchmark" element={<BenchmarkArenaPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/onboard" element={<OnboardPage />} />
+                    <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                    <Route path="/terms" element={<TermsOfServicePage />} />
+                    <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
+                    <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
+                    <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
+                    <Route path="/design-system" element={<DesignSystemPage />} />
+                    <Route path="/docs" element={<DocsPage />} />
+                    <Route path="/docs/getting-started" element={<GettingStartedPage />} />
+                    <Route path="/settings/api-keys" element={<ApiKeysPage />} />
+                    <Route path="/settings/connected-apps" element={<ConnectedAppsPage />} />
+                    {/* Developer Portal dissolved: account → /profile, docs → /docs */}
+                    <Route path="/developer" element={<Navigate to="/profile" replace />} />
+                    <Route
+                      path="/developer/usage"
+                      element={<Navigate to="/profile?tab=overview" replace />}
+                    />
+                    <Route
+                      path="/developer/getting-started"
+                      element={<Navigate to="/docs/getting-started" replace />}
+                    />
+                    <Route path="/connect/:token" element={<ConnectPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/auth" element={<AuthCallbackPage />} />
+                    <Route path="/waitlist" element={<WaitlistPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/verify-email" element={<VerifyEmailPage />} />
+                    <Route path="/welcome" element={<OnboardingWizardPage />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    {/* Rota some com a flag desligada — kill-switch do rollout (plano §3.2) */}
+                    {FEATURE_COPILOT && <Route path="/copilot" element={<CopilotPage />} />}
+                    <Route path="/admin/chat" element={<AdminChatPage />} />
+                    <Route path="/admin/presets" element={<AdminPresetsPage />} />
+                    <Route path="/admin/products" element={<AdminProductsPage />} />
+                    <Route path="/admin/psd-scene" element={<PsdSceneRenderPage />} />
+                    <Route path="/admin/smart-analyzer" element={<SmartAnalyzerPage />} />
 
-                  <Route path="/create" element={<CreatePage />} />
-                  <Route path="/create/projects" element={<CreativeProjectsPage />} />
-                  <Route path="/content-studio" element={<ContentStudioPage />} />
-                  <Route path="/campaigns" element={<CampaignsPage />} />
-                  <Route
-                    path="/playground"
-                    element={
-                      <PremiumGate toolName="Playground">
-                        <PlaygroundPage />
-                      </PremiumGate>
-                    }
-                  />
-                  <Route
-                    path="/playground/explore"
-                    element={
-                      <PremiumGate toolName="Playground">
-                        <PlaygroundGalleryPage />
-                      </PremiumGate>
-                    }
-                  />
-                  <Route path="/playground/shared/:shareId" element={<PlaygroundSharedPage />} />
-                  <Route
-                    path="/playground/:slug"
-                    element={
-                      <PremiumGate toolName="Playground">
-                        <PlaygroundPage />
-                      </PremiumGate>
-                    }
-                  />
-                  <Route path="/community" element={<CommunityPage />} />
-                  <Route path="/community/presets" element={<CommunityPresetsPage />} />
-                  <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundaryWrapper>
+                    <Route path="/create" element={<CreatePage />} />
+                    <Route path="/create/projects" element={<CreativeProjectsPage />} />
+                    <Route path="/content-studio" element={<ContentStudioPage />} />
+                    <Route path="/campaigns" element={<CampaignsPage />} />
+                    <Route
+                      path="/playground"
+                      element={
+                        <PremiumGate toolName="Playground">
+                          <PlaygroundPage />
+                        </PremiumGate>
+                      }
+                    />
+                    <Route
+                      path="/playground/explore"
+                      element={
+                        <PremiumGate toolName="Playground">
+                          <PlaygroundGalleryPage />
+                        </PremiumGate>
+                      }
+                    />
+                    <Route path="/playground/shared/:shareId" element={<PlaygroundSharedPage />} />
+                    <Route
+                      path="/playground/:slug"
+                      element={
+                        <PremiumGate toolName="Playground">
+                          <PlaygroundPage />
+                        </PremiumGate>
+                      }
+                    />
+                    <Route path="/community" element={<CommunityPage />} />
+                    <Route path="/community/presets" element={<CommunityPresetsPage />} />
+                    <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundaryWrapper>
             </Layout>
           </ActiveBrandProvider>
         </ActiveBrandKitProvider>

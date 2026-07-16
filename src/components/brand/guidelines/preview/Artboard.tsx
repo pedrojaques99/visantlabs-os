@@ -47,7 +47,12 @@ export const Artboard: React.FC<ArtboardProps> = ({ w, h, className, children, e
     <div
       ref={fitRef}
       className={className}
-      style={{ position: 'relative', width: '100%', aspectRatio: `${w} / ${h}`, overflow: 'hidden' }}
+      style={{
+        position: 'relative',
+        width: '100%',
+        aspectRatio: `${w} / ${h}`,
+        overflow: 'hidden',
+      }}
     >
       <div
         style={{

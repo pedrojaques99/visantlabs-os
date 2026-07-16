@@ -87,7 +87,11 @@ export async function extractTemplateSchemas() {
   const toHex = (c: RGB | RGBA) =>
     '#' +
     [c.r, c.g, c.b]
-      .map((v) => Math.round(v * 255).toString(16).padStart(2, '0'))
+      .map((v) =>
+        Math.round(v * 255)
+          .toString(16)
+          .padStart(2, '0')
+      )
       .join('');
   const resolveHex = async (id: string, depth = 0): Promise<string | null> => {
     if (hexById.has(id)) return hexById.get(id)!;

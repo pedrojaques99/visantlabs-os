@@ -109,10 +109,7 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
   const wcag = checkWCAGCompliance(ratio);
 
   return (
-    <motion.div
-      {...fadeUp}
-      className={cn('mt-6 rounded-xl p-4 space-y-3', glassSurface.tile)}
-    >
+    <motion.div {...fadeUp} className={cn('mt-6 rounded-xl p-4 space-y-3', glassSurface.tile)}>
       <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
         WCAG Contrast Check
       </h3>

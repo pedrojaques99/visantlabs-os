@@ -3426,7 +3426,10 @@ Generate the new mockup image with the requested changes applied.`;
         <WelcomeScreen onImageUpload={handleImageUpload} />
       ) : (
         <div
-          className={cn('h-full w-full bg-background overflow-hidden', !inShell && 'pt-12 md:pt-14')}
+          className={cn(
+            'h-full w-full bg-background overflow-hidden',
+            !inShell && 'pt-12 md:pt-14'
+          )}
         >
           <div
             className={cn(

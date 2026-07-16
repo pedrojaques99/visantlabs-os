@@ -87,7 +87,9 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         title="Show filters"
       >
         <Menu size={16} className="text-sidebar-foreground/50 flex-shrink-0" />
-        <span className="text-xs font-mono text-sidebar-foreground/50 uppercase truncate">{title}</span>
+        <span className="text-xs font-mono text-sidebar-foreground/50 uppercase truncate">
+          {title}
+        </span>
       </Button>
     );
   }

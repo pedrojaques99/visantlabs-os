@@ -676,7 +676,11 @@ router.get('/charts', adminUsersLimiter, validateAdmin, async (_req: Request, re
           costByDateMap[date] += calculateVideoCost(videoCount || 1);
         }
         if (imageCount > 0) {
-          costByDateMap[date] += calculateImageCost(imageCount, model, normalizeResolution(resolution));
+          costByDateMap[date] += calculateImageCost(
+            imageCount,
+            model,
+            normalizeResolution(resolution)
+          );
         }
       }
     }

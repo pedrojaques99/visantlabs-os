@@ -370,17 +370,67 @@ export const LIBRARY_ITEMS: ContextNavItem[] = [
 export const COMMUNITY_NAV: ContextNavItem[] = [
   { id: 'overview', labelKey: 'nav.community.overview', to: '/community', icon: Compass },
   { id: 'all', labelKey: 'nav.community.all', to: '/community/presets', icon: LayoutGrid },
-  { id: 'mockup', labelKey: 'nav.community.mockup', to: '/community/presets?type=mockup', icon: ImageIcon },
-  { id: 'angle', labelKey: 'nav.community.angle', to: '/community/presets?type=angle', icon: Camera },
-  { id: 'texture', labelKey: 'nav.community.texture', to: '/community/presets?type=texture', icon: Layers },
-  { id: 'ambience', labelKey: 'nav.community.ambience', to: '/community/presets?type=ambience', icon: MapPin },
-  { id: 'luminance', labelKey: 'nav.community.luminance', to: '/community/presets?type=luminance', icon: Sun },
+  {
+    id: 'mockup',
+    labelKey: 'nav.community.mockup',
+    to: '/community/presets?type=mockup',
+    icon: ImageIcon,
+  },
+  {
+    id: 'angle',
+    labelKey: 'nav.community.angle',
+    to: '/community/presets?type=angle',
+    icon: Camera,
+  },
+  {
+    id: 'texture',
+    labelKey: 'nav.community.texture',
+    to: '/community/presets?type=texture',
+    icon: Layers,
+  },
+  {
+    id: 'ambience',
+    labelKey: 'nav.community.ambience',
+    to: '/community/presets?type=ambience',
+    icon: MapPin,
+  },
+  {
+    id: 'luminance',
+    labelKey: 'nav.community.luminance',
+    to: '/community/presets?type=luminance',
+    icon: Sun,
+  },
   { id: '3d', labelKey: 'nav.community.threeD', to: '/community/presets?type=3d', icon: Box },
-  { id: 'presets', labelKey: 'nav.community.presets', to: '/community/presets?type=presets', icon: Settings },
-  { id: 'aesthetics', labelKey: 'nav.community.aesthetics', to: '/community/presets?type=aesthetics', icon: Palette },
-  { id: 'themes', labelKey: 'nav.community.themes', to: '/community/presets?type=themes', icon: Diamond },
-  { id: 'ui-prompts', labelKey: 'nav.community.uiPrompts', to: '/community/presets?type=ui-prompts', icon: Sparkles },
-  { id: 'figma-prompts', labelKey: 'nav.community.figmaPrompts', to: '/community/presets?type=figma-prompts', icon: Figma },
+  {
+    id: 'presets',
+    labelKey: 'nav.community.presets',
+    to: '/community/presets?type=presets',
+    icon: Settings,
+  },
+  {
+    id: 'aesthetics',
+    labelKey: 'nav.community.aesthetics',
+    to: '/community/presets?type=aesthetics',
+    icon: Palette,
+  },
+  {
+    id: 'themes',
+    labelKey: 'nav.community.themes',
+    to: '/community/presets?type=themes',
+    icon: Diamond,
+  },
+  {
+    id: 'ui-prompts',
+    labelKey: 'nav.community.uiPrompts',
+    to: '/community/presets?type=ui-prompts',
+    icon: Sparkles,
+  },
+  {
+    id: 'figma-prompts',
+    labelKey: 'nav.community.figmaPrompts',
+    to: '/community/presets?type=figma-prompts',
+    icon: Figma,
+  },
 ];
 
 /**
@@ -392,8 +442,18 @@ export const COMMUNITY_NAV: ContextNavItem[] = [
 export const REFERENCES_NAV: ContextNavItem[] = [
   { id: 'library', labelKey: 'nav.references.library', to: '/references', icon: LayoutGrid },
   { id: 'logos', labelKey: 'nav.references.logos', to: '/references?kind=branding', icon: PenTool },
-  { id: 'mockups', labelKey: 'nav.references.mockups', to: '/references?kind=mockup', icon: ImageIcon },
-  { id: 'collections', labelKey: 'nav.references.collections', to: '/references?scope=collections', icon: FolderOpen },
+  {
+    id: 'mockups',
+    labelKey: 'nav.references.mockups',
+    to: '/references?kind=mockup',
+    icon: ImageIcon,
+  },
+  {
+    id: 'collections',
+    labelKey: 'nav.references.collections',
+    to: '/references?scope=collections',
+    icon: FolderOpen,
+  },
   { id: 'mine', labelKey: 'nav.references.mine', to: '/references?scope=mine', icon: Bookmark },
 ];
 

@@ -191,10 +191,17 @@ describe('context size by preset', () => {
       donts: ['Prometer o que a janela não entrega'],
     },
     strategy: {
-      manifesto: { provocation: 'A cidade é obra.', tension: 'Ninguém olha.', promise: 'Emoldure.' },
+      manifesto: {
+        provocation: 'A cidade é obra.',
+        tension: 'Ninguém olha.',
+        promise: 'Emoldure.',
+      },
       positioning: ['hotel-galeria'],
       coreMessage: { product: 'Hotel', differential: 'Vista', emotionalBond: 'Contemplação' },
-      pillars: Array.from({ length: 3 }, (_, i) => ({ value: `p${i}`, description: 'x'.repeat(80) })),
+      pillars: Array.from({ length: 3 }, (_, i) => ({
+        value: `p${i}`,
+        description: 'x'.repeat(80),
+      })),
       personas: Array.from({ length: 3 }, (_, i) => ({
         name: `Persona ${i}`,
         age: 30,
@@ -220,7 +227,10 @@ describe('context size by preset', () => {
       url: `https://cdn.example.com/very/long/media/path/asset-${i}.png`,
       type: 'image',
     })),
-    knowledgeFiles: Array.from({ length: 4 }, (_, i) => ({ fileName: `doc-${i}.pdf`, source: 'pdf' })),
+    knowledgeFiles: Array.from({ length: 4 }, (_, i) => ({
+      fileName: `doc-${i}.pdf`,
+      source: 'pdf',
+    })),
   };
 
   it('minimal is a fraction of full — that gap is the whole point', () => {

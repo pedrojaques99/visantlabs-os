@@ -509,7 +509,10 @@ export const FaviconPage: React.FC = () => {
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, ease, delay: i * 0.05 }}
-                          className={cn('flex flex-col items-center gap-1.5 p-3 rounded-2xl duration-200', glassSurface.panel)}
+                          className={cn(
+                            'flex flex-col items-center gap-1.5 p-3 rounded-2xl duration-200',
+                            glassSurface.panel
+                          )}
                         >
                           <div
                             className="w-16 h-16 rounded flex items-center justify-center overflow-hidden"
@@ -547,7 +550,12 @@ export const FaviconPage: React.FC = () => {
                         HTML Tags
                       </h2>
                       <div className="relative">
-                        <pre className={cn('p-3 rounded-2xl text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200', glassSurface.panel)}>
+                        <pre
+                          className={cn(
+                            'p-3 rounded-2xl text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
+                            glassSurface.panel
+                          )}
+                        >
                           {buildHtmlSnippet()}
                         </pre>
                         <motion.button
@@ -564,7 +572,12 @@ export const FaviconPage: React.FC = () => {
                         Web Manifest
                       </h2>
                       <div className="relative">
-                        <pre className={cn('p-3 rounded-2xl text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200', glassSurface.panel)}>
+                        <pre
+                          className={cn(
+                            'p-3 rounded-2xl text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
+                            glassSurface.panel
+                          )}
+                        >
                           {buildManifestSnippet()}
                         </pre>
                         <motion.button

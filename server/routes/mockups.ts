@@ -2079,9 +2079,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, nex
       designType: req.body.designType || 'blank',
       tags: req.body.tags || [],
       brandingTags: req.body.brandingTags || [],
-      ...(req.body.brandGuidelineId
-        ? { brandGuidelineId: String(req.body.brandGuidelineId) }
-        : {}),
+      ...(req.body.brandGuidelineId ? { brandGuidelineId: String(req.body.brandGuidelineId) } : {}),
       aspectRatio: req.body.aspectRatio || '16:9',
       isLiked: isLiked, // Always boolean
       createdAt: new Date(),
