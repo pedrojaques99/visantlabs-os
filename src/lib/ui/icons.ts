@@ -209,11 +209,11 @@ export { Package } from '@phosphor-icons/react';
 export { Package as PackageOpen } from '@phosphor-icons/react'; // REVIEW
 export { PaintBrush as Paintbrush } from '@phosphor-icons/react';
 export { Palette } from '@phosphor-icons/react';
-export { SidebarSimple as PanelLeftClose } from '@phosphor-icons/react'; // REVIEW
-export { Sidebar as PanelLeftOpen } from '@phosphor-icons/react'; // REVIEW
-export { Sidebar as PanelRight } from '@phosphor-icons/react'; // REVIEW
-export { SidebarSimple as PanelRightClose } from '@phosphor-icons/react'; // REVIEW
-export { Sidebar as PanelRightOpen } from '@phosphor-icons/react'; // REVIEW
+export { SidebarSimple as PanelLeftClose } from '@phosphor-icons/react';
+export { SidebarSimple as PanelLeftOpen } from '@phosphor-icons/react';
+export { SidebarSimple as PanelRight } from '@phosphor-icons/react';
+export { SidebarSimple as PanelRightClose } from '@phosphor-icons/react';
+export { SidebarSimple as PanelRightOpen } from '@phosphor-icons/react';
 export { Paperclip } from '@phosphor-icons/react';
 export { Pause } from '@phosphor-icons/react';
 export { Pencil } from '@phosphor-icons/react';
