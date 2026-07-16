@@ -32,6 +32,9 @@ const EXPORT_CHUNK = 20;
 const MAX_PAYLOAD_BYTES = 180 * 1024 * 1024;
 
 const FORMATS: Format[] = ['mp4', 'webm', 'gif'];
+/** Server caps loops at 10 and photos×loops at 600. */
+const LOOPS = [1, 2, 3, 10];
+const MAX_TIMELINE_ENTRIES = 600;
 
 /**
  * Fit the first shot's aspect ratio inside MAX_SIDE. Every photo gets scaled and
@@ -49,6 +52,7 @@ function PhotoSequencer() {
   const [perPhoto, setPerPhoto] = useState(0.5);
   const [order, setOrder] = useState<Order>('sequence');
   const [format, setFormat] = useState<Format>('mp4');
+  const [loops, setLoops] = useState(1);
   const [result, setResult] = useState<{ url: string; format: Format } | null>(null);
 
   const isGenerating = usePluginStore((s) => s.isGenerating);
@@ -57,8 +61,15 @@ function PhotoSequencer() {
   const runner = useOpRunner({ globalBusy: isGenerating });
   const client = useClient();
 
-  const total = shots.length * perPhoto;
+  // GIF carries its own infinite loop flag, so repeating the timeline would only inflate
+  // the file. The selector is disabled for it and the server gets loops: 1.
+  const loopsApply = format !== 'gif';
+  const activeLoops = loopsApply ? loops : 1;
+
+  const entries = shots.length * activeLoops;
+  const total = entries * perPhoto;
   const tooLong = total > MAX_TOTAL_SEC;
+  const tooManyEntries = entries > MAX_TIMELINE_ENTRIES;
 
   async function pullSelection() {
     // client.request is hard-capped at 30s with no per-call override, and exporting a
@@ -166,6 +177,7 @@ function PhotoSequencer() {
           format,
           width,
           height,
+          loops: activeLoops,
         }),
       });
 
@@ -284,9 +296,43 @@ function PhotoSequencer() {
               className="w-full accent-brand-cyan"
             />
             <p className="font-mono text-[8px] text-neutral-600">
-              {shots.length} fotos · {total.toFixed(1)}s no total
+              {shots.length} fotos{activeLoops > 1 && ` × ${activeLoops}`} · {total.toFixed(1)}s no
+              total
               {tooLong && <span className="text-red-400"> · máx {MAX_TOTAL_SEC}s</span>}
+              {tooManyEntries && (
+                <span className="text-red-400"> · máx {MAX_TIMELINE_ENTRIES} fotos × loops</span>
+              )}
             </p>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] uppercase tracking-wider text-neutral-500">Loops</span>
+              {!loopsApply && (
+                <span className="font-mono text-[8px] text-neutral-600">GIF repete sempre</span>
+              )}
+            </div>
+            <div className="grid grid-cols-4 gap-1">
+              {LOOPS.map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setLoops(n)}
+                  disabled={!loopsApply}
+                  title={
+                    loopsApply
+                      ? `Repetir a sequência ${n}x`
+                      : 'GIF já roda em loop infinito, então repetir a sequência só aumentaria o arquivo'
+                  }
+                  className={`h-8 rounded border text-[9px] font-bold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                    loopsApply && loops === n
+                      ? 'border-brand-cyan/40 bg-brand-cyan/5 text-brand-cyan'
+                      : 'border-white/5 text-neutral-500 hover:border-white/10'
+                  }`}
+                >
+                  {n}x
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -325,7 +371,7 @@ function PhotoSequencer() {
             busyLabel="Renderizando…"
             variant="brand"
             size="sm"
-            disabled={tooLong}
+            disabled={tooLong || tooManyEntries}
             title="Montar o vídeo no servidor"
             className="h-8 w-full text-[10px] font-bold uppercase tracking-wider"
           >
@@ -333,6 +379,26 @@ function PhotoSequencer() {
             {result ? 'Renderizar de novo' : 'Renderizar'}
           </OpButton>
         </>
+      )}
+
+      {result && (
+        <div className="overflow-hidden rounded border border-white/5 bg-black/40">
+          {result.format === 'gif' ? (
+            <img src={result.url} alt="Prévia da sequência" className="w-full" />
+          ) : (
+            // Points straight at R2: a media element loads cross-origin without CORS,
+            // unlike the fetch in downloadFromUrl — that one needs the backend proxy.
+            <video
+              src={result.url}
+              controls
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full bg-black"
+            />
+          )}
+        </div>
       )}
 
       {result && (

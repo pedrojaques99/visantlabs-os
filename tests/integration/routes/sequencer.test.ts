@@ -132,6 +132,57 @@ describe('sequencer routes', () => {
       expect(res.body.error).toContain('Total duration');
     });
 
+    it('400 when loops is not a whole number', async () => {
+      const agent = await request();
+      const res = await agent
+        .post('/api/sequencer')
+        .set('Authorization', bearer(token))
+        .send({ photos: photos(2), loops: 2.5 });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('whole number');
+    });
+
+    it('400 when loops is below 1', async () => {
+      const agent = await request();
+      const res = await agent
+        .post('/api/sequencer')
+        .set('Authorization', bearer(token))
+        .send({ photos: photos(2), loops: 0 });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('at least 1');
+    });
+
+    it('400 when loops exceeds the cap', async () => {
+      const agent = await request();
+      const res = await agent
+        .post('/api/sequencer')
+        .set('Authorization', bearer(token))
+        .send({ photos: photos(2), loops: 11 });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('at most 10');
+    });
+
+    it('400 when photos × loops exceeds the timeline cap', async () => {
+      const agent = await request();
+      const res = await agent
+        .post('/api/sequencer')
+        .set('Authorization', bearer(token))
+        .send({ photos: photos(100), loops: 10, perPhotoSec: 0.02 });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('Photos × loops');
+    });
+
+    it('400 when looping pushes the total duration past the cap', async () => {
+      const agent = await request();
+      const res = await agent
+        .post('/api/sequencer')
+        .set('Authorization', bearer(token))
+        // 20 photos × 4s = 80s on its own (fine); ×10 loops = 800s (over the 600s cap).
+        .send({ photos: photos(20), perPhotoSec: 4, loops: 10 });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('Total duration');
+    });
+
     it('400 when a photo is not valid base64 content', async () => {
       const agent = await request();
       const res = await agent

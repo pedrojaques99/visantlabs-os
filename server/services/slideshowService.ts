@@ -24,6 +24,12 @@ export interface SlideshowOptions {
   width?: number;
   height?: number;
   fps?: number;
+  /**
+   * How many times the whole sequence repeats in the timeline (>= 1, default 1).
+   * Generic on purpose: GIF already loops forever via `-loop 0`, so the plugin UI
+   * keeps this at 1 for GIF rather than the service special-casing a format.
+   */
+  loops?: number;
 }
 
 export interface SlideshowResult {
@@ -38,6 +44,12 @@ const MAX_PHOTOS = 300;
 const MAX_DIMENSION = 3840;
 const MAX_JOB_SIZE_BYTES = 500 * 1024 * 1024; // 500MB of source photos
 const MAX_TOTAL_SEC = 600;
+const MAX_LOOPS = 10;
+/**
+ * Ceiling on photos×loops. Every timeline entry is one more `-i` on the ffmpeg command
+ * line, so without this 300 photos at 10x would build a 3000-input invocation.
+ */
+const MAX_TIMELINE_ENTRIES = 600;
 
 const CONTENT_TYPE: Record<SlideFormat, string> = {
   mp4: 'video/mp4',
@@ -70,14 +82,28 @@ export function validateSlideDimensions(width?: number, height?: number): string
   return null;
 }
 
-export function validatePhotos(images: SlideImage[], perPhotoSec: number): string | null {
+export function validateLoops(loops: number): string | null {
+  if (!Number.isInteger(loops) || loops < 1) return 'Loops must be a whole number of at least 1';
+  if (loops > MAX_LOOPS) return `Loops must be at most ${MAX_LOOPS}`;
+  return null;
+}
+
+export function validatePhotos(
+  images: SlideImage[],
+  perPhotoSec: number,
+  loops = 1
+): string | null {
   if (!images.length) return 'No photos supplied';
   if (images.length > MAX_PHOTOS) return `Max ${MAX_PHOTOS} photos allowed`;
 
   const totalBytes = images.reduce((sum, i) => sum + i.bytes.length, 0);
   if (totalBytes > MAX_JOB_SIZE_BYTES) return 'Job size limit exceeded';
 
-  if (images.length * perPhotoSec > MAX_TOTAL_SEC) {
+  const entries = images.length * loops;
+  if (entries > MAX_TIMELINE_ENTRIES) {
+    return `Photos × loops must be at most ${MAX_TIMELINE_ENTRIES}`;
+  }
+  if (entries * perPhotoSec > MAX_TOTAL_SEC) {
     return `Total duration must be at most ${MAX_TOTAL_SEC}s`;
   }
   return null;
@@ -135,7 +161,14 @@ export async function buildSlideshow(
       names.push(name);
     }
 
-    const n = names.length;
+    // Each photo is written once; looping only repeats the references, so N loops cost
+    // nothing on disk. `random` shuffles once and the result repeats — a loop replays the
+    // same sequence rather than reshuffling per pass.
+    const loops = Math.max(1, Math.floor(opts.loops ?? 1));
+    const seq: string[] = [];
+    for (let l = 0; l < loops; l++) seq.push(...names);
+
+    const n = seq.length;
     // Floor only at ~1 frame so very fast scenes are possible; no upper limit.
     const d = Math.max(0.02, opts.perPhotoSec);
     const W = even(opts.width ?? 1280);
@@ -146,9 +179,9 @@ export async function buildSlideshow(
       `scale=${W}:${H}:force_original_aspect_ratio=decrease,` +
       `pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1`;
 
-    // One looped input per photo → exact N×d timeline.
+    // One looped input per timeline entry → exact N×d timeline.
     const inputs: string[] = [];
-    for (const name of names) {
+    for (const name of seq) {
       inputs.push('-loop', '1', '-framerate', String(fps), '-t', String(d), '-i', name);
     }
 
@@ -220,8 +253,8 @@ export async function buildSlideshow(
       bytes,
       contentType: CONTENT_TYPE[opts.format],
       ext: opts.format,
-      durationSec: d * names.length,
-      frameCount: names.length,
+      durationSec: d * n,
+      frameCount: n,
     };
   } finally {
     await rm(work, { recursive: true, force: true }).catch(() => {});
