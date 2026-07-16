@@ -77,6 +77,7 @@ import totpRoutes from './routes/totp.js';
 import internalRoutes from './routes/internal.js';
 import visualSearchRoutes from './routes/visual-search.js';
 import referencesRoutes from './routes/references.js';
+import devIconsRoutes from './routes/devIcons.js';
 import psdRenderRoutes from './routes/psdRender.js';
 import benchmarkRoutes from './routes/benchmark.js';
 
@@ -398,6 +399,11 @@ export function createApp() {
     ['/references', referencesRoutes],
     ['/psd-render', psdRenderRoutes],
     ['/benchmark', benchmarkRoutes],
+    // Dev-only: picker de ícones grava no barrel. O router se auto-bloqueia
+    // fora de dev, mas só montamos quando não é produção por garantia.
+    ...(process.env.NODE_ENV !== 'production'
+      ? [['/dev-icons', devIconsRoutes] as [string, typeof devIconsRoutes]]
+      : []),
   ];
 
   // OpenAPI spec — public, no auth required
