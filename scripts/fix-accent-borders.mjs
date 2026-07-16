@@ -81,7 +81,11 @@ for (const abs of FILES) {
 
   lines.forEach((line, i) => {
     if (/border-brand-cyan|border-\[brand-cyan\]/.test(line)) {
-      const isAllowed = ALLOW_PATTERNS.some(p => p.test(line));
+      // Prettier wraps `selected ? '…border-brand-cyan'` onto its own line, which
+      // strips the condition the allow-patterns look for. Rejoin the previous line
+      // so a wrapped ternary is judged with its condition intact.
+      const context = (i > 0 ? lines[i - 1].trim() + ' ' : '') + line;
+      const isAllowed = ALLOW_PATTERNS.some(p => p.test(line) || p.test(context));
       if (!isAllowed) {
         violatingLines.push({ n: i + 1, code: line.trim().slice(0, 100) });
         violations++;
