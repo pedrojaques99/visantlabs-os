@@ -26,7 +26,12 @@ export const BrandingExpertPage: React.FC = () => {
       />
 
       <div className="flex-1 w-full h-full flex flex-col pt-16 md:p-8 md:pt-20 lg:p-12 lg:pt-24 overflow-hidden">
-        <div className={cn('flex-1 w-full max-w-6xl mx-auto h-full flex flex-col shadow-2xl md:rounded-2xl transition-all overflow-hidden', glassSurface.control)}>
+        <div
+          className={cn(
+            'flex-1 w-full max-w-6xl mx-auto h-full flex flex-col shadow-2xl md:rounded-2xl transition-all overflow-hidden',
+            glassSurface.control
+          )}
+        >
           <BrandingExpertChat mode="inline" projectId={projectId} />
         </div>
       </div>

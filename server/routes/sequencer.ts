@@ -11,6 +11,7 @@ import {
   validatePerPhotoSec,
   validateSlideDimensions,
   validatePhotos,
+  validateLoops,
   type SlideImage,
   type SlideFormat,
   type SlideOrder,
@@ -57,6 +58,7 @@ router.post('/', sequencerLimiter, authenticate, async (req: AuthRequest, res) =
     const perPhotoSec = Number(req.body.perPhotoSec ?? 0.5);
     const order = String(req.body.order ?? 'sequence');
     const format = String(req.body.format ?? 'mp4');
+    const loops = Number(req.body.loops ?? 1);
     const width = req.body.width === undefined ? undefined : Number(req.body.width);
     const height = req.body.height === undefined ? undefined : Number(req.body.height);
 
@@ -68,6 +70,9 @@ router.post('/', sequencerLimiter, authenticate, async (req: AuthRequest, res) =
     }
     const secErr = validatePerPhotoSec(perPhotoSec);
     if (secErr) return res.status(400).json({ error: secErr });
+
+    const loopsErr = validateLoops(loops);
+    if (loopsErr) return res.status(400).json({ error: loopsErr });
 
     const dimErr = validateSlideDimensions(width, height);
     if (dimErr) return res.status(400).json({ error: dimErr });
@@ -81,7 +86,7 @@ router.post('/', sequencerLimiter, authenticate, async (req: AuthRequest, res) =
       return res.status(400).json({ error: 'One or more photos are empty or not valid base64' });
     }
 
-    const photosErr = validatePhotos(images, perPhotoSec);
+    const photosErr = validatePhotos(images, perPhotoSec, loops);
     if (photosErr) return res.status(400).json({ error: photosErr });
 
     // Checked after validation so a bad request still gets its 400 on a server
@@ -96,6 +101,7 @@ router.post('/', sequencerLimiter, authenticate, async (req: AuthRequest, res) =
       format: format as SlideFormat,
       width,
       height,
+      loops,
     });
 
     const videoUrl = await uploadSequenceVideo(

@@ -389,7 +389,11 @@ const PaletteItem: React.FC<{
   // Union motion.div | 'div' atrita no TS; `any` aqui é intencional e local.
   const Row: any = animateIn ? motion.div : 'div';
   const rowMotion = animateIn
-    ? { initial: { opacity: 0, y: -4 }, animate: { opacity: 1, y: 0 }, transition: transitions.fast }
+    ? {
+        initial: { opacity: 0, y: -4 },
+        animate: { opacity: 1, y: 0 },
+        transition: transitions.fast,
+      }
     : {};
 
   return (

@@ -59,7 +59,11 @@ function friendlyError(e: unknown): { code?: string; message: string } {
 const LS_PREFIX = 'visant:brand-suggestions:';
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-type CachedIdeas = { savedAt: number; suggestions: BrandSuggestion[]; seasonal: SeasonalMoment | null };
+type CachedIdeas = {
+  savedAt: number;
+  suggestions: BrandSuggestion[];
+  seasonal: SeasonalMoment | null;
+};
 
 function readLocal(id: string): CachedIdeas | null {
   try {
@@ -74,7 +78,10 @@ function readLocal(id: string): CachedIdeas | null {
 }
 function writeLocal(id: string, suggestions: BrandSuggestion[], seasonal: SeasonalMoment | null) {
   try {
-    localStorage.setItem(LS_PREFIX + id, JSON.stringify({ savedAt: Date.now(), suggestions, seasonal }));
+    localStorage.setItem(
+      LS_PREFIX + id,
+      JSON.stringify({ savedAt: Date.now(), suggestions, seasonal })
+    );
   } catch {
     /* quota / private mode — non-fatal */
   }

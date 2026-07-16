@@ -410,7 +410,9 @@ export const MyOutputsPage: React.FC = () => {
         )}
       >
         {/* Background */}
-        <div className={cn('inset-0 z-0 pointer-events-none', inShell ? 'absolute' : 'fixed')}></div>
+        <div
+          className={cn('inset-0 z-0 pointer-events-none', inShell ? 'absolute' : 'fixed')}
+        ></div>
 
         {/* Header with Controls and Sidebar */}
         <div className={cn('relative z-30 pb-6', inShell ? 'pt-6' : 'pt-16 md:pt-20')}>

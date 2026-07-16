@@ -1,9 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import {
-  resolveSceneLicense,
-  effectiveLicense,
-  isCommercial,
-} from '../sceneLicense.js';
+import { resolveSceneLicense, effectiveLicense, isCommercial } from '../sceneLicense.js';
 import { listScenes } from '../sceneStore.js';
 
 describe('resolveSceneLicense', () => {
@@ -57,12 +53,42 @@ describe('effectiveLicense / isCommercial', () => {
 
 describe('listScenes commercialOnly filter', () => {
   const rows = [
-    { psdFileName: 'visant_a.psd', license: 'commercial-free', faces: [], width: 1, height: 1, warnings: [], updatedAt: new Date() },
-    { psdFileName: 'paid_b.psd', license: 'studio-paid', faces: [], width: 1, height: 1, warnings: [], updatedAt: new Date() },
+    {
+      psdFileName: 'visant_a.psd',
+      license: 'commercial-free',
+      faces: [],
+      width: 1,
+      height: 1,
+      warnings: [],
+      updatedAt: new Date(),
+    },
+    {
+      psdFileName: 'paid_b.psd',
+      license: 'studio-paid',
+      faces: [],
+      width: 1,
+      height: 1,
+      warnings: [],
+      updatedAt: new Date(),
+    },
     // un-migrated: no license field, but name is a paid studio → must be filtered by fallback
-    { psdFileName: 'Mockup-Hazard_c.psd', faces: [], width: 1, height: 1, warnings: [], updatedAt: new Date() },
+    {
+      psdFileName: 'Mockup-Hazard_c.psd',
+      faces: [],
+      width: 1,
+      height: 1,
+      warnings: [],
+      updatedAt: new Date(),
+    },
     // un-migrated first-party → allowed
-    { psdFileName: 'boxy_d.psd', faces: [], width: 1, height: 1, warnings: [], updatedAt: new Date() },
+    {
+      psdFileName: 'boxy_d.psd',
+      faces: [],
+      width: 1,
+      height: 1,
+      warnings: [],
+      updatedAt: new Date(),
+    },
   ];
   const fakeDb = {
     collection: () => ({

@@ -1,3 +1,5 @@
+import { apiUrl } from '../config';
+
 /**
  * Hand a file to the user from inside the plugin iframe.
  *
@@ -22,11 +24,17 @@ export function downloadFile(
 /**
  * Fetch a URL and hand the bytes to the user as a download.
  *
- * Used for R2-hosted renders: navigating to the URL directly would open the video in
- * a browser tab instead of saving it, and R2 objects carry no attachment disposition.
+ * Goes through the backend proxy instead of fetching the URL directly. R2's public
+ * bucket sends no CORS headers and the plugin iframe is a null origin, so a direct
+ * fetch is blocked by the browser even though the object itself serves fine (200).
+ * The proxy adds `Access-Control-Allow-Origin` plus an attachment disposition, which
+ * R2 objects lack — without it the video would open in a tab instead of saving.
  */
 export async function downloadFromUrl(url: string, filename: string): Promise<void> {
-  const res = await fetch(url);
+  const proxied = apiUrl(
+    `/images/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`
+  );
+  const res = await fetch(proxied);
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
   downloadFile(await res.blob(), filename);
 }

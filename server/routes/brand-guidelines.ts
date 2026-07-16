@@ -2981,29 +2981,34 @@ router.get('/:id/synced-templates', apiRateLimiter, authenticate, async (req: Au
 });
 
 // POST — the plugin pushes freshly-parsed schemas here (owner-gated).
-router.post('/:id/synced-templates', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
-  try {
-    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
-    const guideline = await prisma.brandGuideline.findFirst({
-      where: { id: req.params.id, userId: req.userId },
-      select: { id: true },
-    });
-    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
+router.post(
+  '/:id/synced-templates',
+  apiRateLimiter,
+  authenticate,
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+      const guideline = await prisma.brandGuideline.findFirst({
+        where: { id: req.params.id, userId: req.userId },
+        select: { id: true },
+      });
+      if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-    const parsed = SyncedTemplatesSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: 'invalid_schema', message: parsed.error.message });
+      const parsed = SyncedTemplatesSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: 'invalid_schema', message: parsed.error.message });
+      }
+      await prisma.brandGuideline.update({
+        where: { id: req.params.id },
+        data: { syncedTemplates: parsed.data.templates, figmaSyncedAt: new Date() } as any,
+      });
+      res.json({ ok: true, count: parsed.data.templates.length });
+    } catch (error: any) {
+      console.error('[Synced Templates] Error:', error?.message || error);
+      res.status(500).json({ error: 'Failed to save synced templates', message: error?.message });
     }
-    await prisma.brandGuideline.update({
-      where: { id: req.params.id },
-      data: { syncedTemplates: parsed.data.templates, figmaSyncedAt: new Date() } as any,
-    });
-    res.json({ ok: true, count: parsed.data.templates.length });
-  } catch (error: any) {
-    console.error('[Synced Templates] Error:', error?.message || error);
-    res.status(500).json({ error: 'Failed to save synced templates', message: error?.message });
   }
-});
+);
 
 // GET /api/brand-guidelines/:id/web-presets — list the headless web templates
 // available to render (id + dimensions). Owner-gated; no Figma needed.

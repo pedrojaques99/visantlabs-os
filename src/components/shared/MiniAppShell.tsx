@@ -185,7 +185,12 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
 
       {hasPanel && !isMobile && (
         <AppShellPanel side="right" visible={panelVisible} width={panelWidth}>
-          <div className={cn('h-full overflow-y-auto scrollbar-none rounded-2xl p-5', glassSurface.panel)}>
+          <div
+            className={cn(
+              'h-full overflow-y-auto scrollbar-none rounded-2xl p-5',
+              glassSurface.panel
+            )}
+          >
             {panel}
           </div>
         </AppShellPanel>

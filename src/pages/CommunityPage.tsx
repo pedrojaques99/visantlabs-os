@@ -568,10 +568,7 @@ export const CommunityPage: React.FC = () => {
                 transition={{ delay: 0.4 }}
                 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
               >
-                <GlassPanel
-                  padding="sm"
-                  className={cn('group', glassSurface.control)}
-                >
+                <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
                       {t('community.membros')}
@@ -592,10 +589,7 @@ export const CommunityPage: React.FC = () => {
                   </p>
                 </GlassPanel>
 
-                <GlassPanel
-                  padding="sm"
-                  className={cn('group', glassSurface.control)}
-                >
+                <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
                       {t('community.criaes')}

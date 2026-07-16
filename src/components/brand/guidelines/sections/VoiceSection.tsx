@@ -6,11 +6,7 @@ import { Select } from '@/components/ui/select';
 import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Plus, Trash2 } from 'lucide-react';
-import type {
-  BrandGuideline,
-  BrandToneOfVoiceValue,
-  BrandCopyExample,
-} from '@/lib/figma-types';
+import type { BrandGuideline, BrandToneOfVoiceValue, BrandCopyExample } from '@/lib/figma-types';
 
 interface VoiceSectionProps {
   guideline: BrandGuideline;

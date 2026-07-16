@@ -59,11 +59,7 @@ export const ConnectAICard: React.FC<ConnectAICardProps> = ({
     <section
       aria-label={t('cockpit.connect.title')}
       data-vsn-region="connect-ai"
-      className={cn(
-        'rounded-2xl p-5 flex flex-col',
-        glassSurface.panel,
-        className
-      )}
+      className={cn('rounded-2xl p-5 flex flex-col', glassSurface.panel, className)}
     >
       <div className="flex items-center gap-2.5 mb-4">
         <Plug size={13} className="text-neutral-500 shrink-0" />
@@ -71,12 +67,20 @@ export const ConnectAICard: React.FC<ConnectAICardProps> = ({
       </div>
 
       {/* Visual hero: the assistants this brand plugs into. */}
-      <div className={cn('inline-flex items-center gap-1 self-start p-1.5 mb-4 rounded-2xl', glassSurface.tile)}>
+      <div
+        className={cn(
+          'inline-flex items-center gap-1 self-start p-1.5 mb-4 rounded-2xl',
+          glassSurface.tile
+        )}
+      >
         {ASSISTANTS.map((a) => (
           <div
             key={a.id}
             title={a.label}
-            className={cn('w-10 h-10 rounded-xl flex items-center justify-center', glassSurface.icon)}
+            className={cn(
+              'w-10 h-10 rounded-xl flex items-center justify-center',
+              glassSurface.icon
+            )}
           >
             {a.node}
           </div>

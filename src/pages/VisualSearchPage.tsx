@@ -306,7 +306,12 @@ export const VisualSearchPage: React.FC = () => {
       ) : (
         <>
           {/* Sticky search bar + tabs — below the fixed h-10/md:h-14 header */}
-          <div className={cn('sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800', inShell ? 'top-0' : 'top-10 md:top-14')}>
+          <div
+            className={cn(
+              'sticky z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-2 pb-3 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800',
+              inShell ? 'top-0' : 'top-10 md:top-14'
+            )}
+          >
             <SearchBar
               ref={searchBarRef}
               value={query}

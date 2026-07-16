@@ -40,12 +40,18 @@ describe('contrastFit', () => {
     expect(contrastFit({ url: 'x', hasTransparency: false }, 'dark')).toBe(1);
   });
   it('uses contrastSafeOn when present', () => {
-    expect(contrastFit({ url: 'x', hasTransparency: true, contrastSafeOn: ['dark'] }, 'dark')).toBe(1);
-    expect(contrastFit({ url: 'x', hasTransparency: true, contrastSafeOn: ['dark'] }, 'light')).toBeLessThan(0.3);
+    expect(contrastFit({ url: 'x', hasTransparency: true, contrastSafeOn: ['dark'] }, 'dark')).toBe(
+      1
+    );
+    expect(
+      contrastFit({ url: 'x', hasTransparency: true, contrastSafeOn: ['dark'] }, 'light')
+    ).toBeLessThan(0.3);
   });
   it('infers from asset luminance when contrastSafeOn missing', () => {
     expect(contrastFit({ url: 'x', hasTransparency: true, luminance: 'light' }, 'dark')).toBe(1);
-    expect(contrastFit({ url: 'x', hasTransparency: true, luminance: 'dark' }, 'dark')).toBeLessThan(0.3);
+    expect(
+      contrastFit({ url: 'x', hasTransparency: true, luminance: 'dark' }, 'dark')
+    ).toBeLessThan(0.3);
   });
 });
 
@@ -57,9 +63,29 @@ describe('kindFit', () => {
 });
 
 describe('scoreAssetForFace picks the right logo variant by scene luminance', () => {
-  const darkScene = { surfaceKind: 'apparel' as const, aspectRatio: 1, baseLuminance: 'dark' as const };
-  const lightLogo: AssetForMatch = { url: 'light', variant: 'light', kind: 'logo', luminance: 'light', contrastSafeOn: ['dark'], aspectRatio: 1, hasTransparency: true };
-  const darkLogo: AssetForMatch = { url: 'dark', variant: 'dark', kind: 'logo', luminance: 'dark', contrastSafeOn: ['light'], aspectRatio: 1, hasTransparency: true };
+  const darkScene = {
+    surfaceKind: 'apparel' as const,
+    aspectRatio: 1,
+    baseLuminance: 'dark' as const,
+  };
+  const lightLogo: AssetForMatch = {
+    url: 'light',
+    variant: 'light',
+    kind: 'logo',
+    luminance: 'light',
+    contrastSafeOn: ['dark'],
+    aspectRatio: 1,
+    hasTransparency: true,
+  };
+  const darkLogo: AssetForMatch = {
+    url: 'dark',
+    variant: 'dark',
+    kind: 'logo',
+    luminance: 'dark',
+    contrastSafeOn: ['light'],
+    aspectRatio: 1,
+    hasTransparency: true,
+  };
 
   it('the light (dark-bg-safe) logo scores higher on a dark scene', () => {
     expect(scoreAssetForFace(lightLogo, darkScene)).toBeGreaterThan(
@@ -70,13 +96,43 @@ describe('scoreAssetForFace picks the right logo variant by scene luminance', ()
 
 describe('rankSuggestions', () => {
   const assets: AssetForMatch[] = [
-    { url: 'logo-light', variant: 'light', kind: 'logo', luminance: 'light', contrastSafeOn: ['dark'], aspectRatio: 1, hasTransparency: true },
-    { url: 'logo-dark', variant: 'dark', kind: 'logo', luminance: 'dark', contrastSafeOn: ['light'], aspectRatio: 1, hasTransparency: true },
-    { url: 'campaign', kind: 'graphic', luminance: 'mixed', aspectRatio: 1.78, hasTransparency: false },
+    {
+      url: 'logo-light',
+      variant: 'light',
+      kind: 'logo',
+      luminance: 'light',
+      contrastSafeOn: ['dark'],
+      aspectRatio: 1,
+      hasTransparency: true,
+    },
+    {
+      url: 'logo-dark',
+      variant: 'dark',
+      kind: 'logo',
+      luminance: 'dark',
+      contrastSafeOn: ['light'],
+      aspectRatio: 1,
+      hasTransparency: true,
+    },
+    {
+      url: 'campaign',
+      kind: 'graphic',
+      luminance: 'mixed',
+      aspectRatio: 1.78,
+      hasTransparency: false,
+    },
   ];
   const scenes: SceneForMatch[] = [
-    { psdFileName: 'billboard_wide.psd', baseLuminance: 'mixed', faces: [{ key: 'f1', name: 'Arte', innerW: 1920, innerH: 1080 }] },
-    { psdFileName: 'tshirt_dark.psd', baseLuminance: 'dark', faces: [{ key: 'f1', name: 'Front', innerW: 500, innerH: 500 }] },
+    {
+      psdFileName: 'billboard_wide.psd',
+      baseLuminance: 'mixed',
+      faces: [{ key: 'f1', name: 'Arte', innerW: 1920, innerH: 1080 }],
+    },
+    {
+      psdFileName: 'tshirt_dark.psd',
+      baseLuminance: 'dark',
+      faces: [{ key: 'f1', name: 'Front', innerW: 500, innerH: 500 }],
+    },
   ];
 
   it('routes wide campaign art to the billboard and the light logo to the dark tee', () => {

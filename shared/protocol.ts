@@ -58,6 +58,7 @@ export interface OpMap {
 
   // ── Text ──
   'text.scanFonts': { payload: Record<string, never>; result: { groups: FontGroup[] } };
+  'text.scanFontsPage': { payload: Record<string, never>; result: { groups: FontGroup[] } };
   'text.swapFonts': {
     payload: { swaps: FontSwapEntry[] };
     result: { swapped: number; failed: string[] };

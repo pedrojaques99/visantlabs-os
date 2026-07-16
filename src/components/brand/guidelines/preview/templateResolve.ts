@@ -55,7 +55,16 @@ function hexToRgb(hex: string): [number, number, number] {
  * fall out naturally.
  */
 export function nearestRoleColor(hex: string, t: RoleTheme): string {
-  const anchors = [t.bg, t.surface, t.text, t.textMuted, t.primary, t.secondary, t.accent, t.accentText];
+  const anchors = [
+    t.bg,
+    t.surface,
+    t.text,
+    t.textMuted,
+    t.primary,
+    t.secondary,
+    t.accent,
+    t.accentText,
+  ];
   const [r, g, b] = hexToRgb(hex);
   let best = anchors[0];
   let bestD = Infinity;
@@ -141,7 +150,10 @@ const SLOT_ALIASES: Array<[RegExp, SlotGetter]> = [
   [/^(brand|name|wordmark|logotype|marca|nome)$/, (c) => c.name],
   [/^(tagline|slogan|eyebrow|kicker)$/, (c) => c.tagline || c.caption],
   [/^(caption|legenda|label)$/, (c) => c.caption],
-  [/^(body|desc|description|paragraph|subtitle|subhead|corpo|texto|descricao)$/, (c) => c.body || c.description],
+  [
+    /^(body|desc|description|paragraph|subtitle|subhead|corpo|texto|descricao)$/,
+    (c) => c.body || c.description,
+  ],
   [/^tagl(eft)?$/, (c) => c.tagL],
   [/^tagr(ight)?$/, (c) => c.tagR],
 ];

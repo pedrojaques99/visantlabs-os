@@ -7,7 +7,9 @@ import {
 
 describe('parseAnalysisJson (salvage on truncated description)', () => {
   it('parses well-formed JSON', () => {
-    const j = parseAnalysisJson('{"dimensions":{"vibe":["bold"]},"placement":{"kind":"logo"},"description":"a logo"}');
+    const j = parseAnalysisJson(
+      '{"dimensions":{"vibe":["bold"]},"placement":{"kind":"logo"},"description":"a logo"}'
+    );
     expect(j.placement.kind).toBe('logo');
   });
 

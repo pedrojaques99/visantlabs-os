@@ -73,7 +73,12 @@ const CreativeProjectCard: React.FC<{
 }> = ({ project, onViewImage }) => {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className={cn('group space-y-3 p-4 rounded-xl shadow-sm transition-all duration-200', glassSurface.tile)}>
+    <div
+      className={cn(
+        'group space-y-3 p-4 rounded-xl shadow-sm transition-all duration-200',
+        glassSurface.tile
+      )}
+    >
       <img
         src={project.imageUrl}
         alt={project.prompt}

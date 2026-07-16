@@ -50,7 +50,9 @@ describe('validateExtracted — strategy.copyExamples', () => {
 
   it('discards empty and malformed entries', () => {
     const out = validateExtracted({
-      strategy: { copyExamples: [{ text: '   ' }, { type: 'headline' }, null, 42, { text: 'Real' }] },
+      strategy: {
+        copyExamples: [{ text: '   ' }, { type: 'headline' }, null, 42, { text: 'Real' }],
+      },
     });
     expect(out.strategy?.copyExamples).toEqual([{ text: 'Real' }]);
   });

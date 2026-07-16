@@ -128,7 +128,14 @@ function renderNode(
     return (
       <div
         key={key}
-        style={{ ...typeStyle, width: node.w, height: node.h, fontSize: node.text.size, lineHeight, whiteSpace: 'pre-wrap' }}
+        style={{
+          ...typeStyle,
+          width: node.w,
+          height: node.h,
+          fontSize: node.text.size,
+          lineHeight,
+          whiteSpace: 'pre-wrap',
+        }}
       >
         {txt}
       </div>
@@ -145,7 +152,8 @@ function renderNode(
         width: node.w,
         height: node.h,
         background: nodeBg,
-        border: node.stroke && strokeColor ? `${node.stroke.weight}px solid ${strokeColor}` : undefined,
+        border:
+          node.stroke && strokeColor ? `${node.stroke.weight}px solid ${strokeColor}` : undefined,
         borderRadius: node.type === 'ELLIPSE' ? '50%' : node.cornerRadius,
         overflow: node.clip ? 'hidden' : undefined,
       }}

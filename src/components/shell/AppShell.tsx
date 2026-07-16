@@ -39,37 +39,37 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
   return (
     <InAppShellContext.Provider value={true}>
-     <ShellHeaderContext.Provider value={{ actionsSlot, setActionsSlot }}>
-      <div className="flex-1 min-h-0 flex">
-        <AppSidebar />
-        <div className="flex-1 min-w-0 flex flex-col">
-          <AppTopBar onMenuClick={() => setMobileNavOpen(true)} />
-          <main className="flex-1 min-h-0 overflow-auto relative">{children}</main>
-        </div>
-
-        {/* Cmd+K global — navegar/trocar marca de qualquer rota do shell */}
-        <GlobalCommandPalette />
-
-        {/* Drawer mobile — backdrop + rail deslizante (F5, a11y P4) */}
-        {mobileNavOpen && (
-          <div
-            className="md:hidden fixed inset-0 z-50 flex"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation"
-          >
-            <div
-              className="absolute inset-0 bg-black/50"
-              onClick={() => setMobileNavOpen(false)}
-              aria-hidden
-            />
-            <div className="relative z-10">
-              <AppSidebar variant="mobile" onNavigate={() => setMobileNavOpen(false)} />
-            </div>
+      <ShellHeaderContext.Provider value={{ actionsSlot, setActionsSlot }}>
+        <div className="flex-1 min-h-0 flex">
+          <AppSidebar />
+          <div className="flex-1 min-w-0 flex flex-col">
+            <AppTopBar onMenuClick={() => setMobileNavOpen(true)} />
+            <main className="flex-1 min-h-0 overflow-auto relative">{children}</main>
           </div>
-        )}
-      </div>
-     </ShellHeaderContext.Provider>
+
+          {/* Cmd+K global — navegar/trocar marca de qualquer rota do shell */}
+          <GlobalCommandPalette />
+
+          {/* Drawer mobile — backdrop + rail deslizante (F5, a11y P4) */}
+          {mobileNavOpen && (
+            <div
+              className="md:hidden fixed inset-0 z-50 flex"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation"
+            >
+              <div
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setMobileNavOpen(false)}
+                aria-hidden
+              />
+              <div className="relative z-10">
+                <AppSidebar variant="mobile" onNavigate={() => setMobileNavOpen(false)} />
+              </div>
+            </div>
+          )}
+        </div>
+      </ShellHeaderContext.Provider>
     </InAppShellContext.Provider>
   );
 };

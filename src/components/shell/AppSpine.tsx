@@ -22,7 +22,12 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
-import { classifyRoute, isBrandContext, isBrandScopedEditor, isBrandFilteredList } from '@/config/navConfig';
+import {
+  classifyRoute,
+  isBrandContext,
+  isBrandScopedEditor,
+  isBrandFilteredList,
+} from '@/config/navConfig';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
 import { useShellHeader } from './ShellHeaderContext';
 import { openCommandPalette } from '@/components/ui/CommandPalette';
@@ -56,9 +61,7 @@ const FOCUS_TITLES: Record<string, string> = {
 };
 
 function deriveFocusTitle(pathname: string): string {
-  const key = Object.keys(FOCUS_TITLES).find(
-    (p) => pathname === p || pathname.startsWith(p + '/')
-  );
+  const key = Object.keys(FOCUS_TITLES).find((p) => pathname === p || pathname.startsWith(p + '/'));
   if (key) return FOCUS_TITLES[key];
   const seg = pathname.split('/').filter(Boolean)[0] ?? '';
   return seg ? seg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '';
@@ -94,9 +97,7 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
   // "Voltar" do editor → seção de origem (fallback /cockpit).
   const origin = getEditorOrigin();
   const backTo = origin?.path ?? '/cockpit';
-  const backLabel = origin?.section
-    ? t(`nav.${origin.section}.label`)
-    : t('nav.cockpit.label');
+  const backLabel = origin?.section ? t(`nav.${origin.section}.label`) : t('nav.cockpit.label');
 
   const focusTitle = title ?? deriveFocusTitle(location.pathname);
 
@@ -141,12 +142,8 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
         )}
 
         {isFocus
-          ? focusTitle && (
-              <span className="font-medium text-foreground truncate">{focusTitle}</span>
-            )
-          : sectionLabel && (
-              <span className="text-muted-foreground truncate">{sectionLabel}</span>
-            )}
+          ? focusTitle && <span className="font-medium text-foreground truncate">{focusTitle}</span>
+          : sectionLabel && <span className="text-muted-foreground truncate">{sectionLabel}</span>}
       </div>
 
       <div className="flex items-center gap-2">
@@ -168,7 +165,10 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
         {/* Ações da página/editor — teleportadas via portal (ShellHeaderContext).
             Universal: funciona no dashboard E no editor (F1 montou o provider
             também no branch focus do Layout). */}
-        <div ref={shellHeader?.setActionsSlot} className={cn('flex items-center gap-2 empty:hidden')} />
+        <div
+          ref={shellHeader?.setActionsSlot}
+          className={cn('flex items-center gap-2 empty:hidden')}
+        />
 
         {isFree && (
           <button

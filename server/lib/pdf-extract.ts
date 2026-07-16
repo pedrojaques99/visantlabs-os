@@ -36,7 +36,7 @@ Schema:
   "tags": { "brand_values": [], "tone": [], "aesthetic": [] },
   "guidelines": { "voice": "one paragraph", "dos": [], "donts": [], "imagery": "..." },
   "strategy": {
-    "manifesto": "verbatim manifesto text",
+    "manifesto": { "provocation": "...", "tension": "...", "promise": "...", "full": "verbatim manifesto text" },
     "positioning": [],
     "archetypes": [{ "name": "...", "role": "primary|secondary", "description": "...", "examples": [] }],
     "personas": [{ "name": "...", "age": 25, "occupation": "...", "traits": [], "bio": "...", "desires": [], "painPoints": [] }],
@@ -51,6 +51,7 @@ Rules:
 - For TOM DE VOZ / VOICE VALUES: find sections labelled "Tom de Voz", "Voz da Marca", "Linguagem", "Como Falamos". For EACH listed quality (e.g. "Direto", "Humano", "Rebelde"), emit one voiceValues entry.
 - For DOS/DONTS: find "faça/não faça", "correto/incorreto", proibições, regras de uso.
 - For ARCHETYPES: extract every named archetype with its full description from the manual.
+- For MANIFESTO: put the verbatim text in "full". Only fill provocation/tension/promise when the manual itself lays the manifesto out in that arc — never split a text yourself to invent the structure.
 - For PERSONAS: include age, occupation, traits, desires, pain points, bio.
 - For COLORNAMES: if the palette page mentions named colors with their hex values, map name→hex.
 - For ASSETCLASSIFICATIONS: classify each provided image by index (in size order) — logo/icon/photo/mockup/etc.
@@ -253,7 +254,18 @@ function applyColorNames(colors: PdfTokens['colors'], named: Array<{ hex: string
 
 function buildStrategy(data: any): any {
   const s: any = {};
-  if (data.strategy?.manifesto) s.manifesto = data.strategy.manifesto;
+  // This builds the STREAM PREVIEW shape (claims/tagline/dos…), not the canonical
+  // BrandStrategy — the modal renders these as JSX children, so manifesto has to
+  // arrive flat even though the extractor may now return the structured arc.
+  const manifesto = data.strategy?.manifesto;
+  if (typeof manifesto === 'string' && manifesto.trim()) {
+    s.manifesto = manifesto.trim();
+  } else if (manifesto && typeof manifesto === 'object') {
+    const flat =
+      manifesto.full ||
+      [manifesto.provocation, manifesto.tension, manifesto.promise].filter(Boolean).join('\n\n');
+    if (flat) s.manifesto = flat;
+  }
   if (data.identity?.tagline) s.tagline = data.identity.tagline;
   if (data.identity?.description) s.description = data.identity.description;
   if (data.strategy?.positioning?.length) s.claims = data.strategy.positioning;

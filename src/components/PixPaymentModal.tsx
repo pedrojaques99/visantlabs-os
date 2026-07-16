@@ -337,9 +337,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               <div className="text-4xl font-black text-brand-cyan font-mono tracking-tighter">
                 {credits}
               </div>
-              <MicroTitle className="text-neutral-500">
-                {t('pix.credits') || 'CRÉDITOS'}
-              </MicroTitle>
+              <MicroTitle className="text-neutral-500">{t('pix.credits') || 'CRÉDITOS'}</MicroTitle>
 
               <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
                 <span>REPASSE_TRANSPARENTE</span>

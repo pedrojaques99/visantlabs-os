@@ -20,8 +20,7 @@ export const glassSurface = {
     'border border-white/20 bg-neutral-950/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_12px_32px_-8px_rgba(0,0,0,0.40)] transition-colors hover:border-white/30',
 
   // ── Tile: interactive inner surface inside a panel (has hover, NO blur) ──
-  tile:
-    'border border-white/10 bg-white/[0.03] transition-colors hover:border-white/20 hover:bg-white/5',
+  tile: 'border border-white/10 bg-white/[0.03] transition-colors hover:border-white/20 hover:bg-white/5',
   // ── Surface: static inner surface / chip / input (NO hover, NO blur) ──
   surface: 'border border-white/10 bg-white/[0.03]',
   // ── Control: buttons / nav rows (readable fill, hover, NO blur) ──

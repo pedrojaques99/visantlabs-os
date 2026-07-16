@@ -720,7 +720,10 @@ router.post('/claim-club', apiRateLimiter, authenticate, async (req: AuthRequest
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const clubTiers = ['club', 'fundador', 'visantista'];
-    if (user.subscriptionStatus === 'active' && clubTiers.includes((user.subscriptionTier || '').toLowerCase())) {
+    if (
+      user.subscriptionStatus === 'active' &&
+      clubTiers.includes((user.subscriptionTier || '').toLowerCase())
+    ) {
       return res.json({ granted: true, already: true, tier: user.subscriptionTier });
     }
     if (!stripe) return res.status(500).json({ error: 'Stripe not configured' });

@@ -48,6 +48,8 @@ export const DEFAULT_PRESETS: VariantPreset[] = [
   },
 ];
 
+type MutableColorStop = { position: number; color: RGBA };
+
 function applyGradientColor(
   fills: readonly Paint[],
   color: { r: number; g: number; b: number },
@@ -57,7 +59,8 @@ function applyGradientColor(
   const cloned: Paint[] = JSON.parse(JSON.stringify(fills));
   for (const fill of cloned) {
     if (fill.type === `GRADIENT_${type}` && 'gradientStops' in fill) {
-      const stops = (fill as GradientPaint).gradientStops;
+      // Deep-cloned above, so the readonly stops are safe to mutate in place.
+      const stops = (fill as GradientPaint).gradientStops as MutableColorStop[];
       if (type === 'LINEAR' && stops.length >= 2) {
         stops[0].color = { ...color, a: 1 };
         stops[1].color = { ...color, a: 0 };
@@ -117,13 +120,17 @@ export async function generateVariants(presets: VariantPreset[] = DEFAULT_PRESET
 
     // Texture opacity
     if (preset.textureOpacity !== undefined) {
-      const texture = clone.findOne((n) => n.type === 'INSTANCE' && n.name.includes('Terra Lines'));
+      const texture = clone.findOne(
+        (n) => n.type === 'INSTANCE' && n.name.includes('Terra Lines')
+      ) as InstanceNode | null;
       if (texture) texture.opacity = preset.textureOpacity;
     }
 
     // Sedimentum opacity
     if (preset.sedimentumOpacity !== undefined) {
-      const sed = clone.findOne((n) => n.type === 'INSTANCE' && n.name.includes('SEDIMENTUM'));
+      const sed = clone.findOne(
+        (n) => n.type === 'INSTANCE' && n.name.includes('SEDIMENTUM')
+      ) as InstanceNode | null;
       if (sed) sed.opacity = preset.sedimentumOpacity;
     }
 

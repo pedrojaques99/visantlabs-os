@@ -53,7 +53,11 @@ const RawEditorialMock: React.FC<{
   variant?: number;
   overrides?: MockOverrides;
 }> = (props) => (
-  <TemplateRenderer schema={editorialLayoutSchema as unknown as TemplateSchema} autoTokenize {...props} />
+  <TemplateRenderer
+    schema={editorialLayoutSchema as unknown as TemplateSchema}
+    autoTokenize
+    {...props}
+  />
 );
 
 const BUILTIN: TileItem[] = [
@@ -99,7 +103,12 @@ export const BrandPreviewGallery: React.FC<{
   }, [synced.data]);
 
   return (
-    <motion.div id="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+    <motion.div
+      id="preview"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
       <div className="flex items-baseline justify-between px-1">
         <MicroTitle className="text-[var(--accent)] font-bold opacity-70">Brand Preview</MicroTitle>
         <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/30">

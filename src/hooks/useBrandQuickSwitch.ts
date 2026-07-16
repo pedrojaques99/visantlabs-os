@@ -31,9 +31,7 @@ export function useBrandQuickSwitch(): void {
     (e) => {
       e.preventDefault();
       if (!brand) return;
-      const validIds = new Set(
-        brand.brands.map((b) => b.id).filter((id): id is string => !!id)
-      );
+      const validIds = new Set(brand.brands.map((b) => b.id).filter((id): id is string => !!id));
       const prev = resolvePreviousBrandId(brand.recentBrandIds, brand.activeBrandId, validIds);
       if (prev) brand.setActiveBrand(prev);
     },

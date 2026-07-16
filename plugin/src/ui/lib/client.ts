@@ -13,6 +13,7 @@ import type {
   TelemetryEntry,
 } from '@shared/protocol';
 import { makeId } from '@shared/protocol';
+import { joinApiUrl } from '../apiBase';
 
 export interface ClientOptions {
   baseUrl: string;
@@ -64,9 +65,11 @@ const ROUTE: Record<OpName, Channel> = {
   'dev.selectionToSlices': 'figma',
   'dev.multiplyResponsive': 'figma',
   'text.scanFonts': 'figma',
+  'text.scanFontsPage': 'figma',
   'text.swapFonts': 'figma',
   'text.getStyles': 'figma',
   'export.textToMarkdown': 'figma',
+  'export.framesData': 'figma',
 
   // colors
   'colors.scanForRename': 'figma',
@@ -125,7 +128,7 @@ export function createClient(opts: ClientOptions): Client {
     const t0 = performance.now();
     try {
       const token = opts.getToken();
-      const res = await fetch(`${opts.baseUrl}/api/rpc`, {
+      const res = await fetch(joinApiUrl(opts.baseUrl, '/rpc'), {
         method: 'POST',
         headers: {
           'content-type': 'application/json',

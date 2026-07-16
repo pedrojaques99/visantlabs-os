@@ -371,8 +371,7 @@ export const AdminPage: React.FC = () => {
   const summaryReady = summaryQuery.isSuccess;
   const usersReady = usersQuery.isSuccess;
   const chartsReady = chartsQuery.isSuccess;
-  const isRefreshing =
-    summaryQuery.isFetching || usersQuery.isFetching || chartsQuery.isFetching;
+  const isRefreshing = summaryQuery.isFetching || usersQuery.isFetching || chartsQuery.isFetching;
   const handleRefresh = () => refreshDashboard();
 
   const adminNavItems = useMemo<NavigationItem[]>(
@@ -533,7 +532,6 @@ export const AdminPage: React.FC = () => {
     setHistoryRecords([]);
     fetchUserHistory(user.id, 0);
   };
-
 
   const handleSaveUser = async (user: AdminUser, field: string, value: any) => {
     const numericFields = ['monthlyCredits', 'creditsUsed', 'manualCredits'];
@@ -921,7 +919,9 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'creditsRemaining',
         header: t('admin.remaining'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono text-brand-cyan tabular-nums">{row.original.creditsRemaining}</span>
+          <span className="text-xs font-mono text-brand-cyan tabular-nums">
+            {row.original.creditsRemaining}
+          </span>
         ),
         size: 100,
         enableSorting: true,
@@ -1255,175 +1255,175 @@ export const AdminPage: React.FC = () => {
                       <SectionError onRetry={() => summaryQuery.refetch()} />
                     ) : summaryReady ? (
                       <>
-                    {/* KPI Grid - Top Level Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                      {/* Total Users */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <User className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                              <TrendingUp className="h-3 w-3 text-brand-cyan" />
-                              <span>+12.5%</span>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                              {data.totalUsers}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.totalUsers')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.registeredInSystem')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        {/* KPI Grid - Top Level Metrics */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                          {/* Total Users */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <User className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                                <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
+                                  <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                                  <span>+12.5%</span>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                                  {data.totalUsers}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.totalUsers')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.registeredInSystem')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                      {/* Active Subscriptions */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <CreditCard className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {data.activeSubscriptions}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.activeSubscriptions')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.recurringPlans')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          {/* Active Subscriptions */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <CreditCard className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                  {data.activeSubscriptions}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.activeSubscriptions')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.recurringPlans')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                      {/* Total Transactions */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <ShoppingCart className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                              {data.totalTransactions}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.transactions')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.completedTransactions')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          {/* Total Transactions */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <ShoppingCart className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                                  {data.totalTransactions}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.transactions')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.completedTransactions')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                      {/* New Users (Last 30 Days) */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <UserPlus className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                              <TrendingUp className="h-3 w-3 text-brand-cyan" />
-                              <span>30d</span>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
-                              {data.newUsers30d}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.novos_usurios')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.ltimos_30_dias')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                          {/* New Users (Last 30 Days) */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <UserPlus className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                                <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
+                                  <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                                  <span>30d</span>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
+                                  {data.newUsers30d}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.novos_usurios')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.ltimos_30_dias')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
 
-                    {/* Additional Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                      {/* Total Mockups */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Image className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {data.totalMockupsGenerated}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.mockupsCreated')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.totalMockupsGenerated')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        {/* Additional Summary Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                          {/* Total Mockups */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <Image className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                  {data.totalMockupsGenerated}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.mockupsCreated')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.totalMockupsGenerated')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                      {/* Total Credits Used */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <CreditCard className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {data.totalCreditsUsed}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.creditsDistributed')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.totalCreditsAssigned')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          {/* Total Credits Used */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <CreditCard className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                  {data.totalCreditsUsed}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.creditsDistributed')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.totalCreditsAssigned')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
 
-                      {/* Total Storage Used */}
-                      <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <HardDrive className="h-6 w-6 text-brand-cyan" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
-                              {data.totalStorageUsed !== undefined
-                                ? formatBytes(data.totalStorageUsed)
-                                : '—'}
-                            </p>
-                            <p className="text-sm text-neutral-500 font-mono">
-                              {t('admin.storage')}
-                            </p>
-                            <p className="text-xs text-neutral-400 font-mono mt-1">
-                              {t('admin.totalDiskUsage')}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                          {/* Total Storage Used */}
+                          <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-brand-cyan/10 rounded-md">
+                                  <HardDrive className="h-6 w-6 text-brand-cyan" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                  {data.totalStorageUsed !== undefined
+                                    ? formatBytes(data.totalStorageUsed)
+                                    : '—'}
+                                </p>
+                                <p className="text-sm text-neutral-500 font-mono">
+                                  {t('admin.storage')}
+                                </p>
+                                <p className="text-xs text-neutral-400 font-mono mt-1">
+                                  {t('admin.totalDiskUsage')}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
                       </>
                     ) : (
                       <>
@@ -1439,63 +1439,65 @@ export const AdminPage: React.FC = () => {
                     {usersQuery.isError ? (
                       <SectionError onRetry={() => usersQuery.refetch()} />
                     ) : usersReady ? (
-                    <Card className="bg-neutral-900 border border-white/10 rounded-xl">
-                      <CardHeader>
-                        <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
-                        <CardDescription className="text-neutral-500">
-                          {t('admin.newUsersLast30Days')}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="h-[300px] w-full">
-                          <ChartContainer
-                            config={chartConfig}
-                            className="aspect-auto h-full w-full"
-                          >
-                            <AreaChart
-                              accessibilityLayer
-                              data={userGrowthData}
-                              margin={{
-                                left: 12,
-                                right: 12,
-                              }}
+                      <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                        <CardHeader>
+                          <CardTitle className="text-neutral-300">
+                            {t('admin.userGrowth')}
+                          </CardTitle>
+                          <CardDescription className="text-neutral-500">
+                            {t('admin.newUsersLast30Days')}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-[300px] w-full">
+                            <ChartContainer
+                              config={chartConfig}
+                              className="aspect-auto h-full w-full"
                             >
-                              <CartesianGrid
-                                vertical={false}
-                                strokeDasharray="3 3"
-                                stroke="#3b3b3bff"
-                              />
-                              <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                minTickGap={32}
-                                tickFormatter={(value) => {
-                                  const date = new Date(value);
-                                  return date.toLocaleDateString('pt-BR', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                  });
+                              <AreaChart
+                                accessibilityLayer
+                                data={userGrowthData}
+                                margin={{
+                                  left: 12,
+                                  right: 12,
                                 }}
-                              />
-                              <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent indicator="dot" />}
-                              />
-                              <Area
-                                dataKey="users"
-                                type="natural"
-                                fill="#52ddeb"
-                                fillOpacity={0.05}
-                                stroke="#64f2ffff"
-                                stackId="a"
-                              />
-                            </AreaChart>
-                          </ChartContainer>
-                        </div>
-                      </CardContent>
-                    </Card>
+                              >
+                                <CartesianGrid
+                                  vertical={false}
+                                  strokeDasharray="3 3"
+                                  stroke="#3b3b3bff"
+                                />
+                                <XAxis
+                                  dataKey="date"
+                                  tickLine={false}
+                                  axisLine={false}
+                                  tickMargin={8}
+                                  minTickGap={32}
+                                  tickFormatter={(value) => {
+                                    const date = new Date(value);
+                                    return date.toLocaleDateString('pt-BR', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                    });
+                                  }}
+                                />
+                                <ChartTooltip
+                                  cursor={false}
+                                  content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Area
+                                  dataKey="users"
+                                  type="natural"
+                                  fill="#52ddeb"
+                                  fillOpacity={0.05}
+                                  stroke="#64f2ffff"
+                                  stackId="a"
+                                />
+                              </AreaChart>
+                            </ChartContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ) : (
                       <ChartCardSkeleton />
                     )}

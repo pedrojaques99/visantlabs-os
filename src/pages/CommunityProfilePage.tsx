@@ -608,7 +608,9 @@ export const CommunityProfilePage: React.FC = () => {
                                   mockup.isLiked ? 'fill-red-500 text-destructive' : 'text-white'
                                 )}
                               />
-                              <span className="text-xs font-mono tabular-nums">{mockup.likesCount || 0}</span>
+                              <span className="text-xs font-mono tabular-nums">
+                                {mockup.likesCount || 0}
+                              </span>
                             </div>
                           </div>
                         </div>

@@ -14,5 +14,4 @@ interface ShellHeaderContextValue {
 
 export const ShellHeaderContext = createContext<ShellHeaderContextValue | null>(null);
 
-export const useShellHeader = (): ShellHeaderContextValue | null =>
-  useContext(ShellHeaderContext);
+export const useShellHeader = (): ShellHeaderContextValue | null => useContext(ShellHeaderContext);

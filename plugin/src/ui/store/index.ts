@@ -10,6 +10,7 @@ import type {
   DesignTokens,
 } from './types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { DEFAULT_API_BASE_URL, joinApiUrl, normalizeBaseUrl } from '../apiBase';
 
 export const usePluginStore = create<PluginStore>()(
   immer((set) => ({
@@ -52,10 +53,8 @@ export const usePluginStore = create<PluginStore>()(
     generateImage: false,
     mode: 'simple',
 
-    // Server
-    serverUrl:
-      (typeof window !== 'undefined' && (window as any).__VISANT_API_URL__) ||
-      'https://api.visantlabs.com',
+    // Server — SSoT for the API base URL (see ../apiBase.ts)
+    serverUrl: DEFAULT_API_BASE_URL,
 
     // Auth
     authToken: null,
@@ -198,7 +197,7 @@ export const usePluginStore = create<PluginStore>()(
 
     setServerUrl: (url) =>
       set((state) => {
-        state.serverUrl = url.replace(/\/$/, '');
+        state.serverUrl = normalizeBaseUrl(url);
       }),
 
     setAuthToken: (token) =>
@@ -473,7 +472,7 @@ function persistActiveSessionPointer() {
 
 function fetchServerSessionContext(sid: string) {
   const { serverUrl, authToken } = usePluginStore.getState();
-  fetch(`${serverUrl}/api/plugin/session/${sid}/messages`, {
+  fetch(joinApiUrl(serverUrl, `/plugin/session/${sid}/messages`), {
     headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
   })
     .then((r) => (r.ok ? r.json() : null))

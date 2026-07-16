@@ -128,7 +128,9 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Quick edit</DialogTitle>
-          <DialogDescription>The core of this brand — the rest lives in the full view.</DialogDescription>
+          <DialogDescription>
+            The core of this brand — the rest lives in the full view.
+          </DialogDescription>
         </DialogHeader>
 
         <DialogBody className="space-y-5">
@@ -149,7 +151,9 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {uploading ? 'Uploading…' : 'Upload logo'}
               </Button>
-              <p className="text-[11px] text-neutral-500">Becomes the brand&apos;s avatar everywhere.</p>
+              <p className="text-[11px] text-neutral-500">
+                Becomes the brand&apos;s avatar everywhere.
+              </p>
             </div>
             <input
               ref={fileRef}
@@ -165,7 +169,11 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
           </div>
 
           <Field label="Name">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Brand name" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Brand name"
+            />
           </Field>
           <Field label="Tagline">
             <Input

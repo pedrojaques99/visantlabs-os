@@ -260,7 +260,11 @@ export function BrandGuidelineSection() {
                   aria-label="Sync [Template] frames to the preview"
                   title="Sincronizar os [Template] desta página com o preview"
                 >
-                  {syncing ? <GlitchLoader size={12} /> : <LayoutTemplate size={13} className="mr-1" />}
+                  {syncing ? (
+                    <GlitchLoader size={12} />
+                  ) : (
+                    <LayoutTemplate size={13} className="mr-1" />
+                  )}
                   Sync
                 </Button>
               )}

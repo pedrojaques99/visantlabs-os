@@ -84,7 +84,13 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     width: panelWidth,
     isResizing,
     handleProps: resizeHandleProps,
-  } = useResizable({ min: MIN_WIDTH, max: MAX_WIDTH, initial: width, edge: 'left', onChange: onResize });
+  } = useResizable({
+    min: MIN_WIDTH,
+    max: MAX_WIDTH,
+    initial: width,
+    edge: 'left',
+    onChange: onResize,
+  });
 
   // Calculate text colors based on canvas background
   const textColors = useMemo(() => getTextColors(backgroundColor), [backgroundColor]);

@@ -613,7 +613,10 @@ export const SvgOptimizerPage: React.FC = () => {
           <motion.div
             key="workspace"
             {...fadeScale}
-            className={cn('relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex flex-col', glassSurface.panel)}
+            className={cn(
+              'relative w-full max-w-3xl rounded-2xl overflow-hidden min-h-[300px] flex flex-col',
+              glassSurface.panel
+            )}
           >
             {/* View mode toggle */}
             <motion.div

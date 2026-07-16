@@ -541,23 +541,26 @@ export const ChatShell: React.FC<ChatShellProps> = ({
   }, isOpen);
 
   // Fetch a remote asset URL and attach it as a File (used by media kit click + drag).
-  const attachAssetFromUrl = useCallback(async (url: string) => {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`${res.status}`);
-      const blob = await res.blob();
-      const nameFromUrl = url.split('/').pop()?.split('?')[0] || 'asset';
-      const ext = blob.type.split('/')[1] || 'png';
-      const fileName = nameFromUrl.includes('.') ? nameFromUrl : `${nameFromUrl}.${ext}`;
-      const file = new File([blob], fileName, { type: blob.type || 'image/png' });
-      setAttachedFiles((prev) => [...prev, file]);
-      toast.success(t('chatShell.attached', { name: fileName }));
-    } catch (err: any) {
-      toast.error(
-        t('chatShell.attachAssetError', { error: err?.message || t('chatShell.genericError') })
-      );
-    }
-  }, [t]);
+  const attachAssetFromUrl = useCallback(
+    async (url: string) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status}`);
+        const blob = await res.blob();
+        const nameFromUrl = url.split('/').pop()?.split('?')[0] || 'asset';
+        const ext = blob.type.split('/')[1] || 'png';
+        const fileName = nameFromUrl.includes('.') ? nameFromUrl : `${nameFromUrl}.${ext}`;
+        const file = new File([blob], fileName, { type: blob.type || 'image/png' });
+        setAttachedFiles((prev) => [...prev, file]);
+        toast.success(t('chatShell.attached', { name: fileName }));
+      } catch (err: any) {
+        toast.error(
+          t('chatShell.attachAssetError', { error: err?.message || t('chatShell.genericError') })
+        );
+      }
+    },
+    [t]
+  );
 
   // Drag & drop — accept image/pdf files AND asset URLs (from media kit panel)
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -896,9 +899,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         onClick={() => setMediaPanelOpen((v) => !v)}
                         className="hover:bg-white/10 h-8 w-8 shrink-0 text-neutral-400"
                         aria-label={
-                          mediaPanelOpen
-                            ? t('chatShell.hideMediaKit')
-                            : t('chatShell.showMediaKit')
+                          mediaPanelOpen ? t('chatShell.hideMediaKit') : t('chatShell.showMediaKit')
                         }
                       >
                         {mediaPanelOpen ? (
@@ -948,7 +949,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             key={s}
                             type="button"
                             onClick={() => setInput(s)}
-                            className={cn('text-left px-4 py-3 rounded-xl text-xs text-neutral-300 hover:border-white/15 hover:text-neutral-100 flex items-center gap-2.5', glassSurface.tile)}
+                            className={cn(
+                              'text-left px-4 py-3 rounded-xl text-xs text-neutral-300 hover:border-white/15 hover:text-neutral-100 flex items-center gap-2.5',
+                              glassSurface.tile
+                            )}
                           >
                             <Sparkles size={12} className="text-brand-cyan/70 shrink-0" />
                             <span>{s}</span>

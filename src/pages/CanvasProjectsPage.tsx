@@ -140,7 +140,11 @@ export const CanvasProjectsPage: React.FC = () => {
       setCommunityWorkflows((prev) =>
         prev.map((w) =>
           w._id === workflowId
-            ? { ...w, isLikedByUser: liked, likesCount: liked ? w.likesCount + 1 : w.likesCount - 1 }
+            ? {
+                ...w,
+                isLikedByUser: liked,
+                likesCount: liked ? w.likesCount + 1 : w.likesCount - 1,
+              }
             : w
         )
       );
@@ -369,7 +373,6 @@ export const CanvasProjectsPage: React.FC = () => {
 
   const headerActions = (
     <div className="flex items-center gap-3">
-
       {/* Search de projetos: expande INLINE dentro do header (não é popup
           flutuante); colapsa ao sair vazio. Fica visualmente distinto do
           Cmd+K global da espinha (que é navegação, não filtro de lista). */}

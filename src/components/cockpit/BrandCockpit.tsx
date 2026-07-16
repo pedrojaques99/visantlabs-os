@@ -106,11 +106,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
 
   // Marca ativa vem do SSoT global (ActiveBrandContext) — o cockpit não gere
   // mais o estado/localStorage localmente. O rail e o hero ficam em sincronia.
-  const {
-    brands: activeBrands,
-    activeBrand,
-    isLoading: brandsLoading,
-  } = useActiveBrand();
+  const { brands: activeBrands, activeBrand, isLoading: brandsLoading } = useActiveBrand();
   const hasBrand = !!activeBrand?.id;
 
   // "Todas as marcas" (isAllBrands) → o HomeRoute mostra o grid, não o cockpit;
@@ -232,7 +228,8 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
     [depthReport.missing]
   );
   const openGuideline = useCallback(
-    () => navigate(activeBrand?.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines'),
+    () =>
+      navigate(activeBrand?.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines'),
     [navigate, activeBrand]
   );
 
@@ -478,85 +475,91 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     Antes o mockup era uma faixa full-width gigante; agora é uma
                     célula contida do bento (menos é mais). ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
-                {activeBrand?.id && (
-                  <React.Suspense fallback={null}>
-                    <SurpriseMockupHero
-                      brandId={activeBrand.id}
-                      onAddAsset={() => setChangeLogoOpen(true)}
-                    />
-                  </React.Suspense>
-                )}
-
-                {/* ── In progress ── */}
-                <section
-                  aria-label={t('cockpit.work.title')}
-                  data-vsn-region="in-progress"
-                  className={cn(cardCls, 'p-5 flex flex-col')}
-                >
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <MicroTitle className="text-neutral-500">{t('cockpit.work.title')}</MicroTitle>
-                    <Button
-                      variant="surface"
-                      size="xs"
-                      onClick={() => navigate(FEATURE_COPILOT ? '/copilot' : '/mockupmachine')}
-                      className="gap-1.5"
-                      data-vsn-component="CockpitNewWork"
-                    >
-                      <Plus size={11} />
-                      {t('cockpit.work.new')}
-                    </Button>
-                  </div>
-
-                  {workItems.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {workItems.map((item) => (
-                        <button
-                          key={`${item.kind}-${item.id}`}
-                          onClick={() => openWorkItem(item)}
-                          className={cn(tileCls, 'group text-left overflow-hidden flex flex-col')}
-                        >
-                          <div className="aspect-square w-full bg-neutral-900 flex items-center justify-center overflow-hidden">
-                            {item.image ? (
-                              <img
-                                src={item.image}
-                                alt=""
-                                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                                loading="lazy"
-                              />
-                            ) : item.kind === 'campaign' ? (
-                              <Megaphone size={20} className="text-neutral-700" strokeWidth={1.2} />
-                            ) : (
-                              <Palette size={20} className="text-neutral-700" strokeWidth={1.2} />
-                            )}
-                          </div>
-                          <div className="p-3 space-y-0.5 min-w-0">
-                            <p className="text-xs font-medium text-neutral-200 truncate">
-                              {item.title}
-                            </p>
-                            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 truncate">
-                              {item.meta}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    /* Rich empty state — sell what IS possible with this brand. */
-                    <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 py-10">
-                      <div className="p-5 rounded-2xl bg-neutral-950/50 border border-white/10">
-                        <Wand2 size={28} className="text-neutral-400" strokeWidth={1.2} />
-                      </div>
-                      <div className="space-y-1.5 max-w-sm">
-                        <h3 className="text-sm font-semibold text-neutral-200">
-                          {t('cockpit.work.emptyTitle')}
-                        </h3>
-                        <p className="text-xs text-neutral-500 leading-relaxed">
-                          {t('cockpit.work.emptySubtitle')}
-                        </p>
-                      </div>
-                    </div>
+                  {activeBrand?.id && (
+                    <React.Suspense fallback={null}>
+                      <SurpriseMockupHero
+                        brandId={activeBrand.id}
+                        onAddAsset={() => setChangeLogoOpen(true)}
+                      />
+                    </React.Suspense>
                   )}
-                </section>
+
+                  {/* ── In progress ── */}
+                  <section
+                    aria-label={t('cockpit.work.title')}
+                    data-vsn-region="in-progress"
+                    className={cn(cardCls, 'p-5 flex flex-col')}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <MicroTitle className="text-neutral-500">
+                        {t('cockpit.work.title')}
+                      </MicroTitle>
+                      <Button
+                        variant="surface"
+                        size="xs"
+                        onClick={() => navigate(FEATURE_COPILOT ? '/copilot' : '/mockupmachine')}
+                        className="gap-1.5"
+                        data-vsn-component="CockpitNewWork"
+                      >
+                        <Plus size={11} />
+                        {t('cockpit.work.new')}
+                      </Button>
+                    </div>
+
+                    {workItems.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {workItems.map((item) => (
+                          <button
+                            key={`${item.kind}-${item.id}`}
+                            onClick={() => openWorkItem(item)}
+                            className={cn(tileCls, 'group text-left overflow-hidden flex flex-col')}
+                          >
+                            <div className="aspect-square w-full bg-neutral-900 flex items-center justify-center overflow-hidden">
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt=""
+                                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              ) : item.kind === 'campaign' ? (
+                                <Megaphone
+                                  size={20}
+                                  className="text-neutral-700"
+                                  strokeWidth={1.2}
+                                />
+                              ) : (
+                                <Palette size={20} className="text-neutral-700" strokeWidth={1.2} />
+                              )}
+                            </div>
+                            <div className="p-3 space-y-0.5 min-w-0">
+                              <p className="text-xs font-medium text-neutral-200 truncate">
+                                {item.title}
+                              </p>
+                              <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 truncate">
+                                {item.meta}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      /* Rich empty state — sell what IS possible with this brand. */
+                      <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 py-10">
+                        <div className="p-5 rounded-2xl bg-neutral-950/50 border border-white/10">
+                          <Wand2 size={28} className="text-neutral-400" strokeWidth={1.2} />
+                        </div>
+                        <div className="space-y-1.5 max-w-sm">
+                          <h3 className="text-sm font-semibold text-neutral-200">
+                            {t('cockpit.work.emptyTitle')}
+                          </h3>
+                          <p className="text-xs text-neutral-500 leading-relaxed">
+                            {t('cockpit.work.emptySubtitle')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </section>
                 </div>
               </div>
 

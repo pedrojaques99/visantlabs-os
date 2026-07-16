@@ -212,7 +212,10 @@ export const CreativeSetupSidebar: React.FC = () => {
                       setUploadedBackgroundUrl(logo.url!);
                       setShowVault(false);
                     }}
-                    className={cn('aspect-square rounded-xl p-2 hover:border-neutral-700 transition-all group overflow-hidden', glassSurface.tile)}
+                    className={cn(
+                      'aspect-square rounded-xl p-2 hover:border-neutral-700 transition-all group overflow-hidden',
+                      glassSurface.tile
+                    )}
                   >
                     <img
                       src={getProxiedUrl(logo.url)}
@@ -238,7 +241,10 @@ export const CreativeSetupSidebar: React.FC = () => {
                       setUploadedBackgroundUrl(media.url!);
                       setShowVault(false);
                     }}
-                    className={cn('aspect-video rounded-xl p-1.5 hover:border-neutral-700 transition-all group overflow-hidden', glassSurface.tile)}
+                    className={cn(
+                      'aspect-video rounded-xl p-1.5 hover:border-neutral-700 transition-all group overflow-hidden',
+                      glassSurface.tile
+                    )}
                   >
                     <img
                       src={getProxiedUrl(media.url)}
@@ -290,7 +296,10 @@ export const CreativeSetupSidebar: React.FC = () => {
         </span>
         <button
           onClick={() => navigate('/create/projects')}
-          className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:border-neutral-700 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan', glassSurface.control)}
+          className={cn(
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:border-neutral-700 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan',
+            glassSurface.control
+          )}
           title="My Creatives"
           data-vsn-action="open-projects"
         >
@@ -320,7 +329,10 @@ export const CreativeSetupSidebar: React.FC = () => {
           <button
             onClick={() => setWizardOpen(true)}
             disabled={status !== 'setup'}
-            className={cn('w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-all hover:bg-neutral-900/60 disabled:opacity-50', glassSurface.tile)}
+            className={cn(
+              'w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-all hover:bg-neutral-900/60 disabled:opacity-50',
+              glassSurface.tile
+            )}
             title="Nova marca"
           >
             <Plus size={18} />
@@ -340,7 +352,10 @@ export const CreativeSetupSidebar: React.FC = () => {
             placeholder="O que você quer criar hoje?"
             aria-label="Ideia do criativo"
             rows={4}
-            className={cn('w-full rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50', glassSurface.panel)}
+            className={cn(
+              'w-full rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50',
+              glassSurface.panel
+            )}
             data-vsn-input="prompt"
           />
           <div className="absolute bottom-3 right-3 text-[10px] font-mono text-neutral-700 pointer-events-none uppercase tracking-tighter">
@@ -420,7 +435,12 @@ export const CreativeSetupSidebar: React.FC = () => {
                   <span className="uppercase tracking-widest">Subir Imagem Local</span>
                 </div>
               ) : (
-                <div className={cn('relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl', glassSurface.tile)}>
+                <div
+                  className={cn(
+                    'relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl',
+                    glassSurface.tile
+                  )}
+                >
                   <img
                     src={getProxiedUrl(uploadedBackgroundUrl)}
                     alt="Uploaded Asset"
@@ -461,7 +481,10 @@ export const CreativeSetupSidebar: React.FC = () => {
             ) : (
               <div
                 onClick={() => setShowVault(true)}
-                className={cn('group cursor-pointer relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl', glassSurface.tile)}
+                className={cn(
+                  'group cursor-pointer relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl',
+                  glassSurface.tile
+                )}
               >
                 <img
                   src={getProxiedUrl(uploadedBackgroundUrl)}

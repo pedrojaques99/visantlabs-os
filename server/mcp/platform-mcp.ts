@@ -135,7 +135,7 @@ const STRATEGY_INPUT_SHAPE = {
     )
     .optional()
     .describe(
-      "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate."
+      'Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate.'
     ),
   coreMessage: z
     .object({
@@ -2347,68 +2347,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           casingRules: z.array(z.string()).optional(),
         })
         .optional(),
-      strategy: z
-        .object({
-          manifesto: z.string().optional(),
-          positioning: z.array(z.string()).optional(),
-          archetypes: z
-            .array(
-              z.object({
-                name: z.string(),
-                role: z.enum(['primary', 'secondary']).optional(),
-                description: z.string(),
-                examples: z.array(z.string()).optional(),
-              })
-            )
-            .optional(),
-          personas: z
-            .array(
-              z.object({
-                name: z.string(),
-                age: z.number().optional(),
-                occupation: z.string().optional(),
-                traits: z.array(z.string()).optional(),
-                bio: z.string().optional(),
-                desires: z.array(z.string()).optional(),
-                painPoints: z.array(z.string()).optional(),
-              })
-            )
-            .optional(),
-          voiceValues: z
-            .array(
-              z.object({
-                title: z.string(),
-                description: z.string(),
-                example: z.string(),
-              })
-            )
-            .optional(),
-          coreMessage: z
-            .object({
-              product: z.string(),
-              differential: z.string(),
-              emotionalBond: z.string(),
-            })
-            .optional(),
-          pillars: z.array(z.object({ value: z.string(), description: z.string() })).optional(),
-          marketResearch: z
-            .object({
-              competitors: z.array(z.string()).optional(),
-              gaps: z.array(z.string()).optional(),
-              opportunities: z.array(z.string()).optional(),
-              notes: z.string().optional(),
-            })
-            .optional(),
-          graphicSystem: z
-            .object({
-              patterns: z.array(z.string()).optional(),
-              grafisms: z.array(z.string()).optional(),
-              imageRules: z.array(z.string()).optional(),
-              editorialGrid: z.string().optional(),
-            })
-            .optional(),
-        })
-        .optional(),
+      // Reuse the update tool's shape. The second copy that used to live here is
+      // exactly how `manifesto` stayed string-only and `copyExamples` went missing
+      // on create — a 200 for data that was never saved.
+      strategy: z.object(STRATEGY_INPUT_SHAPE).optional(),
       tokens: z
         .object({
           spacing: z.record(z.string(), z.number()).optional(),

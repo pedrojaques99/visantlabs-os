@@ -20,7 +20,9 @@ Schema:
   "guidelines": { "voice": "overall tone summary", "dos": ["do this", "..."], "donts": ["avoid this", "..."], "imagery": "visual style description" },
   "tokens": { "spacing": { "xs": 4 }, "radius": { "sm": 4 } },
   "strategy": {
-    "manifesto": "full manifesto text",
+    "manifesto": { "provocation": "...", "tension": "...", "promise": "...", "full": "full manifesto text" },
+    "coreMessage": { "product": "what the brand sells", "differential": "what sets it apart", "emotionalBond": "the feeling it transmits" },
+    "pillars": [{ "value": "Pillar name", "description": "why it matters" }],
     "positioning": ["positioning statement 1", "positioning statement 2"],
     "archetypes": [
       { "name": "Archetype Name", "role": "primary|secondary", "description": "what this archetype means for the brand", "examples": ["Brand A", "Brand B"] }
@@ -52,11 +54,23 @@ Asset classification rules (apply to each image passed, by index order):
 Rules:
 - Colors MUST be valid hex (#RGB or #RRGGBB)
 - Font families must be exact names (e.g., "Inter", not "sans-serif")
-- For strategy documents: extract ALL personas, archetypes, tone of voice values, positioning, manifesto, brand values
+- For strategy documents: extract ALL personas, archetypes, tone of voice values, positioning, manifesto, core message, pillars, brand values
 - archetypes/personas/voiceValues MUST be objects (not plain strings)
+- manifesto: put the verbatim text in "full". Only fill provocation/tension/promise when the source itself lays the manifesto out in that arc — never split a text yourself to invent the structure. If there's only running text, "full" alone is the correct answer.
+- coreMessage: many decks state this as one sentence — "<product> with the differential of <differential>, transmitting <emotionalBond>". Split that sentence into its three parts. If the source never states it, omit the field; do NOT derive it from the tagline or description.
 - copyExamples: transcribe real copy VERBATIM — headlines, taglines, CTAs the brand actually published in the source. Never write new copy, never improve or translate one, and skip generic UI text ("Saiba mais", "Enviar"). These are fed back as few-shot for generation, so an invented line teaches the model to imitate a fake brand. Omit the field entirely rather than pad it.
 - assetClassifications must have one entry per image, in the same order images were provided
 - Return ONLY valid JSON, no markdown fences, no explanation`;
+
+/** Copy only the named keys that came back as non-empty strings, trimmed. */
+function pickStrings<K extends string>(src: any, keys: readonly K[]): Partial<Record<K, string>> {
+  const out: Partial<Record<K, string>> = {};
+  for (const k of keys) {
+    const v = src?.[k];
+    if (typeof v === 'string' && v.trim()) out[k] = v.trim();
+  }
+  return out;
+}
 
 export interface AssetClassification {
   index: number;
@@ -191,7 +205,38 @@ export function validateExtracted(data: any): ExtractedBrandData {
   if (data.strategy && typeof data.strategy === 'object') {
     result.strategy = {};
     const s = data.strategy;
-    if (typeof s.manifesto === 'string') result.strategy.manifesto = s.manifesto;
+
+    // Accept both shapes: legacy sources give a flat string, the structured arc
+    // (provocação/tensão/promessa) only shows up when the deck spells it out.
+    if (typeof s.manifesto === 'string' && s.manifesto.trim()) {
+      result.strategy.manifesto = s.manifesto.trim();
+    } else if (s.manifesto && typeof s.manifesto === 'object') {
+      const man = pickStrings(s.manifesto, ['provocation', 'tension', 'promise', 'full']);
+      if (Object.keys(man).length) result.strategy.manifesto = man;
+    }
+
+    // All three parts or nothing — a half core message reads as a broken sentence.
+    if (s.coreMessage && typeof s.coreMessage === 'object') {
+      const core = pickStrings(s.coreMessage, ['product', 'differential', 'emotionalBond']);
+      if (core.product && core.differential && core.emotionalBond) {
+        result.strategy.coreMessage = core as {
+          product: string;
+          differential: string;
+          emotionalBond: string;
+        };
+      }
+    }
+
+    if (Array.isArray(s.pillars)) {
+      const pillars = s.pillars
+        .map((x: any) => (typeof x === 'string' ? { value: x, description: '' } : x))
+        .filter((x: any) => x && typeof x.value === 'string' && x.value.trim())
+        .map((x: any) => ({
+          value: x.value.trim(),
+          description: typeof x.description === 'string' ? x.description.trim() : '',
+        }));
+      if (pillars.length) result.strategy.pillars = pillars;
+    }
 
     // Position can be string or array from LLM, ensure array of strings
     if (typeof s.positioning === 'string') result.strategy.positioning = [s.positioning];

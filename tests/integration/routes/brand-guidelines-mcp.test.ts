@@ -281,7 +281,9 @@ describe('Brand Guidelines — MCP writes strategy.copyExamples', () => {
 
     await callTool(token, 'brand-guidelines-update', {
       id: guideline.id,
-      strategy: { copyExamples: [{ text: 'SEM ÁUDIO-GUIA. SÓ ABRE A CORTINA.', type: 'headline' }] },
+      strategy: {
+        copyExamples: [{ text: 'SEM ÁUDIO-GUIA. SÓ ABRE A CORTINA.', type: 'headline' }],
+      },
     });
 
     const ctx = await callTool(token, 'brand-guidelines-get', {

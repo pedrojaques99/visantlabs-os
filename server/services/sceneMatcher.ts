@@ -27,12 +27,31 @@ export type SurfaceKind =
 
 /** Keyword → surface kind. Cheap classifier from the PSD/face name (Fase 1). */
 const SURFACE_KEYWORDS: Array<{ kind: SurfaceKind; words: RegExp }> = [
-  { kind: 'apparel', words: /tshirt|t-shirt|\btee\b|shirt|hoodie|apparel|garment|fabric|tote|\bcap\b|\bhat\b|jersey|sweater|camiseta|moletom/i },
-  { kind: 'device', words: /phone|iphone|ipad|tablet|laptop|macbook|screen|monitor|device|desktop|celular|tela/i },
+  {
+    kind: 'apparel',
+    words:
+      /tshirt|t-shirt|\btee\b|shirt|hoodie|apparel|garment|fabric|tote|\bcap\b|\bhat\b|jersey|sweater|camiseta|moletom/i,
+  },
+  {
+    kind: 'device',
+    words: /phone|iphone|ipad|tablet|laptop|macbook|screen|monitor|device|desktop|celular|tela/i,
+  },
   { kind: 'card', words: /business[\s_-]*card|namecard|\bcard\b|cartao|cartão|\bvisit/i },
-  { kind: 'packaging', words: /\bbox\b|package|packaging|\bbag\b|bottle|\bcan\b|pouch|\bjar\b|\btube\b|\blabel\b|embalagem|caixa|sacola|garrafa|\brotulo\b/i },
-  { kind: 'signage', words: /billboard|outdoor|\bbanner\b|storefront|signage|\bsign\b|facade|fachada|placa|\bwall\b|parede/i },
-  { kind: 'print', words: /poster|flyer|brochure|magazine|\bbook\b|letterhead|stationery|\bprint\b|folder|cartaz|revista|papel|folheto/i },
+  {
+    kind: 'packaging',
+    words:
+      /\bbox\b|package|packaging|\bbag\b|bottle|\bcan\b|pouch|\bjar\b|\btube\b|\blabel\b|embalagem|caixa|sacola|garrafa|\brotulo\b/i,
+  },
+  {
+    kind: 'signage',
+    words:
+      /billboard|outdoor|\bbanner\b|storefront|signage|\bsign\b|facade|fachada|placa|\bwall\b|parede/i,
+  },
+  {
+    kind: 'print',
+    words:
+      /poster|flyer|brochure|magazine|\bbook\b|letterhead|stationery|\bprint\b|folder|cartaz|revista|papel|folheto/i,
+  },
   { kind: 'frame', words: /\bframe\b|\bcanvas\b|wall[\s_-]*art|artframe|quadro|moldura/i },
   { kind: 'product', words: /\bmug\b|\bcup\b|\bglass\b|\bpen\b|\bmug\b|caneca|copo|produto/i },
 ];
@@ -70,10 +89,26 @@ const ART_KINDS: BrandAssetKind[] = ['graphic', 'photo', 'illustration', 'patter
 /** Which surfaces each asset kind belongs on (kindFit). */
 const KIND_SURFACE_FIT: Record<'logo' | 'art', Partial<Record<SurfaceKind, number>>> = {
   logo: {
-    apparel: 1, card: 1, packaging: 1, product: 1, device: 0.8, signage: 0.7, frame: 0.5, print: 0.5, unknown: 0.6,
+    apparel: 1,
+    card: 1,
+    packaging: 1,
+    product: 1,
+    device: 0.8,
+    signage: 0.7,
+    frame: 0.5,
+    print: 0.5,
+    unknown: 0.6,
   },
   art: {
-    signage: 1, print: 1, frame: 1, device: 0.9, packaging: 0.7, apparel: 0.7, card: 0.5, product: 0.5, unknown: 0.6,
+    signage: 1,
+    print: 1,
+    frame: 1,
+    device: 0.9,
+    packaging: 0.7,
+    apparel: 0.7,
+    card: 0.5,
+    product: 0.5,
+    unknown: 0.6,
   },
 };
 

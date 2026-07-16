@@ -556,7 +556,9 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b border-white/10">
                       <span className="text-neutral-500">{t('admin.products.crditos')}</span>
-                      <span className="text-brand-cyan font-mono tabular-nums">{product.credits}</span>
+                      <span className="text-brand-cyan font-mono tabular-nums">
+                        {product.credits}
+                      </span>
                     </div>
 
                     {/* Unlimited indicator for subscription plans */}

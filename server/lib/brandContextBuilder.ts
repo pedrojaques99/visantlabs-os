@@ -559,7 +559,9 @@ export function buildBrandContext(
       if (gs.editorialGrid) lines.push(`EDITORIAL GRID: ${gs.editorialGrid}`);
     }
     if (bg.strategy.copyExamples?.length) {
-      lines.push("COPY EXAMPLES (the brand's own voice — match register and rhythm, never reuse verbatim):");
+      lines.push(
+        "COPY EXAMPLES (the brand's own voice — match register and rhythm, never reuse verbatim):"
+      );
       for (const c of bg.strategy.copyExamples) {
         if (c.text) lines.push(`  ${c.type ? `[${c.type}] ` : ''}"${c.text}"`);
       }

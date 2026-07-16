@@ -423,7 +423,11 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             className={cn(ghostBtn, 'h-10 px-4 justify-between')}
           >
             <span>Copy brand context</span>
-            {busy === 'context' ? <Loader2 size={13} className="animate-spin" /> : <Copy size={13} />}
+            {busy === 'context' ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <Copy size={13} />
+            )}
           </button>
           <div className="flex gap-2">
             <button

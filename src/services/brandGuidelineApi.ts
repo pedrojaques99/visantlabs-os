@@ -325,7 +325,10 @@ export const brandGuidelineApi = {
       });
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') {
-        throw codedError({ error: 'suggestions_unavailable' }, 'Ideas took too long — try again shortly.');
+        throw codedError(
+          { error: 'suggestions_unavailable' },
+          'Ideas took too long — try again shortly.'
+        );
       }
       throw e;
     } finally {
