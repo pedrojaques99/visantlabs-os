@@ -339,7 +339,11 @@
         "fontSwapTitle": "Font Swap",
         "fontSwapDescription": "Scan and batch-replace fonts",
         "exportTitle": "Export",
-        "exportDescription": "Assets, slices, responsive, and text export"
+        "exportDescription": "Assets, slices, responsive, and text export",
+        "connectorsTitle": "From Linear",
+        "connectorsDescription": "Turn issues into Story and Feed frames",
+        "intelligenceTitle": "Analyse",
+        "intelligenceDescription": "Categorise a selection, or read it as JSON or an image prompt"
       },
       "automation": {
         "scanningColors": "Scanning colors…",

@@ -339,7 +339,11 @@
         "fontSwapTitle": "Troca de Fontes",
         "fontSwapDescription": "Escanear e substituir fontes em lote",
         "exportTitle": "Exportar",
-        "exportDescription": "Assets, slices, responsivo e exportação de texto"
+        "exportDescription": "Assets, slices, responsivo e exportação de texto",
+        "connectorsTitle": "Do Linear",
+        "connectorsDescription": "Transformar issues em frames Story e Feed",
+        "intelligenceTitle": "Analisar",
+        "intelligenceDescription": "Categorizar a seleção, ou lê-la como JSON ou prompt de imagem"
       },
       "automation": {
         "scanningColors": "Escaneando cores…",

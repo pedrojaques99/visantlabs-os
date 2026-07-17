@@ -1157,7 +1157,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const presets = scanPresets();
       postToUI({ type: 'PRESETS_SCANNED', presets });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }
@@ -1168,7 +1168,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const projects = await fetchProjects((msg as any).linearApiKey);
       postToUI({ type: 'LINEAR_PROJECTS', projects });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }
@@ -1179,7 +1179,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const milestones = await fetchMilestones((msg as any).linearApiKey, (msg as any).projectId);
       postToUI({ type: 'LINEAR_MILESTONES', milestones });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }
@@ -1198,7 +1198,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       });
       postToUI({ type: 'BRIDGE_DONE', ...result });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ArrowRightLeft, Scan, Eye } from 'lucide-react';
 import { Select } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Project {
   id: string;
@@ -15,9 +17,9 @@ interface Milestone {
 function Dot({ state }: { state: 'off' | 'on' | 'busy' | 'err' }) {
   const c = {
     off: 'bg-muted-foreground/30',
-    on: 'bg-emerald-400',
-    busy: 'bg-amber-400 animate-pulse',
-    err: 'bg-red-400',
+    on: 'bg-success',
+    busy: 'bg-warning animate-pulse',
+    err: 'bg-destructive',
   };
   return <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${c[state]}`} />;
 }
@@ -83,7 +85,11 @@ export function ConnectorsSection() {
         setDotState('on');
         setBusy(false);
       }
-      if (msg.type === 'ERROR') {
+      // Scoped on purpose: 'ERROR' is a shared bus posted from ~8 places in code.ts and
+      // consumed by useOpRunner as a terminal error for *any* op. Listening to it here
+      // painted this connector red for a colour-cleanup failure — and, worse, a Linear
+      // failure aborted whatever unrelated op was running.
+      if (msg.type === 'BRIDGE_ERROR') {
         setStatus(msg.message);
         setDotState('err');
         setBusy(false);
@@ -157,34 +163,36 @@ export function ConnectorsSection() {
       {/* ── Connection ── */}
       <div className="flex items-center gap-2 mb-1">
         <Dot state={apiKey ? dotState : 'off'} />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {/* "Linear" is a proper noun, not a technical label — sans, not uppercase mono. */}
+        <span className="text-[11px] text-muted-foreground">
           Linear {connected ? `· ${t('plugin.tools.connectors.linearConnected')}` : ''}
         </span>
       </div>
 
       <div className="flex gap-1.5">
         <div className="relative flex-1">
-          <input
+          {/* An API key is a technical value — mono earns its place here. */}
+          <Input
             type={showKey ? 'text' : 'password'}
             placeholder="lin_api_..."
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            className="w-full h-7 pl-2 pr-10 text-[10px] font-mono bg-foreground/[0.04] border border-foreground/[0.08] rounded-md focus:border-indigo-500/50 focus:outline-none transition-colors"
+            className="h-7 pl-2 pr-10 text-[10px] font-mono"
           />
           <button
             onClick={() => setShowKey((v) => !v)}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-foreground/25 hover:text-foreground/50"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/60 hover:text-foreground transition-colors"
           >
             {showKey ? t('plugin.tools.connectors.hide') : t('plugin.tools.connectors.show')}
           </button>
         </div>
-        <button
+        <Button
           onClick={connect}
           disabled={!apiKey || busy}
-          className="h-7 px-3 text-[9px] font-semibold uppercase tracking-wider bg-indigo-600 hover:bg-indigo-500 rounded-md transition-colors disabled:opacity-30"
+          className="h-7 px-3 text-[10px] bg-brand-cyan text-black hover:bg-brand-cyan/90"
         >
           {t('plugin.tools.connectors.connect')}
-        </button>
+        </Button>
       </div>
 
       {/* ── Project + Milestone selectors ── */}
@@ -218,10 +226,11 @@ export function ConnectorsSection() {
               <button
                 key={f.id}
                 onClick={() => toggleFormat(f.id)}
-                className={`flex-1 h-6 text-[9px] font-semibold uppercase tracking-wider rounded-md border transition-all ${
+                /* Selected state is the other thing cyan is for. */
+                className={`flex-1 h-6 text-[10px] rounded-md border transition-all ${
                   formats.includes(f.id)
-                    ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                    : 'bg-transparent border-foreground/[0.08] text-foreground/25 hover:text-muted-foreground/60'
+                    ? 'bg-brand-cyan/15 border-brand-cyan/40 text-foreground'
+                    : 'bg-transparent border-border text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {f.label}
@@ -241,59 +250,63 @@ export function ConnectorsSection() {
           </div>
 
           {/* ── Issue filter ── */}
-          <input
+          <Input
             type="text"
             placeholder={t('plugin.tools.connectors.filterPlaceholder')}
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full h-7 px-2 text-[10px] font-mono bg-foreground/[0.04] border border-foreground/[0.08] rounded-md focus:border-indigo-500/50 focus:outline-none transition-colors placeholder:text-foreground/15"
+            className="h-7 px-2 text-[10px]"
           />
 
           {/* ── Actions ── */}
           <div className="flex gap-1.5">
-            <button
+            <Button
               onClick={handleScan}
               disabled={busy}
-              className="h-7 px-2.5 text-[9px] font-semibold uppercase tracking-wider bg-foreground/[0.04] hover:bg-foreground/[0.08] border border-foreground/[0.08] rounded-md flex items-center gap-1.5 transition-colors disabled:opacity-30"
+              variant="outline"
+              className="h-7 px-2.5 text-[10px] gap-1.5"
             >
               <Scan size={10} /> {t('plugin.tools.connectors.scan')}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => handleRun(true)}
               disabled={busy || !projectId}
-              className="h-7 px-2.5 text-[9px] font-semibold uppercase tracking-wider bg-foreground/[0.04] hover:bg-foreground/[0.08] border border-foreground/[0.08] rounded-md flex items-center gap-1.5 transition-colors disabled:opacity-30"
+              variant="outline"
+              className="h-7 px-2.5 text-[10px] gap-1.5"
             >
               <Eye size={10} /> {t('plugin.tools.connectors.preview')}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => handleRun(false)}
               disabled={busy || !projectId}
-              className="flex-1 h-7 text-[9px] font-bold uppercase tracking-wider bg-indigo-600 hover:bg-indigo-500 rounded-md flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30"
+              className="flex-1 h-7 text-[10px] gap-1.5 bg-brand-cyan text-black hover:bg-brand-cyan/90"
             >
               <ArrowRightLeft size={10} /> {t('plugin.tools.connectors.generate')}
-            </button>
+            </Button>
           </div>
         </>
       )}
 
       {/* ── Footer: presets + status ── */}
       {presets && (
-        <div className="flex gap-3 text-[9px] text-foreground/25">
+        <div className="flex gap-3 text-[9px] text-muted-foreground/50">
+          {/* Counts are technical values — mono is doing real work here. */}
           {Object.entries(presets).map(([fmt, vars]) => (
             <span key={fmt}>
-              <span className="text-muted-foreground/60">{fmt}</span> {vars.length}
+              <span className="text-muted-foreground">{fmt}</span>{' '}
+              <span className="font-mono tabular-nums">{vars.length}</span>
             </span>
           ))}
         </div>
       )}
       {status && (
         <div
-          className={`text-[9px] leading-tight ${
+          className={`text-[10px] leading-tight ${
             dotState === 'err'
-              ? 'text-red-400/80'
+              ? 'text-destructive'
               : dotState === 'on'
-                ? 'text-emerald-400/70'
-                : 'text-foreground/35'
+                ? 'text-success'
+                : 'text-muted-foreground'
           }`}
         >
           {status}

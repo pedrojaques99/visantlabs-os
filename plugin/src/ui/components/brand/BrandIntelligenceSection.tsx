@@ -1,20 +1,17 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
-import { useOpRunner } from '../../hooks/useOpRunner';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { useBrandStrategyIngest } from '../../hooks/useBrandStrategyIngest';
 import { useSlidesAnalyze } from '../../hooks/useSlidesAnalyze';
 import { SlidesPreviewPanel } from './SlidesPreviewPanel';
-import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { RefreshCw, Layers, FileText, Presentation } from 'lucide-react';
+import { RefreshCw, FileText, Presentation } from 'lucide-react';
 
 export function BrandIntelligenceSection() {
   const { t } = useTranslation();
   const { brandGuideline, isGenerating } = usePluginStore();
-  const runner = useOpRunner({ globalBusy: isGenerating });
   const { run: runImport, isImporting } = useBrandImport();
   const { run: runStrategyIngest, isIngesting, hasSelection } = useBrandStrategyIngest();
   const { scan, apply, dismiss, isScanning, isApplying, progress, preview } = useSlidesAnalyze();
@@ -102,21 +99,9 @@ export function BrandIntelligenceSection() {
               : t('plugin.brand.intelligence.populatePage')}
         </Button>
 
-        <OpButton
-          opId="smartScan"
-          runner={runner}
-          message={{ type: 'SMART_SCAN_SELECTION' }}
-          responseTypes={['SMART_SCAN_RESULT']}
-          busyLabel={t('plugin.brand.intelligence.scanningBusy')}
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          title={t('plugin.brand.intelligence.categorizeTitle')}
-          className="w-full h-8 text-muted-foreground border-border/50 hover:border-border"
-        >
-          <Layers size={12} className="mr-2" />
-          {t('plugin.brand.intelligence.scanSelection')}
-        </OpButton>
+        {/* Smart scan used to have a second trigger here, but this one only fired the scan —
+            no SMART_SCAN_RESULT listener, no modal — so the results went nowhere. The live
+            one lives in Tools › Extract, which owns the result modal. */}
       </div>
 
       {references.length > 0 && (

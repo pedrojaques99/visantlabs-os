@@ -9,7 +9,23 @@ import { PhotoSequencerSection } from './PhotoSequencerSection';
 import { BrandIntelligenceSection } from '../brand/BrandIntelligenceSection';
 import { ColorCleanupSection } from '../brand/ColorCleanupSection';
 import { BrandMatrixSection } from '../brand/BrandMatrixSection';
-import { Download, Type, Zap, Users, Film, ScanSearch, Droplet, Grid3x3, type LucideIcon } from 'lucide-react';
+import { ConnectorsSection } from './ConnectorsSection';
+import { IntelligenceSection } from './IntelligenceSection';
+import { ReferencesSection } from './ReferencesSection';
+import {
+  Download,
+  Type,
+  Zap,
+  Users,
+  Film,
+  ScanSearch,
+  Droplet,
+  Grid3x3,
+  ArrowRightLeft,
+  Lightbulb,
+  Images,
+  type LucideIcon,
+} from 'lucide-react';
 
 interface Tool {
   id: string;
@@ -47,6 +63,15 @@ const getGroups = (
         icon: Users,
         description: t('plugin.tools.tab.bulkCardsDescription'),
         component: BulkCardsSection,
+      },
+      // A finished Linear→Figma pipeline (handlers/linearBridge.ts) that had no route into
+      // the UI: issues become Story/Feed frames. Creating frames is what this shelf is for.
+      {
+        id: 'connectors',
+        title: t('plugin.tools.tab.connectorsTitle'),
+        icon: ArrowRightLeft,
+        description: t('plugin.tools.tab.connectorsDescription'),
+        component: ConnectorsSection,
       },
     ],
   },
@@ -109,6 +134,15 @@ const getGroups = (
     id: 'extract',
     label: t('plugin.tools.group.extract'),
     tools: [
+      // Reads the canvas and hands back something you take elsewhere: a categorised scan,
+      // a JSON, an image prompt, a naming guide. It owns the smart-scan result modal.
+      {
+        id: 'intelligence',
+        title: t('plugin.tools.tab.intelligenceTitle'),
+        icon: Lightbulb,
+        description: t('plugin.tools.tab.intelligenceDescription'),
+        component: IntelligenceSection,
+      },
       {
         id: 'export',
         title: t('plugin.tools.tab.exportTitle'),
