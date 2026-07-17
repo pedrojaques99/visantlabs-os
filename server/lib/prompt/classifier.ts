@@ -45,6 +45,34 @@ const INTENT_PATTERNS: Record<IntentType, RegExp[]> = {
   ],
 };
 
+// Design artifacts people name without a verb ("Mockup de cartão de visita").
+// A noun-phrase request is still a request — the absence of "cria" doesn't make it chat.
+const DESIGN_ARTIFACT_PATTERNS = [
+  /\b(mockups?|mock-?ups?)\b/i,
+  /\b(cart[ãa]o de visita|business cards?)\b/i,
+  /\b(banners?|p[ôo]sters?|posters?|flyers?|panfletos?|out-?doors?)\b/i,
+  /\b(posts?|stories|story|carross[ée]is|carrossel|carousel)\b/i,
+  /\b(logo|logotipo|identidade visual)\b/i,
+  /\b(landing pages?|websites?|telas?|screens?)\b/i,
+  /\b(apresenta[çc][ãa]o|slides?|decks?)\b/i,
+  /\b(card[áa]pios?|menus?|cat[áa]logos?)\b/i,
+  /\b(embalagens?|r[óo]tulos?|packaging)\b/i,
+];
+
+// Interrogatives: "o que é um mockup?" asks about the artifact, it doesn't request one.
+const QUESTION_PREFIX =
+  /^(o que|oque|qual|quais|what|which|como|how|why|por que|porque|quando|when|onde|where|explica|me explica)\b/i;
+
+/**
+ * Does this name a design artifact as a request, rather than ask about one?
+ * Only consulted when no action verb matched — it can never override an explicit verb.
+ */
+function looksLikeArtifactRequest(normalized: string): boolean {
+  const trimmed = normalized.trim();
+  if (QUESTION_PREFIX.test(trimmed) || trimmed.endsWith('?')) return false;
+  return DESIGN_ARTIFACT_PATTERNS.some((p) => p.test(trimmed));
+}
+
 // Complexity indicators
 const COMPLEXITY_INDICATORS = {
   simple: [
@@ -168,6 +196,14 @@ export function classifyIntent(prompt: string, hasSelection: boolean = false): C
     }
   }
 
+  // No action verb won — fall back to the artifact named. Runs only when nothing beat
+  // 'chat', so an explicit verb ("deleta o mockup") always keeps its intent.
+  if (intent === 'chat' && looksLikeArtifactRequest(normalized)) {
+    intent = 'create';
+    secondaryIntent = undefined;
+    keywords.push('artifact-noun');
+  }
+
   // Detect format
   const format = detectFormat(prompt);
 
@@ -241,8 +277,21 @@ const SHORT_ACTION_PATTERNS = [
   /\b(maior|menor|grande|pequeno|vermelho|azul|verde|branco|preto)\b/i,
 ];
 
+const GREETING_PATTERN = /^(oi|ola|olá|hey|hello|hi|bom dia|boa tarde|boa noite|e ai|eai)/i;
+
 /**
- * Quick check if prompt is just chat (no design intent)
+ * Greetings open a conversation — they never answer a pending question.
+ */
+export function isGreeting(prompt: string): boolean {
+  return GREETING_PATTERN.test(prompt.toLowerCase().trim());
+}
+
+/**
+ * Quick check if prompt is just chat (no design intent).
+ *
+ * Stateless by design: it only sees this message. A short message can also be a reply to
+ * a question the assistant just asked — that case is resolved by the caller via
+ * `detectPendingTurn` (see ./continuation.ts), not here.
  */
 export function isChatOnly(prompt: string): boolean {
   const normalized = prompt.toLowerCase().trim();
@@ -254,7 +303,7 @@ export function isChatOnly(prompt: string): boolean {
   }
 
   // Greetings
-  if (/^(oi|ola|olá|hey|hello|hi|bom dia|boa tarde|boa noite|e ai|eai)/i.test(normalized)) {
+  if (GREETING_PATTERN.test(normalized)) {
     return true;
   }
 

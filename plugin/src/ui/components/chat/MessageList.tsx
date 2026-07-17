@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { MessageBubble } from './MessageBubble';
 import { usePluginStore } from '../../store';
 import type { ChatMessage } from '../../store/types';
@@ -8,11 +9,12 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages }: MessageListProps) {
+  const { t } = useTranslation();
   const lastAssistantIdx = messages.reduce((acc, m, i) => (m.role === 'assistant' ? i : acc), -1);
 
   const handleUndo = useCallback(() => {
     parent.postMessage({ pluginMessage: { type: 'UNDO_LAST_BATCH' } }, 'https://www.figma.com');
-    usePluginStore.getState().showToast('Undoing last operation…', 'info');
+    usePluginStore.getState().showToast(t('plugin.chat.undoingLast'), 'info');
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -34,7 +36,7 @@ export function MessageList({ messages }: MessageListProps) {
       'https://www.figma.com'
     );
     usePluginStore.getState().setIsGenerating(true);
-    usePluginStore.getState().showToast('Retrying…', 'info');
+    usePluginStore.getState().showToast(t('plugin.chat.retrying'), 'info');
   }, []);
 
   if (messages.length === 0) {
@@ -42,7 +44,7 @@ export function MessageList({ messages }: MessageListProps) {
       <div className="flex items-center justify-center h-full text-center">
         <div className="max-w-xs">
           <p className="text-muted-foreground text-sm">
-            No messages yet. Start by describing what you want to create.
+            {t('plugin.chat.noMessages')}
           </p>
         </div>
       </div>

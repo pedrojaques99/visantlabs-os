@@ -15,13 +15,23 @@ import express, { type Request, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { authenticate, optionalAuthenticate, type AuthRequest } from '../middleware/auth.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
-import { chargeCredits } from '../lib/credits.js';
+import {
+  countUserReferences,
+  referenceUploadLimit,
+  referenceLimitPayload,
+} from '../lib/references/quota.js';
 import { regionForCountry, normalizeCountry } from '../../src/lib/references/taxonomy.js';
 import {
   REFERENCE_DIMENSION_KEYS,
   FACET_DIMENSION_KEYS,
 } from '../../src/constants/referenceDimensions.js';
-import { rankReferences } from '../lib/references/feedRanking.js';
+import {
+  PUBLIC_PROJECTION,
+  searchReferences,
+  hydrateVectorMatches,
+  visibilityFilter,
+  type ReferenceFilterParams,
+} from '../lib/references/engine.js';
 
 const router = express.Router();
 
@@ -41,117 +51,60 @@ const ingestRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Public projection — never leak internal Mongo _id or owner internals
-const PUBLIC_PROJECTION = {
-  _id: 0,
-  id: 1,
-  name: 1,
-  studio: 1,
-  description: 1,
-  referenceImageUrl: 1,
-  thumbnailUrl: 1,
-  thumbHash: 1,
-  dimensions: 1,
-  provenance: 1,
-  country: 1,
-  region: 1,
-  sourceUrl: 1,
-  tags: 1,
-  createdAt: 1,
-} as const;
+/**
+ * Ingest is 3 AI calls + 2 uploads per image, and used to run one image at a
+ * time — a 10-image batch meant ~30 serial AI round-trips inside one HTTP
+ * request, which is how you meet a proxy timeout. Bounded rather than unbounded
+ * so a full batch can't fan 30 calls at Gemini at once and get rate-limited.
+ */
+const INGEST_CONCURRENCY = 3;
 
-const DIMENSION_KEYS = REFERENCE_DIMENSION_KEYS;
+/**
+ * Promise.allSettled with a concurrency ceiling, preserving input order.
+ * (No p-limit/p-queue in the dep tree, and this is the only caller.)
+ */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<R>
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length);
+  let cursor = 0;
 
-/** Build a Mongo filter for the public library from query params. */
-function buildLibraryFilter(query: Request['query']): Record<string, any> {
-  // Visible in the public library: admin-curated OR explicitly public + approved,
-  // and never flagged hiddenFromPublic (third-party studio mockups live admin-only).
-  const filter: Record<string, any> = {
-    category: 'reference',
-    hiddenFromPublic: { $ne: true },
-    $and: [{ $or: [{ isAdminCurated: true }, { isPublic: true, isApproved: true }] }],
+  const worker = async () => {
+    while (cursor < items.length) {
+      const i = cursor++;
+      try {
+        results[i] = { status: 'fulfilled', value: await fn(items[i], i) };
+      } catch (reason) {
+        results[i] = { status: 'rejected', reason };
+      }
+    }
   };
 
-  // Coarse kind filter for the page toggle: branding (has a brand_artifact) vs mockup.
-  if (query.kind === 'branding') filter['dimensions.brand_artifact.0'] = { $exists: true };
-  else if (query.kind === 'mockup') filter['dimensions.mockup_type.0'] = { $exists: true };
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  return results;
+}
 
-  const country = typeof query.country === 'string' ? normalizeCountry(query.country) : undefined;
-  if (country) filter.country = country;
-
-  if (typeof query.region === 'string' && query.region.trim()) {
-    filter.region = query.region.trim();
-  }
-
-  // Free-text tag filter across the flattened tags array
-  if (typeof query.tag === 'string' && query.tag.trim()) {
-    filter.tags = { $in: query.tag.split(',').map((t) => t.trim().toLowerCase()) };
-  }
-
-  for (const key of DIMENSION_KEYS) {
+/** Map the HTTP query string onto the engine's typed filter params. */
+function filterParamsFromQuery(query: Request['query']): ReferenceFilterParams {
+  const dimensions: Record<string, string | undefined> = {};
+  for (const key of REFERENCE_DIMENSION_KEYS) {
     const val = query[key];
-    if (typeof val === 'string' && val.trim()) {
-      filter[`dimensions.${key}`] = { $in: val.split(',').map((v) => v.trim()) };
-    }
+    if (typeof val === 'string') dimensions[key] = val;
   }
-
-  if (typeof query.search === 'string' && query.search.trim()) {
-    filter.$and.push({
-      $or: [
-        { name: { $regex: query.search.trim(), $options: 'i' } },
-        { description: { $regex: query.search.trim(), $options: 'i' } },
-        { studio: { $regex: query.search.trim(), $options: 'i' } },
-      ],
-    });
-  }
-
-  return filter;
-}
-
-// Feed ranking pulls the newest N candidates and scores them in memory. The
-// library is curated (hundreds–low thousands), so this is cheap; if it ever
-// outgrows the cap we log it rather than silently truncate.
-const CANDIDATE_CAP = 1500;
-
-/** Parse the comma-joined brand descriptor tokens into a normalized Set. */
-function parseBrandTerms(raw: unknown): Set<string> | undefined {
-  if (typeof raw !== 'string' || !raw.trim()) return undefined;
-  const set = new Set(
-    raw
-      .split(',')
-      .map((t) => t.trim().toLowerCase())
-      .filter((t) => t.length >= 2)
-      .slice(0, 40)
-  );
-  return set.size ? set : undefined;
-}
-
-/** Derive the user's taste vocabulary + saved-id set from their collections. */
-async function loadUserSignals(
-  db: ReturnType<typeof getDb>,
-  userId?: string | number
-): Promise<{ tasteValues?: Set<string>; savedIds?: Set<string> }> {
-  if (!userId) return {};
-  const cols = await db
-    .collection('reference_collections')
-    .find({ userId: String(userId) })
-    .project({ refIds: 1 })
-    .toArray();
-  const savedIds = new Set<string>(cols.flatMap((c: any) => c.refIds || []));
-  if (savedIds.size === 0) return {};
-
-  const docs = await db
-    .collection('community_presets')
-    .find({ id: { $in: [...savedIds] }, category: 'reference' })
-    .project({ _id: 0, dimensions: 1 })
-    .toArray();
-  const tasteValues = new Set<string>();
-  for (const d of docs) {
-    for (const vals of Object.values((d as any).dimensions || {})) {
-      if (Array.isArray(vals)) for (const v of vals) tasteValues.add(String(v).toLowerCase());
-    }
-  }
-  return { tasteValues: tasteValues.size ? tasteValues : undefined, savedIds };
+  const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
+  return {
+    visibility: 'public',
+    search: str(query.search),
+    kind: query.kind === 'branding' || query.kind === 'mockup' ? query.kind : 'all',
+    country: str(query.country),
+    region: str(query.region),
+    tag: str(query.tag),
+    // Narrows to refs tagged with this brand. `brandTerms` (ranking) is separate.
+    brandGuidelineId: str(query.brandGuidelineId),
+    dimensions,
+  };
 }
 
 // ── POST /upload — user uploads images, pipeline tags + populates ────────────
@@ -172,52 +125,66 @@ router.post('/upload', ingestRateLimiter, authenticate, async (req: AuthRequest,
     if (!r2Service.isR2Configured()) {
       return res.status(503).json({ error: 'Storage is not configured' });
     }
-    const { ingestReference } = await import('../lib/mockup/referenceIngestor.js');
+    const { ingestReferenceLight } = await import('../lib/mockup/referenceIngestor.js');
 
-    // Charge 1 credit per image up-front (AI analysis cost)
-    await chargeCredits(userId, images.length);
+    const brandGuidelineIds =
+      typeof req.body.brandGuidelineId === 'string' ? [req.body.brandGuidelineId] : undefined;
+
+    // Abuse ceiling — no credits. Uploading is free (a reference is INPUT that
+    // enriches the library); the guard against mass-upload is a hard per-user cap.
+    await connectToMongoDB();
+    const db = getDb();
+    const max = referenceUploadLimit();
+    const owned = await countUserReferences(db, String(userId));
+    if (owned + images.length > max) {
+      return res.status(402).json(referenceLimitPayload(owned, max));
+    }
+
+    // Cheap phase only: store + hash + facts, status 'pending'. NO AI runs here —
+    // enrichment is deferred to admin approval (POST /admin/references/:id/approve).
+    const settled = await mapWithConcurrency(images, INGEST_CONCURRENCY, async (img) => {
+      const base64 = typeof img === 'string' ? img : img.data;
+      if (!base64) throw new Error('Missing image data');
+
+      const presetId = `userref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const imageUrl = await r2Service.uploadMockupPresetReference(base64, presetId);
+
+      return ingestReferenceLight({
+        imageBase64: base64,
+        imageUrl,
+        name: img.name,
+        studio: img.studio,
+        userId: String(userId),
+        tags: Array.isArray(img.tags) ? img.tags : undefined,
+        country: img.country,
+        region: img.region,
+        designer: img.designer,
+        sourceUrl: img.sourceUrl,
+        awardSource: img.awardSource,
+        year: typeof img.year === 'number' ? img.year : undefined,
+        brandGuidelineIds,
+        // User uploads await moderation; public only if they also opt in.
+        isAdminCurated: false,
+        isPublic: img.isPublic === true,
+      });
+    });
 
     const results: any[] = [];
     const errors: any[] = [];
+    settled.forEach((outcome, i) => {
+      if (outcome.status === 'fulfilled') results.push(outcome.value);
+      else
+        errors.push({ name: images[i]?.name, error: outcome.reason?.message || 'Ingest failed' });
+    });
 
-    for (const img of images) {
-      try {
-        const base64 = typeof img === 'string' ? img : img.data;
-        if (!base64) {
-          errors.push({ name: img?.name, error: 'Missing image data' });
-          continue;
-        }
-
-        const presetId = `userref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const imageUrl = await r2Service.uploadMockupPresetReference(base64, presetId);
-
-        const result = await ingestReference({
-          imageBase64: base64,
-          imageUrl,
-          name: img.name,
-          studio: img.studio,
-          userId: String(userId),
-          tags: Array.isArray(img.tags) ? img.tags : undefined,
-          country: img.country,
-          region: img.region,
-          designer: img.designer,
-          sourceUrl: img.sourceUrl,
-          awardSource: img.awardSource,
-          year: typeof img.year === 'number' ? img.year : undefined,
-          // User uploads are owned by the user; public only if they opt in
-          isAdminCurated: false,
-          isPublic: img.isPublic === true,
-        });
-
-        results.push(result);
-      } catch (err: any) {
-        errors.push({ name: img?.name, error: err.message });
-      }
-    }
+    const deduped = results.filter((r) => r.deduped).length;
 
     return res.json({
       success: true,
+      // Uploaded and awaiting review — nothing is public or AI-analysed yet.
       ingested: results.length,
+      deduped,
+      pending: results.length - deduped,
       failed: errors.length,
       results,
       errors: errors.length > 0 ? errors : undefined,
@@ -238,57 +205,17 @@ router.get('/', apiRateLimiter, optionalAuthenticate, async (req: AuthRequest, r
     await connectToMongoDB();
     const db = getDb();
 
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(60, Math.max(1, parseInt(req.query.limit as string) || 30));
-    const skip = (page - 1) * limit;
-    const filter = buildLibraryFilter(req.query);
-    const seed = typeof req.query.seed === 'string' ? req.query.seed.slice(0, 32) : '';
-
-    // Legacy path — no seed → newest-first, offset-paginated (unchanged).
-    if (!seed) {
-      const [refs, total] = await Promise.all([
-        db
-          .collection('community_presets')
-          .find(filter)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .project(PUBLIC_PROJECTION)
-          .toArray(),
-        db.collection('community_presets').countDocuments(filter),
-      ]);
-      return res.json({ references: refs, total, page, limit, pages: Math.ceil(total / limit) });
-    }
-
-    // Ranked path — pull newest CANDIDATE_CAP, score in memory, then paginate.
-    const brandTerms = parseBrandTerms(req.query.brandTerms);
-    const { tasteValues, savedIds } = await loadUserSignals(db, req.userId);
-
-    const [candidates, total] = await Promise.all([
-      db
-        .collection('community_presets')
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .limit(CANDIDATE_CAP)
-        .project(PUBLIC_PROJECTION)
-        .toArray(),
-      db.collection('community_presets').countDocuments(filter),
-    ]);
-    if (total > CANDIDATE_CAP) {
-      console.warn(`[references] feed ranking capped at ${CANDIDATE_CAP}/${total} candidates`);
-    }
-
-    const ranked = rankReferences(candidates as any[], {
-      seed,
-      brandTerms,
-      tasteValues,
-      savedIds,
-      now: Date.now(),
+    const result = await searchReferences(db, {
+      ...filterParamsFromQuery(req.query),
+      page: parseInt(req.query.page as string) || 1,
+      limit: parseInt(req.query.limit as string) || 30,
+      seed: typeof req.query.seed === 'string' ? req.query.seed : undefined,
+      brandTerms: typeof req.query.brandTerms === 'string' ? req.query.brandTerms : undefined,
+      viewerId: req.userId,
+      // Rank by meaning when asked and there's a query (else lexical/ranked feed).
+      semantic: req.query.semantic === '1' || req.query.semantic === 'true',
     });
-    const pageItems = ranked.slice(skip, skip + limit);
-    // pages reflect the ranked candidate set so infinite scroll stops cleanly.
-    const pages = Math.ceil(Math.min(total, CANDIDATE_CAP) / limit);
-    return res.json({ references: pageItems, total, page, limit, pages });
+    return res.json(result);
   } catch (error: any) {
     console.error('[references] list error:', error);
     return res.status(500).json({ error: 'Failed to list references' });
@@ -300,11 +227,7 @@ router.get('/facets', apiRateLimiter, async (_req: Request, res: Response) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    const base = {
-      category: 'reference',
-      hiddenFromPublic: { $ne: true },
-      $or: [{ isAdminCurated: true }, { isPublic: true, isApproved: true }],
-    };
+    const base = { category: 'reference', ...visibilityFilter('public') };
 
     // Structured dimension facets — designer-friendly filter groups (additive to the tag cloud)
     const facetStages: Record<string, any[]> = {};
@@ -389,27 +312,10 @@ router.post(
       }
 
       const matches = await vectorService.query(embedding, limit, vectorFilter);
-      const ids = matches.map((m: any) => m.id).filter(Boolean);
-      if (ids.length === 0) return res.json({ references: [], total: 0 });
 
       // Hydrate from Mongo so the UI gets full, public-safe records
       await connectToMongoDB();
-      const db = getDb();
-      const docs = await db
-        .collection('community_presets')
-        .find({ id: { $in: ids }, category: 'reference', hiddenFromPublic: { $ne: true } })
-        .project(PUBLIC_PROJECTION)
-        .toArray();
-
-      // Preserve similarity order + attach score
-      const scoreById = new Map(matches.map((m: any) => [m.id, m.score]));
-      const ordered = ids
-        .map((id: string) => {
-          const doc = docs.find((d: any) => d.id === id);
-          return doc ? { ...doc, score: scoreById.get(id) ?? 0 } : null;
-        })
-        .filter(Boolean);
-
+      const ordered = await hydrateVectorMatches(getDb(), matches, { visibility: 'public' });
       return res.json({ references: ordered, total: ordered.length });
     } catch (error: any) {
       console.error('[references] search-by-image error:', error);
@@ -430,31 +336,13 @@ router.get('/:id/similar', apiRateLimiter, async (req: Request, res: Response) =
     const { vectorService } = await import('../services/vectorService.js');
     // +1 because the record itself comes back as the top match
     const matches = await vectorService.queryById(id, limit + 1, { feature: 'reference' });
-    const ids = matches.map((m: any) => m.id).filter((mid: string) => mid && mid !== id);
-    if (ids.length === 0) return res.json({ references: [], total: 0 });
 
     await connectToMongoDB();
-    const db = getDb();
-    const docs = await db
-      .collection('community_presets')
-      .find({
-        id: { $in: ids },
-        category: 'reference',
-        hiddenFromPublic: { $ne: true },
-        $or: [{ isAdminCurated: true }, { isPublic: true, isApproved: true }],
-      })
-      .project(PUBLIC_PROJECTION)
-      .toArray();
-
-    const scoreById = new Map(matches.map((m: any) => [m.id, m.score]));
-    const ordered = ids
-      .map((mid: string) => {
-        const doc = docs.find((d: any) => d.id === mid);
-        return doc ? { ...doc, score: scoreById.get(mid) ?? 0 } : null;
-      })
-      .filter(Boolean)
-      .slice(0, limit);
-
+    const ordered = await hydrateVectorMatches(getDb(), matches, {
+      visibility: 'public',
+      excludeId: id,
+      limit,
+    });
     return res.json({ references: ordered, total: ordered.length });
   } catch (error: any) {
     console.error('[references] similar error:', error);
@@ -483,7 +371,8 @@ router.get('/mine', apiRateLimiter, authenticate, async (req: AuthRequest, res: 
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .project({ ...PUBLIC_PROJECTION, isPublic: 1 })
+        // The uploader sees their own moderation state (pending/approved/rejected).
+        .project({ ...PUBLIC_PROJECTION, isPublic: 1, status: 1, enriched: 1 })
         .toArray(),
       db.collection('community_presets').countDocuments(filter),
     ]);

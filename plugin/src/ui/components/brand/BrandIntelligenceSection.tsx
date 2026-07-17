@@ -1,18 +1,17 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
-import { useOpRunner } from '../../hooks/useOpRunner';
 import { useBrandImport } from '../../hooks/useBrandImport';
 import { useBrandStrategyIngest } from '../../hooks/useBrandStrategyIngest';
 import { useSlidesAnalyze } from '../../hooks/useSlidesAnalyze';
 import { SlidesPreviewPanel } from './SlidesPreviewPanel';
-import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { RefreshCw, Layers, FileText, Presentation } from 'lucide-react';
+import { RefreshCw, FileText, Presentation } from 'lucide-react';
 
 export function BrandIntelligenceSection() {
+  const { t } = useTranslation();
   const { brandGuideline, isGenerating } = usePluginStore();
-  const runner = useOpRunner({ globalBusy: isGenerating });
   const { run: runImport, isImporting } = useBrandImport();
   const { run: runStrategyIngest, isIngesting, hasSelection } = useBrandStrategyIngest();
   const { scan, apply, dismiss, isScanning, isApplying, progress, preview } = useSlidesAnalyze();
@@ -22,7 +21,7 @@ export function BrandIntelligenceSection() {
   if (!brandGuideline) {
     return (
       <div className="text-xs text-muted-foreground text-center py-4">
-        Load a brand guideline first to access AI analysis.
+        {t('plugin.brand.intelligence.loadFirst')}
       </div>
     );
   }
@@ -49,7 +48,7 @@ export function BrandIntelligenceSection() {
           disabled={busy}
           variant="brand"
           size="sm"
-          title="Escaneia todos os slides e popula estratégia, cores, logos, fotos e mockups via IA"
+          title={t('plugin.brand.intelligence.analyzeTitle')}
           className="w-full h-8 font-bold uppercase tracking-wider text-[10px]"
         >
           {isScanning ? (
@@ -57,7 +56,7 @@ export function BrandIntelligenceSection() {
           ) : (
             <Presentation size={12} className="mr-2" />
           )}
-          {isScanning ? (progress ?? 'Analisando…') : 'Analyze All Slides'}
+          {isScanning ? (progress ?? t('plugin.brand.intelligence.analyzing')) : t('plugin.brand.intelligence.analyzeAll')}
         </Button>
 
         <Button
@@ -65,15 +64,15 @@ export function BrandIntelligenceSection() {
           disabled={busy}
           variant="outline"
           size="sm"
-          title="Detect and sync tokens, colors, typography from this Figma file"
-          className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
+          title={t('plugin.brand.intelligence.smartImportTitle')}
+          className="w-full h-8 text-muted-foreground border-border/50 hover:border-border"
         >
           {isImporting ? (
             <GlitchLoader size={12} className="mr-2" />
           ) : (
             <RefreshCw size={12} className="mr-2" />
           )}
-          {isImporting ? 'Syncing…' : 'Smart Import from Figma'}
+          {isImporting ? t('plugin.brand.intelligence.syncing') : t('plugin.brand.intelligence.smartImport')}
         </Button>
 
         <Button
@@ -83,10 +82,10 @@ export function BrandIntelligenceSection() {
           size="sm"
           title={
             hasSelection
-              ? `Extract text from ${selectionCount} selected frame${selectionCount > 1 ? 's' : ''} and populate brand strategy`
-              : 'Extract text from the current page and populate brand strategy fields'
+              ? t('plugin.brand.intelligence.extractSelectionTitle', { count: selectionCount })
+              : t('plugin.brand.intelligence.extractPageTitle')
           }
-          className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
+          className="w-full h-8 text-muted-foreground border-border/50 hover:border-border"
         >
           {isIngesting ? (
             <GlitchLoader size={12} className="mr-2" />
@@ -94,48 +93,36 @@ export function BrandIntelligenceSection() {
             <FileText size={12} className="mr-2" />
           )}
           {isIngesting
-            ? 'Extracting strategy…'
+            ? t('plugin.brand.intelligence.extractingStrategy')
             : hasSelection
-              ? `Populate Strategy from ${selectionCount} Frame${selectionCount > 1 ? 's' : ''}`
-              : 'Populate Strategy from Page'}
+              ? t('plugin.brand.intelligence.populateSelection', { count: selectionCount })
+              : t('plugin.brand.intelligence.populatePage')}
         </Button>
 
-        <OpButton
-          opId="smartScan"
-          runner={runner}
-          message={{ type: 'SMART_SCAN_SELECTION' }}
-          responseTypes={['SMART_SCAN_RESULT']}
-          busyLabel="Scanning…"
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          title="Categorize selected layers into brand asset types"
-          className="w-full h-8 text-neutral-400 border-white/5 hover:border-white/10"
-        >
-          <Layers size={12} className="mr-2" />
-          Scan Selection for Insights
-        </OpButton>
+        {/* Smart scan used to have a second trigger here, but this one only fired the scan —
+            no SMART_SCAN_RESULT listener, no modal — so the results went nowhere. The live
+            one lives in Tools › Extract, which owns the result modal. */}
       </div>
 
       {references.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
-            Visual References
+          <h4 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+            {t('plugin.brand.intelligence.visualReferences')}
           </h4>
           <div className="grid grid-cols-2 gap-2">
             {references.map((ref: any, idx: number) => (
               <div
                 key={idx}
-                className="border border-white/5 rounded-lg overflow-hidden bg-neutral-950/40"
+                className="border border-border/50 rounded-lg overflow-hidden bg-background/40"
               >
                 {ref.url && (
                   <img
                     src={ref.url}
-                    alt={ref.label || 'Reference'}
+                    alt={ref.label || t('plugin.brand.intelligence.referenceAlt')}
                     className="w-full h-16 object-cover opacity-60 hover:opacity-100 transition-opacity"
                   />
                 )}
-                <p className="text-[9px] p-2 text-neutral-500 font-mono">{ref.label}</p>
+                <p className="text-[9px] p-2 text-muted-foreground font-mono">{ref.label}</p>
               </div>
             ))}
           </div>

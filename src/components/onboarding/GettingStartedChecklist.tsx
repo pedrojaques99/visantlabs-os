@@ -128,18 +128,18 @@ export const GettingStartedChecklist: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 16 }}
         transition={{ delay: 0.6, duration: 0.3 }}
-        className="hidden lg:flex fixed bottom-6 left-6 z-30 w-72 flex-col gap-3 rounded-xl border border-white/10 bg-neutral-950/80 backdrop-blur-xl p-4"
+        className="hidden lg:flex fixed bottom-6 left-6 z-30 w-72 flex-col gap-3 rounded-xl border border-border bg-card/80 backdrop-blur-xl p-4"
         aria-label="Primeiros passos"
         data-vsn-component="GettingStartedChecklist"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Rocket size={12} className="text-neutral-500" />
-            <span className="text-xs font-medium text-neutral-300">Primeiros passos</span>
+            <Rocket size={12} className="text-muted-foreground" />
+            <span className="text-xs font-medium text-foreground">Primeiros passos</span>
           </div>
           <button
             onClick={dismiss}
-            className="text-neutral-600 hover:text-neutral-300 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Dispensar"
           >
             <X size={13} />
@@ -148,7 +148,7 @@ export const GettingStartedChecklist: React.FC = () => {
 
         {/* Progress */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-neutral-800 overflow-hidden rounded-full">
+          <div className="flex-1 h-px bg-muted overflow-hidden rounded-full">
             <motion.div
               className="h-full bg-brand-cyan"
               initial={false}
@@ -156,17 +156,17 @@ export const GettingStartedChecklist: React.FC = () => {
               transition={{ duration: 0.4 }}
             />
           </div>
-          <span className="font-mono text-[10px] text-neutral-500">
+          <span className="font-mono text-[10px] text-muted-foreground">
             {completed}/{steps.length}
           </span>
         </div>
 
         {allDone ? (
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-medium text-neutral-300">Tudo pronto.</span>
+            <span className="text-xs font-medium text-foreground">Tudo pronto.</span>
             <button
               onClick={dismiss}
-              className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
               Fechar
             </button>
@@ -186,7 +186,7 @@ export const GettingStartedChecklist: React.FC = () => {
                         'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors',
                         done
                           ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-                          : 'border-neutral-700 text-transparent group-hover:border-neutral-500'
+                          : 'border-border text-transparent group-hover:border-ring'
                       )}
                     >
                       <Check size={10} strokeWidth={3} />
@@ -195,8 +195,8 @@ export const GettingStartedChecklist: React.FC = () => {
                       className={cn(
                         'flex-1 font-mono text-[11px] transition-colors',
                         done
-                          ? 'text-neutral-600 line-through'
-                          : 'text-neutral-400 group-hover:text-neutral-200'
+                          ? 'text-muted-foreground line-through'
+                          : 'text-muted-foreground group-hover:text-foreground'
                       )}
                     >
                       {s.label}
@@ -204,7 +204,7 @@ export const GettingStartedChecklist: React.FC = () => {
                     {!done && (
                       <ArrowRight
                         size={11}
-                        className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
                       />
                     )}
                   </button>

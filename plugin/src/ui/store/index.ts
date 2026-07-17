@@ -16,6 +16,7 @@ export const usePluginStore = create<PluginStore>()(
   immer((set) => ({
     // Selection & Canvas
     selectionDetails: [],
+    fileId: null,
     selectionThumb: null,
 
     // Brand
@@ -74,8 +75,6 @@ export const usePluginStore = create<PluginStore>()(
     mentionElements: [],
     apiKey: null,
     anthropicApiKey: null,
-    showSmartScanModal: false,
-    smartScanResults: null,
     colorScanResults: null,
     selectedFont: null,
     brandLintReport: null,

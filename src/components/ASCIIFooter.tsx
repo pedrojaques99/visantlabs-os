@@ -188,14 +188,14 @@ export default function ASCIIFooter({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-3 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-sm shadow-2xl z-50 min-w-[140px] overflow-hidden"
+                      className="absolute bottom-full right-0 mb-3 bg-popover backdrop-blur-xl border border-border rounded-sm shadow-2xl z-50 min-w-[140px] overflow-hidden"
                     >
                       <div className="p-1 flex flex-col gap-1">
                         {onTermsClick && (
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onTermsClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.terms')}
                           </Button>
@@ -204,7 +204,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onUsagePolicyClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.usage')}
                           </Button>
@@ -213,7 +213,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onRefundClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.refund')}
                           </Button>
@@ -256,20 +256,20 @@ export default function ASCIIFooter({
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute bottom-full right-0 mb-3 bg-neutral-950/90 backdrop-blur-xl border border-neutral-800/50 rounded-sm shadow-2xl z-50 min-w-[120px] overflow-hidden"
+                    className="absolute bottom-full right-0 mb-3 bg-popover backdrop-blur-xl border border-border rounded-sm shadow-2xl z-50 min-w-[120px] overflow-hidden"
                   >
                     <div className="p-1 flex flex-col gap-1">
                       <Button
                         variant="ghost"
                         onClick={() => handleLocaleChange('en-US')}
-                        className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
+                        className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                       >
                         {t('footer.english')}
                       </Button>
                       <Button
                         variant="ghost"
                         onClick={() => handleLocaleChange('pt-BR')}
-                        className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-neutral-400 hover:text-white hover:bg-neutral-900 border-none shadow-none"
+                        className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                       >
                         {t('footer.portuguese')}
                       </Button>

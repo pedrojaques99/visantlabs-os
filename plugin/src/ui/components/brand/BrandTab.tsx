@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { BrandLogoSection } from './BrandLogoSection';
 import { BrandTypographySection } from './BrandTypographySection';
 import { BrandColorGrid } from './BrandColorGrid';
@@ -11,6 +12,7 @@ import { usePluginStore } from '../../store';
 import { Palette, Type, ImageIcon, Settings2, Library, CheckCircle2, Circle } from 'lucide-react';
 
 function BrandCompletenessBar() {
+  const { t } = useTranslation();
   const guideline = usePluginStore((s) => s.brandGuideline);
   const colors = usePluginStore((s) => s.selectedColors);
   const logos = usePluginStore((s) => s.logos);
@@ -18,12 +20,12 @@ function BrandCompletenessBar() {
   const designSystem = usePluginStore((s) => s.designSystem);
 
   const steps = [
-    { label: 'Guideline', done: !!guideline },
-    { label: 'Colors', done: colors.size > 0 },
-    { label: 'Logos', done: logos.some((l) => l.src || l.url) },
-    { label: 'Typography', done: typography.some((t) => t.fontFamily) },
+    { label: t('plugin.brand.tab.stepGuideline'), done: !!guideline },
+    { label: t('plugin.brand.tab.stepColors'), done: colors.size > 0 },
+    { label: t('plugin.brand.tab.stepLogos'), done: logos.some((l) => l.src || l.url) },
+    { label: t('plugin.brand.tab.stepTypography'), done: typography.some((tp) => tp.fontFamily) },
     {
-      label: 'Tokens',
+      label: t('plugin.brand.tab.stepTokens'),
       done: !!(designSystem?.tokens && Object.keys(designSystem.tokens).length > 0),
     },
   ];
@@ -35,7 +37,7 @@ function BrandCompletenessBar() {
     <div className="rounded-lg border border-border/40 bg-card/50 px-3 py-2 mb-3">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-          Brand Setup
+          {t('plugin.brand.tab.setup')}
         </span>
         <span className="text-[10px] font-mono text-muted-foreground">
           {completed}/{steps.length}
@@ -65,6 +67,7 @@ function BrandCompletenessBar() {
 }
 
 export function BrandTab() {
+  const { t } = useTranslation();
   useBrandAutoSync();
   const linkedGuideline = usePluginStore((s) => s.linkedGuideline);
   const prevLinkedRef = React.useRef(linkedGuideline);
@@ -86,9 +89,9 @@ export function BrandTab() {
         <BrandGuidelineSection />
 
         <BrandSection
-          title="Logos"
+          title={t('plugin.brand.tab.logosTitle')}
           icon={ImageIcon}
-          description="Logo variants and assets"
+          description={t('plugin.brand.tab.logosDescription')}
           collapsible
           defaultOpen={false}
         >
@@ -96,9 +99,9 @@ export function BrandTab() {
         </BrandSection>
 
         <BrandSection
-          title="Colors"
+          title={t('plugin.brand.tab.colorsTitle')}
           icon={Palette}
-          description="Brand color palette"
+          description={t('plugin.brand.tab.colorsDescription')}
           collapsible
           defaultOpen={false}
         >
@@ -106,9 +109,9 @@ export function BrandTab() {
         </BrandSection>
 
         <BrandSection
-          title="Typography"
+          title={t('plugin.brand.tab.typographyTitle')}
           icon={Type}
-          description="Font families and styles"
+          description={t('plugin.brand.tab.typographyDescription')}
           collapsible
           defaultOpen={false}
         >
@@ -116,9 +119,9 @@ export function BrandTab() {
         </BrandSection>
 
         <BrandSection
-          title="Design System"
+          title={t('plugin.brand.tab.designSystemTitle')}
           icon={Settings2}
-          description="Tokens and variables"
+          description={t('plugin.brand.tab.designSystemDescription')}
           collapsible
           defaultOpen={false}
         >
@@ -126,9 +129,9 @@ export function BrandTab() {
         </BrandSection>
 
         <BrandSection
-          title="Components"
+          title={t('plugin.brand.tab.componentsTitle')}
           icon={Library}
-          description="Reusable component library"
+          description={t('plugin.brand.tab.componentsDescription')}
           collapsible
           defaultOpen={false}
         >

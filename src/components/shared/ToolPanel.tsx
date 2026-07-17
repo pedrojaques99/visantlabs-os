@@ -2,8 +2,59 @@ import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy } from '@/lib/ui/icons';
+import { ChevronDown, Eye, EyeOff, Download, Clipboard, Copy, Pipette } from '@/lib/ui/icons';
 import { HexColorPicker } from 'react-colorful';
+import { BrandSwatchRow } from './BrandSwatchRow';
+import { hexToRgb, rgbToHex, parseHex } from '@/utils/colorUtils';
+import { useTranslation } from '@/hooks/useTranslation';
+
+// Minimal typing for the native EyeDropper API (Chromium). Feature-detected at runtime.
+type EyeDropperResult = { sRGBHex: string };
+interface EyeDropperCtor {
+  new (): { open: () => Promise<EyeDropperResult> };
+}
+const hasEyeDropper = () => typeof window !== 'undefined' && 'EyeDropper' in window;
+
+/**
+ * Editable hex text field with paste-first UX: select-all on focus, live-apply
+ * on any valid value (paste or type), Enter to commit, revert on invalid blur.
+ * Used by InlineColorPicker; ExpandableColorPicker shares the same parseHex logic.
+ */
+const HexTextInput: React.FC<{
+  value: string;
+  onChange: (hex: string) => void;
+  ariaLabel?: string;
+  className?: string;
+}> = ({ value, onChange, ariaLabel, className }) => {
+  const [draft, setDraft] = React.useState(value.replace('#', '').toUpperCase());
+  React.useEffect(() => {
+    setDraft(value.replace('#', '').toUpperCase());
+  }, [value]);
+  return (
+    <input
+      type="text"
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value.replace(/^#/, '').toUpperCase());
+        const hex = parseHex(e.target.value);
+        if (hex) onChange(hex);
+      }}
+      onFocus={(e) => e.target.select()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+      }}
+      onBlur={() => {
+        if (!parseHex(draft)) setDraft(value.replace('#', '').toUpperCase());
+      }}
+      spellCheck={false}
+      aria-label={ariaLabel || 'Color hex'}
+      className={cn(
+        'bg-transparent text-[10px] text-neutral-400 font-mono uppercase tracking-wider outline-none focus:text-neutral-200 w-[8ch]',
+        className
+      )}
+    />
+  );
+};
 
 export const ToolPanel: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
@@ -198,15 +249,23 @@ export const InlineColorPicker: React.FC<{
   onChange: (hex: string) => void;
   label?: string;
 }> = ({ value, onChange, label }) => (
-  <div className="flex items-center gap-2">
-    <input
-      type="color"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label={label || 'Color'}
-      className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0"
-    />
-    <span className="text-[10px] text-neutral-500 font-mono uppercase">{value}</span>
+  <div className="space-y-1.5">
+    <div className="flex items-center gap-2">
+      <input
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label || 'Color'}
+        className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0"
+      />
+      <span className="text-[10px] text-neutral-600 font-mono">#</span>
+      <HexTextInput
+        value={value}
+        onChange={onChange}
+        ariaLabel={label ? `${label} hex` : 'Color hex'}
+      />
+    </div>
+    <BrandSwatchRow onPick={onChange} current={value} />
   </div>
 );
 
@@ -237,44 +296,69 @@ export const ChannelRow: React.FC<{
       expanded ? 'border-neutral-700 bg-neutral-900/50' : 'border-transparent'
     )}
   >
-    <button
+    {/* Row background toggles on mouse-click for convenience; the accessible
+        keyboard toggle is the chevron <button>. Interactive children stop
+        propagation so they don't double-fire the toggle. */}
+    <div
       onClick={onToggleExpand}
-      className="flex items-center gap-3 w-full py-2 px-2 hover:bg-neutral-800/30 rounded-lg transition-colors"
+      className="flex items-center gap-2 w-full py-2 px-2 hover:bg-neutral-800/30 rounded-lg transition-colors cursor-pointer"
     >
       <input
         type="color"
         value={color}
         aria-label={`${label} color`}
-        onChange={(e) => {
-          e.stopPropagation();
-          onColorChange(e.target.value);
-        }}
+        onChange={(e) => onColorChange(e.target.value)}
         onClick={(e) => e.stopPropagation()}
         className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 shrink-0"
       />
-      <span className="text-[11px] text-neutral-400 font-mono uppercase flex-1 text-left tracking-wider">
-        {label}
+      {/* Inline hex — edit without opening the native picker */}
+      <span
+        className="flex items-center gap-1"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <span className="text-[10px] text-neutral-600 font-mono">#</span>
+        <HexTextInput value={color} onChange={onColorChange} ariaLabel={`${label} hex`} />
       </span>
-      <div className="flex items-center gap-1">
+      {!label.startsWith('#') && (
+        <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-wider truncate">
+          {label}
+        </span>
+      )}
+      <div className="flex items-center gap-1 ml-auto shrink-0">
         {actions}
-        <span
-          role="button"
+        <button
+          type="button"
           aria-label={`Toggle ${label} visibility`}
+          aria-pressed={visible}
           onClick={(e) => {
             e.stopPropagation();
             onToggleVisible();
           }}
-          className="text-neutral-500 hover:text-white transition-colors p-1"
+          className="text-neutral-500 hover:text-white transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60"
         >
           {visible ? <Eye size={14} /> : <EyeOff size={14} />}
-        </span>
-        <ChevronDown
-          size={14}
-          className={cn('text-neutral-600 transition-transform', expanded && 'rotate-180')}
-        />
+        </button>
+        <button
+          type="button"
+          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${label}`}
+          aria-expanded={expanded}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          className="p-1 rounded text-neutral-600 hover:text-neutral-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/60"
+        >
+          <ChevronDown size={14} className={cn('transition-transform', expanded && 'rotate-180')} />
+        </button>
       </div>
-    </button>
-    {expanded && <div className="px-2 pb-2 pt-1 animate-fade-in space-y-2">{children}</div>}
+    </div>
+    {expanded && (
+      <div className="px-2 pb-2 pt-1 animate-fade-in space-y-2">
+        <BrandSwatchRow onPick={onColorChange} current={color} />
+        {children}
+      </div>
+    )}
   </div>
 );
 
@@ -289,22 +373,63 @@ export const ExpandableColorPicker: React.FC<{
   presets?: string[];
   onReset?: () => void;
   defaultExpanded?: boolean;
-}> = ({ color, onChange, label, presets, onReset, defaultExpanded = false }) => {
+  /** Show the native eyedropper button (Chromium). Auto-hidden where unsupported. Default true. */
+  eyedropper?: boolean;
+  /** Recently used colors shown as a quick-pick row when expanded. */
+  recentColors?: string[];
+  /** Show editable R/G/B numeric fields under the picker. Default false. */
+  showRgb?: boolean;
+}> = ({
+  color,
+  onChange,
+  label,
+  presets,
+  onReset,
+  defaultExpanded = false,
+  eyedropper = true,
+  recentColors,
+  showRgb = false,
+}) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(defaultExpanded);
   const [hexInput, setHexInput] = useState(color.replace('#', '').toUpperCase());
+  const eyedropperOn = eyedropper && hasEyeDropper();
 
   // Sync external changes
   React.useEffect(() => {
     setHexInput(color.replace('#', '').toUpperCase());
   }, [color]);
 
+  // Paste-first: accept "#RRGGBB", "RRGGBB", or 3-digit shorthand, apply immediately.
   const handleHexInput = useCallback(
     (raw: string) => {
-      const v = raw.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
-      setHexInput(v);
-      if (v.length === 6) onChange(`#${v}`);
+      setHexInput(raw.replace(/^#/, '').replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase());
+      const hex = parseHex(raw);
+      if (hex) onChange(hex);
     },
     [onChange]
+  );
+
+  const pickWithEyedropper = useCallback(async () => {
+    const Ctor = (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper;
+    if (!Ctor) return;
+    try {
+      const result = await new Ctor().open();
+      if (result?.sRGBHex) onChange(result.sRGBHex.toUpperCase());
+    } catch {
+      /* user cancelled */
+    }
+  }, [onChange]);
+
+  const rgb = React.useMemo(() => hexToRgb(color), [color]);
+  const setChannel = useCallback(
+    (index: number, raw: string) => {
+      const n = Math.max(0, Math.min(255, parseInt(raw || '0', 10) || 0));
+      const next: [number, number, number] = [...rgb] as [number, number, number];
+      next[index] = n;
+      onChange(rgbToHex(next[0], next[1], next[2]));
+    },
+    [rgb, onChange]
   );
 
   return (
@@ -323,14 +448,30 @@ export const ExpandableColorPicker: React.FC<{
             type="text"
             value={hexInput}
             onChange={(e) => handleHexInput(e.target.value)}
+            onFocus={(e) => e.target.select()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.currentTarget.blur();
+            }}
             onBlur={() => {
               if (hexInput.length !== 6) setHexInput(color.replace('#', '').toUpperCase());
             }}
-            maxLength={6}
+            spellCheck={false}
+            autoCapitalize="characters"
             aria-label={label || 'Color hex'}
-            className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none"
+            className="bg-transparent text-xs text-white font-mono tracking-wider w-full focus:outline-none uppercase"
           />
         </div>
+        {eyedropperOn && (
+          <button
+            type="button"
+            onClick={pickWithEyedropper}
+            className="text-neutral-500 hover:text-brand-cyan transition-colors p-1 shrink-0"
+            aria-label="Pick color from screen"
+            title="Eyedropper"
+          >
+            <Pipette size={14} />
+          </button>
+        )}
         {onReset && (
           <button
             onClick={onReset}
@@ -359,6 +500,7 @@ export const ExpandableColorPicker: React.FC<{
       </div>
       {open && (
         <div className="animate-fade-in space-y-2">
+          <BrandSwatchRow onPick={onChange} current={color} />
           {presets && presets.length > 0 && (
             <div className="flex gap-1.5 flex-wrap">
               {presets.map((p) => (
@@ -384,6 +526,47 @@ export const ExpandableColorPicker: React.FC<{
               style={{ width: '100%', height: '120px' }}
             />
           </div>
+          {showRgb && (
+            <div className="grid grid-cols-3 gap-1.5">
+              {(['R', 'G', 'B'] as const).map((ch, i) => (
+                <label key={ch} className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-1.5 py-0.5">
+                  <span className="text-[10px] font-mono text-neutral-500">{ch}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={255}
+                    value={rgb[i]}
+                    onChange={(e) => setChannel(i, e.target.value)}
+                    aria-label={`${label ? label + ' ' : ''}${ch} channel`}
+                    className="bg-transparent text-[11px] text-white font-mono tabular-nums w-full focus:outline-none"
+                  />
+                </label>
+              ))}
+            </div>
+          )}
+          {recentColors && recentColors.length > 0 && (
+            <div className="space-y-1">
+              <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-600">
+                {t('common.recent')}
+              </span>
+              <div className="flex gap-1.5 flex-wrap">
+                {recentColors.slice(0, 12).map((c, i) => (
+                  <button
+                    key={`${c}-${i}`}
+                    onClick={() => onChange(c)}
+                    className={cn(
+                      'w-5 h-5 rounded-full border transition-all hover:scale-110',
+                      color.toLowerCase() === c.toLowerCase()
+                        ? 'border-white/40 ring-1 ring-white/20'
+                        : 'border-white/10 hover:border-white/20'
+                    )}
+                    style={{ backgroundColor: c }}
+                    aria-label={`Recent ${c}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

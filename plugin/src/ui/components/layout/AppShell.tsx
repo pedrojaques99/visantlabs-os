@@ -1,14 +1,18 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { Header } from './Header';
+import { TabBar } from './TabBar';
 import { ChatView } from '../chat/ChatView';
 import { SessionsView } from '../chat/SessionsView';
-import { SettingsView } from '../settings/SettingsView';
-import { ProfileTab } from '../settings/ProfileTab';
+import { BrandView } from '../brand/BrandView';
+import { ToolsView } from '../tools/ToolsView';
+import { ProfileView } from '../settings/ProfileView';
 import { ToastProvider } from './ToastProvider';
 
 /** Bottom-right drag handle that resizes the Figma plugin window. */
 function ResizeHandle() {
+  const { t } = useTranslation();
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -41,7 +45,7 @@ function ResizeHandle() {
   return (
     <div
       onPointerDown={onPointerDown}
-      title="Redimensionar"
+      title={t('plugin.shell.resize')}
       className="absolute bottom-0 right-0 z-50 w-4 h-4 cursor-nwse-resize text-muted-foreground/40 hover:text-muted-foreground transition-colors"
     >
       <svg viewBox="0 0 16 16" fill="none" className="w-full h-full">
@@ -58,6 +62,7 @@ function ResizeHandle() {
 
 /** Collapsed state: a single round Visant Copilot logo bubble that expands on click. */
 function CollapsedBubble() {
+  const { t } = useTranslation();
   const setCollapsed = usePluginStore((s) => s.setCollapsed);
   const isGenerating = usePluginStore((s) => s.isGenerating);
 
@@ -70,9 +75,9 @@ function CollapsedBubble() {
     <div className="flex items-center justify-center w-full h-screen bg-background">
       <button
         onClick={expand}
-        title="Expandir Visant Copilot"
-        aria-label="Expandir Visant Copilot"
-        className="relative w-12 h-12 rounded-full bg-neutral-900 border border-brand-cyan/40 flex items-center justify-center shadow-lg hover:border-brand-cyan hover:scale-105 transition-all focus:outline-none"
+        title={t('plugin.shell.expand')}
+        aria-label={t('plugin.shell.expand')}
+        className="relative w-12 h-12 rounded-full bg-card border border-brand-cyan/40 flex items-center justify-center shadow-lg hover:border-brand-cyan hover:scale-105 transition-all focus:outline-none"
       >
         <span className="text-brand-cyan font-bold text-lg leading-none select-none">V</span>
         {isGenerating && (
@@ -98,16 +103,15 @@ export function AppShell() {
     <ToastProvider>
       <div className="relative flex flex-col h-screen bg-background text-foreground">
         <Header />
-        <main className="flex-1 overflow-hidden overflow-y-auto">
+        {/* Chat is the product, so it alone runs full-bleed; the other tabs get padding. */}
+        <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {activeView === 'main' && <ChatView />}
           {activeView === 'sessions' && <SessionsView />}
-          {activeView === 'settings' && <SettingsView />}
-          {activeView === 'profile' && (
-            <div className="p-4">
-              <ProfileTab />
-            </div>
-          )}
+          {activeView === 'brand' && <BrandView />}
+          {activeView === 'tools' && <ToolsView />}
+          {activeView === 'profile' && <ProfileView />}
         </main>
+        <TabBar />
         <ResizeHandle />
       </div>
     </ToastProvider>

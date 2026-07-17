@@ -96,7 +96,7 @@ async function build() {
 
     // Step 3: Assemble self-contained HTML
     const htmlContent = `<!DOCTYPE html>
-<html class="dark">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -140,6 +140,19 @@ body {
       };
       try { Object.defineProperty(window, 'localStorage', { value: mem, writable: true, configurable: true }); } catch(e) { window.localStorage = mem; }
       try { Object.defineProperty(window, 'sessionStorage', { value: mem, writable: true, configurable: true }); } catch(e) { window.sessionStorage = mem; }
+    })();
+    // Theme sync: follow Figma's UI theme. With themeColors:true Figma toggles
+    // a figma-dark/figma-light class on the html element; mirror it onto our own
+    // dark class so the shared design-system tokens resolve light/dark on their own.
+    (function(){
+      var el = document.documentElement;
+      var apply = function(){
+        var shouldDark = el.classList.contains('figma-dark');
+        var isDark = el.classList.contains('dark');
+        if (shouldDark !== isDark) el.classList.toggle('dark', shouldDark);
+      };
+      apply();
+      try { new MutationObserver(apply).observe(el, { attributes: true, attributeFilter: ['class'] }); } catch(e) {}
     })();
 ${apiUrlInjection}
   </script>

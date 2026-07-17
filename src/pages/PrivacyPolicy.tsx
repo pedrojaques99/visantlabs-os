@@ -50,40 +50,40 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
       onClick={onClose}
     >
       <div
-        className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-900 border border-white/10 rounded-md shadow-2xl p-6 md:p-8 my-8"
+        className="relative max-w-4xl w-full max-h-[90vh] bg-card border border-border rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
         <Button
           variant="ghost"
           onClick={onClose}
-          className="absolute top-4 right-4 bg-neutral-800 hover:bg-neutral-700 p-2 rounded-md text-neutral-300 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 bg-muted hover:bg-muted/80 p-2 rounded-md text-muted-foreground hover:text-foreground transition-colors z-10"
           title={t('common.closeEsc')}
         >
           <X size={20} />
         </Button>
 
         <div className="pr-8">
-          <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200 mb-2  uppercase">
+          <h1 className="text-2xl md:text-3xl font-semibold font-mono text-foreground mb-2  uppercase">
             {t('privacy.title')}
           </h1>
-          <p className="text-xs text-neutral-500 font-mono mb-8">
+          <p className="text-xs text-muted-foreground font-mono mb-8">
             {t('privacy.lastUpdated', {
               date: getCurrentLocale() === 'pt-BR' ? '18 de novembro de 2025' : 'November 18, 2025',
             })}
           </p>
 
-          <div className="prose prose-invert max-w-none space-y-6 text-sm text-neutral-300 leading-relaxed">
+          <div className="prose prose-invert max-w-none space-y-6 text-sm text-muted-foreground leading-relaxed">
             <p dangerouslySetInnerHTML={{ __html: t('privacy.overview') }} />
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.informationWeCollect.title')}
               </h2>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.accountInfo.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.informationWeCollect.accountInfo.items').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
@@ -91,10 +91,10 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.paymentInfo.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.informationWeCollect.paymentInfo.items').map(
                   (item, idx) => (
                     <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
@@ -102,10 +102,10 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.usageData.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.informationWeCollect.usageData.items').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
@@ -113,10 +113,10 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.technicalData.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.informationWeCollect.technicalData.items').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
@@ -124,23 +124,23 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.informationWeCollect.googleAuth.title')}
               </h3>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.informationWeCollect.googleAuth.permissionsIntro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-3">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-3">
                 {getArray('privacy.sections.informationWeCollect.googleAuth.permissions').map(
                   (item, idx) => (
                     <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
                   )
                 )}
               </ul>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.informationWeCollect.googleAuth.dataIntro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.informationWeCollect.googleAuth.dataItems').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
@@ -148,115 +148,115 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
               <p
-                className="text-neutral-400 mt-3"
+                className="text-muted-foreground mt-3"
                 dangerouslySetInnerHTML={{
-                  __html: `<strong class="text-neutral-300">${t(
+                  __html: `<strong class="text-muted-foreground">${t(
                     'privacy.sections.informationWeCollect.googleAuth.important'
                   )}</strong>`,
                 }}
               />
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.howWeUseData.title')}
               </h2>
-              <p className="text-neutral-400 mb-3">{t('privacy.sections.howWeUseData.intro')}</p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <p className="text-muted-foreground mb-3">{t('privacy.sections.howWeUseData.intro')}</p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.howWeUseData.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.howWeUseData.googleAuth.title')}
               </h3>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.howWeUseData.googleAuth.intro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-3">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-3">
                 {getArray('privacy.sections.howWeUseData.googleAuth.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
-              <p className="text-neutral-400">
+              <p className="text-muted-foreground">
                 {t('privacy.sections.howWeUseData.googleAuth.note')}
               </p>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.howWeUseData.aiTraining.title')}
               </h3>
               <p
-                className="text-neutral-400"
+                className="text-muted-foreground"
                 dangerouslySetInnerHTML={{
                   __html: t('privacy.sections.howWeUseData.aiTraining.note'),
                 }}
               />
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.dataSharing.title')}
               </h2>
-              <p className="text-neutral-400 mb-3">{t('privacy.sections.dataSharing.intro')}</p>
+              <p className="text-muted-foreground mb-3">{t('privacy.sections.dataSharing.intro')}</p>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.serviceProviders.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.dataSharing.serviceProviders.items').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
                   )
                 )}
               </ul>
-              <p className="text-neutral-400 mt-3">
+              <p className="text-muted-foreground mt-3">
                 {t('privacy.sections.dataSharing.serviceProviders.note')}
               </p>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.googleData.title')}
               </h3>
               <p
-                className="text-neutral-400 mb-2"
+                className="text-muted-foreground mb-2"
                 dangerouslySetInnerHTML={{
                   __html: t('privacy.sections.dataSharing.googleData.intro'),
                 }}
               />
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.dataSharing.googleData.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
-              <p className="text-neutral-400 mt-3">
+              <p className="text-muted-foreground mt-3">
                 {t('privacy.sections.dataSharing.googleData.exception')}
               </p>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.legalObligations.title')}
               </h3>
-              <p className="text-neutral-400">
+              <p className="text-muted-foreground">
                 {t('privacy.sections.dataSharing.legalObligations.note')}
               </p>
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.storageAndSecurity.title')}
               </h2>
-              <p className="text-neutral-400 mb-3">
+              <p className="text-muted-foreground mb-3">
                 {t('privacy.sections.storageAndSecurity.intro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-4">
                 {getArray('privacy.sections.storageAndSecurity.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.storageAndSecurity.googleAuth.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.storageAndSecurity.googleAuth.items').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
@@ -265,49 +265,49 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
               </ul>
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.yourRights.title')}
               </h2>
-              <p className="text-neutral-400 mb-3">{t('privacy.sections.yourRights.intro')}</p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <p className="text-muted-foreground mb-3">{t('privacy.sections.yourRights.intro')}</p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.yourRights.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
-              <p className="text-neutral-400 mt-3">{t('privacy.sections.yourRights.contact')}</p>
+              <p className="text-muted-foreground mt-3">{t('privacy.sections.yourRights.contact')}</p>
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.cookiesAndTracking.title')}
               </h2>
-              <p className="text-neutral-400 mb-3">
+              <p className="text-muted-foreground mb-3">
                 {t('privacy.sections.cookiesAndTracking.intro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.cookiesAndTracking.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.cookiesAndTracking.googleAnalytics.title')}
               </h3>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.cookiesAndTracking.googleAnalytics.intro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-3">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-3">
                 {getArray('privacy.sections.cookiesAndTracking.googleAnalytics.collected').map(
                   (item, idx) => (
                     <li key={idx}>{item}</li>
                   )
                 )}
               </ul>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.cookiesAndTracking.googleAnalytics.howItWorks')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-3">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-3">
                 {getArray('privacy.sections.cookiesAndTracking.googleAnalytics.options').map(
                   (item, idx) => {
                     if (item.includes('Google Analytics Opt-out')) {
@@ -331,51 +331,51 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
               <p
-                className="text-neutral-400"
+                className="text-muted-foreground"
                 dangerouslySetInnerHTML={{
-                  __html: `<strong class="text-neutral-300">${t(
+                  __html: `<strong class="text-muted-foreground">${t(
                     'privacy.sections.cookiesAndTracking.googleAnalytics.note'
                   )}</strong>`,
                 }}
               />
 
-              <p className="text-neutral-400 mt-4">
+              <p className="text-muted-foreground mt-4">
                 {t('privacy.sections.cookiesAndTracking.noAdvertising')}
               </p>
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.dataRetention.title')}
               </h2>
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataRetention.general.title')}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-4">
                 {getArray('privacy.sections.dataRetention.general.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataRetention.googleAuth.title')}
               </h3>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.dataRetention.googleAuth.intro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-4">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-4">
                 {getArray('privacy.sections.dataRetention.googleAuth.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
 
-              <h3 className="text-base font-semibold text-neutral-300 mt-4 mb-2">
+              <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataRetention.requestingDeletion.title')}
               </h3>
-              <p className="text-neutral-400 mb-2">
+              <p className="text-muted-foreground mb-2">
                 {t('privacy.sections.dataRetention.requestingDeletion.intro')}
               </p>
-              <ul className="list-disc list-inside space-y-1 text-neutral-400 ml-4 mb-3">
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4 mb-3">
                 {getArray('privacy.sections.dataRetention.requestingDeletion.items').map(
                   (item, idx) => {
                     if (item.includes('contato@visant.co')) {
@@ -413,35 +413,35 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 )}
               </ul>
               <p
-                className="text-neutral-400"
+                className="text-muted-foreground"
                 dangerouslySetInnerHTML={{
-                  __html: `<strong class="text-neutral-300">${t(
+                  __html: `<strong class="text-muted-foreground">${t(
                     'privacy.sections.dataRetention.requestingDeletion.note'
                   )}</strong>`,
                 }}
               />
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.changesToPolicy.title')}
               </h2>
-              <p className="text-neutral-400">{t('privacy.sections.changesToPolicy.note')}</p>
+              <p className="text-muted-foreground">{t('privacy.sections.changesToPolicy.note')}</p>
             </div>
 
-            <div className="border-t border-white/10 pt-6">
-              <h2 className="text-lg font-semibold font-mono text-neutral-200 mb-4  uppercase">
+            <div className="border-t border-border pt-6">
+              <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.contact.title')}
               </h2>
               <p
-                className="text-neutral-400 mb-2"
+                className="text-muted-foreground mb-2"
                 dangerouslySetInnerHTML={{
-                  __html: `<strong class="text-neutral-300">${t(
+                  __html: `<strong class="text-muted-foreground">${t(
                     'privacy.sections.contact.company'
                   )}</strong>`,
                 }}
               />
-              <p className="text-neutral-400">
+              <p className="text-muted-foreground">
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}
                 <a
                   href="mailto:contato@visant.co"
@@ -453,8 +453,8 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
               </p>
             </div>
 
-            <div className="border-t border-white/10 pt-6 mt-8">
-              <p className="text-xs text-neutral-500 font-mono ">
+            <div className="border-t border-border pt-6 mt-8">
+              <p className="text-xs text-muted-foreground font-mono ">
                 {t('privacy.sections.agreement')}
               </p>
             </div>

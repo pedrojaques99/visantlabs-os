@@ -24,10 +24,13 @@ import {
   Palette,
   Star,
   ArrowLeft,
+  Sun,
+  Moon,
   User as UserIcon,
 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/hooks/useTheme';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { usePinnedNav } from '@/hooks/usePinnedNav';
@@ -58,6 +61,7 @@ interface AppSidebarProps {
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onNavigate }) => {
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useLayout();
@@ -459,7 +463,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
 
       {!drillIn && <div className="flex-1" />}
 
-      {/* Rodapé — só utilidades icon-only (Configurações · Legal · Colapsar).
+      {/* Rodapé — só utilidades icon-only (Tema · Configurações · Legal · Colapsar).
           Conta + créditos vivem no topo (AppSpine, ao lado do Buscar ⌘K).
           Configurações fica sempre presente (feedback "perfil sumindo"). */}
       {collapsed ? (
@@ -476,6 +480,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             ) : (
               <UserIcon size={15} />
             )}
+          </button>
+          <button
+            onClick={toggleTheme}
+            aria-label={t('command.toggleTheme')}
+            title={t('command.toggleTheme')}
+            className={iconBtn}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           </button>
           <button
             onClick={() => go('/profile?tab=configuration')}
@@ -500,6 +512,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           {/* Conta + créditos migraram pro topo (AppSpine, ao lado do Buscar ⌘K).
               O rodapé fica só com as utilidades icon-only. */}
           <div className="flex items-center justify-end gap-0.5">
+            <button
+              onClick={toggleTheme}
+              aria-label={t('command.toggleTheme')}
+              title={t('command.toggleTheme')}
+              className={iconBtn}
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
             <button
               onClick={() => go('/profile?tab=configuration')}
               aria-label={t('nav.settings')}

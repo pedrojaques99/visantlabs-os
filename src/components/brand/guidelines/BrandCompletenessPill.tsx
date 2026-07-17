@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CheckCircle2, ArrowRight, Stethoscope } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ const STATUS_STYLES = {
 } as const;
 
 export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ guideline }) => {
+  const { t } = useTranslation();
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
   const status = completenessStatus(report.score);
   const style = STATUS_STYLES[status] ?? STATUS_STYLES.low;
@@ -102,7 +104,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
             {missingCount === 0 ? (
               <div className="flex items-center gap-2 px-2 py-3 text-[12px] text-success">
                 <CheckCircle2 size={14} />
-                Tudo preenchido.
+                {t('brandGuidelines.completenessAllSet')}
               </div>
             ) : (
               <ul className="flex flex-col">
@@ -118,7 +120,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                       />
                       <div className="min-w-0">
                         <div className="text-[12.5px] text-neutral-200 leading-tight">
-                          {rule.label}
+                          {t(`brandCompleteness.${rule.id}`) || rule.label}
                         </div>
                         {WHY_BY_ID[rule.id] && (
                           <div className="text-[11px] text-neutral-500 leading-snug mt-0.5">

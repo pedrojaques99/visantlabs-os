@@ -698,9 +698,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className={cn(
-                'bg-neutral-900 overflow-hidden flex',
+                'bg-card overflow-hidden flex',
                 mode === 'modal'
-                  ? 'w-full h-screen md:h-[85vh] md:max-w-4xl rounded-2xl border border-neutral-800 shadow-2xl'
+                  ? 'w-full h-screen md:h-[85vh] md:max-w-4xl rounded-2xl border border-border shadow-2xl'
                   : 'w-full h-full rounded-none'
               )}
             >
@@ -727,14 +727,14 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                 {/* Top — New session + surface brand mark */}
                 <div className="p-3 space-y-1">
                   <div className="flex items-center gap-2 px-3 py-2 mb-1">
-                    {sidebarIcon ?? <Sparkles className="h-4 w-4 text-neutral-400" />}
-                    <span className="text-sm font-semibold text-neutral-200">
+                    {sidebarIcon ?? <Sparkles className="h-4 w-4 text-muted-foreground" />}
+                    <span className="text-sm font-semibold text-foreground">
                       {strings.sidebarLabel}
                     </span>
                   </div>
                   <button
                     onClick={createNewSession}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                   >
                     <Plus size={16} className="opacity-60" />
                     <span>{t('chatShell.newSession')}</span>
@@ -747,12 +747,12 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                     {t('chatShell.sessions')}
                   </div>
                   {loadingSessions ? (
-                    <div className="flex items-center gap-2 px-3 py-2 text-xs text-neutral-500">
+                    <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
                       <GlitchLoader size={12} />
                       {t('chatShell.loading')}
                     </div>
                   ) : sessions.length === 0 ? (
-                    <div className="px-3 py-2 text-xs text-neutral-600">
+                    <div className="px-3 py-2 text-xs text-muted-foreground">
                       {t('chatShell.noSessions')}
                     </div>
                   ) : (
@@ -764,8 +764,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           className={cn(
                             'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors group relative cursor-pointer',
                             currentSessionId === session._id
-                              ? 'bg-white/10 text-neutral-100'
-                              : 'text-neutral-400 hover:bg-white/5 hover:text-neutral-200'
+                              ? 'bg-accent text-foreground'
+                              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                           )}
                         >
                           <div className="flex items-center justify-between gap-2 overflow-hidden">
@@ -804,7 +804,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                 {/* User footer — some dentro do AppShell (rail já mostra) */}
                 {user && !inShell && (
-                  <div className="p-3 border-t border-neutral-800">
+                  <div className="p-3 border-t border-border">
                     <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg">
                       {user.picture ? (
                         <img
@@ -813,15 +813,15 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           className="w-8 h-8 rounded-full object-cover shrink-0"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-semibold text-neutral-300 shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-semibold text-muted-foreground shrink-0">
                           {(user.name || user.email || '?').charAt(0).toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm text-neutral-200 truncate leading-tight">
+                        <div className="text-sm text-foreground truncate leading-tight">
                           {user.name || user.email}
                         </div>
-                        <div className="text-xs text-neutral-500 truncate leading-tight">
+                        <div className="text-xs text-muted-foreground truncate leading-tight">
                           {user.isAdmin
                             ? t('chatShell.roleAdmin')
                             : user.userCategory || t('chatShell.roleAccount')}
@@ -834,30 +834,30 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
               {/* Main Chat Area */}
               <div
-                className="flex flex-col flex-1 min-w-0 bg-neutral-950 relative"
+                className="flex flex-col flex-1 min-w-0 bg-background relative"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
                 {isDraggingFile && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/5 border-2 border-dashed border-white/20 rounded-lg pointer-events-none backdrop-blur-sm">
-                    <div className="flex flex-col items-center gap-2 text-neutral-300">
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-muted border-2 border-dashed border-white/20 rounded-lg pointer-events-none backdrop-blur-sm">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <Paperclip size={28} />
                       <span className="text-xs">{t('chatShell.dropToAttach')}</span>
                     </div>
                   </div>
                 )}
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 md:px-8 py-3 border-b border-neutral-800 bg-black/20 gap-3">
+                <div className="flex items-center justify-between px-4 md:px-8 py-3 border-b border-border bg-muted/40 gap-3">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
-                      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-neutral-400 shrink-0"
+                      className="p-1.5 hover:bg-accent rounded-lg transition-colors text-muted-foreground shrink-0"
                       aria-label={t('chatShell.toggleSidebar')}
                     >
                       {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                     </button>
-                    <h3 className="text-sm font-semibold text-neutral-200 truncate leading-tight">
+                    <h3 className="text-sm font-semibold text-foreground truncate leading-tight">
                       {sessions.find((s) => s._id === currentSessionId)?.title ||
                         t('chatShell.newSession')}
                     </h3>
@@ -883,7 +883,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           <button
                             type="button"
                             onClick={() => setWizardOpen(true)}
-                            className="flex items-center gap-2 w-full px-2 py-2 text-[11px] font-medium text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40 transition-colors"
+                            className="flex items-center gap-2 w-full px-2 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                           >
                             <Plus size={12} />
                             {t('chatShell.newBrand')}
@@ -897,7 +897,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => setMediaPanelOpen((v) => !v)}
-                        className="hover:bg-white/10 h-8 w-8 shrink-0 text-neutral-400"
+                        className="hover:bg-accent h-8 w-8 shrink-0 text-muted-foreground"
                         aria-label={
                           mediaPanelOpen ? t('chatShell.hideMediaKit') : t('chatShell.showMediaKit')
                         }
@@ -916,7 +916,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         size="icon"
                         aria-label={t('chatShell.close')}
                         onClick={onClose}
-                        className="hover:bg-white/10 h-8 w-8 shrink-0"
+                        className="hover:bg-accent h-8 w-8 shrink-0"
                       >
                         <X size={18} aria-hidden="true" />
                       </Button>
@@ -950,7 +950,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             type="button"
                             onClick={() => setInput(s)}
                             className={cn(
-                              'text-left px-4 py-3 rounded-xl text-xs text-neutral-300 hover:border-white/15 hover:text-neutral-100 flex items-center gap-2.5',
+                              'text-left px-4 py-3 rounded-xl text-xs text-muted-foreground hover:border-ring hover:text-foreground flex items-center gap-2.5',
                               glassSurface.tile
                             )}
                           >
@@ -966,7 +966,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                       .filter((p) => p.status === 'pending')
                       .map((pending) => (
                         <div key={pending.id} className="flex gap-4">
-                          <div className="w-8 h-8 rounded-full bg-neutral-900 border border-warning/30 flex items-center justify-center shadow-lg shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-muted border border-warning/30 flex items-center justify-center shadow-lg shrink-0">
                             <BookOpen size={16} className="text-warning" />
                           </div>
                           <div className="flex-1 max-w-[85%] rounded-2xl border border-warning/30 bg-warning/[0.04] p-4 space-y-3">
@@ -976,16 +976,16 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               </span>
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-neutral-100">
+                              <p className="text-sm font-medium text-foreground">
                                 {pending.title}
                               </p>
                               {pending.reason && (
-                                <p className="text-xs text-neutral-500 mt-1 italic">
+                                <p className="text-xs text-muted-foreground mt-1 italic">
                                   {pending.reason}
                                 </p>
                               )}
                             </div>
-                            <div className="text-xs text-neutral-300 bg-black/30 rounded-lg p-3 border border-neutral-800 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                            <div className="text-xs text-muted-foreground bg-muted rounded-lg p-3 border border-border whitespace-pre-wrap max-h-40 overflow-y-auto">
                               {pending.content}
                             </div>
                             <div className="flex items-center gap-2">
@@ -1021,33 +1021,33 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         "Aprovar e gerar" — hoje o chat não recebe custo pré-geração. */}
                     {activePlan && (
                       <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center shadow-lg shrink-0">
-                          <Bot size={16} className="text-neutral-300" />
+                        <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center shadow-lg shrink-0">
+                          <Bot size={16} className="text-muted-foreground" />
                         </div>
-                        <div className="flex-1 max-w-[85%] rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
+                        <div className="flex-1 max-w-[85%] rounded-2xl border border-border bg-muted/40 p-4 space-y-4">
                           {activePlan.summary && (
-                            <p className="text-xs text-neutral-400">{activePlan.summary}</p>
+                            <p className="text-xs text-muted-foreground">{activePlan.summary}</p>
                           )}
 
                           {activePlan.proposals?.length > 0 && (
                             <div className="space-y-1.5">
-                              <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">
+                              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                                 {t('chatShell.proposedVariations')}
                               </p>
                               {activePlan.proposals.map((p, i) => (
                                 <div
                                   key={i}
-                                  className="flex items-start gap-2 px-3 py-2 rounded-lg bg-black/30 border border-neutral-800"
+                                  className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted border border-border"
                                 >
-                                  <span className="text-xs text-neutral-500 shrink-0 mt-px">
+                                  <span className="text-xs text-muted-foreground shrink-0 mt-px">
                                     {i + 1}.
                                   </span>
                                   <div className="min-w-0">
-                                    <p className="text-xs font-medium text-neutral-200">
+                                    <p className="text-xs font-medium text-foreground">
                                       {p.title}
                                     </p>
                                     {p.aspectRatio && (
-                                      <p className="text-[11px] text-neutral-600 mt-0.5">
+                                      <p className="text-[11px] text-muted-foreground mt-0.5">
                                         {p.aspectRatio}
                                       </p>
                                     )}
@@ -1059,12 +1059,12 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                           {activePlan.questions && activePlan.questions.length > 0 && (
                             <div className="space-y-2.5">
-                              <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-widest">
+                              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                                 {t('chatShell.questions')}
                               </p>
                               {activePlan.questions.map((q, i) => (
                                 <div key={i} className="space-y-1">
-                                  <label className="text-xs text-neutral-300">{q}</label>
+                                  <label className="text-xs text-muted-foreground">{q}</label>
                                   <input
                                     type="text"
                                     value={planAnswers[i] || ''}
@@ -1072,7 +1072,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                       setPlanAnswers((prev) => ({ ...prev, [i]: e.target.value }))
                                     }
                                     placeholder={t('chatShell.optionalAnswer')}
-                                    className="w-full px-3 py-1.5 rounded-md bg-black/40 border border-white/10 text-xs text-neutral-200 placeholder-neutral-600 outline-none focus:border-white/20 transition-colors"
+                                    className="w-full px-3 py-1.5 rounded-md bg-input border border-border text-xs text-foreground placeholder-muted-foreground outline-none focus:border-ring transition-colors"
                                   />
                                 </div>
                               ))}
@@ -1111,8 +1111,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                     {isLoading && (
                       <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center shadow-lg">
-                          <Bot size={16} className="text-neutral-300 animate-pulse" />
+                        <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center shadow-lg">
+                          <Bot size={16} className="text-muted-foreground animate-pulse" />
                         </div>
                         <div className="flex-1 max-w-[80%] space-y-3 py-1.5">
                           <PremiumGlitchLoader className="!text-xs" />
@@ -1127,7 +1127,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             />
                           )}
                           {inflightToolCalls.length > 0 && (
-                            <div className="space-y-1.5 pt-2 border-t border-neutral-800">
+                            <div className="space-y-1.5 pt-2 border-t border-border">
                               {inflightToolCalls.map((tc) => (
                                 <div
                                   key={tc.id}
@@ -1136,8 +1136,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                     tc.status === 'error'
                                       ? 'bg-destructive/5 border-destructive/20 text-destructive'
                                       : tc.status === 'running'
-                                        ? 'bg-white/5 border-white/10 text-neutral-200'
-                                        : 'bg-white/[0.03] border-neutral-800 text-neutral-400'
+                                        ? 'bg-muted border-border text-foreground'
+                                        : 'bg-muted/40 border-border text-muted-foreground'
                                   )}
                                 >
                                   {tc.status === 'running' ? (
@@ -1165,7 +1165,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                 </div>
 
                 {/* Footer / Input */}
-                <div className="border-t border-neutral-800 bg-black/40 backdrop-blur-md py-8 px-10">
+                <div className="border-t border-border bg-card/60 backdrop-blur-md py-8 px-10">
                   <div className="max-w-5xl mx-auto w-full">
                     {/* File Attachments */}
                     {attachedFiles.length > 0 && (
@@ -1173,7 +1173,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         {attachedFiles.map((file, i) => (
                           <div
                             key={i}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-md border border-white/10 text-xs text-neutral-300"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md border border-border text-xs text-muted-foreground"
                           >
                             {getFileIcon(file.type)}
                             <span className="truncate max-w-[120px]">{file.name}</span>
@@ -1206,7 +1206,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           'flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors',
                           planModeActive
                             ? 'bg-success/10 border-success/30 text-success'
-                            : 'bg-white/[0.03] border-white/10 text-neutral-500 hover:text-neutral-300 hover:border-white/20'
+                            : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground hover:border-ring'
                         )}
                         title={t('chatShell.planModeTooltip')}
                       >
@@ -1217,7 +1217,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         {t('chatShell.planMode')}
                       </button>
 
-                      <div className="flex items-center rounded-md border border-white/10 overflow-hidden text-[11px] font-medium">
+                      <div className="flex items-center rounded-md border border-border overflow-hidden text-[11px] font-medium">
                         {(['layers', 'image', 'both'] as const).map((mode) => (
                           <button
                             key={mode}
@@ -1226,8 +1226,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             className={cn(
                               'px-2.5 py-1 transition-colors',
                               textMode === mode
-                                ? 'bg-white/10 text-neutral-200'
-                                : 'text-neutral-600 hover:text-neutral-400'
+                                ? 'bg-accent text-foreground'
+                                : 'text-muted-foreground hover:text-foreground'
                             )}
                             title={
                               mode === 'layers'
@@ -1272,9 +1272,9 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
               {/* Right-side panel — Media Kit / Prompt Library */}
               {isLargeScreen && mediaPanelOpen && selectedBrand && (
-                <aside className="flex flex-col bg-neutral-950 border-l border-neutral-800 w-80 shrink-0">
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
-                    <div className="flex items-center bg-white/5 rounded-md p-0.5 gap-px">
+                <aside className="flex flex-col bg-card border-l border-border w-80 shrink-0">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                    <div className="flex items-center bg-muted rounded-md p-0.5 gap-px">
                       {(['media', 'prompts'] as const).map((tab) => (
                         <button
                           key={tab}
@@ -1283,8 +1283,8 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           className={cn(
                             'px-2.5 py-1 text-[11px] font-medium rounded transition-colors',
                             panelTab === tab
-                              ? 'bg-white/10 text-neutral-200'
-                              : 'text-neutral-500 hover:text-neutral-300'
+                              ? 'bg-accent text-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
                           )}
                         >
                           {tab === 'media' ? t('chatShell.mediaKit') : t('chatShell.prompts')}
@@ -1305,7 +1305,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           <button
                             onClick={() => brandImportInputRef.current?.click()}
                             disabled={brandImport.isPending}
-                            className="p-1.5 rounded-md text-neutral-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors disabled:opacity-50"
                             aria-label={t('chatShell.importPdfImages')}
                             title={t('chatShell.importPdfImagesTooltip')}
                           >
@@ -1319,7 +1319,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                       )}
                       <button
                         onClick={() => setMediaPanelOpen(false)}
-                        className="p-1 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition-colors"
+                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                         aria-label={t('chatShell.closePanel')}
                       >
                         <X size={14} />
@@ -1329,7 +1329,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                   {panelTab === 'media' ? (
                     <div className="flex-1 overflow-y-auto scrollbar-thin p-3">
-                      <p className="text-xs text-neutral-500 mb-3 px-1">
+                      <p className="text-xs text-muted-foreground mb-3 px-1">
                         {t('chatShell.clickOrDrag')}
                       </p>
                       <MediaKitGallery

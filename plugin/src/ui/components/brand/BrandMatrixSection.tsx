@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { Plus, Copy, Layers, X } from 'lucide-react';
+import { SMART_SCAN_REQUESTER, isSmartScanFor } from '../../lib/smartScan';
 
 interface ColorToken {
   id: string;
@@ -21,11 +23,11 @@ interface ScannedAsset {
   section: string;
 }
 
-const SECTION_OPTIONS = [
-  { key: 'horizontal', label: 'Horizontal' },
-  { key: 'vertical', label: 'Vertical' },
-  { key: 'icon', label: 'Icon' },
-  { key: 'identity', label: 'ID Visual' },
+const getSectionOptions = (t: (key: string) => string) => [
+  { key: 'horizontal', label: t('plugin.brand.matrix.horizontal') },
+  { key: 'vertical', label: t('plugin.brand.matrix.vertical') },
+  { key: 'icon', label: t('plugin.brand.matrix.icon') },
+  { key: 'identity', label: t('plugin.brand.matrix.idVisual') },
 ];
 
 function hex(r: number, g: number, b: number): string {
@@ -68,6 +70,8 @@ function useFigmaSubscribe(handler: (msg: any) => void) {
 }
 
 export function BrandMatrixSection() {
+  const { t } = useTranslation();
+  const SECTION_OPTIONS = getSectionOptions(t);
   const { send } = useFigmaMessages();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const colors = usePluginStore((s) => s.matrixColors);
@@ -100,7 +104,9 @@ export function BrandMatrixSection() {
             : mergeColors(usePluginStore.getState().matrixColors, incoming)
         );
       }
-      if (msg.type === 'SMART_SCAN_RESULT') {
+      // Only our own scan — Tools › Extract fires this same round-trip for its result modal,
+      // and without the check its scan would silently rewrite the assets picked here.
+      if (msg.type === 'SMART_SCAN_RESULT' && isSmartScanFor(msg, SMART_SCAN_REQUESTER.brandMatrix)) {
         const items = (msg.items || []).filter(
           (i: any) => i.category === 'logo' || i.category === 'component'
         );
@@ -132,7 +138,7 @@ export function BrandMatrixSection() {
   const selected = colors.filter((c) => c.selected);
 
   return (
-    <div className="space-y-3 bg-neutral-900/40 p-3 rounded-lg border border-border/60 shadow-sm">
+    <div className="space-y-3 bg-muted/40 p-3 rounded-lg border border-border/60 shadow-sm">
       {/* Color palette — compact dots */}
       <div className="space-y-2">
         <div className="flex flex-wrap gap-1.5 items-center">
@@ -143,7 +149,7 @@ export function BrandMatrixSection() {
               title={`${c.name} — ${hex(c.r, c.g, c.b)}`}
               className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 ${
                 c.selected
-                  ? 'border-white/80 shadow-[0_0_0_1px_rgba(255,255,255,0.3)] scale-105'
+                  ? 'border-foreground/80 shadow-[0_0_0_1px_rgba(255,255,255,0.3)] scale-105'
                   : 'border-transparent opacity-30 hover:opacity-60'
               }`}
               style={{ backgroundColor: hex(c.r, c.g, c.b) }}
@@ -151,7 +157,7 @@ export function BrandMatrixSection() {
           ))}
           <button
             onClick={() => setShowCustom(!showCustom)}
-            className="w-6 h-6 rounded-full border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:border-white/40 hover:text-white transition-colors"
+            className="w-6 h-6 rounded-full border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:border-foreground/40 hover:text-foreground transition-colors"
           >
             <Plus size={10} />
           </button>
@@ -165,7 +171,7 @@ export function BrandMatrixSection() {
               value={customHex}
               onChange={(e) => setCustomHex(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addCustom()}
-              className="flex-1 h-6 px-2 text-[10px] bg-neutral-900 border border-border/60 rounded focus:border-white/40 outline-none"
+              className="flex-1 h-6 px-2 text-[10px] bg-card border border-border/60 rounded focus:border-foreground/40 outline-none"
               autoFocus
             />
             <Button
@@ -182,7 +188,7 @@ export function BrandMatrixSection() {
 
         {selected.length > 0 && (
           <p className="text-[9px] text-muted-foreground">
-            {selected.length} cor{selected.length !== 1 ? 'es' : ''}
+            {selected.length === 1 ? t('plugin.brand.matrix.colorCountOne', { count: selected.length }) : t('plugin.brand.matrix.colorCountOther', { count: selected.length })}
           </p>
         )}
       </div>
@@ -195,7 +201,7 @@ export function BrandMatrixSection() {
           onChange={(e) => setCreateSections(e.target.checked)}
           className="w-3 h-3 rounded border-border/60 accent-brand-cyan"
         />
-        <span className="text-[9px] text-muted-foreground">Criar sections</span>
+        <span className="text-[9px] text-muted-foreground">{t('plugin.brand.matrix.createSections')}</span>
       </label>
 
       {/* Actions */}
@@ -209,25 +215,28 @@ export function BrandMatrixSection() {
             createSections,
           }}
           responseTypes={['OPERATIONS_DONE']}
-          busyLabel="Clonando…"
+          busyLabel={t('plugin.brand.matrix.cloning')}
           variant="brand"
           size="sm"
           className="w-full"
           disabled={selected.length === 0}
         >
           <Copy size={12} className="mr-2" />
-          Logo Matrix
+          {t('plugin.brand.matrix.logoMatrix')}
         </OpButton>
 
         {!showFull ? (
           <button
             onClick={() => {
               setShowFull(true);
-              send({ type: 'SMART_SCAN_SELECTION' } as any);
+              send({
+                type: 'SMART_SCAN_SELECTION',
+                requester: SMART_SCAN_REQUESTER.brandMatrix,
+              } as any);
             }}
-            className="w-full text-[9px] text-muted-foreground hover:text-white py-1 transition-colors"
+            className="w-full text-[9px] text-muted-foreground hover:text-foreground py-1 transition-colors"
           >
-            Full Matrix com seções ›
+            {t('plugin.brand.matrix.fullMatrixSections')}
           </button>
         ) : (
           <div className="space-y-2 pt-1 border-t border-border/30">
@@ -235,7 +244,7 @@ export function BrandMatrixSection() {
               <div className="space-y-1">
                 {assets.map((a) => (
                   <div key={a.nodeId} className="flex items-center gap-1.5 text-[10px] group">
-                    <span className="truncate flex-1 text-muted-foreground group-hover:text-white">
+                    <span className="truncate flex-1 text-muted-foreground group-hover:text-foreground">
                       {a.nodeName}
                     </span>
                     <select
@@ -247,7 +256,7 @@ export function BrandMatrixSection() {
                           )
                         )
                       }
-                      className="h-5 text-[9px] bg-neutral-900 border border-border/40 rounded px-1"
+                      className="h-5 text-[9px] bg-card border border-border/40 rounded px-1"
                     >
                       {SECTION_OPTIONS.map((s) => (
                         <option key={s.key} value={s.key}>
@@ -257,7 +266,7 @@ export function BrandMatrixSection() {
                     </select>
                     <button
                       onClick={() => setAssets((p) => p.filter((x) => x.nodeId !== a.nodeId))}
-                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400"
+                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                     >
                       <X size={10} />
                     </button>
@@ -266,7 +275,7 @@ export function BrandMatrixSection() {
               </div>
             ) : (
               <p className="text-[9px] text-muted-foreground italic">
-                Selecione elementos e clique novamente
+                {t('plugin.brand.matrix.selectElements')}
               </p>
             )}
 
@@ -284,14 +293,14 @@ export function BrandMatrixSection() {
                 createSections,
               }}
               responseTypes={['OPERATIONS_DONE']}
-              busyLabel="Gerando…"
+              busyLabel={t('plugin.brand.matrix.generating')}
               variant="outline"
               size="sm"
               className="w-full"
               disabled={selected.length === 0 || assets.length === 0}
             >
               <Layers size={12} className="mr-2" />
-              Full Matrix
+              {t('plugin.brand.matrix.fullMatrix')}
             </OpButton>
           </div>
         )}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ function sanitizeThumbnailUrl(url: string): string | null {
 }
 
 export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanModalProps) {
+  const { t } = useTranslation();
   const [categorized, setCategorized] = useState<SmartScanItem[]>(items);
 
   const handleCategoryChange = (id: string, category: string) => {
@@ -54,9 +56,9 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-96 overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">Smart Scan Results</DialogTitle>
+          <DialogTitle className="text-sm font-semibold">{t('plugin.brand.modals.smartScanTitle')}</DialogTitle>
           <DialogDescription className="text-xs mt-1">
-            Categorize detected design elements
+            {t('plugin.brand.modals.smartScanDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -83,11 +85,11 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
 
               <Select
                 options={[
-                  { value: 'logo', label: 'Logo' },
-                  { value: 'font', label: 'Font' },
-                  { value: 'color', label: 'Color' },
-                  { value: 'component', label: 'Component' },
-                  { value: 'skip', label: 'Skip' },
+                  { value: 'logo', label: t('plugin.brand.modals.catLogo') },
+                  { value: 'font', label: t('plugin.brand.modals.catFont') },
+                  { value: 'color', label: t('plugin.brand.modals.catColor') },
+                  { value: 'component', label: t('plugin.brand.modals.catComponent') },
+                  { value: 'skip', label: t('plugin.brand.modals.catSkip') },
                 ]}
                 value={item.category || 'skip'}
                 onChange={(value) => handleCategoryChange(item.id, value as string)}
@@ -101,7 +103,7 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
             onClick={handleApply}
             className="flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/90 text-xs h-8"
           >
-            Apply
+            {t('plugin.brand.modals.apply')}
           </Button>
           <Button onClick={onClose} variant="outline" className="flex-1 text-xs h-8">
             Cancel
@@ -125,6 +127,7 @@ interface PushPreviewModalProps {
 }
 
 export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPreviewModalProps) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string[]>(['colors', 'typography', 'logos', 'tokens']);
 
   const handleToggle = (key: string) => {
@@ -140,9 +143,9 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">Push to Web App</DialogTitle>
+          <DialogTitle className="text-sm font-semibold">{t('plugin.brand.modals.pushTitle')}</DialogTitle>
           <DialogDescription className="text-xs mt-1">
-            Select what to push to your brand guideline
+            {t('plugin.brand.modals.pushDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -154,7 +157,7 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
                 onCheckedChange={() => handleToggle('colors')}
               />
               <span className="text-xs">
-                Colors <span className="text-muted-foreground">({changes.colors.length} new)</span>
+                {t('plugin.brand.modals.colorsNew')} <span className="text-muted-foreground">({t('plugin.brand.modals.countNew', { count: changes.colors.length })})</span>
               </span>
             </label>
           )}
@@ -179,7 +182,7 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
                 onCheckedChange={() => handleToggle('logos')}
               />
               <span className="text-xs">
-                Logos <span className="text-muted-foreground">({changes.logos.length} new)</span>
+                {t('plugin.brand.modals.logosNew')} <span className="text-muted-foreground">({t('plugin.brand.modals.countNew', { count: changes.logos.length })})</span>
               </span>
             </label>
           )}
@@ -206,7 +209,7 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
             disabled={selected.length === 0}
             className="flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/90 text-xs h-8"
           >
-            Push
+            {t('plugin.brand.modals.push')}
           </Button>
           <Button onClick={onClose} variant="outline" className="flex-1 text-xs h-8">
             Cancel
@@ -230,28 +233,29 @@ export function ComponentLibraryModal({
   thumbnails,
   onClose,
 }: ComponentLibraryModalProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const filtered = components.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0 overflow-hidden bg-neutral-950 border-white/5">
+      <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0 overflow-hidden bg-background border-border/50">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-lg font-bold uppercase tracking-widest text-brand-cyan">
-            Library Index
+            {t('plugin.brand.modals.libraryTitle')}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            View and insert components from your design system
+            {t('plugin.brand.modals.libraryDescription')}
           </DialogDescription>
 
           <div className="mt-4">
             <input
               type="text"
-              placeholder="Search components..."
+              placeholder={t('plugin.brand.modals.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-neutral-900 border border-white/5 rounded-lg px-3 py-2 text-xs focus:border-brand-cyan/50 outline-none transition-all"
+              className="w-full bg-card border border-border/50 rounded-lg px-3 py-2 text-xs focus:border-brand-cyan/50 outline-none transition-all"
             />
           </div>
         </DialogHeader>
@@ -263,7 +267,7 @@ export function ComponentLibraryModal({
               return (
                 <div
                   key={comp.id}
-                  className="group bg-neutral-900/40 border border-white/5 rounded-xl p-3 hover:border-brand-cyan/30 transition-all cursor-pointer"
+                  className="group bg-muted/40 border border-border/50 rounded-xl p-3 hover:border-brand-cyan/30 transition-all cursor-pointer"
                   onClick={() => {
                     parent.postMessage(
                       { pluginMessage: { type: 'SELECT_AND_ZOOM', nodeId: comp.id } },
@@ -271,7 +275,7 @@ export function ComponentLibraryModal({
                     );
                   }}
                 >
-                  <div className="aspect-video bg-neutral-950 rounded-lg mb-2 overflow-hidden flex items-center justify-center border border-white/5">
+                  <div className="aspect-video bg-background rounded-lg mb-2 overflow-hidden flex items-center justify-center border border-border/50">
                     {thumb ? (
                       <img
                         src={thumb}
@@ -279,10 +283,10 @@ export function ComponentLibraryModal({
                         className="max-w-full max-h-full object-contain"
                       />
                     ) : (
-                      <Layers size={24} className="text-neutral-800" />
+                      <Layers size={24} className="text-muted-foreground/40" />
                     )}
                   </div>
-                  <div className="text-[10px] font-bold text-neutral-400 group-hover:text-white transition-colors truncate">
+                  <div className="text-[10px] font-bold text-muted-foreground group-hover:text-foreground transition-colors truncate">
                     {comp.name}
                   </div>
                 </div>
@@ -291,19 +295,19 @@ export function ComponentLibraryModal({
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-20 text-neutral-500 text-xs">
-              No components matching your search.
+            <div className="text-center py-20 text-muted-foreground text-xs">
+              {t('plugin.brand.modals.noSearchResults')}
             </div>
           )}
         </div>
 
-        <div className="p-4 border-t border-white/5 bg-neutral-900/20 flex justify-end">
+        <div className="p-4 border-t border-border/50 bg-muted/20 flex justify-end">
           <Button
             onClick={onClose}
             variant="ghost"
-            className="text-xs h-8 text-neutral-500 uppercase tracking-widest"
+            className="text-xs h-8 text-muted-foreground uppercase tracking-widest"
           >
-            Close Library
+            {t('plugin.brand.modals.closeLibrary')}
           </Button>
         </div>
       </DialogContent>
@@ -312,65 +316,65 @@ export function ComponentLibraryModal({
 }
 
 export function NamingGuideModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-neutral-950 border-white/5 p-6 overflow-hidden flex flex-col max-h-[90vh]">
+      <DialogContent className="max-w-md bg-background border-border/50 p-6 overflow-hidden flex flex-col max-h-[90vh]">
         <DialogHeader className="mb-6">
           <DialogTitle className="text-lg font-bold uppercase tracking-[0.2em] text-brand-cyan flex items-center gap-2">
             <BookOpen size={20} />
-            Naming Guide
+            {t('plugin.brand.modals.namingTitle')}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            How to name layers for Smart Integration
+            {t('plugin.brand.modals.namingSubtitle')}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar text-xs leading-relaxed text-neutral-400">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar text-xs leading-relaxed text-muted-foreground">
           <section className="space-y-2">
-            <h4 className="font-bold text-white uppercase tracking-widest text-[10px]">
-              🎨 Color Palettes
+            <h4 className="font-bold text-foreground uppercase tracking-widest text-[10px]">
+              {t('plugin.brand.modals.colorPalettes')}
             </h4>
-            <p>Smart Import detects colors via Variables or Styles using these patterns:</p>
+            <p>{t('plugin.brand.modals.colorPalettesDesc')}</p>
             <div className="grid grid-cols-2 gap-2 font-mono text-[9px]">
-              <div className="bg-neutral-900 p-2 rounded">primary / 500</div>
-              <div className="bg-neutral-900 p-2 rounded">secondary / surface</div>
-              <div className="bg-neutral-900 p-2 rounded">accent / highlight</div>
-              <div className="bg-neutral-900 p-2 rounded">background / bg</div>
+              <div className="bg-card p-2 rounded">primary / 500</div>
+              <div className="bg-card p-2 rounded">secondary / surface</div>
+              <div className="bg-card p-2 rounded">accent / highlight</div>
+              <div className="bg-card p-2 rounded">background / bg</div>
             </div>
-            <p className="italic text-[9px]">* Also supports: danger, success, warning, neutral.</p>
+            <p className="italic text-[9px]">{t('plugin.brand.modals.alsoSupports')}</p>
           </section>
 
           <section className="space-y-2">
-            <h4 className="font-bold text-white uppercase tracking-widest text-[10px]">
-              🔤 Typography Styles
+            <h4 className="font-bold text-foreground uppercase tracking-widest text-[10px]">
+              {t('plugin.brand.modals.typographyStyles')}
             </h4>
-            <p>Detection happens via Text Styles or selected Text layers:</p>
+            <p>{t('plugin.brand.modals.typographyStylesDesc')}</p>
             <div className="grid grid-cols-2 gap-2 font-mono text-[9px]">
-              <div className="bg-neutral-900 p-2 rounded">Heading / H1</div>
-              <div className="bg-neutral-900 p-2 rounded">Title / Subtitle</div>
-              <div className="bg-neutral-900 p-2 rounded">Body / Paragraph</div>
-              <div className="bg-neutral-900 p-2 rounded">Small / Caption</div>
+              <div className="bg-card p-2 rounded">Heading / H1</div>
+              <div className="bg-card p-2 rounded">Title / Subtitle</div>
+              <div className="bg-card p-2 rounded">Body / Paragraph</div>
+              <div className="bg-card p-2 rounded">Small / Caption</div>
             </div>
           </section>
 
           <section className="space-y-2">
-            <h4 className="font-bold text-white uppercase tracking-widest text-[10px]">
-              🛡️ Asset Logos
+            <h4 className="font-bold text-foreground uppercase tracking-widest text-[10px]">
+              {t('plugin.brand.modals.assetLogos')}
             </h4>
-            <p>Components named with these keywords go straight to logo slots:</p>
+            <p>{t('plugin.brand.modals.assetLogosDesc')}</p>
             <div className="grid grid-cols-2 gap-2 font-mono text-[9px]">
-              <div className="bg-neutral-900 p-2 rounded">Logo / Primary</div>
-              <div className="bg-neutral-900 p-2 rounded">Brand / Dark</div>
-              <div className="bg-neutral-900 p-2 rounded">Icon / Emblem</div>
-              <div className="bg-neutral-900 p-2 rounded">Logo / Accent</div>
+              <div className="bg-card p-2 rounded">Logo / Primary</div>
+              <div className="bg-card p-2 rounded">Brand / Dark</div>
+              <div className="bg-card p-2 rounded">Icon / Emblem</div>
+              <div className="bg-card p-2 rounded">Logo / Accent</div>
             </div>
           </section>
 
           <div className="bg-brand-cyan/5 border border-brand-cyan/10 p-3 rounded-lg flex items-start gap-2">
             <Info size={14} className="text-brand-cyan mt-0.5 shrink-0" />
             <p className="text-[9px] text-brand-cyan/80">
-              Pro Tip: You can group layers (e.g., Folder/Logo) and the plugin will still find the
-              correct keywords inside.
+              {t('plugin.brand.modals.proTip')}
             </p>
           </div>
         </div>
@@ -380,9 +384,9 @@ export function NamingGuideModal({ isOpen, onClose }: { isOpen: boolean; onClose
             onClick={onClose}
             variant="outline"
             size="sm"
-            className="h-8 border-white/5 uppercase tracking-widest text-[9px]"
+            className="h-8 border-border/50 uppercase tracking-widest text-[9px]"
           >
-            Got it, thanks!
+            {t('plugin.brand.modals.gotIt')}
           </Button>
         </div>
       </DialogContent>

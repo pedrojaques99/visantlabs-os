@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginMessages } from '../../hooks/usePluginMessages';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -35,7 +36,55 @@ const CARD_H = 480;
 const GAP = 24;
 const COLS = 5;
 
+/** Backstop only. The sandbox answers in well under this; it exists so a lost reply can't
+ *  leave the button spinning forever. */
+const APPLY_TIMEOUT_MS = 60_000;
+
+type ApplyOutcome =
+  | { status: 'done'; count: number }
+  | { status: 'failed'; message?: string }
+  | { status: 'unknown' };
+
+/**
+ * Apply the operations and report what actually happened.
+ *
+ * This used to fire the operations and then `setTimeout(max(3000, n*250))` before announcing
+ * "N cards generated" — a success message on a stopwatch, printed whether the clone worked,
+ * failed, or was still running. The source node is looked up by name ('Influencer'), so the
+ * most likely real outcome — no such node in the page — announced success too.
+ */
+function applyAndWait(
+  applyOperations: (ops: any[]) => void,
+  operations: any[]
+): Promise<ApplyOutcome> {
+  return new Promise((resolve) => {
+    const handler = (event: MessageEvent) => {
+      const msg = event.data?.pluginMessage;
+      if (msg?.type === 'OPERATIONS_DONE') {
+        cleanup();
+        resolve({ status: 'done', count: msg.count ?? operations.length });
+      } else if (msg?.type === 'ERROR' || msg?.type === 'OPERATION_ERROR') {
+        cleanup();
+        resolve({ status: 'failed', message: msg.message });
+      }
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve({ status: 'unknown' });
+    }, APPLY_TIMEOUT_MS);
+    const cleanup = () => {
+      window.removeEventListener('message', handler);
+      clearTimeout(timer);
+    };
+
+    // Listen before sending, or a fast reply lands before we're watching.
+    window.addEventListener('message', handler);
+    applyOperations(operations);
+  });
+}
+
 export function BulkCardsSection() {
+  const { t } = useTranslation();
   const { applyOperations } = usePluginMessages();
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [useImages, setUseImages] = useState(true);
@@ -55,13 +104,15 @@ export function BulkCardsSection() {
         const parsed = parseJson(data);
         setInfluencers(parsed);
         const withPhotos = parsed.filter((i) => i.foto_arquivo).length;
+        // The pt-BR was inlined here while these very keys sat unused in both locales.
         setStatus(
           parsed.length > 0
-            ? `${parsed.length} influencers${withPhotos > 0 ? ` · ${withPhotos} com foto` : ''}`
-            : 'Nenhum influencer encontrado'
+            ? t('plugin.tools.bulkCards.influencers', { count: parsed.length }) +
+                (withPhotos > 0 ? t('plugin.tools.bulkCards.withPhoto', { count: withPhotos }) : '')
+            : t('plugin.tools.bulkCards.noneFound')
         );
       } catch {
-        setStatus('Erro ao ler JSON');
+        setStatus(t('plugin.tools.bulkCards.readJsonError'));
       }
     };
     reader.readAsText(file);
@@ -71,7 +122,7 @@ export function BulkCardsSection() {
   async function generate() {
     if (!influencers.length) return;
     setBusy(true);
-    setStatus(`Gerando ${influencers.length} cards…`);
+    setStatus(t('plugin.tools.bulkCards.generatingCards', { count: influencers.length }));
 
     try {
       const operations = influencers.map((inf, i) => {
@@ -92,13 +143,16 @@ export function BulkCardsSection() {
         return op;
       });
 
-      applyOperations(operations);
-
-      const waitMs = Math.max(3000, influencers.length * 250);
-      await new Promise((r) => setTimeout(r, waitMs));
-      setStatus(`${influencers.length} cards gerados`);
+      const outcome = await applyAndWait(applyOperations, operations);
+      if (outcome.status === 'done') {
+        setStatus(t('plugin.tools.bulkCards.cardsGenerated', { count: outcome.count }));
+      } else if (outcome.status === 'failed') {
+        setStatus(outcome.message || t('plugin.tools.bulkCards.generateError'));
+      } else {
+        setStatus(t('plugin.tools.bulkCards.timedOut'));
+      }
     } catch (err) {
-      setStatus('Erro ao gerar cards');
+      setStatus(t('plugin.tools.bulkCards.generateError'));
       console.error(err);
     } finally {
       setBusy(false);
@@ -117,7 +171,7 @@ export function BulkCardsSection() {
         disabled={busy}
       >
         <Upload size={12} className="mr-2" />
-        {influencers.length > 0 ? `${influencers.length} influencers` : 'Carregar JSON'}
+        {influencers.length > 0 ? t('plugin.tools.bulkCards.influencersCount', { count: influencers.length }) : t('plugin.tools.bulkCards.loadJson')}
       </Button>
 
       {hasImages && (
@@ -126,16 +180,16 @@ export function BulkCardsSection() {
           className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-[9px] uppercase tracking-wider border transition-colors ${
             useImages
               ? 'border-brand-cyan/40 text-brand-cyan bg-brand-cyan/5'
-              : 'border-white/5 text-neutral-500 hover:border-white/10'
+              : 'border-border/50 text-muted-foreground hover:border-border'
           }`}
         >
           <ImageIcon size={11} />
-          {useImages ? 'Copiar fotos do Figma: ON' : 'Copiar fotos do Figma: OFF'}
+          {useImages ? t('plugin.tools.bulkCards.copyPhotosOn') : t('plugin.tools.bulkCards.copyPhotosOff')}
         </button>
       )}
 
       {useImages && hasImages && (
-        <p className="text-[8px] text-neutral-600 px-1 leading-tight">
+        <p className="text-[8px] text-muted-foreground/70 px-1 leading-tight">
           Os frames das fotos devem estar na página com o mesmo nome do campo{' '}
           <code>foto_arquivo</code> do JSON (ex: &quot;01 - Anderson Cabral.jpg&quot;)
         </p>
@@ -153,7 +207,7 @@ export function BulkCardsSection() {
         ) : (
           <LayoutGrid size={12} className="mr-2" />
         )}
-        {busy ? status : `Gerar ${influencers.length || '…'} cards`}
+        {busy ? status : t('plugin.tools.bulkCards.generateCards', { count: influencers.length || '…' })}
       </Button>
 
       {status && !busy && <p className="text-[9px] text-muted-foreground text-center">{status}</p>}

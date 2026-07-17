@@ -275,12 +275,12 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4 sm:p-6 md:p-8 overflow-hidden"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-xl md:max-w-2xl bg-neutral-950/50 backdrop-blur-3xl border border-neutral-800 rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
+      <div className="w-full max-w-xl md:max-w-2xl bg-card backdrop-blur-3xl border border-border rounded-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] relative max-h-full overflow-hidden flex flex-col animate-scale-in">
         <LinearGradientBackground className="rounded-2xl" fullHeight />
         <Button
           variant="ghost"
           onClick={onClose}
-          className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors z-30 p-2 hover:bg-white/5 rounded-full"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-30 p-2 hover:bg-accent rounded-full"
         >
           <X size={20} />
         </Button>
@@ -289,8 +289,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
             <div className="space-y-6 sm:space-y-8">
               {/* Header */}
               <div className="flex items-center gap-2 sm:gap-3 pb-2">
-                <CreditCard size={16} className="text-neutral-500" />
-                <MicroTitle className="text-neutral-500">
+                <CreditCard size={16} className="text-muted-foreground" />
+                <MicroTitle className="text-muted-foreground">
                   {activeTab === 'carteira'
                     ? t('credits.title') || 'CRÉDITOS'
                     : t('creditsPackages.title') || 'COMPRAR'}
@@ -324,18 +324,18 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <div>
                     <div className="animate-fade-in py-4 space-y-3">
                       {/* Package card */}
-                      <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-5 sm:p-6 space-y-5">
+                      <div className="bg-muted/40 border border-border rounded-xl p-5 sm:p-6 space-y-5">
                         {/* Selector row */}
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
                               {t('creditsPackages.credits') || 'Créditos'}
                             </p>
                             <div className="flex items-baseline gap-2">
-                              <span className="text-4xl sm:text-5xl font-black font-mono text-white leading-none tabular-nums">
+                              <span className="text-4xl sm:text-5xl font-black font-mono text-foreground leading-none tabular-nums">
                                 {animatedCredits}
                               </span>
-                              <span className="text-xs font-mono text-neutral-500 uppercase">
+                              <span className="text-xs font-mono text-muted-foreground uppercase">
                                 créditos
                               </span>
                             </div>
@@ -349,7 +349,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               }}
                               disabled={selectedIndex === 0}
                               aria-label="Pacote anterior"
-                              className="h-8 w-8 p-0 border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800 hover:border-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300"
+                              className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-ring disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
                             >
                               <Minus size={14} />
                             </Button>
@@ -361,7 +361,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               }}
                               disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
                               aria-label="Próximo pacote"
-                              className="h-8 w-8 p-0 border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800 hover:border-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-300"
+                              className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-ring disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
                             >
                               <Plus size={14} />
                             </Button>
@@ -381,7 +381,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               className={`h-1.5 rounded-full transition-all duration-300 ${
                                 index === selectedIndex
                                   ? 'bg-brand-cyan w-6'
-                                  : 'bg-neutral-700 hover:bg-neutral-500 w-1.5'
+                                  : 'bg-muted hover:bg-muted-foreground w-1.5'
                               }`}
                             />
                           ))}
@@ -389,13 +389,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                         {/* Price row */}
                         {currencyInfo && price > 0 && (
-                          <div className="pt-4 border-t border-neutral-800/40 flex items-end justify-between">
+                          <div className="pt-4 border-t border-border flex items-end justify-between">
                             <div>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
                                 {t('pricing.oneTimePayment') || 'Pagamento único'}
                               </p>
                               <div className="flex items-baseline gap-1.5">
-                                <span className="text-3xl sm:text-4xl font-black font-mono text-white tabular-nums">
+                                <span className="text-3xl sm:text-4xl font-black font-mono text-foreground tabular-nums">
                                   {formatPrice(
                                     animatedPrice,
                                     currencyInfo.currency,
@@ -404,7 +404,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest text-right leading-relaxed">
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest text-right leading-relaxed">
                               $0.067 Google
                               <br />
                               $0.013 Infra
@@ -414,22 +414,22 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       </div>
 
                       {/* Model cost reference — expandable */}
-                      <div className="border border-neutral-800/40 rounded-xl overflow-hidden">
+                      <div className="border border-border rounded-xl overflow-hidden">
                         <button
                           onClick={() => setShowPackageCosts(!showPackageCosts)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-neutral-300 hover:text-white hover:bg-neutral-900/40 transition-colors"
+                          className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                           aria-expanded={showPackageCosts}
                         >
                           <span className="flex items-center gap-2">
-                            <Pickaxe size={11} className="text-neutral-500" />
+                            <Pickaxe size={11} className="text-muted-foreground" />
                             Quanto rende por modelo
                           </span>
                           {showPackageCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
 
                         {showPackageCosts && (
-                          <div className="px-4 pb-4 pt-1 bg-neutral-950/30 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                            <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-neutral-300 border-b border-neutral-800/60 pb-2 mb-2">
+                          <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
                               <span>Modelo / Resolução</span>
                               <span>Imagens</span>
                             </div>
@@ -438,14 +438,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 key={idx}
                                 className="flex justify-between text-[10px] font-mono items-center"
                               >
-                                <span className="text-neutral-300">{item.label}</span>
-                                <span className="text-neutral-200 font-bold tabular-nums">
+                                <span className="text-muted-foreground">{item.label}</span>
+                                <span className="text-foreground font-bold tabular-nums">
                                   {Math.floor(currentPackage.credits / item.cost)}
                                 </span>
                               </div>
                             ))}
-                            <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-neutral-800/50 mt-1">
-                              <span className="text-neutral-300">Veo 3 (Vídeo)</span>
+                            <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-border mt-1">
+                              <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
                               <span className="text-brand-cyan font-bold tabular-nums">
                                 {Math.floor(currentPackage.credits / 15)} vídeos
                               </span>
@@ -484,13 +484,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             setActiveTab('assinatura');
                           }}
-                          className="w-full text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-widest transition-colors hover:bg-neutral-800/30 rounded-md py-2"
+                          className="w-full text-muted-foreground hover:text-foreground text-[10px] font-mono uppercase tracking-widest transition-colors hover:bg-accent rounded-md py-2"
                         >
                           {t('pricing.tabs.subscriptions') || 'Ver Assinatura'} →
                         </button>
                       </div>
 
-                      <p className="text-[10px] font-mono text-neutral-600 text-center pt-1">
+                      <p className="text-[10px] font-mono text-muted-foreground text-center pt-1">
                         {t('creditsPackages.note') ||
                           'Créditos não expiram e podem ser usados a qualquer momento'}
                       </p>
@@ -504,7 +504,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     {subscriptionPlans.length > 0 ? (
                       <>
                         {/* Billing toggle */}
-                        <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-md border border-neutral-800/50">
+                        <div className="grid grid-cols-2 bg-muted p-1 rounded-md border border-border">
                           {(['monthly', 'yearly'] as const).map((cycle) => (
                             <button
                               key={cycle}
@@ -514,8 +514,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               }}
                               className={`py-1.5 text-[11px] font-mono uppercase tracking-wide rounded transition-all flex items-center justify-center gap-1.5 ${
                                 billingCycle === cycle
-                                  ? 'bg-neutral-800 text-white shadow-sm'
-                                  : 'text-neutral-500 hover:text-neutral-300'
+                                  ? 'bg-secondary text-secondary-foreground shadow-sm'
+                                  : 'text-muted-foreground hover:text-foreground'
                               }`}
                             >
                               {cycle === 'monthly'
@@ -526,7 +526,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   className={`text-[10px] px-1 py-0.5 rounded font-bold ${
                                     billingCycle === 'yearly'
                                       ? 'bg-brand-cyan/20 text-brand-cyan'
-                                      : 'bg-neutral-800 text-neutral-500'
+                                      : 'bg-muted text-muted-foreground'
                                   }`}
                                 >
                                   -16%
@@ -552,8 +552,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             return (
                               <div
                                 key={plan.id}
-                                className={`relative bg-neutral-900/40 border rounded-xl p-4 space-y-4 flex flex-col ${
-                                  isPopular ? 'border-brand-cyan/40' : 'border-neutral-800/50'
+                                className={`relative bg-muted/40 border rounded-xl p-4 space-y-4 flex flex-col ${
+                                  isPopular ? 'border-brand-cyan/40' : 'border-border'
                                 }`}
                               >
                                 {isPopular && (
@@ -566,16 +566,16 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                                 {/* Name */}
                                 <div className="pt-1">
-                                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-0.5">
+                                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
                                     Plano
                                   </p>
                                   <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-base font-black text-white leading-tight">
+                                    <span className="text-base font-black text-foreground leading-tight">
                                       {plan.name}
                                     </span>
                                     {plan.metadata?.storageMB &&
                                       parseInt(plan.metadata.storageMB) >= 5120 && (
-                                        <Badge className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[10px] px-1">
+                                        <Badge className="bg-muted text-muted-foreground border border-border text-[10px] px-1">
                                           BYOK
                                         </Badge>
                                       )}
@@ -583,20 +583,20 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </div>
 
                                 {/* Price */}
-                                <div className="border-t border-neutral-800/40 pt-3">
-                                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                                <div className="border-t border-border pt-3">
+                                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
                                     {billingCycle === 'yearly'
                                       ? t('pricing.perYear') || '/ano'
                                       : t('pricing.perMonth') || '/mês'}
                                   </p>
-                                  <span className="text-2xl font-black font-mono text-white tabular-nums">
+                                  <span className="text-2xl font-black font-mono text-foreground tabular-nums">
                                     {formatPrice(
                                       planPrice,
                                       currencyInfo?.currency || 'BRL',
                                       currencyInfo?.locale || 'pt-BR'
                                     )}
                                   </span>
-                                  <div className="flex items-center gap-1 text-[10px] font-mono text-neutral-500 uppercase mt-1">
+                                  <div className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground uppercase mt-1">
                                     <Pickaxe size={9} />
                                     <span>
                                       {plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}
@@ -609,11 +609,11 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   {benefits.map((benefit: string, idx: number) => (
                                     <div
                                       key={idx}
-                                      className="flex items-start gap-1.5 text-[10px] font-mono text-neutral-300"
+                                      className="flex items-start gap-1.5 text-[10px] font-mono text-muted-foreground"
                                     >
                                       <CheckCircle2
                                         size={11}
-                                        className="text-neutral-500 flex-shrink-0 mt-0.5"
+                                        className="text-muted-foreground flex-shrink-0 mt-0.5"
                                       />
                                       <span>{benefit.trim()}</span>
                                     </div>
@@ -640,7 +640,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   className={`w-full text-xs font-mono font-semibold rounded-md transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 ${
                                     isPopular
                                       ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg'
-                                      : 'bg-neutral-800 hover:bg-neutral-700 text-white'
+                                      : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
                                   }`}
                                 >
                                   <CreditCard size={12} />
@@ -652,7 +652,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         </div>
                       </>
                     ) : (
-                      <div className="text-center py-12 text-neutral-600 font-mono text-sm">
+                      <div className="text-center py-12 text-muted-foreground font-mono text-sm">
                         {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
                       </div>
                     )}
@@ -684,24 +684,24 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     return (
                       <div className="animate-slide-in-left py-4 sm:py-6 space-y-3">
                         {/* Header: balance + tier */}
-                        <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-5 sm:p-6 space-y-5">
+                        <div className="bg-muted/40 border border-border rounded-xl p-5 sm:p-6 space-y-5">
                           {/* Balance row */}
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-300 mb-1">
+                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
                                 {t('credits.available') || 'Disponíveis'}
                               </p>
                               <div className="flex items-baseline gap-2">
-                                <span className="text-4xl sm:text-5xl font-black font-mono text-white leading-none">
+                                <span className="text-4xl sm:text-5xl font-black font-mono text-foreground leading-none">
                                   {totalCreditsAvailable}
                                 </span>
-                                <span className="text-xs font-mono text-neutral-500 uppercase">
+                                <span className="text-xs font-mono text-muted-foreground uppercase">
                                   créditos
                                 </span>
                               </div>
                             </div>
                             {subscriptionTier && (
-                              <Badge className="bg-neutral-800 text-neutral-300 border border-neutral-700 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1">
+                              <Badge className="bg-muted text-muted-foreground border border-border text-[10px] font-mono uppercase tracking-widest px-2.5 py-1">
                                 {subscriptionTier}
                               </Badge>
                             )}
@@ -710,15 +710,15 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Monthly usage bar */}
                           {monthlyCredits > 0 && (
                             <div className="space-y-1.5">
-                              <div className="flex justify-between text-[10px] font-mono uppercase tracking-widest text-neutral-300">
+                              <div className="flex justify-between text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                                 <span>Uso mensal</span>
                                 <span>
                                   {creditsUsed} / {monthlyCredits}
                                 </span>
                               </div>
-                              <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-neutral-500 rounded-full transition-all duration-500"
+                                  className="h-full bg-muted-foreground rounded-full transition-all duration-500"
                                   style={{ width: `${usedPercentage}%` }}
                                 />
                               </div>
@@ -727,7 +727,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                           {/* Reset date */}
                           {creditsResetDate && (
-                            <p className="text-[10px] font-mono text-neutral-300 uppercase tracking-widest">
+                            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
                               {hasActiveSubscription
                                 ? t('credits.renews', { date: formatDate(creditsResetDate) })
                                 : t('credits.resets', { date: formatDate(creditsResetDate) })}
@@ -736,22 +736,22 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         </div>
 
                         {/* Model cost reference — expandable */}
-                        <div className="border border-neutral-800/40 rounded-xl overflow-hidden">
+                        <div className="border border-border rounded-xl overflow-hidden">
                           <button
                             onClick={() => setShowStatusCosts(!showStatusCosts)}
-                            className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-neutral-300 hover:text-white hover:bg-neutral-900/40 transition-colors"
+                            className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                             aria-expanded={showStatusCosts}
                           >
                             <span className="flex items-center gap-2">
-                              <Pickaxe size={11} className="text-neutral-500" />
+                              <Pickaxe size={11} className="text-muted-foreground" />
                               Quanto rende por modelo
                             </span>
                             {showStatusCosts ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                           </button>
 
                           {showStatusCosts && (
-                            <div className="px-4 pb-4 pt-1 bg-neutral-950/30 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                              <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-neutral-300 border-b border-neutral-800/60 pb-2 mb-2">
+                            <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                              <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
                                 <span>Modelo / Resolução</span>
                                 <span>Imagens</span>
                               </div>
@@ -760,15 +760,15 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   key={idx}
                                   className="flex justify-between text-[10px] font-mono items-center"
                                 >
-                                  <span className="text-neutral-300">{item.label}</span>
-                                  <span className="text-neutral-200 font-bold tabular-nums">
+                                  <span className="text-muted-foreground">{item.label}</span>
+                                  <span className="text-foreground font-bold tabular-nums">
                                     {Math.floor(totalCreditsAvailable / item.cost)}
                                   </span>
                                 </div>
                               ))}
-                              <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-neutral-800/50 mt-1">
-                                <span className="text-neutral-300">Veo 3 (Vídeo)</span>
-                                <span className="text-neutral-200 font-bold tabular-nums">
+                              <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-border mt-1">
+                                <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
+                                <span className="text-foreground font-bold tabular-nums">
                                   {Math.floor(totalCreditsAvailable / 15)} vídeos
                                 </span>
                               </div>
@@ -800,7 +800,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }, 300);
                             }}
-                            className="w-full border-neutral-700/50 hover:border-neutral-600/50 bg-neutral-900/30 hover:bg-neutral-800/50 text-neutral-300 font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2"
+                            className="w-full border-border hover:border-ring bg-card hover:bg-muted text-muted-foreground font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2"
                           >
                             <FileText size={14} />
                             {t('usageHistory.title') || 'Histórico de Uso'}
@@ -813,7 +813,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 {/* Carteira — no subscription */}
                 {activeTab === 'carteira' && !subscriptionStatus && (
                   <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-                    <p className="text-neutral-400 font-mono text-sm">
+                    <p className="text-muted-foreground font-mono text-sm">
                       {t('credits.noSubscription') ||
                         'Faça login para ver seus créditos disponíveis'}
                     </p>
@@ -822,7 +822,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         playClickSound();
                         setActiveTab('creditos');
                       }}
-                      className="text-[11px] text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-widest transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
+                      className="text-[11px] text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-widest transition-colors px-3 py-2 hover:bg-accent rounded"
                     >
                       {t('creditsPackages.buy') || 'Comprar'} →
                     </button>
@@ -831,12 +831,12 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               </div>
 
               {/* Modal Community Footer */}
-              <div className="pt-8 mt-4 border-t border-neutral-800/20 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-50 hover:opacity-100 transition-opacity">
+              <div className="pt-8 mt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 opacity-50 hover:opacity-100 transition-opacity">
                 <div className="flex items-center gap-4">
                   <a
                     href="https://github.com/visantlabs"
                     target="_blank"
-                    className="flex items-center gap-2 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan transition-colors"
+                    className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
                   >
                     <Pickaxe size={12} />
                     <span>OSS CORE</span>
@@ -844,13 +844,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <a
                     href="https://discord.gg/visant"
                     target="_blank"
-                    className="flex items-center gap-2 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan transition-colors"
+                    className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
                   >
                     <Info size={12} />
                     <span>LABS COMMUNITY</span>
                   </a>
                 </div>
-                <div className="text-[10px] font-mono text-neutral-600">
+                <div className="text-[10px] font-mono text-muted-foreground">
                   © 2026 VISANT LAB® — BUILDING IN PUBLIC
                 </div>
               </div>

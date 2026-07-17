@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { useClient } from '../../lib/ClientProvider';
@@ -7,6 +8,7 @@ import { OpButton } from '../common/OpButton';
 import { Download, Copy, LayoutGrid, Smartphone, FileText, Braces, Table } from 'lucide-react';
 
 export function ExportSection() {
+  const { t } = useTranslation();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
   const client = useClient();
@@ -35,28 +37,28 @@ export function ExportSection() {
           runner={runner}
           message={{ type: 'ILLUSTRATOR_EXPORT' }}
           responseTypes={['ILLUSTRATOR_CODE_READY', 'OPERATIONS_DONE']}
-          busyLabel="Exporting…"
+          busyLabel={t('plugin.tools.export.exporting')}
           variant="brand"
           size="sm"
-          title="Export selected layers as production-ready assets"
+          title={t('plugin.tools.export.assetsTitle')}
           className="h-8 text-[10px]"
         >
           <Download size={12} className="mr-1.5" />
-          Assets
+          {t('plugin.tools.export.assets')}
         </OpButton>
         <OpButton
           opId="copyJSX"
           runner={runner}
           message={{ type: 'COPY_ILLUSTRATOR_CODE' }}
           responseTypes={['ILLUSTRATOR_CODE_READY']}
-          busyLabel="Copying…"
+          busyLabel={t('plugin.tools.export.copying')}
           variant="outline"
           size="sm"
-          title="Copy selection as JSX code to clipboard"
+          title={t('plugin.tools.export.copyJsxTitle')}
           className="h-8 text-[10px]"
         >
           <Copy size={12} className="mr-1.5" />
-          Copy JSX
+          {t('plugin.tools.export.copyJsx')}
         </OpButton>
       </div>
 
@@ -69,11 +71,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title="Split selection into numbered slices for carousel posts"
+          title={t('plugin.tools.export.slicesTitle')}
           className="h-8 text-[10px]"
         >
-          <LayoutGrid size={11} className="mr-1.5 text-neutral-500" />
-          Slices
+          <LayoutGrid size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.export.slices')}
         </OpButton>
         <OpButton
           opId="responsive"
@@ -83,11 +85,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title="Duplicate selection into multiple screen sizes"
+          title={t('plugin.tools.export.responsiveTitle')}
           className="h-8 text-[10px]"
         >
-          <Smartphone size={11} className="mr-1.5 text-neutral-500" />
-          Responsive
+          <Smartphone size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.export.responsive')}
         </OpButton>
         <OpButton
           opId="exportTexts"
@@ -96,11 +98,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title="Extract all text layers from the page as Markdown"
+          title={t('plugin.tools.export.textsTitle')}
           className="h-8 text-[10px]"
         >
-          <FileText size={11} className="mr-1.5 text-neutral-500" />
-          Texts
+          <FileText size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.export.texts')}
         </OpButton>
       </div>
 
@@ -113,11 +115,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title={`Export frame data as JSON (${scanPage ? 'whole page' : 'selection'})`}
+          title={t('plugin.tools.export.dataJsonTitle', { scope: scanPage ? t('plugin.tools.export.scopeWholePage') : t('plugin.tools.export.scopeSelection') })}
           className="h-8 text-[10px]"
         >
-          <Braces size={11} className="mr-1.5 text-neutral-500" />
-          Data JSON
+          <Braces size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.export.dataJson')}
         </OpButton>
         <OpButton
           opId="exportCsv"
@@ -126,11 +128,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title={`Export frame data as CSV (${scanPage ? 'whole page' : 'selection'})`}
+          title={t('plugin.tools.export.dataCsvTitle', { scope: scanPage ? t('plugin.tools.export.scopeWholePage') : t('plugin.tools.export.scopeSelection') })}
           className="h-8 text-[10px]"
         >
-          <Table size={11} className="mr-1.5 text-neutral-500" />
-          Data CSV
+          <Table size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.export.dataCsv')}
         </OpButton>
       </div>
     </div>

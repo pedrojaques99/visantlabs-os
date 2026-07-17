@@ -317,7 +317,10 @@ export async function renderBrandBookPdf(
     });
 
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30_000 });
+    // puppeteer-core v24 dropped 'networkidle0'/'networkidle2' from setContent's
+    // waitUntil (they remain valid for goto). 'load' is the sanctioned equivalent
+    // here: it fires once images and stylesheets in the static HTML have loaded.
+    await page.setContent(html, { waitUntil: 'load', timeout: 30_000 });
 
     const pdfBuffer = await page.pdf({
       format: 'A4',

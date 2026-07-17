@@ -308,7 +308,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="px-3 py-2 flex items-center gap-2 text-xs text-neutral-500 font-mono">
+      <div className="px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground font-mono">
         <GlitchLoader size={12} color="brand-cyan" />
       </div>
     );
@@ -338,7 +338,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <Button
               variant="ghost"
               onClick={onCreditsClick}
-              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-neutral-900/40 border hover:bg-[#252525]/60 hover:border-neutral-700 transition-all cursor-pointer shadow-sm ${
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring transition-all cursor-pointer shadow-sm ${
                 isLowCredits
                   ? 'text-warning border-warning/30'
                   : 'text-brand-cyan border-brand-cyan/20'
@@ -363,7 +363,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-neutral-400 font-mono bg-neutral-900/40 border border-neutral-800 hover:bg-[#252525]/60 hover:border-neutral-600/50 hover:text-neutral-300 transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-muted-foreground font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring hover:text-foreground transition-all cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
             {user.picture ? (
@@ -399,18 +399,18 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
               <div
                 className={`absolute right-0 ${
                   menuPlacement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-                } bg-neutral-900 border border-neutral-800/50 rounded-md shadow-lg z-50 min-w-[150px] py-1 dropdown-menu`}
+                } bg-popover border border-border rounded-md shadow-lg z-50 min-w-[150px] py-1 dropdown-menu`}
               >
                 <Button
                   variant="ghost"
                   onClick={handleProfileClick}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center gap-2 justify-between"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-2 justify-between"
                 >
                   <span className="flex items-center gap-2">
                     <UserIcon size={14} />
                     {t('common.profile')}
                   </span>
-                  <span className="text-[10px] text-neutral-600 uppercase tracking-wider">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     {tierLabel}
                   </span>
                 </Button>
@@ -421,7 +421,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/community');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <Globe size={14} />
                   {t('common.community') || 'Community'}
@@ -433,7 +433,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/docs');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <BookOpen size={14} />
                   Docs
@@ -445,14 +445,14 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     window.history.pushState({}, '', '/about');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <Info size={14} />
                   {t('about.title') || 'About'}
                 </Button>
                 {user.isAdmin && (
                   <>
-                    <div className="border-t border-neutral-800/50 my-1" />
+                    <div className="border-t border-border my-1" />
                     <Button
                       variant="ghost"
                       onClick={() => {
@@ -468,11 +468,11 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   </>
                 )}
 
-                <div className="border-t border-neutral-800/50 my-1" />
+                <div className="border-t border-border my-1" />
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
-                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 flex items-center justify-start gap-2"
+                  className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent flex items-center justify-start gap-2"
                 >
                   <LogOut size={14} />
                   {t('auth.logout')}
@@ -492,7 +492,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         <Button
           variant="ghost"
           onClick={() => setShowEmailModal(true)}
-          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-neutral-800/50 text-neutral-400 rounded-md border border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300 text-[10px] md:text-xs font-mono transition-colors"
+          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-muted-foreground rounded-md border border-border hover:border-ring hover:text-foreground text-[10px] md:text-xs font-mono transition-colors"
         >
           <Mail size={12} className="md:w-[14px] md:h-[14px]" />
           <span className="hidden sm:inline">{t('auth.signInWithEmail')}</span>
@@ -501,10 +501,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
       </div>
 
       {showEmailModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-popover border border-border rounded-md p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-neutral-200">
+              <h2 className="text-lg font-semibold text-foreground">
                 {isSignUp ? t('auth.signUp') : t('auth.signIn')}
               </h2>
               <Button
@@ -520,7 +520,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     captchaRef.current.resetCaptcha();
                   }
                 }}
-                className="text-neutral-500 hover:text-neutral-300 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X size={20} />
               </Button>
@@ -531,21 +531,21 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <form onSubmit={handleEmailAuth} className="space-y-4">
               {isSignUp && (
                 <div>
-                  <label className="block text-xs font-mono text-neutral-400 mb-1">
+                  <label className="block text-xs font-mono text-muted-foreground mb-1">
                     {t('auth.name')}
                   </label>
                   <Input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                    className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
                     placeholder={t('auth.namePlaceholder')}
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
+                <label className="block text-xs font-mono text-muted-foreground mb-1">
                   {t('auth.email')}
                 </label>
                 <Input
@@ -553,13 +553,13 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                  className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
                   placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
+                <label className="block text-xs font-mono text-muted-foreground mb-1">
                   {t('auth.password')}
                 </label>
                 <Input
@@ -568,11 +568,11 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                  className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
                   placeholder={t('auth.passwordPlaceholder')}
                 />
                 {isSignUp && (
-                  <p className="text-xs text-neutral-500 mt-1 font-mono">
+                  <p className="text-xs text-muted-foreground mt-1 font-mono">
                     {t('auth.minimumCharacters')}
                   </p>
                 )}
@@ -622,7 +622,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   !password ||
                   (isSignUp && captchaEnabled && !captchaToken)
                 }
-                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >
                 {isAuthLoading ? (
                   <>
@@ -637,14 +637,14 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
               </Button>
             </form>
 
-            <div className="mt-4 pt-4 border-t border-neutral-800/50">
+            <div className="mt-4 pt-4 border-t border-border">
               <Button
                 variant="ghost"
                 onClick={() => {
                   setIsSignUp(!isSignUp);
                   setAuthError(null);
                 }}
-                className="w-full text-xs text-neutral-500 hover:text-neutral-400 font-mono transition-colors"
+                className="w-full text-xs text-muted-foreground hover:text-foreground font-mono transition-colors"
               >
                 {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
               </Button>

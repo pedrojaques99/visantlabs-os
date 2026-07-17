@@ -822,41 +822,35 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
             });
 
             if (matches?.length) {
-              const pineconeIds = matches
-                .map((m: any) => m.metadata?.title || m.id)
-                .filter(Boolean);
-              const mongoRefs = await db
-                .collection('community_presets')
-                .find({ category: 'reference', isAdminCurated: true })
-                .project({
-                  _id: 0,
-                  id: 1,
-                  name: 1,
-                  description: 1,
-                  referenceImageUrl: 1,
-                  dimensions: 1,
-                  prompt: 1,
-                  tags: 1,
-                })
-                .toArray();
+              const { hydrateVectorMatches, searchReferences, AGENT_PROJECTION } =
+                await import('../lib/references/engine.js');
+              const projection = AGENT_PROJECTION as Record<string, 0 | 1>;
 
-              const refMap = new Map(mongoRefs.map((r: any) => [r.id, r]));
-              const scored = matches
-                .map((m: any) => {
-                  const ref = refMap.get(m.id) || refMap.get(m.metadata?.title);
-                  if (!ref) return null;
-                  return { ...ref, relevanceScore: Math.round((m.score ?? 0) * 100) / 100 };
-                })
-                .filter(Boolean);
+              // Hydrate only the ids Pinecone returned — this used to pull the
+              // ENTIRE curated library into memory just to build a lookup map.
+              const hits = await hydrateVectorMatches(db, matches, {
+                visibility: 'curated',
+                projection,
+              });
+              const scored = hits.map(({ score, ...ref }: any) => ({
+                ...ref,
+                relevanceScore: Math.round((score ?? 0) * 100) / 100,
+              }));
 
               // Fill remaining slots with unscored refs (for variety)
               if (scored.length < maxLimit) {
                 const scoredIds = new Set(scored.map((s: any) => s.id));
-                const filler = mongoRefs
-                  .filter((r: any) => !scoredIds.has(r.id))
-                  .slice(0, maxLimit - scored.length)
-                  .map((r: any) => ({ ...r, relevanceScore: 0 }));
-                scored.push(...filler);
+                const { references: filler } = await searchReferences(db, {
+                  visibility: 'curated',
+                  limit: maxLimit,
+                  projection,
+                });
+                scored.push(
+                  ...filler
+                    .filter((r: any) => !scoredIds.has(r.id))
+                    .slice(0, maxLimit - scored.length)
+                    .map((r: any) => ({ ...r, relevanceScore: 0 }))
+                );
               }
 
               return res.json(scored);
@@ -871,34 +865,16 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
       }
     }
 
-    // Fallback: MongoDB text search + dimension match + recency
-    const filter: any = { category: 'reference', isAdminCurated: true };
-    if (query && typeof query === 'string') {
-      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      filter.$or = [
-        { name: { $regex: escaped, $options: 'i' } },
-        { description: { $regex: escaped, $options: 'i' } },
-      ];
-    }
+    // Fallback: MongoDB text search + recency
+    const { searchReferences, AGENT_PROJECTION } = await import('../lib/references/engine.js');
+    const { references } = await searchReferences(db, {
+      visibility: 'curated',
+      search: typeof query === 'string' ? query : undefined,
+      limit: maxLimit,
+      projection: AGENT_PROJECTION as Record<string, 0 | 1>,
+    });
 
-    const refs = await db
-      .collection('community_presets')
-      .find(filter)
-      .sort({ createdAt: -1 })
-      .limit(maxLimit)
-      .project({
-        _id: 0,
-        id: 1,
-        name: 1,
-        description: 1,
-        referenceImageUrl: 1,
-        dimensions: 1,
-        prompt: 1,
-        tags: 1,
-      })
-      .toArray();
-
-    return res.json(refs.map((r: any) => ({ ...r, relevanceScore: 0 })));
+    return res.json(references.map((r: any) => ({ ...r, relevanceScore: 0 })));
   } catch (error: any) {
     console.error('Failed to search references:', error);
     return res.status(500).json({ error: 'Failed to search references' });

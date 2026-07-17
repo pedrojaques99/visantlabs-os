@@ -24,6 +24,7 @@ import {
   Pin,
   HelpCircle,
   ChevronDown,
+  Save,
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -882,16 +883,33 @@ export const ImageLabPage: React.FC = () => {
     }
   }, [mode, handleAiEnhance, isAiProcessing, setExportModalOpen, handleCopyAsPng]);
 
+  const [savePresetOpen, setSavePresetOpen] = useState(false);
   const controlsPanel = useMemo(
     () => (
       <div className="h-full flex flex-col">
         <div className="flex-1 overflow-hidden">{modeControls}</div>
-        <div className="shrink-0 border-t border-white/10 px-4 py-3">
-          <ImageLabSavePreset />
+        {/* Save preset — collapsed behind a button at the bottom, by the export actions */}
+        <div className="shrink-0 border-t border-white/10">
+          {savePresetOpen && (
+            <div className="px-4 pt-3 animate-fade-in">
+              <ImageLabSavePreset />
+            </div>
+          )}
+          <button
+            onClick={() => setSavePresetOpen((v) => !v)}
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors"
+          >
+            <Save size={12} />
+            {savePresetOpen ? 'Hide preset' : 'Save preset'}
+            <ChevronDown
+              size={12}
+              className={cn('transition-transform', savePresetOpen && 'rotate-180')}
+            />
+          </button>
         </div>
       </div>
     ),
-    [modeControls]
+    [modeControls, savePresetOpen]
   );
 
   const MODE_ITEMS: { id: ImageLabMode; icon: React.ReactNode; label: string }[] = useMemo(
@@ -935,9 +953,11 @@ export const ImageLabPage: React.FC = () => {
       >
         {/* Proximity sensor for FX bar auto-hide (z-0: works when magic hand inactive) */}
         <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
-        {/* Top-strip proximity trigger — z-20 above magic hand overlay (z-10) */}
+        {/* Top-strip proximity trigger — z-20 above magic hand overlay (z-10).
+            Centered + bounded so it never overlaps the right control panel, whose
+            section-tab rail has clickable icons in the top-right corner. */}
         <div
-          className="absolute top-0 left-0 right-0 h-20 z-20"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[65%] max-w-3xl h-20 z-20"
           onPointerMove={handleCanvasPointerMove}
         />
 

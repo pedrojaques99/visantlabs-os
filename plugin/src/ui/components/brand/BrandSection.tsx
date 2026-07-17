@@ -38,32 +38,38 @@ export function BrandSection({
   return (
     <div
       className={cn(
-        'bg-neutral-900/40 border border-white/5 rounded-xl flex flex-col relative z-20 backdrop-blur-sm overflow-hidden transition-all duration-300',
+        'bg-muted/40 border border-border/50 rounded-xl flex flex-col relative z-20 backdrop-blur-sm overflow-hidden transition-all duration-300',
         className
       )}
     >
       <div
         className={cn(
-          'px-4 py-3 flex items-center justify-between border-b border-white/5 bg-white/[0.02] group/section',
-          collapsible && 'cursor-pointer hover:bg-white/[0.05]'
+          'px-4 py-3 flex items-center justify-between border-b border-border/50 bg-muted/30 group/section',
+          collapsible && 'cursor-pointer hover:bg-foreground/[0.05]'
         )}
         onClick={toggle}
         title={description}
       >
-        <div className="flex items-center gap-2">
-          {Icon && <Icon size={14} className="text-neutral-500" />}
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400">
+        {/* min-w-0 lets the row shrink so the description can clip instead of wrapping —
+            without it, flex children refuse to go below their content width. */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {Icon && <Icon size={14} className="text-muted-foreground shrink-0" />}
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground shrink-0">
             {title}
           </h3>
           {description && (
-            <span className="text-[9px] text-neutral-600 font-normal normal-case tracking-normal hidden group-hover/section:inline">
-              — {description}
+            /* Always present and clipped to one line. It used to be hidden until hover and
+               then injected into this row, so hovering re-wrapped the header and grew the
+               card — layout that moves under the cursor. The full text stays in the
+               native tooltip on the header. */
+            <span className="text-[9px] text-muted-foreground/50 font-normal normal-case tracking-normal truncate">
+              {description}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 pl-2">
           {badge && (
-            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.05] text-neutral-500 border border-white/[0.08]">
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-foreground/[0.05] text-muted-foreground border border-foreground/[0.08]">
               {badge}
             </span>
           )}
@@ -71,7 +77,7 @@ export function BrandSection({
             <ChevronDown
               size={14}
               className={cn(
-                'text-neutral-600 transition-transform duration-300',
+                'text-muted-foreground/70 transition-transform duration-300',
                 isOpen && 'rotate-180'
               )}
             />

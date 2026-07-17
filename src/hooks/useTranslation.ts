@@ -5,8 +5,14 @@ export const useTranslation = () => {
   const [locale, setLocaleState] = useState<Locale>(getCurrentLocale());
 
   useEffect(() => {
-    // Sync locale state with stored locale on mount
-    setLocaleState(getCurrentLocale());
+    // Sync locale state with stored locale on mount AND whenever any component
+    // changes the locale (setLocale dispatches a `localechange` event). Without
+    // this subscription only the component that called setLocale re-renders and
+    // the rest of the app stays on the previous language.
+    const sync = () => setLocaleState(getCurrentLocale());
+    sync();
+    window.addEventListener('localechange', sync);
+    return () => window.removeEventListener('localechange', sync);
   }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {

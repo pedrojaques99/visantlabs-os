@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
 
 function BrandLintReport({ report }: { report: any }) {
+  const { t } = useTranslation();
   const totals = report?.totals || {};
   const issues: any[] = Array.isArray(report?.issues) ? report.issues : [];
   const score = typeof report?.score === 'number' ? report.score : null;
@@ -18,27 +20,27 @@ function BrandLintReport({ report }: { report: any }) {
           : 'text-red-500';
 
   return (
-    <div className="border border-white/5 rounded-lg p-3 space-y-2 mt-3 bg-white/[0.02]">
+    <div className="border border-border/50 rounded-lg p-3 space-y-2 mt-3 bg-muted/30">
       <div className="flex items-center justify-between text-[10px]">
-        <span className="font-bold uppercase tracking-wider text-neutral-500">Lint Report</span>
-        {score !== null && <span className={`font-bold ${scoreColor}`}>SCORE {score}%</span>}
+        <span className="font-bold uppercase tracking-wider text-muted-foreground">{t('plugin.tools.linting.report')}</span>
+        {score !== null && <span className={`font-bold ${scoreColor}`}>{t('plugin.tools.linting.score', { score })}</span>}
       </div>
-      <div className="flex gap-3 text-[9px] font-mono text-neutral-500">
-        <span>{totals.nodesScanned ?? 0} NODES</span>
-        <span className="text-red-500/80">{totals.errors ?? 0} ERRORS</span>
-        <span className="text-yellow-500/80">{totals.warnings ?? 0} WARNINGS</span>
+      <div className="flex gap-3 text-[9px] font-mono text-muted-foreground">
+        <span>{t('plugin.tools.linting.nodes', { count: totals.nodesScanned ?? 0 })}</span>
+        <span className="text-red-500/80">{t('plugin.tools.linting.errors', { count: totals.errors ?? 0 })}</span>
+        <span className="text-yellow-500/80">{t('plugin.tools.linting.warnings', { count: totals.warnings ?? 0 })}</span>
       </div>
       {issues.length > 0 && (
         <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
           {issues.slice(0, 15).map((iss, i) => (
             <div
               key={`${iss.nodeId}-${i}`}
-              className="text-[9px] border-l border-white/10 pl-2 py-1 bg-white/[0.01]"
+              className="text-[9px] border-l border-border pl-2 py-1 bg-foreground/[0.01]"
             >
-              <div className="font-mono truncate text-neutral-400">
+              <div className="font-mono truncate text-muted-foreground">
                 {iss.nodeName || iss.nodeId}
               </div>
-              <div className="text-neutral-500">{iss.message}</div>
+              <div className="text-muted-foreground">{iss.message}</div>
             </div>
           ))}
         </div>
@@ -48,6 +50,7 @@ function BrandLintReport({ report }: { report: any }) {
 }
 
 export function LintingSection() {
+  const { t } = useTranslation();
   const store = usePluginStore();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
@@ -60,28 +63,28 @@ export function LintingSection() {
           runner={runner}
           message={{ type: 'BRAND_LINT', brand: store.brandGuideline }}
           responseTypes={['BRAND_LINT_REPORT']}
-          busyLabel="Linting…"
+          busyLabel={t('plugin.tools.linting.linting')}
           variant="outline"
           size="sm"
-          title="Check selection for brand guideline violations"
+          title={t('plugin.tools.linting.scanBrandTitle')}
           className="h-8 text-[10px]"
         >
-          <ShieldAlert size={12} className="mr-2 text-neutral-500" />
-          Scan Brand
+          <ShieldAlert size={12} className="mr-2 text-muted-foreground" />
+          {t('plugin.tools.linting.scanBrand')}
         </OpButton>
         <OpButton
           opId="lintFix"
           runner={runner}
           message={{ type: 'BRAND_LINT_FIX', brand: store.brandGuideline }}
           responseTypes={['BRAND_LINT_REPORT', 'OPERATIONS_DONE']}
-          busyLabel="Fixing…"
+          busyLabel={t('plugin.tools.linting.fixing')}
           variant="outline"
           size="sm"
-          title="Auto-fix brand violations (colors, fonts, spacing)"
+          title={t('plugin.tools.linting.autoFixTitle')}
           className="h-8 text-[10px]"
         >
-          <ShieldCheck size={12} className="mr-2 text-neutral-500" />
-          Auto Fix
+          <ShieldCheck size={12} className="mr-2 text-muted-foreground" />
+          {t('plugin.tools.linting.autoFix')}
         </OpButton>
       </div>
 
