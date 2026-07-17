@@ -56,21 +56,21 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
   };
 
   return (
-    <div className="relative group rounded-lg overflow-hidden border border-neutral-800/70 bg-neutral-950">
-      <div className="flex items-center justify-between px-4 py-2 bg-neutral-900/80 border-b border-white/10">
-        <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+    <div className="relative group rounded-lg overflow-hidden border border-border bg-muted">
+      <div className="flex items-center justify-between px-4 py-2 bg-muted border-b border-border">
+        <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
           {langLabel[language]}
         </span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors py-0.5 px-2 rounded hover:bg-neutral-800/60"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-0.5 px-2 rounded hover:bg-muted"
           aria-label="Copy code"
         >
           {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
           <span>{copied ? 'Copied!' : 'Copy'}</span>
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 text-sm font-mono text-neutral-300 leading-relaxed">
+      <pre className="overflow-x-auto p-4 text-sm font-mono text-foreground leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
@@ -97,7 +97,7 @@ const TabCode: React.FC<TabCodeProps> = ({ js, python }) => {
             className={`px-3 py-1.5 text-xs font-mono rounded-md transition-colors ${
               tab === t
                 ? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30'
-                : 'text-neutral-500 hover:text-neutral-300 border border-transparent hover:border-neutral-700/50'
+                : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-ring'
             }`}
           >
             {t === 'js' ? 'JavaScript' : 'Python'}
@@ -306,7 +306,7 @@ export const GettingStartedPage: React.FC = () => {
       />
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300 relative',
+          'bg-background text-muted-foreground relative',
           inShell ? 'min-h-full' : 'min-h-screen',
           inShell ? 'pt-6' : 'pt-12 md:pt-14'
         )}
@@ -317,7 +317,7 @@ export const GettingStartedPage: React.FC = () => {
 
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-24 relative z-10">
           {/* Header Card */}
-          <Card className="bg-neutral-900 border border-white/10 rounded-xl mb-8">
+          <Card className="bg-card border border-border rounded-xl mb-8">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/docs">
@@ -343,10 +343,10 @@ export const GettingStartedPage: React.FC = () => {
               <div className="flex items-start gap-3">
                 <BookOpen className="h-7 w-7 text-brand-cyan mt-1 shrink-0" />
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-200 mb-1">
+                  <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-foreground mb-1">
                     Getting Started
                   </h1>
-                  <p className="text-neutral-500 font-mono text-sm">
+                  <p className="text-muted-foreground font-mono text-sm">
                     Authenticate and make your first API call in under 5 minutes.
                   </p>
                 </div>
@@ -358,14 +358,14 @@ export const GettingStartedPage: React.FC = () => {
             {/* Sidebar nav */}
             <aside className="hidden lg:block w-52 shrink-0">
               <div className={cn('sticky space-y-1', inShell ? 'top-4' : 'top-20')}>
-                <p className="text-xs font-mono text-neutral-600 uppercase tracking-wider mb-3">
+                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">
                   On this page
                 </p>
                 {SECTIONS.map((s) => (
                   <a
                     key={s.id}
                     href={`#${s.id}`}
-                    className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-200 transition-colors py-1.5 px-2 rounded-md hover:bg-neutral-800/40 group"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1.5 px-2 rounded-md hover:bg-muted/40 group"
                   >
                     <ChevronRight
                       size={12}
@@ -381,32 +381,32 @@ export const GettingStartedPage: React.FC = () => {
             <div className="flex-1 min-w-0 space-y-10">
               {/* ── Authentication ── */}
               <section id="authentication">
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-brand-cyan/10 rounded-lg">
                         <Key size={18} className="text-brand-cyan" />
                       </div>
-                      <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                      <h2 className="text-xl font-semibold font-manrope text-foreground">
                         Authentication
                       </h2>
                     </div>
-                    <p className="text-neutral-400 text-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       All API requests require a{' '}
-                      <code className="text-brand-cyan bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                      <code className="text-brand-cyan bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
                         visant_sk_
                       </code>{' '}
                       API key passed as a{' '}
-                      <code className="text-neutral-300 bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                      <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
                         Bearer
                       </code>{' '}
                       token in the{' '}
-                      <code className="text-neutral-300 bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                      <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
                         Authorization
                       </code>{' '}
                       header.
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-neutral-400">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>Don't have a key yet?</span>
                       <Link
                         to="/settings/api-keys"
@@ -415,13 +415,13 @@ export const GettingStartedPage: React.FC = () => {
                         Create an API key <ExternalLink size={12} />
                       </Link>
                     </div>
-                    <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4">
-                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                    <div className="bg-muted/40 border border-border rounded-lg p-4">
+                      <p className="text-xs font-mono text-muted-foreground mb-2">
                         OAuth 2.1 (for AI agents &amp; third-party apps)
                       </p>
-                      <p className="text-neutral-400 text-sm leading-relaxed">
+                      <p className="text-muted-foreground text-sm leading-relaxed">
                         Agents and apps can authenticate via{' '}
-                        <code className="text-brand-cyan bg-neutral-800/60 px-1.5 py-0.5 rounded text-xs font-mono">
+                        <code className="text-brand-cyan bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
                           OAuth 2.1 + PKCE
                         </code>{' '}
                         with dynamic client registration. See{' '}
@@ -435,13 +435,13 @@ export const GettingStartedPage: React.FC = () => {
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                      <p className="text-xs font-mono text-muted-foreground mb-2">
                         List available tools
                       </p>
                       <CodeBlock code={AUTH_CURL} language="bash" />
                     </div>
-                    <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4">
-                      <p className="text-xs font-mono text-neutral-500 mb-2">Available scopes</p>
+                    <div className="bg-muted/40 border border-border rounded-lg p-4">
+                      <p className="text-xs font-mono text-muted-foreground mb-2">Available scopes</p>
                       <div className="flex flex-wrap gap-2">
                         {[
                           {
@@ -476,44 +476,44 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Brand Generation ── */}
               <section id="brand-generation">
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-purple-500/10 rounded-lg">
                         <Palette size={18} className="text-purple-400" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                        <h2 className="text-xl font-semibold font-manrope text-foreground">
                           Brand Generation
                         </h2>
-                        <p className="text-xs font-mono text-neutral-600 mt-0.5">
+                        <p className="text-xs font-mono text-muted-foreground mt-0.5">
                           Scope required: <span className="text-purple-400">generate</span>
                         </p>
                       </div>
                     </div>
-                    <p className="text-neutral-400 text-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       Generate complete brand guidelines — colors, typography, voice, and visual
                       direction — from a brand name and industry. Brand guidelines become input for
                       all subsequent generation tools.
                     </p>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                      <p className="text-xs font-mono text-muted-foreground mb-2">
                         Generate brand guidelines
                       </p>
                       <TabCode js={BRAND_JS} python={BRAND_PY} />
                     </div>
-                    <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
-                      <p className="text-neutral-400 font-semibold mb-2">
+                    <div className="bg-muted/40 border border-border rounded-lg p-4 text-xs font-mono text-muted-foreground space-y-1">
+                      <p className="text-foreground font-semibold mb-2">
                         Tool: <span className="text-purple-400">generate-brand-guidelines</span>
                       </p>
                       <p>
-                        <span className="text-neutral-300">brandName</span> — string, required
+                        <span className="text-foreground">brandName</span> — string, required
                       </p>
                       <p>
-                        <span className="text-neutral-300">industry</span> — string, required
+                        <span className="text-foreground">industry</span> — string, required
                       </p>
                       <p>
-                        <span className="text-neutral-300">tone</span> — "professional" | "playful"
+                        <span className="text-foreground">tone</span> — "professional" | "playful"
                         | "bold" | "minimal"
                       </p>
                     </div>
@@ -523,44 +523,44 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Mockup Generation ── */}
               <section id="mockup-generation">
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-warning/10 rounded-lg">
                         <Image size={18} className="text-warning" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                        <h2 className="text-xl font-semibold font-manrope text-foreground">
                           Mockup Generation
                         </h2>
-                        <p className="text-xs font-mono text-neutral-600 mt-0.5">
+                        <p className="text-xs font-mono text-muted-foreground mt-0.5">
                           Scope required: <span className="text-warning">generate</span>
                         </p>
                       </div>
                     </div>
-                    <p className="text-neutral-400 text-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       Apply your artwork to professional product templates — apparel, packaging,
                       devices, print — and receive a rendered mockup image URL.
                     </p>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                      <p className="text-xs font-mono text-muted-foreground mb-2">
                         Generate a product mockup
                       </p>
                       <TabCode js={MOCKUP_JS} python={MOCKUP_PY} />
                     </div>
-                    <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
-                      <p className="text-neutral-400 font-semibold mb-2">
+                    <div className="bg-muted/40 border border-border rounded-lg p-4 text-xs font-mono text-muted-foreground space-y-1">
+                      <p className="text-foreground font-semibold mb-2">
                         Tool: <span className="text-warning">mockup-generate</span>
                       </p>
                       <p>
-                        <span className="text-neutral-300">templateId</span> — string, required
+                        <span className="text-foreground">templateId</span> — string, required
                       </p>
                       <p>
-                        <span className="text-neutral-300">imageUrl</span> — string (public URL),
+                        <span className="text-foreground">imageUrl</span> — string (public URL),
                         required
                       </p>
                       <p>
-                        <span className="text-neutral-300">backgroundColor</span> — hex string,
+                        <span className="text-foreground">backgroundColor</span> — hex string,
                         optional
                       </p>
                     </div>
@@ -570,49 +570,49 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Creative Studio ── */}
               <section id="creative-studio">
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
                       <div className="p-2 bg-success/10 rounded-lg">
                         <Zap size={18} className="text-success" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold font-manrope text-neutral-200">
+                        <h2 className="text-xl font-semibold font-manrope text-foreground">
                           Creative Studio
                         </h2>
-                        <p className="text-xs font-mono text-neutral-600 mt-0.5">
+                        <p className="text-xs font-mono text-muted-foreground mt-0.5">
                           Scope required: <span className="text-success">generate</span>
                         </p>
                       </div>
                     </div>
-                    <p className="text-neutral-400 text-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       Generate on-brand creative assets — social media posts, banners, ads — using a
                       natural language prompt paired with your brand context. Brand guidelines are
                       used as generation input, not just documentation.
                     </p>
                     <div>
-                      <p className="text-xs font-mono text-neutral-500 mb-2">
+                      <p className="text-xs font-mono text-muted-foreground mb-2">
                         Generate a creative asset
                       </p>
                       <TabCode js={CREATIVE_JS} python={CREATIVE_PY} />
                     </div>
-                    <div className="bg-neutral-800/30 border border-neutral-700/30 rounded-lg p-4 text-xs font-mono text-neutral-500 space-y-1">
-                      <p className="text-neutral-400 font-semibold mb-2">
+                    <div className="bg-muted/40 border border-border rounded-lg p-4 text-xs font-mono text-muted-foreground space-y-1">
+                      <p className="text-foreground font-semibold mb-2">
                         Tool: <span className="text-success">creative-generate</span>
                       </p>
                       <p>
-                        <span className="text-neutral-300">prompt</span> — string, required
+                        <span className="text-foreground">prompt</span> — string, required
                       </p>
                       <p>
-                        <span className="text-neutral-300">brandId</span> — string, optional (uses
+                        <span className="text-foreground">brandId</span> — string, optional (uses
                         brand context)
                       </p>
                       <p>
-                        <span className="text-neutral-300">format</span> — "instagram-post" |
+                        <span className="text-foreground">format</span> — "instagram-post" |
                         "banner" | "thumbnail" | "ad"
                       </p>
                       <p>
-                        <span className="text-neutral-300">style</span> — "modern" | "classic" |
+                        <span className="text-foreground">style</span> — "modern" | "classic" |
                         "bold" | "minimal"
                       </p>
                     </div>
@@ -622,57 +622,57 @@ export const GettingStartedPage: React.FC = () => {
 
               {/* ── Next Steps ── */}
               <section id="next-steps">
-                <Card className="bg-neutral-900 border border-white/10 rounded-xl">
+                <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold font-manrope text-neutral-200 mb-5">
+                    <h2 className="text-xl font-semibold font-manrope text-foreground mb-5">
                       Next Steps
                     </h2>
                     <div className="grid sm:grid-cols-3 gap-4">
                       <Link
                         to="/api/docs"
-                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <BookOpen size={16} className="text-brand-cyan" />
                           <ChevronRight
                             size={14}
-                            className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                            className="text-muted-foreground group-hover:text-brand-cyan transition-colors"
                           />
                         </div>
-                        <p className="text-sm font-medium text-neutral-300">Full API Reference</p>
-                        <p className="text-xs text-neutral-600">
+                        <p className="text-sm font-medium text-foreground">Full API Reference</p>
+                        <p className="text-xs text-muted-foreground">
                           Browse all MCP tools with params and response schemas
                         </p>
                       </Link>
                       <Link
                         to="/settings/api-keys"
-                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <Key size={16} className="text-brand-cyan" />
                           <ChevronRight
                             size={14}
-                            className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                            className="text-muted-foreground group-hover:text-brand-cyan transition-colors"
                           />
                         </div>
-                        <p className="text-sm font-medium text-neutral-300">Manage API Keys</p>
-                        <p className="text-xs text-neutral-600">
+                        <p className="text-sm font-medium text-foreground">Manage API Keys</p>
+                        <p className="text-xs text-muted-foreground">
                           Create, rotate, and scope your API keys
                         </p>
                       </Link>
                       <Link
                         to="/profile?tab=overview"
-                        className="group flex flex-col gap-2 p-4 bg-neutral-800/30 border border-neutral-700/40 rounded-lg hover:border-neutral-700 hover:bg-neutral-800/60 transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <Zap size={16} className="text-brand-cyan" />
                           <ChevronRight
                             size={14}
-                            className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                            className="text-muted-foreground group-hover:text-brand-cyan transition-colors"
                           />
                         </div>
-                        <p className="text-sm font-medium text-neutral-300">Usage Dashboard</p>
-                        <p className="text-xs text-neutral-600">
+                        <p className="text-sm font-medium text-foreground">Usage Dashboard</p>
+                        <p className="text-xs text-muted-foreground">
                           Monitor request counts, credits, and quotas
                         </p>
                       </Link>

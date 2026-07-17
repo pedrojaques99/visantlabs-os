@@ -161,16 +161,16 @@ const PresetDetailModal: React.FC<{
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.15 }}
-        className="bg-neutral-950 border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-neutral-950/95 backdrop-blur-sm border-b border-neutral-800 px-6 py-4 flex items-center gap-4 z-10">
+        <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-4 flex items-center gap-4 z-10">
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-neutral-100 font-mono truncate">
+            <h2 className="text-sm font-semibold text-foreground font-mono truncate">
               {migrated.name}
             </h2>
-            <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">
+            <p className="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">
               {migrated.description}
             </p>
           </div>
@@ -178,23 +178,23 @@ const PresetDetailModal: React.FC<{
             {isAuthenticated && onToggleLike && (
               <button
                 onClick={onToggleLike}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-800 text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-[11px] font-mono"
               >
-                <Heart size={12} className={isLiked ? 'fill-current text-neutral-300' : ''} />
+                <Heart size={12} className={isLiked ? 'fill-current text-foreground' : ''} />
                 {likesCount > 0 && likesCount}
               </button>
             )}
             {(isOwner || isAuthenticated) && onEdit && (
               <button
                 onClick={onEdit}
-                className="px-3 py-1.5 rounded-lg border border-neutral-800 text-neutral-500 hover:text-neutral-300 transition-colors text-[11px] font-mono"
+                className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-[11px] font-mono"
               >
                 Edit
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg border border-neutral-800 text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
             >
               <X size={14} />
             </button>
@@ -210,7 +210,7 @@ const PresetDetailModal: React.FC<{
                 src={migrated.referenceImageUrl}
                 alt={migrated.name}
                 loading="lazy"
-                className="w-full aspect-square object-cover rounded-xl border border-neutral-800"
+                className="w-full aspect-square object-cover rounded-xl border border-border"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -233,7 +233,7 @@ const PresetDetailModal: React.FC<{
             <div className="flex flex-wrap gap-1.5">
               <span
                 className={cn(
-                  'text-[10px] font-mono px-2 py-1 rounded-lg border bg-white/[0.03] border-neutral-800',
+                  'text-[10px] font-mono px-2 py-1 rounded-lg border bg-muted/40 border-border',
                   config.color
                 )}
               >
@@ -242,7 +242,7 @@ const PresetDetailModal: React.FC<{
               {migrated.aspectRatio && (
                 <span
                   className={cn(
-                    'text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600',
+                    'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
                     glassSurface.control
                   )}
                 >
@@ -252,7 +252,7 @@ const PresetDetailModal: React.FC<{
               {migrated.difficulty && (
                 <span
                   className={cn(
-                    'text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-600',
+                    'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
                     glassSurface.control
                   )}
                 >
@@ -262,14 +262,14 @@ const PresetDetailModal: React.FC<{
             </div>
 
             {/* Prompt */}
-            <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-4">
+            <div className="bg-muted/40 border border-border rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                   Prompt
                 </span>
                 <button
                   onClick={copyPrompt}
-                  className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-600 hover:text-neutral-300 transition-colors"
+                  className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {copied ? (
                     <>
@@ -280,7 +280,7 @@ const PresetDetailModal: React.FC<{
                   )}
                 </button>
               </div>
-              <p className="text-xs text-neutral-400 font-mono leading-relaxed max-h-36 overflow-y-auto whitespace-pre-wrap">
+              <p className="text-xs text-muted-foreground font-mono leading-relaxed max-h-36 overflow-y-auto whitespace-pre-wrap">
                 {migrated.prompt}
               </p>
             </div>
@@ -292,7 +292,7 @@ const PresetDetailModal: React.FC<{
                   <span
                     key={tag}
                     className={cn(
-                      'text-[10px] font-mono px-2 py-1 rounded-lg text-neutral-700',
+                      'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
                       glassSurface.control
                     )}
                   >
@@ -305,7 +305,7 @@ const PresetDetailModal: React.FC<{
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-neutral-950/95 backdrop-blur-sm border-t border-neutral-800 px-6 py-4 flex gap-3">
+        <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-border px-6 py-4 flex gap-3">
           <Button variant="surface" className="flex-1" onClick={onOpenInCanvas}>
             Open in Canvas
           </Button>
@@ -758,8 +758,8 @@ export const CommunityPresetsPage: React.FC = () => {
             className={cn(
               'px-3 py-1.5 rounded-md text-xs font-mono transition-all',
               viewMode === mode
-                ? 'bg-white/10 text-neutral-200'
-                : 'text-neutral-600 hover:text-neutral-400'
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {mode === 'all'
@@ -799,7 +799,7 @@ export const CommunityPresetsPage: React.FC = () => {
           <div className="relative w-auto">
             <Search
               size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
             />
             <input
               ref={searchRef}
@@ -808,7 +808,7 @@ export const CommunityPresetsPage: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('community.presets.search_presets')}
               className={cn(
-                'w-48 focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-white/10 transition-all duration-200',
+                'w-48 focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-all duration-200',
                 glassSurface.control
               )}
               aria-label={t('community.presets.search_presets_2')}
@@ -816,7 +816,7 @@ export const CommunityPresetsPage: React.FC = () => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X size={12} />
               </button>
@@ -832,7 +832,7 @@ export const CommunityPresetsPage: React.FC = () => {
           />
 
           {/* Count */}
-          <span className="text-[11px] font-mono text-neutral-700 shrink-0">
+          <span className="text-[11px] font-mono text-muted-foreground shrink-0">
             {sorted.length} preset{sorted.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -852,7 +852,7 @@ export const CommunityPresetsPage: React.FC = () => {
         {/* ── Auth gate ─────────────────────────────────────────────────────── */}
         {viewMode === 'my' && !isAuthenticated && !isCheckingAuth && (
           <div className="py-20 flex flex-col items-center gap-4">
-            <p className="text-sm font-mono text-neutral-600">
+            <p className="text-sm font-mono text-muted-foreground">
               {t('communityPresets.errors.mustBeAuthenticated')}
             </p>
             <Button variant="surface" size="sm" onClick={() => setShowAuthModal(true)}>
@@ -876,11 +876,11 @@ export const CommunityPresetsPage: React.FC = () => {
                 key={i}
                 className={cn('rounded-xl overflow-hidden animate-pulse', glassSurface.tile)}
               >
-                <div className="aspect-[4/3] bg-neutral-900/50" />
+                <div className="aspect-[4/3] bg-muted" />
                 <div className="p-3 space-y-2">
-                  <div className="h-3 bg-neutral-800/50 rounded w-3/4" />
-                  <div className="h-2.5 bg-neutral-800/30 rounded w-full" />
-                  <div className="h-2.5 bg-neutral-800/30 rounded w-2/3" />
+                  <div className="h-3 bg-muted rounded w-3/4" />
+                  <div className="h-2.5 bg-muted rounded w-full" />
+                  <div className="h-2.5 bg-muted rounded w-2/3" />
                 </div>
               </div>
             ))}
@@ -892,19 +892,19 @@ export const CommunityPresetsPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20"
+            className="min-h-[280px] flex flex-col items-center justify-center gap-6 border border-border rounded-3xl bg-card"
           >
             <div className={cn('p-6 rounded-full', glassSurface.control)}>
-              <Layers size={28} strokeWidth={1} className="text-neutral-700" />
+              <Layers size={28} strokeWidth={1} className="text-muted-foreground" />
             </div>
             <div className="text-center space-y-2">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                 {searchQuery ? `No results for "${searchQuery}"` : 'No presets yet'}
               </p>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="font-mono text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors underline underline-offset-2"
+                  className="font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
                 >
                   Clear search
                 </button>

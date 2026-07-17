@@ -11,6 +11,8 @@ import { NodeSlider } from '@/components/ui/NodeSlider';
 import { Switch } from '@/components/ui/switch';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { ToolPanelDisclosure } from '@/components/shared/ToolPanel';
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
+import { Zap, Square, SlidersHorizontal } from '@/lib/ui/icons';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
   SHADER_DEFINITIONS,
@@ -31,6 +33,12 @@ interface ShaderControlsProps {
   onValueChange: (key: string, value: any) => void;
   className?: string;
   hideToggle?: boolean;
+  /**
+   * Render the shader panel as a Blender/Photoshop-style sectioned panel (icon
+   * rail: Shader / Style / Parameters) instead of the stacked-disclosure blob.
+   * ImageLab opts in; the 3D-Studio effects tab keeps the default layout.
+   */
+  sectioned?: boolean;
 }
 
 export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
@@ -43,70 +51,122 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
     onValueChange,
     className,
     hideToggle,
+    sectioned,
   }) => {
     const def = SHADER_DEFINITIONS_MAP[shaderType];
 
+    const typeSelector = (
+      <div className="grid grid-cols-2 gap-1.5">
+        {SHADER_DEFINITIONS.map((d) => (
+          <button
+            key={d.id}
+            onClick={() => onTypeChange(d.id)}
+            className={cn(
+              'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+              shaderType === d.id
+                ? 'bg-white/10 text-white'
+                : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+            )}
+          >
+            {d.label}
+          </button>
+        ))}
+      </div>
+    );
+
+    const variantSelector = def?.variants ? (
+      <div className="grid grid-cols-3 gap-1.5">
+        {def.variants.options.map((o) => (
+          <button
+            key={o.value}
+            onClick={() => onValueChange(def.variants!.key, o.value)}
+            className={cn(
+              'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+              (values[def.variants!.key] ?? def.variants!.defaultValue) === o.value
+                ? 'bg-white/10 text-white'
+                : 'bg-white/5 text-neutral-400 hover:bg-white/10'
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    ) : null;
+
+    const parameters = (
+      <div className="space-y-3">
+        {def?.params.map((p) => (
+          <ParamControl
+            key={p.key}
+            param={p}
+            value={values[p.key]}
+            onChange={(v) => onValueChange(p.key, v)}
+          />
+        ))}
+      </div>
+    );
+
+    const toggleRow = !hideToggle && (
+      <div
+        className={cn(
+          'flex items-center justify-between',
+          sectioned && 'px-4 py-2.5 border-b border-neutral-800/50'
+        )}
+      >
+        <MicroTitle>SHADER EFFECT</MicroTitle>
+        <Switch checked={enabled} onCheckedChange={onEnabledChange} />
+      </div>
+    );
+
+    // ── Sectioned layout (ImageLab): icon-rail tabs, matching the other tools ──
+    if (sectioned) {
+      const tabs: PanelTab[] = [
+        { id: 'shader', label: 'Shader', icon: <Zap size={16} />, content: typeSelector },
+        ...(variantSelector
+          ? [
+              {
+                id: 'variant',
+                label: def!.variants!.label,
+                icon: <Square size={16} />,
+                content: variantSelector,
+              },
+            ]
+          : []),
+        {
+          id: 'params',
+          label: 'Parameters',
+          icon: <SlidersHorizontal size={16} />,
+          content: parameters,
+        },
+      ];
+      return (
+        <div className={cn('flex-1 flex flex-col min-h-0', className)}>
+          {toggleRow}
+          {enabled ? (
+            <PanelSectionTabs tabs={tabs} />
+          ) : (
+            <div className="p-4 text-[11px] text-neutral-600">
+              Enable the shader effect to edit its parameters.
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ── Default layout (3D Studio, canvas): stacked disclosures ──
     return (
       <div className={cn('space-y-4', className)}>
-        {!hideToggle && (
-          <div className="flex items-center justify-between">
-            <MicroTitle>SHADER EFFECT</MicroTitle>
-            <Switch checked={enabled} onCheckedChange={onEnabledChange} />
-          </div>
-        )}
-
+        {toggleRow}
         {!enabled ? null : (
           <>
-            {/* Shader type selector */}
-            <div className="grid grid-cols-2 gap-1.5">
-              {SHADER_DEFINITIONS.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => onTypeChange(d.id)}
-                  className={cn(
-                    'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
-                    shaderType === d.id
-                      ? 'bg-white/10 text-white'
-                      : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                  )}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Variant selector (e.g. halftone style) */}
-            {def?.variants && (
-              <ToolPanelDisclosure label={def.variants.label.toUpperCase()} defaultOpen>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {def.variants.options.map((o) => (
-                    <button
-                      key={o.value}
-                      onClick={() => onValueChange(def.variants!.key, o.value)}
-                      className={cn(
-                        'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
-                        (values[def.variants!.key] ?? def.variants!.defaultValue) === o.value
-                          ? 'bg-white/10 text-white'
-                          : 'bg-white/5 text-neutral-400 hover:bg-white/10'
-                      )}
-                    >
-                      {o.label}
-                    </button>
-                  ))}
-                </div>
+            {typeSelector}
+            {variantSelector && (
+              <ToolPanelDisclosure label={def!.variants!.label.toUpperCase()} defaultOpen>
+                {variantSelector}
               </ToolPanelDisclosure>
             )}
-
-            {/* Parameters */}
             <ToolPanelDisclosure label="Parameters" defaultOpen>
-              {def?.params.map((p) => (
-                <ParamControl
-                  key={p.key}
-                  param={p}
-                  value={values[p.key]}
-                  onChange={(v) => onValueChange(p.key, v)}
-                />
-              ))}
+              {parameters}
             </ToolPanelDisclosure>
           </>
         )}

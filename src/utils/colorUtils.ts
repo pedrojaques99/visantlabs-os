@@ -27,6 +27,18 @@ export function rgbToHex(r: number, g: number, b: number): string {
 }
 
 /**
+ * Smart, paste-first hex parser for color inputs. Accepts "#RRGGBB", "RRGGBB",
+ * "#RGB", or "RGB" (with surrounding whitespace) and returns a normalized
+ * "#RRGGBB" (uppercase), or null when there aren't yet enough valid hex digits.
+ */
+export function parseHex(raw: string): string | null {
+  let v = raw.trim().replace(/^#/, '').replace(/[^0-9a-fA-F]/g, '');
+  if (v.length === 3) v = v.split('').map((c) => c + c).join('');
+  if (v.length < 6) return null;
+  return `#${v.slice(0, 6).toUpperCase()}`;
+}
+
+/**
  * Calculate relative luminance according to WCAG 2.1
  * @param r - Red component (0-255)
  * @param g - Green component (0-255)

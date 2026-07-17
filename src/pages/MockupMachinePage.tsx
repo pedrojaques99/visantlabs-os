@@ -3497,7 +3497,7 @@ Generate the new mockup image with the requested changes applied.`;
                     variant="ghost"
                     onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
-                    className="w-10 h-10 rounded-full bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-neutral-500 hover:text-white shadow-2xl transition-all group"
+                    className="w-10 h-10 rounded-full bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground shadow-2xl transition-all group"
                     title={
                       isSidebarCollapsed
                         ? t('mockup.openSidebar') || 'Abrir barra lateral'
@@ -3520,7 +3520,7 @@ Generate the new mockup image with the requested changes applied.`;
                       variant="ghost"
                       onClick={() => setIsSidebarVisibleMobile(false)}
                       size="icon"
-                      className="w-10 h-10 rounded-full bg-neutral-900 shadow-xl border-white/10"
+                      className="w-10 h-10 rounded-full bg-card border-border text-muted-foreground hover:text-foreground shadow-xl"
                       aria-label="Close sidebar"
                     >
                       <Menu className="h-5 w-5 rotate-180" />

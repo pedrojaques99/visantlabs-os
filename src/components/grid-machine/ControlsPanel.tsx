@@ -12,24 +12,15 @@ import {
   Palette as PaletteIcon,
   Square,
 } from '@/lib/ui/icons';
-import { SectionNavSidebar, type SectionNavItem } from '@/components/shared/SectionNavSidebar';
-
-const SECTION_NAV: SectionNavItem[] = [
-  { id: 'sec-display', icon: <Eye size={14} />, label: 'Display' },
-  { id: 'sec-style', icon: <SlidersHorizontal size={14} />, label: 'Style' },
-  { id: 'sec-bg', icon: <Square size={14} />, label: 'Background' },
-  { id: 'sec-colors', icon: <PaletteIcon size={14} />, label: 'Colors' },
-];
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
 import { SendToButton } from '@/components/shared/SendToButton';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
 import { useDebouncedSlider } from '@/hooks/useDebouncedSlider';
 import {
   ToolPanel,
-  ToolPanelContent,
-  ToolPanelSection,
-  ToolPanelDisclosure,
   ToolPanelActions,
   ToolPanelRow,
+  InlineColorPicker,
 } from '@/components/shared/ToolPanel';
 
 interface Props {
@@ -95,200 +86,214 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
   const updateSetting = useGridMachineStore((s) => s.updateSetting);
   const clear = useGridMachineStore((s) => s.clear);
 
-  return (
-    <ToolPanel className="flex-row">
-      <SectionNavSidebar items={SECTION_NAV} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <ToolPanelContent>
-          {/* Display */}
-          <ToolPanelSection title="Display" id="sec-display">
-            <Toggle
-              label="Outline"
-              checked={showOutline}
-              onChange={(v) => updateSetting('showOutline', v)}
-            />
-            <Toggle
-              label="Anchors"
-              checked={showAnchors}
-              onChange={(v) => updateSetting('showAnchors', v)}
-            />
-            <Toggle
-              label="Handles"
-              checked={showHandles}
-              onChange={(v) => updateSetting('showHandles', v)}
-            />
-            <Toggle
-              label="H-Lines"
-              checked={showHLines}
-              onChange={(v) => updateSetting('showHLines', v)}
-            />
-            {showHLines && (
-              <Slider
-                label="Min Spacing"
-                value={hLineSpacing}
-                min={0}
-                max={50}
-                step={1}
-                onChange={(v) => updateSetting('hLineSpacing', v)}
-                format={(v) => (v === 0 ? 'All' : `${v}`)}
-              />
-            )}
-            <Toggle
-              label="V-Lines"
-              checked={showVLines}
-              onChange={(v) => updateSetting('showVLines', v)}
-            />
-            {showVLines && (
-              <Slider
-                label="Min Spacing"
-                value={vLineSpacing}
-                min={0}
-                max={50}
-                step={1}
-                onChange={(v) => updateSetting('vLineSpacing', v)}
-                format={(v) => (v === 0 ? 'All' : `${v}`)}
-              />
-            )}
-            <Toggle
-              label="Diagonals"
-              checked={showDiagonals}
-              onChange={(v) => updateSetting('showDiagonals', v)}
-            />
-            {showDiagonals && (
-              <Slider
-                label="Min Spacing"
-                value={diagonalSpacing}
-                min={0}
-                max={50}
-                step={1}
-                onChange={(v) => updateSetting('diagonalSpacing', v)}
-                format={(v) => (v === 0 ? 'All' : `${v}`)}
-              />
-            )}
-            <Toggle
-              label="Base Grid"
-              checked={showBaseGrid}
-              onChange={(v) => updateSetting('showBaseGrid', v)}
-            />
-            {hiddenLines.size > 0 && (
-              <button
-                onClick={() => useGridMachineStore.setState({ hiddenLines: new Set() })}
-                className="text-[11px] text-cyan-400/70 hover:text-cyan-400 mt-1"
-              >
-                Show {hiddenLines.size} hidden line{hiddenLines.size > 1 ? 's' : ''}
-              </button>
-            )}
-          </ToolPanelSection>
-
-          {/* Style */}
-          <ToolPanelSection title="Style" id="sec-style">
+  const tabs: PanelTab[] = [
+    {
+      id: 'display',
+      label: 'Display',
+      icon: <Eye size={16} />,
+      content: (
+        <div className="space-y-2">
+          <Toggle
+            label="Outline"
+            checked={showOutline}
+            onChange={(v) => updateSetting('showOutline', v)}
+          />
+          <Toggle
+            label="Anchors"
+            checked={showAnchors}
+            onChange={(v) => updateSetting('showAnchors', v)}
+          />
+          <Toggle
+            label="Handles"
+            checked={showHandles}
+            onChange={(v) => updateSetting('showHandles', v)}
+          />
+          <Toggle
+            label="H-Lines"
+            checked={showHLines}
+            onChange={(v) => updateSetting('showHLines', v)}
+          />
+          {showHLines && (
             <Slider
-              label="Line Opacity"
-              value={lineOpacity}
-              min={0.05}
-              max={1}
-              step={0.05}
-              onChange={(v) => updateSetting('lineOpacity', v)}
-              format={(v) => `${Math.round(v * 100)}%`}
-            />
-            <Slider
-              label="Point Size"
-              value={pointSize}
-              min={1}
-              max={12}
-              step={0.5}
-              onChange={(v) => updateSetting('pointSize', v)}
-            />
-            <Slider
-              label="Logo Opacity"
-              value={logoOpacity}
+              label="Min Spacing"
+              value={hLineSpacing}
               min={0}
-              max={1}
-              step={0.05}
-              onChange={(v) => updateSetting('logoOpacity', v)}
-              format={(v) => `${Math.round(v * 100)}%`}
+              max={50}
+              step={1}
+              onChange={(v) => updateSetting('hLineSpacing', v)}
+              format={(v) => (v === 0 ? 'All' : `${v}`)}
             />
-            {showBaseGrid && (
-              <Slider
-                label="Grid Spacing"
-                value={baseGridSpacing}
-                min={5}
-                max={100}
-                step={5}
-                onChange={(v) => updateSetting('baseGridSpacing', v)}
-              />
-            )}
-          </ToolPanelSection>
-
-          {/* Background */}
-          <ToolPanelSection title="Background" id="sec-bg">
-            <div className="flex gap-1.5">
-              {(['dark', 'light'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => updateSetting('bgMode', mode)}
-                  className={cn(
-                    'flex-1 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border',
-                    bgMode === mode
-                      ? 'bg-white/10 text-white border-white/20'
-                      : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
-                  )}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-          </ToolPanelSection>
-
-          {/* Colors */}
-          <ToolPanelDisclosure label="Colors" id="sec-colors">
-            <ColorInput
-              label="Lines"
-              value={lineColor}
-              onChange={(v) => updateSetting('lineColor', v)}
+          )}
+          <Toggle
+            label="V-Lines"
+            checked={showVLines}
+            onChange={(v) => updateSetting('showVLines', v)}
+          />
+          {showVLines && (
+            <Slider
+              label="Min Spacing"
+              value={vLineSpacing}
+              min={0}
+              max={50}
+              step={1}
+              onChange={(v) => updateSetting('vLineSpacing', v)}
+              format={(v) => (v === 0 ? 'All' : `${v}`)}
             />
-            <ColorInput
-              label="Anchors"
-              value={anchorColor}
-              onChange={(v) => updateSetting('anchorColor', v)}
+          )}
+          <Toggle
+            label="Diagonals"
+            checked={showDiagonals}
+            onChange={(v) => updateSetting('showDiagonals', v)}
+          />
+          {showDiagonals && (
+            <Slider
+              label="Min Spacing"
+              value={diagonalSpacing}
+              min={0}
+              max={50}
+              step={1}
+              onChange={(v) => updateSetting('diagonalSpacing', v)}
+              format={(v) => (v === 0 ? 'All' : `${v}`)}
             />
-            <ColorInput
-              label="Handles"
-              value={handleColor}
-              onChange={(v) => updateSetting('handleColor', v)}
-            />
-          </ToolPanelDisclosure>
-        </ToolPanelContent>
-
-        {/* Actions */}
-        <ToolPanelActions>
-          <div className="flex gap-2 w-full">
-            <Button
-              onClick={onExportPng}
-              disabled={isExporting}
-              className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
+          )}
+          <Toggle
+            label="Base Grid"
+            checked={showBaseGrid}
+            onChange={(v) => updateSetting('showBaseGrid', v)}
+          />
+          {hiddenLines.size > 0 && (
+            <button
+              onClick={() => useGridMachineStore.setState({ hiddenLines: new Set() })}
+              className="text-[11px] text-cyan-400/70 hover:text-cyan-400 mt-1"
             >
-              <Download size={14} /> Export PNG
-            </Button>
-            {svgContent && <SendToButton source="grid-machine" outputMime="image/png" />}
-          </div>
+              Show {hiddenLines.size} hidden line{hiddenLines.size > 1 ? 's' : ''}
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'style',
+      label: 'Style',
+      icon: <SlidersHorizontal size={16} />,
+      content: (
+        <div className="space-y-2">
+          <Slider
+            label="Line Opacity"
+            value={lineOpacity}
+            min={0.05}
+            max={1}
+            step={0.05}
+            onChange={(v) => updateSetting('lineOpacity', v)}
+            format={(v) => `${Math.round(v * 100)}%`}
+          />
+          <Slider
+            label="Point Size"
+            value={pointSize}
+            min={1}
+            max={12}
+            step={0.5}
+            onChange={(v) => updateSetting('pointSize', v)}
+          />
+          <Slider
+            label="Logo Opacity"
+            value={logoOpacity}
+            min={0}
+            max={1}
+            step={0.05}
+            onChange={(v) => updateSetting('logoOpacity', v)}
+            format={(v) => `${Math.round(v * 100)}%`}
+          />
+          {showBaseGrid && (
+            <Slider
+              label="Grid Spacing"
+              value={baseGridSpacing}
+              min={5}
+              max={100}
+              step={5}
+              onChange={(v) => updateSetting('baseGridSpacing', v)}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'bg',
+      label: 'Background',
+      icon: <Square size={16} />,
+      content: (
+        <div className="flex gap-1.5">
+          {(['dark', 'light'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => updateSetting('bgMode', mode)}
+              className={cn(
+                'flex-1 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border',
+                bgMode === mode
+                  ? 'bg-white/10 text-white border-white/20'
+                  : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
+              )}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'colors',
+      label: 'Colors',
+      icon: <PaletteIcon size={16} />,
+      content: (
+        <div className="space-y-3">
+          <ColorInput label="Lines" value={lineColor} onChange={(v) => updateSetting('lineColor', v)} />
+          <ColorInput
+            label="Anchors"
+            value={anchorColor}
+            onChange={(v) => updateSetting('anchorColor', v)}
+          />
+          <ColorInput
+            label="Handles"
+            value={handleColor}
+            onChange={(v) => updateSetting('handleColor', v)}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <ToolPanel>
+      <PanelSectionTabs tabs={tabs} />
+
+      {/* Actions */}
+      <ToolPanelActions>
+        <div className="flex gap-2 w-full">
           <Button
-            onClick={onExportSvg}
+            onClick={onExportPng}
             disabled={isExporting}
-            variant="ghost"
-            className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2"
+            className="flex-1 bg-white hover:bg-neutral-200 text-black font-medium h-9 text-xs gap-2"
           >
-            <FileCode size={14} /> Export SVG
+            <Download size={14} /> Export PNG
           </Button>
-          <Button
-            variant="ghost"
-            onClick={clear}
-            className="w-full text-neutral-600 hover:text-destructive h-8 text-xs gap-2"
-          >
-            <Trash2 size={13} /> Clear
-          </Button>
-        </ToolPanelActions>
-      </div>
+          {svgContent && <SendToButton source="grid-machine" outputMime="image/png" />}
+        </div>
+        <Button
+          onClick={onExportSvg}
+          disabled={isExporting}
+          variant="ghost"
+          className="w-full text-neutral-400 hover:text-white h-9 text-xs gap-2"
+        >
+          <FileCode size={14} /> Export SVG
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={clear}
+          className="w-full text-neutral-600 hover:text-destructive h-8 text-xs gap-2"
+        >
+          <Trash2 size={13} /> Clear
+        </Button>
+      </ToolPanelActions>
     </ToolPanel>
   );
 });
@@ -300,13 +305,8 @@ const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string)
   value,
   onChange,
 }) => (
-  <ToolPanelRow label={label}>
-    <input
-      type="color"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label={label}
-      className="w-6 h-6 rounded-md border border-neutral-800/50 bg-transparent cursor-pointer"
-    />
-  </ToolPanelRow>
+  <div className="space-y-1">
+    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{label}</span>
+    <InlineColorPicker value={value} onChange={onChange} label={label} />
+  </div>
 );

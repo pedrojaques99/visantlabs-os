@@ -338,7 +338,7 @@ export const MyOutputsPage: React.FC = () => {
     return (
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300',
+          'bg-background text-muted-foreground',
           inShell ? 'min-h-full pt-6' : 'min-h-screen pt-12 md:pt-14'
         )}
       >
@@ -346,7 +346,7 @@ export const MyOutputsPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 text-sm">{t('my.outputs.loading_your_outputs')}</p>
+              <p className="text-muted-foreground text-sm">{t('my.outputs.loading_your_outputs')}</p>
             </div>
           </div>
         </div>
@@ -363,7 +363,7 @@ export const MyOutputsPage: React.FC = () => {
       />
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300 relative overflow-hidden',
+          'bg-background text-muted-foreground relative overflow-hidden',
           inShell ? 'min-h-full' : 'min-h-screen'
         )}
       >
@@ -374,12 +374,12 @@ export const MyOutputsPage: React.FC = () => {
           <div className={cn('relative z-30 pb-4', inShell ? 'pt-4' : 'pt-16 md:pt-20')}>
             <div className="max-w-7xl mx-auto px-4 md:px-6">
               <div className="relative max-w-md">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={`${t('common.search') || 'Buscar'}...`}
-                  className="h-9 max-w-md border-neutral-700 bg-neutral-900 pl-9 text-sm"
+                  className="h-9 max-w-md border-border bg-input pl-9 text-sm"
                 />
               </div>
             </div>
@@ -423,11 +423,11 @@ export const MyOutputsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <ImageIcon size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-lg font-semibold text-neutral-200 mb-1.5">
+              <ImageIcon size={64} className="text-muted-foreground mb-4" strokeWidth={1} />
+              <h2 className="text-lg font-semibold text-foreground mb-1.5">
                 {mockups.length === 0 ? 'No outputs yet' : 'No results'}
               </h2>
-              <p className="text-sm text-neutral-500 mb-5">
+              <p className="text-sm text-muted-foreground mb-5">
                 {mockups.length === 0
                   ? 'Generate your first mockup and it shows up here.'
                   : 'Adjust your search or filter.'}
@@ -450,7 +450,7 @@ export const MyOutputsPage: React.FC = () => {
                     // marca é o que costuma zerar o grid; clear tem que soltar ele).
                     setActiveBrand(null);
                   }}
-                  className="border-neutral-700 text-neutral-300"
+                  className="border-border text-foreground"
                 >
                   Clear filters
                 </Button>
@@ -466,7 +466,7 @@ export const MyOutputsPage: React.FC = () => {
               renderItem={(mockup) => {
                 const imageUrl = getImageUrl(mockup)!;
                 return (
-                  <div className="group relative rounded-xl overflow-hidden bg-neutral-900 ring-1 ring-white/5 hover:ring-white/15 transition-all">
+                  <div className="group relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all">
                     <button
                       type="button"
                       onClick={() => handleView(mockup)}
