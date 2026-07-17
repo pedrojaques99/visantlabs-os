@@ -6,6 +6,7 @@ import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
 import { Plus, Copy, Layers, X } from 'lucide-react';
+import { SMART_SCAN_REQUESTER, isSmartScanFor } from '../../lib/smartScan';
 
 interface ColorToken {
   id: string;
@@ -103,7 +104,9 @@ export function BrandMatrixSection() {
             : mergeColors(usePluginStore.getState().matrixColors, incoming)
         );
       }
-      if (msg.type === 'SMART_SCAN_RESULT') {
+      // Only our own scan — Tools › Extract fires this same round-trip for its result modal,
+      // and without the check its scan would silently rewrite the assets picked here.
+      if (msg.type === 'SMART_SCAN_RESULT' && isSmartScanFor(msg, SMART_SCAN_REQUESTER.brandMatrix)) {
         const items = (msg.items || []).filter(
           (i: any) => i.category === 'logo' || i.category === 'component'
         );
@@ -226,7 +229,10 @@ export function BrandMatrixSection() {
           <button
             onClick={() => {
               setShowFull(true);
-              send({ type: 'SMART_SCAN_SELECTION' } as any);
+              send({
+                type: 'SMART_SCAN_SELECTION',
+                requester: SMART_SCAN_REQUESTER.brandMatrix,
+              } as any);
             }}
             className="w-full text-[9px] text-muted-foreground hover:text-foreground py-1 transition-colors"
           >

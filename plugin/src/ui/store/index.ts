@@ -74,8 +74,6 @@ export const usePluginStore = create<PluginStore>()(
     mentionElements: [],
     apiKey: null,
     anthropicApiKey: null,
-    showSmartScanModal: false,
-    smartScanResults: null,
     colorScanResults: null,
     selectedFont: null,
     brandLintReport: null,

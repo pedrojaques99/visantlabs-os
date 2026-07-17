@@ -187,8 +187,6 @@ export interface PluginStore {
   mentionElements: any[];
   apiKey: string | null;
   anthropicApiKey: string | null;
-  showSmartScanModal: boolean;
-  smartScanResults: any | null;
   colorScanResults: any | null;
   selectedFont: { family: string; style?: string; fontSize?: number; lineHeight?: number } | null;
   brandLintReport: any | null;

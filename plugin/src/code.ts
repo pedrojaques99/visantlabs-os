@@ -211,9 +211,12 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // Smart scan: analyze multi-selection and classify each node
   if (msg.type === 'SMART_SCAN_SELECTION') {
+    // Echoed back so each requester can tell its own result from someone else's — the
+    // result is broadcast to every listener in the UI. See ui/lib/smartScan.ts.
+    const requester = (msg as any).requester;
     const selection = figma.currentPage.selection;
     if (selection.length === 0) {
-      postToUI({ type: 'SMART_SCAN_RESULT', items: [], error: 'Nothing selected' });
+      postToUI({ type: 'SMART_SCAN_RESULT', items: [], error: 'Nothing selected', requester });
       return;
     }
 
@@ -425,7 +428,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       items.push(item);
     }
 
-    postToUI({ type: 'SMART_SCAN_RESULT', items });
+    postToUI({ type: 'SMART_SCAN_RESULT', items, requester });
     return;
   }
 

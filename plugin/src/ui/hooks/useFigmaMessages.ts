@@ -44,20 +44,13 @@ export function useFigmaMessages() {
           break;
         }
 
-        case 'SMART_SCAN_RESULT': {
-          if (msg.items) {
-            // Show SmartScan modal with categorized results
-            usePluginStore.setState({
-              pendingAttachments: msg.items,
-              showSmartScanModal: true,
-              smartScanResults: msg.items,
-            });
-            storeState.showToast(`Found ${msg.items.length} elements`, 'success');
-          } else {
-            storeState.showToast('No elements found', 'warning');
-          }
-          break;
-        }
+        // SMART_SCAN_RESULT is deliberately not handled here. This global case used to dump
+        // the scan items straight into `pendingAttachments` — the chat's attachment tray —
+        // but a scan item is {id, name, category} while an Attachment is
+        // {id, name, type, size, preview}, so it planted wrong-shaped rows in the composer
+        // that rendered as <img src={undefined}>. It also set showSmartScanModal and
+        // smartScanResults, which nothing ever read. The requester owns its own result now:
+        // Tools › Extract opens the modal, the logo matrix fills its assets.
 
         case 'COLOR_SCAN_RESULTS': {
           usePluginStore.setState({ colorScanResults: msg.matches ?? [] });

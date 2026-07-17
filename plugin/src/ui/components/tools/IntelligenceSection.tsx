@@ -6,6 +6,7 @@ import { usePluginStore } from '../../store';
 import { OpButton } from '../common/OpButton';
 import { FileJson, Layers, StickyNote, BookOpen } from 'lucide-react';
 import { NamingGuideModal, SmartScanModal } from '../brand/BrandModals';
+import { SMART_SCAN_REQUESTER, isSmartScanFor } from '../../lib/smartScan';
 
 export function IntelligenceSection() {
   const { t } = useTranslation();
@@ -19,7 +20,8 @@ export function IntelligenceSection() {
   React.useEffect(() => {
     const handler = (event: MessageEvent) => {
       const msg = event.data?.pluginMessage;
-      if (msg?.type === 'SMART_SCAN_RESULT') {
+      // Only our own scan — the logo matrix listens for this result too.
+      if (msg?.type === 'SMART_SCAN_RESULT' && isSmartScanFor(msg, SMART_SCAN_REQUESTER.toolsIntelligence)) {
         setScanItems(msg.items || []);
         setScanModalOpen(true);
       }
@@ -33,7 +35,10 @@ export function IntelligenceSection() {
       <OpButton
         opId="smartScan"
         runner={runner}
-        message={{ type: 'SMART_SCAN_SELECTION' }}
+        message={{
+          type: 'SMART_SCAN_SELECTION',
+          requester: SMART_SCAN_REQUESTER.toolsIntelligence,
+        }}
         responseTypes={['SMART_SCAN_RESULT']}
         busyLabel={t('plugin.tools.intelligence.scanning')}
         variant="brand"
