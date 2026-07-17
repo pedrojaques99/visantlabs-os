@@ -683,7 +683,7 @@ export const DocsPage: React.FC = () => {
                     <Card id="mcp-overview" className="border border-border bg-card">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Server className="w-5 h-5 text-neutral-400" /> Two MCP Servers
+                          <Server className="w-5 h-5 text-muted-foreground" /> Two MCP Servers
                         </CardTitle>
                         <CardDescription>
                           Choose the server that fits your use case. You can use both
@@ -1277,7 +1277,7 @@ const result = await client.callTool({
                           },
                           {
                             label: 'Structure',
-                            color: 'text-neutral-400',
+                            color: 'text-muted-foreground',
                             ops: [
                               'GROUP_NODES',
                               'UNGROUP',
