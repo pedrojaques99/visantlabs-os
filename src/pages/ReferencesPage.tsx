@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -32,13 +33,16 @@ import {
   Square,
   Save,
   ChevronDown,
-} from 'lucide-react';
+  Shuffle,
+} from '@/lib/ui/icons';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Modal } from '@/components/ui/Modal';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -51,6 +55,9 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';
 import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryFlag } from '@/lib/references/taxonomy';
+import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
+import { useRailSlot } from '@/components/shell/RailSlotContext';
+import { brandRankingTerms } from '@/lib/references/brandTerms';
 import {
   FACET_DIMENSION_KEYS,
   DIMENSION_LABELS,
@@ -63,12 +70,29 @@ import {
   type ReferenceUploadInput,
   collectionsApi,
   adminReferencesApi,
+  type DuplicateReport,
+  type PendingReference,
   type ReferenceCollection,
   type CollectionDetail,
   type TasteHint,
 } from '@/services/referencesApi';
 
 const PAGE_SIZE = 30;
+
+// Per-session feed seed — persisted so the order is stable across pages/reloads
+// within a browser session, but fresh on a new session (or when reshuffled).
+const REF_SEED_KEY = 'vsn_ref_seed';
+function getSessionSeed(): string {
+  try {
+    const existing = sessionStorage.getItem(REF_SEED_KEY);
+    if (existing) return existing;
+    const fresh = Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem(REF_SEED_KEY, fresh);
+    return fresh;
+  } catch {
+    return Math.random().toString(36).slice(2, 10);
+  }
+}
 
 const REGION_OPTIONS = [
   { value: '', label: 'Todas as regiões' },
@@ -167,6 +191,17 @@ export const ReferencesPage: React.FC = () => {
     if (v) initialDims[k] = v;
   }
 
+  // Active brand feeds the feed RANKING (not a hard filter): the BrandSwitcher in
+  // the shell is the control. "Todas as marcas" (activeBrandId null) → neutral feed.
+  const activeBrand = useActiveBrandSafe();
+  const activeBrandId = activeBrand?.activeBrandId ?? null;
+  const brandTerms = useMemo(
+    () => brandRankingTerms(activeBrand?.activeBrand),
+    [activeBrand?.activeBrand]
+  );
+  // Rail slot — the tag facets live in the drill-in rail, below the categories.
+  const railSlot = useRailSlot()?.railSlot ?? null;
+
   const [items, setItems] = useState<ReferenceItem[]>([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -179,7 +214,22 @@ export const ReferencesPage: React.FC = () => {
     (searchParams.get('scope') as 'library' | 'collections' | 'mine') || 'library'
   );
   const [reloadNonce, setReloadNonce] = useState(0);
+  // Session seed — makes the feed order fresh per visit (deterministic WITHIN a
+  // session so infinite-scroll pagination stays consistent). Reshuffle = new seed.
+  const [seed, setSeed] = useState<string>(getSessionSeed);
+  const reshuffle = useCallback(() => {
+    const next = Math.random().toString(36).slice(2, 10);
+    try {
+      sessionStorage.setItem(REF_SEED_KEY, next);
+    } catch {
+      /* private mode — seed stays in memory only */
+    }
+    setSeed(next);
+  }, []);
   const [search, setSearch] = useState(searchParams.get('q') || '');
+  // Semantic (meaning) vs exact (substring) text search. Default on — it's the
+  // point; a text embedding per debounced query is cheap.
+  const [semanticSearch, setSemanticSearch] = useState(true);
   const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('q') || '');
   const [country, setCountry] = useState(searchParams.get('country') || '');
   const [region, setRegion] = useState(searchParams.get('region') || '');
@@ -196,6 +246,13 @@ export const ReferencesPage: React.FC = () => {
 
   // Admin curation gate — verified server-side; this only toggles the UI affordances.
   const [isAdmin, setIsAdmin] = useState(false);
+  const [dupeMap, setDupeMap] = useState<Map<string, { count: number; isKeeper: boolean }>>(
+    new Map()
+  );
+  const [dupeReport, setDupeReport] = useState<DuplicateReport | null>(null);
+  const [deduping, setDeduping] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [moderationOpen, setModerationOpen] = useState(false);
   // Batch multi-select (Set of ref ids) + shift-range anchor.
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const selectAnchor = useRef<number | null>(null);
@@ -276,6 +333,10 @@ export const ReferencesPage: React.FC = () => {
                 tag: activeTag || undefined,
                 kind,
                 dimensions: dims,
+                seed,
+                brandId: activeBrandId || undefined,
+                brandTerms: brandTerms || undefined,
+                semantic: semanticSearch,
               });
         setItems((prev) => {
           if (!append) return data.references;
@@ -293,7 +354,19 @@ export const ReferencesPage: React.FC = () => {
         setIsLoadingMore(false);
       }
     },
-    [scope, debouncedSearch, country, region, activeTag, kind, dims]
+    [
+      scope,
+      debouncedSearch,
+      country,
+      region,
+      activeTag,
+      kind,
+      dims,
+      seed,
+      activeBrandId,
+      brandTerms,
+      semanticSearch,
+    ]
   );
 
   // facets once
@@ -322,6 +395,30 @@ export const ReferencesPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  // Duplicate map — admin only. The library predates ingest dedup, so identical
+  // bytes exist more than once; this marks them in place so the grouping can be
+  // eyeballed against the real images before anything is deleted.
+  useEffect(() => {
+    if (!isAdmin) return;
+    adminReferencesApi
+      .duplicates()
+      .then((report) => {
+        const map = new Map<string, { count: number; isKeeper: boolean }>();
+        for (const g of report.groups) {
+          map.set(g.keep.id, { count: g.count, isKeeper: true });
+          for (const d of g.duplicates) map.set(d.id, { count: g.count, isKeeper: false });
+        }
+        setDupeMap(map);
+        setDupeReport(report);
+      })
+      .catch(() => {});
+    // Moderation queue count — how many user uploads await review.
+    adminReferencesApi
+      .pending(1, 0)
+      .then((r) => setPendingCount(r.total))
+      .catch(() => {});
+  }, [isAdmin]);
+
   // debounce the search box (instant search)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 320);
@@ -343,6 +440,9 @@ export const ReferencesPage: React.FC = () => {
     similar,
     collectionView,
     reloadNonce,
+    seed,
+    activeBrandId,
+    brandTerms,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── URL → estado (rail drill-in) ──────────────────────────────────────────
@@ -576,6 +676,31 @@ export const ReferencesPage: React.FC = () => {
     [clearSelection, unhide]
   );
 
+  // Auto-delete redundant copies (keeps the oldest of each group). Confirms
+  // first — it's one-way and the server recomputes which ids die, so a stale
+  // page can't take a keeper down with it.
+  const handleDedupe = useCallback(async () => {
+    if (!dupeReport) return;
+    const ok = window.confirm(
+      `Remover ${dupeReport.redundant} cópia(s) redundante(s)? A mais antiga de cada grupo é mantida. Ação irreversível.`
+    );
+    if (!ok) return;
+    setDeduping(true);
+    try {
+      const res = await adminReferencesApi.dedupe(false);
+      // Drop the deleted ids from the grid without a full refetch.
+      const doomed = new Set(dupeReport.groups.flatMap((g) => g.duplicates.map((d) => d.id)));
+      setItems((prev) => prev.filter((r) => !doomed.has(r.id)));
+      setDupeMap(new Map());
+      setDupeReport(null);
+      toast.success(`${res.deleted ?? 0} referência(s) duplicada(s) removida(s)`);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao remover duplicatas');
+    } finally {
+      setDeduping(false);
+    }
+  }, [dupeReport]);
+
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -687,6 +812,8 @@ export const ReferencesPage: React.FC = () => {
         setRegion(v);
         if (v) setCountry('');
       }}
+      semantic={semanticSearch}
+      setSemantic={setSemanticSearch}
     />
   );
 
@@ -725,7 +852,7 @@ export const ReferencesPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="bg-neutral-900 border-neutral-700 text-xs"
+              className="bg-card border-border text-xs"
               onClick={() => requireAuth() && searchByImageInput.current?.click()}
             >
               <ScanSearch className="h-3.5 w-3.5 mr-1.5" />
@@ -749,9 +876,9 @@ export const ReferencesPage: React.FC = () => {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2.5"
+              className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-border bg-muted px-4 py-2.5"
             >
-              <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
+              <span className="flex items-center gap-2 text-xs text-muted-foreground truncate">
                 <ScanSearch className="h-3.5 w-3.5 shrink-0" />
                 {similarLoading
                   ? 'Buscando parecidas...'
@@ -760,7 +887,7 @@ export const ReferencesPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs text-neutral-400 hover:text-neutral-200 shrink-0"
+                className="h-7 text-xs text-muted-foreground hover:text-foreground shrink-0"
                 onClick={clearSimilar}
               >
                 <X className="h-3.5 w-3.5 mr-1" />
@@ -772,8 +899,8 @@ export const ReferencesPage: React.FC = () => {
 
         {/* Collection (board) banner */}
         {collectionView && (
-          <div className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2.5">
-            <span className="flex items-center gap-2 text-xs text-brand-cyan truncate">
+          <div className="flex items-center justify-between gap-3 mb-4 rounded-xl border border-border bg-muted px-4 py-2.5">
+            <span className="flex items-center gap-2 text-xs text-muted-foreground truncate">
               <Folder className="h-3.5 w-3.5 shrink-0" />
               {collectionView.collection.name} · {collectionView.items.length}
             </span>
@@ -782,7 +909,7 @@ export const ReferencesPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-neutral-400 hover:text-destructive"
+                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
                   aria-label="Apagar coleção"
                   onClick={() => {
                     const board = collectionView.collection;
@@ -814,7 +941,7 @@ export const ReferencesPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs text-neutral-400 hover:text-neutral-200"
+                className="h-7 text-xs text-muted-foreground hover:text-foreground"
                 onClick={() => setCollectionView(null)}
               >
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
@@ -824,82 +951,31 @@ export const ReferencesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Scope toggle + filters */}
+        {/* Workbench — busca + país/região + filtros + embaralhar numa barra só.
+            Scope (Biblioteca/Coleções/Minhas refs) e kind (Logos/Mockups) são
+            NAVEGAÇÃO: vivem na rail drill-in (navConfig REFERENCES_NAV), não aqui. */}
         {!similar && !collectionView && (
           <div className="space-y-3 mb-6">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
-                {(['library', 'collections', 'mine'] as const).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => {
-                      if (s !== 'library' && !authService.isAuthenticated()) {
-                        toast.error('Faça login para ver isso');
-                        return;
-                      }
-                      setScope(s);
-                    }}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                      scope === s
-                        ? 'bg-neutral-800 text-neutral-100'
-                        : 'text-neutral-500 hover:text-neutral-300'
-                    )}
-                  >
-                    {s === 'library'
-                      ? 'Biblioteca'
-                      : s === 'collections'
-                        ? 'Coleções'
-                        : 'Minhas refs'}
-                  </button>
-                ))}
-                {/* Kind filter — logos vs mockups */}
-                {scope === 'library' && (
-                  <div className="ml-2 flex items-center gap-1 border-l border-neutral-800 pl-2">
-                    {(['all', 'branding', 'mockup'] as const).map((k) => (
-                      <button
-                        key={k}
-                        onClick={() => setKind(k)}
-                        className={cn(
-                          'px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors',
-                          kind === k
-                            ? 'bg-neutral-800 text-neutral-100'
-                            : 'text-neutral-500 hover:text-neutral-300'
-                        )}
-                      >
-                        {k === 'all' ? 'Tudo' : k === 'branding' ? 'Logos' : 'Mockups'}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Mobile filter trigger */}
-              {scope === 'library' && (
+            {scope === 'library' && (
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">{filterControls}</div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="md:hidden h-8 bg-neutral-900 border-neutral-700 text-xs"
-                  onClick={() => setFilterSheet(true)}
+                  aria-label="Embaralhar feed"
+                  title="Embaralhar"
+                  className="h-9 shrink-0 border-border bg-card text-muted-foreground hover:text-foreground text-xs"
+                  onClick={reshuffle}
                 >
-                  <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
-                  Filtros
+                  <Shuffle className="h-3.5 w-3.5" />
                 </Button>
-              )}
-            </div>
-
-            {/* Desktop inline filters + progressive-disclosure toggle */}
-            {scope === 'library' && (
-              <div className="hidden md:flex items-center gap-2">
-                <div className="flex-1">{filterControls}</div>
                 <Button
                   variant="outline"
                   size="sm"
                   aria-expanded={filtersOpen}
                   className={cn(
-                    'h-9 shrink-0 border-neutral-700 text-xs transition-colors',
-                    filtersOpen
-                      ? 'bg-neutral-800 text-neutral-100'
-                      : 'bg-neutral-900 text-neutral-400'
+                    'hidden md:inline-flex h-9 shrink-0 border-border text-xs transition-colors',
+                    filtersOpen ? 'bg-muted text-foreground' : 'bg-card text-muted-foreground'
                   )}
                   onClick={() => setFiltersOpen((o) => !o)}
                 >
@@ -912,20 +988,27 @@ export const ReferencesPage: React.FC = () => {
                     )}
                   />
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Filtros"
+                  className="md:hidden h-9 shrink-0 border-border bg-card text-muted-foreground text-xs"
+                  onClick={() => setFilterSheet(true)}
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                </Button>
               </div>
             )}
 
             {/* Semantic suggestion — based on what the user has saved */}
             {scope === 'library' && !hasActiveFilters && taste.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-                  Pra você
-                </span>
+                <span className="text-xs text-muted-foreground">Pra você</span>
                 {taste.map((t) => (
                   <Badge
                     key={t.key + t.value}
                     variant="outline"
-                    className="cursor-pointer border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10 text-[10px]"
+                    className="cursor-pointer border-border bg-muted text-muted-foreground hover:bg-muted hover:text-foreground text-xs"
                     onClick={() => setDim(t.key, t.value)}
                   >
                     {t.value}
@@ -937,7 +1020,7 @@ export const ReferencesPage: React.FC = () => {
             {/* Active filters summary + result count */}
             {scope === 'library' && hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="mr-1 text-[11px] font-mono text-neutral-500">
+                <span className="mr-1 text-xs text-muted-foreground">
                   {total.toLocaleString('pt-BR')} {total === 1 ? 'ref' : 'refs'}
                 </span>
                 {kind !== 'all' && (
@@ -962,7 +1045,7 @@ export const ReferencesPage: React.FC = () => {
                 ))}
                 <button
                   onClick={clearAllFilters}
-                  className="ml-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-brand-cyan transition-colors"
+                  className="ml-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Limpar tudo
                 </button>
@@ -981,7 +1064,7 @@ export const ReferencesPage: React.FC = () => {
                   if (!vals || !vals.length) return null;
                   return (
                     <div key={dk} className="flex flex-wrap items-center gap-1.5">
-                      <span className="w-[88px] shrink-0 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                      <span className="w-[88px] shrink-0 text-xs text-muted-foreground">
                         {DIM_LABELS[dk]}
                       </span>
                       {vals.slice(0, 10).map((v) => {
@@ -991,10 +1074,10 @@ export const ReferencesPage: React.FC = () => {
                             key={v.value}
                             variant={active ? 'secondary' : 'outline'}
                             className={cn(
-                              'cursor-pointer text-[10px]',
+                              'cursor-pointer text-xs',
                               active
-                                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30'
-                                : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan'
+                                ? 'bg-muted text-foreground border-border'
+                                : 'border-border text-muted-foreground hover:border-ring hover:text-foreground'
                             )}
                             onClick={() => setDim(dk, v.value)}
                           >
@@ -1002,7 +1085,9 @@ export const ReferencesPage: React.FC = () => {
                             {active ? (
                               <X className="h-2.5 w-2.5 ml-1" />
                             ) : (
-                              <span className="ml-1 text-neutral-600 tabular-nums">{v.count}</span>
+                              <span className="ml-1 text-muted-foreground tabular-nums">
+                                {v.count}
+                              </span>
                             )}
                           </Badge>
                         );
@@ -1012,37 +1097,32 @@ export const ReferencesPage: React.FC = () => {
                 })}
               </motion.div>
             )}
-
-            {/* Tag facets — folded until "Filtros" is opened */}
-            {scope === 'library' && filtersOpen && facets && facets.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {activeTag && (
-                  <Badge
-                    variant="secondary"
-                    className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px]"
-                    onClick={() => setActiveTag('')}
-                  >
-                    {activeTag}
-                    <X className="h-2.5 w-2.5 ml-1" />
-                  </Badge>
-                )}
-                {facets.tags
-                  .filter((t) => t.value !== activeTag)
-                  .slice(0, 18)
-                  .map((t) => (
-                    <Badge
-                      key={t.value}
-                      variant="outline"
-                      className="cursor-pointer border-neutral-700 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan text-[10px]"
-                      onClick={() => setActiveTag(t.value)}
-                    >
-                      {t.value}
-                      <span className="ml-1 text-neutral-600 tabular-nums">{t.count}</span>
-                    </Badge>
-                  ))}
-              </div>
-            )}
+            {/* Os tag facets migraram pra rail (portal abaixo das categorias) — ver railTags. */}
           </div>
+        )}
+
+        {/* Admin-only: user uploads awaiting moderation. Nothing here is public
+            or AI-analysed yet — approving runs enrichment, then reveals it. */}
+        {isAdmin && pendingCount > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-brand-cyan/30 bg-brand-cyan/5 px-3 py-2">
+            <span className="text-xs font-mono text-brand-cyan">
+              {pendingCount} referência(s) aguardando revisão
+            </span>
+            <Button
+              size="sm"
+              className="ml-auto h-7 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+              onClick={() => setModerationOpen(true)}
+            >
+              Revisar
+            </Button>
+          </div>
+        )}
+
+        {/* Admin-only duplicate calibration bar. Shows what the content-hash
+            grouping found; the badges on the cards show WHERE. Delete is
+            explicit and one-way, so it confirms first. */}
+        {isAdmin && dupeReport && dupeReport.redundant > 0 && (
+          <DuplicateAdminBar report={dupeReport} onDedupe={handleDedupe} deduping={deduping} />
         )}
 
         {/* Content */}
@@ -1079,6 +1159,7 @@ export const ReferencesPage: React.FC = () => {
             renderItem={(item, idx) => (
               <MasonryCard
                 item={item}
+                dupe={dupeMap.get(item.id)}
                 focused={idx === focusedIndex}
                 selected={selected.has(item.id)}
                 selectionActive={selected.size > 0}
@@ -1109,7 +1190,7 @@ export const ReferencesPage: React.FC = () => {
           <div ref={sentinelRef} className="h-1" />
         )}
         {isLoadingMore && (
-          <div className="flex items-center justify-center py-6 gap-2 text-neutral-500">
+          <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span className="text-xs">Carregando mais...</span>
           </div>
@@ -1119,7 +1200,7 @@ export const ReferencesPage: React.FC = () => {
           scope !== 'collections' &&
           grid.length > 0 &&
           page >= pages && (
-            <p className="text-center text-[10px] text-neutral-600 py-6">
+            <p className="text-center text-[10px] text-muted-foreground py-6">
               {grid.length} de {total} referências
             </p>
           )}
@@ -1144,9 +1225,11 @@ export const ReferencesPage: React.FC = () => {
         {/* Mobile filter sheet */}
         {filterSheet && (
           <Dialog open onOpenChange={() => setFilterSheet(false)}>
-            <DialogContent className="max-w-sm bg-neutral-950 border-neutral-800">
+            <DialogContent className="max-w-sm bg-card border-border">
               <DialogHeader>
-                <DialogTitle className="text-sm font-mono text-neutral-300">Filtros</DialogTitle>
+                <DialogTitle className="text-sm font-mono text-muted-foreground">
+                  Filtros
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-3 pt-1">{filterControls}</div>
             </DialogContent>
@@ -1163,7 +1246,7 @@ export const ReferencesPage: React.FC = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm pointer-events-none"
           >
-            <div className="flex flex-col items-center gap-3 text-brand-cyan border-2 border-dashed border-brand-cyan/50 rounded-2xl px-12 py-10">
+            <div className="flex flex-col items-center gap-3 text-neutral-200 border-2 border-dashed border-white/20 rounded-2xl px-12 py-10">
               <ImageIcon className="h-8 w-8" />
               <p className="text-sm font-medium">Solte a imagem para achar parecidas</p>
             </div>
@@ -1187,6 +1270,14 @@ export const ReferencesPage: React.FC = () => {
         onDelete={(ref) => handleAdminDelete([ref.id])}
         similarSource={similar?.source}
       />
+
+      {/* Admin moderation queue (pending user uploads) */}
+      {moderationOpen && (
+        <ModerationQueue
+          onClose={() => setModerationOpen(false)}
+          onResolved={() => setPendingCount((c) => Math.max(0, c - 1))}
+        />
+      )}
 
       {/* Right-click context menu (reuses dropdown-menu, anchored at cursor) */}
       {ctxMenu && (
@@ -1249,6 +1340,44 @@ export const ReferencesPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Tag facets — portaled INTO the drill-in rail, below the categories. Tags
+          read like sub-categories, so they belong in the nav rail (not the body).
+          Clicking one filters the feed via activeTag. */}
+      {railSlot &&
+        scope === 'library' &&
+        !similar &&
+        !collectionView &&
+        !!facets?.tags?.length &&
+        createPortal(
+          <div className="px-2 pb-3">
+            <p className="px-1 pb-1.5 text-[11px] text-sidebar-foreground/50">Tags</p>
+            <div className="flex flex-wrap gap-1">
+              {activeTag && (
+                <button
+                  onClick={() => setActiveTag('')}
+                  className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-[11px]"
+                >
+                  {activeTag}
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              )}
+              {facets.tags
+                .filter((t) => t.value !== activeTag)
+                .slice(0, 24)
+                .map((t) => (
+                  <button
+                    key={t.value}
+                    onClick={() => setActiveTag(t.value)}
+                    className="rounded-md px-1.5 py-0.5 text-[11px] text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                  >
+                    {t.value}
+                  </button>
+                ))}
+            </div>
+          </div>,
+          railSlot
+        )}
     </div>
   );
 };
@@ -1274,7 +1403,7 @@ const CollectionsGrid: React.FC<{
 
   if (!authService.isAuthenticated()) {
     return (
-      <div className="text-center py-20 text-sm text-neutral-500">
+      <div className="text-center py-20 text-sm text-muted-foreground">
         Faça login para criar e ver suas coleções.
       </div>
     );
@@ -1283,7 +1412,7 @@ const CollectionsGrid: React.FC<{
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       {creating ? (
-        <div className="aspect-[4/3] rounded-xl border border-brand-cyan/30 bg-neutral-900 p-3 flex flex-col justify-center gap-2">
+        <div className="aspect-[4/3] rounded-xl border border-border bg-card p-3 flex flex-col justify-center gap-2">
           <Input
             autoFocus
             value={name}
@@ -1293,7 +1422,7 @@ const CollectionsGrid: React.FC<{
               if (e.key === 'Escape') setCreating(false);
             }}
             placeholder="Nome da coleção"
-            className="bg-neutral-950 border-neutral-700 text-sm h-9"
+            className="bg-input border-border text-sm h-9"
           />
           <div className="flex gap-1.5">
             <Button
@@ -1307,7 +1436,7 @@ const CollectionsGrid: React.FC<{
             <Button
               size="sm"
               variant="ghost"
-              className="text-xs text-neutral-400"
+              className="text-xs text-muted-foreground"
               onClick={() => setCreating(false)}
             >
               Cancelar
@@ -1317,10 +1446,10 @@ const CollectionsGrid: React.FC<{
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="aspect-[4/3] rounded-xl border border-dashed border-neutral-700 hover:border-neutral-700 text-neutral-500 hover:text-brand-cyan transition-colors flex flex-col items-center justify-center gap-2"
+          className="aspect-[4/3] rounded-xl border border-dashed border-border hover:border-ring text-muted-foreground hover:text-foreground transition-colors flex flex-col items-center justify-center gap-2"
         >
           <FolderPlus className="h-6 w-6" />
-          <span className="text-xs font-mono uppercase tracking-wider">Nova coleção</span>
+          <span className="text-xs">Nova coleção</span>
         </button>
       )}
 
@@ -1328,9 +1457,9 @@ const CollectionsGrid: React.FC<{
         <button
           key={c.id}
           onClick={() => onOpen(c.id)}
-          className="group text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 ring-white/5 hover:ring-white/15 transition-all hover:-translate-y-0.5"
+          className="group text-left rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all hover:-translate-y-0.5"
         >
-          <div className="aspect-[4/3] relative bg-neutral-800">
+          <div className="aspect-[4/3] relative bg-muted">
             {c.covers && c.covers.length > 1 ? (
               <div className="grid grid-cols-2 grid-rows-2 w-full h-full gap-px">
                 {c.covers.slice(0, 4).map((u, i) => (
@@ -1351,17 +1480,17 @@ const CollectionsGrid: React.FC<{
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full grid place-items-center text-neutral-700">
+              <div className="w-full h-full grid place-items-center text-muted-foreground">
                 <Folder className="h-8 w-8" />
               </div>
             )}
           </div>
           <div className="p-2.5">
-            <p className="text-xs font-medium text-neutral-200 truncate flex items-center gap-1">
-              {!c.isPublic && <Lock className="h-3 w-3 text-neutral-500 shrink-0" />}
+            <p className="text-xs font-medium text-foreground truncate flex items-center gap-1">
+              {!c.isPublic && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
               {c.name}
             </p>
-            <p className="text-[10px] font-mono text-neutral-500">
+            <p className="text-[10px] font-mono text-muted-foreground">
               {c.count} {c.count === 1 ? 'item' : 'itens'}
             </p>
           </div>
@@ -1424,9 +1553,9 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-sm bg-neutral-950 border-neutral-800">
+      <DialogContent className="max-w-sm bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">
+          <DialogTitle className="text-sm font-mono text-muted-foreground">
             {count > 1 ? `Salvar ${count} em coleção` : 'Salvar em coleção'}
           </DialogTitle>
         </DialogHeader>
@@ -1438,7 +1567,7 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
               if (e.key === 'Enter') createAndAdd();
             }}
             placeholder="Nova coleção..."
-            className="bg-neutral-900 border-neutral-700 text-sm h-9"
+            className="bg-input border-border text-sm h-9"
           />
           <Button
             size="sm"
@@ -1450,9 +1579,9 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
         </div>
         <div className="max-h-64 overflow-y-auto flex flex-col gap-1 mt-1">
           {cols === null ? (
-            <p className="text-xs text-neutral-500 py-4 text-center">Carregando...</p>
+            <p className="text-xs text-muted-foreground py-4 text-center">Carregando...</p>
           ) : cols.length === 0 ? (
-            <p className="text-xs text-neutral-500 py-4 text-center">
+            <p className="text-xs text-muted-foreground py-4 text-center">
               Nenhuma coleção ainda — crie a primeira acima.
             </p>
           ) : (
@@ -1461,16 +1590,16 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
                 key={c.id}
                 onClick={() => addTo(c.id)}
                 disabled={savedIds.has(c.id)}
-                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-neutral-900 text-left transition-colors"
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-muted text-left transition-colors"
               >
-                <span className="flex items-center gap-2 text-sm text-neutral-200 truncate">
-                  <Folder className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
+                <span className="flex items-center gap-2 text-sm text-foreground truncate">
+                  <Folder className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   {c.name}
                 </span>
                 {savedIds.has(c.id) ? (
                   <Check className="h-4 w-4 text-brand-cyan shrink-0" />
                 ) : (
-                  <span className="text-[10px] font-mono text-neutral-600 tabular-nums">
+                  <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
                     {c.count}
                   </span>
                 )}
@@ -1552,11 +1681,11 @@ const BatchActionBar: React.FC<{
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: 16 }}
     transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border border-neutral-800 bg-neutral-950/95 backdrop-blur px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 rounded-full border border-border bg-card/95 backdrop-blur px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
     role="toolbar"
     aria-label="Ações da seleção"
   >
-    <span className="px-1 text-xs font-mono text-neutral-300 tabular-nums">
+    <span className="px-1 text-xs font-mono text-muted-foreground tabular-nums">
       <motion.span
         key={count}
         initial={{ scale: 0.7, opacity: 0.4 }}
@@ -1571,7 +1700,7 @@ const BatchActionBar: React.FC<{
     {count < total && (
       <button
         onClick={onSelectAll}
-        className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 hover:text-brand-cyan transition-colors"
+        className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
       >
         Tudo
       </button>
@@ -1588,7 +1717,7 @@ const BatchActionBar: React.FC<{
       <Button
         size="sm"
         variant="outline"
-        className="h-8 bg-neutral-900 border-neutral-700 text-xs text-destructive hover:text-destructive"
+        className="h-8 bg-card border-border text-xs text-destructive hover:text-destructive"
         onClick={onDelete}
       >
         <Trash2 className="h-3.5 w-3.5 mr-1.5" />
@@ -1599,7 +1728,7 @@ const BatchActionBar: React.FC<{
       onClick={onClear}
       title="Concluir seleção"
       aria-label="Concluir seleção"
-      className="h-7 w-7 grid place-items-center rounded-full text-neutral-400 hover:text-neutral-200"
+      className="h-7 w-7 grid place-items-center rounded-full text-muted-foreground hover:text-foreground"
     >
       <X className="h-4 w-4" />
     </button>
@@ -1636,69 +1765,67 @@ const EditReferenceDialog: React.FC<{
   };
 
   return (
-    <Dialog open onOpenChange={() => !saving && onClose()}>
-      <DialogContent className="max-w-md bg-neutral-950 border-neutral-800">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">
-            Editar referência
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase">Nome</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-neutral-900 border-neutral-700 text-sm h-9"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase">Descrição</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded-md text-sm p-2 text-neutral-200 resize-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase">
-              Tags (separadas por vírgula)
-            </label>
-            <Input
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="minimalist, line art, warm..."
-              className="bg-neutral-900 border-neutral-700 text-sm h-9"
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-neutral-900 border-neutral-700 text-xs"
-              disabled={saving}
-              onClick={onClose}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-              disabled={saving}
-              onClick={save}
-            >
-              {saving ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-              ) : (
-                <Save className="h-3.5 w-3.5 mr-1.5" />
-              )}
-              Salvar
-            </Button>
-          </div>
+    <Modal
+      isOpen
+      onClose={() => !saving && onClose()}
+      title="Editar referência"
+      size="sm"
+      footer={
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground"
+            disabled={saving}
+            onClick={onClose}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="sm"
+            className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+            disabled={saving}
+            onClick={save}
+          >
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+            )}
+            Salvar
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-xs text-muted-foreground">Nome</label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="bg-input border-border text-sm h-9"
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+        <div className="space-y-1.5">
+          <label className="text-xs text-muted-foreground">Descrição</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full bg-input border border-border rounded-md text-sm p-2 text-foreground resize-none"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs text-muted-foreground">Tags (separadas por vírgula)</label>
+          <Input
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            placeholder="minimalist, line art, warm..."
+            className="bg-input border-border text-sm h-9"
+          />
+        </div>
+      </div>
+    </Modal>
   );
 };
 
@@ -1706,12 +1833,144 @@ const EditReferenceDialog: React.FC<{
 const FilterChip: React.FC<{ label: string; onRemove: () => void }> = ({ label, onRemove }) => (
   <Badge
     variant="secondary"
-    className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px]"
+    className="cursor-pointer bg-muted text-foreground border-border text-xs"
     onClick={onRemove}
   >
     {label}
     <X className="h-2.5 w-2.5 ml-1" />
   </Badge>
+);
+
+// ─── Admin-only moderation queue (pending user uploads) ──────────────────────
+const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }> = ({
+  onClose,
+  onResolved,
+}) => {
+  const [items, setItems] = useState<PendingReference[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await adminReferencesApi.pending(50, 0);
+      setItems(res.items);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao carregar fila');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Approval runs AI enrichment server-side, so it's slow — block the row while it works.
+  const act = async (id: string, action: 'approve' | 'reject') => {
+    setBusy(id);
+    try {
+      if (action === 'approve') await adminReferencesApi.approve(id);
+      else await adminReferencesApi.reject(id);
+      setItems((prev) => prev.filter((r) => r.id !== id));
+      onResolved();
+      toast.success(action === 'approve' ? 'Aprovada e analisada' : 'Rejeitada');
+    } catch (e: any) {
+      toast.error(e.message || 'Erro');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl bg-card border-border">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-mono text-muted-foreground">
+            Fila de moderação · {items.length} aguardando
+          </DialogTitle>
+        </DialogHeader>
+        {loading ? (
+          <div className="py-10 text-center">
+            <Loader2 className="h-5 w-5 mx-auto animate-spin text-muted-foreground" />
+          </div>
+        ) : items.length === 0 ? (
+          <p className="py-10 text-center text-xs text-muted-foreground">Nada para revisar.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto p-1">
+            {items.map((ref) => (
+              <div
+                key={ref.id}
+                className="rounded-lg border border-border bg-background/40 overflow-hidden"
+              >
+                <img
+                  src={ref.thumbnailUrl || ref.referenceImageUrl}
+                  alt={ref.name}
+                  className="w-full aspect-square object-cover"
+                />
+                <div className="p-2 space-y-2">
+                  <p className="text-[11px] truncate" title={ref.name}>
+                    {ref.name}
+                  </p>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      className="h-7 flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-[11px]"
+                      disabled={busy === ref.id}
+                      onClick={() => act(ref.id, 'approve')}
+                    >
+                      {busy === ref.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Aprovar'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 text-[11px]"
+                      disabled={busy === ref.id}
+                      onClick={() => act(ref.id, 'reject')}
+                    >
+                      Rejeitar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// ─── Admin-only duplicate calibration bar ────────────────────────────────────
+const DuplicateAdminBar: React.FC<{
+  report: DuplicateReport;
+  onDedupe: () => void;
+  deduping: boolean;
+}> = ({ report, onDedupe, deduping }) => (
+  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+    <span className="text-xs font-mono text-amber-500">
+      {report.groups.length} grupo(s) · {report.redundant} cópia(s) redundante(s)
+    </span>
+    <span className="text-[11px] text-muted-foreground">
+      Marcadas no grid: <span className="text-amber-500">×N</span> = mantida,{' '}
+      <span className="text-destructive">dup</span> = removível
+      {report.unhashed > 0 && ` · ${report.unhashed} sem hash (não comparáveis)`}
+    </span>
+    <Button
+      size="sm"
+      variant="outline"
+      className="ml-auto h-7 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+      disabled={deduping}
+      onClick={onDedupe}
+    >
+      {deduping ? (
+        <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+      ) : (
+        <Trash2 className="mr-1.5 h-3 w-3" />
+      )}
+      Remover redundantes
+    </Button>
+  </div>
 );
 
 const FilterControls: React.FC<{
@@ -1721,17 +1980,43 @@ const FilterControls: React.FC<{
   setCountry: (v: string) => void;
   region: string;
   setRegion: (v: string) => void;
-}> = ({ search, setSearch, country, setCountry, region, setRegion }) => (
+  semantic: boolean;
+  setSemantic: (v: boolean) => void;
+}> = ({ search, setSearch, country, setCountry, region, setRegion, semantic, setSemantic }) => (
   <div className="flex flex-col md:flex-row md:items-center gap-2">
     <div className="relative flex-1 min-w-[200px]">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
       <Input
         id="ref-search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Buscar por nome, estúdio, descrição...  ( / )"
-        className="pl-9 bg-neutral-900 border-neutral-700 text-sm h-9"
+        placeholder={
+          semantic
+            ? 'Buscar por significado...  ( / )'
+            : 'Buscar por nome, estúdio, descrição...  ( / )'
+        }
+        className="pl-9 pr-24 bg-input border-border text-sm h-9"
       />
+      {/* Semantic (meaning) vs exact (substring). Only relevant with a query. */}
+      {search.trim() && (
+        <button
+          type="button"
+          onClick={() => setSemantic(!semantic)}
+          title={
+            semantic
+              ? 'Busca por significado (IA). Clique para busca exata.'
+              : 'Busca exata (substring). Clique para busca por significado.'
+          }
+          className={cn(
+            'absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-[10px] font-mono transition-colors',
+            semantic
+              ? 'bg-brand-cyan/15 text-brand-cyan'
+              : 'bg-muted text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {semantic ? 'significado' : 'exata'}
+        </button>
+      )}
     </div>
     <div className="md:w-[190px]">
       <Select options={COUNTRY_OPTIONS} value={country} onChange={setCountry} placeholder="País" />
@@ -1755,6 +2040,8 @@ const MasonryCard: React.FC<{
   selectionActive?: boolean;
   onToggleSelect?: (shiftKey: boolean) => void;
   onContextMenu?: (x: number, y: number) => void;
+  /** Admin-only duplicate marker. Absent for everyone else. */
+  dupe?: { count: number; isKeeper: boolean };
 }> = ({
   item,
   onOpen,
@@ -1766,6 +2053,7 @@ const MasonryCard: React.FC<{
   selectionActive,
   onToggleSelect,
   onContextMenu,
+  dupe,
 }) => {
   const [loaded, setLoaded] = useState(false);
   const reduce = useReducedMotion();
@@ -1807,10 +2095,10 @@ const MasonryCard: React.FC<{
             else onOpen();
           }}
           className={cn(
-            'block w-full text-left rounded-xl overflow-hidden bg-neutral-900 ring-1 transition-[box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-[0.985] focus:outline-none',
+            'block w-full text-left rounded-xl overflow-hidden bg-card ring-1 transition-[box-shadow,transform,opacity] duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-[0.985] focus:outline-none',
             selected || focused
               ? 'ring-2 ring-brand-cyan'
-              : 'ring-white/5 hover:ring-white/15 focus-visible:ring-2 focus-visible:ring-brand-cyan/60',
+              : 'ring-border hover:ring-ring focus-visible:ring-2 focus-visible:ring-brand-cyan/60',
             // In select-mode, dim what isn't chosen so the mode is unmistakable.
             selectionActive && !selected && 'opacity-55 hover:opacity-100'
           )}
@@ -1826,7 +2114,7 @@ const MasonryCard: React.FC<{
                   className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 animate-pulse bg-neutral-800/50" />
+                <div className="absolute inset-0 animate-pulse bg-muted/50" />
               ))}
             <motion.img
               layoutId={`card-${item.id}`}
@@ -1864,8 +2152,28 @@ const MasonryCard: React.FC<{
               </span>
             )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-brand-cyan/90 px-1.5 py-0.5 text-[10px] font-mono text-black">
+              <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur px-1.5 py-0.5 text-[10px] font-mono text-neutral-100">
                 {Math.round(item.score * 100)}%
+              </span>
+            )}
+            {/* Admin-only: identical bytes ingested more than once (the library
+                predates ingest dedup). Amber = the copy that survives a dedupe,
+                destructive = the copy that gets deleted. */}
+            {dupe && (
+              <span
+                className={cn(
+                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-[10px] font-mono backdrop-blur',
+                  dupe.isKeeper
+                    ? 'bg-amber-500/80 text-black'
+                    : 'bg-destructive/80 text-destructive-foreground'
+                )}
+                title={
+                  dupe.isKeeper
+                    ? `${dupe.count} cópias idênticas — esta é a mais antiga e seria mantida`
+                    : `${dupe.count} cópias idênticas — esta seria removida`
+                }
+              >
+                {dupe.isKeeper ? `×${dupe.count}` : 'dup'}
               </span>
             )}
           </div>
@@ -1884,7 +2192,7 @@ const MasonryCard: React.FC<{
             className={cn(
               'absolute top-1.5 left-1.5 z-10 h-6 w-6 grid place-items-center rounded-md bg-black/60 backdrop-blur transition-opacity',
               selected || selectionActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
-              selected ? 'text-brand-cyan' : 'text-neutral-200 hover:text-brand-cyan'
+              selected ? 'text-brand-cyan' : 'text-neutral-200 hover:text-neutral-100'
             )}
           >
             {selected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
@@ -1901,7 +2209,7 @@ const MasonryCard: React.FC<{
             onClick={onSimilar}
             title="Ver parecidas"
             aria-label="Ver parecidas"
-            className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+            className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-neutral-100"
           >
             <Images className="h-3.5 w-3.5" />
           </button>
@@ -1919,7 +2227,7 @@ const MasonryCard: React.FC<{
               onClick={onSave}
               title="Salvar em coleção"
               aria-label="Salvar em coleção"
-              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-brand-cyan"
+              className="h-7 w-7 grid place-items-center rounded-full bg-black/70 backdrop-blur text-neutral-200 hover:text-neutral-100"
             >
               <Bookmark className="h-3.5 w-3.5" />
             </button>
@@ -2047,16 +2355,18 @@ const Lightbox: React.FC<{
             {/* Meta panel */}
             <div
               onClick={(e) => e.stopPropagation()}
-              className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-neutral-950/60 p-5 sm:p-6 overflow-y-auto space-y-4"
+              className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-border bg-card p-5 sm:p-6 overflow-y-auto space-y-4"
             >
               {(() => {
                 const title = refTitle(item);
                 const sub = item.studio?.trim() || item.provenance?.designer?.trim();
                 return (
                   <div>
-                    <h3 className="text-base font-semibold text-white leading-snug">{title}</h3>
+                    <h3 className="text-base font-semibold text-foreground leading-snug">
+                      {title}
+                    </h3>
                     {sub && sub !== title && (
-                      <p className="text-xs font-mono text-neutral-400 mt-0.5">{sub}</p>
+                      <p className="text-xs font-mono text-muted-foreground mt-0.5">{sub}</p>
                     )}
                   </div>
                 );
@@ -2068,16 +2378,14 @@ const Lightbox: React.FC<{
                 (() => {
                   const shared = sharedDimensions(similarSource, item);
                   return shared.length ? (
-                    <div className="rounded-lg border border-brand-cyan/20 bg-brand-cyan/5 p-3">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-brand-cyan/70 mb-1.5">
-                        Por que combina
-                      </p>
+                    <div className="rounded-lg border border-border bg-muted p-3">
+                      <p className="text-xs text-muted-foreground mb-1.5">Por que combina</p>
                       <div className="flex flex-wrap gap-1">
                         {shared.map((s) => (
                           <Badge
                             key={s}
                             variant="outline"
-                            className="border-brand-cyan/30 text-brand-cyan text-[10px]"
+                            className="border-border bg-muted text-muted-foreground text-xs"
                           >
                             {s}
                           </Badge>
@@ -2089,20 +2397,22 @@ const Lightbox: React.FC<{
 
               <div className="flex flex-wrap gap-1.5">
                 {item.country && (
-                  <Badge className="bg-neutral-800 text-neutral-200 border-neutral-700 text-[11px]">
+                  <Badge className="bg-muted text-foreground border-border text-[11px]">
                     {flag ? (
                       <span className="mr-1">{flag}</span>
                     ) : (
                       <MapPin className="h-3 w-3 mr-1" />
                     )}
                     {item.country}
-                    {prov.countryInferred && <span className="ml-1 text-neutral-500">auto</span>}
+                    {prov.countryInferred && (
+                      <span className="ml-1 text-muted-foreground">auto</span>
+                    )}
                   </Badge>
                 )}
                 {item.region && (
                   <Badge
                     variant="outline"
-                    className="border-neutral-700 text-neutral-400 text-[11px]"
+                    className="border-border text-muted-foreground text-[11px]"
                   >
                     <Globe className="h-3 w-3 mr-1" />
                     {REGION_LABELS[item.region] || item.region}
@@ -2111,7 +2421,7 @@ const Lightbox: React.FC<{
                 {prov.year && (
                   <Badge
                     variant="outline"
-                    className="border-neutral-700 text-neutral-400 text-[11px]"
+                    className="border-border text-muted-foreground text-[11px]"
                   >
                     {prov.year}
                   </Badge>
@@ -2119,7 +2429,7 @@ const Lightbox: React.FC<{
                 {prov.awardSource && (
                   <Badge
                     variant="outline"
-                    className="border-neutral-700 text-neutral-400 text-[11px]"
+                    className="border-border text-muted-foreground text-[11px]"
                   >
                     {prov.awardSource}
                   </Badge>
@@ -2128,17 +2438,19 @@ const Lightbox: React.FC<{
 
               {prov.designer && (
                 <div>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase">Designer</span>
-                  <p className="text-sm text-neutral-300">{prov.designer}</p>
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                    Designer
+                  </span>
+                  <p className="text-sm text-muted-foreground">{prov.designer}</p>
                 </div>
               )}
 
               {item.description && (
                 <div>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
                     Descrição
                   </span>
-                  <p className="text-xs text-neutral-400 mt-0.5 leading-relaxed line-clamp-6">
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-6">
                     {item.description}
                   </p>
                 </div>
@@ -2147,15 +2459,17 @@ const Lightbox: React.FC<{
               {/* Tags — click to drop into the library filtered by it (shareable route) */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase">Tags</span>
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                    Tags
+                  </span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((t) => (
                       <Badge
                         key={t}
                         variant="outline"
                         className={cn(
-                          'text-[10px] px-1.5 py-0 border-neutral-700 text-neutral-400 transition-colors',
-                          onTag && 'cursor-pointer hover:border-brand-cyan/40 hover:text-brand-cyan'
+                          'text-[10px] px-1.5 py-0 border-border text-muted-foreground transition-colors',
+                          onTag && 'cursor-pointer hover:border-ring hover:text-foreground'
                         )}
                         onClick={onTag ? () => onTag(t) : undefined}
                       >
@@ -2165,7 +2479,7 @@ const Lightbox: React.FC<{
                     {!showAllTags && item.tags.length > 6 && (
                       <button
                         onClick={() => setShowAllTags(true)}
-                        className="text-[10px] font-mono text-neutral-500 hover:text-brand-cyan px-1 transition-colors"
+                        className="text-[10px] font-mono text-muted-foreground hover:text-foreground px-1 transition-colors"
                       >
                         +{item.tags.length - 6}
                       </button>
@@ -2186,8 +2500,8 @@ const Lightbox: React.FC<{
                         key={`${v}-${i}`}
                         variant="outline"
                         className={cn(
-                          'text-[10px] px-1.5 py-0 border-neutral-800 text-neutral-400 transition-colors',
-                          onTag && 'cursor-pointer hover:border-brand-cyan/40 hover:text-brand-cyan'
+                          'text-[10px] px-1.5 py-0 border-border text-muted-foreground transition-colors',
+                          onTag && 'cursor-pointer hover:border-ring hover:text-foreground'
                         )}
                         onClick={onTag ? () => onTag(v) : undefined}
                       >
@@ -2198,7 +2512,7 @@ const Lightbox: React.FC<{
                 ) : null;
               })()}
 
-              <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+              <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 <Button
                   size="sm"
                   className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
@@ -2211,7 +2525,7 @@ const Lightbox: React.FC<{
                   <Button
                     variant="outline"
                     size="sm"
-                    className="bg-neutral-900 border-neutral-700 text-xs"
+                    className="bg-card border-border text-xs"
                     onClick={() => onSave(item)}
                   >
                     <Bookmark className="h-3.5 w-3.5 mr-1.5" />
@@ -2223,7 +2537,7 @@ const Lightbox: React.FC<{
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 bg-neutral-900 border-neutral-700 text-xs"
+                      className="flex-1 bg-card border-border text-xs"
                       onClick={() => onEdit?.(item)}
                     >
                       <Pencil className="h-3.5 w-3.5 mr-1.5" />
@@ -2232,7 +2546,7 @@ const Lightbox: React.FC<{
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 bg-neutral-900 border-neutral-700 text-xs text-destructive hover:text-destructive"
+                      className="flex-1 bg-card border-border text-xs text-destructive hover:text-destructive"
                       onClick={() => onDelete?.(item)}
                     >
                       <Trash2 className="h-3.5 w-3.5 mr-1.5" />
@@ -2245,7 +2559,7 @@ const Lightbox: React.FC<{
                     href={item.sourceUrl || prov.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 text-xs text-neutral-400 hover:text-brand-cyan"
+                    className="inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     Ver fonte original
@@ -2272,11 +2586,7 @@ const MasonrySkeleton: React.FC<{ cols: number }> = ({ cols }) => {
       {columns.map((col, ci) => (
         <div key={ci} className="flex-1 min-w-0 flex flex-col gap-3">
           {col.map((h, i) => (
-            <div
-              key={i}
-              className="rounded-xl bg-neutral-900/60 animate-pulse"
-              style={{ height: h }}
-            />
+            <div key={i} className="rounded-xl bg-card/60 animate-pulse" style={{ height: h }} />
           ))}
         </div>
       ))}
@@ -2286,11 +2596,11 @@ const MasonrySkeleton: React.FC<{ cols: number }> = ({ cols }) => {
 
 const FirstRun: React.FC<{ onUpload: () => void }> = ({ onUpload }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-    <div className="h-14 w-14 grid place-items-center rounded-2xl bg-neutral-900 ring-1 ring-white/10">
-      <ImageIcon className="h-7 w-7 text-neutral-500" />
+    <div className="h-14 w-14 grid place-items-center rounded-2xl bg-card ring-1 ring-border">
+      <ImageIcon className="h-7 w-7 text-muted-foreground" />
     </div>
-    <h3 className="text-lg font-semibold text-white">Sua biblioteca de referências</h3>
-    <p className="text-sm text-neutral-500 max-w-md leading-relaxed">
+    <h3 className="text-lg font-semibold text-foreground">Sua biblioteca de referências</h3>
+    <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
       Design world-class do mundo inteiro, taggeado por conteúdo e por país. Suba, arraste ou cole
       uma imagem — o pipeline analisa, taggeia e popula. Depois mergulhe de uma ref pra outra.
     </p>
@@ -2307,14 +2617,9 @@ const FirstRun: React.FC<{ onUpload: () => void }> = ({ onUpload }) => (
 
 const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-    <Search className="h-8 w-8 text-neutral-700" />
-    <p className="text-sm text-neutral-400">Nenhuma referência para esse filtro</p>
-    <Button
-      variant="outline"
-      size="sm"
-      className="bg-neutral-900 border-neutral-700 text-xs"
-      onClick={onClear}
-    >
+    <Search className="h-8 w-8 text-muted-foreground" />
+    <p className="text-sm text-muted-foreground">Nenhuma referência para esse filtro</p>
+    <Button variant="outline" size="sm" className="bg-card border-border text-xs" onClick={onClear}>
       <X className="h-3.5 w-3.5 mr-1.5" />
       Limpar filtros
     </Button>
@@ -2324,13 +2629,8 @@ const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
 const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
     <AlertTriangle className="h-8 w-8 text-warning/80" />
-    <p className="text-sm text-neutral-400">Não foi possível carregar as referências</p>
-    <Button
-      variant="outline"
-      size="sm"
-      className="bg-neutral-900 border-neutral-700 text-xs"
-      onClick={onRetry}
-    >
+    <p className="text-sm text-muted-foreground">Não foi possível carregar as referências</p>
+    <Button variant="outline" size="sm" className="bg-card border-border text-xs" onClick={onRetry}>
       Tentar de novo
     </Button>
   </div>
@@ -2382,9 +2682,13 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         });
       }
       const res = await referencesApi.upload(images);
-      toast.success(
-        `${res.ingested} referência(s) ingerida(s)${res.failed ? `, ${res.failed} falha(s)` : ''}`
-      );
+      // Uploads now await moderation — nothing is public or analysed yet. Saying
+      // "ingerida" would overclaim; "em revisão" is the honest state.
+      const pending = res.pending ?? res.ingested - (res.deduped || 0);
+      const parts = [`${pending} enviada(s) para revisão`];
+      if (res.deduped) parts.push(`${res.deduped} já na biblioteca`);
+      if (res.failed) parts.push(`${res.failed} falha(s)`);
+      toast.success(parts.join(', '));
       onDone(isPublic);
     } catch (e: any) {
       toast.error(e.message || 'Erro no upload');
@@ -2393,11 +2697,31 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
     }
   };
 
+  // Ingest is 3 AI calls per image — the app's longest file-processing wait.
+  // Same loader the other ingest flows use (BrandIngestModal, Compress, Upscale).
+  // No `progress`: the batch is one request, so a bar here would be invented.
+  if (uploading) {
+    return (
+      <Dialog open onOpenChange={() => {}}>
+        <DialogContent className="max-w-lg bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-mono text-muted-foreground">
+              Analisando referências
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-8">
+            <FlyingPaperLoader label={`Analisando ${files.length} imagem(ns)...`} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open onOpenChange={() => !uploading && onClose()}>
-      <DialogContent className="max-w-lg bg-neutral-950 border-neutral-800">
+      <DialogContent className="max-w-lg bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-sm font-mono text-neutral-300">
+          <DialogTitle className="text-sm font-mono text-muted-foreground">
             Subir referências
           </DialogTitle>
         </DialogHeader>
@@ -2405,22 +2729,22 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         <div className="space-y-4">
           <div
             onClick={pick}
-            className="border-2 border-dashed border-neutral-700 rounded-xl p-6 text-center hover:border-neutral-700 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-ring transition-colors cursor-pointer"
           >
-            <Upload className="h-7 w-7 mx-auto text-neutral-500 mb-2" />
-            <p className="text-sm text-neutral-300">
+            <Upload className="h-7 w-7 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">
               {files.length > 0
                 ? `${files.length} imagem(ns) selecionada(s)`
                 : 'Clique para selecionar imagens (máx 10)'}
             </p>
-            <p className="text-[11px] text-neutral-600 mt-1">
+            <p className="text-[11px] text-muted-foreground mt-1">
               A IA extrai dimensões e infere a origem automaticamente. 1 crédito por imagem.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+              <label className="text-[10px] font-mono text-muted-foreground uppercase">
                 País (opcional)
               </label>
               <Select
@@ -2431,38 +2755,38 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+              <label className="text-[10px] font-mono text-muted-foreground uppercase">
                 Designer / Estúdio
               </label>
               <Input
                 value={designer}
                 onChange={(e) => setDesigner(e.target.value)}
                 placeholder="ex: Pentagram"
-                className="bg-neutral-900 border-neutral-700 text-sm h-9"
+                className="bg-input border-border text-sm h-9"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+              <label className="text-[10px] font-mono text-muted-foreground uppercase">
                 Fonte (URL)
               </label>
               <Input
                 value={sourceUrl}
                 onChange={(e) => setSourceUrl(e.target.value)}
                 placeholder="https://..."
-                className="bg-neutral-900 border-neutral-700 text-sm h-9"
+                className="bg-input border-border text-sm h-9"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">
+              <label className="text-[10px] font-mono text-muted-foreground uppercase">
                 Award / Arquivo
               </label>
               <Input
                 value={awardSource}
                 onChange={(e) => setAwardSource(e.target.value)}
                 placeholder="ex: D&AD 2024"
-                className="bg-neutral-900 border-neutral-700 text-sm h-9"
+                className="bg-input border-border text-sm h-9"
               />
             </div>
           </div>
@@ -2474,16 +2798,16 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               onChange={(e) => setIsPublic(e.target.checked)}
               className="accent-brand-cyan"
             />
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-muted-foreground">
               Tornar pública na biblioteca compartilhada
             </span>
           </label>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
             <Button
               variant="outline"
               size="sm"
-              className="bg-neutral-900 border-neutral-700 text-xs"
+              className="bg-card border-border text-xs"
               disabled={uploading}
               onClick={onClose}
             >

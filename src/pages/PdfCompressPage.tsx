@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FileDown, Upload, X } from 'lucide-react';
+import { FileDown, Upload, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -207,16 +207,14 @@ export const PdfCompressPage: React.FC = () => {
     <div className="space-y-5">
       {/* Preset selector */}
       <div className="space-y-1.5">
-        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
-          Preset
-        </span>
+        <span className="text-xs font-medium text-neutral-500">Preset</span>
         <div className="flex gap-1 flex-wrap">
           {PRESET_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setPreset(opt.value)}
               className={cn(
-                'px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all',
+                'px-3 py-1.5 rounded text-xs font-medium transition-all',
                 preset === opt.value
                   ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
                   : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
@@ -232,7 +230,7 @@ export const PdfCompressPage: React.FC = () => {
       <div className="h-px bg-neutral-800" />
 
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-all duration-200">
         <Upload size={12} />
         Add more PDFs
         <input
@@ -255,7 +253,7 @@ export const PdfCompressPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <>
@@ -343,9 +341,9 @@ export const PdfCompressPage: React.FC = () => {
             >
               <Upload className="mx-auto mb-4 text-neutral-500" size={32} />
               <p className="text-sm text-neutral-400">
-                Drop PDFs here or <span className="text-brand-cyan">browse</span>
+                Drop PDFs here or <span className="text-neutral-300">browse</span>
               </p>
-              <p className="text-[10px] text-neutral-600 mt-2 font-mono uppercase tracking-wider">
+              <p className="text-[10px] text-neutral-600 mt-2 font-mono tracking-wider">
                 PDF · Max 50MB per file
               </p>
             </motion.div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, Zap, Clock, Activity } from 'lucide-react';
+import { TrendingUp, Zap, Clock, Activity } from '@/lib/ui/icons';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';

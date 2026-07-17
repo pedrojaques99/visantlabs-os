@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { FormLabel, FormLabelProps } from './form-label';
-import { X, Check } from 'lucide-react';
+import { X, Check } from '@/lib/ui/icons';
 
 export interface FormFieldProps {
   label?: string;

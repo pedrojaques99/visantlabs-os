@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock } from 'lucide-react';
+import { Lock } from '@/lib/ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';

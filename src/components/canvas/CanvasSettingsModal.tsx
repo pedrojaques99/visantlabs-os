@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
 import {
   X,
   Grid3x3,
@@ -14,7 +14,7 @@ import {
   LayoutGrid,
   Paintbrush,
   Settings2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';

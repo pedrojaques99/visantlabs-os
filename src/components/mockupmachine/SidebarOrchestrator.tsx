@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '../../lib/utils';
-import { Dices, Gem, RotateCcw, Scan, Pickaxe } from 'lucide-react';
+import { Dices, Gem, RotateCcw, Scan, Pickaxe } from '@/lib/ui/icons';
 import type { UploadedImage, DesignType } from '../../types/types';
 import { useMockup } from './MockupContext';
 import { useSidebarEffects } from '@/hooks/useSidebarEffects';

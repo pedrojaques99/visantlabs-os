@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, AlertTriangle, CreditCard } from 'lucide-react';
+import { X, AlertTriangle, CreditCard } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';

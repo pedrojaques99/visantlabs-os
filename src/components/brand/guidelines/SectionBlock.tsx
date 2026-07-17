@@ -2,7 +2,7 @@ import React, { useState, useContext, createContext } from 'react';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
-import { Pencil, X, Save, Maximize2, Minus } from 'lucide-react';
+import { Pencil, X, Save, Maximize2, Minus } from '@/lib/ui/icons';
 import {
   Dialog,
   DialogContent,

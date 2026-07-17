@@ -211,9 +211,12 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
   // Smart scan: analyze multi-selection and classify each node
   if (msg.type === 'SMART_SCAN_SELECTION') {
+    // Echoed back so each requester can tell its own result from someone else's — the
+    // result is broadcast to every listener in the UI. See ui/lib/smartScan.ts.
+    const requester = (msg as any).requester;
     const selection = figma.currentPage.selection;
     if (selection.length === 0) {
-      postToUI({ type: 'SMART_SCAN_RESULT', items: [], error: 'Nothing selected' });
+      postToUI({ type: 'SMART_SCAN_RESULT', items: [], error: 'Nothing selected', requester });
       return;
     }
 
@@ -425,7 +428,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       items.push(item);
     }
 
-    postToUI({ type: 'SMART_SCAN_RESULT', items });
+    postToUI({ type: 'SMART_SCAN_RESULT', items, requester });
     return;
   }
 
@@ -486,10 +489,8 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-  if (msg.type === 'OPEN_EXTERNAL_URL') {
-    figma.openExternal(msg.url);
-    return;
-  }
+  // OPEN_EXTERNAL_URL used to live here as a second name for the same job — see
+  // OPEN_EXTERNAL below, which is the one everything sends now.
 
   if (msg.type === 'USE_SELECTION_AS_FONT') {
     const selection = figma.currentPage.selection;
@@ -1157,7 +1158,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const presets = scanPresets();
       postToUI({ type: 'PRESETS_SCANNED', presets });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }
@@ -1168,7 +1169,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const projects = await fetchProjects((msg as any).linearApiKey);
       postToUI({ type: 'LINEAR_PROJECTS', projects });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }
@@ -1179,7 +1180,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const milestones = await fetchMilestones((msg as any).linearApiKey, (msg as any).projectId);
       postToUI({ type: 'LINEAR_MILESTONES', milestones });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }
@@ -1198,7 +1199,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       });
       postToUI({ type: 'BRIDGE_DONE', ...result });
     } catch (err) {
-      postToUI({ type: 'ERROR', message: err instanceof Error ? err.message : String(err) });
+      postToUI({ type: 'BRIDGE_ERROR', message: err instanceof Error ? err.message : String(err) });
     }
     return;
   }

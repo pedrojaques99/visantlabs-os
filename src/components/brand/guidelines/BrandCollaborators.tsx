@@ -3,7 +3,7 @@ import { RoomProvider } from '@/config/liveblocks';
 import { useBrandCollaboration } from '@/hooks/brand/useBrandCollaboration';
 import { getPresenceColor } from '@/lib/liveblocks-presence';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { Users } from 'lucide-react';
+import { Users } from '@/lib/ui/icons';
 import { LiveObject } from '@liveblocks/client';
 import type { BrandGuideline } from '@/lib/figma-types';
 import {

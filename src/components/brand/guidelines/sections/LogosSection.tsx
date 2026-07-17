@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
-import { Image as ImageIcon, Plus, Trash2, Gem } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2, Gem } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';

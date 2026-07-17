@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
-import { Code2, Copy, Download, Check, FileCode, Braces, Palette, Hash } from 'lucide-react';
+import { Code2, Copy, Download, Check, FileCode, Braces, Palette, Hash } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';

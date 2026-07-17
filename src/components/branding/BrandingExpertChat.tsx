@@ -19,7 +19,7 @@ import {
   Trash2,
   ChevronLeft,
   Menu,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { authService } from '@/services/authService';

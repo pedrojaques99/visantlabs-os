@@ -9,7 +9,7 @@ const formButtonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-[brand-cyan]/20 hover:scale-[1.02] active:scale-95',
+          'bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-neutral-600/20 hover:scale-[1.02] active:scale-95',
         outline:
           'border border-neutral-800 bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:border-neutral-700 hover:text-neutral-100 hover:scale-[1.02] active:scale-95',
         ghost:

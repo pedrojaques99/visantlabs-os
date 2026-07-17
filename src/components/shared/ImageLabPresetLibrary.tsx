@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { X, Heart, Loader2, Search } from 'lucide-react';
+import { X, Heart, Loader2, Search } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { API_BASE } from '@/config/api';

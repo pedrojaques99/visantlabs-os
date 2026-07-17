@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera } from 'lucide-react';
+import { Camera } from '@/lib/ui/icons';
 import type { AnglePresetType } from '../types/anglePresets';
 import { getAllAnglePresets } from '../services/anglePresetsService';
 import { GenericPresetModal } from './shared/GenericPresetModal';

@@ -12,7 +12,7 @@ import {
   Save,
   Eye,
   Loader2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '../ui/dialog';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';

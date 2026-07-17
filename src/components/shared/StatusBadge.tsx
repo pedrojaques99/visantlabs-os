@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2 } from '@/lib/ui/icons';
 
 export type ItemStatus = 'queued' | 'processing' | 'done' | 'error';
 

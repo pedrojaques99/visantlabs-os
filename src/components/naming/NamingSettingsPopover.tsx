@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { useClickOutside } from '@/hooks/useClickOutside';

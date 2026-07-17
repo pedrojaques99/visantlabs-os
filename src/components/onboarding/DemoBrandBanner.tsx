@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Compass } from 'lucide-react';
+import { Compass } from '@/lib/ui/icons';
 import { useBrandGuidelines, hasRealBrand } from '@/hooks/queries/useBrandGuidelines';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { useTranslation } from '@/hooks/useTranslation';

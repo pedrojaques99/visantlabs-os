@@ -1,5 +1,5 @@
 import React from 'react';
-import { Maximize2, Heart, Download, FileText, Trash2, Palette, X, Scissors } from 'lucide-react';
+import { Maximize2, Heart, Download, FileText, Trash2, Palette, X, Scissors } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Diamond, Layers, Target, FileText, Plus } from 'lucide-react';
+import { Diamond, Layers, Target, FileText, Plus } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';

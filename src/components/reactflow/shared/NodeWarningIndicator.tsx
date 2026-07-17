@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 interface NodeWarningIndicatorProps {

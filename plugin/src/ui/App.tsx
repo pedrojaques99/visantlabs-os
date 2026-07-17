@@ -7,6 +7,7 @@ import { usePluginOpsChannel } from './hooks/usePluginOpsChannel';
 import { useClient } from './lib/ClientProvider';
 import { AppShell } from './components/layout/AppShell';
 import { loadChatHistory, setChatPersistClient } from './store';
+import { setStoredLocale, type Locale } from '@/utils/localeUtils';
 
 export function App() {
   const setServerUrl = usePluginStore((s) => s.setServerUrl);
@@ -20,14 +21,25 @@ export function App() {
     setChatPersistClient(client);
 
     const init = async () => {
-      const [serverUrlResult] = await Promise.allSettled([
+      const [serverUrlResult, , , localeResult] = await Promise.allSettled([
         client.request('storage.get', { key: 'serverUrl' }),
         checkStatus(),
         loadChatHistory(client),
+        client.request('storage.get', { key: 'locale' }),
       ]);
 
       if (serverUrlResult.status === 'fulfilled' && serverUrlResult.value?.value) {
         setServerUrl(serverUrlResult.value.value as string);
+      }
+
+      // The Figma sandbox localStorage is memory-only, so the user's language
+      // preference is persisted via clientStorage and rehydrated here on launch.
+      if (localeResult.status === 'fulfilled') {
+        const stored = localeResult.value?.value as Locale | undefined;
+        if (stored === 'en-US' || stored === 'pt-BR') {
+          setStoredLocale(stored);
+          window.dispatchEvent(new CustomEvent('localechange', { detail: stored }));
+        }
       }
 
       send({ type: 'GET_CONTEXT' } as any);

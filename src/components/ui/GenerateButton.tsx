@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pickaxe, RefreshCcw, Zap } from 'lucide-react';
+import { Pickaxe, RefreshCcw, Zap } from '@/lib/ui/icons';
 import { GlitchLoader } from './GlitchLoader';
 import { Button } from './button';
 import { Tooltip } from './Tooltip';

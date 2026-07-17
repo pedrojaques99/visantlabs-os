@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Dna } from 'lucide-react';
+import { ChevronDown, ChevronUp, Dna } from '@/lib/ui/icons';
 import type { BrandIdentity } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 

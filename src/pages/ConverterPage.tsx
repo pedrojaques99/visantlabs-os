@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, ArrowLeftRight, X, ArrowRight } from 'lucide-react';
+import { Upload, ArrowLeftRight, X, ArrowRight } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -274,7 +274,7 @@ export const ConverterPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-all duration-200">
         <Upload size={12} />
         Add images / PDF
         <input
@@ -299,7 +299,7 @@ export const ConverterPage: React.FC = () => {
             className={cn(
               'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
               previewItem?.id === item.id
-                ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
+                ? 'bg-neutral-800/60 ring-1 ring-neutral-600'
                 : 'hover:bg-neutral-900/60'
             )}
           >
@@ -351,7 +351,7 @@ export const ConverterPage: React.FC = () => {
       <div className="space-y-4">
         {/* Format */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Format</span>
+          <span className="text-xs font-medium text-neutral-500">Format</span>
           <div className="flex gap-1 flex-wrap">
             {OUTPUT_FORMATS.map((f) => (
               <motion.button
@@ -377,7 +377,7 @@ export const ConverterPage: React.FC = () => {
         {outputFormat === 'jpg' && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase">Quality</span>
+              <span className="text-xs font-medium text-neutral-500">Quality</span>
               <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
                 {jpgQuality}%
               </span>
@@ -406,7 +406,7 @@ export const ConverterPage: React.FC = () => {
               <Button
                 onClick={handleConvertAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -515,7 +515,7 @@ export const ConverterPage: React.FC = () => {
               whileTap={{ scale: 0.99 }}
             >
               <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-neutral-500">
                 Drop images / PDF or click
               </span>
               <input
@@ -568,7 +568,7 @@ export const ConverterPage: React.FC = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ duration: 0.2, ease }}
-                      className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded"
+                      className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded"
                     >
                       {outputFormat.toUpperCase()}
                     </motion.span>
@@ -589,7 +589,7 @@ function FormatBadge({ from, to }: { from: string; to: string }) {
   if (from === to) return null;
   return (
     <span className="text-[10px] font-mono uppercase bg-neutral-800 text-neutral-400 px-1 py-px rounded">
-      {from} <ArrowRight size={7} className="inline text-brand-cyan" /> {to}
+      {from} <ArrowRight size={7} className="inline text-neutral-500" /> {to}
     </span>
   );
 }

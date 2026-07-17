@@ -12,7 +12,7 @@ import {
   Zap,
   Check,
   RotateCcw,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun } from 'lucide-react';
+import { Sun } from '@/lib/ui/icons';
 import type { LuminancePresetType } from '../types/luminancePresets';
 import { getAllLuminancePresets } from '../services/luminancePresetsService';
 import { GenericPresetModal } from './shared/GenericPresetModal';

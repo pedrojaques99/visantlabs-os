@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap } from 'lucide-react';
+import { Zap } from '@/lib/ui/icons';
 import { useImageEditorStore, type InpaintMode } from '@/stores/imageEditorStore';
 import { useImageEditorActions } from '@/hooks/image-editor/useImageEditorActions';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';

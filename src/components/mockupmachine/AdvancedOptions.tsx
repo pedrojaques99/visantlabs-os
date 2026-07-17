@@ -12,7 +12,7 @@ import {
   Layers,
   XCircle,
   FilePlus,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -276,7 +276,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 placeholder={isGenerating ? '' : t('mockup.customCategoryPlaceholder')}
-                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
+                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
                   theme === 'dark'
                     ? 'bg-brand-cyan/10 text-brand-cyan'
                     : 'bg-brand-cyan/5 text-neutral-800'
@@ -557,7 +557,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 value={negativePrompt}
                 onChange={onNegativePromptChange}
                 rows={2}
-                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                     : 'bg-neutral-50 border-neutral-300 text-neutral-700'
@@ -607,7 +607,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 value={additionalPrompt}
                 onChange={onAdditionalPromptChange}
                 rows={2}
-                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${
                   theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                     : 'bg-neutral-50 border-neutral-300 text-neutral-700'

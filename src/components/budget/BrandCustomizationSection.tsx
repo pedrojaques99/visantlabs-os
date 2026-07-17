@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import { Button } from '@/components/ui/button';
 import type { UploadedImage } from '@/types/types';
-import { X, Upload } from 'lucide-react';
+import { X, Upload } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { getContrastColor } from '@/utils/colorUtils';
 import { budgetApi } from '@/services/budgetApi';

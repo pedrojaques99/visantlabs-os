@@ -1,4 +1,4 @@
-import { Workflow, Layers, Image, Video, Palette, LayoutGrid } from 'lucide-react';
+import { Workflow, Layers, Image, Video, Palette, LayoutGrid } from '@/lib/ui/icons';
 
 export type WorkflowCategory = 'branding' | 'mockup' | 'image-editing' | 'video' | 'general';
 

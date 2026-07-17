@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors, Video, Upload, X, Play, Plus, Zap, Download } from 'lucide-react';
+import { Scissors, Video, Upload, X, Play, Plus, Zap, Download } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';

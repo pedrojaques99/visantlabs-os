@@ -3,7 +3,7 @@ import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AiFieldButton } from '../AiFieldButton';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandCoreMessage } from '@/lib/figma-types';
 
 interface MensagemCentralSectionProps {

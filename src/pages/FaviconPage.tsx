@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, Copy, Image as ImageIcon, Check, Download } from 'lucide-react';
+import { Upload, Copy, Image as ImageIcon, Check, Download } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -288,13 +288,13 @@ export const FaviconPage: React.FC = () => {
   /* ── Panel: controls (only shown when source is loaded) ── */
   const panel = sourceUrl ? (
     <div className="space-y-5">
-      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Settings</h2>
+      <h2 className="text-[11px] font-medium text-neutral-500">Settings</h2>
 
       <BrandToolSelect value={brandId} onChange={setBrandId} />
 
       {/* Background color */}
       <div className="space-y-1.5">
-        <span className="text-[10px] font-mono text-neutral-500 uppercase">BG Color</span>
+        <span className="text-xs font-medium text-neutral-500">Background</span>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
@@ -330,7 +330,7 @@ export const FaviconPage: React.FC = () => {
       {/* Border radius */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Radius</span>
+          <span className="text-xs font-medium text-neutral-500">Radius</span>
           <span className="text-[10px] font-mono text-neutral-500">{borderRadius}%</span>
         </div>
         <input
@@ -347,7 +347,7 @@ export const FaviconPage: React.FC = () => {
       {/* Padding */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Padding</span>
+          <span className="text-xs font-medium text-neutral-500">Padding</span>
           <span className="text-[10px] font-mono text-neutral-500">{padding}%</span>
         </div>
         <input
@@ -367,7 +367,7 @@ export const FaviconPage: React.FC = () => {
       <Button
         onClick={handleGenerate}
         disabled={isGenerating}
-        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
         asChild
       >
         <motion.button whileTap={{ scale: 0.98 }} disabled={isGenerating}>
@@ -451,7 +451,7 @@ export const FaviconPage: React.FC = () => {
               )}
             >
               <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-neutral-500">
                 Drop image or click to upload
               </span>
               <input
@@ -533,7 +533,7 @@ export const FaviconPage: React.FC = () => {
                           <span className="text-[10px] font-mono text-neutral-300">
                             {icon.size}x{icon.size}
                           </span>
-                          <span className="text-[10px] font-mono text-neutral-600 uppercase">
+                          <span className="text-[10px] text-neutral-600">
                             {SIZE_LABELS[icon.size] || ''}
                           </span>
                         </motion.div>
@@ -546,9 +546,7 @@ export const FaviconPage: React.FC = () => {
                       transition={{ ...fadeUp.transition, delay: 0.15 }}
                       className="space-y-3"
                     >
-                      <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                        HTML Tags
-                      </h2>
+                      <h2 className="text-[11px] font-medium text-neutral-500">HTML Tags</h2>
                       <div className="relative">
                         <pre
                           className={cn(
@@ -568,9 +566,7 @@ export const FaviconPage: React.FC = () => {
                         </motion.button>
                       </div>
 
-                      <h2 className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                        Web Manifest
-                      </h2>
+                      <h2 className="text-[11px] font-medium text-neutral-500">Web Manifest</h2>
                       <div className="relative">
                         <pre
                           className={cn(

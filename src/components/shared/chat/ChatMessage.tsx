@@ -11,7 +11,7 @@ import {
   AlertCircle,
   ChevronDown,
   Pencil,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/utils/markdownRenderer';
 import { Button } from '@/components/ui/button';
@@ -89,7 +89,7 @@ const CreativeProjectCard: React.FC<{
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="text-left flex-1 text-neutral-500 hover:text-neutral-300 transition-colors flex items-start gap-1.5 min-w-0"
+          className="text-left flex-1 text-muted-foreground hover:text-foreground transition-colors flex items-start gap-1.5 min-w-0"
           aria-expanded={expanded}
         >
           <ChevronDown
@@ -172,12 +172,12 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
           className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border',
             !isAssistant
-              ? 'bg-neutral-800 border-neutral-800'
-              : 'bg-neutral-900 border-brand-cyan/20'
+              ? 'bg-muted border-border'
+              : 'bg-card border-brand-cyan/20'
           )}
         >
           {!isAssistant ? (
-            <User size={16} className="text-neutral-400" />
+            <User size={16} className="text-muted-foreground" />
           ) : (
             <Bot size={16} className="text-brand-cyan" />
           )}
@@ -189,7 +189,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
           'max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-all border',
           !isAssistant
             ? 'bg-brand-cyan/10 border-brand-cyan/20 text-neutral-100'
-            : 'bg-white/5 border-neutral-800 text-neutral-300'
+            : 'bg-muted border-border text-muted-foreground'
         )}
       >
         {/* Copy Button */}
@@ -197,7 +197,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
           variant="ghost"
           size="icon"
           onClick={handleCopy}
-          className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900/50 hover:bg-neutral-800"
+          className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-card/50 hover:bg-accent"
         >
           {isCopied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
         </Button>
@@ -208,7 +208,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
 
         {/* Attachments */}
         {attachments && attachments.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-border">
             <div className="grid grid-cols-2 gap-2">
               {attachments.map((attachment, idx) => (
                 <div key={idx} className="group relative">
@@ -220,12 +220,12 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                       onClick={() => setViewerImage(attachment.dataUrl)}
                     />
                   ) : (
-                    <div className="bg-white/5 rounded-lg p-3 flex items-center gap-2 text-xs hover:bg-white/10 transition-colors">
+                    <div className="bg-muted rounded-lg p-3 flex items-center gap-2 text-xs hover:bg-accent transition-colors">
                       <FileText size={14} className="text-warning" />
                       <span className="truncate">{attachment.name}</span>
                     </div>
                   )}
-                  <p className="text-xs text-neutral-500 mt-1 group-hover:text-neutral-400">
+                  <p className="text-xs text-muted-foreground mt-1 group-hover:text-foreground">
                     {attachment.name}
                   </p>
                 </div>
@@ -236,7 +236,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
 
         {/* Tool Calls (expandable) */}
         {toolCalls && toolCalls.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+          <div className="mt-3 pt-3 border-t border-border space-y-1.5">
             {toolCalls.map((call) => {
               const label = TOOL_LABELS[call.name] || call.name;
               const isRunning = call.status === 'running';
@@ -266,11 +266,11 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                         : isRunning
                           ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
                           : isExpanded
-                            ? 'bg-white/5 border-white/10 text-neutral-300'
-                            : 'bg-white/[0.03] border-neutral-800 text-neutral-400',
+                            ? 'bg-muted border-border text-muted-foreground'
+                            : 'bg-muted/40 border-border text-muted-foreground',
                       hasDetail &&
                         !isRunning &&
-                        'hover:bg-white/5 hover:border-white/10 cursor-pointer'
+                        'hover:bg-accent hover:border-border cursor-pointer'
                     )}
                   >
                     {isRunning ? (
@@ -303,24 +303,24 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                   </button>
 
                   {isExpanded && call.args && (
-                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-black/30 border border-neutral-800 text-[11px] space-y-2">
+                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-muted border border-border text-[11px] space-y-2">
                       {call.name === 'propose_creative_plan' && (
                         <>
                           {call.args.summary && (
-                            <p className="text-neutral-400 italic">{call.args.summary}</p>
+                            <p className="text-muted-foreground italic">{call.args.summary}</p>
                           )}
                           {call.args.proposals?.length > 0 && (
                             <div className="space-y-1">
-                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
                                 Variações
                               </p>
                               {call.args.proposals.map((p: any, i: number) => (
                                 <div key={i} className="flex items-start gap-2">
-                                  <span className="text-neutral-600 shrink-0">{i + 1}.</span>
+                                  <span className="text-muted-foreground shrink-0">{i + 1}.</span>
                                   <div>
-                                    <span className="text-neutral-300 font-medium">{p.title}</span>
+                                    <span className="text-muted-foreground font-medium">{p.title}</span>
                                     {p.aspectRatio && (
-                                      <span className="text-neutral-600 ml-2">{p.aspectRatio}</span>
+                                      <span className="text-muted-foreground ml-2">{p.aspectRatio}</span>
                                     )}
                                   </div>
                                 </div>
@@ -329,11 +329,11 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.questions?.length > 0 && (
                             <div className="space-y-0.5">
-                              <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
                                 Perguntas feitas
                               </p>
                               {call.args.questions.map((q: string, i: number) => (
-                                <p key={i} className="text-neutral-500">
+                                <p key={i} className="text-muted-foreground">
                                   — {q}
                                 </p>
                               ))}
@@ -346,8 +346,8 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           {(['brands', 'clients', 'decisions', 'references'] as const).map((key) =>
                             call.args[key] ? (
                               <div key={key} className="flex gap-2">
-                                <span className="text-neutral-600 capitalize shrink-0">{key}:</span>
-                                <span className="text-neutral-400">{call.args[key]}</span>
+                                <span className="text-muted-foreground capitalize shrink-0">{key}:</span>
+                                <span className="text-muted-foreground">{call.args[key]}</span>
                               </div>
                             ) : null
                           )}
@@ -356,9 +356,9 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                       {call.name === 'generate_or_update_mockup' && (
                         <div className="space-y-1">
                           {call.args.prompt && (
-                            <p className="text-neutral-400 line-clamp-3">{call.args.prompt}</p>
+                            <p className="text-muted-foreground line-clamp-3">{call.args.prompt}</p>
                           )}
-                          <div className="flex gap-3 text-neutral-600">
+                          <div className="flex gap-3 text-muted-foreground">
                             {call.args.model && (
                               <span>model: {call.args.model.split('/').pop()}</span>
                             )}
@@ -372,7 +372,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                         'update_session_memory',
                         'generate_or_update_mockup',
                       ].includes(call.name) && (
-                        <pre className="text-neutral-500 whitespace-pre-wrap break-all text-[10px]">
+                        <pre className="text-muted-foreground whitespace-pre-wrap break-all text-[10px]">
                           {JSON.stringify(call.args, null, 2).slice(0, 400)}
                         </pre>
                       )}
@@ -386,7 +386,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
 
         {/* Generated Creative Projects */}
         {creativeProjects && creativeProjects.length > 0 && (
-          <div className="mt-5 pt-5 border-t border-white/10 space-y-6">
+          <div className="mt-5 pt-5 border-t border-border space-y-6">
             {creativeProjects.map((proj, idx) => (
               <CreativeProjectCard
                 key={idx}
@@ -407,7 +407,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                 'p-1.5 rounded transition-colors',
                 feedback.rating === 'up'
                   ? 'bg-success/20 text-success'
-                  : 'text-neutral-500 hover:text-success hover:bg-success/10'
+                  : 'text-muted-foreground hover:text-success hover:bg-success/10'
               )}
               title={feedback.rating === 'up' ? 'Undo feedback' : 'Helpful'}
             >
@@ -420,7 +420,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                 'p-1.5 rounded transition-colors',
                 feedback.rating === 'down'
                   ? 'bg-destructive/20 text-destructive'
-                  : 'text-neutral-500 hover:text-destructive hover:bg-destructive/10'
+                  : 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
               )}
               title={feedback.rating === 'down' ? 'Undo feedback' : 'Not helpful'}
             >

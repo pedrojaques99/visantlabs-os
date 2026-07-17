@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Edit2, RotateCw, Copy, Check, X, ThumbsUp } from 'lucide-react';
+import { Save, Edit2, RotateCw, Copy, Check, X, ThumbsUp } from '@/lib/ui/icons';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -86,7 +86,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         {localPalettes.map((palette, index) => (
           <div
             key={index}
-            className={`border rounded-xl p-5 hover:border-[brand-cyan]/50 transition-colors relative ${
+            className={`border rounded-xl p-5 hover:border-neutral-600/50 transition-colors relative ${
               theme === 'dark'
                 ? 'border-neutral-800/60 bg-neutral-950/70'
                 : 'border-neutral-300 bg-neutral-100'
@@ -111,7 +111,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 value={palette.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 placeholder="Nome da paleta"
-                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-[brand-cyan] focus:outline-none pb-1 w-full ${
+                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-neutral-600 focus:outline-none pb-1 w-full ${
                   theme === 'dark'
                     ? 'text-neutral-200 border-neutral-700/50'
                     : 'text-neutral-800 border-neutral-400/50'
@@ -174,7 +174,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                             );
                           }
                         }}
-                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-[brand-cyan]/20 mb-2 ${
+                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-neutral-600/20 mb-2 ${
                           theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
                         }`}
                         style={{ backgroundColor: color }}
@@ -195,7 +195,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 <Button
                   variant="ghost"
                   onClick={() => handleAddColor(index)}
-                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[brand-cyan]/50 hover:text-brand-cyan ${
+                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-neutral-600/50 hover:text-brand-cyan ${
                     theme === 'dark'
                       ? 'border-neutral-700/50 text-neutral-400'
                       : 'border-neutral-400/50 text-neutral-500'
@@ -261,7 +261,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         <Button
           variant="ghost"
           onClick={handleAddPalette}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
             theme === 'dark'
               ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
               : 'bg-neutral-100 border-neutral-300 text-neutral-800'

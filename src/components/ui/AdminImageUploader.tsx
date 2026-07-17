@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { GlitchLoader } from './GlitchLoader';
 import type { UploadedImage } from '@/types/types';
-import { UploadCloud } from 'lucide-react';
+import { UploadCloud } from '@/lib/ui/icons';
 
 interface AdminImageUploaderProps {
   onImageUpload: (image: UploadedImage) => void;

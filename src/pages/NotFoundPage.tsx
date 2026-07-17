@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { Home } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -84,7 +84,7 @@ export const NotFoundPage: React.FC = () => {
                 variant="ghost"
                 onClick={() => navigate('/')}
                 className={`px-8 py-3.5 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow-lg cursor-pointer ${
-                  theme === 'dark' ? 'shadow-[brand-cyan]/20' : 'shadow-[brand-cyan]/30'
+                  theme === 'dark' ? 'shadow-neutral-600/20' : 'shadow-neutral-600/30'
                 }`}
               >
                 <Home className="h-4 w-4" />

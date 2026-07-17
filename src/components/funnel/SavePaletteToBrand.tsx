@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookmarkPlus } from 'lucide-react';
+import { BookmarkPlus } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
@@ -72,7 +72,7 @@ export const SavePaletteToBrand: React.FC<SavePaletteToBrandProps> = ({ colors }
           navigate('/welcome');
         }}
         variant="outline"
-        className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+        className="text-xs border-neutral-700"
         data-vsn-component="SavePaletteToBrand"
       >
         <BookmarkPlus size={12} className="mr-1.5" /> {t('funnel.saveToBrand.button')}
@@ -85,7 +85,7 @@ export const SavePaletteToBrand: React.FC<SavePaletteToBrandProps> = ({ colors }
       <Button
         onClick={() => navigate('/brand-guidelines')}
         variant="outline"
-        className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+        className="text-xs border-neutral-700"
         data-vsn-component="SavePaletteToBrand"
       >
         <BookmarkPlus size={12} className="mr-1.5" /> {t('funnel.saveToBrand.noBrand')}
@@ -100,7 +100,7 @@ export const SavePaletteToBrand: React.FC<SavePaletteToBrandProps> = ({ colors }
         onClick={handleSave}
         disabled={saving || !activeId}
         variant="outline"
-        className="font-mono text-xs uppercase tracking-widest border-neutral-700"
+        className="text-xs border-neutral-700"
       >
         <BookmarkPlus size={12} className="mr-1.5" />
         {saving ? t('funnel.saveToBrand.saving') : t('funnel.saveToBrand.button')}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, ChevronDown, Check } from 'lucide-react';
+import { Search, ChevronDown, Check } from '@/lib/ui/icons';
 import { Input } from './input';
 import { Button } from './button';
 import { cn } from '@/lib/utils';

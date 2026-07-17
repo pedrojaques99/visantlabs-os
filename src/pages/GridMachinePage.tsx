@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';

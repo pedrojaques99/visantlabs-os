@@ -12,7 +12,7 @@ import {
   RotateCcw,
   Spline,
   Circle,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 type Tool = 'select' | 'eraser' | 'lasso';
 

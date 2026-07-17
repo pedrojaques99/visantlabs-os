@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   ArrowLeft,
   ArrowRight,
@@ -56,6 +57,7 @@ function canvasSize(shot: Shot): { width: number; height: number } {
 }
 
 function PhotoSequencer() {
+  const { t } = useTranslation();
   const [shots, setShots] = useState<Shot[]>([]);
   const [perPhoto, setPerPhoto] = useState(0.5);
   const [order, setOrder] = useState<Order>('sequence');
@@ -103,7 +105,7 @@ function PhotoSequencer() {
       // OpButton fires `run()` without a .catch and useOpRunner has no catch either,
       // so a rejection here would surface as an unhandled rejection and the user
       // would just see the spinner stop. Every task in this panel owns its errors.
-      showToast(e?.message || 'Falha ao exportar a seleção', 'error');
+      showToast(e?.message || t('plugin.tools.photoSequencer.exportFailed'), 'error');
       return;
     }
 
@@ -111,28 +113,28 @@ function PhotoSequencer() {
     const failed = images.length - ok.length;
 
     if (!images.length) {
-      showToast('Selecione frames ou imagens no canvas primeiro', 'info');
+      showToast(t('plugin.tools.photoSequencer.selectFirst'), 'info');
       return;
     }
     if (!ok.length) {
-      showToast('Nada exportável na seleção', 'error');
+      showToast(t('plugin.tools.photoSequencer.nothingExportable'), 'error');
       return;
     }
 
     setShots((prev) => {
       const room = MAX_PHOTOS - prev.length;
       if (room <= 0) {
-        showToast(`Máximo de ${MAX_PHOTOS} fotos`, 'warning');
+        showToast(t('plugin.tools.photoSequencer.maxPhotos', { max: MAX_PHOTOS }), 'warning');
         return prev;
       }
       // Re-pulling the same node would duplicate it — the canvas is the source of truth.
       const seen = new Set(prev.map((s) => s.nodeId));
       const fresh = ok.filter((s) => !seen.has(s.nodeId)).slice(0, room);
-      if (!fresh.length) showToast('Essas camadas já estão na lista', 'info');
+      if (!fresh.length) showToast(t('plugin.tools.photoSequencer.alreadyInList'), 'info');
       return [...prev, ...fresh];
     });
 
-    if (failed) showToast(`${failed} camada(s) não exportaram`, 'warning');
+    if (failed) showToast(t('plugin.tools.photoSequencer.layersFailedExport', { count: failed }), 'warning');
   }
 
   function sortByPosition() {
@@ -165,7 +167,7 @@ function PhotoSequencer() {
     const payloadBytes = shots.reduce((sum, s) => sum + s.data.length, 0);
     if (payloadBytes > MAX_PAYLOAD_BYTES) {
       showToast(
-        `Fotos pesadas demais (${(payloadBytes / 1024 / 1024).toFixed(0)}MB). Remova algumas.`,
+        t('plugin.tools.photoSequencer.photosTooHeavy', { size: (payloadBytes / 1024 / 1024).toFixed(0) }),
         'error'
       );
       return;
@@ -190,15 +192,15 @@ function PhotoSequencer() {
       });
 
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: `Falha (${res.status})` }));
+        const { error } = await res.json().catch(() => ({ error: t('plugin.tools.photoSequencer.failedStatus', { status: res.status }) }));
         throw new Error(error);
       }
 
       const { videoUrl } = await res.json();
       setResult({ url: videoUrl, format });
-      showToast(`Vídeo pronto · ${total.toFixed(1)}s`, 'success');
+      showToast(t('plugin.tools.photoSequencer.videoReady', { seconds: total.toFixed(1) }), 'success');
     } catch (e: any) {
-      showToast(e?.message || 'Falha ao renderizar', 'error');
+      showToast(e?.message || t('plugin.tools.photoSequencer.renderFailed'), 'error');
     }
   }
 
@@ -207,7 +209,7 @@ function PhotoSequencer() {
     try {
       await downloadFromUrl(result.url, `sequence.${result.format}`);
     } catch {
-      showToast('Falha ao baixar', 'error');
+      showToast(t('plugin.tools.photoSequencer.downloadFailed'), 'error');
     }
   }
 
@@ -221,11 +223,11 @@ function PhotoSequencer() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title="Exportar os frames selecionados no canvas como fotos da sequência"
+          title={t('plugin.tools.photoSequencer.pullSelectionTitle')}
           className="h-8 text-[10px]"
         >
-          <SquareMousePointer size={11} className="mr-1.5 text-neutral-500" />
-          Puxar seleção
+          <SquareMousePointer size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.photoSequencer.pullSelection')}
         </OpButton>
         <OpButton
           opId="seqSort"
@@ -235,47 +237,47 @@ function PhotoSequencer() {
           variant="outline"
           size="sm"
           disabled={shots.length < 2}
-          title="Reordenar pela posição no canvas (esquerda→direita, cima→baixo)"
+          title={t('plugin.tools.photoSequencer.sortTitle')}
           className="h-8 text-[10px]"
         >
-          <LayoutGrid size={11} className="mr-1.5 text-neutral-500" />
-          Ordenar
+          <LayoutGrid size={11} className="mr-1.5 text-muted-foreground" />
+          {t('plugin.tools.photoSequencer.sort')}
         </OpButton>
       </div>
 
       {shots.length > 0 && (
-        <div className="grid grid-cols-4 gap-1.5 rounded-xl border border-white/5 bg-neutral-900/40 p-2">
+        <div className="grid grid-cols-4 gap-1.5 rounded-xl border border-border/50 bg-muted/40 p-2">
           {shots.map((shot, i) => (
             <div
               key={shot.nodeId}
-              className="group relative aspect-square overflow-hidden rounded bg-black/40"
+              className="group relative aspect-square overflow-hidden rounded bg-background/40"
               title={shot.name}
             >
               <img src={shot.data} alt="" className="size-full object-cover" />
-              <span className="absolute bottom-0.5 left-0.5 rounded bg-black/70 px-1 font-mono text-[8px] text-white">
+              <span className="absolute bottom-0.5 left-0.5 rounded bg-background/70 px-1 font-mono text-[8px] text-foreground">
                 {i + 1}
               </span>
-              <div className="absolute inset-0 flex items-center justify-center gap-0.5 bg-black/70 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="absolute inset-0 flex items-center justify-center gap-0.5 bg-background/70 opacity-0 transition-opacity group-hover:opacity-100">
                 <button
                   onClick={() => move(i, -1)}
                   disabled={i === 0}
-                  className="text-neutral-400 hover:text-white disabled:opacity-20"
-                  title="Mover para trás"
+                  className="text-muted-foreground hover:text-foreground disabled:opacity-20"
+                  title={t('plugin.tools.photoSequencer.moveBackward')}
                 >
                   <ArrowLeft size={11} />
                 </button>
                 <button
                   onClick={() => move(i, 1)}
                   disabled={i === shots.length - 1}
-                  className="text-neutral-400 hover:text-white disabled:opacity-20"
-                  title="Mover para frente"
+                  className="text-muted-foreground hover:text-foreground disabled:opacity-20"
+                  title={t('plugin.tools.photoSequencer.moveForward')}
                 >
                   <ArrowRight size={11} />
                 </button>
                 <button
                   onClick={() => remove(shot.nodeId)}
-                  className="text-neutral-400 hover:text-white"
-                  title="Remover"
+                  className="text-muted-foreground hover:text-foreground"
+                  title={t('plugin.tools.photoSequencer.remove')}
                 >
                   <X size={11} />
                 </button>
@@ -289,8 +291,8 @@ function PhotoSequencer() {
         <>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] uppercase tracking-wider text-neutral-500">
-                Tempo por foto
+              <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                {t('plugin.tools.photoSequencer.timePerPhoto')}
               </span>
               <span className="font-mono text-[10px] text-brand-cyan">{perPhoto.toFixed(2)}s</span>
             </div>
@@ -303,7 +305,7 @@ function PhotoSequencer() {
               onChange={(e) => setPerPhoto(Number(e.target.value))}
               className="w-full accent-brand-cyan"
             />
-            <p className="font-mono text-[8px] text-neutral-600">
+            <p className="font-mono text-[8px] text-muted-foreground/70">
               {shots.length} fotos{activeLoops > 1 && ` × ${activeLoops}`} · {total.toFixed(1)}s no
               total
               {tooLong && <span className="text-red-400"> · máx {MAX_TOTAL_SEC}s</span>}
@@ -315,9 +317,9 @@ function PhotoSequencer() {
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] uppercase tracking-wider text-neutral-500">Loops</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{t('plugin.tools.photoSequencer.loops')}</span>
               {!loopsApply && (
-                <span className="font-mono text-[8px] text-neutral-600">GIF repete sempre</span>
+                <span className="font-mono text-[8px] text-muted-foreground/70">{t('plugin.tools.photoSequencer.gifAlwaysLoops')}</span>
               )}
             </div>
             <div className="grid grid-cols-4 gap-1">
@@ -328,13 +330,13 @@ function PhotoSequencer() {
                   disabled={!loopsApply}
                   title={
                     loopsApply
-                      ? `Repetir a sequência ${n}x`
-                      : 'GIF já roda em loop infinito, então repetir a sequência só aumentaria o arquivo'
+                      ? t('plugin.tools.photoSequencer.repeatTitle', { count: n })
+                      : t('plugin.tools.photoSequencer.gifLoopTitle')
                   }
                   className={`h-8 rounded border text-[9px] font-bold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                     loopsApply && loops === n
                       ? 'border-brand-cyan/40 bg-brand-cyan/5 text-brand-cyan'
-                      : 'border-white/5 text-neutral-500 hover:border-white/10'
+                      : 'border-border/50 text-muted-foreground hover:border-border'
                   }`}
                 >
                   {n}x
@@ -349,11 +351,11 @@ function PhotoSequencer() {
               className={`h-8 rounded border text-[9px] uppercase tracking-wider transition-colors ${
                 order === 'random'
                   ? 'border-brand-cyan/40 bg-brand-cyan/5 text-brand-cyan'
-                  : 'border-white/5 text-neutral-500 hover:border-white/10'
+                  : 'border-border/50 text-muted-foreground hover:border-border'
               }`}
-              title="Aleatória embaralha a ordem a cada render"
+              title={t('plugin.tools.photoSequencer.randomTitle')}
             >
-              {order === 'random' ? 'Ordem: aleatória' : 'Ordem: sequência'}
+              {order === 'random' ? t('plugin.tools.photoSequencer.orderRandom') : t('plugin.tools.photoSequencer.orderSequence')}
             </button>
             <div className="grid grid-cols-3 gap-1">
               {FORMATS.map((f) => (
@@ -363,7 +365,7 @@ function PhotoSequencer() {
                   className={`h-8 rounded border text-[9px] font-bold uppercase tracking-wider transition-colors ${
                     format === f
                       ? 'border-brand-cyan/40 bg-brand-cyan/5 text-brand-cyan'
-                      : 'border-white/5 text-neutral-500 hover:border-white/10'
+                      : 'border-border/50 text-muted-foreground hover:border-border'
                   }`}
                 >
                   {f}
@@ -376,23 +378,23 @@ function PhotoSequencer() {
             opId="seqRender"
             runner={runner}
             task={render}
-            busyLabel="Renderizando…"
+            busyLabel={t('plugin.tools.photoSequencer.rendering')}
             variant="brand"
             size="sm"
             disabled={tooLong || tooManyEntries}
-            title="Montar o vídeo no servidor"
+            title={t('plugin.tools.photoSequencer.buildServerTitle')}
             className="h-8 w-full text-[10px] font-bold uppercase tracking-wider"
           >
             <Film size={12} className="mr-1.5" />
-            {result ? 'Renderizar de novo' : 'Renderizar'}
+            {result ? t('plugin.tools.photoSequencer.renderAgain') : t('plugin.tools.photoSequencer.render')}
           </OpButton>
         </>
       )}
 
       {result && (
-        <div className="overflow-hidden rounded border border-white/5 bg-black/40">
+        <div className="overflow-hidden rounded border border-border/50 bg-background/40">
           {result.format === 'gif' ? (
-            <img src={result.url} alt="Prévia da sequência" className="w-full" />
+            <img src={result.url} alt={t('plugin.tools.photoSequencer.previewAlt')} className="w-full" />
           ) : (
             // Points straight at R2: a media element loads cross-origin without CORS,
             // unlike the fetch in downloadFromUrl — that one needs the backend proxy.
@@ -414,21 +416,20 @@ function PhotoSequencer() {
           opId="seqSave"
           runner={runner}
           task={save}
-          busyLabel="Baixando…"
+          busyLabel={t('plugin.tools.photoSequencer.downloading')}
           variant="outline"
           size="sm"
-          title="Baixar o arquivo renderizado"
+          title={t('plugin.tools.photoSequencer.downloadFileTitle')}
           className="h-8 w-full text-[10px] font-bold uppercase tracking-wider"
         >
           <Download size={12} className="mr-1.5" />
-          Baixar {result.format.toUpperCase()}
+          {t('plugin.tools.photoSequencer.download', { format: result.format.toUpperCase() })}
         </OpButton>
       )}
 
       {!shots.length && (
-        <p className="px-1 text-[8px] leading-tight text-neutral-600">
-          Selecione frames ou imagens no canvas e clique em Puxar seleção. Cada um vira uma foto da
-          sequência, na ordem mostrada.
+        <p className="px-1 text-[8px] leading-tight text-muted-foreground/70">
+          {t('plugin.tools.photoSequencer.emptyHint')}
         </p>
       )}
     </div>
@@ -436,8 +437,9 @@ function PhotoSequencer() {
 }
 
 export function PhotoSequencerSection() {
+  const { t } = useTranslation();
   return (
-    <AuthGate feature="O Photo Sequencer">
+    <AuthGate feature={t('plugin.tools.photoSequencer.authFeature')}>
       <PhotoSequencer />
     </AuthGate>
   );

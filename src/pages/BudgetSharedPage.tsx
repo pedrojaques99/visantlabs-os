@@ -14,7 +14,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '../components/ui/breadcrumb';
-import { Download, Share2 } from 'lucide-react';
+import { Download, Share2 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { generateBudgetPDF } from '@/utils/generateBudgetPDF';
 import html2canvas from 'html2canvas';

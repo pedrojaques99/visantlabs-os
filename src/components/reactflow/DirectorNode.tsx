@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { type NodeProps, Position, NodeResizer } from '@xyflow/react';
-import { Compass, PanelRight, Image as ImageIcon, Check, Dices, Zap } from 'lucide-react';
+import { Compass, PanelRight, Image as ImageIcon, Check, Dices, Zap } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PremiumGlitchLoader } from '@/components/ui/PremiumGlitchLoader';
 import type { DirectorNodeData } from '@/types/reactFlow';
@@ -153,7 +153,7 @@ export const DirectorNode = memo(
             ) : (
               <div className="w-full h-24 rounded-md border-node border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
                 <ImageIcon size={16} className="text-neutral-600" />
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                <span className="text-[10px] font-medium text-neutral-500">
                   {t('canvasNodes.directorNode.noImage') || 'No image'}
                 </span>
               </div>

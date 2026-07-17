@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, ImageIcon, Minus, Plus } from 'lucide-react';
+import { Search, ImageIcon, Minus, Plus } from '@/lib/ui/icons';
 import { SearchBar } from '../components/ui/SearchBar';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
@@ -429,7 +429,7 @@ export const MockupsPage: React.FC = () => {
                 return (
                   <GlassPanel
                     key={mockup._id}
-                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative overflow-hidden hover:border-neutral-600/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div

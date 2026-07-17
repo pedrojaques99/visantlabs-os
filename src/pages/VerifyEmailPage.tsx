@@ -5,7 +5,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { authService } from '@/services/authService';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle } from '@/lib/ui/icons';
 
 type Status = 'loading' | 'success' | 'error';
 

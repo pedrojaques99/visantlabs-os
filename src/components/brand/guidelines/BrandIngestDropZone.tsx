@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileImage, FileText, Figma } from 'lucide-react';
+import { Upload, FileImage, FileText, Figma } from '@/lib/ui/icons';
 
 interface BrandIngestDropZoneProps {
   onFiles: (files: FileList) => void;

@@ -35,7 +35,7 @@ import {
   ChevronDown,
   AlertTriangle,
   Pencil,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BrandGuideline } from '@/lib/figma-types';
@@ -59,14 +59,14 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
       animate={{ opacity: 1, y: 0 }}
       className="w-full min-h-[70vh] flex flex-col items-center justify-center text-center gap-6 px-6"
     >
-      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-        <Layers size={26} strokeWidth={1.2} className="text-neutral-500" />
+      <div className="p-4 rounded-2xl bg-muted/40 border border-border">
+        <Layers size={26} strokeWidth={1.2} className="text-muted-foreground" />
       </div>
       <div className="space-y-2 max-w-sm">
-        <h2 className="text-xl font-semibold text-neutral-200 tracking-tight">
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">
           {t('brandGuidelines.emptyState')}
         </h2>
-        <p className="text-neutral-500 text-sm leading-relaxed">
+        <p className="text-muted-foreground text-sm leading-relaxed">
           {t('brandGuidelines.emptyStateDesc')}
         </p>
       </div>
@@ -75,7 +75,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
         {t('brandGuidelines.createFirst')}
       </Button>
       {/* Tell first-timers what a guideline can be built from — kills the "now what?" gap. */}
-      <div className="flex items-center gap-4 text-[11px] text-neutral-600">
+      <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <FileText size={13} strokeWidth={1.5} /> PDF
         </span>
@@ -90,13 +90,28 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
   );
 };
 
+/**
+ * Categorias que um humano escolheu para SER imagem de marca. Só elas podem
+ * virar capa.
+ *
+ * `stock` / `product` / `other` / sem categoria são material de REFERÊNCIA
+ * (a chuteira de um concorrente, o print de uma página do guideline). Promover
+ * a primeira imagem qualquer a herói era o que fazia a grade virar ruído: a
+ * capa é o único identificador da marca numa lista de 24, e estava sendo
+ * decidida pela ordem de upload.
+ *
+ * O logo também fica de fora — ele já aparece como o chip logo abaixo.
+ * Sem match → CoverFallback pinta as cores da própria marca, que sempre lê
+ * como aquela marca.
+ */
+const COVER_CATEGORIES = ['background', 'graphic', 'texture'] as const;
+
 const getCoverUrl = (g: BrandGuideline): string | null => {
-  const bg = g.media?.find((m) => m.type === 'image' && m.category === 'background');
-  if (bg) return bg.url;
-  const firstImg = g.media?.find((m) => m.type === 'image');
-  if (firstImg) return firstImg.url;
-  const primaryLogo = g.logos?.find((l) => l?.variant === 'primary' || l?.variant === 'dark');
-  if (primaryLogo) return primaryLogo.url;
+  const media = Array.isArray(g.media) ? g.media : [];
+  for (const category of COVER_CATEGORIES) {
+    const hit = media.find((m) => m?.type === 'image' && m?.category === category && m?.url);
+    if (hit) return hit.url;
+  }
   return null;
 };
 
@@ -145,9 +160,32 @@ const BrandCard = ({
 }) => {
   const { t } = useTranslation();
   const [coverLoaded, setCoverLoaded] = useState(false);
+  // Sem `onError` a capa quebrada era um skeleton pulsando pra sempre: o
+  // `onLoad` nunca dispara, a <img> fica em opacity-0 e o CoverFallback nunca
+  // entra (ele só cobria coverUrl == null, não URL inválida).
+  const [coverFailed, setCoverFailed] = useState(false);
   const coverUrl = getCoverUrl(guideline);
+  const showCover = !!coverUrl && !coverFailed;
   const report = useMemo(() => computeBrandCompleteness(guideline), [guideline]);
   const status = completenessStatus(report.score);
+  const brandName = guideline.identity?.name || guideline.name || 'Untitled';
+
+  // A % sozinha não aciona nada — dizer O QUE falta (por peso) transforma o
+  // medidor num próximo passo. Labels vêm da lib por id, traduzidas aqui.
+  const completenessHint = useMemo(() => {
+    if (report.missing.length === 0)
+      return t('brandGuidelines.completenessFull', { score: report.score });
+    const top = [...report.missing].sort((a, b) => b.weight - a.weight);
+    const items = top
+      .slice(0, 3)
+      .map((r) => t(`brandCompleteness.${r.id}`) || r.label)
+      .join(', ');
+    const extra = top.length - 3;
+    return t('brandGuidelines.completenessMissing', {
+      score: report.score,
+      items: extra > 0 ? `${items} ${t('brandGuidelines.completenessMore', { count: extra })}` : items,
+    });
+  }, [report, t]);
   const primaryFont = guideline.typography?.find(
     (t) => t.role === 'heading' || t.role === 'headline'
   )?.family;
@@ -157,44 +195,55 @@ const BrandCard = ({
   const fontHint = [primaryFont, bodyFont].filter(Boolean).join(' / ');
 
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
-      onClick={() => onSelect(guideline)}
       className={cn(
-        'group relative flex flex-col sm:flex-col rounded-xl border border-neutral-800 bg-neutral-900 hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left cursor-pointer',
+        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-ring hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left',
         archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
       )}
     >
+      {/* Ação principal como "stretched link": cobre o card inteiro SEM aninhar
+          interativos. Antes a raiz era um <button> com o menu ⋮ (role=button)
+          dentro — botão dentro de botão: árvore de acessibilidade inválida e o
+          menu inalcançável por teclado. Agora o menu é irmão, num z acima. */}
+      <button
+        type="button"
+        onClick={() => onSelect(guideline)}
+        aria-label={brandName}
+        className="absolute inset-0 z-[1] rounded-xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
+
       {/* Cover */}
-      <div className="relative w-full sm:w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-neutral-800">
-        {coverUrl && !coverLoaded && (
-          <div className="absolute inset-0 animate-pulse bg-neutral-800" />
-        )}
-        {coverUrl ? (
-          <img
-            src={getProxiedUrl(coverUrl)}
-            alt=""
-            loading="lazy"
-            onLoad={() => setCoverLoaded(true)}
-            className={cn(
-              'w-full h-full object-cover group-hover:scale-105 transition-all duration-500',
-              coverLoaded ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'
-            )}
-          />
+      <div className="relative w-full h-32 sm:h-40 shrink-0 overflow-hidden bg-muted">
+        {showCover ? (
+          <>
+            {!coverLoaded && <div className="absolute inset-0 animate-pulse bg-muted" />}
+            <img
+              src={getProxiedUrl(coverUrl)}
+              alt=""
+              loading="lazy"
+              onLoad={() => setCoverLoaded(true)}
+              onError={() => setCoverFailed(true)}
+              className={cn(
+                'w-full h-full object-cover group-hover:scale-105 transition-all duration-500',
+                coverLoaded ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'
+              )}
+            />
+          </>
         ) : (
           <CoverFallback colors={guideline.colors} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
 
         {/* Badges overlay */}
-        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+        <div className="absolute top-2 right-2 z-[2] flex items-center gap-1.5">
           {archived && (
             <Badge
               variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-neutral-400 text-[10px] px-1.5 py-0 h-5 gap-1"
+              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-[10px] px-1.5 py-0 h-5 gap-1"
             >
               <Archive size={9} />
               {t('brandQuota.archivedBadge')}
@@ -203,14 +252,14 @@ const BrandCard = ({
           {(onArchive || onUnarchive || onQuickEdit) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div
-                  role="button"
+                <button
+                  type="button"
                   aria-label={t('brandQuota.brandActions')}
-                  className="p-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20"
+                  className="p-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreVertical size={11} className="text-white/80" />
-                </div>
+                  <MoreVertical size={11} className="text-white/90" />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[130px]">
                 {!archived && onQuickEdit && (
@@ -276,7 +325,7 @@ const BrandCard = ({
 
       {/* Avatar */}
       <div className="relative px-3 sm:px-4 -mt-5">
-        <div className="ring-2 ring-neutral-900 rounded-lg">
+        <div className="ring-2 ring-card rounded-lg w-fit">
           <BrandAvatar brand={guideline} size={40} rounded="md" preference="primary" />
         </div>
       </div>
@@ -284,38 +333,35 @@ const BrandCard = ({
       {/* Info */}
       <div className="flex-1 px-3 sm:px-4 pt-2 pb-3 min-w-0 flex flex-col gap-1.5">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-neutral-200 truncate group-hover:text-white transition-colors">
-            {guideline.identity?.name || guideline.name || 'Untitled'}
+          <p className="text-sm font-medium text-foreground truncate transition-colors">
+            {brandName}
           </p>
           {guideline.identity?.tagline && (
-            <p className="text-[11px] text-neutral-600 truncate mt-0.5 leading-tight">
+            <p className="text-[11px] text-muted-foreground truncate mt-0.5 leading-tight">
               {guideline.identity.tagline}
             </p>
           )}
         </div>
 
         {/* Footer: completeness + font hint */}
-        <div className="flex items-center justify-between gap-2 mt-auto pt-1 border-t border-neutral-800">
-          <Tooltip
-            content={`${report.score}% complete — ${report.missing.length} items missing`}
-            position="bottom"
-          >
-            <div className="flex items-center gap-1.5">
-              <div className="w-16 h-1 rounded-full bg-neutral-800 overflow-hidden">
+        <div className="flex items-center justify-between gap-2 mt-auto pt-1 border-t border-border">
+          <Tooltip content={completenessHint} position="bottom">
+            <div className="relative z-[2] flex items-center gap-1.5">
+              <div className="w-16 h-1 rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn('h-full rounded-full transition-all', SCORE_COLORS[status])}
                   style={{ width: `${report.score}%` }}
                 />
               </div>
-              <span className="text-[10px] text-neutral-600 tabular-nums">{report.score}%</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums">{report.score}%</span>
             </div>
           </Tooltip>
           {fontHint && (
-            <p className="text-[10px] text-neutral-700 truncate max-w-[50%]">{fontHint}</p>
+            <p className="text-[10px] text-muted-foreground truncate max-w-[50%]">{fontHint}</p>
           )}
         </div>
       </div>
-    </motion.button>
+    </motion.div>
   );
 };
 
@@ -342,17 +388,17 @@ const BrandQuotaMeter = ({
   return (
     <div className="flex items-center gap-2.5 shrink-0">
       {!unlimited && (
-        <div className="hidden sm:block w-16 h-1 rounded-full bg-neutral-800 overflow-hidden">
+        <div className="hidden sm:block w-16 h-1 rounded-full bg-muted overflow-hidden">
           <div
             className={cn(
               'h-full rounded-full transition-all',
-              full ? 'bg-warning' : 'bg-white/30'
+              full ? 'bg-warning' : 'bg-muted-foreground'
             )}
             style={{ width: `${pct}%` }}
           />
         </div>
       )}
-      <span className="text-[11px] text-neutral-600 tabular-nums whitespace-nowrap">
+      <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
         {unlimited
           ? t('brandQuota.meterUnlimited', { used })
           : t('brandQuota.meter', { used, max })}
@@ -387,7 +433,7 @@ const BrandGraceBanner = ({
   return (
     <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
       <AlertTriangle size={16} className="text-warning shrink-0" />
-      <p className="text-sm text-neutral-200 flex-1">
+      <p className="text-sm text-foreground flex-1">
         {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
       </p>
       <Button
@@ -477,7 +523,7 @@ const BrandGrid = ({
         <div className="relative w-full sm:w-56">
           <Search
             size={14}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
           />
           <Input
             value={search}
@@ -494,8 +540,8 @@ const BrandGrid = ({
               className={cn(
                 'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors',
                 !folderFilter
-                  ? 'bg-white/10 border-white/10 text-neutral-300'
-                  : 'border-transparent text-neutral-600 hover:text-neutral-400'
+                  ? 'bg-accent border-border text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               )}
             >
               {t('brandGuidelines.allFolders')}
@@ -507,8 +553,8 @@ const BrandGrid = ({
                 className={cn(
                   'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1',
                   folderFilter === f
-                    ? 'bg-white/10 border-white/10 text-neutral-300'
-                    : 'border-transparent text-neutral-600 hover:text-neutral-400'
+                    ? 'bg-accent border-border text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 )}
               >
                 <Folder size={10} />
@@ -521,7 +567,7 @@ const BrandGrid = ({
         <div className="sm:ml-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-400 border border-transparent hover:border-neutral-800 transition-colors">
+              <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-colors">
                 <ArrowUpDown size={11} />
                 {sort === 'recent'
                   ? t('brandGuidelines.sortRecent')
@@ -558,7 +604,7 @@ const BrandGrid = ({
       </div>
 
       {/* Count */}
-      <p className="text-[11px] text-neutral-700">
+      <p className="text-[11px] text-muted-foreground">
         {t('brandGuidelines.countBrands', {
           filtered: filtered.length,
           total: guidelines.length,
@@ -584,7 +630,7 @@ const BrandGrid = ({
         <div className="space-y-3 pt-2">
           <button
             onClick={() => setShowArchived((v) => !v)}
-            className="flex items-center gap-1.5 text-[11px] text-neutral-600 hover:text-neutral-400 transition-colors"
+            className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronDown
               size={12}
@@ -612,8 +658,8 @@ const BrandGrid = ({
 
       {filtered.length === 0 && search.trim() && (
         <div className="flex flex-col items-center py-12 gap-3">
-          <Search size={20} className="text-neutral-700" />
-          <p className="text-xs text-neutral-600">
+          <Search size={20} className="text-muted-foreground" />
+          <p className="text-xs text-muted-foreground">
             {t('brandGuidelines.noMatch', { term: search })}
           </p>
         </div>
@@ -720,7 +766,7 @@ export const BrandGuidelinesPage: React.FC = () => {
         title={t('brandGuidelines.seoTitle')}
         description={t('brandGuidelines.seoDescription')}
       />
-      <div className="absolute inset-0 z-0 bg-neutral-950" />
+      <div className="absolute inset-0 z-0 bg-background" />
 
       {/* Só tem a marca demo → convite persistente pra trazer a real (abre o wizard). */}
       <DemoBrandBanner onCta={() => handleOpenWizard()} />
@@ -772,7 +818,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                     </SheetTrigger>
                     <SheetContent
                       side="left"
-                      className="w-[85vw] max-w-sm p-0 border-r border-white/10 bg-neutral-950/95 backdrop-blur-xl"
+                      className="w-[85vw] max-w-sm p-0 border-r border-border bg-background/95 backdrop-blur-xl"
                     >
                       <SheetTitle className="sr-only">{t('brand.guidelines.menu')}</SheetTitle>
                       <GuidelinesSidebar
@@ -787,7 +833,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                   </Sheet>
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-base font-semibold text-neutral-100 truncate">
+                  <h1 className="text-base font-semibold text-foreground truncate">
                     {t('brandGuidelines.title')}
                   </h1>
                 </div>
@@ -817,7 +863,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                   className="flex flex-col items-center justify-center py-40 gap-6"
                 >
                   <GlitchLoader size={40} />
-                  <p className="text-neutral-600 text-xs animate-pulse">{t('common.loading')}</p>
+                  <p className="text-muted-foreground text-xs animate-pulse">{t('common.loading')}</p>
                 </motion.div>
               ) : guidelines.length === 0 ? (
                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />

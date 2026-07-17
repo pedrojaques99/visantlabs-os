@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { X, Search } from 'lucide-react';
+import { X, Search } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -115,7 +115,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar campo..."
-            className="w-full pl-8 pr-3 py-1.5 bg-neutral-950/70 border border-neutral-800 rounded text-sm font-mono text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50"
+            className="w-full pl-8 pr-3 py-1.5 bg-neutral-950/70 border border-neutral-800 rounded text-sm font-mono text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-600/50"
             aria-label="Buscar campo"
           />
         </div>

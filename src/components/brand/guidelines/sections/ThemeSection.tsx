@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SwatchBook, Plus, Trash2, Check } from 'lucide-react';
+import { SwatchBook, Plus, Trash2, Check } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { BrandGuideline, BrandColorTheme } from '@/lib/figma-types';

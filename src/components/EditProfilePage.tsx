@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, Check, User, Mail, X } from 'lucide-react';
+import { Camera, Check, User, Mail, X } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { authService, type User as UserType } from '../services/authService';
 import { useLayout } from '@/hooks/useLayout';

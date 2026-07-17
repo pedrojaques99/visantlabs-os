@@ -8,19 +8,25 @@
 import {
   assemblePrompt,
   buildRetryFeedback,
+  detectPendingTurn,
   refineIntentWithLLM,
   type AssembledPrompt,
   type ClassifiedIntent,
+  type ConversationTurn,
   type EnrichedIntent,
+  type PendingTurn,
 } from './prompt/index.js';
 
 export {
   assemblePrompt,
   buildRetryFeedback,
+  detectPendingTurn,
   refineIntentWithLLM,
   type AssembledPrompt,
   type ClassifiedIntent,
+  type ConversationTurn,
   type EnrichedIntent,
+  type PendingTurn,
 };
 
 // ============ Interfaces ============
@@ -107,6 +113,7 @@ export interface RouteContexts {
   enforcedTokens?: string;
   brandChoiceContext?: string;
   brandKnowledgeContext?: string;
+  pendingTurn?: PendingTurn;
 }
 
 export function buildSystemPrompt(
@@ -171,6 +178,7 @@ export function buildSystemPrompt(
     agentComponentsContext: ctx.agentComponentsContext,
     enforcedTokens: ctx.enforcedTokens,
     brandChoiceContext: ctx.brandChoiceContext,
+    pendingTurn: ctx.pendingTurn,
     brandKnowledgeContext: ctx.brandKnowledgeContext,
   });
 }

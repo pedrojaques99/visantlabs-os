@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, X, Instagram, Youtube, Twitter, Globe, ImageIcon } from 'lucide-react';
+import { Camera, X, Instagram, Youtube, Twitter, Globe, ImageIcon } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import {
   userProfileService,

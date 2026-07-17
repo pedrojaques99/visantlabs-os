@@ -1,6 +1,6 @@
 import React, { ComponentType, memo, useCallback, useEffect, useState, useRef } from 'react';
 import { type NodeProps, type Node, NodeResizer, Position, useNodes } from '@xyflow/react';
-import { ChevronDown, type LucideIcon, Diamond, LayoutGrid, Palette } from 'lucide-react';
+import { ChevronDown, type LucideIcon, Diamond, LayoutGrid, Palette } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { ConnectedImagesDisplay } from '../ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';

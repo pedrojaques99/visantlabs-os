@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { LinearGradientBackground } from '../components/ui/LinearGradientBackground';
 import { FormInput } from '../components/ui/form-input';
-import { Pickaxe, MessageCircle, Mail } from 'lucide-react';
+import { Pickaxe, MessageCircle, Mail } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { waitlistService } from '../services/waitlistService';

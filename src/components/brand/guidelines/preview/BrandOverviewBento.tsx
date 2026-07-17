@@ -12,7 +12,7 @@
  */
 import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GlassPanel } from '@/components/ui/GlassPanel';

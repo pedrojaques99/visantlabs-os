@@ -12,7 +12,7 @@ import { isBrandLimitError } from '@/hooks/queries/useBrandGuidelines';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
-import { ArrowRight, Upload, PencilLine, Compass, Loader2 } from 'lucide-react';
+import { ArrowRight, Upload, PencilLine, Compass, Loader2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { PersonaGrid } from './PersonaGrid';
 import { SEGMENTS, DEFAULT_ROUTE, type Segment } from './onboardingSegments';

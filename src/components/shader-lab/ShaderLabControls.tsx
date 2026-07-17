@@ -2,7 +2,7 @@ import React from 'react';
 import { useShaderLabStore } from '@/stores/shaderLabStore';
 import { ShaderControls } from '@/components/shared/ShaderControls';
 import { SendToButton } from '@/components/shared/SendToButton';
-import { ToolPanel, ToolPanelContent, ToolPanelExportActions } from '@/components/shared/ToolPanel';
+import { ToolPanel, ToolPanelExportActions } from '@/components/shared/ToolPanel';
 
 interface ShaderLabControlsProps {
   onExport: () => void;
@@ -15,16 +15,15 @@ export const ShaderLabControls: React.FC<ShaderLabControlsProps> = React.memo(
 
     return (
       <ToolPanel>
-        <ToolPanelContent>
-          <ShaderControls
-            enabled={store.shaderEnabled}
-            shaderType={store.shaderType}
-            values={store.shaderValues}
-            onEnabledChange={store.setShaderEnabled}
-            onTypeChange={store.setShaderType}
-            onValueChange={store.setShaderValue}
-          />
-        </ToolPanelContent>
+        <ShaderControls
+          sectioned
+          enabled={store.shaderEnabled}
+          shaderType={store.shaderType}
+          values={store.shaderValues}
+          onEnabledChange={store.setShaderEnabled}
+          onTypeChange={store.setShaderType}
+          onValueChange={store.setShaderValue}
+        />
 
         <ToolPanelExportActions
           onExport={onExport}

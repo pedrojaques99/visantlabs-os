@@ -3,7 +3,7 @@
  * admin) para o componente. Curado de propósito — `import * as` puxaria os ~1500
  * ícones pro bundle. Amplie o mapa conforme os apps precisarem. Plano APP-SHELL P3.
  */
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
 import {
   LayoutGrid,
   Sparkles,
@@ -30,7 +30,7 @@ import {
   Globe,
   Shapes,
   Frame,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutGrid,

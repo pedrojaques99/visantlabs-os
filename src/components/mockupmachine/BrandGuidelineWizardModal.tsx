@@ -9,7 +9,7 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { FileText, X, Image as ImageIcon, Figma } from 'lucide-react';
+import { FileText, X, Image as ImageIcon, Figma } from '@/lib/ui/icons';
 import { validatePdfFile } from '@/utils/pdfUtils';
 import { buildBrandIngestPayload } from '@/hooks/queries/useBrandImport';
 import { isBrandLimitError } from '@/hooks/queries/useBrandGuidelines';

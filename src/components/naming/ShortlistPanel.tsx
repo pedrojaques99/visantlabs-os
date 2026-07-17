@@ -10,7 +10,7 @@ import {
   Pencil,
   SearchCheck,
   BookmarkPlus,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
@@ -234,7 +234,7 @@ function ShortlistRow({
                       <ul className="space-y-0.5">
                         {defense.layers.map((l, i) => (
                           <li key={i} className="flex gap-1.5">
-                            <span className="text-brand-cyan">·</span>
+                            <span className="text-neutral-600">·</span>
                             {l}
                           </li>
                         ))}

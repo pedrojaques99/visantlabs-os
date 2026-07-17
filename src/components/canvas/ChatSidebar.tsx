@@ -9,7 +9,7 @@ import {
   ChevronUp,
   Diamond,
   Settings2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { ChatNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';

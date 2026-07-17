@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import type { BudgetLinks } from '@/types/types';
-import { Globe, Instagram, MessageCircle } from 'lucide-react';
+import { Globe, Instagram, MessageCircle } from '@/lib/ui/icons';
 
 interface LinksSectionProps {
   links: BudgetLinks;

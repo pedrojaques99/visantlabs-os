@@ -99,7 +99,7 @@ export function useAuth() {
       if (!authUrl || !sessionId) return;
 
       window.parent.postMessage(
-        { pluginMessage: { type: 'OPEN_EXTERNAL_URL', url: authUrl } },
+        { pluginMessage: { type: 'OPEN_EXTERNAL', url: authUrl } },
         'https://www.figma.com'
       );
       showToast('Faça login no navegador...', 'info');

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Zap, Lock, Image as ImageIcon, ClipboardList, Figma } from 'lucide-react';
+import { Zap, Lock, Image as ImageIcon, ClipboardList, Figma } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { SEO } from '@/components/SEO';
 import { Button } from '@/components/ui/button';
@@ -47,11 +47,11 @@ const CopilotLockedPreview: React.FC = () => {
     <div className="flex-1 overflow-y-auto flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-2xl flex flex-col items-center gap-8 text-center">
         <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-          <Zap size={28} className="text-brand-cyan" />
+          <Zap size={28} className="text-neutral-400" />
         </div>
 
         <div className="space-y-3">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-neutral-400 uppercase tracking-wider">
             <Lock size={10} />
             {t('copilot.locked.badge')}
           </span>
@@ -172,7 +172,7 @@ export const CopilotPage: React.FC = () => {
             wsPath="/copilot/ws"
             sessionsQueryKey="copilot-sessions"
             feature="copilot"
-            sidebarIcon={<Zap className="h-4 w-4 text-brand-cyan" />}
+            sidebarIcon={<Zap className="h-4 w-4 text-neutral-400" />}
             strings={strings}
             suggestions={suggestions}
             initialInput={initialPrompt}

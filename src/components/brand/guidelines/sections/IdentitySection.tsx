@@ -13,7 +13,7 @@ import {
   Linkedin,
   Briefcase,
   Twitter,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { cn } from '@/lib/utils';
 

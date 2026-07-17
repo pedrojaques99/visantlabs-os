@@ -17,7 +17,7 @@ import {
   Zap,
   Diamond,
   Copy,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageShell } from '../components/ui/PageShell';
 import { imageApi, SearchImage, DesignerParams, ContentMode } from '../services/imageApi';
@@ -128,7 +128,7 @@ const ImageCard = memo<ImageCardProps>(
           {/* Technical Badges */}
           <div className="absolute top-3 left-3 z-10 flex gap-1.5">
             {isHD && (
-              <div className="bg-brand-cyan/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
+              <div className="bg-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
                 ULTRA HD
               </div>
             )}

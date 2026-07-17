@@ -16,7 +16,7 @@ import {
   Brain,
   Cpu,
   Layers,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 const PROCESSING_STEPS = [
   { icon: Brain, label: 'ANALYZING INTENT...' },
@@ -261,7 +261,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-300">
                 <div className="flex items-center justify-between px-1">
                   <p
-                    className="text-[11px] font-mono font-bold uppercase tracking-widest"
+                    className="text-[11px] font-bold"
                     style={{ color: CATEGORIES.find((c) => c.id === activeCategory)?.color }}
                   >
                     {CATEGORIES.find((c) => c.id === activeCategory)?.name} Presets
@@ -321,7 +321,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             {isLoading && (
               <div className="flex items-center gap-3 px-3 py-2 bg-brand-cyan/5 border-node border-neutral-800 rounded-2xl rounded-tl-none mr-8">
                 <GlitchLoader size={14} color="var(--brand-cyan)" />
-                <span className="text-brand-cyan/70 text-[10px] font-mono uppercase tracking-widest font-bold">
+                <span className="text-brand-cyan/70 text-[10px] font-bold">
                   {PROCESSING_STEPS[processingStep].label}
                 </span>
                 <span className="ml-auto flex gap-0.5">
@@ -353,7 +353,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                 <Zap size={20} className="text-brand-cyan" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold text-brand-cyan font-mono uppercase tracking-tight">
+                <p className="text-[12px] font-bold text-brand-cyan tracking-tight">
                   {pendingDefinition.name}
                 </p>
                 <p className="text-[10px] text-brand-cyan/60 font-mono leading-tight mt-0.5">

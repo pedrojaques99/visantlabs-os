@@ -1,24 +1,29 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useMentions } from '../../hooks/useMentions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Paperclip, Zap, Scan, Image, X, Plus } from 'lucide-react';
+import { Send, Paperclip, Zap, Scan, Image, X, Plus, Check } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
 import { ModelSelector } from '@/components/shared/ModelSelector';
-import type { Attachment } from '../../store/types';
+import { isOutOfCredits, type Attachment } from '../../store/types';
+import { PRICING_URL } from '../../apiBase';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf'];
 
-function fileToAttachment(file: File): Promise<Attachment | null> {
+function fileToAttachment(
+  file: File,
+  t: (key: string, params?: Record<string, string | number>) => string
+): Promise<Attachment | null> {
   return new Promise((resolve) => {
     if (file.size > MAX_FILE_SIZE) {
-      usePluginStore.getState().showToast(`${file.name} exceeds 5MB limit`, 'error');
+      usePluginStore.getState().showToast(t('plugin.input.fileTooLarge', { name: file.name }), 'error');
       return resolve(null);
     }
-    if (!ACCEPTED_TYPES.some((t) => file.type.startsWith(t.split('/')[0]) || file.type === t)) {
-      usePluginStore.getState().showToast(`${file.name}: unsupported format`, 'error');
+    if (!ACCEPTED_TYPES.some((mime) => file.type.startsWith(mime.split('/')[0]) || file.type === mime)) {
+      usePluginStore.getState().showToast(t('plugin.input.unsupportedFormat', { name: file.name }), 'error');
       return resolve(null);
     }
     const reader = new FileReader();
@@ -36,8 +41,11 @@ function fileToAttachment(file: File): Promise<Attachment | null> {
   });
 }
 
-async function addFiles(files: File[]) {
-  const results = await Promise.all(files.map(fileToAttachment));
+async function addFiles(
+  files: File[],
+  t: (key: string, params?: Record<string, string | number>) => string
+) {
+  const results = await Promise.all(files.map((file) => fileToAttachment(file, t)));
   const valid = results.filter(Boolean) as Attachment[];
   if (valid.length) {
     usePluginStore.setState((s) => ({
@@ -51,6 +59,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend }: ChatInputProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [showActions, setShowActions] = useState(false);
@@ -69,9 +78,17 @@ export function ChatInput({ onSend }: ChatInputProps) {
     brandGuideline,
     isGenerating,
     selectedModel,
+    credits,
   } = usePluginStore();
 
   const mentions = useMentions(textareaRef, setContent);
+
+  // Expansion is born of usage: the upgrade belongs at the moment of the limit, with the
+  // sentence they just typed still in the box — not as a number nagging from the header.
+  const outOfCredits = isOutOfCredits(credits);
+  const openPricing = useCallback(() => {
+    parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL', url: PRICING_URL } }, '*');
+  }, []);
 
   const activeBrandName = brandGuideline?.name || brandGuideline?.identity?.name || 'Brand';
   const brandLogo = (
@@ -80,6 +97,9 @@ export function ChatInput({ onSend }: ChatInputProps) {
   )?.url;
 
   const handleSend = () => {
+    // Enter must respect the limit too — hiding the button alone would still let it through,
+    // and the request would only die at the server with a raw NO_CREDITS error.
+    if (outOfCredits) return;
     if (content.trim()) {
       onSend(content);
       setContent('');
@@ -111,7 +131,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    addFiles(Array.from(e.target.files || []));
+    addFiles(Array.from(e.target.files || []), t);
     e.target.value = '';
   };
 
@@ -119,8 +139,8 @@ export function ChatInput({ onSend }: ChatInputProps) {
     e.preventDefault();
     setIsDragging(false);
     const files = Array.from(e.dataTransfer.files);
-    if (files.length) addFiles(files);
-  }, []);
+    if (files.length) addFiles(files, t);
+  }, [t]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -146,12 +166,12 @@ export function ChatInput({ onSend }: ChatInputProps) {
       }
       if (imageFiles.length) {
         e.preventDefault();
-        addFiles(imageFiles);
+        addFiles(imageFiles, t);
       }
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, []);
+  }, [t]);
 
   const removeAttachment = (id: string) => {
     usePluginStore.setState((s) => ({
@@ -189,7 +209,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
           selectedModel={selectedModel}
           onModelChange={(model) => usePluginStore.setState({ selectedModel: model })}
           type={generateImage ? 'image' : 'chat'}
-          className="!bg-transparent border-white/5 hover:border-white/10 !px-1.5 !py-0 h-5 text-[10px] opacity-60 hover:opacity-100 transition-opacity"
+          className="!bg-transparent border-border/50 hover:border-border !px-1.5 !py-0 h-5 text-[10px] opacity-60 hover:opacity-100 transition-opacity"
         />
 
         <div className="w-px h-3 bg-border" />
@@ -204,7 +224,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
           }`}
         >
           <Zap size={9} className={thinkMode ? 'text-brand-cyan' : ''} />
-          Think
+          {t('plugin.input.think')}
         </button>
 
         <button
@@ -221,7 +241,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
           ) : (
             <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0 opacity-50" />
           )}
-          <span className="truncate">{useBrand ? activeBrandName : 'Brand'}</span>
+          <span className="truncate">{useBrand ? activeBrandName : t('plugin.common.brand')}</span>
         </button>
       </div>
 
@@ -260,7 +280,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
           value={content}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
-          placeholder="Descreva o que deseja criar..."
+          placeholder={t('plugin.input.placeholder')}
           className="min-h-[36px] max-h-24 text-sm resize-none py-2 px-3 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
           rows={1}
         />
@@ -306,8 +326,8 @@ export function ChatInput({ onSend }: ChatInputProps) {
                     }`}
                   >
                     <Scan size={13} />
-                    Scan page
-                    {scanPage && <span className="ml-auto text-brand-cyan">✓</span>}
+                    {t('plugin.input.scanPage')}
+                    {scanPage && <Check size={12} className="ml-auto text-brand-cyan" />}
                   </button>
                   <button
                     type="button"
@@ -320,8 +340,8 @@ export function ChatInput({ onSend }: ChatInputProps) {
                     }`}
                   >
                     <Image size={13} />
-                    Generate image
-                    {generateImage && <span className="ml-auto text-brand-cyan">✓</span>}
+                    {t('plugin.input.generateImage')}
+                    {generateImage && <Check size={12} className="ml-auto text-brand-cyan" />}
                   </button>
                 </div>
               )}
@@ -342,15 +362,29 @@ export function ChatInput({ onSend }: ChatInputProps) {
             />
           </div>
 
-          <Button
-            onClick={handleSend}
-            size="icon"
-            className="h-7 w-7 rounded-lg bg-brand-cyan text-black hover:bg-brand-cyan/90"
-            disabled={!content.trim() || isGenerating}
-          >
-            <Send size={14} />
-          </Button>
+          {!outOfCredits && (
+            <Button
+              onClick={handleSend}
+              size="icon"
+              className="h-7 w-7 rounded-lg bg-brand-cyan text-black hover:bg-brand-cyan/90"
+              disabled={!content.trim() || isGenerating}
+            >
+              <Send size={14} />
+            </Button>
+          )}
         </div>
+
+        {outOfCredits && (
+          <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+            <p className="text-[11px] text-muted-foreground">{t('plugin.input.creditsOut')}</p>
+            <Button
+              onClick={openPricing}
+              className="h-7 px-3 rounded-lg bg-brand-cyan text-black hover:bg-brand-cyan/90 text-xs"
+            >
+              {t('plugin.input.creditsOutCta')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

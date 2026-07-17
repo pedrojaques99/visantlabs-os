@@ -24,6 +24,11 @@ import { COLOR_SPEC_RULES } from './modules/color-spec.js';
 import { buildSelectionContext, buildContainersHint } from './modules/context.js';
 import { buildToolsReference } from './modules/tools-reference.js';
 import { GOLDEN_RULES, THINK_MODE_RULES } from './modules/golden-rules.js';
+import {
+  buildContinuationContext,
+  isReplyToPendingQuestion,
+  type PendingTurn,
+} from './continuation.js';
 
 // Re-export for external use
 export * from './types.js';
@@ -31,9 +36,17 @@ export * from './presets.js';
 export {
   classifyIntent,
   isChatOnly,
+  isGreeting,
   refineIntentWithLLM,
   type EnrichedIntent,
 } from './classifier.js';
+export {
+  detectPendingTurn,
+  isReplyToPendingQuestion,
+  buildContinuationContext,
+  type ConversationTurn,
+  type PendingTurn,
+} from './continuation.js';
 
 export interface PromptAssemblerInput {
   command: string;
@@ -69,28 +82,64 @@ export interface PromptAssemblerInput {
   agentComponentsContext?: string;
   enforcedTokens?: string;
   brandChoiceContext?: string;
+  /** Unanswered question from the assistant's last turn (see ./continuation.ts). */
+  pendingTurn?: PendingTurn;
 }
 
 /**
  * Assemble a minimal, intent-optimized prompt
  */
 export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
-  const { command, selectedElements = [], chatHistory } = input;
+  const { command, selectedElements = [], chatHistory, pendingTurn } = input;
+
+  // ── Conversation state resolves the turn before any classification ──
+  // A short message right after our own question is an answer, not a new conversation.
+  // Classify the whole turn (original request + answer) so "Visant" replying to
+  // "which brand for the mockup?" stays a mockup instead of decaying into chat.
+  const isContinuation = !!pendingTurn && isReplyToPendingQuestion(command, pendingTurn);
+  const continuationContext = isContinuation
+    ? buildContinuationContext(command, pendingTurn!)
+    : '';
+  const classifierInput =
+    isContinuation && pendingTurn?.pendingRequest
+      ? `${pendingTurn.pendingRequest}\n${command}`
+      : command;
 
   // Classify intent
-  const intent = classifyIntent(command, selectedElements.length > 0);
+  const intent = classifyIntent(classifierInput, selectedElements.length > 0);
 
-  // Check if pure chat
-  if (isChatOnly(command)) {
+  // Check if pure chat — a continuation never is, it inherits the pending request's intent
+  if (!isContinuation && isChatOnly(command)) {
+    // Chat still needs the conversation. Answering "what did I just ask you?" with a
+    // historyless prompt is how the assistant ends up greeting a user mid-task.
+    const chatModules: PromptModule[] = [
+      { id: 'chat_only', content: getCorePrompt(true), priority: 100 },
+    ];
+    if (chatHistory) {
+      chatModules.push({
+        id: 'history',
+        content: `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}`,
+        priority: 92,
+      });
+    }
+    if (input.brandChoiceContext) {
+      chatModules.push({ id: 'brand_choice', content: input.brandChoiceContext, priority: 88 });
+    }
+    const chatSystem = chatModules.map((m) => m.content).join('\n\n');
     return {
-      system: getCorePrompt(true),
-      tokenEstimate: 100,
-      modules: ['chat_only'],
+      system: chatSystem,
+      tokenEstimate: Math.ceil(chatSystem.length / 4),
+      modules: chatModules.map((m) => m.id),
       intent: { ...intent, intent: 'chat' },
     };
   }
 
   const modules: PromptModule[] = [];
+
+  // ── 0. Dialog continuation (highest signal: we are mid-task, not opening) ──
+  if (continuationContext) {
+    modules.push({ id: 'continuation', content: continuationContext, priority: 95 });
+  }
 
   // ── 1. Core identity (always) ──
   modules.push({ id: 'core', content: getCorePrompt(false), priority: 100 });

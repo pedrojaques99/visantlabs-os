@@ -20,7 +20,7 @@ import {
   Palette,
   Lock,
   Unlock,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { AutoSaveStatus } from '@/hooks/useAutoSave';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
@@ -221,9 +221,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
       {/* Project name (editable) */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
-          Projeto
-        </label>
+        <label className="text-xs font-medium text-neutral-500">Projeto</label>
         {isEditingName ? (
           <input
             autoFocus
@@ -252,10 +250,8 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
       {guideline && (
         <div className="flex flex-col gap-3 pb-4 border-b border-neutral-800">
           <div className="flex items-center gap-2">
-            <Briefcase size={12} className="text-brand-cyan" />
-            <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-300">
-              Brand Vault
-            </label>
+            <Briefcase size={12} className="text-neutral-500" />
+            <label className="text-xs font-medium text-neutral-300">Brand Vault</label>
           </div>
           <div className="max-h-[240px] overflow-y-auto pr-1">
             <MediaKitGallery
@@ -280,9 +276,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
       {/* Add layers */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
-          Adicionar Estáticos
-        </label>
+        <label className="text-xs font-medium text-neutral-500">Adicionar Estáticos</label>
         <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={handleAddText}
@@ -311,9 +305,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
       {/* Layers list */}
       <div className="flex flex-col gap-1.5 overflow-hidden">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
-          Layers ({layers.length})
-        </label>
+        <label className="text-xs font-medium text-neutral-500">Layers ({layers.length})</label>
         <div className="flex flex-col gap-1 overflow-y-auto pr-1 max-h-[300px]">
           {layers.length === 0 && (
             <p className="text-[11px] text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
@@ -429,9 +421,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
       {/* Format switcher */}
       <div className="mt-auto flex flex-col gap-4 border-t border-neutral-800 pt-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
-            Formato
-          </label>
+          <label className="text-xs font-medium text-neutral-500">Formato</label>
           <AspectRatioSelector
             value={format as AspectRatio}
             onChange={(r) => setFormat(r as CreativeFormat)}

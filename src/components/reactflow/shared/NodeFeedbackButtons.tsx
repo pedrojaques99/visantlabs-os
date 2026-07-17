@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ThumbsUp, ThumbsDown } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';
 import { useGenerationFeedback } from '@/hooks/useGenerationFeedback';

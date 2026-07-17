@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { Download, X, CheckCircle2, AlertCircle, XCircle } from '@/lib/ui/icons';
 import { useRenderQueue } from '../../hooks/moodboard/useRenderQueue';
 import { RenderJob } from '../../types/moodboard';
 import { downloadBlob } from '../../utils/clipboard';

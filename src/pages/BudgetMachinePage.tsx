@@ -16,7 +16,7 @@ import { Tooltip } from '../components/ui/Tooltip';
 import type { PdfFieldMapping } from '../types/types';
 import { toast } from 'sonner';
 import type { BudgetData } from '../types/types';
-import { Save, Download, Share2, Copy, Check, AlertCircle, Menu, X } from 'lucide-react';
+import { Save, Download, Share2, Copy, Check, AlertCircle, Menu, X } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { generateBudgetPDF } from '@/utils/generateBudgetPDF';
 import { getTemplateById } from '@/utils/budgetTemplates';

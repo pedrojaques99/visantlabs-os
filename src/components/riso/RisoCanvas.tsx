@@ -6,7 +6,7 @@ import React, {
   useImperativeHandle,
   useCallback,
 } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { RisoRenderer, extractDominantColors } from './RisoRenderer';

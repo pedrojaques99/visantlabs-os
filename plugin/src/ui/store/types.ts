@@ -78,6 +78,24 @@ export interface Credits {
   resetDate?: string;
 }
 
+/** Tab destinations, plus 'sessions' (chat history, reached from the chat, not a tab). */
+export type ActiveView = 'brand' | 'main' | 'tools' | 'profile' | 'sessions';
+
+/** The tab bar, in the product's hierarchy: brand → chat → tools → user. */
+export const TAB_VIEWS = ['brand', 'main', 'tools', 'profile'] as const;
+export type TabView = (typeof TAB_VIEWS)[number];
+
+/**
+ * The limit is only real when we know it. Credits default to {used:0, limit:0} and a
+ * logged-out user reports the same, so `used >= limit` alone would tell someone who never
+ * signed in that they ran out — that's an auth state, not a limit. The server stays the
+ * source of truth (it answers NO_CREDITS); this only decides when to stop asking.
+ */
+export function isOutOfCredits(credits: Credits | null | undefined): boolean {
+  if (!credits || credits.limit <= 0) return false;
+  return credits.used >= credits.limit;
+}
+
 export interface Attachment {
   id: string;
   name: string;
@@ -121,6 +139,8 @@ export interface PluginStore {
   // Selection & Canvas
   selectionDetails: SelectionDetail[];
   selectionThumb: string | null;
+  /** Figma file key, from FILE_INFO. Null on an unsaved/local file. */
+  fileId: string | null;
 
   // Brand
   logos: LogoSlot[];
@@ -169,8 +189,6 @@ export interface PluginStore {
   mentionElements: any[];
   apiKey: string | null;
   anthropicApiKey: string | null;
-  showSmartScanModal: boolean;
-  smartScanResults: any | null;
   colorScanResults: any | null;
   selectedFont: { family: string; style?: string; fontSize?: number; lineHeight?: number } | null;
   brandLintReport: any | null;
@@ -186,7 +204,9 @@ export interface PluginStore {
   brandHydrationAtMs: number;
 
   // UI State
-  activeView: 'main' | 'settings' | 'profile' | 'sessions';
+  // Destinations, in the product's hierarchy: brand → chat → tools → user.
+  // 'sessions' has no tab — it is chat history, reached from the chat itself.
+  activeView: ActiveView;
   collapsed: boolean;
   openPanel: string | null;
   devMode: boolean;
@@ -209,7 +229,7 @@ export interface PluginStore {
   setThinkMode: (enabled: boolean) => void;
   setUseBrand: (enabled: boolean) => void;
   setScanPage: (enabled: boolean) => void;
-  setActiveView: (view: 'main' | 'settings' | 'profile' | 'sessions') => void;
+  setActiveView: (view: ActiveView) => void;
   updateTypography: (slot: 'primary' | 'secondary', data: Partial<TypographySlot>) => void;
   addSelectedColor: (role: string, color: ColorEntry) => void;
   setAllComponents: (components: Component[]) => void;

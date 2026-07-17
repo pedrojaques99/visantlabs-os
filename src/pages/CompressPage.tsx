@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, Minimize2, X } from 'lucide-react';
+import { Upload, Minimize2, X } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -312,7 +312,7 @@ export const CompressPage: React.FC = () => {
         {/* Quality slider */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase">Quality</span>
+            <span className="text-xs font-medium text-neutral-500">Quality</span>
             <span className="text-[10px] font-mono text-neutral-500 tabular-nums">{quality}%</span>
           </div>
           <input
@@ -329,7 +329,7 @@ export const CompressPage: React.FC = () => {
 
         {/* Max dimension */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Max dimension</span>
+          <span className="text-xs font-medium text-neutral-500">Max dimension</span>
           <div className="flex gap-1">
             {DIMENSION_OPTIONS.map((d) => (
               <button
@@ -351,7 +351,7 @@ export const CompressPage: React.FC = () => {
 
         {/* Format */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-neutral-500 uppercase">Format</span>
+          <span className="text-xs font-medium text-neutral-500">Format</span>
           <div className="flex gap-1">
             {FORMAT_OPTIONS.map((f) => (
               <button
@@ -382,7 +382,7 @@ export const CompressPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 font-mono text-xs uppercase tracking-widest"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -498,7 +498,7 @@ export const CompressPage: React.FC = () => {
               whileTap={{ scale: 0.99 }}
             >
               <Upload size={24} className="text-neutral-500" />
-              <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-neutral-500">
                 Drop images or click — batch supported
               </span>
               <input
@@ -555,7 +555,7 @@ export const CompressPage: React.FC = () => {
                         {formatBytes(previewItem.originalSize)}
                       </span>
                       <span className="text-[10px] font-mono text-neutral-500">→</span>
-                      <span className="text-[10px] font-mono uppercase tracking-wider bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded tabular-nums">
+                      <span className="text-[10px] font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded tabular-nums">
                         {formatBytes(previewItem.compressedSize)}
                       </span>
                       {previewItem.originalSize > 0 && (

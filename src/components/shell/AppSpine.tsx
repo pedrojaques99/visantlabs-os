@@ -17,7 +17,7 @@
  */
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, ChevronLeft, Command } from 'lucide-react';
+import { Menu, ChevronLeft, Command } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
@@ -29,6 +29,7 @@ import {
   isBrandFilteredList,
 } from '@/config/navConfig';
 import { BrandSwitcher } from '@/components/cockpit/BrandSwitcher';
+import { AuthButton } from '@/components/AuthButton';
 import { useShellHeader } from './ShellHeaderContext';
 import { openCommandPalette } from '@/components/ui/CommandPalette';
 import { getEditorOrigin } from './editorOrigin';
@@ -71,7 +72,7 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { subscriptionStatus, onSubscriptionModalOpen } = useLayout();
+  const { subscriptionStatus, onSubscriptionModalOpen, onCreditPackagesModalOpen } = useLayout();
   const brand = useActiveBrandSafe();
   const shellHeader = useShellHeader();
   // Alt+B → alterna pra última marca (quick-switch; ver useBrandQuickSwitch).
@@ -178,6 +179,13 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
             {t('nav.upgrade')}
           </button>
         )}
+
+        {/* Conta + créditos (SSoT) — vivem no topo, ao lado do Buscar ⌘K. */}
+        <AuthButton
+          subscriptionStatus={subscriptionStatus}
+          onCreditsClick={() => onCreditPackagesModalOpen()}
+          menuPlacement="bottom"
+        />
       </div>
     </header>
   );

@@ -14,7 +14,7 @@ import {
   UserCog,
   BarChart2,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { type User as UserType } from '@/services/authService';
 import { type SubscriptionStatus } from '@/services/subscriptionService';
@@ -260,7 +260,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   <p className="text-4xl font-bold text-white font-mono tracking-tight">
                     {totalCreditsAvailable}
                   </p>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full border border-brand-cyan/20">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/10">
                     {t('credits.active')}
                   </span>
                 </div>
@@ -400,8 +400,8 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   'p-4 flex flex-col items-center justify-center text-center'
                 )}
               >
-                <CreditCard className="text-brand-cyan/60 mb-2" size={20} />
-                <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
+                <CreditCard className="text-neutral-500 mb-2" size={20} />
+                <p className="text-xl font-bold text-neutral-200 font-mono mb-1">
                   {referralStats.totalCreditsEarned || 0}
                 </p>
                 <MicroTitle as="p" className="text-neutral-600">

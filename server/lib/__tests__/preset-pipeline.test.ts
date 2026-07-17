@@ -54,7 +54,7 @@ describe('web preset registry', () => {
 
   it('builds HTML from vars + slots + fonts', () => {
     const v = brandToPresetVars(brand);
-    const html = getWebPreset('Post/Launch')!.build(
+    const html = getWebPreset('Post/Launch')!.build!(
       v,
       { h1: 'Volta às aulas', infos: ['08/07', '@zola'] },
       { photo1: { imageUrl: 'https://x/p.png' }, logo: { imageUrl: 'https://x/l.png' } },

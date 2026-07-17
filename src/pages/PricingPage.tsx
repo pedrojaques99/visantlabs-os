@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, CreditCard, Zap } from 'lucide-react';
+import { Check, CreditCard, Zap } from '@/lib/ui/icons';
 import { getUserLocale, type CurrencyInfo } from '@/utils/localeUtils';
 import { getCreditPackageLink } from '@/utils/creditPackages';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -113,7 +113,7 @@ export const PricingPage: React.FC = () => {
       />
 
       <div
-        className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14"
+        className="min-h-screen bg-background text-muted-foreground pt-12 md:pt-14"
         data-vsn-page="pricing"
         data-vsn-component="pricing-v3"
       >
@@ -142,10 +142,10 @@ export const PricingPage: React.FC = () => {
 
           {/* Header */}
           <div className="text-center mb-10 md:mb-12">
-            <h1 className="text-4xl md:text-5xl font-semibold text-neutral-100 mb-4 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-semibold text-foreground mb-4 tracking-tight">
               {copy.title}
             </h1>
-            <p className="text-neutral-500 text-sm md:text-base max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
               {copy.subtitle}
             </p>
           </div>
@@ -168,7 +168,7 @@ export const PricingPage: React.FC = () => {
                   'relative z-10 px-6 py-2 text-sm rounded-full min-w-[104px] transition-colors',
                   billingCycle === 'monthly'
                     ? 'text-black font-bold'
-                    : 'text-neutral-400 hover:text-neutral-200'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {copy.monthly}
@@ -180,7 +180,7 @@ export const PricingPage: React.FC = () => {
                   'relative z-10 px-6 py-2 text-sm rounded-full min-w-[104px] flex items-center justify-center gap-2 transition-colors',
                   billingCycle === 'yearly'
                     ? 'text-black font-bold'
-                    : 'text-neutral-400 hover:text-neutral-200'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {copy.yearly}
@@ -189,7 +189,7 @@ export const PricingPage: React.FC = () => {
                     'text-[10px] px-1.5 py-0.5 rounded-full font-bold',
                     billingCycle === 'yearly'
                       ? 'bg-neutral-950/20 text-black'
-                      : 'bg-neutral-800 text-neutral-300'
+                      : 'bg-muted text-muted-foreground'
                   )}
                 >
                   {copy.yearlyBadge}
@@ -220,10 +220,10 @@ export const PricingPage: React.FC = () => {
                 <div
                   key={tier.id}
                   className={cn(
-                    'relative flex flex-col rounded-2xl border bg-neutral-900/40 p-6',
+                    'relative flex flex-col rounded-2xl border bg-card p-6',
                     tier.recommended
                       ? 'border-brand-cyan/40 bg-brand-cyan/[0.03]'
-                      : 'border-neutral-800'
+                      : 'border-border'
                   )}
                   data-vsn-region={`tier-${tier.id}`}
                 >
@@ -235,7 +235,7 @@ export const PricingPage: React.FC = () => {
                           {copy.recommended}
                         </Badge>
                       ) : (
-                        <Badge className="bg-neutral-800 text-neutral-300 border-none text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <Badge className="bg-muted text-muted-foreground border-none text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
                           <Zap size={10} />
                           {copy.earlyAccess}
                         </Badge>
@@ -245,8 +245,8 @@ export const PricingPage: React.FC = () => {
 
                   {/* Nome + tagline */}
                   <div className="mb-5 mt-1">
-                    <h2 className="text-xl font-bold text-neutral-100">{tc.name}</h2>
-                    <p className="text-xs text-neutral-500 mt-1 leading-relaxed">{tc.tagline}</p>
+                    <h2 className="text-xl font-bold text-foreground">{tc.name}</h2>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{tc.tagline}</p>
                   </div>
 
                   {/* Preço grande */}
@@ -254,37 +254,37 @@ export const PricingPage: React.FC = () => {
                     <span
                       className={cn(
                         'text-4xl font-bold font-mono tracking-tight',
-                        tier.recommended ? 'text-brand-cyan' : 'text-neutral-100'
+                        tier.recommended ? 'text-brand-cyan' : 'text-foreground'
                       )}
                     >
                       {priceStr}
                     </span>
                     {cycleSuffix && (
-                      <span className="text-sm text-neutral-500 font-mono">{cycleSuffix}</span>
+                      <span className="text-sm text-muted-foreground font-mono">{cycleSuffix}</span>
                     )}
                   </div>
 
                   {/* Preço "normal" riscado — só quando o ativo é promo de lançamento (Vision) */}
                   {regular != null && (
-                    <p className="mt-2 mb-1 text-xs font-mono text-neutral-500">
+                    <p className="mt-2 mb-1 text-xs font-mono text-muted-foreground">
                       <span className="line-through">
                         {formatTierPrice(regular, currency)}
                         {cycleSuffix}
                       </span>
                       {' · '}
-                      <span className={tier.recommended ? 'text-brand-cyan' : 'text-neutral-300'}>
+                      <span className={tier.recommended ? 'text-brand-cyan' : 'text-muted-foreground'}>
                         {copy.launchLabel}
                       </span>
-                      <span className="text-neutral-600"> · {copy.launchNote}</span>
+                      <span className="text-muted-foreground"> · {copy.launchNote}</span>
                     </p>
                   )}
 
                   {/* Créditos — uma linha fair-use + tradução em resultado legível */}
-                  <p className="mt-4 text-xs text-neutral-400 font-mono">{tc.credits}</p>
+                  <p className="mt-4 text-xs text-muted-foreground font-mono">{tc.credits}</p>
                   <p
                     className={cn(
                       'mt-1 text-xs font-mono',
-                      tier.recommended ? 'text-brand-cyan' : 'text-neutral-500'
+                      tier.recommended ? 'text-brand-cyan' : 'text-muted-foreground'
                     )}
                   >
                     {tc.creditsOutcome}
@@ -292,7 +292,7 @@ export const PricingPage: React.FC = () => {
 
                   {/* BYOK — badge discreto */}
                   <div className="mt-2">
-                    <Badge className="bg-neutral-800/60 text-neutral-400 border border-neutral-700 text-[10px] font-mono px-2 py-0.5 rounded-md">
+                    <Badge className="bg-muted text-muted-foreground border border-border text-[10px] font-mono px-2 py-0.5 rounded-md">
                       {copy.byokBadge}
                     </Badge>
                   </div>
@@ -302,13 +302,13 @@ export const PricingPage: React.FC = () => {
                     {tc.features.map((feature) => (
                       <li
                         key={feature}
-                        className="flex items-start gap-2.5 text-sm text-neutral-300"
+                        className="flex items-start gap-2.5 text-sm text-muted-foreground"
                       >
                         <Check
                           size={15}
                           className={cn(
                             'mt-0.5 shrink-0',
-                            tier.recommended ? 'text-brand-cyan' : 'text-neutral-500'
+                            tier.recommended ? 'text-brand-cyan' : 'text-muted-foreground'
                           )}
                         />
                         <span>{feature}</span>
@@ -341,13 +341,13 @@ export const PricingPage: React.FC = () => {
           {/* Rodapé — pacote avulso de créditos, discreto */}
           {creditPackages.length > 0 && (
             <div className="mt-14 text-center flex items-center justify-center gap-2 flex-wrap">
-              <MicroTitle as="span" className="text-neutral-600">
+              <MicroTitle as="span" className="text-muted-foreground">
                 {copy.moreCreditsQuestion}
               </MicroTitle>
               <Button
                 variant="link"
                 onClick={handleBuyCredits}
-                className="text-xs text-neutral-400 hover:text-neutral-200 h-auto p-0"
+                className="text-xs text-muted-foreground hover:text-foreground h-auto p-0"
               >
                 {copy.moreCreditsCta}
               </Button>

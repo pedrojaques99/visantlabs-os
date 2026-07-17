@@ -10,7 +10,7 @@ import {
   Trash2,
   Upload,
   Plus,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { brandGuidelineApi, type BrandKnowledgeFile } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';

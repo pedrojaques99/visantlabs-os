@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link2, ExternalLink, Unlink, RefreshCw } from 'lucide-react';
+import { Link2, ExternalLink, Unlink, RefreshCw } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { FigmaImportModal } from '../FigmaImportModal';
-import { Figma } from 'lucide-react';
+import { Figma } from '@/lib/ui/icons';
 import { Link } from 'react-router-dom';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';

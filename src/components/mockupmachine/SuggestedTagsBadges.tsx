@@ -1,5 +1,5 @@
 import React from 'react';
-import { Diamond } from 'lucide-react';
+import { Diamond } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';

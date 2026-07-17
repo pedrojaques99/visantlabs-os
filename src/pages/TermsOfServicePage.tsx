@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -19,7 +19,7 @@ export const TermsOfServicePage: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-[#101010] text-neutral-300 relative">
+    <div className="min-h-screen bg-background text-muted-foreground relative">
       <SEO
         title="Terms of Service — Visant Labs"
         description="Visant Labs terms of service: accounts, subscriptions, acceptable use, intellectual property, disclaimers, and liability."
@@ -30,7 +30,7 @@ export const TermsOfServicePage: React.FC = () => {
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-neutral-400 hover:text-neutral-200 transition-colors font-mono text-sm"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"
         >
           <ArrowLeft size={16} />
           {t('privacy.backToHome')}

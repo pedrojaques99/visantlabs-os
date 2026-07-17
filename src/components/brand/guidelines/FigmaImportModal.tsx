@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Check, X, Palette, Type, Image as ImageIcon } from 'lucide-react';
+import { Check, X, Palette, Type, Image as ImageIcon } from '@/lib/ui/icons';
 
 interface FigmaImportModalProps {
   isOpen: boolean;
@@ -69,7 +69,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
       <DialogContent className="sm:max-w-[500px] bg-neutral-900 border-neutral-800 text-neutral-200 p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2 border-b border-neutral-800/50">
           <DialogTitle className="text-xl font-bold font-manrope flex items-center gap-2">
-            <Palette className="text-brand-cyan" size={20} />
+            <Palette className="text-neutral-400" size={20} />
             Importar do Figma
           </DialogTitle>
         </DialogHeader>
@@ -154,7 +154,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
           {/* Components / Logos section */}
           <div className="space-y-3 pt-2 border-t border-neutral-800/50">
             <div className="flex items-center gap-2 font-medium">
-              <div className="p-1 rounded bg-brand-cyan/20 text-brand-cyan">
+              <div className="p-1 rounded bg-neutral-800 text-neutral-400">
                 <ImageIcon size={14} />
               </div>
               <span>Logos (selecione os componentes)</span>

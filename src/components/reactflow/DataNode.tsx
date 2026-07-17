@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Upload, ChevronLeft, ChevronRight, Table2, AlertCircle } from 'lucide-react';
+import { Upload, ChevronLeft, ChevronRight, Table2, AlertCircle } from '@/lib/ui/icons';
 import type { DataNodeData } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';

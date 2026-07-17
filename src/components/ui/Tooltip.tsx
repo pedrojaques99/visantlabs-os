@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 
 interface TooltipProps {

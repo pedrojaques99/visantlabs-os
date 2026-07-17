@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Lock, ChevronDown, ChevronUp, Settings2, Check, ChevronLeft } from 'lucide-react';
+import { Lock, ChevronDown, ChevronUp, Settings2, Check, ChevronLeft } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';

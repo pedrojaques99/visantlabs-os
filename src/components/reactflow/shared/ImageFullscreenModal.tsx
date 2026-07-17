@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, ZoomIn, ZoomOut, Download, RotateCw } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, Download, RotateCw } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { NodeSlider } from './node-slider';
 import { useNodeDownload } from './useNodeDownload';

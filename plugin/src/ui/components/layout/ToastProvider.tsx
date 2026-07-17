@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { X, AlertCircle, CheckCircle2, Info } from 'lucide-react';
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { toastMessage, toastType } = usePluginStore();
   const [visible, setVisible] = useState(false);
 
@@ -37,7 +39,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             type="button"
             onClick={() => setVisible(false)}
             className="shrink-0 opacity-60 hover:opacity-100 transition-opacity"
-            aria-label="Dismiss"
+            aria-label={t('plugin.common.dismiss')}
           >
             <X size={12} />
           </button>

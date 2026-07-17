@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colord } from 'colord';
-import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from 'lucide-react';
+import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -301,7 +301,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Identity" />
         {identity.tagline && (
-          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-cyan/80">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-300">
             {identity.tagline}
           </p>
         )}

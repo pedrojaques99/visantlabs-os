@@ -33,7 +33,7 @@ import {
   Check,
   Square,
   AlertCircle,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -479,7 +479,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
       >
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <Image size={14} className="text-brand-cyan" />
+            <Image size={14} className="text-neutral-400" />
             <DialogTitle className="text-sm font-bold uppercase tracking-[0.15em]">
               {t('brandMockupDialog.title')}
             </DialogTitle>

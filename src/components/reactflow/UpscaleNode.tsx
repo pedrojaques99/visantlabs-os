@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
-import { Maximize2, Diamond } from 'lucide-react';
+import { Maximize2, Diamond } from '@/lib/ui/icons';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { UpscaleNodeData } from '@/types/reactFlow';

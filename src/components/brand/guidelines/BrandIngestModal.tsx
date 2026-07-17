@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, X } from '@/lib/ui/icons';
 import type { FigStreamState, FigCategory } from '@/hooks/useExtractFigStream';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';

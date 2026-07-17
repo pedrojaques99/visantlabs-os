@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { useBrandSync } from '../../hooks/useBrandSync';
 type TypoSlot = 'primary' | 'secondary';
 
 export function BrandTypographySection() {
+  const { t } = useTranslation();
   const { typography, updateTypography, designTokens, selectedFont, linkedGuideline } =
     usePluginStore();
   const { updateBrandGuideline } = useBrandSync();
@@ -72,9 +74,9 @@ export function BrandTypographySection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between pb-2 border-b border-white/5">
-        <p className="text-[10px] text-neutral-500 font-mono">
-          {figmaStyles.length} styles / {fontFamilies.length} families found
+      <div className="flex items-center justify-between pb-2 border-b border-border/50">
+        <p className="text-[10px] text-muted-foreground font-mono">
+          {t('plugin.brand.typography.stylesFound', { styles: figmaStyles.length, families: fontFamilies.length })}
         </p>
         <Button
           variant="ghost"
@@ -82,7 +84,7 @@ export function BrandTypographySection() {
           className="h-6 w-6"
           onClick={() => send({ type: 'GET_CONTEXT' } as any)}
         >
-          <RefreshCw size={12} className="text-neutral-500" />
+          <RefreshCw size={12} className="text-muted-foreground" />
         </Button>
       </div>
 
@@ -90,12 +92,12 @@ export function BrandTypographySection() {
         {typography.map((typo) => (
           <div
             key={typo.name}
-            className="space-y-3 p-3 bg-neutral-950/30 rounded-xl border border-white/5"
+            className="space-y-3 p-3 bg-background/30 rounded-xl border border-border/50"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Type size={12} className="text-brand-cyan" />
-                <label className="text-[10px] font-bold uppercase tracking-widest text-white">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-foreground">
                   {typo.name}
                 </label>
               </div>
@@ -103,16 +105,16 @@ export function BrandTypographySection() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleUseSelection(typo.name as TypoSlot)}
-                className="h-6 px-2 text-[9px] uppercase tracking-widest font-bold text-neutral-500 hover:text-brand-cyan"
+                className="h-6 px-2 text-[9px] uppercase tracking-widest font-bold text-muted-foreground hover:text-brand-cyan"
               >
                 <MousePointer2 size={10} className="mr-1" />
-                Use selection
+                {t('plugin.brand.typography.useSelection')}
               </Button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600">
-                Pick Figma Style
+              <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                {t('plugin.brand.typography.pickStyle')}
               </label>
               <Select
                 options={figmaStyles.map((f: any) => ({
@@ -121,15 +123,15 @@ export function BrandTypographySection() {
                 }))}
                 value=""
                 onChange={(val) => handleStyleSelect(typo.name as TypoSlot, val as string)}
-                placeholder="Choose text style..."
+                placeholder={t('plugin.brand.typography.chooseStylePlaceholder')}
                 className="w-full"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
-                  Family
+                <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+                  {t('plugin.brand.typography.family')}
                 </label>
                 <Select
                   options={fontFamilies.map((f) => ({ value: f, label: f }))}
@@ -138,29 +140,29 @@ export function BrandTypographySection() {
                     updateTypography(typo.name as TypoSlot, { fontFamily: val });
                     syncToDatabase(typo.name as TypoSlot, { fontFamily: val });
                   }}
-                  placeholder="Font family"
+                  placeholder={t('plugin.brand.typography.fontFamilyPlaceholder')}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
-                  Weight / Style
+                <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+                  {t('plugin.brand.typography.weightStyle')}
                 </label>
                 <Input
-                  placeholder="Regular, Bold..."
+                  placeholder={t('plugin.brand.typography.weightStylePlaceholder')}
                   value={typo.fontStyle || ''}
                   onChange={(e) => {
                     updateTypography(typo.name as TypoSlot, { fontStyle: e.target.value });
                     syncToDatabase(typo.name as TypoSlot, { fontStyle: e.target.value });
                   }}
-                  className="text-[10px] h-8 bg-neutral-950/50 border-white/5"
+                  className="text-[10px] h-8 bg-background/50 border-border/50"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
-                  Size (px)
+                <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+                  {t('plugin.brand.typography.sizePx')}
                 </label>
                 <Input
                   type="number"
@@ -171,23 +173,23 @@ export function BrandTypographySection() {
                     updateTypography(typo.name as TypoSlot, { fontSize: val });
                     syncToDatabase(typo.name as TypoSlot, { fontSize: val });
                   }}
-                  className="text-[10px] h-8 bg-neutral-950/50 border-white/5 font-mono"
+                  className="text-[10px] h-8 bg-background/50 border-border/50 font-mono"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
-                  Line (px)
+                <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+                  {t('plugin.brand.typography.linePx')}
                 </label>
                 <Input
                   type="number"
-                  placeholder="Auto"
+                  placeholder={t('plugin.brand.typography.autoPlaceholder')}
                   value={typo.lineHeight || ''}
                   onChange={(e) => {
                     const val = parseInt(e.target.value) || undefined;
                     updateTypography(typo.name as TypoSlot, { lineHeight: val });
                     syncToDatabase(typo.name as TypoSlot, { lineHeight: val });
                   }}
-                  className="text-[10px] h-8 bg-neutral-950/50 border-white/5 font-mono"
+                  className="text-[10px] h-8 bg-background/50 border-border/50 font-mono"
                 />
               </div>
             </div>

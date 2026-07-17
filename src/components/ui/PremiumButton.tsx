@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from './GlitchLoader';
-import { ArrowRight, LucideIcon } from 'lucide-react';
+import { ArrowRight, LucideIcon } from '@/lib/ui/icons';
 
 export interface PremiumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;

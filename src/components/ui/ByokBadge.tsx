@@ -1,5 +1,5 @@
 import React from 'react';
-import { Key, CreditCard } from 'lucide-react';
+import { Key, CreditCard } from '@/lib/ui/icons';
 import { Badge } from './badge';
 import { cn } from '@/lib/utils';
 import { Tooltip } from './Tooltip';

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Bold, Italic, List, Palette } from 'lucide-react';
+import { Bold, Italic, List, Palette } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import {
   applyBold,
@@ -226,7 +226,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                       key={color}
                       type="button"
                       onClick={() => handleColorSelect(color)}
-                      className={`w-8 h-8 rounded border hover:border-[brand-cyan] transition-colors ${
+                      className={`w-8 h-8 rounded border hover:border-neutral-600 transition-colors ${
                         theme === 'dark' ? 'border-neutral-700' : 'border-neutral-400'
                       }`}
                       style={{ backgroundColor: color }}
@@ -268,7 +268,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
           placeholder=""
-          className="font-geist rounded-t-none border-0 bg-transparent text-transparent caret-[brand-cyan] resize-none relative z-10"
+          className="font-geist rounded-t-none border-0 bg-transparent text-transparent caret-neutral-600 resize-none relative z-10"
           style={{
             minHeight,
             color: 'transparent',

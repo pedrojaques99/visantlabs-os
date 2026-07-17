@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Scale } from 'lucide-react';
+import { Scale } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';

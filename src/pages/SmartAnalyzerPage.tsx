@@ -14,7 +14,7 @@ import {
   Cpu,
   RefreshCw,
   Diamond,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { PageShell } from '../components/ui/PageShell';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -688,9 +688,7 @@ export const SmartAnalyzerPage: React.FC = () => {
   const adminActions = (
     <div className="flex items-center gap-4">
       <div className="flex flex-col items-end mr-4">
-        <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tighter">
-          System Access
-        </span>
+        <span className="text-[10px] text-neutral-500">System Access</span>
         <span className="text-xs font-mono text-white">ADMINISTRATOR</span>
       </div>
       {step !== 'idle' && (
@@ -791,7 +789,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
               <div className="text-center space-y-2">
                 <h3 className="text-sm font-semibold text-white">Extracting prompt</h3>
-                <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 animate-pulse">
+                <p className="text-xs text-neutral-500 animate-pulse">
                   Analyzing visual patterns...
                 </p>
               </div>
@@ -821,8 +819,8 @@ export const SmartAnalyzerPage: React.FC = () => {
                     generatedVariations.length > 0) && (
                     <div className="space-y-6">
                       <div className="flex items-center justify-between pl-1">
-                        <h4 className="text-[10px] font-mono uppercase tracking-[0.1em] text-brand-cyan flex items-center gap-3">
-                          <span className="w-2 h-2 rounded-full bg-brand-cyan" />
+                        <h4 className="text-xs font-medium text-neutral-300 flex items-center gap-3">
+                          <span className="w-2 h-2 rounded-full bg-neutral-600" />
                           {generatedVariations.length > 0
                             ? 'Visual Variations Suite'
                             : 'Generated Visual Synthesis'}
@@ -1033,7 +1031,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
                       {/* Refinements */}
                       <div className="mt-8 space-y-4 pt-6 border-t border-neutral-800">
-                        <h4 className="text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 font-bold pl-1 flex items-center gap-2">
+                        <h4 className="text-xs font-medium text-neutral-400 pl-1 flex items-center gap-2">
                           <Plus size={10} /> Refinements
                         </h4>
                         <div className="flex flex-wrap gap-2">
@@ -1071,7 +1069,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             />
                             <Plus
                               size={12}
-                              className="absolute left-4 text-neutral-600 group-focus-within/input:text-brand-cyan transition-colors"
+                              className="absolute left-4 text-neutral-600 group-focus-within/input:text-neutral-300 transition-colors"
                             />
                           </div>
 
@@ -1098,7 +1096,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                 <div className="lg:col-span-4 space-y-12">
                   {/* SOURCE IMAGE + REPLACE */}
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 pl-1">
+                    <h4 className="text-xs font-medium text-neutral-400 flex items-center gap-2 pl-1">
                       <ImageIcon size={12} /> Source
                     </h4>
                     <GlassPanel
@@ -1125,7 +1123,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   {/* #4: TAGS & CONTROLS */}
                   {result.tags && result.tags.length > 0 && (
                     <div className="space-y-6">
-                      <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 pl-1">
+                      <h4 className="text-xs font-medium text-neutral-400 flex items-center gap-2 pl-1">
                         <Tag size={12} /> Visual Keywords
                       </h4>
                       <div className="flex flex-wrap gap-2">
@@ -1143,7 +1141,7 @@ export const SmartAnalyzerPage: React.FC = () => {
 
                   {result.mode === 'figma-plugin' && result.tokens && (
                     <div className="space-y-6">
-                      <h4 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2 pl-1">
+                      <h4 className="text-xs font-medium text-neutral-400 flex items-center gap-2 pl-1">
                         <Palette size={12} /> Extracted Palette
                       </h4>
                       <div className="grid gap-3">
@@ -1183,19 +1181,17 @@ export const SmartAnalyzerPage: React.FC = () => {
               <DialogTitle className="text-xl font-semibold tracking-tight">
                 Save to Community
               </DialogTitle>
-              <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-[0.1em] leading-none">
+              <p className="text-xs text-neutral-500 leading-none">
                 Global resource synchronization
               </p>
             </div>
-            <Globe className="text-brand-cyan/20" size={32} />
+            <Globe className="text-neutral-700" size={32} />
           </div>
 
           <div className="p-8 space-y-8">
             <div className="grid gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest font-bold">
-                  Title
-                </label>
+                <label className="text-xs font-medium text-neutral-400">Title</label>
                 <Input
                   value={publishName}
                   onChange={(e) => setPublishName(e.target.value)}
@@ -1205,9 +1201,7 @@ export const SmartAnalyzerPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <label className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest font-bold">
-                  Tags
-                </label>
+                <label className="text-xs font-medium text-neutral-400">Tags</label>
                 <div className="flex flex-wrap gap-2 min-h-[40px] p-4 bg-neutral-900/50 rounded-xl border border-white/10">
                   {publishTags.map((tag) => (
                     <span
@@ -1224,9 +1218,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                     </span>
                   ))}
                   {publishTags.length === 0 && (
-                    <span className="text-neutral-600 font-mono text-[10px] uppercase">
-                      No tags defined
-                    </span>
+                    <span className="text-neutral-600 text-xs">No tags defined</span>
                   )}
                 </div>
                 <div className="flex gap-2">

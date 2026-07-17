@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from 'lucide-react';
+import { LucideIcon, ShieldCheck, LayoutGrid, Palette } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { NodeButton } from './node-button';
 import { Tooltip } from '@/components/ui/Tooltip';

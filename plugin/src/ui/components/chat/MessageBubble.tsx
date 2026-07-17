@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, type ReactNode } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Braces,
   Check,
@@ -24,6 +25,7 @@ import { renderMarkdownBlocks } from '@/utils/markdownRenderer';
 import { ToolCallCard } from '@/components/shared/chat/ToolCallCard';
 
 function MockupImage({ url }: { url: string }) {
+  const { t } = useTranslation();
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -52,14 +54,14 @@ function MockupImage({ url }: { url: string }) {
 
   if (error) {
     return (
-      <div className="mt-2 max-w-[280px] rounded-lg border border-border/50 bg-white/5 p-3 text-[10px] text-foreground/50">
-        <p>Failed to load mockup image</p>
+      <div className="mt-2 max-w-[280px] rounded-lg border border-border/50 bg-muted p-3 text-[10px] text-foreground/50">
+        <p>{t('plugin.message.mockupLoadFailed')}</p>
         <button
           type="button"
           onClick={() => window.open(url, '_blank')}
           className="mt-1 text-brand-cyan hover:underline"
         >
-          Open in browser
+          {t('plugin.message.openInBrowser')}
         </button>
       </div>
     );
@@ -67,7 +69,7 @@ function MockupImage({ url }: { url: string }) {
 
   if (!blobUrl) {
     return (
-      <div className="mt-2 max-w-[280px] h-40 rounded-lg border border-border/50 bg-white/5 animate-pulse" />
+      <div className="mt-2 max-w-[280px] h-40 rounded-lg border border-border/50 bg-muted animate-pulse" />
     );
   }
 
@@ -75,7 +77,7 @@ function MockupImage({ url }: { url: string }) {
     <div className="mt-2 group/img relative max-w-[280px]">
       <img
         src={blobUrl}
-        alt="Generated mockup"
+        alt={t('plugin.message.generatedMockupAlt')}
         className="w-full rounded-lg border border-border/50 object-contain cursor-pointer"
         onClick={() => window.open(url, '_blank')}
       />
@@ -83,24 +85,24 @@ function MockupImage({ url }: { url: string }) {
         <button
           type="button"
           onClick={handleCopyPng}
-          className="p-1 rounded bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors"
-          title="Copy as PNG"
+          className="p-1 rounded bg-background/70 hover:bg-background/90 text-foreground/80 hover:text-foreground transition-colors"
+          title={t('plugin.message.copyAsPng')}
         >
           {copied ? <Check size={10} /> : <Image size={10} />}
         </button>
         <button
           type="button"
           onClick={() => window.open(url, '_blank')}
-          className="p-1 rounded bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors"
-          title="Open full size"
+          className="p-1 rounded bg-background/70 hover:bg-background/90 text-foreground/80 hover:text-foreground transition-colors"
+          title={t('plugin.message.openFullSize')}
         >
           <Maximize2 size={10} />
         </button>
         <a
           href={blobUrl}
           download="mockup.png"
-          className="p-1 rounded bg-black/60 hover:bg-black/80 text-white/80 hover:text-white transition-colors"
-          title="Download"
+          className="p-1 rounded bg-background/70 hover:bg-background/90 text-foreground/80 hover:text-foreground transition-colors"
+          title={t('plugin.common.download')}
         >
           <Download size={10} />
         </a>
@@ -146,7 +148,8 @@ const AT_REF_REGEX = /@"([^"]+)"/g;
 function renderContentWithLinks(
   content: string,
   nodeMap: Map<string, string>,
-  useMarkdown: boolean
+  useMarkdown: boolean,
+  t: (key: string, params?: Record<string, string | number>) => string
 ): ReactNode[] {
   if (nodeMap.size === 0 && !useMarkdown) return [content];
   if (nodeMap.size === 0 && useMarkdown) return renderMarkdownBlocks(content);
@@ -171,7 +174,7 @@ function renderContentWithLinks(
           type="button"
           onClick={() => focusNodeInFigma(nodeId)}
           className="inline text-brand-cyan hover:underline cursor-pointer font-medium"
-          title={`Go to "${name}"`}
+          title={t('plugin.message.goTo', { name })}
         >
           @"{name}"
         </button>
@@ -190,6 +193,7 @@ function renderContentWithLinks(
 }
 
 export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbleProps) {
+  const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isError = message.isError;
   const [showAllOps, setShowAllOps] = useState(false);
@@ -225,6 +229,10 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
       ? 'bg-destructive/10 border border-destructive/30 text-destructive'
       : 'bg-card border border-border text-foreground';
 
+  // The user bubble paints its own background, so muted-on-surface tokens don't resolve
+  // against it — muted-foreground over brand-cyan is cyan on cyan.
+  const mutedOnBubble = isUser ? 'text-black/50' : 'text-muted-foreground/40';
+
   return (
     <div
       className={`group/bubble flex ${
@@ -241,9 +249,9 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             <button
               type="button"
               onClick={onUndo}
-              aria-label="Undo operations"
+              aria-label={t('plugin.message.undoOperations')}
               className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
-              title="Undo operations"
+              title={t('plugin.message.undoOperations')}
             >
               <Undo2 size={9} />
             </button>
@@ -253,8 +261,8 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
               type="button"
               onClick={onRetry}
               className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
-              title="Retry"
-              aria-label="Retry"
+              title={t('plugin.common.retry')}
+              aria-label={t('plugin.common.retry')}
             >
               <RefreshCw size={9} />
             </button>
@@ -263,8 +271,8 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             type="button"
             onClick={copyContent}
             className="w-5 h-5 rounded-full bg-card border border-border text-foreground flex items-center justify-center hover:border-brand-cyan/50"
-            title="Copy message"
-            aria-label="Copy message"
+            title={t('plugin.message.copyMessage')}
+            aria-label={t('plugin.message.copyMessage')}
           >
             {copied ? <Check size={9} /> : <Copy size={9} />}
           </button>
@@ -272,7 +280,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         {message.thinking && (
           <div className="text-xs text-muted-foreground mb-2">
             <details>
-              <summary className="cursor-pointer select-none">Thinking…</summary>
+              <summary className="cursor-pointer select-none">{t('plugin.message.thinking')}</summary>
               <pre className="text-[10px] mt-1 overflow-auto max-h-24">{message.thinking}</pre>
             </details>
           </div>
@@ -282,8 +290,8 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         <div className="space-y-1">
           {useMemo(
             () =>
-              renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser),
-            [message.content, message.summaryItems, isUser]
+              renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser, t),
+            [message.content, message.summaryItems, isUser, t]
           )}
         </div>
 
@@ -299,12 +307,15 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             if (frames && frames.length > 0) {
               chips.push({
                 icon: <Layers size={8} />,
-                label: `${frames.length} frame${frames.length > 1 ? 's' : ''}`,
+                label: t(
+                  frames.length === 1 ? 'plugin.common.frameCountOne' : 'plugin.common.frameCountOther',
+                  { count: frames.length }
+                ),
               });
             }
-            if (meta.scanPage) chips.push({ icon: <Scan size={8} />, label: 'Page scan' });
-            if (meta.useBrand) chips.push({ icon: <Palette size={8} />, label: 'Brand' });
-            if (meta.generateImage) chips.push({ icon: <Image size={8} />, label: 'Image' });
+            if (meta.scanPage) chips.push({ icon: <Scan size={8} />, label: t('plugin.message.pageScan') });
+            if (meta.useBrand) chips.push({ icon: <Palette size={8} />, label: t('plugin.common.brand') });
+            if (meta.generateImage) chips.push({ icon: <Image size={8} />, label: t('plugin.message.image') });
             if (meta.model) chips.push({ icon: null, label: String(meta.model) });
             if (chips.length === 0) return null;
             return (
@@ -312,7 +323,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 {chips.map((c, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/20 rounded px-1 py-0.5 text-white/60"
+                    className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/10 rounded px-1 py-0.5 text-black/70"
                   >
                     {c.icon}
                     {c.label}
@@ -320,7 +331,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 ))}
                 {frames && frames.length > 0 && (
                   <span
-                    className="text-[8px] font-mono text-white/40 truncate max-w-[180px]"
+                    className="text-[8px] font-mono text-black/55 truncate max-w-[180px]"
                     title={frames.map((f) => f.name).join(', ')}
                   >
                     {frames.map((f) => f.name).join(', ')}
@@ -367,7 +378,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border/40">
               <CircleCheck size={11} className="text-green-500 shrink-0" />
               <span className="text-[10px] font-semibold text-foreground/80">
-                {ops.length} operation{ops.length > 1 ? 's' : ''} applied
+                {ops.length === 1 ? t('plugin.message.operationsAppliedOne', { count: ops.length }) : t('plugin.message.operationsAppliedOther', { count: ops.length })}
               </span>
             </div>
             <ul className="px-2.5 py-1.5 space-y-0.5">
@@ -382,7 +393,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                       type="button"
                       onClick={() => focusNodeInFigma(item.nodeId!)}
                       className="truncate text-left hover:text-brand-cyan transition-colors cursor-pointer"
-                      title={`Select in Figma`}
+                      title={t('plugin.message.selectInFigma')}
                     >
                       {item.label}
                     </button>
@@ -399,7 +410,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 hover:text-muted-foreground py-1 border-t border-border/40 hover:bg-muted/30 transition-colors"
               >
                 {showAllOps ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                {showAllOps ? 'Show less' : `Show ${hiddenItemCount} more`}
+                {showAllOps ? t('plugin.message.showLess') : t('plugin.message.showMore', { count: hiddenItemCount })}
               </button>
             )}
             <div className="px-2.5 pb-2 pt-1 border-t border-border/40 flex items-center justify-between">
@@ -409,7 +420,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 className="inline-flex items-center gap-1 text-[9px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
               >
                 <Braces size={9} />
-                {showJson ? 'Hide JSON' : 'View JSON'}
+                {showJson ? t('plugin.message.hideJson') : t('plugin.message.viewJson')}
               </button>
               {showJson && (
                 <button
@@ -418,7 +429,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                   className="inline-flex items-center gap-1 text-[9px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
                 >
                   {copied ? <Check size={9} /> : <Copy size={9} />}
-                  {copied ? 'Copied' : 'Copy'}
+                  {copied ? t('plugin.common.copied') : t('plugin.common.copy')}
                 </button>
               )}
             </div>
@@ -435,13 +446,13 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
           <div className="mt-2 flex items-center gap-2 px-2 py-1.5 rounded-md bg-background/30 border border-border/30">
             <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground/60">
               {outTokens != null && (
-                <span title="Output tokens">
+                <span title={t('plugin.message.outputTokens')}>
                   <span className="text-foreground/40">out</span> {formatNum(outTokens)}
                 </span>
               )}
               {outTokens != null && inTokens != null && <span className="text-border">·</span>}
               {inTokens != null && (
-                <span title="Input tokens">
+                <span title={t('plugin.message.inputTokens')}>
                   <span className="text-foreground/40">in</span> {formatNum(inTokens)}
                 </span>
               )}
@@ -452,7 +463,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
 
         {/* Timestamp */}
         {message.timestamp && (
-          <div className="mt-1 text-[9px] text-muted-foreground/40 flex items-center gap-0.5">
+          <div className={`mt-1 text-[9px] ${mutedOnBubble} flex items-center gap-0.5`}>
             <Clock size={7} />
             {relativeTime(message.timestamp)}
           </div>

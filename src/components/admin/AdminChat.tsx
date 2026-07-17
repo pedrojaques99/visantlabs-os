@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield } from 'lucide-react';
+import { Shield } from '@/lib/ui/icons';
 import { ChatShell, type ChatShellStrings } from '@/components/shared/chat/ChatShell';
 import { adminChatApi } from '@/services/adminChatApi';
 

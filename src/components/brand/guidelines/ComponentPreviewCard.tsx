@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThumbsUp, Wrench, Clock } from 'lucide-react';
+import { ThumbsUp, Wrench, Clock } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 

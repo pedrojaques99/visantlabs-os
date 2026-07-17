@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -102,7 +102,7 @@ export const AuthCallbackPage: React.FC = () => {
       <div className="bg-neutral-900 border border-white/10 rounded-md p-6 w-full max-w-md">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={24} className="text-destructive" />
-          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
+          <h2 className="text-lg font-semibold text-neutral-200">
             {t('auth.authenticationError') || 'Authentication Error'}
           </h2>
         </div>

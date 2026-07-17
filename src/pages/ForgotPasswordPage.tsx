@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { Lock, CheckCircle2, XCircle } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -159,7 +159,7 @@ export const ForgotPasswordPage: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.passwordPlaceholder') || 'Enter new password'}
             />
             <p className="text-xs text-neutral-500 mt-1 font-mono">
@@ -177,7 +177,7 @@ export const ForgotPasswordPage: React.FC = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.confirmPasswordPlaceholder') || 'Confirm new password'}
             />
           </div>

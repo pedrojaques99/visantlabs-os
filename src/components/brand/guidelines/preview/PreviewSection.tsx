@@ -15,7 +15,7 @@ import {
   AppWindow,
   FileText,
   Presentation,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { BrandGuideline } from '@/lib/figma-types';

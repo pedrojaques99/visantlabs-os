@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Diamond, Calendar, Eye, Trash2, Plus, Pickaxe, Search } from 'lucide-react';
+import { Diamond, Calendar, Eye, Trash2, Plus, Pickaxe, Search } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { SearchBar } from '../components/ui/SearchBar';

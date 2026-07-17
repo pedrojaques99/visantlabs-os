@@ -1,5 +1,5 @@
 import React from 'react';
-import { Monitor } from 'lucide-react';
+import { Monitor } from '@/lib/ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-media-query';

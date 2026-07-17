@@ -8,7 +8,7 @@ import {
   DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Zap, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Zap, Check, X, ChevronDown, ChevronUp } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';

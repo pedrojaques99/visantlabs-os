@@ -1,11 +1,15 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { Plus, MessageSquare, Trash2, Pencil, Check, X } from 'lucide-react';
 
 /** Compact relative-time label (pt-BR), e.g. "agora", "5 min", "3 h", "2 d". */
-function timeAgo(ts: number): string {
+function timeAgo(
+  ts: number,
+  t: (key: string, params?: Record<string, string | number>) => string
+): string {
   const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
-  if (s < 60) return 'agora';
+  if (s < 60) return t('plugin.sessions.now');
   const m = Math.floor(s / 60);
   if (m < 60) return `${m} min`;
   const h = Math.floor(m / 60);
@@ -15,6 +19,7 @@ function timeAgo(ts: number): string {
 }
 
 export function SessionsView() {
+  const { t } = useTranslation();
   const sessions = usePluginStore((s) => s.sessions);
   const activeId = usePluginStore((s) => s.sessionId);
   const { newSession, switchSession, deleteSession, renameSession } = usePluginStore();
@@ -36,14 +41,14 @@ export function SessionsView() {
     <div className="flex flex-col h-full bg-background">
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-          Sessões
+          {t('plugin.sessions.title')}
         </span>
         <button
           onClick={newSession}
-          className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[10px] font-mono text-brand-cyan bg-neutral-900/50 border border-brand-cyan/20 hover:bg-neutral-800 hover:border-brand-cyan/40 transition-all"
+          className="flex items-center gap-1 h-7 px-2.5 rounded-[6px] text-[10px] font-mono text-brand-cyan bg-muted/50 border border-brand-cyan/20 hover:bg-muted hover:border-brand-cyan/40 transition-all"
         >
           <Plus size={12} />
-          Nova conversa
+          {t('plugin.sessions.newChat')}
         </button>
       </div>
 
@@ -51,7 +56,7 @@ export function SessionsView() {
         {sessions.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-[11px] text-muted-foreground text-center max-w-[200px]">
-              Nenhuma sessão salva ainda. Inicie uma conversa e ela aparecerá aqui.
+              {t('plugin.sessions.empty')}
             </p>
           </div>
         ) : (
@@ -95,8 +100,8 @@ export function SessionsView() {
                   >
                     <div className="text-[11px] text-foreground/90 truncate">{s.title}</div>
                     <div className="text-[9px] font-mono text-muted-foreground">
-                      {s.messageCount} msg{s.messageCount !== 1 ? 's' : ''} · {timeAgo(s.updatedAt)}
-                      {isActive ? ' · ativa' : ''}
+                      {s.messageCount === 1 ? t('plugin.sessions.msgCountOne', { count: s.messageCount }) : t('plugin.sessions.msgCountOther', { count: s.messageCount })} · {timeAgo(s.updatedAt, t)}
+                      {isActive ? ` · ${t('plugin.sessions.active')}` : ''}
                     </div>
                   </button>
                 )}
@@ -107,7 +112,7 @@ export function SessionsView() {
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={commitRename}
                     className="text-muted-foreground hover:text-brand-cyan transition-colors shrink-0"
-                    title="Salvar"
+                    title={t('plugin.common.save')}
                   >
                     <Check size={13} />
                   </button>
@@ -119,14 +124,14 @@ export function SessionsView() {
                         setConfirmDeleteId(null);
                       }}
                       className="text-destructive hover:opacity-80 transition-opacity"
-                      title="Confirmar exclusão"
+                      title={t('plugin.sessions.confirmDelete')}
                     >
                       <Check size={13} />
                     </button>
                     <button
                       onClick={() => setConfirmDeleteId(null)}
                       className="text-muted-foreground hover:text-foreground transition-colors"
-                      title="Cancelar"
+                      title={t('plugin.common.cancel')}
                     >
                       <X size={13} />
                     </button>
@@ -136,14 +141,14 @@ export function SessionsView() {
                     <button
                       onClick={() => startRename(s.id, s.title)}
                       className="text-muted-foreground hover:text-foreground transition-colors"
-                      title="Renomear"
+                      title={t('plugin.sessions.rename')}
                     >
                       <Pencil size={12} />
                     </button>
                     <button
                       onClick={() => setConfirmDeleteId(s.id)}
                       className="text-muted-foreground hover:text-destructive transition-colors"
-                      title="Excluir"
+                      title={t('plugin.common.delete')}
                     >
                       <Trash2 size={12} />
                     </button>

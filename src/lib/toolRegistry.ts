@@ -23,7 +23,7 @@ import {
   FileDown,
   Library,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 // ---------------------------------------------------------------------------
 // MIME helpers

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Dices, Lock, LockOpen, Copy } from 'lucide-react';
+import { Dices, Lock, LockOpen, Copy } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { NodeLabel } from './node-label';
 import { Tooltip } from '@/components/ui/Tooltip';

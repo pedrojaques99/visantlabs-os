@@ -34,7 +34,7 @@ import {
   Palette,
   Globe,
   GitFork,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import {
   ToolPanelDisclosure,
   ToolPanelChip,

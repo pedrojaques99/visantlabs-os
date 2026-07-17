@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Sliders, Palette as PaletteIcon, X, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sliders, Palette as PaletteIcon, X, Plus } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -273,7 +273,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <span
-                    className={`text-[10px] font-mono uppercase tracking-widest ${
+                    className={`text-[10px] ${
                       theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                     }`}
                   >

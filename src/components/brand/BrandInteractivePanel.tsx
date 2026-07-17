@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { RefreshCw, Copy, Loader2, Layout, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { RefreshCw, Copy, Loader2, Layout, ArrowUpRight, ArrowRight } from '@/lib/ui/icons';
 import { BrandRenderDialog } from '@/components/brand/guidelines/BrandRenderDialog';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';

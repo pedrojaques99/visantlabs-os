@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Sliders, RotateCcw } from 'lucide-react';
+import { Sliders, RotateCcw } from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
 import { FILTER_RANGES } from './lib/editorTokens';
 import type { LogoLayerData } from './store/creativeTypes';

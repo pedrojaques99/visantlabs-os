@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import type { SectionLayout } from '@/types/types';
 import { Button } from '@/components/ui/button';
@@ -397,7 +397,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
         {fullWidthSections.length === 0 && isDraggingToFullWidth && draggedStepNumber !== null && (
           <div
             data-drop-zone-order={0}
-            className="relative h-[10px] flex items-center bg-gradient-to-r from-[brand-cyan]/15 via-[brand-cyan]/20 to-[brand-cyan]/15 rounded-xl border-2 border-[brand-cyan] border-dashed transition-all duration-200"
+            className="relative h-[10px] flex items-center bg-gradient-to-r from-neutral-600/15 via-neutral-600/20 to-neutral-600/15 rounded-xl border-2 border-neutral-600 border-dashed transition-all duration-200"
           >
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="flex items-center gap-3 w-full px-4">
@@ -408,7 +408,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     animation: 'pulse 1.2s ease-in-out infinite',
                   }}
                 />
-                <div className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md text-brand-cyan text-sm font-mono font-semibold whitespace-nowrap">
+                <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-brand-cyan text-sm font-mono font-semibold whitespace-nowrap">
                   DROP FOR FULL WIDTH
                 </div>
                 <div
@@ -455,7 +455,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     data-drop-zone-order={index}
                     className={`relative transition-all duration-200 h-[10px] flex items-center ${
                       isDropTargetBefore
-                        ? 'bg-gradient-to-r from-[brand-cyan]/15 via-[brand-cyan]/20 to-[brand-cyan]/15 rounded-xl border-2 border-[brand-cyan] border-dashed'
+                        ? 'bg-gradient-to-r from-neutral-600/15 via-neutral-600/20 to-neutral-600/15 rounded-xl border-2 border-neutral-600 border-dashed'
                         : 'hover:bg-brand-cyan/5'
                     }`}
                     onDragOver={handleContainerDragOver}
@@ -473,7 +473,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                                 animation: 'pulse 1.2s ease-in-out infinite',
                               }}
                             />
-                            <div className="px-3 py-1 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md text-brand-cyan text-xs font-mono font-semibold whitespace-nowrap">
+                            <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-brand-cyan text-xs font-mono font-semibold whitespace-nowrap">
                               DROP HERE
                             </div>
                             <div
@@ -502,7 +502,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                       isDragged
                         ? 'opacity-100 scale-95'
                         : isDropTargetBefore || isDropTargetAfter
-                          ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
+                          ? 'ring-2 ring-neutral-600/60 rounded-xl shadow-lg shadow-neutral-600/20'
                           : ''
                     }`}
                   >
@@ -515,7 +515,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                       data-drop-zone-order={index + 1}
                       className={`relative transition-all duration-200 h-[10px] flex items-center ${
                         isDropTargetAfter
-                          ? 'bg-gradient-to-r from-[brand-cyan]/15 via-[brand-cyan]/20 to-[brand-cyan]/15 rounded-xl border-2 border-[brand-cyan] border-dashed'
+                          ? 'bg-gradient-to-r from-neutral-600/15 via-neutral-600/20 to-neutral-600/15 rounded-xl border-2 border-neutral-600 border-dashed'
                           : 'hover:bg-brand-cyan/5'
                       }`}
                       onDragOver={handleContainerDragOver}
@@ -533,7 +533,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                                   animation: 'pulse 1.2s ease-in-out infinite',
                                 }}
                               />
-                              <div className="px-3 py-1 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md text-brand-cyan text-xs font-mono font-semibold whitespace-nowrap">
+                              <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-brand-cyan text-xs font-mono font-semibold whitespace-nowrap">
                                 DROP HERE
                               </div>
                               <div
@@ -568,7 +568,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
       {/* Preview de drop full-width - só mostra se não houver sections full-width ou se estiver arrastando para área vazia */}
       {isDraggingToFullWidth && draggedStepNumber !== null && fullWidthSections.length === 0 && (
         <div
-          className="w-full border-2 border-dashed border-[brand-cyan] rounded-xl p-12 text-center bg-gradient-to-b from-[brand-cyan]/10 to-[brand-cyan]/5 transition-all duration-300 relative overflow-hidden"
+          className="w-full border-2 border-dashed border-neutral-600 rounded-xl p-12 text-center bg-gradient-to-b from-neutral-600/10 to-neutral-600/5 transition-all duration-300 relative overflow-hidden"
           style={{
             boxShadow: '0 0 30px rgba(82, 221, 235, 0.4), inset 0 0 20px rgba(82, 221, 235, 0.1)',
             animation: 'fadeInScale 0.3s ease-out',
@@ -577,7 +577,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
           onDrop={handleContainerDrop}
         >
           {/* Efeito de brilho animado */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[brand-cyan]/20 to-transparent animate-shimmer" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-neutral-600/20 to-transparent animate-shimmer" />
 
           <div
             className={`relative z-10 ${
@@ -585,7 +585,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             }`}
           >
             <div className="text-brand-cyan text-2xl font-semibold mb-3 flex items-center justify-center gap-2">
-              <div className="w-8 h-8 border-2 border-[brand-cyan] rounded flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-neutral-600 rounded flex items-center justify-center">
                 <div className="w-4 h-4 bg-brand-cyan rounded-md" />
               </div>
               Full Width Panel
@@ -603,7 +603,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
       {/* Indicador visual quando arrastando sobre área de full-width existente */}
       {isDraggingToFullWidth && draggedStepNumber !== null && fullWidthSections.length > 0 && (
         <div
-          className="w-full h-2 bg-gradient-to-r from-transparent via-[brand-cyan]/50 to-transparent rounded-md transition-all duration-300"
+          className="w-full h-2 bg-gradient-to-r from-transparent via-neutral-600/50 to-transparent rounded-md transition-all duration-300"
           style={{
             boxShadow: '0 0 20px rgba(82, 221, 235, 0.6)',
             animation: 'pulse 1.5s ease-in-out infinite',
@@ -732,7 +732,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               }}
               className={`flex flex-col gap-4 md:gap-6 min-h-[200px] relative rounded-md transition-all duration-300 ${
                 isColumnHighlighted
-                  ? 'bg-brand-cyan/5 border-2 border-[brand-cyan]/40'
+                  ? 'bg-brand-cyan/5 border-2 border-neutral-600/40'
                   : isEmptyColumn
                     ? 'bg-transparent'
                     : ''
@@ -745,7 +745,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               }`}
             >
               {sectionsInColumn.length === 0 && dragOverColumn === columnIndex && (
-                <div className="border-2 border-dashed border-[brand-cyan]/60 rounded-xl p-8 text-center text-neutral-400 text-sm bg-brand-cyan/5 transition-all duration-300">
+                <div className="border-2 border-dashed border-neutral-600/60 rounded-xl p-8 text-center text-neutral-400 text-sm bg-brand-cyan/5 transition-all duration-300">
                   {draggedStepNumber !== null ? 'Drop here' : ''}
                 </div>
               )}
@@ -828,7 +828,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                         isDragged
                           ? 'opacity-100 scale-95'
                           : isDropTarget
-                            ? 'ring-2 ring-[brand-cyan]/60 rounded-xl shadow-lg shadow-[brand-cyan]/20'
+                            ? 'ring-2 ring-neutral-600/60 rounded-xl shadow-lg shadow-neutral-600/20'
                             : ''
                       }`}
                     >
@@ -882,7 +882,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
         {/* Preview de nova coluna - aparece quando arrasta próximo à borda direita */}
         {showNewColumnPreview && layout.columns < 3 && draggedStepNumber !== null && (
           <div
-            className="flex flex-col gap-4 md:gap-6 min-h-[200px] border-2 border-dashed border-[brand-cyan] rounded-xl bg-gradient-to-b from-[brand-cyan]/10 to-[brand-cyan]/5 transition-all duration-300"
+            className="flex flex-col gap-4 md:gap-6 min-h-[200px] border-2 border-dashed border-neutral-600 rounded-xl bg-gradient-to-b from-neutral-600/10 to-neutral-600/5 transition-all duration-300"
             style={{
               boxShadow: '0 0 30px rgba(82, 221, 235, 0.4), inset 0 0 20px rgba(82, 221, 235, 0.1)',
               animation: 'fadeInScale 0.3s ease-out',

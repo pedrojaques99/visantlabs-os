@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { defineRegistry, useBoundProp } from '@json-render/react';
 import { visantCatalog } from './catalog';
 import { toast } from 'sonner';
-import { Zap } from 'lucide-react';
+import { Zap } from '@/lib/ui/icons';
 
 // Layout
 import { PageShell } from '@/components/ui/PageShell';

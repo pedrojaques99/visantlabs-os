@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileInput } from 'lucide-react';
+import { FileInput } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useExtractFileStream } from '@/hooks/useExtractFigStream';
 import { useIngestAsStream } from '@/hooks/useIngestAsStream';

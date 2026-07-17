@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useBrandSync } from '../../hooks/useBrandSync';
 import { useBrandGuidelineLoader } from '../../hooks/useBrandGuidelineLoader';
@@ -13,6 +14,7 @@ import { useClient } from '../../lib/ClientProvider';
 import { useApi } from '../../hooks/useApi';
 
 export function BrandGuidelineSection() {
+  const { t } = useTranslation();
   const linkedGuideline = usePluginStore((s) => s.linkedGuideline);
   const { loadBrandGuidelines, saveBrandGuideline, updateBrandGuideline } = useBrandSync();
   const { apply, clear } = useBrandGuidelineLoader();
@@ -40,16 +42,16 @@ export function BrandGuidelineSection() {
       const res: any = await client.request('templates.extractSchema', {});
       const templates = res?.templates ?? [];
       if (!templates.length) {
-        showToast('Nenhum [Template] nesta página', 'error');
+        showToast(t('plugin.brand.guideline.noTemplateOnPage'), 'error');
         return;
       }
       await call(`/api/brand-guidelines/${linkedGuideline}/synced-templates`, {
         method: 'POST',
         body: JSON.stringify({ templates }),
       });
-      showToast(`${templates.length} template(s) sincronizado(s)`, 'success');
+      showToast(t('plugin.brand.guideline.templatesSynced', { count: templates.length }), 'success');
     } catch {
-      showToast('Falha ao sincronizar templates', 'error');
+      showToast(t('plugin.brand.guideline.syncFailed'), 'error');
     } finally {
       setSyncing(false);
     }
@@ -146,18 +148,18 @@ export function BrandGuidelineSection() {
                   const primary = colors.find((c: any) => c?.role === 'primary') || colors[0];
                   const swatch = primary?.hex ? (
                     <span
-                      className="w-3 h-3 rounded-full shrink-0 border border-white/10"
+                      className="w-3 h-3 rounded-full shrink-0 border border-border"
                       style={{ backgroundColor: primary.hex }}
                     />
                   ) : (
-                    <span className="w-3 h-3 rounded-full shrink-0 bg-neutral-700 border border-white/10" />
+                    <span className="w-3 h-3 rounded-full shrink-0 bg-muted border border-border" />
                   );
                   return { value: getGuidelineId(g)!, label: getGuidelineLabel(g), icon: swatch };
                 })}
                 value={linkedGuideline || ''}
                 onChange={(value) => handleSelectGuideline(value as string)}
                 variant="node"
-                placeholder="Select a guideline..."
+                placeholder={t('plugin.brand.guideline.selectPlaceholder')}
                 className="w-full"
               />
               {linkedGuideline && (
@@ -175,8 +177,8 @@ export function BrandGuidelineSection() {
                       'https://www.figma.com'
                     );
                   }}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-0 group-hover/gl:opacity-100 transition-opacity bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 z-10"
-                  title="Disconnect brand"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 p-0.5 rounded opacity-0 group-hover/gl:opacity-100 transition-opacity bg-muted hover:bg-muted text-muted-foreground hover:text-foreground z-10"
+                  title={t('plugin.brand.guideline.disconnect')}
                 >
                   <X size={12} />
                 </button>
@@ -193,8 +195,8 @@ export function BrandGuidelineSection() {
                 if (e.key === 'Enter') handleCreateNew();
                 if (e.key === 'Escape') setIsCreating(false);
               }}
-              placeholder="Guideline name..."
-              className="flex-1 h-8 px-2 text-xs bg-white/5 border border-white/10 rounded outline-none focus:border-brand-cyan"
+              placeholder={t('plugin.brand.guideline.namePlaceholder')}
+              className="flex-1 h-8 px-2 text-xs bg-muted border border-border rounded outline-none focus:border-brand-cyan"
             />
           )}
           {isCreating ? (
@@ -228,7 +230,7 @@ export function BrandGuidelineSection() {
                   disabled={loading}
                 >
                   <Plus size={14} className="mr-2" />
-                  New
+                  {t('plugin.brand.guideline.new')}
                 </Button>
               )}
               <Button
@@ -236,7 +238,7 @@ export function BrandGuidelineSection() {
                 variant="ghost"
                 size="sm"
                 className="h-8"
-                aria-label="Refresh guidelines"
+                aria-label={t('plugin.brand.guideline.refresh')}
               >
                 <RefreshCw size={14} />
               </Button>
@@ -247,7 +249,7 @@ export function BrandGuidelineSection() {
                   className="h-8 text-brand-cyan hover:bg-brand-cyan/10 text-[10px] font-bold uppercase tracking-wider"
                   onClick={() => setPushOpen(true)}
                 >
-                  Push
+                  {t('plugin.brand.guideline.push')}
                 </Button>
               )}
               {linkedGuideline && (
@@ -257,15 +259,15 @@ export function BrandGuidelineSection() {
                   className="h-8 text-brand-cyan hover:bg-brand-cyan/10 text-[10px] font-bold uppercase tracking-wider"
                   onClick={handleSyncTemplates}
                   disabled={syncing}
-                  aria-label="Sync [Template] frames to the preview"
-                  title="Sincronizar os [Template] desta página com o preview"
+                  aria-label={t('plugin.brand.guideline.syncAria')}
+                  title={t('plugin.brand.guideline.syncTitle')}
                 >
                   {syncing ? (
                     <GlitchLoader size={12} />
                   ) : (
                     <LayoutTemplate size={13} className="mr-1" />
                   )}
-                  Sync
+                  {t('plugin.brand.guideline.sync')}
                 </Button>
               )}
             </>
@@ -274,17 +276,17 @@ export function BrandGuidelineSection() {
 
         {guidelines.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-4">
-            No guidelines yet. Create one to get started.
+            {t('plugin.brand.guideline.empty')}
           </p>
         )}
       </div>
 
       <button
         onClick={() => setGuideOpen(true)}
-        className="w-full flex items-center justify-center gap-1.5 py-1 text-[8px] text-neutral-600 hover:text-neutral-400 transition-colors uppercase tracking-widest"
+        className="w-full flex items-center justify-center gap-1.5 py-1 text-[8px] text-muted-foreground/70 hover:text-muted-foreground transition-colors uppercase tracking-widest"
       >
         <BookOpen size={9} />
-        Naming Guide
+        {t('plugin.brand.guideline.namingGuide')}
       </button>
 
       <NamingGuideModal isOpen={guideOpen} onClose={() => setGuideOpen(false)} />

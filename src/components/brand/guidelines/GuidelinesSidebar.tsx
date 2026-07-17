@@ -25,7 +25,7 @@ import {
   Archive,
   ArchiveRestore,
   Star,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { sb, SidebarSectionLabel, SidebarSearch } from '@/components/shell/sidebarKit';
 import { creativeProjectApi } from '@/services/creativeProjectApi';

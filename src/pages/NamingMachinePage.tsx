@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Zap, X, Heart, Bookmark } from 'lucide-react';
+import { Zap, X, Heart, Bookmark } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { MiniAppShell } from '@/components/shared/MiniAppShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';

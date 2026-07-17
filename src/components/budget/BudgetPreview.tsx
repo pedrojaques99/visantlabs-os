@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import type { BudgetData, Deliverable, FAQ, BudgetLinks } from '@/types/types';
-import { Calendar, Globe, Instagram, MessageCircle } from 'lucide-react';
+import { Calendar, Globe, Instagram, MessageCircle } from '@/lib/ui/icons';
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { PdfPreviewWithFields } from './PdfPreviewWithFields';
 import { VisantBudgetPage } from './visant/VisantBudgetPage';

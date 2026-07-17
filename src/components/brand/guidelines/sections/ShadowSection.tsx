@@ -3,7 +3,7 @@ import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Layers2, Plus, Trash2 } from 'lucide-react';
+import { Layers2, Plus, Trash2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline, BrandGuidelineShadow } from '@/lib/figma-types';
 import { buildShadowCss } from '@/utils/brand-css';

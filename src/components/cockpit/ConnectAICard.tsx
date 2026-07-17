@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Plug } from 'lucide-react';
+import { Loader2, Plug } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { useTranslation } from '@/hooks/useTranslation';

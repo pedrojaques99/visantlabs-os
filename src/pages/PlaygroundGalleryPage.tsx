@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { LucideIcon } from 'lucide-react';
-import { Search, X, Plus, SlidersHorizontal, Zap } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
+import { Search, X, Plus, SlidersHorizontal, Zap } from '@/lib/ui/icons';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';

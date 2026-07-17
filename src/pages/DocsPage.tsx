@@ -15,7 +15,7 @@ import {
   Bot,
   Coins,
   Zap,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { SEO } from '../components/SEO';
 import { BreadcrumbWithBack } from '../components/ui/BreadcrumbWithBack';
 import {
@@ -267,7 +267,7 @@ export const DocsPage: React.FC = () => {
   }, [activeTab, navigationItems]);
 
   const renderMethodBadge = (method: string) => {
-    let className = 'bg-neutral-800 text-neutral-300';
+    let className = 'bg-muted text-muted-foreground';
     if (method === 'GET') className = 'bg-success/10 text-success border-success/20';
     if (method === 'POST') className = 'bg-warning/10 text-warning border-warning/20';
     if (method === 'PUT') className = 'bg-blue-500/10 text-blue-500 border-blue-500/20';
@@ -294,7 +294,7 @@ export const DocsPage: React.FC = () => {
           {endpoints.map((ep, i) => (
             <div
               key={i}
-              className="bg-card border border-border rounded-xl p-6 hover:border-neutral-700 transition-colors"
+              className="bg-card border border-border rounded-xl p-6 hover:border-ring transition-colors"
             >
               <div className="flex items-center gap-3 mb-4">
                 {renderMethodBadge(ep.method)}
@@ -303,7 +303,7 @@ export const DocsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-muted-foreground mb-4">{ep.summary}</p>
-              {ep.description && <p className="text-neutral-400 mb-6 text-sm">{ep.description}</p>}
+              {ep.description && <p className="text-muted-foreground mb-6 text-sm">{ep.description}</p>}
 
               {ep.parameters && ep.parameters.length > 0 && (
                 <div className="mt-4">
@@ -403,10 +403,10 @@ export const DocsPage: React.FC = () => {
                           new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })
                         )
                       }
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all duration-200"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all duration-200"
                     >
                       <span>Search</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] font-mono text-neutral-400">
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground">
                         ⌘K
                       </kbd>
                     </button>
@@ -418,7 +418,7 @@ export const DocsPage: React.FC = () => {
                         'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0',
                         copied
                           ? 'bg-success/10 border-success/40 text-success'
-                          : 'bg-secondary/60 border-border text-muted-foreground hover:border-neutral-700 hover:text-brand-cyan hover:bg-brand-cyan/5'
+                          : 'bg-secondary/60 border-border text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5'
                       )}
                     >
                       {copied ? (
@@ -464,7 +464,7 @@ export const DocsPage: React.FC = () => {
                   <TabsContent value="overview" className="space-y-6 bg-transparent mt-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <Link to="/docs/getting-started" className="block">
-                        <Card className="h-full cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1">
+                        <Card className="h-full cursor-pointer hover:border-ring transition-all hover:-translate-y-1">
                           <CardHeader>
                             <Zap className="w-8 h-8 text-brand-cyan mb-2" />
                             <CardTitle>Getting Started</CardTitle>
@@ -479,7 +479,7 @@ export const DocsPage: React.FC = () => {
                       </Link>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('api')}
                       >
                         <CardHeader>
@@ -494,7 +494,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('mcp')}
                       >
                         <CardHeader>
@@ -509,7 +509,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('plugin')}
                       >
                         <CardHeader>
@@ -524,7 +524,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('agents')}
                       >
                         <CardHeader>
@@ -539,7 +539,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('brand-guidelines')}
                       >
                         <CardHeader>
@@ -555,7 +555,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('canvas-api')}
                       >
                         <CardHeader>
@@ -571,7 +571,7 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-neutral-700 transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('pricing')}
                       >
                         <CardHeader>
@@ -683,7 +683,7 @@ export const DocsPage: React.FC = () => {
                     <Card id="mcp-overview" className="border border-border bg-card">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Server className="w-5 h-5 text-neutral-400" /> Two MCP Servers
+                          <Server className="w-5 h-5 text-muted-foreground" /> Two MCP Servers
                         </CardTitle>
                         <CardDescription>
                           Choose the server that fits your use case. You can use both
@@ -1277,7 +1277,7 @@ const result = await client.callTool({
                           },
                           {
                             label: 'Structure',
-                            color: 'text-neutral-400',
+                            color: 'text-muted-foreground',
                             ops: [
                               'GROUP_NODES',
                               'UNGROUP',

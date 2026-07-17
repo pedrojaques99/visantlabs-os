@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 export interface AppShellMobileSheetProps {

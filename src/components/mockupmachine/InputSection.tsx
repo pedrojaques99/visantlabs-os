@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, CheckCircle2, ArrowLeftRight } from 'lucide-react';
+import { X, Plus, CheckCircle2, ArrowLeftRight } from '@/lib/ui/icons';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -12,7 +12,7 @@ import { MicroTitle } from '../ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Diamond, MessageSquare, Share2 } from 'lucide-react';
+import { Diamond, MessageSquare, Share2 } from '@/lib/ui/icons';
 import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from '@/hooks/useMockup';
 import { MockupCard } from './MockupCard';
@@ -354,10 +354,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
               onChange={(e) => mockupContext.setInstructions(e.target.value)}
             />
             <div className="absolute bottom-3 right-3 flex items-center gap-2 pointer-events-none">
-              <Diamond size={12} className="text-brand-cyan opacity-40" />
-              <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
-                Context Engine Active
-              </span>
+              <Diamond size={12} className="text-neutral-500 opacity-40" />
+              <span className="text-[10px] text-neutral-600">Context Engine Active</span>
             </div>
           </div>
         </div>
@@ -399,7 +397,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <MicroTitle className="text-neutral-600 group-hover:text-brand-cyan/60">
               Initialize Workspace
             </MicroTitle>
-            <p className="text-[10px] text-neutral-700 font-mono mt-1 group-hover:text-neutral-500 transition-colors uppercase">
+            <p className="text-[10px] text-neutral-700 mt-1 group-hover:text-neutral-500 transition-colors">
               Drop primary design asset
             </p>
           </label>
@@ -426,7 +424,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-neutral-800 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.03] transition-all cursor-pointer group"
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
-            <span className="text-[10px] font-bold font-mono text-neutral-600 group-hover:text-neutral-400 uppercase tracking-widest">
+            <span className="text-[10px] font-medium text-neutral-600 group-hover:text-neutral-400">
               + Add Reference
             </span>
           </label>

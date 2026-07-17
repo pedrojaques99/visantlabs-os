@@ -3,7 +3,7 @@ import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AiFieldButton } from '../AiFieldButton';
-import { BookOpen } from 'lucide-react';
+import { BookOpen } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandManifesto } from '@/lib/figma-types';
 
 interface ManifestoSectionProps {

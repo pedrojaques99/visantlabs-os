@@ -8,7 +8,7 @@ import {
   DialogBody,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, CheckCircle2, AlertTriangle, XOctagon } from 'lucide-react';
+import { Stethoscope, CheckCircle2, AlertTriangle, XOctagon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandHealthReport, BrandHealthInsight } from '@/services/brandGuidelineApi';
 import { formatDateTime } from '@/utils/localeUtils';
@@ -51,7 +51,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <Stethoscope size={14} className="text-brand-cyan" />
+            <Stethoscope size={14} className="text-neutral-400" />
             <DialogTitle className="text-sm font-bold uppercase tracking-[0.15em]">
               Auditoria da marca
             </DialogTitle>
@@ -91,7 +91,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
           {!isLoading && !error && report && (
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-neutral-800">
-                <div className="text-3xl font-bold text-brand-cyan tabular-nums">
+                <div className="text-3xl font-bold text-neutral-100 tabular-nums">
                   {report.score}
                 </div>
                 <div className="flex-1">

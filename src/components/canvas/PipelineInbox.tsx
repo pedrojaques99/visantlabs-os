@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Inbox, X, ImageIcon } from 'lucide-react';
+import { Inbox, X, ImageIcon } from '@/lib/ui/icons';
 import { usePipelinePending } from '@/hooks/usePipeline';
 import type { PipelineAsset } from '@/services/pipelineApi';
 import { cn } from '@/lib/utils';

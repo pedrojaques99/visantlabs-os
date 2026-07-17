@@ -2981,6 +2981,246 @@ router.delete('/references/:id', validateAdmin, async (req: Request, res: Respon
   }
 });
 
+/**
+ * Moderation queue — user uploads awaiting a human decision.
+ *
+ * User uploads land `status: 'pending'` and unenriched (no AI ran). They can't
+ * be public until approved, so this is the only place they surface for review.
+ * Oldest first — a fair queue.
+ */
+router.get('/references/pending', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+    const skip = Math.max(0, parseInt(req.query.skip as string) || 0);
+    const filter = { category: 'reference', status: 'pending' };
+
+    const [items, total] = await Promise.all([
+      getDb()
+        .collection('community_presets')
+        .find(filter)
+        .sort({ createdAt: 1 })
+        .skip(skip)
+        .limit(limit)
+        .project({
+          _id: 0,
+          id: 1,
+          name: 1,
+          referenceImageUrl: 1,
+          thumbnailUrl: 1,
+          thumbHash: 1,
+          provenance: 1,
+          country: 1,
+          palette: 1,
+          width: 1,
+          height: 1,
+          userId: 1,
+          isPublic: 1,
+          createdAt: 1,
+        })
+        .toArray(),
+      getDb().collection('community_presets').countDocuments(filter),
+    ]);
+
+    return res.json({ items, total, skip, limit });
+  } catch (error: any) {
+    console.error('[admin] reference pending error:', error);
+    return res.status(500).json({ error: 'Failed to load pending references' });
+  }
+});
+
+/**
+ * Approve a pending upload → run the AI pipeline, THEN make it visible.
+ *
+ * Enrichment must succeed before the ref is marked approved, so it never
+ * surfaces in search/filters without its dimensions and vector. If enrichment
+ * throws, the ref stays pending and the admin sees the error — nothing half-lit.
+ */
+router.post('/references/:id/approve', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid reference ID format' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+    const ref = await db
+      .collection('community_presets')
+      .findOne({ id: req.params.id, category: 'reference' });
+    if (!ref) return res.status(404).json({ error: 'Reference not found' });
+
+    const { enrichReference } = await import('../lib/mockup/referenceIngestor.js');
+    // Enrich first — the expensive AI phase. Only flip visibility on success.
+    await enrichReference(req.params.id);
+
+    await db
+      .collection('community_presets')
+      .updateOne(
+        { id: req.params.id, category: 'reference' },
+        { $set: { status: 'approved', isApproved: true, updatedAt: new Date() } }
+      );
+
+    return res.json({ success: true, id: req.params.id, status: 'approved' });
+  } catch (error: any) {
+    console.error('[admin] reference approve error:', error);
+    return res.status(500).json({ error: 'Failed to approve reference', details: error.message });
+  }
+});
+
+/**
+ * Reject a pending upload. Soft by default — keeps the row (status 'rejected',
+ * never public, never enriched) for auditability. `?hard=1` deletes it and its
+ * vector outright.
+ */
+router.post('/references/:id/reject', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid reference ID format' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+
+    if (req.query.hard === '1' || req.body?.hard === true) {
+      const result = await db
+        .collection('community_presets')
+        .deleteOne({ id: req.params.id, category: 'reference' });
+      if (result.deletedCount === 0) return res.status(404).json({ error: 'Reference not found' });
+      try {
+        await vectorService.delete(req.params.id);
+      } catch {
+        /* an unenriched ref has no vector — fine */
+      }
+      return res.json({ success: true, id: req.params.id, deleted: true });
+    }
+
+    const result = await db
+      .collection('community_presets')
+      .updateOne(
+        { id: req.params.id, category: 'reference' },
+        { $set: { status: 'rejected', isApproved: false, isPublic: false, updatedAt: new Date() } }
+      );
+    if (result.matchedCount === 0) return res.status(404).json({ error: 'Reference not found' });
+    return res.json({ success: true, id: req.params.id, status: 'rejected' });
+  } catch (error: any) {
+    console.error('[admin] reference reject error:', error);
+    return res.status(500).json({ error: 'Failed to reject reference' });
+  }
+});
+
+/**
+ * Duplicate groups, by content hash.
+ *
+ * The library predates ingest dedup, so identical bytes were ingested more than
+ * once (each paying for its own AI analysis). `contentHash` is backfilled by
+ * scripts/backfill-reference-facts.ts — refs without one are simply not grouped.
+ *
+ * Read-only on purpose: it reports, a human calibrates, and only then does
+ * POST /references/dedupe delete anything.
+ */
+router.get('/references/duplicates', validateAdmin, async (_req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const groups = await getDb()
+      .collection('community_presets')
+      .aggregate([
+        { $match: { category: 'reference', contentHash: { $exists: true, $ne: null } } },
+        { $sort: { createdAt: 1 } },
+        {
+          $group: {
+            _id: '$contentHash',
+            // Oldest wins: it's the one other records may already point at.
+            refs: { $push: { id: '$id', name: '$name', createdAt: '$createdAt' } },
+            count: { $sum: 1 },
+          },
+        },
+        { $match: { count: { $gt: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 500 },
+      ])
+      .toArray();
+
+    const total = await getDb()
+      .collection('community_presets')
+      .countDocuments({ category: 'reference' });
+    const hashed = await getDb()
+      .collection('community_presets')
+      .countDocuments({ category: 'reference', contentHash: { $exists: true } });
+
+    return res.json({
+      groups: groups.map((g: any) => ({
+        contentHash: g._id,
+        count: g.count,
+        keep: g.refs[0],
+        duplicates: g.refs.slice(1),
+      })),
+      redundant: groups.reduce((sum: number, g: any) => sum + g.count - 1, 0),
+      // Refs never backfilled can't be compared — say so instead of implying
+      // the library is clean.
+      unhashed: total - hashed,
+      total,
+    });
+  } catch (error: any) {
+    console.error('[admin] reference duplicates error:', error);
+    return res.status(500).json({ error: 'Failed to load duplicates' });
+  }
+});
+
+/**
+ * Delete redundant copies, keeping the oldest of each group. Defaults to a dry
+ * run — deleting is opt-in, and the ids are recomputed server-side rather than
+ * trusted from the client so a stale page can't delete a keeper.
+ */
+router.post('/references/dedupe', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const dryRun = req.body?.dryRun !== false;
+
+    const groups = await db
+      .collection('community_presets')
+      .aggregate([
+        { $match: { category: 'reference', contentHash: { $exists: true, $ne: null } } },
+        { $sort: { createdAt: 1 } },
+        { $group: { _id: '$contentHash', ids: { $push: '$id' }, count: { $sum: 1 } } },
+        { $match: { count: { $gt: 1 } } },
+      ])
+      .toArray();
+
+    const doomed = groups.flatMap((g: any) => g.ids.slice(1));
+    if (dryRun) {
+      return res.json({ dryRun: true, groups: groups.length, wouldDelete: doomed.length });
+    }
+    if (doomed.length === 0) {
+      return res.json({ dryRun: false, groups: 0, deleted: 0 });
+    }
+
+    const result = await db
+      .collection('community_presets')
+      .deleteMany({ id: { $in: doomed }, category: 'reference' });
+
+    // Vectors are per-record: leaving them orphans the similarity index, which
+    // would keep serving deleted refs. Non-fatal — a missing vector is fine.
+    let vectorsDeleted = 0;
+    for (const id of doomed) {
+      try {
+        await vectorService.delete(id);
+        vectorsDeleted++;
+      } catch {
+        /* vector may not exist */
+      }
+    }
+
+    return res.json({
+      dryRun: false,
+      groups: groups.length,
+      deleted: result.deletedCount,
+      vectorsDeleted,
+    });
+  } catch (error: any) {
+    console.error('[admin] reference dedupe error:', error);
+    return res.status(500).json({ error: 'Failed to dedupe references' });
+  }
+});
+
 router.put('/references/:id', validateAdmin, async (req: Request, res: Response) => {
   try {
     if (!isSafeId(req.params.id)) {

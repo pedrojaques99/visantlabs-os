@@ -1,7 +1,7 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
 import { useParams } from 'react-router-dom';
-import { Download, Maximize2, Upload, Video, Image as ImageIcon, X, Diamond } from 'lucide-react';
+import { Download, Maximize2, Upload, Video, Image as ImageIcon, X, Diamond } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { NodeHeader } from './shared/node-header';
 import { Tooltip } from '@/components/ui/Tooltip';

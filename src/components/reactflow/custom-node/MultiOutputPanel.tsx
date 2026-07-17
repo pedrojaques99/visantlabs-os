@@ -14,13 +14,13 @@ export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props)
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+      <p className="text-[10px] font-medium text-neutral-500 tracking-wider">
         {isSinglePrompt ? 'Prompt' : `Prompts (${config.outputCount})`}
       </p>
       {(isSinglePrompt ? [prompts[0] ?? ''] : prompts).map((prompt, i) => (
         <div key={i} className="space-y-0.5">
           {config.behavior === 'model-comparison' && config.models?.[i] && (
-            <p className="text-[10px] font-mono text-brand-cyan/50 uppercase tracking-wide pl-0.5">
+            <p className="text-[10px] font-mono text-neutral-500 tracking-wide pl-0.5">
               {config.models[i]}
             </p>
           )}

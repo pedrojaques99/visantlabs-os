@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Zap } from 'lucide-react';
+import { Zap } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline, BrandGuidelineMotion } from '@/lib/figma-types';
 

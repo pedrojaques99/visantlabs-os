@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, MessageCircle, Bug } from 'lucide-react';
+import { X, MessageCircle, Bug } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
@@ -153,7 +153,7 @@ ${message}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
+          <h2 className="text-lg font-semibold text-neutral-200">
             {t('support.title') || 'Support / Report Bug'}
           </h2>
           <Button
@@ -179,7 +179,7 @@ ${message}
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${
                   contactType === 'customerService'
-                    ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                    ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                     : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                 }`}
               >
@@ -192,7 +192,7 @@ ${message}
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${
                   contactType === 'reportBug'
-                    ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                    ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                     : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                 }`}
               >
@@ -214,7 +214,7 @@ ${message}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('support.namePlaceholder') || 'Your name'}
             />
           </div>
@@ -231,7 +231,7 @@ ${message}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('support.emailPlaceholder') || 'your@email.com'}
             />
           </div>
@@ -246,7 +246,7 @@ ${message}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('support.subjectPlaceholder') || 'Brief description'}
             />
           </div>
@@ -261,7 +261,7 @@ ${message}
               onChange={(e) => setMessage(e.target.value)}
               required
               rows={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono resize-none"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono resize-none"
               placeholder={t('support.messagePlaceholder') || 'Describe your issue or question...'}
             />
           </div>

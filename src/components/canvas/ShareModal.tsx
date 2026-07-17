@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Share2, Edit3, Eye, Trash2, Check, Link2, UserPlus, X } from 'lucide-react';
+import { Copy, Share2, Edit3, Eye, Trash2, Check, Link2, UserPlus, X } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Modal } from '@/components/ui/Modal';
 import { canvasApi } from '@/services/canvasApi';

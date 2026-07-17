@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { X, Shuffle } from 'lucide-react';
+import { X, Shuffle } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/button';

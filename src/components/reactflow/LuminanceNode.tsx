@@ -1,4 +1,4 @@
-import { Sun } from 'lucide-react';
+import { Sun } from '@/lib/ui/icons';
 import type { LuminanceNodeData } from '@/types/reactFlow';
 import { getAllLuminancePresets, getLuminancePreset } from '@/services/luminancePresetsService';
 import { LuminancePresetModal } from '../LuminancePresetModal';
