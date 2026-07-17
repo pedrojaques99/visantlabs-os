@@ -1410,7 +1410,11 @@
     "sortName": "Name",
     "sortCompleteness": "Completeness",
     "countBrands": "{filtered} of {total} brands",
-    "noMatch": "No brands match “{term}”"
+    "noMatch": "No brands match “{term}”",
+    "completenessFull": "{score}% complete · all set",
+    "completenessMissing": "{score}% complete · missing: {items}",
+    "completenessMore": "+{count}",
+    "completenessAllSet": "All set."
   },
   "branding": {
     "allSectionsGenerated": "All sections have already been generated",
@@ -6135,5 +6139,26 @@
       "generateOnBrand": "Generate your first on-brand piece",
       "connectAgent": "Connect your AI"
     }
+  },
+  "brandCompleteness": {
+    "name": "Brand name",
+    "tagline": "Tagline",
+    "description": "Brand description",
+    "colors_2": "At least 2 colors",
+    "colors_named": "Colors with names or roles",
+    "colors_role": "At least 1 color with a role",
+    "typography": "At least 1 typeface",
+    "logo": "At least 1 logo",
+    "logo_variants": "Logo variants (light/dark/icon)",
+    "manifesto": "Manifesto",
+    "archetype": "At least 1 archetype",
+    "persona": "At least 1 persona",
+    "voice_tone": "Tone of voice",
+    "voice_dos": "Do's list",
+    "voice_donts": "Don'ts list",
+    "spacing": "Spacing tokens",
+    "radius": "Radius tokens",
+    "media": "Media kit or knowledge",
+    "public_or_figma": "Sharing or linked Figma"
   }
 }

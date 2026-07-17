@@ -419,7 +419,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                             className="group flex items-center justify-between gap-3 w-full py-1.5 text-left border-b border-border last:border-0"
                           >
                             <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors truncate">
-                              {rule.label}
+                              {t(`brandCompleteness.${rule.id}`) || rule.label}
                             </span>
                             <ChevronRight
                               size={12}

@@ -1410,7 +1410,11 @@
     "sortName": "Nome",
     "sortCompleteness": "Completude",
     "countBrands": "{filtered} de {total} marcas",
-    "noMatch": "Nenhuma marca corresponde a “{term}”"
+    "noMatch": "Nenhuma marca corresponde a “{term}”",
+    "completenessFull": "{score}% completo · tudo preenchido",
+    "completenessMissing": "{score}% completo · falta: {items}",
+    "completenessMore": "+{count}",
+    "completenessAllSet": "Tudo preenchido."
   },
   "branding": {
     "allSectionsGenerated": "Todas as seções já foram geradas",
@@ -6139,5 +6143,26 @@
       "generateOnBrand": "Gere sua primeira peça on-brand",
       "connectAgent": "Conecte seu AI"
     }
+  },
+  "brandCompleteness": {
+    "name": "Nome da marca",
+    "tagline": "Tagline",
+    "description": "Descrição da marca",
+    "colors_2": "Pelo menos 2 cores",
+    "colors_named": "Cores com nomes ou roles",
+    "colors_role": "Pelo menos 1 cor com role",
+    "typography": "Pelo menos 1 tipografia",
+    "logo": "Pelo menos 1 logo",
+    "logo_variants": "Logo com variantes (light/dark/icon)",
+    "manifesto": "Manifesto",
+    "archetype": "Pelo menos 1 arquétipo",
+    "persona": "Pelo menos 1 persona",
+    "voice_tone": "Tom de voz",
+    "voice_dos": "Lista de \"Do's\"",
+    "voice_donts": "Lista de \"Don'ts\"",
+    "spacing": "Spacing tokens",
+    "radius": "Radius tokens",
+    "media": "Media kit ou knowledge",
+    "public_or_figma": "Compartilhamento ou Figma vinculado"
   }
 }
