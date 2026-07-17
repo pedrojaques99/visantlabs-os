@@ -1,38 +1,30 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useServerStatus } from '../../hooks/useServerStatus';
 import { Button } from '@/components/ui/button';
-import { Settings, Pickaxe, User as UserIcon, History, Minimize2 } from 'lucide-react';
+import { Minimize2 } from 'lucide-react';
+import type { ActiveView } from '../../store/types';
 
+const VIEW_TITLE: Record<ActiveView, string> = {
+  brand: 'plugin.nav.brand',
+  main: 'plugin.nav.chat',
+  tools: 'plugin.nav.tools',
+  profile: 'plugin.nav.profile',
+  sessions: 'plugin.sessions.title',
+};
+
+/**
+ * Says where you are and lets you collapse. Navigation moved to the TabBar, chat history to
+ * the chat, and credits to the profile tab — the header used to carry all three and direct
+ * nobody.
+ */
 export function Header() {
   const { t } = useTranslation();
-  const {
-    setActiveView,
-    credits,
-    activeView,
-    userInfo,
-    authEmail,
-    toggleDevMode,
-    devMode,
-    setCollapsed,
-  } = usePluginStore();
+  const activeView = usePluginStore((s) => s.activeView);
+  const setCollapsed = usePluginStore((s) => s.setCollapsed);
+  const devMode = usePluginStore((s) => s.devMode);
   const { isConnected } = useServerStatus();
-  const clickCount = useRef(0);
-  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleTitleClick = useCallback(() => {
-    clickCount.current++;
-    if (clickTimer.current) clearTimeout(clickTimer.current);
-    if (clickCount.current >= 5) {
-      clickCount.current = 0;
-      toggleDevMode();
-    } else {
-      clickTimer.current = setTimeout(() => {
-        clickCount.current = 0;
-      }, 800);
-    }
-  }, [toggleDevMode]);
 
   const collapse = useCallback(() => {
     setCollapsed(true);
@@ -40,8 +32,7 @@ export function Header() {
   }, [setCollapsed]);
 
   return (
-    <header className="border-b border-border bg-card px-4 py-3 flex items-center justify-between">
-      {/* Left: status/info. Title is dropped (Figma's window title bar already shows it). */}
+    <header className="shrink-0 border-b border-border bg-card px-4 py-2.5 flex items-center justify-between">
       <div className="flex items-center gap-2 min-h-[28px]">
         {/* Only surface the status dot when the server is DOWN — silent when healthy. */}
         {isConnected === false && (
@@ -52,81 +43,24 @@ export function Header() {
             title={t('plugin.header.serverDisconnected')}
           />
         )}
-
-        {credits && (
-          <Button
-            variant="ghost"
-            onClick={handleTitleClick}
-            className="flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[10px] text-brand-cyan font-mono bg-muted/50 border border-brand-cyan/20 hover:bg-muted hover:border-brand-cyan/40 transition-all cursor-default shadow-sm"
-            title={t('plugin.header.creditsAvailable')}
-          >
-            <Pickaxe size={12} className="text-brand-cyan" />
-            <span>{Math.max(0, credits.limit - credits.used)}</span>
-            {devMode && <span className="ml-0.5 text-[8px] font-bold tracking-wide">DEV</span>}
-          </Button>
+        <h1 className="text-sm font-semibold text-foreground">{t(VIEW_TITLE[activeView])}</h1>
+        {devMode && (
+          <span className="text-[9px] font-mono font-bold tracking-wide text-muted-foreground border border-border rounded px-1 py-0.5">
+            DEV
+          </span>
         )}
       </div>
 
-      {/* Right: actions — views grouped, window control (collapse) last. */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setActiveView(activeView === 'sessions' ? 'main' : 'sessions')}
-          className="h-7 w-7 bg-muted/50 hover:bg-muted"
-          title={t('plugin.header.sessions')}
-          aria-label={activeView === 'sessions' ? t('plugin.header.closeSessions') : t('plugin.header.openSessions')}
-        >
-          <History size={14} className="text-muted-foreground" />
-        </Button>
-
-        <button
-          onClick={() => setActiveView(activeView === 'profile' ? 'main' : 'profile')}
-          className="w-7 h-7 rounded-md overflow-hidden border border-border hover:border-brand-cyan/40 transition-colors focus:outline-none flex-shrink-0"
-          title={userInfo?.name ?? authEmail ?? t('plugin.header.profile')}
-          aria-label={t('plugin.header.openProfile')}
-        >
-          {userInfo?.photoUrl ? (
-            <img
-              src={userInfo.photoUrl}
-              alt={userInfo.name}
-              className="w-full h-full object-cover"
-            />
-          ) : authEmail || userInfo?.name ? (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <span className="text-[10px] font-bold text-foreground/70 uppercase">
-                {(userInfo?.name ?? authEmail ?? '?').charAt(0)}
-              </span>
-            </div>
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <UserIcon size={14} className="text-muted-foreground" />
-            </div>
-          )}
-        </button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setActiveView(activeView === 'settings' ? 'main' : 'settings')}
-          className="h-7 w-7 bg-muted/50 hover:bg-muted"
-          title={t('plugin.header.settings')}
-          aria-label={activeView === 'settings' ? t('plugin.header.closeSettings') : t('plugin.header.openSettings')}
-        >
-          <Settings size={14} className="text-muted-foreground" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={collapse}
-          className="h-7 w-7 bg-muted/50 hover:bg-muted"
-          title={t('plugin.header.collapse')}
-          aria-label={t('plugin.header.collapsePanel')}
-        >
-          <Minimize2 size={14} className="text-muted-foreground" />
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={collapse}
+        className="h-7 w-7 hover:bg-muted"
+        title={t('plugin.header.collapse')}
+        aria-label={t('plugin.header.collapsePanel')}
+      >
+        <Minimize2 size={14} className="text-muted-foreground" />
+      </Button>
     </header>
   );
 }

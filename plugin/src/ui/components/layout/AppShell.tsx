@@ -2,10 +2,12 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { Header } from './Header';
+import { TabBar } from './TabBar';
 import { ChatView } from '../chat/ChatView';
 import { SessionsView } from '../chat/SessionsView';
-import { SettingsView } from '../settings/SettingsView';
-import { ProfileTab } from '../settings/ProfileTab';
+import { BrandView } from '../brand/BrandView';
+import { ToolsView } from '../tools/ToolsView';
+import { ProfileView } from '../settings/ProfileView';
 import { ToastProvider } from './ToastProvider';
 
 /** Bottom-right drag handle that resizes the Figma plugin window. */
@@ -101,16 +103,15 @@ export function AppShell() {
     <ToastProvider>
       <div className="relative flex flex-col h-screen bg-background text-foreground">
         <Header />
-        <main className="flex-1 overflow-hidden overflow-y-auto">
+        {/* Chat is the product, so it alone runs full-bleed; the other tabs get padding. */}
+        <main className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {activeView === 'main' && <ChatView />}
           {activeView === 'sessions' && <SessionsView />}
-          {activeView === 'settings' && <SettingsView />}
-          {activeView === 'profile' && (
-            <div className="p-4">
-              <ProfileTab />
-            </div>
-          )}
+          {activeView === 'brand' && <BrandView />}
+          {activeView === 'tools' && <ToolsView />}
+          {activeView === 'profile' && <ProfileView />}
         </main>
+        <TabBar />
         <ResizeHandle />
       </div>
     </ToastProvider>

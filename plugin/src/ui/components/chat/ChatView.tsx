@@ -5,7 +5,7 @@ import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { TypingIndicator } from './TypingIndicator';
-import { Layers, Trash2, MessageSquare, Brain, ChevronDown } from 'lucide-react';
+import { Layers, Trash2, MessageSquare, Brain, ChevronDown, History } from 'lucide-react';
 import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { getGuidelineLabel } from '../../lib/brandHydration';
 
@@ -13,6 +13,7 @@ export function ChatView() {
   const { t } = useTranslation();
   const { chatHistory, selectionDetails, clearChatHistory, sessionContext } = usePluginStore();
   const brandGuideline = usePluginStore((s) => s.brandGuideline);
+  const setActiveView = usePluginStore((s) => s.setActiveView);
   const { sendMessage } = useChatSend();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const scrollAnchorRef = useAutoScrollToBottom([chatHistory, isGenerating]);
@@ -40,51 +41,60 @@ export function ChatView() {
   const brandName = brandGuideline ? getGuidelineLabel(brandGuideline) : null;
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Brand context bar */}
-      {brandGuideline && (
-        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/50 bg-muted/30">
-          {brandLogo ? (
-            <img
-              src={brandLogo}
-              alt=""
-              className="w-5 h-5 rounded object-contain bg-muted p-0.5 shrink-0"
-            />
-          ) : (
-            <div className="w-5 h-5 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-semibold text-foreground/70">
-                {brandName?.[0]?.toUpperCase() || '?'}
-              </span>
-            </div>
-          )}
-          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">
-            {brandName}
-          </span>
+    <div className="flex flex-col h-full min-h-0 bg-background">
+      {/* One bar: which brand is answering, plus this chat's own controls. History lives here
+          now — it's a chat concern, and the header no longer carries navigation. */}
+      <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 border-b border-border/50 bg-muted/30">
+        {brandGuideline ? (
+          <>
+            {brandLogo ? (
+              <img
+                src={brandLogo}
+                alt=""
+                className="w-5 h-5 rounded object-contain bg-muted p-0.5 shrink-0"
+              />
+            ) : (
+              <div className="w-5 h-5 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
+                <span className="text-[10px] font-semibold text-foreground/70">
+                  {brandName?.[0]?.toUpperCase() || '?'}
+                </span>
+              </div>
+            )}
+            {/* A brand name is a proper noun, not a technical value — so it's sans, not mono. */}
+            <span className="text-[11px] text-foreground/80 truncate">{brandName}</span>
+          </>
+        ) : (
+          <button
+            onClick={() => setActiveView('brand')}
+            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {t('plugin.chat.noBrandPick')}
+          </button>
+        )}
+
+        <div className="ml-auto flex items-center gap-1 shrink-0">
+          <button
+            onClick={() => setActiveView('sessions')}
+            title={t('plugin.header.sessions')}
+            aria-label={t('plugin.header.openSessions')}
+            className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <History size={12} />
+          </button>
           {chatHistory.length > 0 && (
             <button
               onClick={clearChatHistory}
-              className="ml-auto flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-destructive transition-colors shrink-0"
+              title={t('plugin.common.clear')}
+              aria-label={t('plugin.common.clear')}
+              className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
             >
-              <Trash2 size={10} />
-              {t('plugin.common.clear')}
+              <Trash2 size={12} />
             </button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Clear button when no brand is linked */}
-      {!brandGuideline && chatHistory.length > 0 && (
-        <div className="flex justify-end px-3 pt-2">
-          <button
-            onClick={clearChatHistory}
-            className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-destructive transition-colors"
-          >
-            <Trash2 size={10} />
-            {t('plugin.common.clear')}
-          </button>
-        </div>
-      )}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
         {chatHistory.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-xs space-y-4">

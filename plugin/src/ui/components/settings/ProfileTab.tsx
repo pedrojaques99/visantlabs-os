@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useApi } from '../../hooks/useApi';
 import { usePluginStore } from '../../store';
@@ -14,11 +14,28 @@ export function ProfileTab() {
   const { t, locale, setLocale } = useTranslation();
   const client = useClient();
   const { isAuthenticated, email, login, logout, loginWithGoogle } = useAuth();
-  const { userInfo } = usePluginStore();
+  const { userInfo, toggleDevMode } = usePluginStore();
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(false);
+  const clickCount = useRef(0);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Dev mode used to hide behind 5 clicks on the header's credits chip. The chip is gone —
+  // the version string is where a build-level easter egg belongs anyway.
+  const handleVersionClick = useCallback(() => {
+    clickCount.current++;
+    if (clickTimer.current) clearTimeout(clickTimer.current);
+    if (clickCount.current >= 5) {
+      clickCount.current = 0;
+      toggleDevMode();
+    } else {
+      clickTimer.current = setTimeout(() => {
+        clickCount.current = 0;
+      }, 800);
+    }
+  }, [toggleDevMode]);
 
   // Persist the language choice through clientStorage — the Figma sandbox's
   // localStorage is memory-only, so App.tsx rehydrates this on next launch.
@@ -222,7 +239,13 @@ export function ProfileTab() {
         <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/70">
           Visant Copilot
         </div>
-        <div className="text-[9px] font-mono text-muted-foreground/50">{t('plugin.profile.versionLabel')}</div>
+        <button
+          type="button"
+          onClick={handleVersionClick}
+          className="text-[9px] font-mono text-muted-foreground/50 cursor-default focus:outline-none"
+        >
+          {t('plugin.profile.versionLabel')}
+        </button>
       </div>
     </div>
   );

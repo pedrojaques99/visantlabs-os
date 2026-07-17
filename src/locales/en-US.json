@@ -55,7 +55,8 @@
       "seeAll": "see all",
       "noMessages": "No messages yet. Start by describing what you want to create.",
       "undoingLast": "Undoing last operation…",
-      "retrying": "Retrying…"
+      "retrying": "Retrying…",
+      "noBrandPick": "No brand — pick one"
     },
     "message": {
       "mockupLoadFailed": "Failed to load mockup image",
@@ -85,7 +86,9 @@
       "placeholder": "Describe what you want to create...",
       "think": "Think",
       "scanPage": "Scan page",
-      "generateImage": "Generate image"
+      "generateImage": "Generate image",
+      "creditsOut": "You're out of credits this month.",
+      "creditsOutCta": "Get more"
     },
     "sessions": {
       "title": "Sessions",
@@ -125,7 +128,11 @@
       "settingsApiTitle": "Settings & API",
       "apiKeyLabel": "Visant API Key (Dev)",
       "keysStoredLocally": "Your keys are stored locally in the plugin.",
-      "versionLabel": "VERSION 4.3.0 ALPHA"
+      "versionLabel": "VERSION 4.3.0 ALPHA",
+      "creditsTitle": "Credits",
+      "creditsRemainingOne": "{count} left this month.",
+      "creditsRemainingOther": "{count} left this month.",
+      "creditsOut": "None left this month. They reset on your renewal date."
     },
     "brand": {
       "designSystem": {
@@ -503,7 +510,21 @@
         "messageTypePlaceholder": "Message type (e.g., APPLY_OPERATIONS)",
         "payloadLabel": "Payload (JSON)",
         "executeOperation": "Execute Operation"
+      },
+      "group": {
+        "create": "Create",
+        "onBrand": "On brand",
+        "refine": "Refine",
+        "extract": "Extract",
+        "brandMatrixDescription": "Generate a logo × colour grid"
       }
+    },
+    "nav": {
+      "label": "Sections",
+      "brand": "Brand",
+      "chat": "Chat",
+      "tools": "Tools",
+      "profile": "You"
     }
   },
   "brandMockupDialog": {

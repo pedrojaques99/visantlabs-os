@@ -15,6 +15,13 @@
 
 export const PRODUCTION_API_BASE_URL = 'https://api.visantlabs.com';
 
+/**
+ * The web app, for the few places the plugin must hand off to a browser (upgrade, account).
+ * Kept in sync with `productionWebOrigins` in server/app.ts.
+ */
+export const PRODUCTION_WEB_BASE_URL = 'https://visantlabs.com';
+export const PRICING_URL = `${PRODUCTION_WEB_BASE_URL}/pricing`;
+
 /** Local backend: server/index.ts listens on PORT ?? 3001. */
 export const LOCAL_API_BASE_URL = 'http://localhost:3001';
 

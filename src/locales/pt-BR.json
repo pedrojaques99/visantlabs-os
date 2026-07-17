@@ -55,7 +55,8 @@
       "seeAll": "ver todos",
       "noMessages": "Nenhuma mensagem ainda. Comece descrevendo o que deseja criar.",
       "undoingLast": "Desfazendo a última operação…",
-      "retrying": "Tentando novamente…"
+      "retrying": "Tentando novamente…",
+      "noBrandPick": "Sem marca — escolher"
     },
     "message": {
       "mockupLoadFailed": "Falha ao carregar a imagem do mockup",
@@ -85,7 +86,9 @@
       "placeholder": "Descreva o que deseja criar...",
       "think": "Pensar",
       "scanPage": "Varrer página",
-      "generateImage": "Gerar imagem"
+      "generateImage": "Gerar imagem",
+      "creditsOut": "Seus créditos deste mês acabaram.",
+      "creditsOutCta": "Obter mais"
     },
     "sessions": {
       "title": "Sessões",
@@ -125,7 +128,11 @@
       "settingsApiTitle": "Configurações & API",
       "apiKeyLabel": "Chave de API Visant (Dev)",
       "keysStoredLocally": "Suas chaves são armazenadas localmente no plugin.",
-      "versionLabel": "VERSÃO 4.3.0 ALPHA"
+      "versionLabel": "VERSÃO 4.3.0 ALPHA",
+      "creditsTitle": "Créditos",
+      "creditsRemainingOne": "Resta {count} neste mês.",
+      "creditsRemainingOther": "Restam {count} neste mês.",
+      "creditsOut": "Nenhum restante neste mês. Eles voltam na data de renovação."
     },
     "brand": {
       "designSystem": {
@@ -503,7 +510,21 @@
         "messageTypePlaceholder": "Tipo de mensagem (ex: APPLY_OPERATIONS)",
         "payloadLabel": "Payload (JSON)",
         "executeOperation": "Executar Operação"
+      },
+      "group": {
+        "create": "Criar",
+        "onBrand": "On-brand",
+        "refine": "Refinar",
+        "extract": "Extrair",
+        "brandMatrixDescription": "Gerar uma grade logo × cor"
       }
+    },
+    "nav": {
+      "label": "Seções",
+      "brand": "Marca",
+      "chat": "Chat",
+      "tools": "Tools",
+      "profile": "Você"
     }
   },
   "brandMockupDialog": {

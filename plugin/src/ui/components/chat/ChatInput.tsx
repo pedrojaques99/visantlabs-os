@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, Zap, Scan, Image, X, Plus, Check } from 'lucide-react';
 import { MentionsDropdown } from './MentionsDropdown';
 import { ModelSelector } from '@/components/shared/ModelSelector';
-import type { Attachment } from '../../store/types';
+import { isOutOfCredits, type Attachment } from '../../store/types';
+import { PRICING_URL } from '../../apiBase';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf'];
@@ -77,9 +78,17 @@ export function ChatInput({ onSend }: ChatInputProps) {
     brandGuideline,
     isGenerating,
     selectedModel,
+    credits,
   } = usePluginStore();
 
   const mentions = useMentions(textareaRef, setContent);
+
+  // Expansion is born of usage: the upgrade belongs at the moment of the limit, with the
+  // sentence they just typed still in the box — not as a number nagging from the header.
+  const outOfCredits = isOutOfCredits(credits);
+  const openPricing = useCallback(() => {
+    parent.postMessage({ pluginMessage: { type: 'OPEN_EXTERNAL', url: PRICING_URL } }, '*');
+  }, []);
 
   const activeBrandName = brandGuideline?.name || brandGuideline?.identity?.name || 'Brand';
   const brandLogo = (
@@ -88,6 +97,9 @@ export function ChatInput({ onSend }: ChatInputProps) {
   )?.url;
 
   const handleSend = () => {
+    // Enter must respect the limit too — hiding the button alone would still let it through,
+    // and the request would only die at the server with a raw NO_CREDITS error.
+    if (outOfCredits) return;
     if (content.trim()) {
       onSend(content);
       setContent('');
@@ -350,15 +362,29 @@ export function ChatInput({ onSend }: ChatInputProps) {
             />
           </div>
 
-          <Button
-            onClick={handleSend}
-            size="icon"
-            className="h-7 w-7 rounded-lg bg-brand-cyan text-black hover:bg-brand-cyan/90"
-            disabled={!content.trim() || isGenerating}
-          >
-            <Send size={14} />
-          </Button>
+          {!outOfCredits && (
+            <Button
+              onClick={handleSend}
+              size="icon"
+              className="h-7 w-7 rounded-lg bg-brand-cyan text-black hover:bg-brand-cyan/90"
+              disabled={!content.trim() || isGenerating}
+            >
+              <Send size={14} />
+            </Button>
+          )}
         </div>
+
+        {outOfCredits && (
+          <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+            <p className="text-[11px] text-muted-foreground">{t('plugin.input.creditsOut')}</p>
+            <Button
+              onClick={openPricing}
+              className="h-7 px-3 rounded-lg bg-brand-cyan text-black hover:bg-brand-cyan/90 text-xs"
+            >
+              {t('plugin.input.creditsOutCta')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
