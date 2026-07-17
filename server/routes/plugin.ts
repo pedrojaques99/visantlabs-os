@@ -18,10 +18,12 @@ import { CACHE_TTL, CacheKey, hashObject } from '../lib/cache-utils.js';
 import {
   buildSystemPrompt,
   buildRetryFeedback,
+  detectPendingTurn,
   refineIntentWithLLM,
   type PluginRequest,
   type DesignSystemJSON,
   type AssembledPrompt,
+  type PendingTurn,
 } from '../lib/figmaAgentPrompt.js';
 import { quickTextCall } from '../services/geminiService.js';
 import { extractExportFields } from '../lib/prompt/classifier.js';
@@ -732,6 +734,7 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
 
     // ═══ Load session history ═══
     let streamChatHistory = '';
+    let streamPendingTurn: PendingTurn | undefined;
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
@@ -757,9 +760,12 @@ router.post('/stream', streamLimiter, optionalAuth, async (req: AuthRequest, res
             included.unshift(older[i]);
             budget -= t;
           }
-          streamChatHistory = [...included, ...tail]
+          const ordered = [...included, ...tail];
+          streamChatHistory = ordered
             .map((m) => `[${(m.role || 'user').toUpperCase()}]: ${m.content}`)
             .join('\n');
+          // Did we leave a question hanging? Then this turn is an answer, not an opening.
+          streamPendingTurn = detectPendingTurn(ordered);
         }
       } catch (e) {
         console.error('[Plugin:Stream] Session load error:', e);
@@ -837,7 +843,12 @@ ${
     : ''
 }${selectionContext}`;
 
-      const prePassResult = await chatWithLLM(command, '', [], {
+      // Pass the conversation: a bare "Visant" only reads as a brand answer next to the
+      // question that asked for it.
+      const prePassContext = streamChatHistory
+        ? `═══ HISTÓRICO DE CONVERSA ═══\n${streamChatHistory}`
+        : '';
+      const prePassResult = await chatWithLLM(command, prePassContext, [], {
         provider: 'gemini',
         apiKey: userApiKey || undefined,
         systemInstruction: prePassPrompt,
@@ -1208,6 +1219,7 @@ ${
         enforcedTokens: enforcedTokenPrompt || undefined,
         brandChoiceContext: brandChoiceContext || undefined,
         brandKnowledgeContext,
+        pendingTurn: streamPendingTurn,
       }
     );
 
@@ -1595,6 +1607,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
 
     // FASE 3: Load or create session for chat memory
     let chatHistory = '';
+    let pendingTurn: PendingTurn | undefined;
     if (sessionId && fileId && typeof sessionId === 'string' && isSafeId(sessionId)) {
       try {
         const db = getDb();
@@ -1624,9 +1637,11 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
             included.unshift(older[i]);
             budget -= t;
           }
-          chatHistory = [...included, ...tail]
+          const ordered = [...included, ...tail];
+          chatHistory = ordered
             .map((m) => `[${(m.role || 'user').toUpperCase()}]: ${m.content}`)
             .join('\n');
+          pendingTurn = detectPendingTurn(ordered);
         }
       } catch (sessionError) {
         console.error('[Plugin] Session error:', sessionError);
@@ -1691,6 +1706,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         enforcedTokens: enforcedTokenPrompt || undefined,
         brandChoiceContext: brandChoiceContext || undefined,
         brandKnowledgeContext: brandKnowledgeCtx2,
+        pendingTurn,
       }
     );
     let systemPrompt = assembled.system;

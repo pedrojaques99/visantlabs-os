@@ -229,6 +229,10 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
       ? 'bg-destructive/10 border border-destructive/30 text-destructive'
       : 'bg-card border border-border text-foreground';
 
+  // The user bubble paints its own background, so muted-on-surface tokens don't resolve
+  // against it — muted-foreground over brand-cyan is cyan on cyan.
+  const mutedOnBubble = isUser ? 'text-black/50' : 'text-muted-foreground/40';
+
   return (
     <div
       className={`group/bubble flex ${
@@ -319,7 +323,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 {chips.map((c, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/10 rounded px-1 py-0.5 text-black/60"
+                    className="inline-flex items-center gap-0.5 text-[8px] font-mono bg-black/10 rounded px-1 py-0.5 text-black/70"
                   >
                     {c.icon}
                     {c.label}
@@ -327,7 +331,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 ))}
                 {frames && frames.length > 0 && (
                   <span
-                    className="text-[8px] font-mono text-black/40 truncate max-w-[180px]"
+                    className="text-[8px] font-mono text-black/55 truncate max-w-[180px]"
                     title={frames.map((f) => f.name).join(', ')}
                   >
                     {frames.map((f) => f.name).join(', ')}
@@ -459,7 +463,7 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
 
         {/* Timestamp */}
         {message.timestamp && (
-          <div className="mt-1 text-[9px] text-muted-foreground/40 flex items-center gap-0.5">
+          <div className={`mt-1 text-[9px] ${mutedOnBubble} flex items-center gap-0.5`}>
             <Clock size={7} />
             {relativeTime(message.timestamp)}
           </div>
