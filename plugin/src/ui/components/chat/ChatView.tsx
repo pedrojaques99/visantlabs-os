@@ -127,29 +127,22 @@ export function ChatView() {
             100,
             Math.round((sessionContext.tokenEstimate / sessionContext.contextLimit) * 100)
           );
-          const isHigh = pct >= 80;
-          const isMed = pct >= 50;
+          // "4 msgs · 0%" is not something a user can act on — the row only earns its space
+          // once the context is close to degrading and clearing is the actual next step.
+          if (pct < 80) return null;
           return (
             <div className="px-3 py-1 border-t border-border/30 flex items-center gap-2">
-              <Brain size={10} className={isHigh ? 'text-destructive' : 'text-muted-foreground'} />
+              <Brain size={10} className="text-destructive" />
               <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    isHigh ? 'bg-destructive' : isMed ? 'bg-amber-500' : 'bg-brand-cyan'
-                  }`}
+                  className="h-full rounded-full bg-destructive transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <span
-                className={`text-[9px] font-mono tabular-nums ${
-                  isHigh ? 'text-destructive' : 'text-muted-foreground'
-                }`}
-              >
+              <span className="text-[9px] font-mono tabular-nums text-destructive">
                 {sessionContext.messageCount === 1 ? t('plugin.chat.contextUsageOne', { pct, count: sessionContext.messageCount }) : t('plugin.chat.contextUsageOther', { pct, count: sessionContext.messageCount })}
               </span>
-              {isHigh && (
-                <span className="text-[9px] font-mono text-destructive">{t('plugin.chat.clearRecommended')}</span>
-              )}
+              <span className="text-[9px] font-mono text-destructive">{t('plugin.chat.clearRecommended')}</span>
             </div>
           );
         })()}
