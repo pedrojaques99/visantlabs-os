@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, GripVertical } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, GripVertical } from '@/lib/ui/icons';
 
 // Drag and drop imports
 import {

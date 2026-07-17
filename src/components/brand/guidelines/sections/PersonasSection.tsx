@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Plus, Trash2, ImagePlus, Loader2 } from 'lucide-react';
+import { User, Plus, Trash2, ImagePlus, Loader2 } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandPersona } from '@/lib/figma-types';
 import { InlineTags } from '../InlineTags';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';

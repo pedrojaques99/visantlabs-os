@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Upload, Gem } from 'lucide-react';
+import { Upload, Gem } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';

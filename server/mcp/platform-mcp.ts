@@ -3692,48 +3692,29 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
     }) => {
       try {
         await connectToMongoDB();
-        const db = getDb();
-        const filter: any = { category: 'reference', isAdminCurated: true };
-        if (search)
-          filter.$or = [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-          ];
-        if (niche) filter['dimensions.niche'] = { $in: [niche] };
-        if (aesthetic) filter['dimensions.aesthetic'] = { $in: [aesthetic] };
-        if (vibe) filter['dimensions.vibe'] = { $in: [vibe] };
-        if (lighting) filter['dimensions.lighting'] = { $in: [lighting] };
-        if (texture) filter['dimensions.texture'] = { $in: [texture] };
-        if (mockup_type) filter['dimensions.mockup_type'] = { $in: [mockup_type] };
-        if (brand_artifact) filter['dimensions.brand_artifact'] = { $in: [brand_artifact] };
-        if (logo_construction)
-          filter['dimensions.logo_construction'] = { $in: [logo_construction] };
-        if (type_style) filter['dimensions.type_style'] = { $in: [type_style] };
-        if (country) filter.country = country;
-        if (region) filter.region = region;
-
-        const refs = await db
-          .collection('community_presets')
-          .find(filter)
-          .sort({ createdAt: -1 })
-          .limit(limit)
-          .project({
-            _id: 0,
-            id: 1,
-            name: 1,
-            studio: 1,
-            description: 1,
-            referenceImageUrl: 1,
-            dimensions: 1,
-            provenance: 1,
-            country: 1,
-            region: 1,
-            sourceUrl: 1,
-            tags: 1,
-            prompt: 1,
-          })
-          .toArray();
-        return jsonResponse({ references: refs, total: refs.length });
+        const { searchReferences, AGENT_PROJECTION } = await import('../lib/references/engine.js');
+        const { references } = await searchReferences(getDb(), {
+          // Agents have always seen curated refs only — user uploads stay out
+          // until that's a deliberate product call.
+          visibility: 'curated',
+          search,
+          country,
+          region,
+          dimensions: {
+            niche,
+            aesthetic,
+            vibe,
+            lighting,
+            texture,
+            mockup_type,
+            brand_artifact,
+            logo_construction,
+            type_style,
+          },
+          limit,
+          projection: AGENT_PROJECTION as Record<string, 0 | 1>,
+        });
+        return jsonResponse({ references, total: references.length });
       } catch (err: any) {
         return ERR.internal(err.message);
       }

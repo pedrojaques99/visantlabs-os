@@ -24,23 +24,27 @@ import {
   Palette,
   Star,
   ArrowLeft,
+  Sun,
+  Moon,
   User as UserIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/hooks/useTheme';
 import { useLayout } from '@/hooks/useLayout';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { usePinnedNav } from '@/hooks/usePinnedNav';
 import { BrandAvatar } from '@/components/brand/BrandAvatar';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
-import { AuthButton } from '@/components/AuthButton';
 import { getLucideIcon } from '@/lib/ui/lucideIcon';
+import { useRailSlot } from './RailSlotContext';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from '@/config/featureFlags';
 import {
   classifyRoute,
   visibleSections,
   contextNavFor,
   isDrillInSection,
+  sectionUsesRailSlot,
   DRILL_TITLES,
   LIBRARY_ITEMS,
   type NavCtx,
@@ -57,11 +61,13 @@ interface AppSidebarProps {
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onNavigate }) => {
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, subscriptionStatus, onCreditPackagesModalOpen } = useLayout();
+  const { user } = useLayout();
   const { brands, activeBrandId, setActiveBrand } = useActiveBrand();
   const { items: pinned, unpin, toggle: togglePin, isPinned } = usePinnedNav();
+  const railSlotCtx = useRailSlot();
 
   // RECENTES — acesso rápido cross-tela às marcas (a marca ativa fica na lista,
   // destacada). Ordem ESTÁVEL por data de edição: não reordena a cada clique
@@ -105,7 +111,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
   // Modo "drill": seções ricas (community, references) SUBSTITUEM a rail-mãe pelas
   // suas tabs + uma seta de voltar, em vez de empilhar um bloco L2 embaixo de tudo
   // (ficava muita coisa). Voltar leva pra Início, onde a rail-mãe reaparece.
-  const drillIn = isDrillInSection(activeSection) && contextItems.length > 0;
+  // Seções rail-slot (my-outputs, apps) entram em drill-in sem itens estáticos:
+  // a L2 delas é dinâmica (tag cloud / categorias), injetada via RailSlot. As
+  // demais (references/community) têm nav fixa.
+  const drillIn =
+    isDrillInSection(activeSection) &&
+    (contextItems.length > 0 || sectionUsesRailSlot(activeSection));
   const drillTitleKey = activeSection ? DRILL_TITLES[activeSection] : undefined;
 
   // Active-state do L2 genérico por query (?tab no profile, ?type na comunidade):
@@ -440,16 +451,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                 </button>
               );
             })}
+            {/* Slot da página — a rota injeta sua L2 dinâmica aqui, abaixo da nav
+                (tags da /references, /my-outputs; categorias do /apps). Desktop
+                expandido só. */}
+            {!collapsed && !isMobile && sectionUsesRailSlot(activeSection) && (
+              <div ref={railSlotCtx?.setRailSlot} className="pt-2" />
+            )}
           </nav>
         </div>
       )}
 
       {!drillIn && <div className="flex-1" />}
 
-      {/* Rodapé — conta (AuthButton = fonte única de usuário+créditos+menu) +
-          barra de utilidades num ÚNICO bloco/borda. Configurações vira ícone
-          (icon-only), sempre presente (não some com a rota — feedback "perfil
-          sumindo"), e também vive dentro do menu do AuthButton. */}
+      {/* Rodapé — só utilidades icon-only (Tema · Configurações · Legal · Colapsar).
+          Conta + créditos vivem no topo (AppSpine, ao lado do Buscar ⌘K).
+          Configurações fica sempre presente (feedback "perfil sumindo"). */}
       {collapsed ? (
         <div className="p-2 border-t border-sidebar-border flex flex-col items-center gap-1">
           {/* Avatar → expande o rail pra alcançar créditos/menu */}
@@ -464,6 +480,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             ) : (
               <UserIcon size={15} />
             )}
+          </button>
+          <button
+            onClick={toggleTheme}
+            aria-label={t('command.toggleTheme')}
+            title={t('command.toggleTheme')}
+            className={iconBtn}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           </button>
           <button
             onClick={() => go('/profile?tab=configuration')}
@@ -485,13 +509,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
         </div>
       ) : (
         <div className="mt-1 border-t border-sidebar-border p-2 space-y-1.5">
-          <AuthButton
-            subscriptionStatus={subscriptionStatus}
-            onCreditsClick={() => onCreditPackagesModalOpen()}
-            menuPlacement="top"
-          />
-          {/* Utilidades icon-only — Configurações · Legal · Colapsar */}
+          {/* Conta + créditos migraram pro topo (AppSpine, ao lado do Buscar ⌘K).
+              O rodapé fica só com as utilidades icon-only. */}
           <div className="flex items-center justify-end gap-0.5">
+            <button
+              onClick={toggleTheme}
+              aria-label={t('command.toggleTheme')}
+              title={t('command.toggleTheme')}
+              className={iconBtn}
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
             <button
               onClick={() => go('/profile?tab=configuration')}
               aria-label={t('nav.settings')}

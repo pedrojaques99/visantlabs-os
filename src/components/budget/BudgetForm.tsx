@@ -167,7 +167,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             required
             className={
               focusedFieldId === 'clientName'
-                ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+                ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
                 : ''
             }
           />
@@ -187,7 +187,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             required
             className={
               focusedFieldId === 'projectName'
-                ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+                ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
                 : ''
             }
           />
@@ -208,7 +208,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             required
             className={
               focusedFieldId === 'projectDescription'
-                ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+                ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
                 : ''
             }
           />
@@ -245,7 +245,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
           rows={4}
           className={
             focusedFieldId === 'observations'
-              ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]'
+              ? 'ring-2 ring-neutral-600 ring-offset-2 ring-offset-[#1A1A1A]'
               : ''
           }
         />

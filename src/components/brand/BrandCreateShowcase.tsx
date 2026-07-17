@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Box, LayoutGrid, Layers, Megaphone, Pencil, Zap } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ArrowRight, Box, LayoutGrid, Layers, Megaphone, Pencil, Zap } from '@/lib/ui/icons';
+import type { LucideIcon } from '@/lib/ui/icons';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
 

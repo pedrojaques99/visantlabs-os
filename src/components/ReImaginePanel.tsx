@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, X } from 'lucide-react';
+import { Pencil, X } from '@/lib/ui/icons';
 import {
   PromptInput,
   PromptInputTextarea,

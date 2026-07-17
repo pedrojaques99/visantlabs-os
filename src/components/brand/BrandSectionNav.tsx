@@ -10,7 +10,7 @@
  * list stays a single source of truth — no duplicated nav definitions.
  */
 import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { GlassPanel } from '@/components/ui/GlassPanel';

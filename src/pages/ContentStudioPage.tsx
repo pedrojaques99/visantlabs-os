@@ -1,17 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { DemoBrandBanner } from '@/components/onboarding/DemoBrandBanner';
-import {
-  Sparkles,
-  Download,
-  Copy,
-  Check,
-  Loader2,
-  Type,
-  Hash,
-  AlertCircle,
-  ArrowLeft,
-} from 'lucide-react';
+import { Sparkles, Download, Copy, Check, Loader2, Type, Hash, AlertCircle } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/hooks/useLayout';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
@@ -40,7 +30,6 @@ const MAX_POLLS = 200;
 
 export const ContentStudioPage: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { isAuthenticated } = useLayout();
   const { requireAuth } = useAuthGuard();
 
@@ -200,35 +189,16 @@ export const ContentStudioPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full bg-neutral-950 text-white">
-      {/* Marca demo ativa → lembrete persistente de trazer a marca real */}
+      {/* Marca demo ativa → lembrete persistente de trazer a marca real. O título
+          da página vem da AppSpine (shell) — sem header próprio aqui. */}
       <DemoBrandBanner brandId={brandGuidelineId} />
-      {/* Header */}
-      <header className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-1.5 rounded-md hover:bg-neutral-800/50 transition-colors"
-        >
-          <ArrowLeft size={16} className="text-neutral-400" />
-        </button>
-        <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-brand-cyan" />
-          <MicroTitle as="h1" className="text-base">
-            {t('contentStudio.title')}
-          </MicroTitle>
-        </div>
-        <span className="text-[10px] font-mono text-neutral-500 bg-neutral-900 px-2 py-0.5 rounded">
-          {t('contentStudio.beta')}
-        </span>
-      </header>
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar — Brief + Config */}
         <aside className="w-full md:w-[380px] flex-shrink-0 border-r border-white/10 overflow-y-auto custom-scrollbar p-5 space-y-5 md:max-h-full max-h-[50vh]">
           {/* Brief */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              {t('contentStudio.campaignBrief')}
-            </label>
+            <label className="text-xs text-neutral-500">{t('contentStudio.campaignBrief')}</label>
             <textarea
               value={brief}
               onChange={(e) => setBrief(e.target.value)}
@@ -242,9 +212,7 @@ export const ContentStudioPage: React.FC = () => {
 
           {/* Tone */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              {t('contentStudio.tone')}
-            </label>
+            <label className="text-xs text-neutral-500">{t('contentStudio.tone')}</label>
             <div className="flex flex-wrap gap-1.5">
               {toneOptions.map((opt) => (
                 <button
@@ -265,9 +233,7 @@ export const ContentStudioPage: React.FC = () => {
 
           {/* Model */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-              {t('contentStudio.imageModel')}
-            </label>
+            <label className="text-xs text-neutral-500">{t('contentStudio.imageModel')}</label>
             <ModelSelector
               type="image"
               selectedModel={model}
@@ -278,7 +244,7 @@ export const ContentStudioPage: React.FC = () => {
 
           {/* Formats */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <label className="text-xs text-neutral-500">
               {t('contentStudio.platforms')} ({selectedFormats.length}/{SOCIAL_FORMATS.length})
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -373,9 +339,7 @@ function BrandSelect({
 
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-        {t('contentStudio.brandGuideline')}
-      </label>
+      <label className="text-xs text-neutral-500">{t('contentStudio.brandGuideline')}</label>
       {isLoading ? (
         <div className="w-full h-[38px] rounded-lg bg-neutral-900/80 border border-white/10 animate-pulse" />
       ) : (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clipboard, Download, Edit2, Trash2, Heart, Copy, Check } from 'lucide-react';
+import { Clipboard, Download, Edit2, Trash2, Heart, Copy, Check } from '@/lib/ui/icons';
 import { cn } from '../lib/utils';
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import type { CommunityPrompt, PromptCategory } from '../types/communityPrompts';
@@ -16,8 +16,8 @@ import {
   Layers,
   MapPin,
   Sun,
-} from 'lucide-react';
-import { Clipboard as ClipboardIcon } from 'lucide-react';
+} from '@/lib/ui/icons';
+import { Clipboard as ClipboardIcon } from '@/lib/ui/icons';
 import { glassSurface } from '@/lib/ui/glass';
 
 export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> =

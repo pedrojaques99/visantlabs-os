@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { Player, PlayerRef } from '@remotion/player';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Video, Settings2, Clock, Maximize2, MoveHorizontal, Zap } from 'lucide-react';
+import { X, Video, Settings2, Clock, Maximize2, MoveHorizontal, Zap } from '@/lib/ui/icons';
 import { MultiSlideComposition } from './MultiSlideComposition';
 import { AnimatedSlide } from './AnimatedSlide';
 import {

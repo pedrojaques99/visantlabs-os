@@ -17,7 +17,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Download,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl, isSafeUrl } from '@/utils/imageUtils';
 import { translateTag, formatDateShort } from '@/utils/localeUtils';
@@ -569,7 +569,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <ZoomIn size={14} />
                 <span className="text-xs font-medium whitespace-nowrap">Zoom In</span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-brand-cyan font-semibold">
+                  <span className="text-[10px] font-mono text-neutral-500 font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -591,7 +591,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <ZoomOut size={14} />
                 <span className="text-xs font-medium whitespace-nowrap">Zoom Out</span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-brand-cyan font-semibold">
+                  <span className="text-[10px] font-mono text-neutral-500 font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -605,7 +605,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   setShowReImaginePanel(true);
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-brand-cyan border border-[brand-cyan]/20 hover:border-[brand-cyan]/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${
+                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-brand-cyan border border-brand-cyan/20 hover:border-brand-cyan/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${
                   editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 title="Re-imagine with AI"
@@ -613,7 +613,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <Pencil size={14} />
                 <span className="text-xs font-medium whitespace-nowrap">Re-imagine</span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-brand-cyan font-semibold">
+                  <span className="text-[10px] font-mono text-neutral-500 font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -665,7 +665,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => setShowPrompt(!showPrompt)}
-                    className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors mb-2"
+                    className="flex items-center gap-2 text-xs text-neutral-400 hover:text-neutral-200 transition-colors mb-2"
                   >
                     <FileText size={14} />
                     <span>{showPrompt ? 'Hide' : 'Show'} Prompt</span>

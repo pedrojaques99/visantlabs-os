@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Check, ChevronLeft, X } from 'lucide-react';
@@ -19,31 +20,33 @@ interface Selection {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getIdentityItems(ext: any): Array<{ label: string; value: string }> {
+type TFn = (key: string, params?: Record<string, any>) => string;
+
+function getIdentityItems(ext: any, t: TFn): Array<{ label: string; value: string }> {
   const items: Array<{ label: string; value: string }> = [];
   const id = ext?.identity || {};
-  if (id.name) items.push({ label: 'Name', value: id.name });
-  if (id.tagline) items.push({ label: 'Tagline', value: id.tagline });
-  if (id.description) items.push({ label: 'Description', value: id.description });
+  if (id.name) items.push({ label: t('plugin.brand.slidesPreview.name'), value: id.name });
+  if (id.tagline) items.push({ label: t('plugin.brand.slidesPreview.tagline'), value: id.tagline });
+  if (id.description) items.push({ label: t('plugin.brand.slidesPreview.description'), value: id.description });
   return items;
 }
 
-function getStrategyItems(ext: any): Array<{ label: string; value: string }> {
+function getStrategyItems(ext: any, t: TFn): Array<{ label: string; value: string }> {
   const items: Array<{ label: string; value: string }> = [];
   const s = ext?.strategy || {};
-  if (s.manifesto) items.push({ label: 'Manifesto', value: s.manifesto });
-  (s.positioning || []).forEach((p: string) => items.push({ label: 'Positioning', value: p }));
+  if (s.manifesto) items.push({ label: t('plugin.brand.slidesPreview.manifesto'), value: s.manifesto });
+  (s.positioning || []).forEach((p: string) => items.push({ label: t('plugin.brand.slidesPreview.positioning'), value: p }));
   (s.archetypes || []).forEach((a: any) =>
-    items.push({ label: `Archetype · ${a.role || ''}`, value: a.name || JSON.stringify(a) })
+    items.push({ label: t('plugin.brand.slidesPreview.archetype', { role: a.role || '' }), value: a.name || JSON.stringify(a) })
   );
   (s.personas || []).forEach((p: any) =>
-    items.push({ label: `Persona`, value: `${p.name}${p.occupation ? ` · ${p.occupation}` : ''}` })
+    items.push({ label: t('plugin.brand.slidesPreview.persona'), value: `${p.name}${p.occupation ? ` · ${p.occupation}` : ''}` })
   );
   (s.voiceValues || []).forEach((v: any) =>
-    items.push({ label: 'Voice', value: v.title || JSON.stringify(v) })
+    items.push({ label: t('plugin.brand.slidesPreview.voice'), value: v.title || JSON.stringify(v) })
   );
   const g = ext?.guidelines || {};
-  if (g.voice) items.push({ label: 'Voice', value: g.voice });
+  if (g.voice) items.push({ label: t('plugin.brand.slidesPreview.voice'), value: g.voice });
   return items;
 }
 
@@ -59,13 +62,13 @@ function getAssetItems(ext: any): Array<{ category: string; label?: string }> {
   }));
 }
 
-function initSelection(ext: any): Selection {
+function initSelection(ext: any, t: TFn): Selection {
   const make = (len: number) => new Set(Array.from({ length: len }, (_, i) => i));
   return {
-    identity: make(getIdentityItems(ext).length),
+    identity: make(getIdentityItems(ext, t).length),
     colors: make((ext?.colors || []).length),
     typography: make((ext?.typography || []).length),
-    strategy: make(getStrategyItems(ext).length),
+    strategy: make(getStrategyItems(ext, t).length),
     tags: make(getTagItems(ext).length),
     assets: make(getAssetItems(ext).length),
   };
@@ -83,13 +86,13 @@ const ItemCheck: React.FC<{
   children: React.ReactNode;
 }> = ({ checked, onToggle, children }) => (
   <div
-    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-white/[0.04] transition-all ${!checked ? 'opacity-35' : ''}`}
+    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-foreground/[0.04] transition-all ${!checked ? 'opacity-35' : ''}`}
     onClick={onToggle}
   >
     <div
-      className={`w-3 h-3 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-white/15 border-white/30' : 'border-white/15'}`}
+      className={`w-3 h-3 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-foreground/15 border-foreground/30' : 'border-foreground/15'}`}
     >
-      {checked && <Check size={8} className="text-neutral-200" />}
+      {checked && <Check size={8} className="text-foreground" />}
     </div>
     {children}
   </div>
@@ -109,25 +112,25 @@ const Section: React.FC<{
   const someChecked = selectedCount > 0;
   return (
     <div
-      className={`rounded-md border transition-colors ${someChecked ? 'border-white/10 bg-white/[0.02]' : 'border-neutral-800'}`}
+      className={`rounded-md border transition-colors ${someChecked ? 'border-border bg-muted/30' : 'border-border'}`}
     >
       <div
         className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer select-none"
         onClick={onToggleAll}
       >
         <div
-          className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${allChecked ? 'bg-white/10 border-white/20' : someChecked ? 'bg-white/5 border-white/15' : 'border-white/10'}`}
+          className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${allChecked ? 'bg-muted border-foreground/20' : someChecked ? 'bg-muted border-foreground/15' : 'border-border'}`}
         >
           {allChecked ? (
-            <Check size={9} className="text-neutral-300" />
+            <Check size={9} className="text-foreground/70" />
           ) : someChecked ? (
-            <div className="w-1.5 h-0.5 bg-neutral-400 rounded" />
+            <div className="w-1.5 h-0.5 bg-muted-foreground rounded" />
           ) : null}
         </div>
-        <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 flex-1">
+        <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground flex-1">
           {label}
         </span>
-        <span className="text-[9px] font-mono text-neutral-700">
+        <span className="text-[9px] font-mono text-muted-foreground/50">
           {selectedCount}/{count}
         </span>
       </div>
@@ -146,12 +149,13 @@ interface Props {
 }
 
 export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: Props) {
+  const { t } = useTranslation();
   const ext = preview.extracted;
-  const [sel, setSel] = useState<Selection>(() => initSelection(ext));
+  const [sel, setSel] = useState<Selection>(() => initSelection(ext, t));
 
   useEffect(() => {
-    setSel(initSelection(ext));
-  }, [ext]);
+    setSel(initSelection(ext, t));
+  }, [ext, t]);
 
   const toggle = useCallback((cat: Category, i: number) => {
     setSel((prev) => {
@@ -174,8 +178,8 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
 
   const colors: any[] = ext?.colors || [];
   const typography: any[] = ext?.typography || [];
-  const identityItems = getIdentityItems(ext);
-  const strategyItems = getStrategyItems(ext);
+  const identityItems = getIdentityItems(ext, t);
+  const strategyItems = getStrategyItems(ext, t);
   const tagItems = getTagItems(ext);
   const assetItems = getAssetItems(ext);
 
@@ -184,24 +188,24 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
         <button
           onClick={onDismiss}
-          className="text-neutral-600 hover:text-neutral-400 transition-colors"
+          className="text-muted-foreground/70 hover:text-muted-foreground transition-colors"
         >
           <ChevronLeft size={14} />
         </button>
         <div className="flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">
-            Preview da Extração
+          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/70">
+            {t('plugin.brand.slidesPreview.extractionPreview')}
           </p>
-          <p className="text-[9px] text-neutral-600 font-mono">
-            {preview.totalFrames} slides · {preview.pages} páginas
+          <p className="text-[9px] text-muted-foreground/70 font-mono">
+            {t('plugin.brand.slidesPreview.slidesPages', { slides: preview.totalFrames, pages: preview.pages })}
           </p>
         </div>
         <button
           onClick={onDismiss}
-          className="text-neutral-700 hover:text-neutral-500 transition-colors"
+          className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
         >
           <X size={12} />
         </button>
@@ -211,24 +215,24 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
         {/* Identity */}
         <Section
-          label="Identidade"
+          label={t('plugin.brand.slidesPreview.identity')}
           count={identityItems.length}
           selectedCount={sel.identity.size}
           onToggleAll={() => toggleAll('identity', identityItems.length)}
         >
           {identityItems.map((item, i) => (
             <ItemCheck key={i} checked={sel.identity.has(i)} onToggle={() => toggle('identity', i)}>
-              <span className="text-[9px] font-mono text-neutral-600 w-16 flex-shrink-0">
+              <span className="text-[9px] font-mono text-muted-foreground/70 w-16 flex-shrink-0">
                 {item.label}
               </span>
-              <span className="text-[10px] text-neutral-300 truncate">{item.value}</span>
+              <span className="text-[10px] text-foreground/70 truncate">{item.value}</span>
             </ItemCheck>
           ))}
         </Section>
 
         {/* Colors */}
         <Section
-          label="Cores"
+          label={t('plugin.brand.slidesPreview.colors')}
           count={colors.length}
           selectedCount={sel.colors.size}
           onToggleAll={() => toggleAll('colors', colors.length)}
@@ -237,13 +241,13 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
             {colors.map((c, i) => (
               <ItemCheck key={i} checked={sel.colors.has(i)} onToggle={() => toggle('colors', i)}>
                 <div
-                  className="w-4 h-4 rounded border border-white/10 flex-shrink-0"
+                  className="w-4 h-4 rounded border border-border flex-shrink-0"
                   style={{ backgroundColor: c.hex }}
                 />
-                <span className="text-[10px] text-neutral-300 truncate flex-1">
+                <span className="text-[10px] text-foreground/70 truncate flex-1">
                   {c.name || c.hex}
                 </span>
-                <span className="text-[9px] font-mono text-neutral-700">{c.role}</span>
+                <span className="text-[9px] font-mono text-muted-foreground/50">{c.role}</span>
               </ItemCheck>
             ))}
           </div>
@@ -251,7 +255,7 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
 
         {/* Typography */}
         <Section
-          label="Tipografia"
+          label={t('plugin.brand.slidesPreview.typography')}
           count={typography.length}
           selectedCount={sel.typography.size}
           onToggleAll={() => toggleAll('typography', typography.length)}
@@ -262,10 +266,10 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
               checked={sel.typography.has(i)}
               onToggle={() => toggle('typography', i)}
             >
-              <span className="text-[10px] text-neutral-200 flex-shrink-0 w-28 truncate">
+              <span className="text-[10px] text-foreground flex-shrink-0 w-28 truncate">
                 {f.family}
               </span>
-              <span className="text-[9px] font-mono text-neutral-600">
+              <span className="text-[9px] font-mono text-muted-foreground/70">
                 {f.style} · {f.role}
               </span>
             </ItemCheck>
@@ -274,24 +278,24 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
 
         {/* Strategy */}
         <Section
-          label="Estratégia"
+          label={t('plugin.brand.slidesPreview.strategy')}
           count={strategyItems.length}
           selectedCount={sel.strategy.size}
           onToggleAll={() => toggleAll('strategy', strategyItems.length)}
         >
           {strategyItems.map((item, i) => (
             <ItemCheck key={i} checked={sel.strategy.has(i)} onToggle={() => toggle('strategy', i)}>
-              <span className="text-[9px] font-mono text-neutral-600 w-20 flex-shrink-0 truncate">
+              <span className="text-[9px] font-mono text-muted-foreground/70 w-20 flex-shrink-0 truncate">
                 {item.label}
               </span>
-              <span className="text-[10px] text-neutral-400 truncate italic">"{item.value}"</span>
+              <span className="text-[10px] text-muted-foreground truncate italic">"{item.value}"</span>
             </ItemCheck>
           ))}
         </Section>
 
         {/* Tags */}
         <Section
-          label="Tags & Valores"
+          label={t('plugin.brand.slidesPreview.tagsValues')}
           count={tagItems.length}
           selectedCount={sel.tags.size}
           onToggleAll={() => toggleAll('tags', tagItems.length)}
@@ -301,7 +305,7 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
               <div
                 key={i}
                 onClick={() => toggle('tags', i)}
-                className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-mono border transition-all ${sel.tags.has(i) ? 'border-white/20 text-neutral-300 bg-white/5' : 'border-white/5 text-neutral-700'}`}
+                className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-mono border transition-all ${sel.tags.has(i) ? 'border-foreground/20 text-foreground/70 bg-muted' : 'border-border/50 text-muted-foreground/50'}`}
               >
                 {tag}
               </div>
@@ -311,7 +315,7 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
 
         {/* Assets */}
         <Section
-          label="Assets Detectados"
+          label={t('plugin.brand.slidesPreview.detectedAssets')}
           count={assetItems.length}
           selectedCount={sel.assets.size}
           onToggleAll={() => toggleAll('assets', assetItems.length)}
@@ -327,12 +331,12 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
                         ? 'text-blue-400/80'
                         : a.category === 'mockup'
                           ? 'text-purple-400/80'
-                          : 'text-neutral-600'
+                          : 'text-muted-foreground/70'
                   }`}
                 >
                   {a.category}
                 </span>
-                <span className="text-[10px] text-neutral-400 truncate">{a.label}</span>
+                <span className="text-[10px] text-muted-foreground truncate">{a.label}</span>
               </ItemCheck>
             ))}
           </div>
@@ -340,15 +344,15 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
       </div>
 
       {/* Footer */}
-      <div className="border-t border-white/5 p-2 flex gap-2">
+      <div className="border-t border-border/50 p-2 flex gap-2">
         <Button
           variant="ghost"
           size="sm"
           onClick={onDismiss}
           disabled={isApplying}
-          className="h-7 px-3 text-[10px] text-neutral-600 border border-white/5"
+          className="h-7 px-3 text-[10px] text-muted-foreground/70 border border-border/50"
         >
-          Descartar
+          {t('plugin.brand.slidesPreview.discard')}
         </Button>
         <Button
           variant="brand"
@@ -362,7 +366,7 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
           ) : (
             <Check size={11} className="mr-1.5" />
           )}
-          {isApplying ? 'Aplicando…' : `Aplicar (${total} itens)`}
+          {isApplying ? t('plugin.brand.slidesPreview.applying') : t('plugin.brand.slidesPreview.apply', { count: total })}
         </Button>
       </div>
     </div>

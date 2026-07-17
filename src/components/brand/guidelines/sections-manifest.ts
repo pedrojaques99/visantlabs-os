@@ -36,7 +36,7 @@ import {
   Shield,
   Search,
   Shapes,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 
 export interface SectionMeta {
   id: string;

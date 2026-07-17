@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap } from 'lucide-react';
+import { Zap } from '@/lib/ui/icons';
 import { CommandPalette } from '@/components/ui/CommandPalette';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FEATURE_COPILOT } from '@/config/featureFlags';

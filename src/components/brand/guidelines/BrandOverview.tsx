@@ -1,7 +1,7 @@
 import React from 'react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandGuideline, BrandManifesto } from '@/lib/figma-types';
-import { Globe, Instagram, Linkedin, Link as LinkIcon } from 'lucide-react';
+import { Globe, Instagram, Linkedin, Link as LinkIcon } from '@/lib/ui/icons';
 
 interface BrandOverviewProps {
   guideline: BrandGuideline;

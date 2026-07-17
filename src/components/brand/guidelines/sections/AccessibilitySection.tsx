@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface AccessibilitySectionProps {

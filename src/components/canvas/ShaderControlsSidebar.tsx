@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Brush, Play, Pause, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Brush, Play, Pause, RotateCcw } from '@/lib/ui/icons';
 import type { ShaderNodeData } from '@/types/reactFlow';
 import type { TimerRef } from '@/types/types';
 import { NodeSlider } from '@/components/ui/NodeSlider';

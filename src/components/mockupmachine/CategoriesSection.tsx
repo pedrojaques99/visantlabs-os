@@ -13,7 +13,7 @@ import {
   Palette,
   Grid3x3,
   X,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';

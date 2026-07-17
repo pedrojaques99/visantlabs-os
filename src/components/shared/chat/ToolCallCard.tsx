@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, CircleCheck, CircleX, ChevronDown } from 'lucide-react';
+import { Loader2, CircleCheck, CircleX, ChevronDown } from '@/lib/ui/icons';
 import { formatDuration } from '@/utils/time';
 import type { ToolCallRecord } from '@shared/types/chat';
 

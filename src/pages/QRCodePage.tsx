@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, QrCode } from 'lucide-react';
+import { Download, QrCode } from '@/lib/ui/icons';
 import { loadImage } from '@/utils/imageUtils';
 import { FormInput } from '../components/ui/form-input';
 import { Select } from '../components/ui/select';
@@ -77,7 +77,7 @@ export const QRCodePage: React.FC = () => {
 
   const panel = (
     <div className="space-y-6">
-      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Settings</h2>
+      <h2 className="text-[11px] font-medium text-neutral-500">Settings</h2>
 
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Text or URL</label>
@@ -211,9 +211,7 @@ export const QRCodePage: React.FC = () => {
             className="text-center text-neutral-600"
           >
             <QrCode className="w-20 h-20 mx-auto mb-4 opacity-30" />
-            <p className="font-mono text-xs uppercase tracking-widest">
-              {t('q.r.code.enter_text_to_generate_qr_code')}
-            </p>
+            <p className="text-xs">{t('q.r.code.enter_text_to_generate_qr_code')}</p>
           </motion.div>
         )}
       </AnimatePresence>

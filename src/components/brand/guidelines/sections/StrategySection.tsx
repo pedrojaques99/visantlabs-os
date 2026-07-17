@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Compass, Plus, Trash2 } from 'lucide-react';
+import { Compass, Plus, Trash2 } from '@/lib/ui/icons';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { ARCHETYPE_PRESETS } from '@/constants/archetypeImages';
 

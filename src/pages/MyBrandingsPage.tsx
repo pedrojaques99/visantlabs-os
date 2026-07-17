@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
+import { useNavigate } from 'react-router-dom';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { type BrandingProject } from '../services/brandingApi';
 import { useBrandings, useDeleteBranding } from '@/hooks/queries/useBrandings';
@@ -8,18 +7,10 @@ import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/BreadcrumbWithBack';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
-import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
+import { FileText, Calendar, Eye, Trash2, FilePenLine } from '@/lib/ui/icons';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button';
 import { formatDateShort } from '@/utils/localeUtils';
@@ -93,7 +84,6 @@ export const MyBrandingsPage: React.FC = () => {
           inShell ? 'pt-6' : 'pt-14'
         )}
       >
-        <div className={cn('inset-0 z-0', inShell ? 'absolute' : 'fixed')}></div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -122,46 +112,13 @@ export const MyBrandingsPage: React.FC = () => {
           inShell ? 'pt-6' : 'pt-14'
         )}
       >
-        <div className={cn('inset-0 z-0', inShell ? 'absolute' : 'fixed')}></div>
-        <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
-          {/* Breadcrumb with Back Button */}
-          <div className="mb-6">
-            <BreadcrumbWithBack to="/branding-machine">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/">Home</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/branding-machine">Branding Machine</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>My Brandings</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </BreadcrumbWithBack>
-          </div>
-          {/* Header */}
-          <div className="flex items-start gap-4 mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300 mb-2">
-                {t('branding.myBrandings.title') || 'My Branding Projects'}
-              </h1>
-              <p className="text-neutral-500 font-mono text-sm md:text-base">
-                {projects.length === 0
-                  ? t('branding.myBrandings.noProjects') || 'No projects yet'
-                  : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
-              </p>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2 mb-6">
             <Button
               variant="ghost"
               onClick={() => navigate('/branding-machine')}
-              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer flex-shrink-0"
+              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm transition-colors flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
               <FilePenLine className="h-4 w-4" />
               {t('branding.myBrandings.createNew') || 'Create New'}
@@ -172,10 +129,10 @@ export const MyBrandingsPage: React.FC = () => {
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <FileText size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-                {t('branding.myBrandings.emptyTitle') || 'NO PROJECTS YET'}
+              <h2 className="text-lg font-semibold text-neutral-200 mb-1.5">
+                {t('branding.myBrandings.emptyTitle') || 'No projects yet'}
               </h2>
-              <p className="text-sm text-neutral-600 font-mono mb-6">
+              <p className="text-sm text-neutral-500 mb-6">
                 {t('branding.myBrandings.emptyDescription') ||
                   'Create your first branding project to see it here.'}
               </p>
@@ -199,21 +156,21 @@ export const MyBrandingsPage: React.FC = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <FileText className="h-5 w-5 text-brand-cyan" />
+                        <FileText className="h-5 w-5 text-neutral-500" />
                         <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
                           {project.name
                             ? truncateText(project.name, 60)
                             : truncateText(project.prompt, 60)}
                         </h3>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
+                      <div className="flex items-center gap-2 text-xs text-neutral-400 mb-3">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{formatDate(project.createdAt)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-sm text-neutral-400 font-mono mb-4 line-clamp-3">
+                  <p className="text-sm text-neutral-400 mb-4 line-clamp-3">
                     {truncateText(project.prompt, 120)}
                   </p>
 
@@ -224,7 +181,7 @@ export const MyBrandingsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(project);
                       }}
-                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 rounded-md text-sm text-neutral-300 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('branding.myBrandings.view') || 'View'}
@@ -233,7 +190,7 @@ export const MyBrandingsPage: React.FC = () => {
                       variant="ghost"
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
-                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-destructive/50 hover:text-destructive rounded-md text-sm text-neutral-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

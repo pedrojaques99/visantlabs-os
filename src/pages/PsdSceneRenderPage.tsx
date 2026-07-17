@@ -9,7 +9,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download, RefreshCw, Upload, Layers, ShieldCheck } from 'lucide-react';
+import { Download, RefreshCw, Upload, Layers, ShieldCheck } from '@/lib/ui/icons';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { authService } from '../services/authService';

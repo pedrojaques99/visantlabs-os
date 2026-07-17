@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Copy } from 'lucide-react';
+import { Download, Copy } from '@/lib/ui/icons';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { type AssetSource } from '@/services/pipelineApi';

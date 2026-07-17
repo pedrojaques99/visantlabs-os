@@ -14,7 +14,7 @@ import {
 import { branding, getGithubUrl } from '../config/branding';
 import { RepellantText } from '../components/RepellantText';
 import { motion } from 'framer-motion';
-import { ExternalLink, Github, ArrowUpRight } from 'lucide-react';
+import { ExternalLink, Github, ArrowUpRight } from '@/lib/ui/icons';
 
 const TEAM = [
   {

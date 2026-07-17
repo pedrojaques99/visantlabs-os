@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { CheckCircle, Pickaxe, ArrowRight } from 'lucide-react';
+import { CheckCircle, Pickaxe, ArrowRight } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { useTranslation } from '@/hooks/useTranslation';

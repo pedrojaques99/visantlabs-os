@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, RotateCcw } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface Props {

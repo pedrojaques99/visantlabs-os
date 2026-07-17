@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from 'lucide-react';
+import { X, Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from '@/lib/ui/icons';
 import { Input } from './ui/input';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';
@@ -345,11 +345,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
           <div className="flex items-center gap-2">
-            <ImageIcon size={20} className="text-brand-cyan" />
-            <h2
-              id="mockup-preset-modal-title"
-              className="text-sm font-mono text-neutral-300 uppercase "
-            >
+            <ImageIcon size={20} className="text-neutral-500" />
+            <h2 id="mockup-preset-modal-title" className="text-sm font-medium text-neutral-300">
               {multiSelect
                 ? t('canvasNodes.promptNode.presetModal.titleMulti')
                     .replace('{selected}', selectedPresetIds.size.toString())

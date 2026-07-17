@@ -6,7 +6,7 @@ import { BUDGET_TEMPLATES } from '@/utils/budgetTemplates';
 import { budgetApi, type BudgetProject } from '@/services/budgetApi';
 import type { CustomPdfPreset } from '@/types/types';
 import { ConfirmationModal } from '../ConfirmationModal';
-import { Check, Upload, FileText, Edit, Trash2, Calendar } from 'lucide-react';
+import { Check, Upload, FileText, Edit, Trash2, Calendar } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -202,7 +202,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
               onClick={() => onSelectTemplate(template.id)}
               className={`relative p-6 bg-neutral-900 border rounded-xl transition-all duration-300 text-left group ${
                 selectedTemplate === template.id
-                  ? 'border-[brand-cyan] bg-brand-cyan/10'
+                  ? 'border-neutral-600 bg-brand-cyan/10'
                   : 'border-neutral-800 hover:border-neutral-700'
               }`}
             >
@@ -217,7 +217,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                   defaultValue={getTemplateDisplayName(template.id, template.name)}
                   onBlur={(e) => handleTemplateNameChange(template.id, e.target.value)}
                   onKeyDown={(e) => handleTemplateNameKeyDown(template.id, e)}
-                  className="text-xl font-semibold text-neutral-200 mb-2 font-mono bg-transparent border-b-2 border-[brand-cyan] outline-none w-full"
+                  className="text-xl font-semibold text-neutral-200 mb-2 font-mono bg-transparent border-b-2 border-neutral-600 outline-none w-full"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -259,7 +259,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                     className="relative p-6 bg-neutral-900 border border-neutral-800 rounded-xl transition-all duration-300 group"
                   >
                     <div className="absolute top-4 right-4">
-                      <Upload size={20} className="text-brand-cyan" />
+                      <Upload size={20} className="text-neutral-500" />
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold text-neutral-200 mb-2 font-mono line-clamp-2">
@@ -274,7 +274,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => handleEditPreset(presetId)}
-                        className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Edit size={14} />
                         {t('common.edit')}
@@ -322,7 +322,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                   className="relative p-6 bg-neutral-900 border border-neutral-800 rounded-xl transition-all duration-300 group"
                 >
                   <div className="absolute top-4 left-4">
-                    <FileText size={20} className="text-brand-cyan" />
+                    <FileText size={20} className="text-neutral-500" />
                   </div>
                   <div className="pr-12">
                     <h3 className="text-xl font-semibold text-neutral-200 mb-2 font-mono line-clamp-2">
@@ -340,7 +340,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => handleEditBudget(budget._id)}
-                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-600/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     >
                       <Edit size={14} />
                       {t('common.edit')}

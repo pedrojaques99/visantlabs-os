@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { Deliverable } from '@/types/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -52,7 +52,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
         <Button
           variant="brand"
           onClick={addDeliverable}
-          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
+          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addDeliverable') || 'Adicionar Entregável'}
         >
           <Plus size={18} />

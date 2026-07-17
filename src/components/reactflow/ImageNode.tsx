@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Upload, UploadCloud, Copy, X } from 'lucide-react';
+import { Upload, UploadCloud, Copy, X } from '@/lib/ui/icons';
 import type { ImageNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { cn } from '@/lib/utils';

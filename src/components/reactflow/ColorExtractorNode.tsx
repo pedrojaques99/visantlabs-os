@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
-import { UploadCloud, Palette, X, RefreshCw, Diamond } from 'lucide-react';
+import { UploadCloud, Palette, X, RefreshCw, Diamond } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { ColorExtractorNodeData } from '@/types/reactFlow';

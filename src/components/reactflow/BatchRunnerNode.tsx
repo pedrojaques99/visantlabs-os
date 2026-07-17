@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Play, Square, RotateCcw, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Play, Square, RotateCcw, CheckCircle2, XCircle, Clock } from '@/lib/ui/icons';
 import type { BatchRunnerNodeData, BatchResult } from '@/types/reactFlow';
 import { NodeContainer } from './shared/NodeContainer';
 import { cn } from '@/lib/utils';

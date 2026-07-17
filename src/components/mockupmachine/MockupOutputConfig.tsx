@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { SlidersHorizontal, GitCompareArrows } from 'lucide-react';
+import { SlidersHorizontal, GitCompareArrows } from '@/lib/ui/icons';
 import { useMockup } from './MockupContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';

@@ -53,7 +53,7 @@ import {
   Maximize2,
   Minimize2,
   Share2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 
@@ -649,7 +649,7 @@ export const Studio3DPage: React.FC = () => {
     { label: t('studio3d.status.depth', { value: depth }) },
     { label: animate !== 'none' ? animate : 'static' },
     ...(shaderEnabled ? [{ label: shaderType, color: 'text-neutral-400' }] : []),
-    ...(cameraInfo?.view ? [{ label: cameraInfo.view, color: 'text-cyan-400' }] : []),
+    ...(cameraInfo?.view ? [{ label: cameraInfo.view, color: 'text-neutral-400' }] : []),
     ...(cameraInfo
       ? [
           { label: `${cameraInfo.polar}° / ${cameraInfo.azimuth}°` },
@@ -1060,7 +1060,7 @@ export const Studio3DPage: React.FC = () => {
             </div>
 
             <div className="text-center space-y-1">
-              <p className="text-sm font-mono text-neutral-200 uppercase tracking-wider">
+              <p className="text-sm font-medium text-neutral-200">
                 {autoRenderState === 'loading' && 'Loading scene...'}
                 {autoRenderState === 'rendering' && 'Rendering frames...'}
                 {autoRenderState === 'encoding' && 'Encoding video...'}

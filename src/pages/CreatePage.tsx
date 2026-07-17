@@ -78,7 +78,11 @@ export const CreatePage: React.FC = () => {
         { label: 'Creative Studio' },
       ]}
       hideHeader
-      contentClassName="p-0"
+      // p-0 sozinho NÃO zera os paddings responsivos do PageShell
+      // (sm:px-6 lg:px-8 sm:pt-8 sm:pb-16 vencem um p-0 base) → sobra 32px de
+      // margem/topo e o rodapé corta. O Creative Studio é full-bleed e gere a
+      // própria altura, então zeramos em todos os breakpoints.
+      contentClassName="p-0 sm:p-0 lg:p-0"
     >
       <CreativeStudio />
     </PageShell>

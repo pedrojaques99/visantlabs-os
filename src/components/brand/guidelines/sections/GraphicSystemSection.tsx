@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Textarea } from '@/components/ui/textarea';
-import { Shapes } from 'lucide-react';
+import { Shapes } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandGraphicSystem } from '@/lib/figma-types';
 
 interface GraphicSystemSectionProps {

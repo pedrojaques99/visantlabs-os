@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pickaxe, Lock } from 'lucide-react';
+import { Pickaxe, Lock } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';

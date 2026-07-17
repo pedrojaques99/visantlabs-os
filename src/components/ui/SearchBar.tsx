@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 export interface SearchBarProps extends Omit<

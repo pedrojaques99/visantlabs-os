@@ -9,7 +9,7 @@ import {
   Palette,
   FileText,
   Heart,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { NodeHeader } from './shared/node-header';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { UpscaleBicubicNodeData } from '@/types/reactFlow';

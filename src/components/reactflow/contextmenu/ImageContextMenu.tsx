@@ -13,7 +13,7 @@ import {
   Upload,
   ExternalLink,
   Scissors,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { downloadImage } from '@/utils/imageUtils';

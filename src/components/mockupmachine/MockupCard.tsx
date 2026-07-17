@@ -8,7 +8,7 @@ import {
   Pencil,
   ThumbsUp,
   ThumbsDown,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';

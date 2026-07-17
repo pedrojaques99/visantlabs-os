@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronDown, ChevronUp, Users, LucideIcon } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Users, LucideIcon } from '@/lib/ui/icons';
 import { getCommunityPresetsByType } from '@/services/communityPresetsService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -146,7 +146,7 @@ export function GenericPresetModal<T extends string>({
           )}
           {/* Community Badge */}
           {isCommunity && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-brand-cyan/30 rounded text-[10px] font-mono text-brand-cyan">
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-neutral-800/70 border border-neutral-700/50 rounded text-[10px] font-mono text-neutral-300">
               Community
             </div>
           )}
@@ -217,7 +217,7 @@ export function GenericPresetModal<T extends string>({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
           <div className="flex items-center gap-2">
-            <Icon size={20} className="text-brand-cyan" />
+            <Icon size={20} className="text-neutral-400" />
             <h2 id="preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase">
               {title}
             </h2>
@@ -291,7 +291,7 @@ export function GenericPresetModal<T extends string>({
           >
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Users size={14} className="text-brand-cyan" />
+                <Users size={14} className="text-neutral-400" />
                 <h3 className="text-xs font-mono text-neutral-400 uppercase">Community Presets</h3>
               </div>
               {isLoadingCommunityPresets ? (

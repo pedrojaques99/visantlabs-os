@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Bold, AlignLeft, AlignCenter, AlignRight, Trash2, Type, Check } from 'lucide-react';
+import { X, Bold, AlignLeft, AlignCenter, AlignRight, Trash2, Type, Check } from '@/lib/ui/icons';
 import { FormInput } from '@/components/ui/form-input';
 import { Select } from '@/components/ui/select';
 import type { PdfFieldMapping } from '@/types/types';
@@ -212,9 +212,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           <Button
             variant="ghost"
             onClick={() => updateLocal({ bold: !isBold })}
-            className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+            className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
               isBold
-                ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                 : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
             }`}
             aria-label={isBold ? 'Desativar negrito' : 'Ativar negrito'}
@@ -233,7 +233,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               type="color"
               value={getValue('color') || '#000000'}
               onChange={(e) => updateLocal({ color: e.target.value })}
-              className="w-12 h-10 rounded border border-neutral-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
+              className="w-12 h-10 rounded border border-neutral-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-neutral-600/50"
               aria-label="Selecionar cor do texto"
             />
             <FormInput
@@ -253,9 +253,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             <Button
               variant="ghost"
               onClick={() => updateLocal({ align: 'left' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
                 (getValue('align') || 'left') === 'left'
-                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
               }`}
               title="Esquerda"
@@ -267,9 +267,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             <Button
               variant="ghost"
               onClick={() => updateLocal({ align: 'center' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
                 getValue('align') === 'center'
-                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
               }`}
               title="Centro"
@@ -281,9 +281,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             <Button
               variant="ghost"
               onClick={() => updateLocal({ align: 'right' })}
-              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 ${
+              className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${
                 getValue('align') === 'right'
-                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700'
               }`}
               title="Direita"
@@ -355,7 +355,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           <Button
             variant="brand"
             onClick={handleApply}
-            className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
+            className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-600/50"
             title="Aplicar mudanças"
             aria-label="Aplicar mudanças"
           >

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { SectionBlock } from '../SectionBlock';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
-import { Image as ImageIcon, Zap, Loader2, Search, X } from 'lucide-react';
+import { Image as ImageIcon, Zap, Loader2, Search, X } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { BrandGuideline } from '@/lib/figma-types';

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
 import { TextureFilterCanvas } from '@/components/texture-filter/TextureFilterCanvas';

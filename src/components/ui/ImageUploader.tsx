@@ -6,7 +6,7 @@ import { authService } from '@/services/authService';
 import { AuthModal } from '../AuthModal';
 import { GlitchLoader } from './GlitchLoader';
 import type { UploadedImage } from '@/types/types';
-import { UploadCloud } from 'lucide-react';
+import { UploadCloud } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 
 interface ImageUploaderProps {

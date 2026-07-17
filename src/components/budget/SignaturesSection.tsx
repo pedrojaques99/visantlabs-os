@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import type { Signature } from '@/types/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface SignaturesSectionProps {
@@ -36,7 +36,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({ signatures
         <Button
           variant="brand"
           onClick={addSignature}
-          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
+          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addSignature') || 'Adicionar Assinatura'}
         >
           <Plus size={18} />

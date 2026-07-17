@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Save, Share2, Tags, Folder, FileType, Info, Globe } from 'lucide-react';
+import { X, Save, Share2, Tags, Folder, FileType, Info, Globe } from '@/lib/ui/icons';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -112,8 +112,8 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-brand-cyan/10 rounded-md border border-brand-cyan/20">
-              <Save size={20} className="text-brand-cyan" />
+            <div className="p-2 bg-neutral-800/60 rounded-md border border-neutral-700/50">
+              <Save size={20} className="text-neutral-300" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">
@@ -139,14 +139,14 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
           {/* Stats */}
           <div className="flex items-center gap-4 px-4 py-3 bg-neutral-900/40 border border-neutral-800/60 rounded-md">
             <MicroTitle className="flex items-center gap-2 text-[10px]  text-neutral-400">
-              <FileType size={14} className="text-brand-cyan/70" />
+              <FileType size={14} className="text-neutral-500" />
               <span>
                 {nodeCount} {t('workflows.saveDialog.nodes') || 'nodes'}
               </span>
             </MicroTitle>
             <div className="w-px h-3 bg-neutral-800" />
             <MicroTitle className="flex items-center gap-2 text-[10px]  text-neutral-400">
-              <Share2 size={14} className="text-brand-cyan/70" />
+              <Share2 size={14} className="text-neutral-500" />
               <span>
                 {edgeCount} {t('workflows.saveDialog.connections') || 'connections'}
               </span>

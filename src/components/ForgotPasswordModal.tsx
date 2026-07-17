@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X, Mail } from 'lucide-react';
+import { X, Mail } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';
@@ -84,9 +84,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto">
       <div className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
-            {t('auth.forgotPassword')}
-          </h2>
+          <h2 className="text-lg font-semibold text-neutral-200">{t('auth.forgotPassword')}</h2>
           <Button
             variant="ghost"
             onClick={handleClose}
@@ -98,8 +96,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
         {isSuccess ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-md bg-brand-cyan/20">
-              <Mail className="w-8 h-8 text-brand-cyan" />
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-md bg-neutral-800/60">
+              <Mail className="w-8 h-8 text-neutral-300" />
             </div>
             <p className="text-sm text-neutral-300 font-mono text-center">
               {t('auth.resetEmailSentMessage')}
@@ -137,7 +135,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                  className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-neutral-600/50 focus:ring-0 text-sm text-neutral-300 font-mono"
                   placeholder={t('auth.emailPlaceholder')}
                 />
               </div>

@@ -8,7 +8,7 @@ import {
   Scissors,
   ImageOff,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useImageEditorStore, type EditorTool, type EditorAction } from '@/stores/imageEditorStore';
 import { IMAGE_EDITOR } from '@/constants/imageEditorTokens';
 import { cn } from '@/lib/utils';

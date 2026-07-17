@@ -10,13 +10,18 @@ import {
   Minus,
   ArrowRight,
   Plus,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
 import { Button } from '@/components/ui/button';
 import { HexColorPicker } from 'react-colorful';
+import {
+  ToolDock,
+  ToolButton,
+  ToolDockDivider,
+  type ToolDockTheme,
+} from '@/components/shared/ToolDock';
 
 export type CanvasTool = 'hand' | 'select' | 'draw' | 'color' | 'type' | 'shapes';
 
@@ -69,6 +74,12 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
     }
     return '#0a0a0a';
   }, [backgroundColor, isLight]);
+
+  // Tema do ToolDock derivado do fundo do canvas (canvas é o único theme-aware).
+  const dockTheme: ToolDockTheme = useMemo(
+    () => ({ bg: toolbarBg, primary: textColors.primary, muted: textColors.muted, isLight }),
+    [toolbarBg, textColors.primary, textColors.muted, isLight]
+  );
 
   const handleToolClick = useCallback(
     (tool: CanvasTool) => {
@@ -264,381 +275,291 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   };
 
   return (
-    <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 pb-[env(safe-area-inset-bottom)]"
+    <ToolDock
       ref={toolbarRef}
+      position="bottom"
+      theme={dockTheme}
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 pb-[env(safe-area-inset-bottom)]"
     >
-      <div
-        className={cn(
-          'flex items-center gap-1 backdrop-blur-xl border rounded-xl px-2 py-1.5 shadow-lg',
-          isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
-        )}
-        style={{
-          backgroundColor: isLight ? `${toolbarBg}ee` : `${toolbarBg}dd`,
-          color: textColors.primary,
-        }}
-      >
-        {tools.map((tool) => {
-          const Icon = tool.icon;
-          const isActive = activeTool === tool.id || (tool.id === 'draw' && isDrawingMode);
+      {tools.map((tool) => {
+        const Icon = tool.icon;
+        const isActive = activeTool === tool.id || (tool.id === 'draw' && isDrawingMode);
+        const isColor = tool.id === 'color';
+        const isType = tool.id === 'type';
 
-          return (
-            <div key={tool.id} className="relative">
-              <Tooltip content={tool.tooltip} position="top">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    if (tool.id === 'color') {
-                      setShowColorPicker(!showColorPicker);
-                      setShowFontPicker(false);
-                    } else if (tool.id === 'type' && activeTool === 'type') {
-                      setShowFontPicker(!showFontPicker);
-                      setShowColorPicker(false);
-                    } else {
-                      handleToolClick(tool.id);
-                      closeMenus();
-                    }
-                  }}
-                  className={cn(
-                    'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-                    'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
-                    isActive
-                      ? 'bg-brand-cyan/20'
-                      : isLight
-                        ? 'hover:bg-neutral-200/50'
-                        : 'hover:bg-neutral-800/50'
-                  )}
-                  style={{
-                    color: isActive ? 'var(--brand-cyan)' : textColors.muted,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = textColors.primary;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = textColors.muted;
-                    }
-                  }}
-                  aria-label={tool.label}
-                >
-                  <Icon size={18} strokeWidth={2} />
-                  {tool.id === 'color' && (
-                    <div
-                      className="absolute bottom-1 left-1 w-2.5 h-2.5 rounded-full border border-neutral-700"
-                      style={{ backgroundColor: strokeColor }}
-                    />
-                  )}
-                </Button>
-              </Tooltip>
-
-              {tool.id === 'type' && activeTool === 'type' && showFontPicker && (
-                <div
-                  className={cn(
-                    'absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[180px]',
-                    isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
-                  )}
-                  style={{
-                    backgroundColor: isLight ? `${toolbarBg}ff` : `${toolbarBg}ff`,
-                    color: textColors.primary,
-                  }}
-                >
-                  <div className="text-xs mb-2 px-1" style={{ color: textColors.muted }}>
-                    Font Family
-                  </div>
-                  <div className="space-y-1">
-                    {availableFonts.map((font) => (
-                      <Button
-                        variant="ghost"
-                        key={font.value}
-                        onClick={() => {
-                          onFontFamilyChange?.(font.value);
-                          setShowFontPicker(false);
-                        }}
-                        className={cn(
-                          'w-full text-left px-3 py-2 rounded-md border transition-colors',
-                          isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50',
-                          fontFamily === font.value
-                            ? 'border-brand-cyan bg-brand-cyan/10'
-                            : isLight
-                              ? 'border-neutral-300'
-                              : 'border-neutral-700'
-                        )}
-                        style={{
-                          color:
-                            fontFamily === font.value ? 'var(--brand-cyan)' : textColors.primary,
-                          ...getFontPreviewStyle(font.value),
-                        }}
-                      >
-                        {font.preview}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {tool.id === 'color' && showColorPicker && (
-                <div
-                  className={cn(
-                    'absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[200px]',
-                    isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
-                  )}
-                  style={{
-                    backgroundColor: isLight ? `${toolbarBg}ff` : `${toolbarBg}ff`,
-                    color: textColors.primary,
-                  }}
-                >
-                  {/* Primeira linha: Cor principal (grande) + Preto */}
-                  <div className="flex gap-2 mb-2">
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        onColorChange?.(colorPalette.primary.brand);
-                        setShowColorPicker(false);
-                      }}
-                      className={cn(
-                        'flex-1 h-10 rounded-md border transition-colors',
-                        strokeColor === colorPalette.primary.brand
-                          ? 'border-brand-cyan'
-                          : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
-                      )}
-                      style={{ backgroundColor: colorPalette.primary.brand }}
-                      aria-label="Brand cyan"
-                    >
-                      {strokeColor === colorPalette.primary.brand && (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-white" />
-                        </div>
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        onColorChange?.(colorPalette.primary.black);
-                        setShowColorPicker(false);
-                      }}
-                      className={cn(
-                        'w-8 h-10 rounded-md border transition-colors',
-                        strokeColor === colorPalette.primary.black
-                          ? 'border-brand-cyan'
-                          : isLight
-                            ? 'border-neutral-300 hover:border-neutral-400'
-                            : 'border-neutral-700 hover:border-neutral-600'
-                      )}
-                      style={{ backgroundColor: colorPalette.primary.black }}
-                      aria-label="Black"
-                    />
-                  </div>
-
-                  {/* Segunda linha: Cores básicas */}
-                  <div className="flex gap-1.5 mb-2">
-                    {colorPalette.basic.map((item) => (
-                      <Button
-                        variant="ghost"
-                        key={item.color}
-                        onClick={() => {
-                          onColorChange?.(item.color);
-                          setShowColorPicker(false);
-                        }}
-                        className={cn(
-                          'flex-1 h-8 rounded-md border transition-colors',
-                          strokeColor === item.color
-                            ? 'border-brand-cyan'
-                            : isLight
-                              ? 'border-neutral-300 hover:border-neutral-400'
-                              : 'border-neutral-700 hover:border-neutral-600'
-                        )}
-                        style={{ backgroundColor: item.color }}
-                        aria-label={item.name}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Terceira linha: Cores secundárias */}
-                  <div className="flex gap-1.5 mb-2">
-                    {colorPalette.secondary.map((item) => (
-                      <Button
-                        variant="ghost"
-                        key={item.color}
-                        onClick={() => {
-                          onColorChange?.(item.color);
-                          setShowColorPicker(false);
-                        }}
-                        className={cn(
-                          'flex-1 h-8 rounded-md border transition-colors',
-                          strokeColor === item.color
-                            ? 'border-brand-cyan'
-                            : isLight
-                              ? 'border-neutral-300 hover:border-neutral-400'
-                              : 'border-neutral-700 hover:border-neutral-600'
-                        )}
-                        style={{ backgroundColor: item.color }}
-                        aria-label={item.name}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Quarta linha: Cores neutras */}
-                  <div className="flex gap-1.5 mb-3">
-                    {colorPalette.neutrals.map((item) => (
-                      <Button
-                        variant="ghost"
-                        key={item.color}
-                        onClick={() => {
-                          onColorChange?.(item.color);
-                          setShowColorPicker(false);
-                        }}
-                        className={cn(
-                          'flex-1 h-8 rounded-md border transition-colors',
-                          strokeColor === item.color
-                            ? 'border-brand-cyan'
-                            : isLight
-                              ? 'border-neutral-300 hover:border-neutral-400'
-                              : 'border-neutral-700 hover:border-neutral-600'
-                        )}
-                        style={{ backgroundColor: item.color }}
-                        aria-label={item.name}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Cor atual selecionada (se não estiver nas predefinidas) */}
-                  {!allColors.includes(strokeColor) && (
-                    <div
-                      className={cn(
-                        'mb-3 pb-3 border-b',
-                        isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
-                      )}
-                    >
-                      <div className="text-xs mb-1.5 px-1" style={{ color: textColors.muted }}>
-                        Current Color
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            'w-8 h-8 rounded-md border',
-                            isLight ? 'border-neutral-300' : 'border-neutral-700'
-                          )}
-                          style={{ backgroundColor: strokeColor }}
-                        />
-                        <div className="flex-1 text-xs" style={{ color: textColors.primary }}>
-                          {strokeColor.toUpperCase()}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Seletor de cor customizado */}
-                  <div className="space-y-1.5">
-                    <div className="text-xs px-1" style={{ color: textColors.muted }}>
-                      Custom Color
-                    </div>
-                    <HexColorPicker
-                      color={strokeColor.startsWith('#') ? strokeColor : '#00d9ff'}
-                      onChange={(color) => onColorChange?.(color)}
-                      style={{ width: '100%', height: '120px' }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Shape Tools */}
-        {shapeTools.map((shapeTool) => {
-          const Icon = shapeTool.icon;
-          const isActive = activeTool === 'shapes' && shapeType === shapeTool.id;
-
-          return (
-            <Tooltip key={shapeTool.id} content={shapeTool.tooltip} position="top">
-              <Button
-                variant="ghost"
-                onClick={() => handleShapeSelect(shapeTool.id)}
-                className={cn(
-                  'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-                  'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
-                  isActive
-                    ? 'bg-brand-cyan/20'
-                    : isLight
-                      ? 'hover:bg-neutral-200/50'
-                      : 'hover:bg-neutral-800/50'
-                )}
-                style={{
-                  color: isActive ? 'var(--brand-cyan)' : textColors.muted,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = textColors.primary;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = textColors.muted;
-                  }
-                }}
-                aria-label={shapeTool.label}
-              >
-                <Icon size={18} strokeWidth={2} />
-              </Button>
-            </Tooltip>
-          );
-        })}
-
-        {/* Toolbar Toggle Button */}
-        {onToggleToolbar && (
-          <div className="relative ml-1 pl-1 border-l border-neutral-800/50">
-            <Tooltip
-              content={
-                isToolbarCollapsed
-                  ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
-                  : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
+        return (
+          <ToolButton
+            key={tool.id}
+            icon={Icon}
+            tooltip={tool.tooltip}
+            ariaLabel={tool.label}
+            active={isActive}
+            badgeColor={isColor ? strokeColor : undefined}
+            onClick={() => {
+              if (isColor) {
+                setShowColorPicker(!showColorPicker);
+                setShowFontPicker(false);
+              } else if (isType && activeTool === 'type') {
+                setShowFontPicker(!showFontPicker);
+                setShowColorPicker(false);
+              } else {
+                handleToolClick(tool.id);
+                closeMenus();
               }
-              position="top"
-            >
-              <Button
-                variant="brand"
-                onClick={onToggleToolbar}
+            }}
+          >
+            {isType && activeTool === 'type' && showFontPicker && (
+              <div
                 className={cn(
-                  'relative w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-150',
-                  'focus:outline-none focus:ring-1 focus:ring-neutral-500/50',
-                  isToolbarCollapsed
-                    ? isLight
-                      ? 'hover:bg-neutral-200/50'
-                      : 'hover:bg-neutral-800/50'
-                    : 'bg-brand-cyan/20'
+                  'absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[180px]',
+                  isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
                 )}
                 style={{
-                  color: isToolbarCollapsed ? textColors.muted : 'var(--brand-cyan)',
+                  backgroundColor: isLight ? `${toolbarBg}ff` : `${toolbarBg}ff`,
+                  color: textColors.primary,
                 }}
-                onMouseEnter={(e) => {
-                  if (isToolbarCollapsed) {
-                    e.currentTarget.style.color = textColors.primary;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (isToolbarCollapsed) {
-                    e.currentTarget.style.color = textColors.muted;
-                  }
-                }}
-                aria-label={isToolbarCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
               >
-                <Plus
-                  size={18}
-                  strokeWidth={2}
-                  className={cn(
-                    'transition-transform duration-150',
-                    !isToolbarCollapsed && 'rotate-45'
-                  )}
-                />
-              </Button>
-            </Tooltip>
-          </div>
-        )}
-      </div>
-    </div>
+                <div className="text-xs mb-2 px-1" style={{ color: textColors.muted }}>
+                  Font Family
+                </div>
+                <div className="space-y-1">
+                  {availableFonts.map((font) => (
+                    <Button
+                      variant="ghost"
+                      key={font.value}
+                      onClick={() => {
+                        onFontFamilyChange?.(font.value);
+                        setShowFontPicker(false);
+                      }}
+                      className={cn(
+                        'w-full text-left px-3 py-2 rounded-md border transition-colors',
+                        isLight ? 'hover:bg-neutral-200/50' : 'hover:bg-neutral-800/50',
+                        fontFamily === font.value
+                          ? 'border-brand-cyan bg-brand-cyan/10'
+                          : isLight
+                            ? 'border-neutral-300'
+                            : 'border-neutral-700'
+                      )}
+                      style={{
+                        color: fontFamily === font.value ? 'var(--brand-cyan)' : textColors.primary,
+                        ...getFontPreviewStyle(font.value),
+                      }}
+                    >
+                      {font.preview}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isColor && showColorPicker && (
+              <div
+                className={cn(
+                  'absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[200px]',
+                  isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
+                )}
+                style={{
+                  backgroundColor: isLight ? `${toolbarBg}ff` : `${toolbarBg}ff`,
+                  color: textColors.primary,
+                }}
+              >
+                {/* Primeira linha: Cor principal (grande) + Preto */}
+                <div className="flex gap-2 mb-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      onColorChange?.(colorPalette.primary.brand);
+                      setShowColorPicker(false);
+                    }}
+                    className={cn(
+                      'flex-1 h-10 rounded-md border transition-colors',
+                      strokeColor === colorPalette.primary.brand
+                        ? 'border-brand-cyan'
+                        : isLight
+                          ? 'border-neutral-300 hover:border-neutral-400'
+                          : 'border-neutral-700 hover:border-neutral-600'
+                    )}
+                    style={{ backgroundColor: colorPalette.primary.brand }}
+                    aria-label="Brand cyan"
+                  >
+                    {strokeColor === colorPalette.primary.brand && (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      onColorChange?.(colorPalette.primary.black);
+                      setShowColorPicker(false);
+                    }}
+                    className={cn(
+                      'w-8 h-10 rounded-md border transition-colors',
+                      strokeColor === colorPalette.primary.black
+                        ? 'border-brand-cyan'
+                        : isLight
+                          ? 'border-neutral-300 hover:border-neutral-400'
+                          : 'border-neutral-700 hover:border-neutral-600'
+                    )}
+                    style={{ backgroundColor: colorPalette.primary.black }}
+                    aria-label="Black"
+                  />
+                </div>
+
+                {/* Segunda linha: Cores básicas */}
+                <div className="flex gap-1.5 mb-2">
+                  {colorPalette.basic.map((item) => (
+                    <Button
+                      variant="ghost"
+                      key={item.color}
+                      onClick={() => {
+                        onColorChange?.(item.color);
+                        setShowColorPicker(false);
+                      }}
+                      className={cn(
+                        'flex-1 h-8 rounded-md border transition-colors',
+                        strokeColor === item.color
+                          ? 'border-brand-cyan'
+                          : isLight
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
+                      )}
+                      style={{ backgroundColor: item.color }}
+                      aria-label={item.name}
+                    />
+                  ))}
+                </div>
+
+                {/* Terceira linha: Cores secundárias */}
+                <div className="flex gap-1.5 mb-2">
+                  {colorPalette.secondary.map((item) => (
+                    <Button
+                      variant="ghost"
+                      key={item.color}
+                      onClick={() => {
+                        onColorChange?.(item.color);
+                        setShowColorPicker(false);
+                      }}
+                      className={cn(
+                        'flex-1 h-8 rounded-md border transition-colors',
+                        strokeColor === item.color
+                          ? 'border-brand-cyan'
+                          : isLight
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
+                      )}
+                      style={{ backgroundColor: item.color }}
+                      aria-label={item.name}
+                    />
+                  ))}
+                </div>
+
+                {/* Quarta linha: Cores neutras */}
+                <div className="flex gap-1.5 mb-3">
+                  {colorPalette.neutrals.map((item) => (
+                    <Button
+                      variant="ghost"
+                      key={item.color}
+                      onClick={() => {
+                        onColorChange?.(item.color);
+                        setShowColorPicker(false);
+                      }}
+                      className={cn(
+                        'flex-1 h-8 rounded-md border transition-colors',
+                        strokeColor === item.color
+                          ? 'border-brand-cyan'
+                          : isLight
+                            ? 'border-neutral-300 hover:border-neutral-400'
+                            : 'border-neutral-700 hover:border-neutral-600'
+                      )}
+                      style={{ backgroundColor: item.color }}
+                      aria-label={item.name}
+                    />
+                  ))}
+                </div>
+
+                {/* Cor atual selecionada (se não estiver nas predefinidas) */}
+                {!allColors.includes(strokeColor) && (
+                  <div
+                    className={cn(
+                      'mb-3 pb-3 border-b',
+                      isLight ? 'border-neutral-300/50' : 'border-neutral-800/50'
+                    )}
+                  >
+                    <div className="text-xs mb-1.5 px-1" style={{ color: textColors.muted }}>
+                      Current Color
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          'w-8 h-8 rounded-md border',
+                          isLight ? 'border-neutral-300' : 'border-neutral-700'
+                        )}
+                        style={{ backgroundColor: strokeColor }}
+                      />
+                      <div className="flex-1 text-xs" style={{ color: textColors.primary }}>
+                        {strokeColor.toUpperCase()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Seletor de cor customizado */}
+                <div className="space-y-1.5">
+                  <div className="text-xs px-1" style={{ color: textColors.muted }}>
+                    Custom Color
+                  </div>
+                  <HexColorPicker
+                    color={strokeColor.startsWith('#') ? strokeColor : '#00d9ff'}
+                    onChange={(color) => onColorChange?.(color)}
+                    style={{ width: '100%', height: '120px' }}
+                  />
+                </div>
+              </div>
+            )}
+          </ToolButton>
+        );
+      })}
+
+      {/* Shape Tools */}
+      {shapeTools.map((shapeTool) => {
+        const Icon = shapeTool.icon;
+        const isActive = activeTool === 'shapes' && shapeType === shapeTool.id;
+
+        return (
+          <ToolButton
+            key={shapeTool.id}
+            icon={Icon}
+            tooltip={shapeTool.tooltip}
+            ariaLabel={shapeTool.label}
+            active={isActive}
+            onClick={() => handleShapeSelect(shapeTool.id)}
+          />
+        );
+      })}
+
+      {/* Toolbar Toggle Button */}
+      {onToggleToolbar && (
+        <>
+          <ToolDockDivider />
+          <ToolButton
+            icon={Plus}
+            active={!isToolbarCollapsed}
+            tooltip={
+              isToolbarCollapsed
+                ? t('canvasToolbar.expandToolbar') || 'Expand Toolbar'
+                : t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar'
+            }
+            ariaLabel={isToolbarCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
+            onClick={onToggleToolbar}
+            iconClassName={cn(
+              'transition-transform duration-150',
+              !isToolbarCollapsed && 'rotate-45'
+            )}
+          />
+        </>
+      )}
+    </ToolDock>
   );
 };

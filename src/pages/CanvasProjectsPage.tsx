@@ -19,7 +19,7 @@ import {
   FileJson,
   Search,
   Globe,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { SearchBar } from '../components/ui/SearchBar';
@@ -653,11 +653,11 @@ export const CanvasProjectsPage: React.FC = () => {
       >
         <div className="flex items-end justify-between gap-4 mb-6">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="p-2 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
-              <Globe size={16} className="text-brand-cyan" />
+            <div className="p-2 rounded-lg bg-white/5 border border-white/10 shrink-0">
+              <Globe size={16} className="text-neutral-400" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-mono uppercase tracking-widest text-neutral-300">
+              <h2 className="text-sm font-semibold text-neutral-200">
                 {t('canvas.community.title')}
               </h2>
               <p className="text-xs text-neutral-600 font-mono mt-0.5">

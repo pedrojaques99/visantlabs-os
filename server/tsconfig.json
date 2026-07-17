@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "../",
@@ -18,7 +18,8 @@
     "**/*.ts",
     "../src/services/r2Service.ts",
     "../src/services/geminiService.ts",
-    "../types/types.ts"
+    "../types/types.ts",
+    "../node_modules/vite/client.d.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

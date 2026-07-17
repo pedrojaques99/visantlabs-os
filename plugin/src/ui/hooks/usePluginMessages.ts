@@ -29,12 +29,6 @@ export function usePluginMessages() {
     send({ type: 'REPORT_SELECTION' } as UIMessage);
   }, [send]);
 
-  // ═══ Smart Scan & Analysis ═══
-
-  const smartScanSelection = useCallback(() => {
-    send({ type: 'SMART_SCAN_SELECTION' } as UIMessage);
-  }, [send]);
-
   // ═══ Operations & Design ═══
 
   const applyOperations = useCallback(
@@ -394,9 +388,6 @@ export function usePluginMessages() {
     getContext,
     getEnrichedContext,
     reportSelection,
-
-    // Smart Scan
-    smartScanSelection,
 
     // Operations
     applyOperations,

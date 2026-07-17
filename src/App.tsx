@@ -143,6 +143,12 @@ const ForgotPasswordPage = lazyWithRetry(() =>
 const DesignSystemPage = lazyWithRetry(() =>
   import('./pages/DesignSystemPage').then((m) => ({ default: m.DesignSystemPage }))
 );
+const IconReviewPage = lazyWithRetry(() =>
+  import('./pages/IconReviewPage').then((m) => ({ default: m.IconReviewPage }))
+);
+const ControlsCatalogPage = lazyWithRetry(() =>
+  import('./pages/ControlsCatalogPage').then((m) => ({ default: m.ControlsCatalogPage }))
+);
 const DocsPage = lazyWithRetry(() =>
   import('./pages/DocsPage').then((m) => ({ default: m.DocsPage }))
 );
@@ -414,6 +420,8 @@ const App: React.FC = () => {
                     <Route path="/brand/:slug" element={<PublicBrandGuideline />} />
                     <Route path="/brand/:slug/:tab" element={<PublicBrandGuideline />} />
                     <Route path="/design-system" element={<DesignSystemPage />} />
+                    <Route path="/design-system/icons" element={<IconReviewPage />} />
+                    <Route path="/design-system/controls" element={<ControlsCatalogPage />} />
                     <Route path="/docs" element={<DocsPage />} />
                     <Route path="/docs/getting-started" element={<GettingStartedPage />} />
                     <Route path="/settings/api-keys" element={<ApiKeysPage />} />

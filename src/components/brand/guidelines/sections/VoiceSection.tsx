@@ -5,7 +5,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Select } from '@/components/ui/select';
 import { AiFieldButton } from '../AiFieldButton';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Plus, Trash2 } from 'lucide-react';
+import { MessageCircle, Plus, Trash2 } from '@/lib/ui/icons';
 import type { BrandGuideline, BrandToneOfVoiceValue, BrandCopyExample } from '@/lib/figma-types';
 
 interface VoiceSectionProps {

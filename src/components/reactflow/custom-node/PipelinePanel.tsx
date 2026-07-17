@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@/lib/ui/icons';
 import type { PipelineConfig } from '@/types/customNode';
 
 interface Props {

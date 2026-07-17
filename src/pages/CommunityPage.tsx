@@ -20,7 +20,7 @@ import {
   Figma,
   Github,
   Workflow,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { PageShell } from '../components/ui/PageShell';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -479,7 +479,7 @@ export const CommunityPage: React.FC = () => {
     >
       <div className="relative z-10">
         {/* Hero Section */}
-        <div className="relative mb-16 min-h-[550px] flex items-center overflow-hidden rounded-3xl border border-white/[0.03] bg-neutral-900/10">
+        <div className="relative mb-16 min-h-[380px] flex items-center overflow-hidden rounded-3xl border border-border bg-card">
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
@@ -487,8 +487,8 @@ export const CommunityPage: React.FC = () => {
             </Suspense>
           </div>
 
-          {/* Content */}
-          <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 py-16">
+          {/* Content — full-width padding so it lines up with the sections below */}
+          <div className="relative z-10 w-full px-6 md:px-10 py-12">
             <div className="max-w-2xl">
               {/* Badge - Premium Styling */}
               <motion.div
@@ -496,11 +496,9 @@ export const CommunityPage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-6"
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
-                  <span className="text-[10px] font-bold font-mono text-neutral-400 uppercase tracking-widest">
-                    Comunidade Ativa
-                  </span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border backdrop-blur-md">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
+                  <span className="text-[11px] text-muted-foreground">Comunidade ativa</span>
                 </div>
               </motion.div>
 
@@ -509,7 +507,7 @@ export const CommunityPage: React.FC = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-5xl md:text-7xl font-bold text-white mb-4 leading-[1.1] font-manrope tracking-tight"
+                className="text-4xl md:text-5xl font-bold text-foreground mb-4 leading-[1.1] font-manrope tracking-tight"
               >
                 {t('communityPresets.title')}
               </motion.h1>
@@ -519,7 +517,7 @@ export const CommunityPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-neutral-400 text-base md:text-lg mb-10 max-w-lg leading-relaxed font-manrope"
+                className="text-muted-foreground text-sm md:text-base mb-8 max-w-lg leading-relaxed font-manrope"
               >
                 {t('communityPresets.subtitle')}
               </motion.p>
@@ -533,7 +531,7 @@ export const CommunityPage: React.FC = () => {
               >
                 <PremiumButton
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-2 h-12 px-6 text-sm min-w-[200px]"
+                  className="flex items-center gap-2 h-11 px-5 text-sm"
                 >
                   <Plus size={18} />
                   <span>{t('community.criar_um_novo_prompt')}</span>
@@ -543,9 +541,9 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => navigate('/community/presets')}
-                    className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
+                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-all flex items-center gap-2"
                   >
-                    <Globe size={18} className="text-neutral-400" />
+                    <Globe size={18} className="text-muted-foreground" />
                     <span className="font-manrope font-semibold">
                       {t('community.explorar_galeria')}
                     </span>
@@ -554,9 +552,9 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => setShowWorkflowLibrary(true)}
-                    className="h-12 px-5 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
+                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-all flex items-center gap-2"
                   >
-                    <FolderOpen size={18} className="text-neutral-400" />
+                    <FolderOpen size={18} className="text-muted-foreground" />
                   </Button>
                 </div>
               </motion.div>
@@ -566,19 +564,19 @@ export const CommunityPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-16 max-w-xl"
+                className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-10 max-w-lg"
               >
                 <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
                       {t('community.membros')}
                     </span>
                     <TrendingUp
                       size={14}
-                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                      className="text-muted-foreground group-hover:text-foreground transition-colors"
                     />
                   </div>
-                  <p className="text-3xl font-bold text-white font-mono tracking-tighter">
+                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
                     {isLoading ? (
                       '...'
                     ) : globalCommunityStats.totalUsers === 0 ? (
@@ -591,15 +589,15 @@ export const CommunityPage: React.FC = () => {
 
                 <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
                       {t('community.criaes')}
                     </span>
                     <Diamond
                       size={14}
-                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                      className="text-muted-foreground group-hover:text-foreground transition-colors"
                     />
                   </div>
-                  <p className="text-3xl font-bold text-white font-mono tracking-tighter">
+                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
                     {isLoading ? (
                       '...'
                     ) : globalCommunityStats.totalPresets === 0 ? (
@@ -615,15 +613,15 @@ export const CommunityPage: React.FC = () => {
                   className={cn('hidden sm:flex group', glassSurface.control)}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-tighter font-manrope">
+                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
                       {t('community.publicado')}
                     </span>
                     <ImageIcon
                       size={14}
-                      className="text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                      className="text-muted-foreground group-hover:text-foreground transition-colors"
                     />
                   </div>
-                  <p className="text-3xl font-bold text-white font-mono tracking-tighter">
+                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
                     {isLoading ? (
                       '...'
                     ) : globalCommunityStats.totalBlankMockups === 0 ? (
@@ -640,7 +638,7 @@ export const CommunityPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-neutral-400 font-mono">{t('common.loading')}</p>
+            <p className="text-muted-foreground text-sm">{t('common.loading')}</p>
           </div>
         )}
 
@@ -650,14 +648,14 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-neutral-500">{t('community.curadoria')}</MicroTitle>
-                  <h2 className="text-3xl font-bold text-white font-manrope tracking-tight">
+                  <MicroTitle className="text-muted-foreground">{t('community.curadoria')}</MicroTitle>
+                  <h2 className="text-3xl font-bold text-foreground font-manrope tracking-tight">
                     {t('community.explorar_por_categoria')}
                   </h2>
                 </div>
                 <Link
                   to="/community/presets"
-                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-neutral-300 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Todas as categorias
                   <ArrowRight size={16} />
@@ -668,54 +666,54 @@ export const CommunityPage: React.FC = () => {
                 {presetTypes.map((category) => (
                   <GlassPanel
                     key={category.type}
-                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-white/10 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-white/[0.03]"
+                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-muted/40"
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
-                      <category.icon size={120} className="text-neutral-400" />
+                      <category.icon size={120} className="text-muted-foreground" />
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-white/5 rounded-xl group-hover:bg-white/5 group-hover:scale-110 transition-all duration-300">
+                      <div className="p-3 bg-muted rounded-xl group-hover:bg-muted group-hover:scale-110 transition-all duration-300">
                         <category.icon
                           size={24}
-                          className="text-neutral-400 group-hover:text-neutral-200 transition-colors"
+                          className="text-muted-foreground group-hover:text-foreground transition-colors"
                         />
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-2xl font-bold font-mono text-white whitespace-nowrap group-hover:text-neutral-200 transition-colors">
+                        <span className="text-2xl font-bold font-mono text-foreground whitespace-nowrap group-hover:text-foreground transition-colors">
                           <CountUp value={category.count} />
                         </span>
-                        <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest font-manrope">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-manrope">
                           Presets
                         </span>
                       </div>
                     </div>
 
                     <div className="mb-6 flex-1">
-                      <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-neutral-200 transition-colors text-left">
+                      <h3 className="text-lg font-semibold text-foreground font-manrope mb-1 capitalize group-hover:text-foreground transition-colors text-left">
                         {category.label}
                       </h3>
-                      <p className="text-xs text-neutral-500 font-mono line-clamp-2 leading-relaxed text-left">
+                      <p className="text-xs text-muted-foreground font-mono line-clamp-2 leading-relaxed text-left">
                         Explorar {category.label.toLowerCase()} criados pela nossa comunidade.
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-4 border-t border-white/10 max-h-48 overflow-y-auto w-full">
+                    <div className="space-y-2 pt-4 border-t border-border max-h-48 overflow-y-auto w-full">
                       {category.presets.length > 0 ? (
                         category.presets.map((preset: any, index: number) => (
                           <div
                             key={`${category.type}-${preset.id || preset._id || index}`}
                             className="flex items-center gap-3 py-1 group/item"
                           >
-                            <div className="w-1.5 h-1.5 rounded-full bg-neutral-700 group-hover/item:bg-brand-cyan transition-colors" />
-                            <p className="text-xs font-mono text-neutral-500 group-hover/item:text-neutral-300 truncate transition-colors text-left">
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground group-hover/item:bg-brand-cyan transition-colors" />
+                            <p className="text-xs font-mono text-muted-foreground group-hover/item:text-foreground truncate transition-colors text-left">
                               {preset.name}
                             </p>
                           </div>
                         ))
                       ) : (
-                        <p className="text-[10px] font-mono text-neutral-800 uppercase tracking-widest text-left">
+                        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest text-left">
                           {t('community.vazio')}
                         </p>
                       )}
@@ -729,17 +727,17 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white font-manrope">
+                  <h2 className="text-2xl font-bold text-foreground font-manrope">
                     {t('community.workflows_da_comunidade')}
                   </h2>
-                  <p className="text-neutral-500 font-mono text-sm max-w-lg mt-2">
+                  <p className="text-muted-foreground text-sm max-w-lg mt-2">
                     Workflows completos criados pela comunidade. Salve, compartilhe e reutilize
                     estruturas de canvas inteiras.
                   </p>
                 </div>
                 <Link
                   to="/canvas"
-                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-neutral-300 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Abrir Canvas
                   <ArrowRight size={16} />
@@ -751,11 +749,11 @@ export const CommunityPage: React.FC = () => {
                   Array.from({ length: 4 }).map((_, i) => (
                     <div
                       key={i}
-                      className="bg-neutral-900/20 border border-white/10 rounded-md p-6"
+                      className="bg-card border border-border rounded-md p-6"
                     >
-                      <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
-                      <div className="h-4 bg-neutral-900 rounded mb-2" />
-                      <div className="h-3 bg-neutral-900 rounded w-2/3" />
+                      <div className="aspect-video bg-muted rounded-md mb-4" />
+                      <div className="h-4 bg-muted rounded mb-2" />
+                      <div className="h-3 bg-muted rounded w-2/3" />
                     </div>
                   ))
                 ) : workflows.length > 0 ? (
@@ -769,11 +767,11 @@ export const CommunityPage: React.FC = () => {
                     return (
                       <GlassPanel
                         key={workflow._id}
-                        className="group relative rounded-md p-6 flex flex-col h-full hover:border-white/10 transition-all hover:-translate-y-1 active:translate-y-0 text-left cursor-pointer"
+                        className="group relative rounded-md p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 text-left cursor-pointer"
                         onClick={() => navigate('/canvas')}
                       >
                         {workflow.thumbnailUrl ? (
-                          <div className="aspect-video rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30 mb-4">
+                          <div className="aspect-video rounded-md overflow-hidden border border-border bg-muted/40 mb-4">
                             <img
                               src={workflow.thumbnailUrl}
                               alt={workflow.name}
@@ -781,21 +779,21 @@ export const CommunityPage: React.FC = () => {
                             />
                           </div>
                         ) : (
-                          <div className="aspect-video rounded-md border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center mb-4">
-                            <CategoryIcon size={32} className="text-neutral-700" />
+                          <div className="aspect-video rounded-md border border-border bg-muted/40 flex items-center justify-center mb-4">
+                            <CategoryIcon size={32} className="text-muted-foreground" />
                           </div>
                         )}
 
                         <div className="flex-1">
-                          <h3 className="text-base font-semibold text-white font-mono mb-1 line-clamp-1 group-hover:text-neutral-200 transition-colors">
+                          <h3 className="text-base font-semibold text-foreground font-mono mb-1 line-clamp-1 group-hover:text-foreground transition-colors">
                             {workflow.name}
                           </h3>
-                          <p className="text-xs text-neutral-500 font-mono line-clamp-2 mb-3">
+                          <p className="text-xs text-muted-foreground font-mono line-clamp-2 mb-3">
                             {workflow.description}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-3 border-t border-white/10">
+                        <div className="flex items-center gap-2 pt-3 border-t border-border">
                           <span
                             className={cn(
                               'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
@@ -810,11 +808,11 @@ export const CommunityPage: React.FC = () => {
                           >
                             {categoryConfig.label}
                           </span>
-                          <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0">
+                          <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
                             {Array.isArray(workflow.nodes) ? workflow.nodes.length : 0} nodes
                           </span>
                           {workflow.likesCount > 0 && (
-                            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0">
+                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
                               ❤️ {workflow.likesCount}
                             </span>
                           )}
@@ -826,12 +824,12 @@ export const CommunityPage: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
+                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-border rounded-3xl bg-card backdrop-blur-sm"
                   >
                     <div className={cn('p-6 rounded-full', glassSurface.control)}>
-                      <Workflow size={32} strokeWidth={1} className="text-neutral-700" />
+                      <Workflow size={32} strokeWidth={1} className="text-muted-foreground" />
                     </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       Nenhum workflow público ainda
                     </p>
                   </motion.div>
@@ -843,7 +841,7 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => setShowWorkflowLibrary(true)}
-                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-white/10 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
                     <ArrowRight
@@ -859,16 +857,16 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-white font-manrope">
+                  <h2 className="text-3xl font-bold text-foreground font-manrope">
                     {t('community.galeria_da_comunidade')}
                   </h2>
-                  <p className="text-neutral-500 font-mono text-sm max-w-lg">
+                  <p className="text-muted-foreground text-sm max-w-lg">
                     Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
                   </p>
                 </div>
                 <Link
                   to="/mockups"
-                  className="inline-flex items-center gap-2 text-neutral-400 hover:text-neutral-300 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Ver galeria completa
                   <ArrowRight size={16} />
@@ -880,14 +878,14 @@ export const CommunityPage: React.FC = () => {
                   Array.from({ length: 10 }).map((_, i) => (
                     <div
                       key={i}
-                      className="aspect-square bg-neutral-900 rounded-md border border-white/10"
+                      className="aspect-square bg-muted rounded-md border border-border"
                     />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
                     <GlassPanel
                       key={mockup._id}
-                      className="group relative aspect-square rounded-md overflow-hidden hover:border-white/10 transition-all hover:shadow-2xl cursor-pointer"
+                      className="group relative aspect-square rounded-md overflow-hidden hover:border-ring transition-all hover:shadow-2xl cursor-pointer"
                     >
                       <Link to="/mockups" className="block w-full h-full">
                         {mockup.imageUrl || mockup.imageBase64 ? (
@@ -897,7 +895,7 @@ export const CommunityPage: React.FC = () => {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-neutral-800">
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                             <ImageIcon size={48} />
                           </div>
                         )}
@@ -922,12 +920,12 @@ export const CommunityPage: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-white/[0.03] rounded-3xl bg-neutral-950/20 backdrop-blur-sm"
+                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-border rounded-3xl bg-card backdrop-blur-sm"
                   >
                     <div className={cn('p-6 rounded-full', glassSurface.control)}>
-                      <ImageIcon size={32} strokeWidth={1} className="text-neutral-700" />
+                      <ImageIcon size={32} strokeWidth={1} className="text-muted-foreground" />
                     </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       Galeria pública vazia
                     </p>
                   </motion.div>
@@ -939,7 +937,7 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
-                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-white/5 text-neutral-500 hover:text-neutral-300 border border-white/10 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
                       <>
@@ -969,16 +967,16 @@ export const CommunityPage: React.FC = () => {
               <GlassPanel padding="none" className="relative z-10 overflow-hidden">
                 <div className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="max-w-xl space-y-4 text-center md:text-left">
-                    <div className="flex items-center justify-center md:justify-start gap-3 text-neutral-400">
+                    <div className="flex items-center justify-center md:justify-start gap-3 text-muted-foreground">
                       <Github size={24} />
-                      <MicroTitle as="span" className="font-semibold text-neutral-400">
+                      <MicroTitle as="span" className="font-semibold text-muted-foreground">
                         Open Source
                       </MicroTitle>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white font-manrope leading-tight">
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground font-manrope leading-tight">
                       Vamos crescer junto
                     </h2>
-                    <p className="text-neutral-400 font-mono text-sm md:text-base leading-relaxed">
+                    <p className="text-muted-foreground font-mono text-sm md:text-base leading-relaxed">
                       Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no
                       GitHub para contribuir, relatar bugs ou dar uma estrela.
                     </p>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -9,7 +9,7 @@ import {
   Image as ImageIcon,
   FolderOpen,
   Diamond,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
 import { useBrandKit } from '@/contexts/BrandKitContext';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
@@ -26,7 +26,6 @@ import { Select } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useQueryClient } from '@tanstack/react-query';
-import { Gem } from 'lucide-react';
 import type { CreativeFormat } from './store/creativeTypes';
 import type { GeminiModel, SeedreamModel, AspectRatio } from '@/types/types';
 import { AspectRatioSelector } from '@/components/reactflow/shared/AspectRatioSelector';
@@ -37,6 +36,15 @@ import { cn } from '@/lib/utils';
 // Conjunto de formatos do Creative Studio — passado ao AspectRatioSelector
 // compartilhado (SSoT), sem fork de UI.
 const CREATIVE_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:5'];
+
+// Sementes de prompt ("comece com") — matam a página em branco e ensinam a
+// gramática do prompt. Preenchem um scaffold que o usuário completa.
+const STARTER_PROMPTS: { label: string; prompt: string }[] = [
+  { label: 'Post de feed', prompt: 'Post de feed para redes sociais anunciando ' },
+  { label: 'Story de anúncio', prompt: 'Story vertical de anúncio destacando ' },
+  { label: 'Banner promo', prompt: 'Banner promocional com desconto para ' },
+  { label: 'Lançamento', prompt: 'Peça de lançamento apresentando ' },
+];
 
 export const CreativeSetupSidebar: React.FC = () => {
   const {
@@ -76,6 +84,8 @@ export const CreativeSetupSidebar: React.FC = () => {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [showVault, setShowVault] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
 
   // Use either explicitly selected brand or context-active brand
   const selectedGuideline = guidelines.find((g) => g.id === brandId) ?? activeGuideline ?? null;
@@ -152,9 +162,30 @@ export const CreativeSetupSidebar: React.FC = () => {
     }
   };
 
+  // Ignite nunca fica desabilitado em silêncio: o rótulo diz o próximo passo e
+  // o clique guia (foca a ideia / pede a marca) em vez de morrer cinza.
+  const igniteLabel = !selectedGuideline
+    ? 'Selecione uma marca'
+    : !prompt.trim()
+      ? 'Escreva sua ideia'
+      : 'Ignite';
+
+  const handleIgnite = () => {
+    if (!selectedGuideline) {
+      toast.error('Selecione uma marca primeiro');
+      return;
+    }
+    if (!prompt.trim()) {
+      toast.error('Escreva sua ideia para gerar');
+      promptRef.current?.focus();
+      return;
+    }
+    handleGenerate();
+  };
+
   if (showVault && selectedGuideline) {
     return (
-      <aside className="w-[360px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
+      <aside className="w-[420px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-6 gap-6 overflow-y-auto custom-scrollbar anim-fade-in">
         <header className="flex items-center justify-between">
           <button
             onClick={() => setShowVault(false)}
@@ -162,7 +193,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           >
             <ArrowLeft size={14} /> Voltar
           </button>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-brand-cyan px-2 py-1 bg-brand-cyan/10 rounded-full border border-brand-cyan/20">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-2 py-1 bg-white/5 rounded-full border border-white/10">
             Brand Vault
           </div>
         </header>
@@ -287,13 +318,11 @@ export const CreativeSetupSidebar: React.FC = () => {
     <aside
       role="region"
       aria-label="Creative Setup"
-      className="w-[360px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-5 gap-5 overflow-y-auto"
+      className="w-[420px] h-full bg-neutral-950 border-r border-neutral-800 flex flex-col p-5 gap-5 overflow-y-auto"
       data-vsn-section="setup"
     >
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
-          Novo criativo
-        </span>
+        <span className="text-xs font-medium text-neutral-500">Novo criativo</span>
         <button
           onClick={() => navigate('/create/projects')}
           className={cn(
@@ -341,11 +370,13 @@ export const CreativeSetupSidebar: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
+        <label htmlFor="creative-idea" className="text-[15px] font-semibold text-neutral-100 px-1">
           Ideia
         </label>
         <div className="relative group">
           <textarea
+            id="creative-idea"
+            ref={promptRef}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             disabled={status !== 'setup'}
@@ -358,10 +389,28 @@ export const CreativeSetupSidebar: React.FC = () => {
             )}
             data-vsn-input="prompt"
           />
-          <div className="absolute bottom-3 right-3 text-[10px] font-mono text-neutral-700 pointer-events-none uppercase tracking-tighter">
-            {prompt.length} letras
-          </div>
         </div>
+        {/* Chips de partida — só enquanto a ideia está vazia (declutter ao digitar) */}
+        {status === 'setup' && !prompt.trim() && (
+          <div className="flex flex-wrap gap-2 px-1 animate-in fade-in">
+            {STARTER_PROMPTS.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => {
+                  setPrompt(s.prompt);
+                  promptRef.current?.focus();
+                }}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-[11px] font-medium text-neutral-400 hover:text-brand-cyan hover:border-neutral-700 transition-all',
+                  glassSurface.control
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -376,185 +425,204 @@ export const CreativeSetupSidebar: React.FC = () => {
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
-          Fundo
-        </label>
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-neutral-900/40 rounded-2xl border border-neutral-800">
-          <button
-            onClick={() => setBackgroundMode('ai')}
-            disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-              backgroundMode === 'ai'
-                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
-                : 'text-neutral-500 hover:text-neutral-300'
-            }`}
-          >
-            <Diamond size={11} strokeWidth={2} /> IA
-          </button>
-          <button
-            onClick={() => {
-              if (!selectedGuideline) {
-                toast.error('Selecione uma marca primeiro');
-                return;
-              }
-              setBackgroundMode('brand');
-              setShowVault(true);
-            }}
-            disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-              backgroundMode === 'brand'
-                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
-                : 'text-neutral-500 hover:text-neutral-300'
-            }`}
-          >
-            <Briefcase size={11} strokeWidth={2} /> Vault
-          </button>
-          <button
-            onClick={() => setBackgroundMode('upload')}
-            disabled={status !== 'setup'}
-            className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-              backgroundMode === 'upload'
-                ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
-                : 'text-neutral-500 hover:text-neutral-300'
-            }`}
-          >
-            <Upload size={11} strokeWidth={2} /> Local
-          </button>
-        </div>
-        {backgroundMode === 'upload' && (
-          <div className="mt-2 flex flex-col gap-2">
-            <label className="cursor-pointer block relative group">
-              <input type="file" accept="image/*" className="hidden" onChange={handleLocalUpload} />
-              {!uploadedBackgroundUrl ? (
-                <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
-                  <Upload
-                    size={16}
-                    className="opacity-40 group-hover:text-brand-cyan transition-colors"
-                  />
-                  <span className="uppercase tracking-widest">Subir Imagem Local</span>
-                </div>
-              ) : (
-                <div
-                  className={cn(
-                    'relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl',
-                    glassSurface.tile
-                  )}
+      {/* Ajustes avançados — colapsado por padrão. Progressive disclosure:
+          Identidade → Ideia → Ignite lideram; Fundo/Modelo ficam guardados
+          com defaults sãos (IA + top model). */}
+      <div className="flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen((o) => !o)}
+          disabled={status !== 'setup'}
+          className={cn(
+            'flex items-center justify-between px-4 py-3 rounded-2xl text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-all disabled:opacity-50',
+            glassSurface.control
+          )}
+        >
+          Ajustes avançados
+          <ChevronDown
+            size={14}
+            className={cn('transition-transform', advancedOpen && 'rotate-180')}
+          />
+        </button>
+        {advancedOpen && (
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-top-1">
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
+                Fundo
+              </label>
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-neutral-900/40 rounded-2xl border border-neutral-800">
+                <button
+                  onClick={() => setBackgroundMode('ai')}
+                  disabled={status !== 'setup'}
+                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                    backgroundMode === 'ai'
+                      ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
+                      : 'text-neutral-500 hover:text-neutral-300'
+                  }`}
                 >
-                  <img
-                    src={getProxiedUrl(uploadedBackgroundUrl)}
-                    alt="Uploaded Asset"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                    <Upload size={18} className="text-brand-cyan" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">
-                      Trocar Arquivo
-                    </span>
-                  </div>
-                  <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">
-                      Local File
-                    </span>
-                  </div>
+                  <Diamond size={11} strokeWidth={2} /> IA
+                </button>
+                <button
+                  onClick={() => {
+                    if (!selectedGuideline) {
+                      toast.error('Selecione uma marca primeiro');
+                      return;
+                    }
+                    setBackgroundMode('brand');
+                    setShowVault(true);
+                  }}
+                  disabled={status !== 'setup'}
+                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                    backgroundMode === 'brand'
+                      ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
+                      : 'text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  <Briefcase size={11} strokeWidth={2} /> Vault
+                </button>
+                <button
+                  onClick={() => setBackgroundMode('upload')}
+                  disabled={status !== 'setup'}
+                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                    backgroundMode === 'upload'
+                      ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
+                      : 'text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  <Upload size={11} strokeWidth={2} /> Local
+                </button>
+              </div>
+              {backgroundMode === 'upload' && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <label className="cursor-pointer block relative group">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLocalUpload}
+                    />
+                    {!uploadedBackgroundUrl ? (
+                      <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
+                        <Upload
+                          size={16}
+                          className="opacity-40 group-hover:text-brand-cyan transition-colors"
+                        />
+                        <span className="uppercase tracking-widest">Subir Imagem Local</span>
+                      </div>
+                    ) : (
+                      <div
+                        className={cn(
+                          'relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl',
+                          glassSurface.tile
+                        )}
+                      >
+                        <img
+                          src={getProxiedUrl(uploadedBackgroundUrl)}
+                          alt="Uploaded Asset"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
+                          <Upload size={18} className="text-white" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                            Trocar Arquivo
+                          </span>
+                        </div>
+                        <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-300">
+                            Local File
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </label>
                 </div>
               )}
-            </label>
+
+              {backgroundMode === 'brand' && (
+                <div className="mt-2 flex flex-col gap-2">
+                  {!uploadedBackgroundUrl ? (
+                    <button
+                      onClick={() => setShowVault(true)}
+                      className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 hover:bg-neutral-900/60"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <Briefcase
+                          size={16}
+                          className="opacity-40 hover:text-brand-cyan transition-colors"
+                        />
+                        <span className="uppercase tracking-widest">Selecione do Vault</span>
+                      </div>
+                    </button>
+                  ) : (
+                    <div
+                      onClick={() => setShowVault(true)}
+                      className={cn(
+                        'group cursor-pointer relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl',
+                        glassSurface.tile
+                      )}
+                    >
+                      <img
+                        src={getProxiedUrl(uploadedBackgroundUrl)}
+                        alt="Selected Asset"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
+                        <Briefcase size={18} className="text-white" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                          Trocar Asset
+                        </span>
+                      </div>
+                      <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-300">
+                          Vault Asset
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1.5 min-h-[70px]">
+              <ModelSelector
+                type="image"
+                variant="node"
+                selectedModel={modelId}
+                onModelChange={(m, p) => setModel(m as GeminiModel | SeedreamModel, p!)}
+                resolution={resolution}
+                onSyncResolution={setResolution}
+                disabled={status !== 'setup'}
+                className="model-selector-creative"
+              />
+            </div>
           </div>
         )}
-
-        {backgroundMode === 'brand' && (
-          <div className="mt-2 flex flex-col gap-2">
-            {!uploadedBackgroundUrl ? (
-              <button
-                onClick={() => setShowVault(true)}
-                className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 hover:bg-neutral-900/60"
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <Briefcase
-                    size={16}
-                    className="opacity-40 hover:text-brand-cyan transition-colors"
-                  />
-                  <span className="uppercase tracking-widest">Selecione do Vault</span>
-                </div>
-              </button>
-            ) : (
-              <div
-                onClick={() => setShowVault(true)}
-                className={cn(
-                  'group cursor-pointer relative w-full aspect-video rounded-2xl overflow-hidden hover:border-neutral-700 transition-all shadow-2xl',
-                  glassSurface.tile
-                )}
-              >
-                <img
-                  src={getProxiedUrl(uploadedBackgroundUrl)}
-                  alt="Selected Asset"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                  <Briefcase size={18} className="text-brand-cyan" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">
-                    Trocar Asset
-                  </span>
-                </div>
-                <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan/80">
-                    Vault Asset
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1.5 min-h-[70px]">
-        <ModelSelector
-          type="image"
-          variant="node"
-          selectedModel={modelId}
-          onModelChange={(m, p) => setModel(m as GeminiModel | SeedreamModel, p!)}
-          resolution={resolution}
-          onSyncResolution={setResolution}
-          disabled={status !== 'setup'}
-          className="model-selector-creative"
-        />
       </div>
 
       <div className="mt-auto pt-4">
-        <div className="flex flex-col gap-3">
-          <Button
-            variant="brand"
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="w-full py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-brand-cyan/10 group overflow-hidden relative"
-          >
-            {status === 'generating' ? (
-              <div className="flex flex-col items-center gap-1 w-full scale-75">
-                <PremiumGlitchLoader color="#00e5ff" className="w-full justify-center" />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-0.5">
-                <div className="flex items-center gap-2">
-                  <Diamond size={18} className="group-hover:rotate-12 transition-transform" />
-                  <span className="uppercase tracking-[0.1em]">Ignite</span>
-                </div>
-              </div>
-            )}
-          </Button>
-
-          {!status ||
-            (status === 'setup' && (
-              <div className="flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-bottom-2">
-                <Gem size={10} className="text-brand-cyan opacity-80" />
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                  Esta geração custará{' '}
-                  <span className="text-white font-bold">{creditsRequired}</span>{' '}
-                  {creditsRequired === 1 ? 'crédito' : 'créditos'}
+        <Button
+          variant="brand"
+          onClick={handleIgnite}
+          className="w-full py-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-brand-cyan/10 group overflow-hidden relative"
+        >
+          {status === 'generating' ? (
+            <div className="flex flex-col items-center gap-1 w-full scale-75">
+              <PremiumGlitchLoader color="#00e5ff" className="w-full justify-center" />
+            </div>
+          ) : (
+            <>
+              <Diamond size={18} className="group-hover:rotate-12 transition-transform" />
+              <span className="uppercase tracking-[0.1em]">{igniteLabel}</span>
+              {/* Custo dobrado dentro do CTA (valor antes do preço) — não mais
+                  uma linha de fricção depois do botão. */}
+              {canGenerate && (
+                <span className="text-black/60 font-mono text-[11px] normal-case tracking-normal">
+                  · {creditsRequired} {creditsRequired === 1 ? 'crédito' : 'créditos'}
                 </span>
-              </div>
-            ))}
-        </div>
+              )}
+            </>
+          )}
+        </Button>
       </div>
 
       <BrandGuidelineWizardModal

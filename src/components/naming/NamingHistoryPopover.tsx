@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { History, Plus, Trash2, Loader2 } from 'lucide-react';
+import { History, Plus, Trash2, Loader2 } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { cn } from '@/lib/utils';

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Layout, Download, Save, RotateCcw, Zap, Pencil } from 'lucide-react';
+import { Layout, Download, Save, RotateCcw, Zap, Pencil } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';

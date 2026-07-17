@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X } from '@/lib/ui/icons';
 
 interface InlineTagsProps {
   values: string[];

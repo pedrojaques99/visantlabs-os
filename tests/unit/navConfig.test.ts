@@ -4,6 +4,7 @@ import {
   resolveShell,
   routeMode,
   isBrandContext,
+  isBrandFilteredList,
   isBrandScopedEditor,
   editorHasOwnChrome,
   visibleSections,
@@ -174,6 +175,20 @@ describe('isBrandContext', () => {
       '/admin/products',
     ]) {
       expect(isBrandContext(p)).toBe(false);
+    }
+  });
+});
+
+describe('isBrandFilteredList', () => {
+  it('listas onde o switcher vira filtro/ranking ganham "Todas as marcas"', () => {
+    for (const p of ['/canvas', '/my-outputs', '/create/projects', '/references']) {
+      expect(isBrandFilteredList(p)).toBe(true);
+    }
+  });
+
+  it('rotas fora dessa lista não recebem a opção "Todas as marcas"', () => {
+    for (const p of ['/cockpit', '/copilot', '/apps', '/brand-guidelines']) {
+      expect(isBrandFilteredList(p)).toBe(false);
     }
   });
 });

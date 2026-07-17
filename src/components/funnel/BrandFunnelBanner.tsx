@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Compass, X } from 'lucide-react';
+import { Compass, X } from '@/lib/ui/icons';
 import { FEATURE_FUNNEL_BANNER } from '@/config/featureFlags';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '@/services/authService';

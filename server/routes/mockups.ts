@@ -1145,7 +1145,7 @@ router.post(
             model: cModel as any,
             aspectRatio: aspectRatio as any,
             apiKey,
-            referenceImages: hasRefs
+            referenceImages: finalReferenceImages?.length
               ? finalReferenceImages.map((img: any) => ({
                   base64: img.base64,
                   mimeType: img.mimeType || 'image/png',

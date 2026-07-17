@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { Textarea } from '@/components/ui/textarea';
@@ -129,7 +129,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             <Button
               variant="ghost"
               onClick={() => handleAddItem(category)}
-              className={`flex items-center gap-2 px-3 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${
+              className={`flex items-center gap-2 px-3 py-2 border hover:border-neutral-600/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${
                 theme === 'dark'
                   ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-400'
                   : 'bg-neutral-200 border-neutral-300 text-neutral-700'

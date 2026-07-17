@@ -14,7 +14,9 @@ import {
   Users,
   Search,
   Command,
-} from 'lucide-react';
+  Sliders,
+  Sparkles,
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useResolvedTokens } from '@/hooks/useResolvedTokens';
@@ -685,6 +687,36 @@ export const DesignSystemPage: React.FC = () => {
                               </p>
                             </CardContent>
                           </Card>
+                          <Link to="/design-system/controls" className="block">
+                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group h-full">
+                              <CardHeader>
+                                <Sliders className="w-8 h-8 text-brand-cyan mb-2" />
+                                <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                                  Controls
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                                  Curves, gradient, XY pad, dual-range &amp; more
+                                </p>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                          <Link to="/design-system/icons" className="block">
+                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group h-full">
+                              <CardHeader>
+                                <Sparkles className="w-8 h-8 text-neutral-500 mb-2" />
+                                <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
+                                  Icons
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
+                                  Phosphor icon catalog with usage counts
+                                </p>
+                              </CardContent>
+                            </Card>
+                          </Link>
                         </div>
                         <Separator />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

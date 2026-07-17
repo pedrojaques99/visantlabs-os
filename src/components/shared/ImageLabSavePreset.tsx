@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Save, Trash2, ChevronDown, Loader2 } from 'lucide-react';
+import { Save, Trash2, ChevronDown, Loader2 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

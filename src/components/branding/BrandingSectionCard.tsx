@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { X, GripVertical, Minus } from 'lucide-react';
+import { X, GripVertical, Minus } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';

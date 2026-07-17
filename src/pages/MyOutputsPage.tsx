@@ -1,29 +1,22 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, X, ImageIcon, Trash2, Minus, Plus } from 'lucide-react';
+import { Search, X, ImageIcon, Trash2, Sparkles } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '@/hooks/useLayout';
 import { toast } from 'sonner';
-import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { getImageUrl } from '@/utils/imageUtils';
-import { useNavigate, Link } from 'react-router-dom';
-import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
+import { useNavigate } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { useTranslation } from '@/hooks/useTranslation';
-import {
-  BreadcrumbWithBack,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '../components/ui/BreadcrumbWithBack';
-import { GlassPanel } from '../components/ui/GlassPanel';
+import { Masonry } from '@/components/ui/Masonry';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
 import { useInAppShell } from '@/components/shell/InAppShellContext';
+import { useRailSlot } from '@/components/shell/RailSlotContext';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 export const MyOutputsPage: React.FC = () => {
@@ -36,28 +29,14 @@ export const MyOutputsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const inShell = useInAppShell();
+  // Tag cloud vai pro rail (L2, SSoT igual /references) via RailSlot.
+  const railSlot = useRailSlot()?.railSlot ?? null;
   // Filtro opcional pela marca ativa — mockups guardam brandGuidelineId.
   // Lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas").
-  const { activeBrandId: brandId } = useActiveBrand();
+  const { activeBrandId: brandId, setActiveBrand } = useActiveBrand();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
   const { isAuthenticated, subscriptionStatus } = useLayout();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [columns, setColumns] = useState(() => {
-    const saved = localStorage.getItem('myOutputsColumns');
-    return saved ? parseInt(saved, 10) : 4;
-  });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Get all unique tags for filtering
   const allTags = useMemo(() => {
@@ -355,30 +334,11 @@ export const MyOutputsPage: React.FC = () => {
     return totalCredits < creditsNeededForEdit;
   }, [isAuthenticated, subscriptionStatus, creditsNeededForEdit]);
 
-  const handleColumnsChange = useCallback((newColumns: number) => {
-    const clamped = Math.max(1, Math.min(6, newColumns));
-    setColumns(clamped);
-    localStorage.setItem('myOutputsColumns', clamped.toString());
-  }, []);
-
-  const getGridClasses = useCallback(() => {
-    return 'grid gap-2 md:gap-3 lg:gap-4';
-  }, []);
-
-  const getGridStyle = useCallback(() => {
-    // Mobile sempre 1 coluna, a partir de 640px (sm) usa o número exato selecionado pelo usuário
-    return {
-      gridTemplateColumns: isMobile
-        ? 'repeat(1, minmax(0, 1fr))'
-        : `repeat(${columns}, minmax(0, 1fr))`,
-    };
-  }, [columns, isMobile]);
-
   if (isLoading) {
     return (
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300',
+          'bg-background text-muted-foreground',
           inShell ? 'min-h-full pt-6' : 'min-h-screen pt-12 md:pt-14'
         )}
       >
@@ -386,9 +346,7 @@ export const MyOutputsPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 font-mono text-sm">
-                {t('my.outputs.loading_your_outputs')}
-              </p>
+              <p className="text-muted-foreground text-sm">{t('my.outputs.loading_your_outputs')}</p>
             </div>
           </div>
         </div>
@@ -405,146 +363,140 @@ export const MyOutputsPage: React.FC = () => {
       />
       <div
         className={cn(
-          'bg-neutral-950 text-neutral-300 relative overflow-hidden',
+          'bg-background text-muted-foreground relative overflow-hidden',
           inShell ? 'min-h-full' : 'min-h-screen'
         )}
       >
-        {/* Background */}
-        <div
-          className={cn('inset-0 z-0 pointer-events-none', inShell ? 'absolute' : 'fixed')}
-        ></div>
-
-        {/* Header with Controls and Sidebar */}
-        <div className={cn('relative z-30 pb-6', inShell ? 'pt-6' : 'pt-16 md:pt-20')}>
-          <div className="max-w-7xl mx-auto px-4 md:px-6">
-            {/* Breadcrumb with Back Button */}
-            <div className="mb-4">
-              <BreadcrumbWithBack to="/">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/">Home</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>{t('myOutputs.seoTitle')}</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </BreadcrumbWithBack>
-            </div>
-            {/* Top Row: Sidebar, and Search */}
-            <div className="flex items-center justify-between gap-4 mb-4">
-              {/* Collapsible Sidebar - Flex grow to take available space */}
-              <div className="flex-1 min-w-0">
-                <CollapsibleSidebar
-                  isCollapsed={isSidebarCollapsed}
-                  onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                  title={t('myOutputs.seoTitle')}
-                  count={mockups.length}
-                  countLabel={mockups.length === 1 ? 'output' : 'outputs'}
-                  allTags={allTags}
-                  filterTag={filterTag}
-                  onFilterTagChange={setFilterTag}
-                  showSearch={showSearch}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  onToggleSearch={() => setShowSearch(!showSearch)}
-                  showBackButton={false}
+        {/* Busca in-page só (barra fina). A identidade (voltar + "Salvos" + contagem)
+            vem do rail drill-in / AppSpine; a tag cloud virou L2 no rail (portal
+            abaixo). Sem header próprio — evita o header morto. */}
+        {mockups.length > 0 && (
+          <div className={cn('relative z-30 pb-4', inShell ? 'pt-4' : 'pt-16 md:pt-20')}>
+            <div className="max-w-7xl mx-auto px-4 md:px-6">
+              <div className="relative max-w-md">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={`${t('common.search') || 'Buscar'}...`}
+                  className="h-9 max-w-md border-border bg-input pl-9 text-sm"
                 />
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Tag cloud → rail (L2, SSoT igual /references) */}
+        {railSlot &&
+          allTags.length > 0 &&
+          createPortal(
+            <div className="px-2 pb-3">
+              <p className="px-1 pb-1.5 text-[11px] text-sidebar-foreground/50">Tags</p>
+              <div className="flex flex-wrap gap-1">
+                {filterTag && (
+                  <button
+                    onClick={() => setFilterTag(null)}
+                    className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-[11px]"
+                  >
+                    {filterTag}
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                )}
+                {allTags
+                  .filter((tg) => tg !== filterTag)
+                  .map((tg) => (
+                    <button
+                      key={tg}
+                      onClick={() => setFilterTag(tg)}
+                      className="rounded-md px-1.5 py-0.5 text-[11px] text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                    >
+                      {tg}
+                    </button>
+                  ))}
+              </div>
+            </div>,
+            railSlot
+          )}
 
         {/* Grid Gallery */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pb-12 md:pb-16">
           {/* Floating Column Control */}
-          {filteredMockups.length > 0 && !isMobile && (
-            <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleColumnsChange(columns - 1)}
-                  disabled={columns <= 1}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
-                  aria-label="Decrease columns"
-                >
-                  <Minus size={14} />
-                </Button>
-                <div className="px-2.5">
-                  <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
-                    {columns}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleColumnsChange(columns + 1)}
-                  disabled={columns >= 6}
-                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
-                  aria-label="Increase columns"
-                >
-                  <Plus size={14} />
-                </Button>
-              </GlassPanel>
-            </div>
-          )}
           {filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <ImageIcon size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
-                {mockups.length === 0 ? 'NO OUTPUTS YET' : 'NO MATCHES FOUND'}
+              <ImageIcon size={64} className="text-muted-foreground mb-4" strokeWidth={1} />
+              <h2 className="text-lg font-semibold text-foreground mb-1.5">
+                {mockups.length === 0 ? 'No outputs yet' : 'No results'}
               </h2>
-              <p className="text-sm text-neutral-600 font-mono mb-4">
+              <p className="text-sm text-muted-foreground mb-5">
                 {mockups.length === 0
-                  ? 'Generate mockups to see them here.'
-                  : 'Try adjusting your search or filter.'}
+                  ? 'Generate your first mockup and it shows up here.'
+                  : 'Adjust your search or filter.'}
               </p>
+              {mockups.length === 0 ? (
+                <Button
+                  onClick={() => navigate('/mockupmachine')}
+                  className="bg-brand-cyan text-black hover:bg-brand-cyan/80"
+                >
+                  <Sparkles size={16} className="mr-1.5" />
+                  Generate my first mockup
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilterTag(null);
+                    // Também limpa a marca ativa → "Todas as marcas" (o filtro por
+                    // marca é o que costuma zerar o grid; clear tem que soltar ele).
+                    setActiveBrand(null);
+                  }}
+                  className="border-border text-foreground"
+                >
+                  Clear filters
+                </Button>
+              )}
             </div>
           ) : (
-            <div className={getGridClasses()} style={getGridStyle()}>
-              {filteredMockups.map((mockup) => {
-                const imageUrl = getImageUrl(mockup);
-                if (!imageUrl) return null;
-
+            // SSoT masonry (mesmo componente da /references) — colunas responsivas,
+            // sem reflow ao paginar, aspect-ratio natural (fim do aspect-square).
+            <Masonry
+              items={filteredMockups.filter((m) => getImageUrl(m))}
+              getKey={(m) => m._id || getImageUrl(m)}
+              gap={12}
+              renderItem={(mockup) => {
+                const imageUrl = getImageUrl(mockup)!;
                 return (
-                  <GlassPanel
-                    key={mockup._id}
-                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
-                  >
-                    {/* Image */}
-                    <div
-                      className="aspect-square relative overflow-hidden bg-neutral-900/50 cursor-pointer"
+                  <div className="group relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all">
+                    <button
+                      type="button"
                       onClick={() => handleView(mockup)}
+                      className="block w-full cursor-pointer focus:outline-none"
+                      aria-label={t('apps.open')}
                     >
                       <img
                         src={imageUrl}
                         alt={mockup.prompt || 'Output'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-300"
                         loading="lazy"
                       />
-                      {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isAuthenticated && mockup._id && (
-                          <Button
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(mockup._id);
-                            }}
-                            disabled={deletingId === mockup._id}
-                            className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-xs font-mono text-destructive hover:text-destructive hover:border-destructive/50 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer z-10"
-                            aria-label={t('my.outputs.delete_output')}
-                          >
-                            <Trash2 size={14} />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </GlassPanel>
+                    </button>
+                    {isAuthenticated && mockup._id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(mockup._id!);
+                        }}
+                        disabled={deletingId === mockup._id}
+                        className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-destructive hover:border-destructive/50 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                        aria-label={t('my.outputs.delete_output')}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 );
-              })}
-            </div>
+              }}
+            />
           )}
         </div>
 
@@ -580,6 +532,9 @@ export const MyOutputsPage: React.FC = () => {
               }
             }}
             isLiked={selectedMockup.isLiked || false}
+            // RCD: activate the re-imagine/credit loop from the library — the wiring
+            // below was built but hidden (showActions defaults to false).
+            showActions={isAuthenticated === true}
             onZoomIn={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-in')}
             onZoomOut={() => handleNavigateToMockupMachine(selectedMockup, 'zoom-out')}
             onNewAngle={(angle) =>

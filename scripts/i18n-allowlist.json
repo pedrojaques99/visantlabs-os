@@ -1,6 +1,8 @@
 {
   "_comment": "i18n strict-mode allowlist. Keys here are exempt from --strict failures. Use only for: (a) dynamic keys built at runtime t('foo.' + var); (b) known leaf-vs-namespace collisions awaiting refactor. Add a // reason in the comments map below for each entry.",
   "unresolved": [
+    "brandCompleteness.${r.id}",
+    "brandCompleteness.${rule.id}",
     "${translationKeyPrefix}.addToFavorites",
     "${translationKeyPrefix}.analyzingImage",
     "${translationKeyPrefix}.brandKit",

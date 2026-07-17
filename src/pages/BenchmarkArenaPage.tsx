@@ -13,7 +13,7 @@ import {
   CreditCard,
   Timer,
   Sparkles,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { PageShell } from '../components/ui/PageShell';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { MicroTitle } from '../components/ui/MicroTitle';
@@ -319,12 +319,7 @@ const RunBenchmark: React.FC = () => {
             return (
               <div key={tier}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className={cn(
-                      'text-[10px] font-mono uppercase tracking-wider',
-                      cfg.color.split(' ')[0]
-                    )}
-                  >
+                  <span className={cn('text-[10px] font-medium', cfg.color.split(' ')[0])}>
                     {cfg.label}
                   </span>
                   <span className="text-[10px] text-white/20">{cfg.description}</span>

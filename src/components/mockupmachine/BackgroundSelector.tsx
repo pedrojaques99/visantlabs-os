@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MapPin, ChevronDown } from 'lucide-react';
+import { MapPin, ChevronDown } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -84,7 +84,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                 variant="ghost"
                 key={background}
                 onClick={(e) => handleBackgroundClick(background, e)}
-                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-neutral-800 hover:border-[brand-cyan]/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-neutral-300 bg-neutral-950/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-neutral-800 hover:border-neutral-600/30 transition-all duration-200 text-left"
                 title={`Change to ${background}`}
               >
                 {background}

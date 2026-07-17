@@ -16,9 +16,6 @@ import { hexToRgb } from '@/utils/colorUtils';
 import { SendToButton } from '@/components/shared/SendToButton';
 import {
   ToolPanel,
-  ToolPanelContent,
-  ToolPanelSection,
-  ToolPanelDisclosure,
   ToolPanelActions,
   ToolPanelGrid,
   ToolPanelChip,
@@ -26,6 +23,8 @@ import {
   ChannelRow,
   InlineColorPicker,
 } from '@/components/shared/ToolPanel';
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
+import { ApplyBrandButton } from '@/components/shared/BrandSwatchRow';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
   Zap,
@@ -39,7 +38,9 @@ import {
   FileType,
   Layers,
   Copy,
-} from 'lucide-react';
+  SlidersHorizontal,
+  Blend,
+} from '@/lib/ui/icons';
 
 const RISO_PRESET_ITEMS = Object.entries(RISO_FULL_PRESETS).map(([name, p]) => ({
   name,
@@ -199,17 +200,13 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
       return inks;
     }, [inkSearch, inkCategory]);
 
-    return (
-      <ToolPanel>
-        <PresetThumbnailStrip
-          imageUrl={store.imageUrl}
-          presets={RISO_PRESET_ITEMS}
-          onSelect={(name) => applyFullPreset(name)}
-        />
-
-        <ToolPanelContent>
-          {/* Screening — core effect parameters */}
-          <ToolPanelSection title="SCREENING">
+    const tabs: PanelTab[] = [
+      {
+        id: 'screening',
+        label: 'Screening',
+        icon: <SlidersHorizontal size={16} />,
+        content: (
+          <div className="space-y-3">
             <ToolPanelRow label="Mode">
               <Select
                 options={DITHER_OPTIONS}
@@ -287,10 +284,32 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
               suffix="px"
               onChange={(v) => set('misregistration', v)}
             />
-          </ToolPanelSection>
-
-          {/* Channels — ink layer count + per-layer controls */}
-          <ToolPanelSection title="CHANNELS">
+          </div>
+        ),
+      },
+      {
+        id: 'channels',
+        label: 'Channels',
+        icon: <Layers size={16} />,
+        action: (
+          <ApplyBrandButton
+            onApply={(colors) => {
+              store.setLayers(
+                colors.map((hex, i) => ({
+                  color: hexToRgb(hex),
+                  hex,
+                  visible: true,
+                  alpha: 0.85,
+                  angle: (i * 22.5) % 90,
+                  offsetX: [1, -1, 1, -1][i % 4],
+                  offsetY: [-1, 1, 1, -1][i % 4],
+                }))
+              );
+            }}
+          />
+        ),
+        content: (
+          <div className="space-y-3">
             <ToolPanelRow label="Ink Layers">
               <div className="flex gap-1">
                 {[2, 3, 4].map((n) => (
@@ -397,7 +416,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         setInkSearch('');
                         setInkCategory(null);
                       }}
-                      className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
+                      className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
                     >
                       <Palette size={12} />
                       Riso Ink Catalog
@@ -481,7 +500,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     {onExportLayer && (
                       <button
                         onClick={() => onExportLayer(i)}
-                        className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 font-mono uppercase transition-colors"
+                        className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
                       >
                         <Layers size={12} />
                         Export Layer Separation
@@ -491,10 +510,15 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 ))}
               </div>
             )}
-          </ToolPanelSection>
-
-          {/* Paper & Texture */}
-          <ToolPanelDisclosure label="Paper & Texture">
+          </div>
+        ),
+      },
+      {
+        id: 'paper',
+        label: 'Paper & Texture',
+        icon: <Blend size={16} />,
+        content: (
+          <div className="space-y-3">
             <ToolPanelRow label="Paper">
               <InlineColorPicker
                 value={store.paperColor}
@@ -537,11 +561,15 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 onChange={(v) => set('edgeBleed', v)}
               />
             </div>
-          </ToolPanelDisclosure>
-
-          {/* Ink Palettes */}
-          <ToolPanelDisclosure label="Ink Palettes">
-            <ToolPanelGrid>
+          </div>
+        ),
+      },
+      {
+        id: 'palettes',
+        label: 'Ink Palettes',
+        icon: <Palette size={16} />,
+        content: (
+          <ToolPanelGrid>
               {Object.entries(RISO_INK_PRESETS).map(([name, colors]) => (
                 <ToolPanelChip
                   key={name}
@@ -573,8 +601,19 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                 </ToolPanelChip>
               ))}
             </ToolPanelGrid>
-          </ToolPanelDisclosure>
-        </ToolPanelContent>
+        ),
+      },
+    ];
+
+    return (
+      <ToolPanel>
+        <PresetThumbnailStrip
+          imageUrl={store.imageUrl}
+          presets={RISO_PRESET_ITEMS}
+          onSelect={(name) => applyFullPreset(name)}
+        />
+
+        <PanelSectionTabs tabs={tabs} />
 
         <ToolPanelActions>
           <div className="relative w-full">

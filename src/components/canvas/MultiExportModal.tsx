@@ -9,7 +9,7 @@ import {
   Search,
   Filter,
   Image as ImageIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { exportImageWithScale } from '@/utils/exportUtils';
 import { toast } from 'sonner';
@@ -213,7 +213,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/50">
           <div>
             <h2 className="text-lg font-semibold text-neutral-100 font-mono flex items-center gap-2">
-              <Download size={20} className="text-[brand-cyan]" />
+              <Download size={20} className="text-neutral-400" />
               Export Images
             </h2>
             <p className="text-xs text-neutral-500 font-mono mt-1">
@@ -242,7 +242,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                 placeholder="Search images..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono focus:outline-none focus:ring-1 focus:ring-[brand-cyan]/50 transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono focus:outline-none focus:ring-1 focus:ring-neutral-600/50 transition-all"
               />
             </div>
 
@@ -252,7 +252,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
               className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-all whitespace-nowrap"
             >
               {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? (
-                <CheckSquare size={14} className="text-[brand-cyan]" />
+                <CheckSquare size={14} className="text-neutral-400" />
               ) : (
                 <Square size={14} />
               )}
@@ -272,7 +272,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                   className={cn(
                     'px-3 py-1 text-[10px] font-mono rounded transition-all',
                     exportFormat === format
-                      ? 'bg-[brand-cyan]/20 text-[brand-cyan] border border-[brand-cyan]/30'
+                      ? 'bg-neutral-700/20 text-neutral-400 border border-neutral-600/30'
                       : 'text-neutral-500 hover:text-neutral-300'
                   )}
                 >
@@ -294,7 +294,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                   className={cn(
                     'group relative aspect-square rounded-xl border transition-all cursor-pointer overflow-hidden',
                     selectedImages.has(img.id)
-                      ? 'border-[brand-cyan] ring-1 ring-[brand-cyan]/20'
+                      ? 'border-neutral-600 ring-1 ring-neutral-600/20'
                       : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/50'
                   )}
                 >
@@ -312,7 +312,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     className={cn(
                       'absolute inset-0 transition-opacity flex flex-col justify-between p-2',
                       selectedImages.has(img.id)
-                        ? 'bg-[brand-cyan]/10'
+                        ? 'bg-neutral-700/10'
                         : 'bg-neutral-950/0 group-hover:bg-neutral-950/70 opacity-0 group-hover:opacity-100'
                     )}
                   >
@@ -321,7 +321,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                         className={cn(
                           'w-5 h-5 rounded-full flex items-center justify-center border transition-all',
                           selectedImages.has(img.id)
-                            ? 'bg-[brand-cyan] border-[brand-cyan] text-black'
+                            ? 'bg-neutral-700 border-neutral-600 text-black'
                             : 'bg-neutral-950/70 border-white/20 text-transparent'
                         )}
                       >
@@ -336,7 +336,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                       >
                         {img.name}
                       </p>
-                      <p className="text-[10px] text-[brand-cyan] font-mono uppercase mt-0.5">
+                      <p className="text-[10px] text-neutral-400 font-mono uppercase mt-0.5">
                         {img.type}
                       </p>
                     </div>
@@ -377,7 +377,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
               onClick={handleExport}
               disabled={selectedImages.size === 0 || isExporting}
               className={cn(
-                'px-6 py-2 bg-[brand-cyan] hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[brand-cyan]/10',
+                'px-6 py-2 bg-neutral-700 hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-neutral-600/10',
                 isExporting && 'animate-pulse'
               )}
             >

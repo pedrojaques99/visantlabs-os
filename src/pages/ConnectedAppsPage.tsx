@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Unplug, Trash2, Shield, Clock, Bot } from 'lucide-react';
+import { Unplug, Trash2, Shield, Clock, Bot } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardContent } from '../components/ui/card';

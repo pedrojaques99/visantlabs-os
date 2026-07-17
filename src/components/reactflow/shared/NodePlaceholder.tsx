@@ -1,5 +1,5 @@
 import React from 'react';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2 } from '@/lib/ui/icons';
 import { GeneratingImageCard } from '@/components/ui/GeneratingImageCard';
 
 interface NodePlaceholderProps {

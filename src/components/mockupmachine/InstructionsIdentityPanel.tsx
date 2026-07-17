@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, X, ChevronDown, ChevronUp, FileText, Palette } from 'lucide-react';
+import { Plus, X, ChevronDown, ChevronUp, FileText, Palette } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';

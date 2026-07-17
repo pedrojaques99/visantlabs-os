@@ -1,5 +1,5 @@
 import React from 'react';
-import { Coins, Link2 } from 'lucide-react';
+import { Coins, Link2 } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { getStepDependencies, getDependencyStepTitle } from '@/utils/brandingHelpers';

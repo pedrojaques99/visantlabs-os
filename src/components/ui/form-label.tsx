@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon } from '@/lib/ui/icons';
 
 export interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   icon?: LucideIcon;

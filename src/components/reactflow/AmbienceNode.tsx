@@ -1,4 +1,4 @@
-import { Sunset } from 'lucide-react';
+import { Sunset } from '@/lib/ui/icons';
 import type { AmbienceNodeData } from '@/types/reactFlow';
 import { getAllAmbiencePresets, getAmbiencePreset } from '@/services/ambiencePresetsService';
 import { AmbiencePresetModal } from '../AmbiencePresetModal';

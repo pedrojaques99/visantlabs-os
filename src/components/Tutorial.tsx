@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/lib/ui/icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
@@ -201,8 +201,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
               }}
               className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
                 theme === 'dark'
-                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
-                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
+                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-neutral-600/30'
+                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-neutral-600/30'
               }`}
             >
               <span>{t('tutorial.createMockup')}</span>

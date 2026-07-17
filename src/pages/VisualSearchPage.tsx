@@ -11,7 +11,7 @@ import {
   Layers,
   Compass,
   type LucideIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { PageShell } from '@/components/ui/PageShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { SearchBar } from '@/components/ui/SearchBar';

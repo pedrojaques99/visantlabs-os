@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, memo, useEffect, useMemo } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2 } from '@/lib/ui/icons';
 import type { OutputNodeData, FlowNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { mockupApi } from '@/services/mockupApi';

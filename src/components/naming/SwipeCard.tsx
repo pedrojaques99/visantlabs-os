@@ -6,7 +6,7 @@ import {
   useAnimationControls,
   type PanInfo,
 } from 'framer-motion';
-import { X, Heart, Gem, AlertTriangle } from 'lucide-react';
+import { X, Heart, Gem, AlertTriangle } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import type { NamingCard, Verdict } from '@/lib/naming/tasteProfile';

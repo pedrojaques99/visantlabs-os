@@ -6,14 +6,14 @@ import { SendToButton } from '@/components/shared/SendToButton';
 import { PresetThumbnailStrip } from '@/components/shared/PresetThumbnailStrip';
 import {
   ToolPanel,
-  ToolPanelContent,
-  ToolPanelSection,
-  ToolPanelDisclosure,
   ToolPanelRow,
   InlineColorPicker,
   ChannelRow,
   ToolPanelExportActions,
 } from '@/components/shared/ToolPanel';
+import { PanelSectionTabs, type PanelTab } from '@/components/shared/PanelSectionTabs';
+import { ApplyBrandButton } from '@/components/shared/BrandSwatchRow';
+import { CircleDot, Layers, Blend, Image, SlidersHorizontal } from '@/lib/ui/icons';
 
 const HALFTONE_PRESET_ITEMS = Object.keys(HALFTONE_PRESETS).map((name) => ({ name }));
 
@@ -69,47 +69,55 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
       [store]
     );
 
-    return (
-      <ToolPanel>
-        <PresetThumbnailStrip
-          imageUrl={store.imageUrl}
-          presets={HALFTONE_PRESET_ITEMS}
-          onSelect={(name) => store.applyPreset(name)}
-        />
-
-        <ToolPanelContent>
-          {/* Halftone */}
-          <ToolPanelSection title="HALFTONE">
-            <div className="grid grid-cols-2 gap-1.5">
-              <ScrubInput
-                label="Freq"
-                value={store.frequency}
-                min={20}
-                max={500}
-                step={1}
-                onChange={(v) => set('frequency', v)}
-              />
-              <ScrubInput
-                label="Dot"
-                value={store.dotSize}
-                min={0.1}
-                max={1}
-                step={0.01}
-                onChange={(v) => set('dotSize', v)}
-              />
-              <ScrubInput
-                label="Space"
-                value={store.dotSpacing}
-                min={0}
-                max={0.8}
-                step={0.01}
-                onChange={(v) => set('dotSpacing', v)}
-              />
-            </div>
-          </ToolPanelSection>
-
-          {/* Channels */}
-          <ToolPanelSection title="CHANNELS">
+    const tabs: PanelTab[] = [
+      {
+        id: 'screen',
+        label: 'Halftone',
+        icon: <CircleDot size={16} />,
+        content: (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput
+              label="Freq"
+              value={store.frequency}
+              min={20}
+              max={500}
+              step={1}
+              onChange={(v) => set('frequency', v)}
+            />
+            <ScrubInput
+              label="Dot"
+              value={store.dotSize}
+              min={0.1}
+              max={1}
+              step={0.01}
+              onChange={(v) => set('dotSize', v)}
+            />
+            <ScrubInput
+              label="Space"
+              value={store.dotSpacing}
+              min={0}
+              max={0.8}
+              step={0.01}
+              onChange={(v) => set('dotSpacing', v)}
+            />
+          </div>
+        ),
+      },
+      {
+        id: 'channels',
+        label: 'Channels',
+        icon: <Layers size={16} />,
+        action: (
+          <ApplyBrandButton
+            onApply={(colors) => {
+              CHANNELS.forEach((ch, i) => {
+                if (colors[i]) set(ch.inkKey, colors[i]);
+              });
+            }}
+          />
+        ),
+        content: (
+          <div className="space-y-1">
             {CHANNELS.map((ch, i) => (
               <ChannelRow
                 key={ch.key}
@@ -142,10 +150,15 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                 </div>
               </ChannelRow>
             ))}
-          </ToolPanelSection>
-
-          {/* Paper & Blend */}
-          <ToolPanelSection title="PAPER & BLEND">
+          </div>
+        ),
+      },
+      {
+        id: 'paper',
+        label: 'Paper & Blend',
+        icon: <Blend size={16} />,
+        content: (
+          <div className="space-y-3">
             <ToolPanelRow label="Paper">
               <InlineColorPicker
                 value={store.paperColor}
@@ -169,10 +182,15 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
                 variant="node"
               />
             </ToolPanelRow>
-          </ToolPanelSection>
-
-          {/* Image & Texture */}
-          <ToolPanelSection title="IMAGE & TEXTURE">
+          </div>
+        ),
+      },
+      {
+        id: 'image',
+        label: 'Image & Texture',
+        icon: <Image size={16} />,
+        content: (
+          <div className="space-y-3">
             <div className="grid grid-cols-2 gap-1.5">
               <ScrubInput
                 label="Contrast"
@@ -216,46 +234,61 @@ export const HalftoneControls: React.FC<HalftoneControlsProps> = React.memo(
               step={0.01}
               onChange={(v) => set('inkNoise', v)}
             />
-          </ToolPanelSection>
+          </div>
+        ),
+      },
+      {
+        id: 'advanced',
+        label: 'Dot Advanced',
+        icon: <SlidersHorizontal size={16} />,
+        content: (
+          <div className="grid grid-cols-2 gap-1.5">
+            <ScrubInput
+              label="Rough"
+              value={store.roughness}
+              min={0}
+              max={2}
+              step={0.05}
+              onChange={(v) => set('roughness', v)}
+            />
+            <ScrubInput
+              label="Fuzz"
+              value={store.fuzz}
+              min={0}
+              max={0.5}
+              step={0.01}
+              onChange={(v) => set('fuzz', v)}
+            />
+            <ScrubInput
+              label="Random"
+              value={store.randomness}
+              min={0}
+              max={0.4}
+              step={0.01}
+              onChange={(v) => set('randomness', v)}
+            />
+            <ScrubInput
+              label="Thresh"
+              value={store.threshold}
+              min={0}
+              max={0.5}
+              step={0.01}
+              onChange={(v) => set('threshold', v)}
+            />
+          </div>
+        ),
+      },
+    ];
 
-          {/* Dot Advanced */}
-          <ToolPanelDisclosure label="Dot Advanced">
-            <div className="grid grid-cols-2 gap-1.5">
-              <ScrubInput
-                label="Rough"
-                value={store.roughness}
-                min={0}
-                max={2}
-                step={0.05}
-                onChange={(v) => set('roughness', v)}
-              />
-              <ScrubInput
-                label="Fuzz"
-                value={store.fuzz}
-                min={0}
-                max={0.5}
-                step={0.01}
-                onChange={(v) => set('fuzz', v)}
-              />
-              <ScrubInput
-                label="Random"
-                value={store.randomness}
-                min={0}
-                max={0.4}
-                step={0.01}
-                onChange={(v) => set('randomness', v)}
-              />
-              <ScrubInput
-                label="Thresh"
-                value={store.threshold}
-                min={0}
-                max={0.5}
-                step={0.01}
-                onChange={(v) => set('threshold', v)}
-              />
-            </div>
-          </ToolPanelDisclosure>
-        </ToolPanelContent>
+    return (
+      <ToolPanel>
+        <PresetThumbnailStrip
+          imageUrl={store.imageUrl}
+          presets={HALFTONE_PRESET_ITEMS}
+          onSelect={(name) => store.applyPreset(name)}
+        />
+
+        <PanelSectionTabs tabs={tabs} />
 
         <ToolPanelExportActions
           onExport={onExport}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Copy, Trash2, GripVertical, Pencil } from 'lucide-react';
+import { Plus, Copy, Trash2, GripVertical, Pencil } from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
 import { FORMAT_DIMENSIONS } from './lib/formatDimensions';
 import type { CreativePage } from './store/creativeTypes';

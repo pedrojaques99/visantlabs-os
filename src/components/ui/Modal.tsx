@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useScrollLock } from '@/hooks/useScrollLock';
 
@@ -96,7 +96,7 @@ export const Modal: React.FC<ModalProps> = ({
       ref={modalRef}
       tabIndex={-1}
       className={cn(
-        'fixed inset-0 bg-neutral-950/80 backdrop-blur-md z-[9999] flex flex-col sm:items-center sm:justify-center overflow-hidden transition-all duration-300',
+        'fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex flex-col sm:items-center sm:justify-center overflow-hidden transition-all duration-300',
         mobileDrawer ? 'justify-end sm:p-4' : 'justify-center p-4',
         'animate-in fade-in duration-300',
         className
@@ -110,7 +110,7 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         className={cn(
           'relative w-full overflow-hidden flex flex-col transition-all duration-500',
-          'bg-neutral-950/98 backdrop-blur-3xl border-t sm:border border-white/10 sm:border-neutral-800 shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
+          'bg-popover backdrop-blur-3xl border-t sm:border border-border shadow-[0_30px_100px_rgba(0,0,0,0.8)]',
           'animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-2 duration-500',
 
           // Mobile Drawer vs Centered Desktop
@@ -128,7 +128,7 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Mobile Handle */}
         {mobileDrawer && (
           <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
-            <div className="w-12 h-1.5 bg-white/10 rounded-full" />
+            <div className="w-12 h-1.5 bg-border rounded-full" />
           </div>
         )}
 
@@ -136,20 +136,20 @@ export const Modal: React.FC<ModalProps> = ({
         {(title || showCloseButton) && (
           <div
             className={cn(
-              'flex items-center justify-between p-6 sm:p-8 border-b border-neutral-800/50 flex-shrink-0',
+              'flex items-center justify-between p-6 sm:p-8 border-b border-border flex-shrink-0',
               headerClassName
             )}
           >
             <div className="flex-1 min-w-0">
               {title && (
-                <h2 id={`${id}-title`} className="text-sm font-semibold text-neutral-200">
+                <h2 id={`${id}-title`} className="text-sm font-semibold text-foreground">
                   {title}
                 </h2>
               )}
               {description && (
                 <p
                   id={`${id}-description`}
-                  className="text-xs text-neutral-500 font-mono mt-2 opacity-70"
+                  className="text-xs text-muted-foreground font-mono mt-2 opacity-70"
                 >
                   {description}
                 </p>
@@ -159,7 +159,7 @@ export const Modal: React.FC<ModalProps> = ({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 sm:p-3 -mr-2 sm:-mr-3 text-neutral-500 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-full"
+                className="p-2 sm:p-3 -mr-2 sm:-mr-3 text-muted-foreground hover:text-foreground transition-all bg-muted hover:bg-accent rounded-full"
                 title="Close (Esc)"
                 aria-label="Close modal"
               >
@@ -183,7 +183,7 @@ export const Modal: React.FC<ModalProps> = ({
         {footer && (
           <div
             className={cn(
-              'flex items-center justify-end gap-3 p-6 sm:p-8 border-t border-neutral-800/50 flex-shrink-0 bg-neutral-900/10',
+              'flex items-center justify-end gap-3 p-6 sm:p-8 border-t border-border flex-shrink-0 bg-muted/30',
               footerClassName
             )}
           >

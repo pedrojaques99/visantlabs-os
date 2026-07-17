@@ -1,6 +1,6 @@
 import React from 'react';
 import { createGenericPresetNode } from './GenericPresetNode';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '@/lib/ui/icons';
 import type { NodeProps, Node } from '@xyflow/react';
 
 interface UniversalPresetNodeConfig {

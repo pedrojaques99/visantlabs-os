@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 
 interface ImageLabUploadWidgetProps {

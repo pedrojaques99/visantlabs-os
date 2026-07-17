@@ -5,7 +5,7 @@ import { useLayout } from '@/hooks/useLayout';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
 import { VisantLogo3D, PRESETS } from '../components/3d/VisantLogo3D';
-import { Lock, LogIn } from 'lucide-react';
+import { Lock, LogIn } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appsService, AppConfig } from '@/services/appsService';
 import { AuthModal } from '@/components/AuthModal';

@@ -14,7 +14,7 @@ import {
   ChevronsUp,
   ChevronsDown,
   Trash2,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useCreativeStore } from './store/creativeStore';
 import { copyLayersToClipboard, pasteLayersFromClipboard } from './lib/clipboard';
 import { toast } from 'sonner';

@@ -1,6 +1,6 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { X, Trash2, Copy as CopyIcon } from 'lucide-react';
+import { X, Trash2, Copy as CopyIcon } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 

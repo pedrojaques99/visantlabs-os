@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Image as ImageIcon,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { GridDotsBackground } from '@/components/ui/GridDotsBackground';
@@ -256,11 +256,11 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
 
   return (
     <div
-      className="absolute inset-0 z-0 bg-neutral-950 overflow-y-auto"
+      className="absolute inset-0 z-0 bg-background overflow-y-auto"
       data-vsn-page="home"
       data-vsn-component="BrandCockpit"
     >
-      <GridDotsBackground opacity={0.05} spacing={30} color="#ffffff" />
+      <GridDotsBackground opacity={0.05} spacing={30} />
       <DemoBrandBanner brandId={activeBrand?.id} />
 
       <main
@@ -306,7 +306,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                       brand={heroBrand}
                       size={56}
                       rounded="md"
-                      className="border-neutral-800 bg-neutral-900"
+                      className="border-border bg-muted"
                     />
                     <span className="absolute inset-0 flex items-center justify-center rounded-md bg-black/55 opacity-0 group-hover/logo:opacity-100 transition-opacity">
                       <ImageIcon size={16} className="text-white/90" />
@@ -316,7 +316,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     {/* "Cockpit da marca" era ruído visual — vira só a11y (leitor
                         de tela). O contexto já é óbvio pela marca + rail. */}
                     <MicroTitle className="sr-only">{t('cockpit.title')}</MicroTitle>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate mt-0.5">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight truncate mt-0.5">
                       {brandName}
                     </h2>
                     {paletteColors.length > 0 && (
@@ -329,7 +329,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                           <span
                             key={c.hex}
                             title={c.name || c.hex}
-                            className="w-4 h-4 rounded-full border border-white/10 shrink-0"
+                            className="w-4 h-4 rounded-full border border-border shrink-0"
                             style={{ backgroundColor: c.hex }}
                           />
                         ))}
@@ -353,13 +353,13 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                       }`}
                       className="group flex items-center gap-2.5 px-1"
                     >
-                      <div className="h-1 w-20 rounded-full bg-neutral-800 overflow-hidden">
+                      <div className="h-1 w-20 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full bg-brand-cyan/70 transition-all"
                           style={{ width: `${depthReport.score}%` }}
                         />
                       </div>
-                      <span className="text-[11px] tabular-nums text-neutral-500 group-hover:text-neutral-300 transition-colors">
+                      <span className="text-[11px] tabular-nums text-muted-foreground group-hover:text-foreground transition-colors">
                         {depthReport.score}%
                       </span>
                     </button>
@@ -378,7 +378,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     size="icon-md"
                     aria-label={t('cockpit.settings')}
                     onClick={() => navigate('/profile')}
-                    className="text-neutral-500 hover:text-neutral-200"
+                    className="text-muted-foreground hover:text-foreground"
                   >
                     <Settings size={15} />
                   </Button>
@@ -398,8 +398,8 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     aria-expanded={!nbaCollapsed}
                     className="flex items-center justify-between gap-2 w-full text-left group/nba"
                   >
-                    <MicroTitle className="text-neutral-500">{t('cockpit.nba.title')}</MicroTitle>
-                    <span className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-neutral-600 group-hover/nba:text-neutral-400 transition-colors">
+                    <MicroTitle className="text-muted-foreground">{t('cockpit.nba.title')}</MicroTitle>
+                    <span className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover/nba:text-foreground transition-colors">
                       {nbaCollapsed && <span className="tabular-nums">{nextActions.length}</span>}
                       <ChevronDown
                         size={14}
@@ -416,14 +416,14 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                           <button
                             onClick={openGuideline}
                             title={brandGapHint(rule.id)}
-                            className="group flex items-center justify-between gap-3 w-full py-1.5 text-left border-b border-white/[0.04] last:border-0"
+                            className="group flex items-center justify-between gap-3 w-full py-1.5 text-left border-b border-border last:border-0"
                           >
-                            <span className="text-xs text-neutral-400 group-hover:text-neutral-100 transition-colors truncate">
-                              {rule.label}
+                            <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                              {t(`brandCompleteness.${rule.id}`) || rule.label}
                             </span>
                             <ChevronRight
                               size={12}
-                              className="shrink-0 text-neutral-700 group-hover:text-neutral-400 transition-colors"
+                              className="shrink-0 text-muted-foreground group-hover:text-foreground transition-colors"
                             />
                           </button>
                         </li>
@@ -437,7 +437,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                   className={cn(cardCls, 'flex items-center gap-2.5 px-4 py-3')}
                 >
                   <CheckCircle2 size={14} className="text-success shrink-0" />
-                  <span className="text-xs text-neutral-400">{t('cockpit.nba.complete')}</span>
+                  <span className="text-xs text-muted-foreground">{t('cockpit.nba.complete')}</span>
                 </section>
               ) : null}
 
@@ -491,7 +491,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     className={cn(cardCls, 'p-5 flex flex-col')}
                   >
                     <div className="flex items-center justify-between gap-3 mb-4">
-                      <MicroTitle className="text-neutral-500">
+                      <MicroTitle className="text-muted-foreground">
                         {t('cockpit.work.title')}
                       </MicroTitle>
                       <Button
@@ -514,7 +514,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                             onClick={() => openWorkItem(item)}
                             className={cn(tileCls, 'group text-left overflow-hidden flex flex-col')}
                           >
-                            <div className="aspect-square w-full bg-neutral-900 flex items-center justify-center overflow-hidden">
+                            <div className="aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
                               {item.image ? (
                                 <img
                                   src={item.image}
@@ -525,18 +525,18 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                               ) : item.kind === 'campaign' ? (
                                 <Megaphone
                                   size={20}
-                                  className="text-neutral-700"
+                                  className="text-muted-foreground"
                                   strokeWidth={1.2}
                                 />
                               ) : (
-                                <Palette size={20} className="text-neutral-700" strokeWidth={1.2} />
+                                <Palette size={20} className="text-muted-foreground" strokeWidth={1.2} />
                               )}
                             </div>
                             <div className="p-3 space-y-0.5 min-w-0">
-                              <p className="text-xs font-medium text-neutral-200 truncate">
+                              <p className="text-xs font-medium text-foreground truncate">
                                 {item.title}
                               </p>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 truncate">
+                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">
                                 {item.meta}
                               </p>
                             </div>
@@ -546,14 +546,14 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     ) : (
                       /* Rich empty state — sell what IS possible with this brand. */
                       <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 py-10">
-                        <div className="p-5 rounded-2xl bg-neutral-950/50 border border-white/10">
-                          <Wand2 size={28} className="text-neutral-400" strokeWidth={1.2} />
+                        <div className="p-5 rounded-2xl bg-muted/40 border border-border">
+                          <Wand2 size={28} className="text-muted-foreground" strokeWidth={1.2} />
                         </div>
                         <div className="space-y-1.5 max-w-sm">
-                          <h3 className="text-sm font-semibold text-neutral-200">
+                          <h3 className="text-sm font-semibold text-foreground">
                             {t('cockpit.work.emptyTitle')}
                           </h3>
-                          <p className="text-xs text-neutral-500 leading-relaxed">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
                             {t('cockpit.work.emptySubtitle')}
                           </p>
                         </div>
@@ -571,7 +571,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                   className={cn(cardCls, 'p-5')}
                 >
                   <div className="flex items-center justify-between gap-3 mb-4">
-                    <MicroTitle className="text-neutral-500">
+                    <MicroTitle className="text-muted-foreground">
                       {t('cockpit.gallery.title')}
                     </MicroTitle>
                     <Button
@@ -601,7 +601,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center">
-                            <Wand2 size={18} className="text-neutral-700" strokeWidth={1.2} />
+                            <Wand2 size={18} className="text-muted-foreground" strokeWidth={1.2} />
                           </div>
                         )}
                       </button>

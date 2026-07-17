@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { TimelineMilestone } from '@/types/types';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 
 interface TimelineSectionProps {
@@ -37,7 +37,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ timeline, onCh
         <Button
           variant="brand"
           onClick={addMilestone}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addMilestone') || 'Adicionar Milestone'}

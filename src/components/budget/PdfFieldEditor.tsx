@@ -9,7 +9,7 @@ import {
   Type,
   AlignLeft,
   DollarSign,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import type { PdfFieldMapping, BudgetData } from '@/types/types';
 import { VariableThumbnail } from './VariableThumbnail';
 import { VariableConfigModal } from './VariableConfigModal';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { type LucideIcon, RotateCcw } from 'lucide-react';
+import { type LucideIcon, RotateCcw } from '@/lib/ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { DropOverlay } from '@/components/ui/DropOverlay';

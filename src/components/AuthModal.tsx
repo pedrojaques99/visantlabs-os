@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { X } from 'lucide-react';
+import { X } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';
@@ -193,15 +193,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-card border border-border rounded-md p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
+          <h2 className="text-lg font-semibold font-mono text-foreground uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
           </h2>
           <Button
             variant="ghost"
             onClick={handleClose}
-            className="text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={20} />
           </Button>
@@ -215,7 +215,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             variant="outline"
             onClick={handleGoogleAuth}
             disabled={isGoogleLoading}
-            className="w-full flex items-center justify-center gap-2 mb-4 font-mono select-none border-neutral-700/50 hover:border-neutral-600/50 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 hover:text-white"
+            className="w-full flex items-center justify-center gap-2 mb-4 font-mono select-none border-border hover:border-ring bg-muted hover:bg-accent text-muted-foreground hover:text-foreground"
           >
             {isGoogleLoading ? (
               <>
@@ -231,30 +231,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </Button>
 
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex-1 h-px bg-neutral-800/50"></div>
-            <span className="text-xs text-neutral-500 font-mono">{t('auth.or')}</span>
-            <div className="flex-1 h-px bg-neutral-800/50"></div>
+            <div className="flex-1 h-px bg-border"></div>
+            <span className="text-xs text-muted-foreground font-mono">{t('auth.or')}</span>
+            <div className="flex-1 h-px bg-border"></div>
           </div>
         </>
 
         <form onSubmit={handleEmailAuth} className="space-y-4">
           {isSignUp && (
             <div>
-              <label className="block text-xs font-mono text-neutral-400 mb-1">
+              <label className="block text-xs font-mono text-muted-foreground mb-1">
                 {t('auth.name')}
               </label>
               <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+                className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
                 placeholder={t('auth.namePlaceholder')}
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
+            <label className="block text-xs font-mono text-muted-foreground mb-1">
               {t('auth.email')}
             </label>
             <Input
@@ -262,13 +262,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
               placeholder={t('auth.emailPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-neutral-400 mb-1">
+            <label className="block text-xs font-mono text-muted-foreground mb-1">
               {t('auth.password')}
             </label>
             <Input
@@ -277,11 +277,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-input p-2 rounded-md border border-border focus:outline-none focus:border-ring focus:ring-0 text-sm text-foreground font-mono"
               placeholder={t('auth.passwordPlaceholder')}
             />
             {isSignUp && (
-              <p className="text-xs text-neutral-500 mt-1 font-mono">
+              <p className="text-xs text-muted-foreground mt-1 font-mono">
                 {t('auth.minimumCharacters')}
               </p>
             )}
@@ -316,7 +316,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Diz POR QUE o botão está desabilitado (captcha pendente) — senão o
               usuário preenche tudo, vê o botão morto e desiste sem entender. */}
           {isSignUp && captchaEnabled && !captchaToken && !authError && (
-            <p className="text-center text-[11px] text-neutral-500 font-mono">
+            <p className="text-center text-[11px] text-muted-foreground font-mono">
               {t('auth.completeCaptchaHint') || 'Complete a verificação acima para continuar'}
             </p>
           )}
@@ -333,7 +333,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             disabled={
               isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)
             }
-            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isAuthLoading ? (
               <>
@@ -348,7 +348,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </Button>
         </form>
 
-        <div className="mt-4 pt-4 border-t border-neutral-800/50">
+        <div className="mt-4 pt-4 border-t border-border">
           <PillButton
             onClick={() => {
               setIsSignUp(!isSignUp);
@@ -363,8 +363,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {isSignUp && (
-          <div className="mt-4 pt-4 border-t border-neutral-800/50">
-            <p className="text-xs text-neutral-500 font-mono text-center">
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground font-mono text-center">
               {t('auth.bySigningUp')}{' '}
               <Link
                 to="/terms"

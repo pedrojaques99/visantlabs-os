@@ -1,14 +1,27 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { useColorRename } from '../../hooks/useColorRename';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Zap, LayoutGrid, Palette, Stamp, Paintbrush } from 'lucide-react';
 
+/**
+ * Not translated on purpose: the format string is written into the produced frame's name
+ * (`Template - Story :: <variant>`, handlers/convertToPreset.ts), so translating it would
+ * rename the artifact per locale and break preset scanning.
+ */
+const PRESET_FORMATS = ['Story', 'Feed'] as const;
+
 export function AutomationSection() {
+  const { t } = useTranslation();
   const store = usePluginStore();
+  // Was hardcoded to 'Story' while the button said "convert to preset" — a label that
+  // promised a choice the UI never offered.
+  const [presetFormat, setPresetFormat] = React.useState<string>(PRESET_FORMATS[0]);
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
   const colorRename = useColorRename();
@@ -27,12 +40,12 @@ export function AutomationSection() {
     colorRename.status !== 'error';
   const renameLabel =
     colorRename.status === 'scanning'
-      ? 'Scanning colors…'
+      ? t('plugin.tools.automation.scanningColors')
       : colorRename.status === 'naming'
-        ? 'AI naming…'
+        ? t('plugin.tools.automation.aiNaming')
         : colorRename.status === 'applying'
-          ? 'Applying…'
-          : 'Smart Color Rename';
+          ? t('plugin.tools.automation.applying')
+          : t('plugin.tools.automation.smartColorRename');
 
   return (
     <div className="space-y-2">
@@ -42,7 +55,7 @@ export function AutomationSection() {
         disabled={isRenaming || runner.anyBusy}
         onClick={() => colorRename.run({ createVariables: true, createStyles: true })}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
-        title="AI-rename selected color swatches using brand strategy + populate library"
+        title={t('plugin.tools.automation.smartColorRenameTitle')}
       >
         {isRenaming ? (
           <GlitchLoader size={12} className="mr-2" />
@@ -57,14 +70,14 @@ export function AutomationSection() {
         runner={runner}
         message={{ type: 'VARY_SELECTION_COLORS', brandColors: brandColorHexes }}
         responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Varying colors…"
+        busyLabel={t('plugin.tools.automation.varyingColors')}
         variant="brand"
         size="sm"
-        title="Generate color variations of the selection using brand palette"
+        title={t('plugin.tools.automation.smartColorVariationsTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <Zap size={12} className="mr-2" />
-        Smart Color Variations
+        {t('plugin.tools.automation.smartColorVariations')}
       </OpButton>
 
       <OpButton
@@ -72,44 +85,53 @@ export function AutomationSection() {
         runner={runner}
         message={{ type: 'GENERATE_VARIANTS' }}
         responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Generating variants…"
+        busyLabel={t('plugin.tools.automation.generatingVariants')}
         variant="outline"
         size="sm"
-        title="Clone selection into Lava, Off-White and Terra color variants"
+        title={t('plugin.tools.automation.generateVariantsTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <Palette size={12} className="mr-2" />
-        Generate Variants
+        {t('plugin.tools.automation.generateVariants')}
       </OpButton>
 
-      <OpButton
-        opId="convertToPreset"
-        runner={runner}
-        message={{ type: 'CONVERT_TO_PRESET', format: 'Story' }}
-        responseTypes={['PRESET_CREATED']}
-        busyLabel="Converting…"
-        variant="outline"
-        size="sm"
-        title="Convert selected frame into a template preset with auto-mapped text placeholders"
-        className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
-      >
-        <Stamp size={12} className="mr-2" />
-        Convert to Preset
-      </OpButton>
+      <div className="flex gap-2">
+        <div className="w-24 shrink-0">
+          <Select
+            value={presetFormat}
+            onChange={setPresetFormat}
+            options={PRESET_FORMATS.map((f) => ({ value: f, label: f }))}
+          />
+        </div>
+        <OpButton
+          opId="convertToPreset"
+          runner={runner}
+          message={{ type: 'CONVERT_TO_PRESET', format: presetFormat }}
+          responseTypes={['PRESET_CREATED']}
+          busyLabel={t('plugin.tools.automation.converting')}
+          variant="outline"
+          size="sm"
+          title={t('plugin.tools.automation.convertToPresetTitle')}
+          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-wider"
+        >
+          <Stamp size={12} className="mr-2" />
+          {t('plugin.tools.automation.convertToPreset')}
+        </OpButton>
+      </div>
 
       <OpButton
         opId="socialFrames"
         runner={runner}
         message={{ type: 'GENERATE_SOCIAL_FRAMES', brandColors: brandColorsArray }}
         responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Creating frames…"
+        busyLabel={t('plugin.tools.automation.creatingFrames')}
         variant="outline"
         size="sm"
-        title="Create pre-sized frames for Instagram, Stories, LinkedIn, etc."
+        title={t('plugin.tools.automation.socialFramesTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <LayoutGrid size={12} className="mr-2" />
-        Social Frames
+        {t('plugin.tools.automation.socialFrames')}
       </OpButton>
     </div>
   );

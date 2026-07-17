@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pickaxe } from 'lucide-react';
+import { Pickaxe } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 
 interface GlitchPickaxeProps {

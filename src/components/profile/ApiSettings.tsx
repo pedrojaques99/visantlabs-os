@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Lock, Eye, EyeOff, Diamond, Cpu } from 'lucide-react';
+import { ExternalLink, Lock, Eye, EyeOff, Diamond, Cpu } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   saveGeminiApiKey,

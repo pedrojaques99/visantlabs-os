@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Send, Square, X } from 'lucide-react';
+import { Send, Square, X } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ComponentProps, HTMLAttributes, KeyboardEventHandler } from 'react';
 import { Button } from '@/components/ui/button';

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Palette, Plus, Trash2, Copy, ShieldCheck, X, BarChart3, Loader2 } from 'lucide-react';
+import { Palette, Plus, Trash2, Copy, ShieldCheck, X, BarChart3, Loader2 } from '@/lib/ui/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,

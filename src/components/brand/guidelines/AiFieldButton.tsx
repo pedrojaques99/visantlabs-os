@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Zap } from 'lucide-react';
+import { Zap } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { toast } from 'sonner';

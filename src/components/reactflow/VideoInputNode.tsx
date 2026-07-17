@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
-import { Video, Upload, X } from 'lucide-react';
+import { Video, Upload, X } from '@/lib/ui/icons';
 import type { VideoInputNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { NodeContainer } from './shared/NodeContainer';

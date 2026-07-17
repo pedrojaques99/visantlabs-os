@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { createPortal } from 'react-dom';
-import { X, Save, Globe, Lock } from 'lucide-react';
+import { X, Save, Globe, Lock } from '@/lib/ui/icons';
 import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';

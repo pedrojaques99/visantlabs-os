@@ -3,7 +3,7 @@ import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { AiFieldButton } from '../AiFieldButton';
-import { FileText } from 'lucide-react';
+import { FileText } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import type { BrandGuideline } from '@/lib/figma-types';
 import { InlineTags } from '../InlineTags';

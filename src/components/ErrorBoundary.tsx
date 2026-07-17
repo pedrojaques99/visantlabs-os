@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home, Copy, Check } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Copy, Check } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { copyToClipboard } from '@/utils/clipboard';
 
@@ -301,7 +301,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <Button
                     variant="brand"
                     onClick={this.handleRetryChunk}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 hover:border-neutral-600/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
@@ -320,7 +320,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <Button
                     variant="brand"
                     onClick={this.handleReset}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 hover:border-neutral-600/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.tryAgain || 'Try Again'}

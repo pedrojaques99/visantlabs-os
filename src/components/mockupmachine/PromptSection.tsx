@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { Info, Pickaxe, Diamond, ArrowLeftRight, PlusIcon } from 'lucide-react';
+import { Info, Pickaxe, Diamond, ArrowLeftRight, PlusIcon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -10,7 +10,7 @@ import { getTranslations } from '@/utils/localeUtils';
 import { useMockup } from './MockupContext';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from '@/lib/ui/icons';
 import { useByokStatus } from '@/hooks/useByokStatus';
 import { ByokCostIndicator } from '@/components/ui/ByokBadge';
 
@@ -399,9 +399,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       {!isCollapsed && promptPreview && (
         <div className="mt-2 pl-1">
           <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-            <span className="text-[10px] uppercase font-mono tracking-wider mr-1 text-brand-cyan">
-              ⚙️ Regras Injetadas:
-            </span>
+            <span className="text-[10px] mr-1 text-neutral-500">⚙️ Regras Injetadas:</span>
             <span
               className={cn(
                 'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
@@ -488,7 +486,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                         onGenerateSuggestion(suggestion);
                       }}
                       disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 min-h-[44px]"
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-600/50 min-h-[44px]"
                       aria-label={
                         isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')
                       }

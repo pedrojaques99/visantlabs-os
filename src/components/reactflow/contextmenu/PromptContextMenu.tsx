@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Trash2, Copy as CopyIcon, Save } from 'lucide-react';
+import { X, Trash2, Copy as CopyIcon, Save } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 

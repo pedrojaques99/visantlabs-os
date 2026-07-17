@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Image as ImageIcon } from 'lucide-react';
+import { X, Image as ImageIcon } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { isSafeUrl } from '@/utils/imageUtils';
 

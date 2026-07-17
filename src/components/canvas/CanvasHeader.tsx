@@ -15,7 +15,7 @@ import {
   Upload,
   Plus,
   Palette,
-} from 'lucide-react';
+} from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { AuthButton } from '../AuthButton';

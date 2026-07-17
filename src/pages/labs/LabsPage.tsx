@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wind, Atom } from 'lucide-react';
+import { Wind, Atom } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface LabTool {

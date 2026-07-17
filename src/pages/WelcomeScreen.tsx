@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers, Gem } from 'lucide-react';
+import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers, Gem } from '@/lib/ui/icons';
 import { useLocation, Link } from 'react-router-dom';
 import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -480,18 +480,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           {brandGuidelines.length > 0 && (
             <Link
               to="/brand-guidelines"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 bg-neutral-900/30 hover:bg-neutral-800/50 hover:border-neutral-700 transition-all duration-200 group"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card hover:bg-muted hover:border-ring transition-all duration-200 group"
             >
               <Gem
                 size={14}
                 className="text-brand-cyan group-hover:scale-110 transition-transform"
               />
-              <span className="text-[11px] font-mono text-neutral-400 group-hover:text-neutral-200 transition-colors">
+              <span className="text-[11px] font-mono text-muted-foreground group-hover:text-foreground transition-colors">
                 {t('welcome.openBrandGuideline') || 'Abrir Brand Guideline'}
               </span>
               <ArrowRight
                 size={12}
-                className="text-neutral-600 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all"
+                className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all"
               />
             </Link>
           )}

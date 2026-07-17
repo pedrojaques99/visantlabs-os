@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { X, Upload, FileText, Save, RefreshCw } from 'lucide-react';
+import { X, Upload, FileText, Save, RefreshCw } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
@@ -171,7 +171,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
               placeholder="Nome do preset"
-              className="w-full px-4 py-2 bg-neutral-950/20 border border-neutral-800 rounded-md text-neutral-200 font-mono mb-4 focus:outline-none focus:border-[brand-cyan]"
+              className="w-full px-4 py-2 bg-neutral-950/20 border border-neutral-800 rounded-md text-neutral-200 font-mono mb-4 focus:outline-none focus:border-neutral-600"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleSavePreset();
@@ -188,7 +188,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 variant="brand"
                 onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
-                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
+                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 text-brand-cyan"
               >
                 {isSavingPreset ? (
                   <GlitchLoader size={16} />

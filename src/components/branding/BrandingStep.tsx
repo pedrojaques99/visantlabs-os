@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormButton } from '@/components/ui/form-button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, RefreshCw, Coins } from 'lucide-react';
+import { CheckCircle2, RefreshCw, Coins } from '@/lib/ui/icons';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';

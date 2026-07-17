@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image, Code, Upload, X, Download, Copy } from 'lucide-react';
+import { Image, Code, Upload, X, Download, Copy } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOgImageStore, type OgTemplate } from '@/stores/ogImageStore';
@@ -325,7 +325,7 @@ export const OgImagePage: React.FC = () => {
 
   const panel = (
     <div className="space-y-5">
-      <h2 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">Settings</h2>
+      <h2 className="text-[11px] font-medium text-neutral-500">Settings</h2>
 
       {/* Brand select */}
       <BrandToolSelect value={brandId} onChange={setBrandId} />
@@ -346,7 +346,7 @@ export const OgImagePage: React.FC = () => {
               <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
               <span
                 className={cn(
-                  'text-[10px] font-mono uppercase tracking-wider',
+                  'text-[10px] font-medium',
                   template === tpl.id
                     ? 'text-brand-cyan'
                     : 'text-neutral-600 group-hover:text-neutral-400'
@@ -568,7 +568,7 @@ function ColorInput({
         className="w-6 h-6 rounded border border-neutral-700 bg-transparent cursor-pointer p-0"
       />
       <div className="flex flex-col">
-        <span className="text-[10px] font-mono text-neutral-600 uppercase">{label}</span>
+        <span className="text-[10px] font-medium text-neutral-500">{label}</span>
         <input
           type="text"
           value={value}

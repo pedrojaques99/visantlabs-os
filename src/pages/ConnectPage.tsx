@@ -6,7 +6,7 @@ import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '../hooks/useLayout';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
-import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from 'lucide-react';
+import { Check, Copy, ArrowRight, ExternalLink, Terminal, ChevronRight } from '@/lib/ui/icons';
 import { getCurrentLocale } from '../utils/localeUtils';
 
 const API = (import.meta as any).env?.VITE_API_URL || '/api';
@@ -492,9 +492,7 @@ export default function ConnectPage() {
 
             {/* Step 1 — connect your assistant */}
             <motion.div variants={itemVariants} className="space-y-3">
-              <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-                {L.step1}
-              </p>
+              <p className="text-[11px] font-medium text-muted-foreground">{L.step1}</p>
               {L.assistants.map((a) => (
                 <AssistantCard
                   key={a.id}
@@ -521,9 +519,7 @@ export default function ConnectPage() {
 
             {/* Step 2 — try it now */}
             <motion.div variants={itemVariants} className="space-y-3">
-              <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
-                {L.step2}
-              </p>
+              <p className="text-[11px] font-medium text-muted-foreground">{L.step2}</p>
               <div className="space-y-1.5">
                 {L.prompts(brandName).map((p) => (
                   <PromptChip key={p} text={p} copied={copied} onCopy={copy} />
@@ -663,7 +659,7 @@ function AssistantCard({
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-medium text-foreground">{a.name}</span>
             {a.tag && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan font-medium shrink-0">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium shrink-0">
                 {a.tag}
               </span>
             )}
