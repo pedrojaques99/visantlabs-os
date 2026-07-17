@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { BrandSection } from '../brand/BrandSection';
 import { ExportSection } from './ExportSection';
 import { FontSwapSection } from './FontSwapSection';
@@ -7,7 +8,9 @@ import { Download, Type, Zap, Users, Film, type LucideIcon } from 'lucide-react'
 import { BulkCardsSection } from './BulkCardsSection';
 import { PhotoSequencerSection } from './PhotoSequencerSection';
 
-const SECTIONS: Array<{
+const getSections = (
+  t: (key: string, params?: Record<string, string | number>) => string
+): Array<{
   id: string;
   title: string;
   icon: LucideIcon;
@@ -15,50 +18,52 @@ const SECTIONS: Array<{
   component: () => React.JSX.Element;
   defaultOpen: boolean;
   badge?: string;
-}> = [
+}> => [
   {
     id: 'bulkcards',
-    title: 'Bulk Cards',
+    title: t('plugin.tools.tab.bulkCardsTitle'),
     icon: Users,
-    description: 'Gerar cards a partir de JSON',
+    description: t('plugin.tools.tab.bulkCardsDescription'),
     component: BulkCardsSection,
     defaultOpen: true,
   },
   {
     id: 'automation',
-    title: 'Automation',
+    title: t('plugin.tools.tab.automationTitle'),
     icon: Zap,
-    description: 'Color variations, presets, and social frames',
+    description: t('plugin.tools.tab.automationDescription'),
     component: AutomationSection,
     defaultOpen: true,
   },
   {
     id: 'photoseq',
-    title: 'Photo Sequencer',
+    title: t('plugin.tools.tab.photoSequencerTitle'),
     icon: Film,
-    description: 'Fotos do canvas em sequência → vídeo',
+    description: t('plugin.tools.tab.photoSequencerDescription'),
     component: PhotoSequencerSection,
     defaultOpen: false,
   },
   {
     id: 'fontswap',
-    title: 'Font Swap',
+    title: t('plugin.tools.tab.fontSwapTitle'),
     icon: Type,
-    description: 'Scan and batch-replace fonts',
+    description: t('plugin.tools.tab.fontSwapDescription'),
     component: FontSwapSection,
     defaultOpen: false,
   },
   {
     id: 'export',
-    title: 'Export',
+    title: t('plugin.tools.tab.exportTitle'),
     icon: Download,
-    description: 'Assets, slices, responsive, and text export',
+    description: t('plugin.tools.tab.exportDescription'),
     component: ExportSection,
     defaultOpen: false,
   },
 ];
 
 export function ToolsTab() {
+  const { t } = useTranslation();
+  const SECTIONS = getSections(t);
   return (
     <div className="flex flex-col h-full">
       <div className="space-y-3 pb-8 flex-1">

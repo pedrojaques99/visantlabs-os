@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useLogoUpload } from '../../hooks/useLogoUpload';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils';
 function LogoPreview({ logo }: { logo: LogoSlot }) {
   const preview = logo.thumbnailUrl || logo.src || logo.url;
   if (!preview) {
-    return <ImageIcon size={20} className="text-neutral-800" />;
+    return <ImageIcon size={20} className="text-muted-foreground/40" />;
   }
   if (logo.format === 'pdf' && !logo.thumbnailUrl) {
     return (
@@ -33,6 +34,7 @@ function LogoPreview({ logo }: { logo: LogoSlot }) {
 }
 
 function LogoSlotCard({ logo }: { logo: LogoSlot }) {
+  const { t } = useTranslation();
   const { linkFromSelection, uploadFile, clearSlot, busySlot } = useLogoUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const busy = busySlot === logo.name;
@@ -48,8 +50,8 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
     <div className="flex flex-col gap-1.5 group">
       <div
         className={cn(
-          'w-full aspect-square bg-neutral-950 border border-white/5 rounded-xl flex items-center justify-center overflow-hidden relative transition-all group-hover:border-brand-cyan/20 cursor-pointer',
-          !hasLogo && 'hover:bg-neutral-900 border-dashed'
+          'w-full aspect-square bg-background border border-border/50 rounded-xl flex items-center justify-center overflow-hidden relative transition-all group-hover:border-brand-cyan/20 cursor-pointer',
+          !hasLogo && 'hover:bg-card border-dashed'
         )}
         onClick={() => !hasLogo && !busy && linkFromSelection(logo.name)}
       >
@@ -57,7 +59,7 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
           <div className="flex flex-col items-center gap-2">
             <GlitchLoader size={12} />
             <span className="text-[8px] font-mono text-brand-cyan uppercase animate-pulse">
-              Capturing...
+              {t('plugin.brand.logo.capturing')}
             </span>
           </div>
         ) : (
@@ -67,7 +69,7 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
         {/* Hover Actions Overlay */}
         <div
           className={cn(
-            'absolute inset-0 bg-neutral-950/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-all duration-200',
+            'absolute inset-0 bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-all duration-200',
             !hasLogo && 'pointer-events-none opacity-0'
           )}
         >
@@ -77,24 +79,24 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 bg-neutral-900 border-white/10 text-white hover:text-brand-cyan hover:border-brand-cyan/30 rounded-lg"
+                  className="h-8 w-8 bg-card border-border text-foreground hover:text-brand-cyan hover:border-brand-cyan/30 rounded-lg"
                   onClick={(e) => {
                     e.stopPropagation();
                     linkFromSelection(logo.name);
                   }}
-                  title="Capture selection from Figma"
+                  title={t('plugin.brand.logo.captureTitle')}
                 >
                   <MousePointer2 size={14} />
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 bg-neutral-900 border-white/10 text-white hover:text-brand-cyan hover:border-brand-cyan/30 rounded-lg"
+                  className="h-8 w-8 bg-card border-border text-foreground hover:text-brand-cyan hover:border-brand-cyan/30 rounded-lg"
                   onClick={(e) => {
                     e.stopPropagation();
                     fileInputRef.current?.click();
                   }}
-                  title="Upload image file"
+                  title={t('plugin.brand.logo.uploadTitle')}
                 >
                   <Upload size={14} />
                 </Button>
@@ -105,8 +107,8 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
                   e.stopPropagation();
                   clearSlot(logo.name);
                 }}
-                className="absolute top-1.5 right-1.5 p-1 rounded-full text-neutral-500 hover:text-red-400 hover:bg-neutral-900 transition-colors"
-                title="Remove Logo"
+                className="absolute top-1.5 right-1.5 p-1 rounded-full text-muted-foreground hover:text-destructive hover:bg-card transition-colors"
+                title={t('plugin.brand.logo.removeTitle')}
               >
                 <X size={10} />
               </button>
@@ -119,10 +121,10 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
             <MousePointer2
               size={12}
-              className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+              className="text-muted-foreground/70 group-hover:text-brand-cyan transition-colors"
             />
-            <span className="text-[7px] font-mono uppercase text-neutral-600 group-hover:text-brand-cyan transition-colors text-center leading-tight px-1">
-              Select → Click
+            <span className="text-[7px] font-mono uppercase text-muted-foreground/70 group-hover:text-brand-cyan transition-colors text-center leading-tight px-1">
+              {t('plugin.brand.logo.selectClick')}
             </span>
             <button
               type="button"
@@ -130,9 +132,9 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
                 e.stopPropagation();
                 fileInputRef.current?.click();
               }}
-              className="text-[7px] font-mono text-neutral-700 hover:text-brand-cyan underline transition-colors"
+              className="text-[7px] font-mono text-muted-foreground/50 hover:text-brand-cyan underline transition-colors"
             >
-              or upload
+              {t('plugin.brand.logo.orUpload')}
             </button>
           </div>
         )}
@@ -147,7 +149,7 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
       />
 
       <div className="flex items-center justify-center">
-        <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 group-hover:text-brand-cyan transition-colors">
+        <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground group-hover:text-brand-cyan transition-colors">
           {logo.name}
         </span>
       </div>
@@ -156,6 +158,7 @@ function LogoSlotCard({ logo }: { logo: LogoSlot }) {
 }
 
 export function BrandLogoSection() {
+  const { t } = useTranslation();
   const logos = usePluginStore((s) => s.logos);
   const addLogoSlot = usePluginStore((s) => s.addLogoSlot);
 
@@ -171,16 +174,16 @@ export function BrandLogoSection() {
         <LogoSlotCard key={logo.name} logo={logo} />
       ))}
       <div
-        className="aspect-square rounded-xl border border-dashed border-white/5 flex flex-col items-center justify-center opacity-40 hover:opacity-100 hover:border-brand-cyan/30 hover:bg-neutral-900/40 transition-all cursor-pointer group"
+        className="aspect-square rounded-xl border border-dashed border-border/50 flex flex-col items-center justify-center opacity-40 hover:opacity-100 hover:border-brand-cyan/30 hover:bg-muted/40 transition-all cursor-pointer group"
         onClick={handleAddSlot}
-        title="Add logo variant"
+        title={t('plugin.brand.logo.addVariantTitle')}
       >
         <Plus
           size={14}
-          className="text-neutral-500 group-hover:text-brand-cyan transition-colors"
+          className="text-muted-foreground group-hover:text-brand-cyan transition-colors"
         />
-        <span className="text-[7px] mt-1 font-mono uppercase tracking-tighter text-neutral-600 group-hover:text-brand-cyan transition-colors">
-          Add Slot
+        <span className="text-[7px] mt-1 font-mono uppercase tracking-tighter text-muted-foreground/70 group-hover:text-brand-cyan transition-colors">
+          {t('plugin.brand.logo.addSlot')}
         </span>
       </div>
     </div>

@@ -1,20 +1,23 @@
 import React, { useRef, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useBrandSync } from '../../hooks/useBrandSync';
 import { MousePointer2, Pipette } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 
-const COLOR_ROLES = [
-  { role: 'primary', label: 'Pri' },
-  { role: 'secondary', label: 'Sec' },
-  { role: 'accent', label: 'Acc' },
-  { role: 'background', label: 'Bg' },
-  { role: 'surface', label: 'Srf' },
-  { role: 'text', label: 'Txt' },
+const getColorRoles = (t: (key: string) => string) => [
+  { role: 'primary', label: t('plugin.brand.colorGrid.rolePri') },
+  { role: 'secondary', label: t('plugin.brand.colorGrid.roleSec') },
+  { role: 'accent', label: t('plugin.brand.colorGrid.roleAcc') },
+  { role: 'background', label: t('plugin.brand.colorGrid.roleBg') },
+  { role: 'surface', label: t('plugin.brand.colorGrid.roleSrf') },
+  { role: 'text', label: t('plugin.brand.colorGrid.roleTxt') },
 ];
 
 export function BrandColorGrid() {
+  const { t } = useTranslation();
+  const COLOR_ROLES = getColorRoles(t);
   const { selectedColors, addSelectedColor, designTokens, linkedGuideline } = usePluginStore();
   const { updateBrandGuideline } = useBrandSync();
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -92,8 +95,8 @@ export function BrandColorGrid() {
       {/* File Variables — pick a color first */}
       {figmaColors.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[8px] font-mono uppercase tracking-widest text-neutral-600 px-0.5">
-            File variables
+          <p className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground/70 px-0.5">
+            {t('plugin.brand.colorGrid.fileVariables')}
           </p>
           <div className="flex flex-wrap gap-1">
             {figmaColors.slice(0, 16).map((c, i) => {
@@ -109,17 +112,17 @@ export function BrandColorGrid() {
                     'w-5 h-5 rounded border transition-all hover:scale-110',
                     isSelected
                       ? 'border-brand-cyan ring-1 ring-brand-cyan/50 scale-110'
-                      : 'border-white/10 hover:border-brand-cyan/40'
+                      : 'border-border hover:border-brand-cyan/40'
                   )}
                   style={{ backgroundColor: hex }}
                 />
               );
             })}
           </div>
-          <p className="text-[8px] text-neutral-500 italic px-0.5">
+          <p className="text-[8px] text-muted-foreground italic px-0.5">
             {pendingHex
-              ? `${pendingHex.name || pendingHex.hex} selected — tap a slot below`
-              : 'Tap a color, then tap a slot to assign'}
+              ? t('plugin.brand.colorGrid.selected', { name: pendingHex.name || pendingHex.hex })
+              : t('plugin.brand.colorGrid.tapHint')}
           </p>
         </div>
       )}
@@ -138,8 +141,8 @@ export function BrandColorGrid() {
                 onDoubleClick={() => openNativePicker(item.role)}
                 title={
                   pendingHex
-                    ? `Assign ${pendingHex.hex} to ${item.label}`
-                    : 'Click: pick from selection · Double-click: custom color'
+                    ? t('plugin.brand.colorGrid.assign', { hex: pendingHex.hex, label: item.label })
+                    : t('plugin.brand.colorGrid.clickHint')
                 }
                 className={cn(
                   'w-full aspect-square rounded-lg border transition-all relative overflow-hidden group',
@@ -167,16 +170,16 @@ export function BrandColorGrid() {
                   <span className="absolute inset-0 flex items-center justify-center">
                     <MousePointer2
                       size={10}
-                      className="text-neutral-600 group-hover:text-brand-cyan transition-colors"
+                      className="text-muted-foreground/70 group-hover:text-brand-cyan transition-colors"
                     />
                   </span>
                 ) : null}
               </button>
-              <span className="text-[8px] font-mono uppercase text-neutral-500 leading-none">
+              <span className="text-[8px] font-mono uppercase text-muted-foreground leading-none">
                 {item.label}
               </span>
               {color && (
-                <span className="text-[7px] font-mono text-neutral-600 leading-none">
+                <span className="text-[7px] font-mono text-muted-foreground/70 leading-none">
                   {color.hex}
                 </span>
               )}

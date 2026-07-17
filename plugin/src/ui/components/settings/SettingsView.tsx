@@ -5,8 +5,10 @@ import { BrandOperationsSection } from '../brand/BrandOperationsSection';
 import { ToolsTab } from '../tools/ToolsTab';
 import { DevTab } from './DevTab';
 import { usePluginStore } from '../../store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function SettingsView() {
+  const { t } = useTranslation();
   const devMode = usePluginStore((s) => s.devMode);
   const cols = devMode ? 'grid-cols-4' : 'grid-cols-3';
 
@@ -16,17 +18,17 @@ export function SettingsView() {
         <div className="px-4 pt-4">
           <TabsList className={`w-full grid ${cols}`}>
             <TabsTrigger value="brand" className="text-xs font-mono uppercase tracking-wide">
-              Brand
+              {t('plugin.settings.tabBrand')}
             </TabsTrigger>
             <TabsTrigger value="auto" className="text-xs font-mono uppercase tracking-wide">
-              Auto
+              {t('plugin.settings.tabAuto')}
             </TabsTrigger>
             <TabsTrigger value="tools" className="text-xs font-mono uppercase tracking-wide">
-              Tools
+              {t('plugin.settings.tabTools')}
             </TabsTrigger>
             {devMode && (
               <TabsTrigger value="dev" className="text-xs font-mono uppercase tracking-wide">
-                Dev
+                {t('plugin.settings.tabDev')}
               </TabsTrigger>
             )}
           </TabsList>

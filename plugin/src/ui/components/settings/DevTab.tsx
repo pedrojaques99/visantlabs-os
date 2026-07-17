@@ -155,7 +155,7 @@ export function DevTab() {
             size="sm"
             className="w-full h-8 text-[10px]"
           >
-            <Cpu size={12} className="mr-2 text-neutral-500" />
+            <Cpu size={12} className="mr-2 text-muted-foreground" />
             Analyze to Prompt
           </OpButton>
           <OpButton
@@ -168,7 +168,7 @@ export function DevTab() {
             size="sm"
             className="w-full h-8 text-[10px]"
           >
-            <LayoutGrid size={12} className="mr-2 text-neutral-500" />
+            <LayoutGrid size={12} className="mr-2 text-muted-foreground" />
             Social Frames
           </OpButton>
         </div>

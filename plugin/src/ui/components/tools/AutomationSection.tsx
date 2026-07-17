@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { usePluginStore } from '../../store';
 import { useColorRename } from '../../hooks/useColorRename';
@@ -8,6 +9,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Zap, LayoutGrid, Palette, Stamp, Paintbrush } from 'lucide-react';
 
 export function AutomationSection() {
+  const { t } = useTranslation();
   const store = usePluginStore();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
@@ -27,12 +29,12 @@ export function AutomationSection() {
     colorRename.status !== 'error';
   const renameLabel =
     colorRename.status === 'scanning'
-      ? 'Scanning colors…'
+      ? t('plugin.tools.automation.scanningColors')
       : colorRename.status === 'naming'
-        ? 'AI naming…'
+        ? t('plugin.tools.automation.aiNaming')
         : colorRename.status === 'applying'
-          ? 'Applying…'
-          : 'Smart Color Rename';
+          ? t('plugin.tools.automation.applying')
+          : t('plugin.tools.automation.smartColorRename');
 
   return (
     <div className="space-y-2">
@@ -42,7 +44,7 @@ export function AutomationSection() {
         disabled={isRenaming || runner.anyBusy}
         onClick={() => colorRename.run({ createVariables: true, createStyles: true })}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
-        title="AI-rename selected color swatches using brand strategy + populate library"
+        title={t('plugin.tools.automation.smartColorRenameTitle')}
       >
         {isRenaming ? (
           <GlitchLoader size={12} className="mr-2" />
@@ -57,14 +59,14 @@ export function AutomationSection() {
         runner={runner}
         message={{ type: 'VARY_SELECTION_COLORS', brandColors: brandColorHexes }}
         responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Varying colors…"
+        busyLabel={t('plugin.tools.automation.varyingColors')}
         variant="brand"
         size="sm"
-        title="Generate color variations of the selection using brand palette"
+        title={t('plugin.tools.automation.smartColorVariationsTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <Zap size={12} className="mr-2" />
-        Smart Color Variations
+        {t('plugin.tools.automation.smartColorVariations')}
       </OpButton>
 
       <OpButton
@@ -72,14 +74,14 @@ export function AutomationSection() {
         runner={runner}
         message={{ type: 'GENERATE_VARIANTS' }}
         responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Generating variants…"
+        busyLabel={t('plugin.tools.automation.generatingVariants')}
         variant="outline"
         size="sm"
-        title="Clone selection into Lava, Off-White and Terra color variants"
+        title={t('plugin.tools.automation.generateVariantsTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <Palette size={12} className="mr-2" />
-        Generate Variants
+        {t('plugin.tools.automation.generateVariants')}
       </OpButton>
 
       <OpButton
@@ -87,14 +89,14 @@ export function AutomationSection() {
         runner={runner}
         message={{ type: 'CONVERT_TO_PRESET', format: 'Story' }}
         responseTypes={['PRESET_CREATED']}
-        busyLabel="Converting…"
+        busyLabel={t('plugin.tools.automation.converting')}
         variant="outline"
         size="sm"
-        title="Convert selected frame into a template preset with auto-mapped text placeholders"
+        title={t('plugin.tools.automation.convertToPresetTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <Stamp size={12} className="mr-2" />
-        Convert to Preset
+        {t('plugin.tools.automation.convertToPreset')}
       </OpButton>
 
       <OpButton
@@ -102,14 +104,14 @@ export function AutomationSection() {
         runner={runner}
         message={{ type: 'GENERATE_SOCIAL_FRAMES', brandColors: brandColorsArray }}
         responseTypes={['OPERATIONS_DONE']}
-        busyLabel="Creating frames…"
+        busyLabel={t('plugin.tools.automation.creatingFrames')}
         variant="outline"
         size="sm"
-        title="Create pre-sized frames for Instagram, Stories, LinkedIn, etc."
+        title={t('plugin.tools.automation.socialFramesTitle')}
         className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
       >
         <LayoutGrid size={12} className="mr-2" />
-        Social Frames
+        {t('plugin.tools.automation.socialFrames')}
       </OpButton>
     </div>
   );

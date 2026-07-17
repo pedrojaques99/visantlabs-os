@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { usePluginStore } from '../../store';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 export function ComponentLibraryModal() {
+  const { t } = useTranslation();
   const { allComponents } = usePluginStore();
   const [search, setSearch] = useState('');
 
@@ -14,7 +16,7 @@ export function ComponentLibraryModal() {
       <div className="relative">
         <Search size={14} className="absolute left-2 top-2 text-muted-foreground" />
         <Input
-          placeholder="Search components..."
+          placeholder={t('plugin.library.searchComponents')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-7 text-xs"

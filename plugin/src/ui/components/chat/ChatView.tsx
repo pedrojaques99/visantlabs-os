@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useChatSend } from '../../hooks/useChatSend';
 import { MessageList } from './MessageList';
@@ -9,6 +10,7 @@ import { useAutoScrollToBottom } from '@/hooks/chat/useAutoScrollToBottom';
 import { getGuidelineLabel } from '../../lib/brandHydration';
 
 export function ChatView() {
+  const { t } = useTranslation();
   const { chatHistory, selectionDetails, clearChatHistory, sessionContext } = usePluginStore();
   const brandGuideline = usePluginStore((s) => s.brandGuideline);
   const { sendMessage } = useChatSend();
@@ -41,21 +43,21 @@ export function ChatView() {
     <div className="flex flex-col h-full bg-background">
       {/* Brand context bar */}
       {brandGuideline && (
-        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border/50 bg-muted/30">
           {brandLogo ? (
             <img
               src={brandLogo}
               alt=""
-              className="w-5 h-5 rounded object-contain bg-white/5 p-0.5 shrink-0"
+              className="w-5 h-5 rounded object-contain bg-muted p-0.5 shrink-0"
             />
           ) : (
-            <div className="w-5 h-5 rounded bg-neutral-800 border border-white/5 flex items-center justify-center shrink-0">
-              <span className="text-[10px] font-semibold text-neutral-300">
+            <div className="w-5 h-5 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
+              <span className="text-[10px] font-semibold text-foreground/70">
                 {brandName?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
           )}
-          <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider truncate">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">
             {brandName}
           </span>
           {chatHistory.length > 0 && (
@@ -64,7 +66,7 @@ export function ChatView() {
               className="ml-auto flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-destructive transition-colors shrink-0"
             >
               <Trash2 size={10} />
-              Clear
+              {t('plugin.common.clear')}
             </button>
           )}
         </div>
@@ -78,7 +80,7 @@ export function ChatView() {
             className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-destructive transition-colors"
           >
             <Trash2 size={10} />
-            Clear
+            {t('plugin.common.clear')}
           </button>
         </div>
       )}
@@ -90,14 +92,14 @@ export function ChatView() {
                 <MessageSquare size={20} className="text-brand-cyan" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Describe what you want to create and Visant Copilot will generate designs in Figma.
+                {t('plugin.chat.emptyDescription')}
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {[
-                  'Mockup de cartão de visita',
-                  'Design para Instagram',
-                  'Design de embalagem',
-                  'Banner para site',
+                  t('plugin.chat.promptBusinessCard'),
+                  t('plugin.chat.promptInstagram'),
+                  t('plugin.chat.promptPackaging'),
+                  t('plugin.chat.promptBanner'),
                 ].map((prompt) => (
                   <button
                     key={prompt}
@@ -143,11 +145,10 @@ export function ChatView() {
                   isHigh ? 'text-destructive' : 'text-muted-foreground'
                 }`}
               >
-                {pct}% · {sessionContext.messageCount} msg
-                {sessionContext.messageCount !== 1 ? 's' : ''}
+                {sessionContext.messageCount === 1 ? t('plugin.chat.contextUsageOne', { pct, count: sessionContext.messageCount }) : t('plugin.chat.contextUsageOther', { pct, count: sessionContext.messageCount })}
               </span>
               {isHigh && (
-                <span className="text-[9px] font-mono text-destructive">Clear recommended</span>
+                <span className="text-[9px] font-mono text-destructive">{t('plugin.chat.clearRecommended')}</span>
               )}
             </div>
           );
@@ -158,7 +159,7 @@ export function ChatView() {
           <div className="flex items-center gap-1.5 px-3 pt-1.5 pb-1">
             <Layers size={10} className="text-muted-foreground shrink-0" />
             <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-              {selectionDetails.length} frame{selectionDetails.length > 1 ? 's' : ''}
+              {selectionDetails.length === 1 ? t('plugin.common.frameCountOne', { count: selectionDetails.length }) : t('plugin.common.frameCountOther', { count: selectionDetails.length })}
             </span>
             {framesOverflow && (
               <button
@@ -166,7 +167,7 @@ export function ChatView() {
                 onClick={() => setFramesExpanded((v) => !v)}
                 className="ml-auto flex items-center gap-0.5 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors shrink-0"
               >
-                {framesExpanded ? 'recolher' : 'ver todos'}
+                {framesExpanded ? t('plugin.chat.collapse') : t('plugin.chat.seeAll')}
                 <ChevronDown
                   size={10}
                   className={`transition-transform ${framesExpanded ? 'rotate-180' : ''}`}

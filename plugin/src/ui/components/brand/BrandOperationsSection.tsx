@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 import { BrandSection } from './BrandSection';
 import { BrandIntelligenceSection } from './BrandIntelligenceSection';
@@ -7,15 +8,16 @@ import { BrandMatrixSection } from './BrandMatrixSection';
 import { BrainCircuit, Paintbrush } from 'lucide-react';
 
 export function BrandOperationsSection() {
+  const { t } = useTranslation();
   useFigmaMessages();
 
   return (
     <div className="space-y-3 p-1">
       <BrandSection
-        title="Intelligence"
+        title={t('plugin.brand.operations.intelligenceTitle')}
         icon={BrainCircuit}
-        badge="AI"
-        description="Import, strategy extraction, and smart scan"
+        badge={t('plugin.brand.operations.intelligenceBadge')}
+        description={t('plugin.brand.operations.intelligenceDescription')}
         collapsible
         defaultOpen={true}
       >
@@ -23,9 +25,9 @@ export function BrandOperationsSection() {
       </BrandSection>
 
       <BrandSection
-        title="Color Cleanup"
+        title={t('plugin.brand.operations.colorCleanupTitle')}
         icon={Paintbrush}
-        description="Find and bind hardcoded colors to variables"
+        description={t('plugin.brand.operations.colorCleanupDescription')}
         collapsible
         defaultOpen={false}
       >

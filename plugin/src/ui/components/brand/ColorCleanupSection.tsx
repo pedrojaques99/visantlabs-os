@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useOpRunner } from '../../hooks/useOpRunner';
 import { OpButton } from '../common/OpButton';
@@ -17,6 +18,7 @@ interface ColorMatch {
 }
 
 export function ColorCleanupSection() {
+  const { t } = useTranslation();
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
   const scanResults = usePluginStore((s) => s.colorScanResults);
@@ -65,28 +67,28 @@ export function ColorCleanupSection() {
           runner={runner}
           message={{ type: 'SCAN_HARDCODED_COLORS', threshold }}
           responseTypes={['COLOR_SCAN_RESULTS']}
-          busyLabel="Scanning…"
+          busyLabel={t('plugin.brand.colorCleanup.scanningBusy')}
           variant="brand"
           size="sm"
           className="flex-1"
           icon={<Search size={14} />}
         >
-          Scan Hardcoded Colors
+          {t('plugin.brand.colorCleanup.scanColors')}
         </OpButton>
         <select
           value={threshold}
           onChange={(e) => setThreshold(Number(e.target.value))}
-          className="h-8 rounded-md border border-border/60 bg-neutral-900/60 text-[10px] px-1.5 text-muted-foreground"
+          className="h-8 rounded-md border border-border/60 bg-muted/60 text-[10px] px-1.5 text-muted-foreground"
         >
-          <option value={0.05}>Strict</option>
-          <option value={0.15}>Normal</option>
-          <option value={0.3}>Loose</option>
+          <option value={0.05}>{t('plugin.brand.colorCleanup.strict')}</option>
+          <option value={0.15}>{t('plugin.brand.colorCleanup.normal')}</option>
+          <option value={0.3}>{t('plugin.brand.colorCleanup.loose')}</option>
         </select>
       </div>
 
       {scanResults && (scanResults as ColorMatch[]).length === 0 && (
         <p className="text-[11px] text-muted-foreground text-center py-2">
-          No hardcoded colors found in selection.
+          {t('plugin.brand.colorCleanup.noneFound')}
         </p>
       )}
 
@@ -94,14 +96,14 @@ export function ColorCleanupSection() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground">
-              {selected.length}/{(scanResults as ColorMatch[]).length} matches selected
+              {t('plugin.brand.colorCleanup.matchesSelected', { selected: selected.length, total: (scanResults as ColorMatch[]).length })}
             </span>
             <button
               type="button"
               onClick={clearResults}
               className="text-[10px] text-muted-foreground hover:text-foreground"
             >
-              Clear
+              {t('plugin.common.clear')}
             </button>
           </div>
 
@@ -117,18 +119,18 @@ export function ColorCleanupSection() {
                   onClick={() => toggle(key)}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors ${
                     isExcluded
-                      ? 'opacity-40 bg-neutral-900/20'
-                      : 'bg-neutral-900/40 hover:bg-neutral-800/60'
+                      ? 'opacity-40 bg-muted/20'
+                      : 'bg-muted/40 hover:bg-muted/60'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     <div
-                      className="w-4 h-4 rounded-sm border border-white/10 shrink-0"
+                      className="w-4 h-4 rounded-sm border border-border shrink-0"
                       style={{ backgroundColor: match.currentHex }}
                     />
                     <span className="text-[10px] text-muted-foreground">→</span>
                     <div
-                      className="w-4 h-4 rounded-sm border border-white/10 shrink-0"
+                      className="w-4 h-4 rounded-sm border border-border shrink-0"
                       style={{ backgroundColor: match.matchedHex }}
                     />
                     <span className="text-[11px] truncate">{match.matchedVariableName}</span>
@@ -150,7 +152,7 @@ export function ColorCleanupSection() {
             disabled={selected.length === 0}
             className="w-full h-8 rounded-md bg-brand-cyan/20 text-brand-cyan text-[11px] font-medium hover:bg-brand-cyan/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            Apply {selected.length} bindings
+            {t('plugin.brand.colorCleanup.applyBindings', { count: selected.length })}
           </button>
         </div>
       )}

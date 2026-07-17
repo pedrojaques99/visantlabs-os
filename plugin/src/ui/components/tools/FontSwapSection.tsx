@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useClient } from '../../lib/ClientProvider';
 import { usePluginStore } from '../../store';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ function FontFamilyPicker({
   value: string;
   onChange: (family: string) => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
@@ -97,7 +99,7 @@ function FontFamilyPicker({
           className="truncate"
           style={value ? { fontFamily: `"${value}", sans-serif` } : undefined}
         >
-          {value || 'Família…'}
+          {value || t('plugin.tools.fontSwap.familyPlaceholder')}
         </span>
         <ChevronDown size={10} className="shrink-0 text-muted-foreground" />
       </button>
@@ -121,7 +123,7 @@ function FontFamilyPicker({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar fonte…"
+                placeholder={t('plugin.tools.fontSwap.searchFont')}
                 className="flex-1 bg-transparent text-[10px] text-foreground outline-none placeholder:text-muted-foreground/50"
               />
             </div>
@@ -144,7 +146,7 @@ function FontFamilyPicker({
             >
               {filtered.length === 0 ? (
                 <div className="text-[10px] text-muted-foreground text-center py-3">
-                  Nenhuma fonte
+                  {t('plugin.tools.fontSwap.noFonts')}
                 </div>
               ) : (
                 filtered.map((f) => (
@@ -177,6 +179,7 @@ interface SwapTarget {
 }
 
 export function FontSwapSection() {
+  const { t } = useTranslation();
   const client = useClient();
   const showToast = usePluginStore((s) => s.showToast);
 
@@ -204,7 +207,7 @@ export function FontSwapSection() {
         setFamilies((familyResult as any) ?? []);
         setTargets({});
       } catch {
-        showToast(s === 'page' ? 'No text found on page' : 'Select layers with text', 'error');
+        showToast(s === 'page' ? t('plugin.tools.fontSwap.noTextOnPage') : t('plugin.tools.fontSwap.selectLayersWithText'), 'error');
       } finally {
         setScanning(false);
       }
@@ -265,10 +268,10 @@ export function FontSwapSection() {
       });
       const res = await client.request('text.swapFonts', { swaps });
       setResult(res);
-      showToast(`${res.swapped} layers atualizados`, 'success');
+      showToast(t('plugin.tools.fontSwap.layersUpdated', { count: res.swapped }), 'success');
       scan();
     } catch (err) {
-      showToast('Erro ao trocar fontes', 'error');
+      showToast(t('plugin.tools.fontSwap.swapFailed'), 'error');
     } finally {
       setSwapping(false);
     }
@@ -277,7 +280,7 @@ export function FontSwapSection() {
   if (scanning) {
     return (
       <div className="flex items-center justify-center py-6 gap-2 text-xs text-muted-foreground">
-        <GlitchLoader size={12} /> Escaneando fontes…
+        <GlitchLoader size={12} /> {t('plugin.tools.fontSwap.scanningFonts')}
       </div>
     );
   }
@@ -286,7 +289,7 @@ export function FontSwapSection() {
     return (
       <div className="space-y-3">
         <p className="text-[10px] text-muted-foreground text-center py-4">
-          Select frames with text, or scan the whole page.
+          {t('plugin.tools.fontSwap.selectFramesHint')}
         </p>
         <div className="grid grid-cols-2 gap-2">
           <Button
@@ -298,7 +301,7 @@ export function FontSwapSection() {
               scan('selection');
             }}
           >
-            <RefreshCw size={10} className="mr-1.5" /> Scan Selection
+            <RefreshCw size={10} className="mr-1.5" /> {t('plugin.tools.fontSwap.scanSelection')}
           </Button>
           <Button
             variant="outline"
@@ -309,7 +312,7 @@ export function FontSwapSection() {
               scan('page');
             }}
           >
-            <RefreshCw size={10} className="mr-1.5" /> Scan Page
+            <RefreshCw size={10} className="mr-1.5" /> {t('plugin.tools.fontSwap.scanPage')}
           </Button>
         </div>
       </div>
@@ -373,7 +376,7 @@ export function FontSwapSection() {
       {result && result.failed.length > 0 && (
         <div className="flex items-start gap-1.5 text-[9px] text-amber-400 px-1">
           <AlertTriangle size={10} className="shrink-0 mt-0.5" />
-          <span>{result.failed.length} layers falharam</span>
+          <span>{t('plugin.tools.fontSwap.layersFailed', { count: result.failed.length })}</span>
         </div>
       )}
 
@@ -383,27 +386,27 @@ export function FontSwapSection() {
           variant="outline"
           size="sm"
           className="h-7 text-[10px]"
-          title="Re-scan current selection"
+          title={t('plugin.tools.fontSwap.rescanSelectionTitle')}
           onClick={() => {
             setScope('selection');
             scan('selection');
           }}
           disabled={swapping}
         >
-          <RefreshCw size={10} className="mr-1.5" /> Selection
+          <RefreshCw size={10} className="mr-1.5" /> {t('plugin.tools.fontSwap.selection')}
         </Button>
         <Button
           variant="outline"
           size="sm"
           className="h-7 text-[10px]"
-          title="Scan entire current page"
+          title={t('plugin.tools.fontSwap.scanPageTitle')}
           onClick={() => {
             setScope('page');
             scan('page');
           }}
           disabled={swapping}
         >
-          <RefreshCw size={10} className="mr-1.5" /> Page
+          <RefreshCw size={10} className="mr-1.5" /> {t('plugin.tools.fontSwap.page')}
         </Button>
         <Button
           variant="default"
@@ -417,7 +420,7 @@ export function FontSwapSection() {
           ) : (
             <Check size={10} className="mr-1.5" />
           )}
-          {swapping ? 'Aplicando…' : 'Aplicar Swap'}
+          {swapping ? t('plugin.tools.fontSwap.applying') : t('plugin.tools.fontSwap.applySwap')}
         </Button>
       </div>
     </div>

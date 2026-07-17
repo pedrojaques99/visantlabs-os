@@ -31,8 +31,8 @@ export function TypingIndicator() {
         </span>
       )}
       {isMockupRunning && (
-        <div className="relative aspect-square w-full max-w-[240px] overflow-hidden rounded-xl border border-white/5 bg-white/[0.02]">
-          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/[0.03] to-transparent" />
+        <div className="relative aspect-square w-full max-w-[240px] overflow-hidden rounded-xl border border-border/50 bg-muted/30">
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-foreground/[0.03] to-transparent" />
           <div className="absolute inset-0 flex items-center justify-center">
             <PremiumGlitchLoader color="var(--brand-cyan)" className="!text-sm" />
           </div>

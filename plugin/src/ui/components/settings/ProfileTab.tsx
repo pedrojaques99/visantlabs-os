@@ -2,18 +2,30 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useApi } from '../../hooks/useApi';
 import { usePluginStore } from '../../store';
+import { useClient } from '../../lib/ClientProvider';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Locale } from '@/utils/localeUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BrandSection } from '../brand/BrandSection';
-import { LogOut, Lock, Key, User, ShieldCheck, Mail, Cpu } from 'lucide-react';
+import { LogOut, Lock, Key, User, ShieldCheck, Mail, Cpu, Languages } from 'lucide-react';
 
 export function ProfileTab() {
+  const { t, locale, setLocale } = useTranslation();
+  const client = useClient();
   const { isAuthenticated, email, login, logout, loginWithGoogle } = useAuth();
   const { userInfo } = usePluginStore();
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Persist the language choice through clientStorage — the Figma sandbox's
+  // localStorage is memory-only, so App.tsx rehydrates this on next launch.
+  const changeLocale = (next: Locale) => {
+    setLocale(next);
+    client.request('storage.set', { key: 'locale', value: next }).catch(() => {});
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -36,13 +48,13 @@ export function ProfileTab() {
     <div className="space-y-4">
       {/* Account Info */}
       <BrandSection
-        title="Conta & Acesso"
+        title={t('plugin.profile.accountTitle')}
         icon={User}
-        badge={isAuthenticated ? 'Logado' : 'Visitante'}
+        badge={isAuthenticated ? t('plugin.profile.badgeLoggedIn') : t('plugin.profile.badgeGuest')}
       >
         {isAuthenticated ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-neutral-900/40 border border-white/5 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-muted/40 border border-border/50 rounded-xl">
               <div className="h-10 w-10 rounded-full bg-brand-cyan/20 border border-brand-cyan/30 flex items-center justify-center overflow-hidden">
                 {userInfo?.photoUrl ? (
                   <img
@@ -55,10 +67,10 @@ export function ProfileTab() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-white uppercase tracking-wider truncate">
-                  {userInfo?.name || 'Visant User'}
+                <p className="text-[10px] font-bold text-foreground uppercase tracking-wider truncate">
+                  {userInfo?.name || t('plugin.profile.defaultUserName')}
                 </p>
-                <div className="flex items-center gap-1.5 text-neutral-500">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Mail size={10} />
                   <p className="text-[9px] font-mono truncate">{email}</p>
                 </div>
@@ -69,33 +81,33 @@ export function ProfileTab() {
               onClick={logout}
               variant="outline"
               size="sm"
-              className="w-full text-[10px] h-8 font-bold uppercase tracking-widest border-white/5 hover:bg-red-500/10 hover:text-red-400 hover:border-red-400/20"
+              className="w-full text-[10px] h-8 font-bold uppercase tracking-widest border-border/50 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
             >
               <LogOut size={12} className="mr-2" />
-              Sair da Conta
+              {t('plugin.profile.logout')}
             </Button>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="space-y-2">
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 text-neutral-600" size={12} />
+                <Mail className="absolute left-3 top-2.5 text-muted-foreground/70" size={12} />
                 <Input
                   type="email"
-                  placeholder="Seu e-mail"
+                  placeholder={t('plugin.profile.emailPlaceholder')}
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  className="text-[10px] h-9 pl-9 bg-neutral-950/50 border-white/5"
+                  className="text-[10px] h-9 pl-9 bg-muted/50 border-border/50"
                 />
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 text-neutral-600" size={12} />
+                <Lock className="absolute left-3 top-2.5 text-muted-foreground/70" size={12} />
                 <Input
                   type="password"
-                  placeholder="Sua senha"
+                  placeholder={t('plugin.profile.passwordPlaceholder')}
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  className="text-[10px] h-9 pl-9 bg-neutral-950/50 border-white/5"
+                  className="text-[10px] h-9 pl-9 bg-muted/50 border-border/50"
                 />
               </div>
             </div>
@@ -105,21 +117,21 @@ export function ProfileTab() {
               variant="brand"
               className="w-full text-xs h-9 font-bold uppercase tracking-widest"
             >
-              {loading ? 'Autenticando...' : 'Entrar no Visant'}
+              {loading ? t('plugin.profile.authenticating') : t('plugin.profile.signIn')}
             </Button>
 
             <div className="flex items-center gap-2 py-1">
-              <div className="flex-1 h-px bg-white/5" />
-              <span className="text-[8px] uppercase tracking-widest text-neutral-600 font-bold">
-                ou
+              <div className="flex-1 h-px bg-muted" />
+              <span className="text-[8px] uppercase tracking-widest text-muted-foreground/70 font-bold">
+                {t('plugin.common.or')}
               </span>
-              <div className="flex-1 h-px bg-white/5" />
+              <div className="flex-1 h-px bg-muted" />
             </div>
 
             <Button
               onClick={loginWithGoogle}
               variant="outline"
-              className="w-full text-[10px] h-9 font-bold uppercase tracking-widest border-white/5 hover:bg-white/5"
+              className="w-full text-[10px] h-9 font-bold uppercase tracking-widest border-border/50 hover:bg-muted"
             >
               <svg className="mr-2 h-3 w-3" viewBox="0 0 24 24">
                 <path
@@ -139,22 +151,43 @@ export function ProfileTab() {
                   fill="#EA4335"
                 />
               </svg>
-              Google Login
+              {t('plugin.profile.googleLogin')}
             </Button>
 
-            <p className="text-[9px] text-neutral-600 text-center px-4 leading-tight italic">
-              Acesse sua conta para sincronizar guidelines e usar créditos premium.
+            <p className="text-[9px] text-muted-foreground/70 text-center px-4 leading-tight italic">
+              {t('plugin.profile.loginHint')}
             </p>
           </div>
         )}
       </BrandSection>
 
       {/* API Configuration */}
-      <BrandSection title="Settings & API" icon={Cpu}>
+      <BrandSection title={t('plugin.profile.settingsApiTitle')} icon={Cpu}>
         <div className="space-y-3">
+          {/* Language */}
           <div className="space-y-2">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 px-1">
-              Visant API Key (Dev)
+            <label className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+              <Languages size={11} />
+              {t('plugin.settings.language')}
+            </label>
+            <div className="flex gap-2">
+              {(['pt-BR', 'en-US'] as const).map((loc) => (
+                <Button
+                  key={loc}
+                  onClick={() => changeLocale(loc)}
+                  variant={locale === loc ? 'brand' : 'outline'}
+                  size="sm"
+                  className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest border-border/50"
+                >
+                  {loc === 'pt-BR' ? 'PT-BR' : 'EN'}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
+              {t('plugin.profile.apiKeyLabel')}
             </label>
             <div className="flex gap-2">
               <Input
@@ -162,15 +195,15 @@ export function ProfileTab() {
                 placeholder="key-xxxxxxxxxxxx"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="text-[10px] h-8 bg-neutral-950/50 border-white/5 font-mono flex-1"
+                className="text-[10px] h-8 bg-muted/50 border-border/50 font-mono flex-1"
               />
               <Button
                 onClick={handleSaveApiKey}
                 variant="outline"
                 size="sm"
-                className="h-8 px-3 border-white/5"
+                className="h-8 px-3 border-border/50"
               >
-                Save
+                {t('plugin.common.save')}
               </Button>
             </div>
           </div>
@@ -178,18 +211,18 @@ export function ProfileTab() {
           <div className="p-3 bg-brand-cyan/5 border border-brand-cyan/10 rounded-lg flex items-center gap-2">
             <ShieldCheck size={14} className="text-brand-cyan" />
             <p className="text-[9px] text-brand-cyan/80 leading-tight">
-              Suas chaves são armazenadas localmente no plugin.
+              {t('plugin.profile.keysStoredLocally')}
             </p>
           </div>
         </div>
       </BrandSection>
 
       {/* About */}
-      <div className="p-4 border border-white/5 rounded-xl bg-neutral-950/20 flex flex-col items-center gap-1">
-        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-600">
+      <div className="p-4 border border-border/50 rounded-xl bg-muted/20 flex flex-col items-center gap-1">
+        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/70">
           Visant Copilot
         </div>
-        <div className="text-[9px] font-mono text-neutral-700">VERSION 4.3.0 ALPHA</div>
+        <div className="text-[9px] font-mono text-muted-foreground/50">{t('plugin.profile.versionLabel')}</div>
       </div>
     </div>
   );

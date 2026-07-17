@@ -1,10 +1,12 @@
 import React, { useRef, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { usePluginStore } from '../../store';
 import { useServerStatus } from '../../hooks/useServerStatus';
 import { Button } from '@/components/ui/button';
 import { Settings, Pickaxe, User as UserIcon, History, Minimize2 } from 'lucide-react';
 
 export function Header() {
+  const { t } = useTranslation();
   const {
     setActiveView,
     credits,
@@ -44,11 +46,10 @@ export function Header() {
         {/* Only surface the status dot when the server is DOWN — silent when healthy. */}
         {isConnected === false && (
           <div
-            className="w-2 h-2 rounded-full shrink-0"
+            className="w-2 h-2 rounded-full shrink-0 bg-destructive"
             role="status"
-            aria-label="Servidor desconectado"
-            style={{ backgroundColor: '#ff4444' }}
-            title="Servidor desconectado"
+            aria-label={t('plugin.header.serverDisconnected')}
+            title={t('plugin.header.serverDisconnected')}
           />
         )}
 
@@ -56,12 +57,12 @@ export function Header() {
           <Button
             variant="ghost"
             onClick={handleTitleClick}
-            className="flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[10px] text-brand-cyan font-mono bg-neutral-900/50 border border-brand-cyan/20 hover:bg-neutral-800 hover:border-brand-cyan/40 transition-all cursor-default shadow-sm"
-            title="Créditos disponíveis"
+            className="flex items-center gap-1.5 h-7 px-2 rounded-[6px] text-[10px] text-brand-cyan font-mono bg-muted/50 border border-brand-cyan/20 hover:bg-muted hover:border-brand-cyan/40 transition-all cursor-default shadow-sm"
+            title={t('plugin.header.creditsAvailable')}
           >
             <Pickaxe size={12} className="text-brand-cyan" />
             <span>{Math.max(0, credits.limit - credits.used)}</span>
-            {devMode && <span className="ml-0.5">⚡</span>}
+            {devMode && <span className="ml-0.5 text-[8px] font-bold tracking-wide">DEV</span>}
           </Button>
         )}
       </div>
@@ -72,18 +73,18 @@ export function Header() {
           variant="ghost"
           size="icon"
           onClick={() => setActiveView(activeView === 'sessions' ? 'main' : 'sessions')}
-          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
-          title="Sessões"
-          aria-label={activeView === 'sessions' ? 'Fechar sessões' : 'Ver sessões'}
+          className="h-7 w-7 bg-muted/50 hover:bg-muted"
+          title={t('plugin.header.sessions')}
+          aria-label={activeView === 'sessions' ? t('plugin.header.closeSessions') : t('plugin.header.openSessions')}
         >
-          <History size={14} className="text-neutral-400" />
+          <History size={14} className="text-muted-foreground" />
         </Button>
 
         <button
           onClick={() => setActiveView(activeView === 'profile' ? 'main' : 'profile')}
           className="w-7 h-7 rounded-md overflow-hidden border border-border hover:border-brand-cyan/40 transition-colors focus:outline-none flex-shrink-0"
-          title={userInfo?.name ?? authEmail ?? 'Profile'}
-          aria-label="Open profile"
+          title={userInfo?.name ?? authEmail ?? t('plugin.header.profile')}
+          aria-label={t('plugin.header.openProfile')}
         >
           {userInfo?.photoUrl ? (
             <img
@@ -92,14 +93,14 @@ export function Header() {
               className="w-full h-full object-cover"
             />
           ) : authEmail || userInfo?.name ? (
-            <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-neutral-300 uppercase">
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-[10px] font-bold text-foreground/70 uppercase">
                 {(userInfo?.name ?? authEmail ?? '?').charAt(0)}
               </span>
             </div>
           ) : (
-            <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-              <UserIcon size={14} className="text-neutral-400" />
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <UserIcon size={14} className="text-muted-foreground" />
             </div>
           )}
         </button>
@@ -108,22 +109,22 @@ export function Header() {
           variant="ghost"
           size="icon"
           onClick={() => setActiveView(activeView === 'settings' ? 'main' : 'settings')}
-          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
-          title="Settings"
-          aria-label={activeView === 'settings' ? 'Close settings' : 'Open settings'}
+          className="h-7 w-7 bg-muted/50 hover:bg-muted"
+          title={t('plugin.header.settings')}
+          aria-label={activeView === 'settings' ? t('plugin.header.closeSettings') : t('plugin.header.openSettings')}
         >
-          <Settings size={14} className="text-neutral-400" />
+          <Settings size={14} className="text-muted-foreground" />
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
           onClick={collapse}
-          className="h-7 w-7 bg-neutral-900/50 hover:bg-neutral-800"
-          title="Colapsar"
-          aria-label="Colapsar painel"
+          className="h-7 w-7 bg-muted/50 hover:bg-muted"
+          title={t('plugin.header.collapse')}
+          aria-label={t('plugin.header.collapsePanel')}
         >
-          <Minimize2 size={14} className="text-neutral-400" />
+          <Minimize2 size={14} className="text-muted-foreground" />
         </Button>
       </div>
     </header>
