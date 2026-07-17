@@ -35,6 +35,7 @@ import {
   ChevronDown,
   Shuffle,
 } from '@/lib/ui/icons';
+import { FlyingPaperLoader } from '@/components/ui/FlyingPaperLoader';
 import { PageShell } from '@/components/ui/PageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +70,8 @@ import {
   type ReferenceUploadInput,
   collectionsApi,
   adminReferencesApi,
+  type DuplicateReport,
+  type PendingReference,
   type ReferenceCollection,
   type CollectionDetail,
   type TasteHint,
@@ -224,6 +227,9 @@ export const ReferencesPage: React.FC = () => {
     setSeed(next);
   }, []);
   const [search, setSearch] = useState(searchParams.get('q') || '');
+  // Semantic (meaning) vs exact (substring) text search. Default on — it's the
+  // point; a text embedding per debounced query is cheap.
+  const [semanticSearch, setSemanticSearch] = useState(true);
   const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('q') || '');
   const [country, setCountry] = useState(searchParams.get('country') || '');
   const [region, setRegion] = useState(searchParams.get('region') || '');
@@ -240,6 +246,13 @@ export const ReferencesPage: React.FC = () => {
 
   // Admin curation gate — verified server-side; this only toggles the UI affordances.
   const [isAdmin, setIsAdmin] = useState(false);
+  const [dupeMap, setDupeMap] = useState<Map<string, { count: number; isKeeper: boolean }>>(
+    new Map()
+  );
+  const [dupeReport, setDupeReport] = useState<DuplicateReport | null>(null);
+  const [deduping, setDeduping] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [moderationOpen, setModerationOpen] = useState(false);
   // Batch multi-select (Set of ref ids) + shift-range anchor.
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const selectAnchor = useRef<number | null>(null);
@@ -323,6 +336,7 @@ export const ReferencesPage: React.FC = () => {
                 seed,
                 brandId: activeBrandId || undefined,
                 brandTerms: brandTerms || undefined,
+                semantic: semanticSearch,
               });
         setItems((prev) => {
           if (!append) return data.references;
@@ -351,6 +365,7 @@ export const ReferencesPage: React.FC = () => {
       seed,
       activeBrandId,
       brandTerms,
+      semanticSearch,
     ]
   );
 
@@ -379,6 +394,30 @@ export const ReferencesPage: React.FC = () => {
       .then((u) => setIsAdmin(!!u?.isAdmin))
       .catch(() => {});
   }, []);
+
+  // Duplicate map — admin only. The library predates ingest dedup, so identical
+  // bytes exist more than once; this marks them in place so the grouping can be
+  // eyeballed against the real images before anything is deleted.
+  useEffect(() => {
+    if (!isAdmin) return;
+    adminReferencesApi
+      .duplicates()
+      .then((report) => {
+        const map = new Map<string, { count: number; isKeeper: boolean }>();
+        for (const g of report.groups) {
+          map.set(g.keep.id, { count: g.count, isKeeper: true });
+          for (const d of g.duplicates) map.set(d.id, { count: g.count, isKeeper: false });
+        }
+        setDupeMap(map);
+        setDupeReport(report);
+      })
+      .catch(() => {});
+    // Moderation queue count — how many user uploads await review.
+    adminReferencesApi
+      .pending(1, 0)
+      .then((r) => setPendingCount(r.total))
+      .catch(() => {});
+  }, [isAdmin]);
 
   // debounce the search box (instant search)
   useEffect(() => {
@@ -637,6 +676,33 @@ export const ReferencesPage: React.FC = () => {
     [clearSelection, unhide]
   );
 
+  // Auto-delete redundant copies (keeps the oldest of each group). Confirms
+  // first — it's one-way and the server recomputes which ids die, so a stale
+  // page can't take a keeper down with it.
+  const handleDedupe = useCallback(async () => {
+    if (!dupeReport) return;
+    const ok = window.confirm(
+      `Remover ${dupeReport.redundant} cópia(s) redundante(s)? A mais antiga de cada grupo é mantida. Ação irreversível.`
+    );
+    if (!ok) return;
+    setDeduping(true);
+    try {
+      const res = await adminReferencesApi.dedupe(false);
+      // Drop the deleted ids from the grid without a full refetch.
+      const doomed = new Set(
+        dupeReport.groups.flatMap((g) => g.duplicates.map((d) => d.id))
+      );
+      setItems((prev) => prev.filter((r) => !doomed.has(r.id)));
+      setDupeMap(new Map());
+      setDupeReport(null);
+      toast.success(`${res.deleted ?? 0} referência(s) duplicada(s) removida(s)`);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao remover duplicatas');
+    } finally {
+      setDeduping(false);
+    }
+  }, [dupeReport]);
+
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -748,6 +814,8 @@ export const ReferencesPage: React.FC = () => {
         setRegion(v);
         if (v) setCountry('');
       }}
+      semantic={semanticSearch}
+      setSemantic={setSemanticSearch}
     />
   );
 
@@ -1035,6 +1103,34 @@ export const ReferencesPage: React.FC = () => {
           </div>
         )}
 
+        {/* Admin-only: user uploads awaiting moderation. Nothing here is public
+            or AI-analysed yet — approving runs enrichment, then reveals it. */}
+        {isAdmin && pendingCount > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-brand-cyan/30 bg-brand-cyan/5 px-3 py-2">
+            <span className="text-xs font-mono text-brand-cyan">
+              {pendingCount} referência(s) aguardando revisão
+            </span>
+            <Button
+              size="sm"
+              className="ml-auto h-7 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
+              onClick={() => setModerationOpen(true)}
+            >
+              Revisar
+            </Button>
+          </div>
+        )}
+
+        {/* Admin-only duplicate calibration bar. Shows what the content-hash
+            grouping found; the badges on the cards show WHERE. Delete is
+            explicit and one-way, so it confirms first. */}
+        {isAdmin && dupeReport && dupeReport.redundant > 0 && (
+          <DuplicateAdminBar
+            report={dupeReport}
+            onDedupe={handleDedupe}
+            deduping={deduping}
+          />
+        )}
+
         {/* Content */}
         {scope === 'collections' && !collectionView ? (
           <CollectionsGrid
@@ -1069,6 +1165,7 @@ export const ReferencesPage: React.FC = () => {
             renderItem={(item, idx) => (
               <MasonryCard
                 item={item}
+                dupe={dupeMap.get(item.id)}
                 focused={idx === focusedIndex}
                 selected={selected.has(item.id)}
                 selectionActive={selected.size > 0}
@@ -1177,6 +1274,14 @@ export const ReferencesPage: React.FC = () => {
         onDelete={(ref) => handleAdminDelete([ref.id])}
         similarSource={similar?.source}
       />
+
+      {/* Admin moderation queue (pending user uploads) */}
+      {moderationOpen && (
+        <ModerationQueue
+          onClose={() => setModerationOpen(false)}
+          onResolved={() => setPendingCount((c) => Math.max(0, c - 1))}
+        />
+      )}
 
       {/* Right-click context menu (reuses dropdown-menu, anchored at cursor) */}
       {ctxMenu && (
@@ -1740,6 +1845,142 @@ const FilterChip: React.FC<{ label: string; onRemove: () => void }> = ({ label, 
   </Badge>
 );
 
+// ─── Admin-only moderation queue (pending user uploads) ──────────────────────
+const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }> = ({
+  onClose,
+  onResolved,
+}) => {
+  const [items, setItems] = useState<PendingReference[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await adminReferencesApi.pending(50, 0);
+      setItems(res.items);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao carregar fila');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Approval runs AI enrichment server-side, so it's slow — block the row while it works.
+  const act = async (id: string, action: 'approve' | 'reject') => {
+    setBusy(id);
+    try {
+      if (action === 'approve') await adminReferencesApi.approve(id);
+      else await adminReferencesApi.reject(id);
+      setItems((prev) => prev.filter((r) => r.id !== id));
+      onResolved();
+      toast.success(action === 'approve' ? 'Aprovada e analisada' : 'Rejeitada');
+    } catch (e: any) {
+      toast.error(e.message || 'Erro');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl bg-card border-border">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-mono text-muted-foreground">
+            Fila de moderação · {items.length} aguardando
+          </DialogTitle>
+        </DialogHeader>
+        {loading ? (
+          <div className="py-10 text-center">
+            <Loader2 className="h-5 w-5 mx-auto animate-spin text-muted-foreground" />
+          </div>
+        ) : items.length === 0 ? (
+          <p className="py-10 text-center text-xs text-muted-foreground">Nada para revisar.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto p-1">
+            {items.map((ref) => (
+              <div
+                key={ref.id}
+                className="rounded-lg border border-border bg-background/40 overflow-hidden"
+              >
+                <img
+                  src={ref.thumbnailUrl || ref.referenceImageUrl}
+                  alt={ref.name}
+                  className="w-full aspect-square object-cover"
+                />
+                <div className="p-2 space-y-2">
+                  <p className="text-[11px] truncate" title={ref.name}>
+                    {ref.name}
+                  </p>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      className="h-7 flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-[11px]"
+                      disabled={busy === ref.id}
+                      onClick={() => act(ref.id, 'approve')}
+                    >
+                      {busy === ref.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        'Aprovar'
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 text-[11px]"
+                      disabled={busy === ref.id}
+                      onClick={() => act(ref.id, 'reject')}
+                    >
+                      Rejeitar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// ─── Admin-only duplicate calibration bar ────────────────────────────────────
+const DuplicateAdminBar: React.FC<{
+  report: DuplicateReport;
+  onDedupe: () => void;
+  deduping: boolean;
+}> = ({ report, onDedupe, deduping }) => (
+  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+    <span className="text-xs font-mono text-amber-500">
+      {report.groups.length} grupo(s) · {report.redundant} cópia(s) redundante(s)
+    </span>
+    <span className="text-[11px] text-muted-foreground">
+      Marcadas no grid: <span className="text-amber-500">×N</span> = mantida,{' '}
+      <span className="text-destructive">dup</span> = removível
+      {report.unhashed > 0 && ` · ${report.unhashed} sem hash (não comparáveis)`}
+    </span>
+    <Button
+      size="sm"
+      variant="outline"
+      className="ml-auto h-7 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+      disabled={deduping}
+      onClick={onDedupe}
+    >
+      {deduping ? (
+        <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+      ) : (
+        <Trash2 className="mr-1.5 h-3 w-3" />
+      )}
+      Remover redundantes
+    </Button>
+  </div>
+);
+
 const FilterControls: React.FC<{
   search: string;
   setSearch: (v: string) => void;
@@ -1747,7 +1988,9 @@ const FilterControls: React.FC<{
   setCountry: (v: string) => void;
   region: string;
   setRegion: (v: string) => void;
-}> = ({ search, setSearch, country, setCountry, region, setRegion }) => (
+  semantic: boolean;
+  setSemantic: (v: boolean) => void;
+}> = ({ search, setSearch, country, setCountry, region, setRegion, semantic, setSemantic }) => (
   <div className="flex flex-col md:flex-row md:items-center gap-2">
     <div className="relative flex-1 min-w-[200px]">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -1755,9 +1998,33 @@ const FilterControls: React.FC<{
         id="ref-search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Buscar por nome, estúdio, descrição...  ( / )"
-        className="pl-9 bg-input border-border text-sm h-9"
+        placeholder={
+          semantic
+            ? 'Buscar por significado...  ( / )'
+            : 'Buscar por nome, estúdio, descrição...  ( / )'
+        }
+        className="pl-9 pr-24 bg-input border-border text-sm h-9"
       />
+      {/* Semantic (meaning) vs exact (substring). Only relevant with a query. */}
+      {search.trim() && (
+        <button
+          type="button"
+          onClick={() => setSemantic(!semantic)}
+          title={
+            semantic
+              ? 'Busca por significado (IA). Clique para busca exata.'
+              : 'Busca exata (substring). Clique para busca por significado.'
+          }
+          className={cn(
+            'absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-[10px] font-mono transition-colors',
+            semantic
+              ? 'bg-brand-cyan/15 text-brand-cyan'
+              : 'bg-muted text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {semantic ? 'significado' : 'exata'}
+        </button>
+      )}
     </div>
     <div className="md:w-[190px]">
       <Select options={COUNTRY_OPTIONS} value={country} onChange={setCountry} placeholder="País" />
@@ -1781,6 +2048,8 @@ const MasonryCard: React.FC<{
   selectionActive?: boolean;
   onToggleSelect?: (shiftKey: boolean) => void;
   onContextMenu?: (x: number, y: number) => void;
+  /** Admin-only duplicate marker. Absent for everyone else. */
+  dupe?: { count: number; isKeeper: boolean };
 }> = ({
   item,
   onOpen,
@@ -1792,6 +2061,7 @@ const MasonryCard: React.FC<{
   selectionActive,
   onToggleSelect,
   onContextMenu,
+  dupe,
 }) => {
   const [loaded, setLoaded] = useState(false);
   const reduce = useReducedMotion();
@@ -1892,6 +2162,26 @@ const MasonryCard: React.FC<{
             {typeof item.score === 'number' && (
               <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur px-1.5 py-0.5 text-[10px] font-mono text-neutral-100">
                 {Math.round(item.score * 100)}%
+              </span>
+            )}
+            {/* Admin-only: identical bytes ingested more than once (the library
+                predates ingest dedup). Amber = the copy that survives a dedupe,
+                destructive = the copy that gets deleted. */}
+            {dupe && (
+              <span
+                className={cn(
+                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-[10px] font-mono backdrop-blur',
+                  dupe.isKeeper
+                    ? 'bg-amber-500/80 text-black'
+                    : 'bg-destructive/80 text-destructive-foreground'
+                )}
+                title={
+                  dupe.isKeeper
+                    ? `${dupe.count} cópias idênticas — esta é a mais antiga e seria mantida`
+                    : `${dupe.count} cópias idênticas — esta seria removida`
+                }
+              >
+                {dupe.isKeeper ? `×${dupe.count}` : 'dup'}
               </span>
             )}
           </div>
@@ -2406,9 +2696,13 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         });
       }
       const res = await referencesApi.upload(images);
-      toast.success(
-        `${res.ingested} referência(s) ingerida(s)${res.failed ? `, ${res.failed} falha(s)` : ''}`
-      );
+      // Uploads now await moderation — nothing is public or analysed yet. Saying
+      // "ingerida" would overclaim; "em revisão" is the honest state.
+      const pending = res.pending ?? res.ingested - (res.deduped || 0);
+      const parts = [`${pending} enviada(s) para revisão`];
+      if (res.deduped) parts.push(`${res.deduped} já na biblioteca`);
+      if (res.failed) parts.push(`${res.failed} falha(s)`);
+      toast.success(parts.join(', '));
       onDone(isPublic);
     } catch (e: any) {
       toast.error(e.message || 'Erro no upload');
@@ -2416,6 +2710,28 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
       setUploading(false);
     }
   };
+
+  // Ingest is 3 AI calls per image — the app's longest file-processing wait.
+  // Same loader the other ingest flows use (BrandIngestModal, Compress, Upscale).
+  // No `progress`: the batch is one request, so a bar here would be invented.
+  if (uploading) {
+    return (
+      <Dialog open onOpenChange={() => {}}>
+        <DialogContent className="max-w-lg bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-mono text-muted-foreground">
+              Analisando referências
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-8">
+            <FlyingPaperLoader
+              label={`Analisando ${files.length} imagem(ns)...`}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open onOpenChange={() => !uploading && onClose()}>

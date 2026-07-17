@@ -143,6 +143,15 @@ const getGroups = (
         description: t('plugin.tools.tab.intelligenceDescription'),
         component: IntelligenceSection,
       },
+      // Canvas work leaves as a tagged reference in the library (the server does
+      // the tagging), and the library is browsable back from here.
+      {
+        id: 'references',
+        title: t('plugin.tools.tab.referencesTitle'),
+        icon: Images,
+        description: t('plugin.tools.tab.referencesDescription'),
+        component: ReferencesSection,
+      },
       {
         id: 'export',
         title: t('plugin.tools.tab.exportTitle'),

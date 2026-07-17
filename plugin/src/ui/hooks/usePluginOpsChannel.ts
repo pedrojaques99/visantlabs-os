@@ -35,6 +35,9 @@ export function usePluginOpsChannel() {
       if (!m?.type) return;
       if (m.type === 'FILE_INFO') {
         fileIdRef.current = m.fileId || null;
+        // Mirror into the store: the file key is this plugin's provenance —
+        // anything captured off the canvas came from a specific Figma file.
+        usePluginStore.setState({ fileId: m.fileId || null });
       } else if (
         (m.type === 'OPERATION_ACK' || m.type === 'OPERATION_ERROR') &&
         typeof m.opId === 'string'

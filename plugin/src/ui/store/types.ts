@@ -139,6 +139,8 @@ export interface PluginStore {
   // Selection & Canvas
   selectionDetails: SelectionDetail[];
   selectionThumb: string | null;
+  /** Figma file key, from FILE_INFO. Null on an unsaved/local file. */
+  fileId: string | null;
 
   // Brand
   logos: LogoSlot[];

@@ -16,6 +16,7 @@ export const usePluginStore = create<PluginStore>()(
   immer((set) => ({
     // Selection & Canvas
     selectionDetails: [],
+    fileId: null,
     selectionThumb: null,
 
     // Brand

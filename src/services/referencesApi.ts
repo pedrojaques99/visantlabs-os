@@ -109,6 +109,8 @@ export interface ReferenceListParams {
   brandId?: string;
   /** Descriptive brand tokens — boost references that match the active brand. */
   brandTerms?: string;
+  /** Rank a text query by meaning (vector search) instead of substring. */
+  semantic?: boolean;
 }
 
 const BASE = '/api/references';
@@ -139,6 +141,9 @@ export const referencesApi = {
     if (params.seed) qs.set('seed', params.seed);
     if (params.brandId) qs.set('brandId', params.brandId);
     if (params.brandTerms) qs.set('brandTerms', params.brandTerms);
+    // Semantic only matters with a query; skip the flag otherwise so the ranked
+    // feed (no query) always takes the cheap lexical path.
+    if (params.semantic && params.search) qs.set('semantic', '1');
     const resp = await fetch(`${BASE}?${qs}`, { headers: authHeaders() });
     if (!resp.ok) throw new Error('Failed to load references');
     return resp.json();
@@ -152,7 +157,16 @@ export const referencesApi = {
 
   async upload(
     images: ReferenceUploadInput[]
-  ): Promise<{ success: boolean; ingested: number; failed: number; results: ReferenceItem[] }> {
+  ): Promise<{
+    success: boolean;
+    ingested: number;
+    /** Images already in the user's library — recognised by content hash. */
+    deduped: number;
+    /** New uploads now awaiting moderation (no AI ran, nothing public yet). */
+    pending: number;
+    failed: number;
+    results: ReferenceItem[];
+  }> {
     const resp = await fetch(`${BASE}/upload`, {
       method: 'POST',
       headers: authHeaders(true),
@@ -286,7 +300,86 @@ export interface ReferenceAdminPatch {
   hiddenFromPublic?: boolean;
 }
 
+export interface DuplicateGroup {
+  contentHash: string;
+  count: number;
+  /** The copy that survives a dedupe — the oldest of the group. */
+  keep: { id: string; name?: string; createdAt: string };
+  duplicates: Array<{ id: string; name?: string; createdAt: string }>;
+}
+
+export interface DuplicateReport {
+  groups: DuplicateGroup[];
+  redundant: number;
+  /** Refs with no contentHash yet — not comparable, so not in any group. */
+  unhashed: number;
+  total: number;
+}
+
+export interface PendingReference {
+  id: string;
+  name?: string;
+  referenceImageUrl?: string;
+  thumbnailUrl?: string;
+  thumbHash?: string;
+  provenance?: ReferenceItem['provenance'];
+  country?: string;
+  palette?: string[];
+  width?: number;
+  height?: number;
+  userId?: string;
+  isPublic?: boolean;
+  createdAt?: string;
+}
+
 export const adminReferencesApi = {
+  /** Moderation queue — user uploads awaiting a human decision. Oldest first. */
+  async pending(limit = 50, skip = 0): Promise<{ items: PendingReference[]; total: number }> {
+    const resp = await fetch(`/api/admin/references/pending?limit=${limit}&skip=${skip}`, {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Failed to load pending references');
+    return resp.json();
+  },
+
+  /** Approve → runs the AI enrichment, then makes it public. Slow (AI). */
+  async approve(id: string): Promise<void> {
+    const resp = await fetch(`/api/admin/references/${encodeURIComponent(id)}/approve`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error((await resp.json().catch(() => ({})))?.error || 'Approve failed');
+  },
+
+  /** Reject. Soft by default (keeps the row); hard deletes it and its vector. */
+  async reject(id: string, hard = false): Promise<void> {
+    const resp = await fetch(
+      `/api/admin/references/${encodeURIComponent(id)}/reject${hard ? '?hard=1' : ''}`,
+      { method: 'POST', headers: authHeaders() }
+    );
+    if (!resp.ok) throw new Error('Reject failed');
+  },
+
+  /** Duplicate groups by content hash. Admin-only; read-only. */
+  async duplicates(): Promise<DuplicateReport> {
+    const resp = await fetch('/api/admin/references/duplicates', { headers: authHeaders() });
+    if (!resp.ok) throw new Error('Failed to load duplicates');
+    return resp.json();
+  },
+
+  /** Delete redundant copies (keeps the oldest). Dry run unless told otherwise. */
+  async dedupe(
+    dryRun = true
+  ): Promise<{ dryRun: boolean; groups: number; wouldDelete?: number; deleted?: number }> {
+    const resp = await fetch('/api/admin/references/dedupe', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dryRun }),
+    });
+    if (!resp.ok) throw new Error('Failed to dedupe');
+    return resp.json();
+  },
+
   async remove(id: string): Promise<void> {
     const resp = await fetch(`/api/admin/references/${encodeURIComponent(id)}`, {
       method: 'DELETE',
