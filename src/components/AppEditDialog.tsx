@@ -154,12 +154,12 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-neutral-950 border-white/10 text-neutral-200 backdrop-blur-xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl bg-popover border-border text-foreground backdrop-blur-xl max-h-[90vh]">
         <DialogHeader className="px-10 pt-10">
-          <DialogTitle className="text-3xl font-black font-redhatmono tracking-tighter text-white">
+          <DialogTitle className="text-3xl font-black font-redhatmono tracking-tighter text-foreground">
             {app ? 'EDIT APP CONFIG //' : 'NEW APP CONFIG //'}
           </DialogTitle>
-          <DialogDescription className="text-neutral-500 text-xs">
+          <DialogDescription className="text-muted-foreground text-xs">
             Configure application metadata and database identity
           </DialogDescription>
         </DialogHeader>
@@ -172,7 +172,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="name"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                className="bg-input border-border focus:border-ring h-10"
                 placeholder="e.g. Mockup Machine"
               />
             </div>
@@ -183,7 +183,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="appId"
                 value={formData.appId || ''}
                 onChange={(e) => setFormData({ ...formData, appId: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                className="bg-input border-border focus:border-ring h-10"
                 placeholder="e.g. mockup-machine"
               />
             </div>
@@ -194,7 +194,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="link"
                 value={formData.link || ''}
                 onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                className="bg-input border-border focus:border-ring h-10"
                 placeholder="e.g. /mockup-machine"
               />
             </div>
@@ -205,7 +205,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 options={CATEGORIES}
                 value={formData.category || 'design'}
                 onChange={(v) => setFormData({ ...formData, category: v })}
-                className="bg-white/5 border-white/10 h-10"
+                className="bg-input border-border h-10"
               />
             </div>
 
@@ -215,7 +215,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 options={BADGE_VARIANTS}
                 value={formData.badgeVariant || 'free'}
                 onChange={(v) => setFormData({ ...formData, badgeVariant: v as any })}
-                className="bg-white/5 border-white/10 h-10"
+                className="bg-input border-border h-10"
               />
             </div>
 
@@ -225,7 +225,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   type="checkbox"
                   checked={formData.isExternal}
                   onChange={(e) => setFormData({ ...formData, isExternal: e.target.checked })}
-                  className="rounded border-white/10 bg-white/5 text-brand-cyan"
+                  className="rounded border-border bg-muted text-brand-cyan"
                 />
                 EXTERNAL LINK
               </label>
@@ -234,7 +234,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   type="checkbox"
                   checked={formData.free}
                   onChange={(e) => setFormData({ ...formData, free: e.target.checked })}
-                  className="rounded border-white/10 bg-white/5 text-brand-cyan"
+                  className="rounded border-border bg-muted text-brand-cyan"
                 />
                 FREE TOOL
               </label>
@@ -243,7 +243,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   type="checkbox"
                   checked={formData.isHidden}
                   onChange={(e) => setFormData({ ...formData, isHidden: e.target.checked })}
-                  className="rounded border-white/10 bg-white/5 text-warning"
+                  className="rounded border-border bg-muted text-warning"
                 />
                 HIDE APP (ADMIN ONLY)
               </label>
@@ -257,7 +257,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="desc"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 min-h-[80px]"
+                className="bg-input border-border focus:border-ring min-h-[80px]"
                 placeholder="Brief description of the app functionality..."
               />
             </div>
@@ -268,7 +268,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="databaseInfo"
                 value={formData.databaseInfo || ''}
                 onChange={(e) => setFormData({ ...formData, databaseInfo: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                className="bg-input border-border focus:border-ring h-10"
                 placeholder="e.g. MongoDB: mockups | Prisma: Mockup"
               />
             </div>
@@ -280,7 +280,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   id="badge"
                   value={formData.badge || ''}
                   onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-                  className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                  className="bg-input border-border focus:border-ring h-10"
                   placeholder="e.g. NEW, BETA"
                 />
               </div>
@@ -293,7 +293,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   onChange={(e) =>
                     setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })
                   }
-                  className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                  className="bg-input border-border focus:border-ring h-10"
                   placeholder="0"
                 />
               </div>
@@ -305,7 +305,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                 id="icon"
                 value={formData.icon || ''}
                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                className="bg-white/5 border-white/10 focus:border-neutral-600 h-10"
+                className="bg-input border-border focus:border-ring h-10"
                 placeholder="e.g. LayoutGrid, Sparkles, Image"
               />
             </div>
@@ -313,7 +313,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
             <div className="space-y-2">
               <Label>App Image / Thumbnail</Label>
               {formData.thumbnail && (
-                <div className="relative aspect-video rounded-md overflow-hidden border border-white/10 mb-2">
+                <div className="relative aspect-video rounded-md overflow-hidden border border-border mb-2">
                   <img
                     src={formData.thumbnail}
                     alt="App thumbnail"
@@ -336,12 +336,12 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
           </div>
         </DialogBody>
 
-        <DialogFooter className="border-t border-neutral-800 px-10 py-8">
+        <DialogFooter className="border-t border-border px-10 py-8">
           <Button
             variant="ghost"
             onClick={onClose}
             disabled={isSaving}
-            className="text-neutral-500 hover:text-white font-mono text-xs"
+            className="text-muted-foreground hover:text-foreground font-mono text-xs"
           >
             CANCEL
           </Button>

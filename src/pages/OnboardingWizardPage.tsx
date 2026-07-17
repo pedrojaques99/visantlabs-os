@@ -48,8 +48,8 @@ const OnboardingWizardV1: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <h2 className="text-xl font-semibold text-white font-mono mb-2">O que voce faz?</h2>
-              <p className="text-neutral-400 text-sm font-mono mb-6">
+              <h2 className="text-xl font-semibold text-foreground font-mono mb-2">O que voce faz?</h2>
+              <p className="text-muted-foreground text-sm font-mono mb-6">
                 Isso nos leva direto a ferramenta certa pra voce.
               </p>
 
@@ -83,14 +83,14 @@ const OnboardingWizardV1: React.FC = () => {
               exit={{ opacity: 0, y: -12 }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-neutral-800/50 border border-white/10">
+                <div className="p-2 rounded-lg bg-muted border border-border">
                   <selected.icon className="w-5 h-5 text-brand-cyan" />
                 </div>
-                <h2 className="text-xl font-semibold text-white font-mono">
+                <h2 className="text-xl font-semibold text-foreground font-mono">
                   {selected.actionTitle}
                 </h2>
               </div>
-              <p className="text-neutral-400 text-sm font-mono mb-6">{selected.actionDesc}</p>
+              <p className="text-muted-foreground text-sm font-mono mb-6">{selected.actionDesc}</p>
 
               <div className="flex gap-3">
                 <Button
