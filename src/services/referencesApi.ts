@@ -156,9 +156,7 @@ export const referencesApi = {
     return resp.json();
   },
 
-  async upload(
-    images: ReferenceUploadInput[]
-  ): Promise<{
+  async upload(images: ReferenceUploadInput[]): Promise<{
     success: boolean;
     ingested: number;
     /** Images already in the user's library — recognised by content hash. */

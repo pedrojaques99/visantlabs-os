@@ -689,9 +689,7 @@ export const ReferencesPage: React.FC = () => {
     try {
       const res = await adminReferencesApi.dedupe(false);
       // Drop the deleted ids from the grid without a full refetch.
-      const doomed = new Set(
-        dupeReport.groups.flatMap((g) => g.duplicates.map((d) => d.id))
-      );
+      const doomed = new Set(dupeReport.groups.flatMap((g) => g.duplicates.map((d) => d.id)));
       setItems((prev) => prev.filter((r) => !doomed.has(r.id)));
       setDupeMap(new Map());
       setDupeReport(null);
@@ -977,9 +975,7 @@ export const ReferencesPage: React.FC = () => {
                   aria-expanded={filtersOpen}
                   className={cn(
                     'hidden md:inline-flex h-9 shrink-0 border-border text-xs transition-colors',
-                    filtersOpen
-                      ? 'bg-muted text-foreground'
-                      : 'bg-card text-muted-foreground'
+                    filtersOpen ? 'bg-muted text-foreground' : 'bg-card text-muted-foreground'
                   )}
                   onClick={() => setFiltersOpen((o) => !o)}
                 >
@@ -1089,7 +1085,9 @@ export const ReferencesPage: React.FC = () => {
                             {active ? (
                               <X className="h-2.5 w-2.5 ml-1" />
                             ) : (
-                              <span className="ml-1 text-muted-foreground tabular-nums">{v.count}</span>
+                              <span className="ml-1 text-muted-foreground tabular-nums">
+                                {v.count}
+                              </span>
                             )}
                           </Badge>
                         );
@@ -1124,11 +1122,7 @@ export const ReferencesPage: React.FC = () => {
             grouping found; the badges on the cards show WHERE. Delete is
             explicit and one-way, so it confirms first. */}
         {isAdmin && dupeReport && dupeReport.redundant > 0 && (
-          <DuplicateAdminBar
-            report={dupeReport}
-            onDedupe={handleDedupe}
-            deduping={deduping}
-          />
+          <DuplicateAdminBar report={dupeReport} onDedupe={handleDedupe} deduping={deduping} />
         )}
 
         {/* Content */}
@@ -1233,7 +1227,9 @@ export const ReferencesPage: React.FC = () => {
           <Dialog open onOpenChange={() => setFilterSheet(false)}>
             <DialogContent className="max-w-sm bg-card border-border">
               <DialogHeader>
-                <DialogTitle className="text-sm font-mono text-muted-foreground">Filtros</DialogTitle>
+                <DialogTitle className="text-sm font-mono text-muted-foreground">
+                  Filtros
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-3 pt-1">{filterControls}</div>
             </DialogContent>
@@ -1923,11 +1919,7 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
                       disabled={busy === ref.id}
                       onClick={() => act(ref.id, 'approve')}
                     >
-                      {busy === ref.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        'Aprovar'
-                      )}
+                      {busy === ref.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Aprovar'}
                     </Button>
                     <Button
                       size="sm"
@@ -2370,7 +2362,9 @@ const Lightbox: React.FC<{
                 const sub = item.studio?.trim() || item.provenance?.designer?.trim();
                 return (
                   <div>
-                    <h3 className="text-base font-semibold text-foreground leading-snug">{title}</h3>
+                    <h3 className="text-base font-semibold text-foreground leading-snug">
+                      {title}
+                    </h3>
                     {sub && sub !== title && (
                       <p className="text-xs font-mono text-muted-foreground mt-0.5">{sub}</p>
                     )}
@@ -2410,7 +2404,9 @@ const Lightbox: React.FC<{
                       <MapPin className="h-3 w-3 mr-1" />
                     )}
                     {item.country}
-                    {prov.countryInferred && <span className="ml-1 text-muted-foreground">auto</span>}
+                    {prov.countryInferred && (
+                      <span className="ml-1 text-muted-foreground">auto</span>
+                    )}
                   </Badge>
                 )}
                 {item.region && (
@@ -2442,7 +2438,9 @@ const Lightbox: React.FC<{
 
               {prov.designer && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">Designer</span>
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                    Designer
+                  </span>
                   <p className="text-sm text-muted-foreground">{prov.designer}</p>
                 </div>
               )}
@@ -2461,7 +2459,9 @@ const Lightbox: React.FC<{
               {/* Tags — click to drop into the library filtered by it (shareable route) */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">Tags</span>
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                    Tags
+                  </span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((t) => (
                       <Badge
@@ -2586,11 +2586,7 @@ const MasonrySkeleton: React.FC<{ cols: number }> = ({ cols }) => {
       {columns.map((col, ci) => (
         <div key={ci} className="flex-1 min-w-0 flex flex-col gap-3">
           {col.map((h, i) => (
-            <div
-              key={i}
-              className="rounded-xl bg-card/60 animate-pulse"
-              style={{ height: h }}
-            />
+            <div key={i} className="rounded-xl bg-card/60 animate-pulse" style={{ height: h }} />
           ))}
         </div>
       ))}
@@ -2623,12 +2619,7 @@ const NoResults: React.FC<{ onClear: () => void }> = ({ onClear }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
     <Search className="h-8 w-8 text-muted-foreground" />
     <p className="text-sm text-muted-foreground">Nenhuma referência para esse filtro</p>
-    <Button
-      variant="outline"
-      size="sm"
-      className="bg-card border-border text-xs"
-      onClick={onClear}
-    >
+    <Button variant="outline" size="sm" className="bg-card border-border text-xs" onClick={onClear}>
       <X className="h-3.5 w-3.5 mr-1.5" />
       Limpar filtros
     </Button>
@@ -2639,12 +2630,7 @@ const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
   <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
     <AlertTriangle className="h-8 w-8 text-warning/80" />
     <p className="text-sm text-muted-foreground">Não foi possível carregar as referências</p>
-    <Button
-      variant="outline"
-      size="sm"
-      className="bg-card border-border text-xs"
-      onClick={onRetry}
-    >
+    <Button variant="outline" size="sm" className="bg-card border-border text-xs" onClick={onRetry}>
       Tentar de novo
     </Button>
   </div>
@@ -2724,9 +2710,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
             </DialogTitle>
           </DialogHeader>
           <div className="py-8">
-            <FlyingPaperLoader
-              label={`Analisando ${files.length} imagem(ns)...`}
-            />
+            <FlyingPaperLoader label={`Analisando ${files.length} imagem(ns)...`} />
           </div>
         </DialogContent>
       </Dialog>

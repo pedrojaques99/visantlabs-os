@@ -25,7 +25,9 @@ const rawOf = (base64: string) => base64.replace(/^data:[^;]+;base64,/, '');
 
 /** Content address of the image bytes — the dedup key. */
 export function contentHashOf(imageBase64: string): string {
-  return createHash('sha256').update(Buffer.from(rawOf(imageBase64), 'base64')).digest('hex');
+  return createHash('sha256')
+    .update(Buffer.from(rawOf(imageBase64), 'base64'))
+    .digest('hex');
 }
 
 /**

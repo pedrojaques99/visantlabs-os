@@ -173,7 +173,8 @@ router.post('/upload', ingestRateLimiter, authenticate, async (req: AuthRequest,
     const errors: any[] = [];
     settled.forEach((outcome, i) => {
       if (outcome.status === 'fulfilled') results.push(outcome.value);
-      else errors.push({ name: images[i]?.name, error: outcome.reason?.message || 'Ingest failed' });
+      else
+        errors.push({ name: images[i]?.name, error: outcome.reason?.message || 'Ingest failed' });
     });
 
     const deduped = results.filter((r) => r.deduped).length;

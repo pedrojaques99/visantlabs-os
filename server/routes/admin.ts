@@ -3052,10 +3052,12 @@ router.post('/references/:id/approve', validateAdmin, async (req: Request, res: 
     // Enrich first — the expensive AI phase. Only flip visibility on success.
     await enrichReference(req.params.id);
 
-    await db.collection('community_presets').updateOne(
-      { id: req.params.id, category: 'reference' },
-      { $set: { status: 'approved', isApproved: true, updatedAt: new Date() } }
-    );
+    await db
+      .collection('community_presets')
+      .updateOne(
+        { id: req.params.id, category: 'reference' },
+        { $set: { status: 'approved', isApproved: true, updatedAt: new Date() } }
+      );
 
     return res.json({ success: true, id: req.params.id, status: 'approved' });
   } catch (error: any) {
@@ -3090,10 +3092,12 @@ router.post('/references/:id/reject', validateAdmin, async (req: Request, res: R
       return res.json({ success: true, id: req.params.id, deleted: true });
     }
 
-    const result = await db.collection('community_presets').updateOne(
-      { id: req.params.id, category: 'reference' },
-      { $set: { status: 'rejected', isApproved: false, isPublic: false, updatedAt: new Date() } }
-    );
+    const result = await db
+      .collection('community_presets')
+      .updateOne(
+        { id: req.params.id, category: 'reference' },
+        { $set: { status: 'rejected', isApproved: false, isPublic: false, updatedAt: new Date() } }
+      );
     if (result.matchedCount === 0) return res.status(404).json({ error: 'Reference not found' });
     return res.json({ success: true, id: req.params.id, status: 'rejected' });
   } catch (error: any) {

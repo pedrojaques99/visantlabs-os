@@ -822,9 +822,8 @@ router.get('/references/smart', apiRateLimiter, async (req, res) => {
             });
 
             if (matches?.length) {
-              const { hydrateVectorMatches, searchReferences, AGENT_PROJECTION } = await import(
-                '../lib/references/engine.js'
-              );
+              const { hydrateVectorMatches, searchReferences, AGENT_PROJECTION } =
+                await import('../lib/references/engine.js');
               const projection = AGENT_PROJECTION as Record<string, 0 | 1>;
 
               // Hydrate only the ids Pinecone returned — this used to pull the

@@ -53,7 +53,9 @@ export async function ensureCoreIndexes(db: Db): Promise<void> {
     // Reference library — every read goes through `server/lib/references/engine.ts`,
     // so these mirror the filter shapes that module builds. References share
     // `community_presets` with other categories, hence the `category` prefix.
-    db.collection('community_presets').createIndex({ category: 1, createdAt: -1 }, { background: true }),
+    db
+      .collection('community_presets')
+      .createIndex({ category: 1, createdAt: -1 }, { background: true }),
     // Hydration by id: vector search, collection items, taste signals ($in lookups).
     db.collection('community_presets').createIndex({ id: 1 }, { background: true }),
     // The uploader's own list (`GET /references/mine`).

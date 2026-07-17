@@ -83,10 +83,14 @@ export function ReferencesSection() {
       // Brand filter is an association tag, not ownership — refs stay global.
       if (brandOnly && brandId) params.set('brandGuidelineId', brandId);
       // Last-one-wins: this is the only call here that should cancel its predecessor.
-      const res = await call(`/api/references?${params}`, {}, {
-        abortPrevious: true,
-        timeoutMs: SEARCH_TIMEOUT_MS,
-      });
+      const res = await call(
+        `/api/references?${params}`,
+        {},
+        {
+          abortPrevious: true,
+          timeoutMs: SEARCH_TIMEOUT_MS,
+        }
+      );
       // null = a newer search superseded this one — keep the old list.
       if (res) setLibrary(res.references || []);
     } catch (err: any) {
@@ -215,7 +219,9 @@ export function ReferencesSection() {
           className="flex-1"
         >
           {pulling ? <GlitchLoader size={14} /> : <Upload size={14} />}
-          {pulling ? t('plugin.tools.references.pulling') : t('plugin.tools.references.pullSelection')}
+          {pulling
+            ? t('plugin.tools.references.pulling')
+            : t('plugin.tools.references.pullSelection')}
         </Button>
       </div>
 

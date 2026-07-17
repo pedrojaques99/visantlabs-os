@@ -285,7 +285,13 @@ export async function searchReferences(
 
   if (!seed) {
     const [references, total] = await Promise.all([
-      collection.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).project(projection).toArray(),
+      collection
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .project(projection)
+        .toArray(),
       collection.countDocuments(filter),
     ]);
     return { references, total, page, limit, pages: Math.ceil(total / limit) };
@@ -485,7 +491,12 @@ async function semanticSearch(
 export async function hydrateVectorMatches(
   db: Db,
   matches: Array<{ id: string; score?: number }>,
-  opts: { visibility?: ReferenceVisibility; projection?: Record<string, 0 | 1>; excludeId?: string; limit?: number } = {}
+  opts: {
+    visibility?: ReferenceVisibility;
+    projection?: Record<string, 0 | 1>;
+    excludeId?: string;
+    limit?: number;
+  } = {}
 ): Promise<any[]> {
   const ids = matches.map((m) => m.id).filter((id) => id && id !== opts.excludeId);
   if (ids.length === 0) return [];

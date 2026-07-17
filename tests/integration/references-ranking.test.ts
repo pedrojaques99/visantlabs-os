@@ -59,9 +59,8 @@ describe('ranked feed — bounded but not truncated', () => {
     // value; use a seed we can reason about: the window is [start, ...], and
     // wrap-around covers the rest, so old-gem (key 0.0001) is reachable for any
     // seed via the wrap. Assert it's in the pool regardless of start.
-    const { loadRankingCandidates, buildReferenceFilter, PUBLIC_PROJECTION } = await import(
-      '../../server/lib/references/engine.js'
-    );
+    const { loadRankingCandidates, buildReferenceFilter, PUBLIC_PROJECTION } =
+      await import('../../server/lib/references/engine.js');
     const pool = await loadRankingCandidates(
       d.collection('community_presets'),
       buildReferenceFilter({ visibility: 'public' }),
@@ -82,13 +81,22 @@ describe('ranked feed — bounded but not truncated', () => {
     const d = await db();
     for (let i = 0; i < 10; i++) await seed({ id: `r-${i}`, createdAt: new Date(2024, 0, i + 1) });
 
-    const { loadRankingCandidates, buildReferenceFilter, PUBLIC_PROJECTION } = await import(
-      '../../server/lib/references/engine.js'
-    );
+    const { loadRankingCandidates, buildReferenceFilter, PUBLIC_PROJECTION } =
+      await import('../../server/lib/references/engine.js');
     const filter = buildReferenceFilter({ visibility: 'public' });
     const proj = PUBLIC_PROJECTION as Record<string, 0 | 1>;
-    const a = await loadRankingCandidates(d.collection('community_presets'), filter, proj, 'seed-x');
-    const b = await loadRankingCandidates(d.collection('community_presets'), filter, proj, 'seed-x');
+    const a = await loadRankingCandidates(
+      d.collection('community_presets'),
+      filter,
+      proj,
+      'seed-x'
+    );
+    const b = await loadRankingCandidates(
+      d.collection('community_presets'),
+      filter,
+      proj,
+      'seed-x'
+    );
     expect(a.map((r: any) => r.id).sort()).toEqual(b.map((r: any) => r.id).sort());
   });
 });
