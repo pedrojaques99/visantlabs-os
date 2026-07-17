@@ -13,7 +13,8 @@
       "brand": "Brand",
       "or": "or",
       "frameCountOne": "{count} frame",
-      "frameCountOther": "{count} frames"
+      "frameCountOther": "{count} frames",
+      "remove": "Remove"
     },
     "library": {
       "searchComponents": "Search components..."
@@ -343,7 +344,9 @@
         "connectorsTitle": "From Linear",
         "connectorsDescription": "Turn issues into Story and Feed frames",
         "intelligenceTitle": "Analyse",
-        "intelligenceDescription": "Categorise a selection, or read it as JSON or an image prompt"
+        "intelligenceDescription": "Categorise a selection, or read it as JSON or an image prompt",
+        "referencesTitle": "References",
+        "referencesDescription": "Save canvas images to your reference library"
       },
       "automation": {
         "scanningColors": "Scanning colors…",
@@ -482,7 +485,8 @@
         "copyPhotosOn": "Copy photos from Figma: ON",
         "copyPhotosOff": "Copy photos from Figma: OFF",
         "generateCards": "Generate {count} cards",
-        "influencersStatus": "{count} influencers"
+        "influencersStatus": "{count} influencers",
+        "timedOut": "Still running — check the canvas."
       },
       "connectors": {
         "templatesStatus": "{count} templates",
@@ -521,6 +525,25 @@
         "refine": "Refine",
         "extract": "Extract",
         "brandMatrixDescription": "Generate a logo × colour grid"
+      },
+      "references": {
+        "pullSelection": "Pull selection",
+        "pulling": "Exporting…",
+        "selectFirst": "Select images on the canvas first",
+        "exportFailed": "Could not export the selection",
+        "someFailed": "{count} layers could not be exported",
+        "saveCount": "Save {count} to library",
+        "saving": "Saving…",
+        "saved": "{count} references saved",
+        "savedWithDupes": "{count} saved · {deduped} already in your library",
+        "saveFailed": "Could not save references",
+        "loadFailed": "Could not load the library",
+        "searchPlaceholder": "Search the library",
+        "brandOnly": "Only {brand}",
+        "empty": "No references yet",
+        "savingAnalyzing": "Analysing and saving…",
+        "savingProgress": "Saving {done} of {total}…",
+        "saveTimedOut": "Took too long to answer. The upload may still be finishing — check the library before retrying."
       }
     },
     "nav": {

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
 import { ServerDebugPanel } from './ServerDebugPanel';
 import { LintingSection } from '../tools/LintingSection';
+import { DevRunnerSection } from '../tools/DevRunnerSection';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   Code2,
@@ -106,8 +106,6 @@ function ServerSection() {
 }
 
 export function DevTab() {
-  const [jsonInput, setJsonInput] = useState('');
-  const [messageType, setMessageType] = useState('APPLY_OPERATIONS');
   const { send } = useFigmaMessages();
   const { analyze } = useSmartAnalyze();
   const isGenerating = usePluginStore((s) => s.isGenerating);
@@ -116,20 +114,6 @@ export function DevTab() {
   const brandColorsArray = store.selectedColors
     ? Array.from(store.selectedColors.values()).map((c) => ({ hex: c.hex, name: c.role }))
     : [];
-
-  const handleRun = () => {
-    try {
-      const data = JSON.parse(jsonInput);
-      send({
-        type: messageType as any,
-        ...(messageType === 'APPLY_OPERATIONS'
-          ? { operations: Array.isArray(data) ? data : [data] }
-          : data),
-      });
-    } catch (err) {
-      alert('Invalid JSON: ' + (err as Error).message);
-    }
-  };
 
   const handleGetContext = () => {
     send({ type: 'GET_CONTEXT' } as any);
@@ -198,36 +182,11 @@ export function DevTab() {
         </div>
       </div>
 
-      <div className="space-y-2 border border-border rounded-lg p-3">
-        <h3 className="text-xs font-mono uppercase font-semibold flex items-center gap-1">
-          <Code2 size={12} />
-          JSON Operations Runner
-        </h3>
-
-        <div className="space-y-2">
-          <Input
-            type="text"
-            value={messageType}
-            onChange={(e) => setMessageType(e.target.value)}
-            placeholder="Message type (e.g., APPLY_OPERATIONS)"
-            className="text-xs h-7"
-          />
-
-          <Textarea
-            value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
-            placeholder={`Paste JSON here...\n\nExample:\n{\n  "type": "CREATE_FRAME",\n  "name": "Frame 1"\n}`}
-            className="font-mono text-xs h-48"
-          />
-
-          <Button
-            onClick={handleRun}
-            className="w-full text-xs h-8 bg-brand-cyan text-black hover:bg-brand-cyan/90"
-          >
-            Send Message
-          </Button>
-        </div>
-      </div>
+      {/* This block used to be a second, hardcoded-English copy of DevRunnerSection —
+          carrying the same `operations`-vs-`payload` bug. One runner, translated. */}
+      <BrandSection title="JSON Operations Runner" icon={Code2} collapsible defaultOpen={false}>
+        <DevRunnerSection />
+      </BrandSection>
 
       <div className="text-xs text-muted-foreground space-y-1 border border-border rounded-lg p-3">
         <p className="font-semibold">Figma Plugin Messages API</p>

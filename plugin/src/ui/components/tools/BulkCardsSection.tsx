@@ -36,6 +36,53 @@ const CARD_H = 480;
 const GAP = 24;
 const COLS = 5;
 
+/** Backstop only. The sandbox answers in well under this; it exists so a lost reply can't
+ *  leave the button spinning forever. */
+const APPLY_TIMEOUT_MS = 60_000;
+
+type ApplyOutcome =
+  | { status: 'done'; count: number }
+  | { status: 'failed'; message?: string }
+  | { status: 'unknown' };
+
+/**
+ * Apply the operations and report what actually happened.
+ *
+ * This used to fire the operations and then `setTimeout(max(3000, n*250))` before announcing
+ * "N cards generated" — a success message on a stopwatch, printed whether the clone worked,
+ * failed, or was still running. The source node is looked up by name ('Influencer'), so the
+ * most likely real outcome — no such node in the page — announced success too.
+ */
+function applyAndWait(
+  applyOperations: (ops: any[]) => void,
+  operations: any[]
+): Promise<ApplyOutcome> {
+  return new Promise((resolve) => {
+    const handler = (event: MessageEvent) => {
+      const msg = event.data?.pluginMessage;
+      if (msg?.type === 'OPERATIONS_DONE') {
+        cleanup();
+        resolve({ status: 'done', count: msg.count ?? operations.length });
+      } else if (msg?.type === 'ERROR' || msg?.type === 'OPERATION_ERROR') {
+        cleanup();
+        resolve({ status: 'failed', message: msg.message });
+      }
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve({ status: 'unknown' });
+    }, APPLY_TIMEOUT_MS);
+    const cleanup = () => {
+      window.removeEventListener('message', handler);
+      clearTimeout(timer);
+    };
+
+    // Listen before sending, or a fast reply lands before we're watching.
+    window.addEventListener('message', handler);
+    applyOperations(operations);
+  });
+}
+
 export function BulkCardsSection() {
   const { t } = useTranslation();
   const { applyOperations } = usePluginMessages();
@@ -57,9 +104,11 @@ export function BulkCardsSection() {
         const parsed = parseJson(data);
         setInfluencers(parsed);
         const withPhotos = parsed.filter((i) => i.foto_arquivo).length;
+        // The pt-BR was inlined here while these very keys sat unused in both locales.
         setStatus(
           parsed.length > 0
-            ? `${parsed.length} influencers${withPhotos > 0 ? ` · ${withPhotos} com foto` : ''}`
+            ? t('plugin.tools.bulkCards.influencers', { count: parsed.length }) +
+                (withPhotos > 0 ? t('plugin.tools.bulkCards.withPhoto', { count: withPhotos }) : '')
             : t('plugin.tools.bulkCards.noneFound')
         );
       } catch {
@@ -94,11 +143,14 @@ export function BulkCardsSection() {
         return op;
       });
 
-      applyOperations(operations);
-
-      const waitMs = Math.max(3000, influencers.length * 250);
-      await new Promise((r) => setTimeout(r, waitMs));
-      setStatus(t('plugin.tools.bulkCards.cardsGenerated', { count: influencers.length }));
+      const outcome = await applyAndWait(applyOperations, operations);
+      if (outcome.status === 'done') {
+        setStatus(t('plugin.tools.bulkCards.cardsGenerated', { count: outcome.count }));
+      } else if (outcome.status === 'failed') {
+        setStatus(outcome.message || t('plugin.tools.bulkCards.generateError'));
+      } else {
+        setStatus(t('plugin.tools.bulkCards.timedOut'));
+      }
     } catch (err) {
       setStatus(t('plugin.tools.bulkCards.generateError'));
       console.error(err);

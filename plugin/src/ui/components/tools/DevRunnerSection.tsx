@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFigmaMessages } from '../../hooks/useFigmaMessages';
+import { usePluginStore } from '../../store';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Terminal, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 export function DevRunnerSection() {
   const { t } = useTranslation();
   const { send } = useFigmaMessages();
+  const showToast = usePluginStore((s) => s.showToast);
   const [jsonInput, setJsonInput] = useState('');
   const [messageType, setMessageType] = useState('APPLY_OPERATIONS');
 
@@ -17,12 +19,15 @@ export function DevRunnerSection() {
       const data = JSON.parse(jsonInput);
       send({
         type: messageType as any,
+        // The sandbox reads `msg.payload` (code.ts, APPLY_OPERATIONS) — this sent
+        // `operations`, so the runner's main path handed it undefined and did nothing.
         ...(messageType === 'APPLY_OPERATIONS'
-          ? { operations: Array.isArray(data) ? data : [data] }
+          ? { payload: Array.isArray(data) ? data : [data] }
           : data),
       });
     } catch (err) {
-      alert(t('plugin.tools.devRunner.invalidJson', { message: (err as Error).message }));
+      // A native alert blocks every subsequent plugin message until dismissed.
+      showToast(t('plugin.tools.devRunner.invalidJson', { message: (err as Error).message }), 'error');
     }
   };
 

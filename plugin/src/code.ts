@@ -489,10 +489,8 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     return;
   }
 
-  if (msg.type === 'OPEN_EXTERNAL_URL') {
-    figma.openExternal(msg.url);
-    return;
-  }
+  // OPEN_EXTERNAL_URL used to live here as a second name for the same job — see
+  // OPEN_EXTERNAL below, which is the one everything sends now.
 
   if (msg.type === 'USE_SELECTION_AS_FONT') {
     const selection = figma.currentPage.selection;

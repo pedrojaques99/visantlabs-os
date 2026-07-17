@@ -5,12 +5,23 @@ import { usePluginStore } from '../../store';
 import { useColorRename } from '../../hooks/useColorRename';
 import { OpButton } from '../common/OpButton';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Zap, LayoutGrid, Palette, Stamp, Paintbrush } from 'lucide-react';
+
+/**
+ * Not translated on purpose: the format string is written into the produced frame's name
+ * (`Template - Story :: <variant>`, handlers/convertToPreset.ts), so translating it would
+ * rename the artifact per locale and break preset scanning.
+ */
+const PRESET_FORMATS = ['Story', 'Feed'] as const;
 
 export function AutomationSection() {
   const { t } = useTranslation();
   const store = usePluginStore();
+  // Was hardcoded to 'Story' while the button said "convert to preset" — a label that
+  // promised a choice the UI never offered.
+  const [presetFormat, setPresetFormat] = React.useState<string>(PRESET_FORMATS[0]);
   const isGenerating = usePluginStore((s) => s.isGenerating);
   const runner = useOpRunner({ globalBusy: isGenerating });
   const colorRename = useColorRename();
@@ -84,20 +95,29 @@ export function AutomationSection() {
         {t('plugin.tools.automation.generateVariants')}
       </OpButton>
 
-      <OpButton
-        opId="convertToPreset"
-        runner={runner}
-        message={{ type: 'CONVERT_TO_PRESET', format: 'Story' }}
-        responseTypes={['PRESET_CREATED']}
-        busyLabel={t('plugin.tools.automation.converting')}
-        variant="outline"
-        size="sm"
-        title={t('plugin.tools.automation.convertToPresetTitle')}
-        className="w-full h-8 text-[10px] font-bold uppercase tracking-wider"
-      >
-        <Stamp size={12} className="mr-2" />
-        {t('plugin.tools.automation.convertToPreset')}
-      </OpButton>
+      <div className="flex gap-2">
+        <div className="w-24 shrink-0">
+          <Select
+            value={presetFormat}
+            onChange={setPresetFormat}
+            options={PRESET_FORMATS.map((f) => ({ value: f, label: f }))}
+          />
+        </div>
+        <OpButton
+          opId="convertToPreset"
+          runner={runner}
+          message={{ type: 'CONVERT_TO_PRESET', format: presetFormat }}
+          responseTypes={['PRESET_CREATED']}
+          busyLabel={t('plugin.tools.automation.converting')}
+          variant="outline"
+          size="sm"
+          title={t('plugin.tools.automation.convertToPresetTitle')}
+          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-wider"
+        >
+          <Stamp size={12} className="mr-2" />
+          {t('plugin.tools.automation.convertToPreset')}
+        </OpButton>
+      </div>
 
       <OpButton
         opId="socialFrames"

@@ -13,7 +13,8 @@
       "brand": "Marca",
       "or": "ou",
       "frameCountOne": "{count} frame",
-      "frameCountOther": "{count} frames"
+      "frameCountOther": "{count} frames",
+      "remove": "Remover"
     },
     "library": {
       "searchComponents": "Buscar componentes..."
@@ -343,7 +344,9 @@
         "connectorsTitle": "Do Linear",
         "connectorsDescription": "Transformar issues em frames Story e Feed",
         "intelligenceTitle": "Analisar",
-        "intelligenceDescription": "Categorizar a seleção, ou lê-la como JSON ou prompt de imagem"
+        "intelligenceDescription": "Categorizar a seleção, ou lê-la como JSON ou prompt de imagem",
+        "referencesTitle": "Referências",
+        "referencesDescription": "Salve imagens do canvas na sua biblioteca de referências"
       },
       "automation": {
         "scanningColors": "Escaneando cores…",
@@ -482,7 +485,8 @@
         "copyPhotosOn": "Copiar fotos do Figma: ON",
         "copyPhotosOff": "Copiar fotos do Figma: OFF",
         "generateCards": "Gerar {count} cards",
-        "influencersStatus": "{count} influencers"
+        "influencersStatus": "{count} influencers",
+        "timedOut": "Ainda processando — confira o canvas."
       },
       "connectors": {
         "templatesStatus": "{count} templates",
@@ -521,6 +525,25 @@
         "refine": "Refinar",
         "extract": "Extrair",
         "brandMatrixDescription": "Gerar uma grade logo × cor"
+      },
+      "references": {
+        "pullSelection": "Puxar seleção",
+        "pulling": "Exportando…",
+        "selectFirst": "Selecione imagens no canvas primeiro",
+        "exportFailed": "Não foi possível exportar a seleção",
+        "someFailed": "{count} camadas não puderam ser exportadas",
+        "saveCount": "Salvar {count} na biblioteca",
+        "saving": "Salvando…",
+        "saved": "{count} referências salvas",
+        "savedWithDupes": "{count} salvas · {deduped} já estavam na sua biblioteca",
+        "saveFailed": "Não foi possível salvar as referências",
+        "loadFailed": "Não foi possível carregar a biblioteca",
+        "searchPlaceholder": "Buscar na biblioteca",
+        "brandOnly": "Só {brand}",
+        "empty": "Nenhuma referência ainda",
+        "savingAnalyzing": "Analisando e salvando…",
+        "savingProgress": "Salvando {done} de {total}…",
+        "saveTimedOut": "Demorou demais para responder. O envio pode ainda estar terminando — confira a biblioteca antes de tentar de novo."
       }
     },
     "nav": {
