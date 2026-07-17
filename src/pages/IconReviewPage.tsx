@@ -11,6 +11,7 @@ import type { IconWeight } from '@phosphor-icons/react';
 import * as Phosphor from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { PageShell } from '@/components/ui/PageShell';
+import { API_BASE } from '@/config/api';
 import * as Icons from '@/lib/ui/icons';
 import { ICON_USAGE, ICON_USAGE_TOTAL, type IconUsage } from '@/lib/ui/icon-usage.generated';
 
@@ -63,7 +64,7 @@ export function IconReviewPage() {
   async function swap(lucideName: string, phosphorName: string) {
     setSaving(true);
     try {
-      const resp = await fetch('/api/dev-icons/icon-swap', {
+      const resp = await fetch(`${API_BASE}/dev-icons/icon-swap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lucideName, phosphorName }),

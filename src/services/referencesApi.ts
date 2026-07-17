@@ -3,6 +3,7 @@
  * Talks to /api/references (see server/routes/references.ts).
  */
 import { authService } from './authService';
+import { API_BASE } from '@/config/api';
 
 export interface ReferenceProvenance {
   country?: string;
@@ -362,7 +363,7 @@ export const adminReferencesApi = {
 
   /** Duplicate groups by content hash. Admin-only; read-only. */
   async duplicates(): Promise<DuplicateReport> {
-    const resp = await fetch('/api/admin/references/duplicates', { headers: authHeaders() });
+    const resp = await fetch(`${API_BASE}/admin/references/duplicates`, { headers: authHeaders() });
     if (!resp.ok) throw new Error('Failed to load duplicates');
     return resp.json();
   },
@@ -371,7 +372,7 @@ export const adminReferencesApi = {
   async dedupe(
     dryRun = true
   ): Promise<{ dryRun: boolean; groups: number; wouldDelete?: number; deleted?: number }> {
-    const resp = await fetch('/api/admin/references/dedupe', {
+    const resp = await fetch(`${API_BASE}/admin/references/dedupe`, {
       method: 'POST',
       headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ dryRun }),
