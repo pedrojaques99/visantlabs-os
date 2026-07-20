@@ -67,6 +67,7 @@ model User {
   totpBackupCodes       String[]
   welcomeEmailsSent     Int       @default(0)
   metadata              Json?     // Billing/grandfathering flags: { legacyBrands?, agencyBrandQuantity?, brandQuotaGraceUntil?, brandQuotaExcess? }
+  entitlements          Json?     // Produtos avulsos: Array<{ sku, kind:'product', source:'stripe', sessionId, grantedAt }> — ver server/lib/entitlements.ts
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

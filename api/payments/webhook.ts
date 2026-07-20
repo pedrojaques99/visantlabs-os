@@ -246,6 +246,55 @@ const processWebhookEvent = async (event: Stripe.Event): Promise<void> => {
               return;
             }
 
+            // ── PRODUTO AVULSO (e-book etc.) ────────────────────────────────
+            // Compra de produto único: concede ENTITLEMENT, não créditos.
+            // Esta é a VERDADE do acesso — o redirect de sucesso é só
+            // conveniência. Idempotente por session.id (reprocessar é seguro).
+            if (session.metadata?.kind === 'product' && session.metadata?.sku) {
+              const sku = session.metadata.sku;
+              const buyerEmail = customerEmail;
+
+              if (!buyerEmail) {
+                console.error('❌ Product purchase without email — cannot grant:', {
+                  sessionId: session.id,
+                  sku,
+                });
+                return;
+              }
+
+              try {
+                const { grantProduct } = await import(
+                  '../../server/services/productGrantService.js'
+                );
+                const result = await grantProduct({
+                  email: buyerEmail,
+                  sku,
+                  sessionId: session.id,
+                  source: 'stripe',
+                  name: session.customer_details?.name || undefined,
+                  stripeCustomerId: customerId || undefined,
+                });
+
+                console.log('✅ Product entitlement processed:', {
+                  sku,
+                  email: buyerEmail,
+                  userId: result.userId,
+                  granted: result.granted,
+                  accountCreated: result.created,
+                  sessionId: session.id,
+                });
+              } catch (grantError: any) {
+                console.error('❌ Failed to grant product entitlement:', {
+                  sku,
+                  email: buyerEmail,
+                  sessionId: session.id,
+                  error: grantError?.message || String(grantError),
+                });
+              }
+              return; // não cai na lógica de créditos
+            }
+            // ────────────────────────────────────────────────────────────────
+
             let credits = 0;
             let productId: string | null = null;
 
