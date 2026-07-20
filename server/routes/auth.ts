@@ -37,6 +37,8 @@ import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 import crypto from 'crypto';
 import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
+import { toEntitlements } from '../lib/entitlements.js';
+import { grantProduct } from '../services/productGrantService.js';
 
 const router = express.Router();
 const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
@@ -692,10 +694,134 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
         emailVerified: user.emailVerified,
         onboardingCompleted: user.onboardingCompleted,
         totpEnabled: user.totpEnabled,
+        // Produtos avulsos (e-book etc.) — o gate do /p/[sku] no visant-club
+        // decide o acesso a partir daqui. Ver server/lib/entitlements.ts.
+        entitlements: toEntitlements((user as any).entitlements),
+        // conta passwordless (comprou produto antes de ter conta): ainda não
+        // definiu senha — o front oferece "garantir acesso" sem bloquear.
+        hasPassword: !!user.password,
       },
     });
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Troca de sessão paga do Stripe por sessão logada — a "primeira sessão sem
+// pedágio" do fluxo product-only (ManyChat → checkout → já cai lendo).
+//
+// Segurança:
+//  - só aceita sessão com payment_status === 'paid' e metadata.kind === 'product';
+//  - o email vem da SESSÃO DO STRIPE, nunca do cliente;
+//  - janela de validade desde a criação da sessão (o link mágico serve pro
+//    pós-compra imediato; URL vazada antiga para de funcionar). Optamos por
+//    janela em vez de one-time estrito para que um refresh da página não quebre
+//    o acesso do comprador legítimo;
+//  - rate-limit por IP;
+//  - o grant em si é idempotente (productGrantService).
+const checkoutExchangeRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts, please try again later' },
+});
+
+// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 24h.
+const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(
+  process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 24
+);
+
+router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, res) => {
+  try {
+    const sessionId = typeof req.body?.sessionId === 'string' ? req.body.sessionId.trim() : '';
+    if (!sessionId) {
+      return res.status(400).json({ error: 'sessionId is required' });
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      console.error('❌ STRIPE_SECRET_KEY not configured for session exchange');
+      return res.status(500).json({ error: 'Payments not configured' });
+    }
+
+    const { default: Stripe } = await import('stripe');
+    const stripe = new Stripe(stripeKey);
+
+    let session: any;
+    try {
+      session = await stripe.checkout.sessions.retrieve(sessionId);
+    } catch {
+      return res.status(404).json({ error: 'Checkout session not found' });
+    }
+
+    if (session.payment_status !== 'paid') {
+      return res.status(402).json({ error: 'Payment not completed' });
+    }
+
+    const kind = session.metadata?.kind;
+    const sku = session.metadata?.sku;
+    if (kind !== 'product' || !sku) {
+      return res.status(400).json({ error: 'Not a product checkout session' });
+    }
+
+    // Janela de validade
+    if (session.created) {
+      const ageHours = (Date.now() / 1000 - session.created) / 3600;
+      if (ageHours > CHECKOUT_EXCHANGE_WINDOW_HOURS) {
+        return res.status(410).json({
+          error: 'Link expired',
+          message: 'Esse link de acesso expirou. Entre com seu email para continuar lendo.',
+          expired: true,
+        });
+      }
+    }
+
+    const email = session.customer_details?.email || session.customer_email;
+    if (!email) {
+      return res.status(400).json({ error: 'No email on checkout session' });
+    }
+
+    const customerIdRaw = session.customer;
+    const stripeCustomerId =
+      typeof customerIdRaw === 'string' ? customerIdRaw : customerIdRaw?.id || undefined;
+
+    // Garante o entitlement (defensivo: cobre o caso do webhook atrasar)
+    const result = await grantProduct({
+      email,
+      sku,
+      sessionId: session.id,
+      source: 'stripe',
+      name: session.customer_details?.name || undefined,
+      stripeCustomerId,
+    });
+
+    const token = jwt.sign({ userId: result.userId, email: result.email }, JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    recordSession(result.userId, req).catch(() => {});
+
+    console.log('✅ Session minted from checkout:', {
+      sku,
+      email: result.email,
+      userId: result.userId,
+      accountCreated: result.created,
+      grantedNow: result.granted,
+    });
+
+    return res.json({
+      token,
+      sku,
+      user: {
+        id: result.userId,
+        email: result.email,
+        entitlements: result.entitlements,
+      },
+    });
+  } catch (error: any) {
+    console.error('❌ session-from-checkout failed:', error?.message || error);
+    return res.status(500).json({ error: 'Failed to create session from checkout' });
   }
 });
 
