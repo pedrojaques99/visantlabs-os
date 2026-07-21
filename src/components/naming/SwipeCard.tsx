@@ -6,7 +6,7 @@ import {
   useAnimationControls,
   type PanInfo,
 } from 'framer-motion';
-import { X, Heart, Gem, AlertTriangle } from '@/lib/ui/icons';
+import { X, Heart, Gem, AlertTriangle, Globe } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import type { NamingCard, Verdict } from '@/lib/naming/tasteProfile';
@@ -165,6 +165,17 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 <span className="mt-6 text-[10px] font-mono uppercase tracking-wider text-neutral-600">
                   {formatTag(card.technique)}
                 </span>
+
+                {/* Domínio parcialmente ocupado — o 'taken' já foi descartado no servidor */}
+                {card.availability?.status === 'partial' && (
+                  <span
+                    title={`Já registrado: ${card.availability.registered.join(', ')}`}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning"
+                  >
+                    <Globe size={11} />
+                    {card.availability.registered.join(', ')} em uso
+                  </span>
+                )}
 
                 {/* Flag de risco */}
                 {card.riskFlag && (

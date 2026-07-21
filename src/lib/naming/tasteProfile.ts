@@ -9,12 +9,28 @@
 
 import type { NamingSettings } from './constants';
 
+/** Resultado do pré-filtro de domínio (RDAP). Ver server/lib/naming/availability.ts. */
+export type AvailabilityStatus = 'free' | 'partial' | 'taken' | 'unknown';
+
 export interface NamingCard {
   name: string;
   rationale: string;
   riskFlag?: string;
   technique: string;
   territory: string;
+  /**
+   * Família linguística (Germanic, Nordic, Anglo, Romance, Japanese...). O LLM
+   * declara no output; alimenta o aprendizado de gosto por som/origem.
+   */
+  family?: string;
+  /**
+   * Ausente quando o pré-filtro está desligado. Cards com status 'taken' já são
+   * descartados no servidor e nunca chegam aqui.
+   */
+  availability?: {
+    status: AvailabilityStatus;
+    registered: string[];
+  };
 }
 
 export type Verdict = 'nope' | 'like' | 'superlike';
@@ -27,6 +43,7 @@ interface HistoryEntry {
 export interface TasteProfile {
   likeRateByTerritory: Record<string, number>;
   likeRateByTechnique: Record<string, number>;
+  likeRateByFamily: Record<string, number>;
   avgLengthLiked: number;
   superliked: NamingCard[];
   liked: NamingCard[];
@@ -42,6 +59,7 @@ export function emptyProfile(): TasteProfile {
   return {
     likeRateByTerritory: {},
     likeRateByTechnique: {},
+    likeRateByFamily: {},
     avgLengthLiked: 0,
     superliked: [],
     liked: [],
@@ -109,6 +127,7 @@ function computeAvgLengthLiked(profile: TasteProfile): number {
 function recomputeDerived(profile: TasteProfile): void {
   profile.likeRateByTerritory = ratesFrom(statsBy(profile, (c) => c.territory));
   profile.likeRateByTechnique = ratesFrom(statsBy(profile, (c) => c.technique));
+  profile.likeRateByFamily = ratesFrom(statsBy(profile, (c) => c.family || ''));
   profile.avgLengthLiked = computeAvgLengthLiked(profile);
 }
 
@@ -201,6 +220,84 @@ export function pickTerritories(
   [...unexplored, ...explored, ...available].forEach(push);
 
   return picks;
+}
+
+/* ── Regras dinâmicas derivadas do gosto ─────────────────────────────────── */
+
+/**
+ * Régua aprendida na sessão. Vira instrução concreta no prompt — antes, os
+ * like-rates por técnica/comprimento só viravam prosa na "leitura de gosto" e
+ * nunca restringiam de fato a geração.
+ */
+export interface TasteRules {
+  preferTechniques: string[];
+  avoidTechniques: string[];
+  preferFamilies: string[];
+  avoidFamilies: string[];
+  /** Faixa de comprimento observada nos aprovados (só com amostra suficiente). */
+  lengthBand?: { min: number; max: number };
+  /** Quantos swipes sustentam estas regras — o prompt pondera por isso. */
+  sampleSize: number;
+}
+
+/** Peso mínimo (superlike=3, like=1, nope=1) para uma chave virar regra. */
+const MIN_WEIGHT = 3;
+const PREFER_RATE = 0.6;
+const AVOID_RATE = 0.2;
+/**
+ * Nunca banir tudo: o gosto declarado não pode colapsar a rodada numa família
+ * só. Se o usuário só viu nomes latinos e gostou, isso é viés de exposição —
+ * não evidência de que ele rejeita alemão. Mantém espaço para exploração.
+ */
+const MAX_AVOIDED_FAMILIES = 2;
+
+function splitByRate(
+  stats: Record<string, KeyStat>,
+  maxAvoid = Number.POSITIVE_INFINITY
+): { prefer: string[]; avoid: string[] } {
+  const eligible = Object.entries(stats).filter(([k, e]) => k && e.total >= MIN_WEIGHT);
+  const rate = (e: KeyStat) => (e.total > 0 ? e.likes / e.total : 0);
+
+  const prefer = eligible
+    .filter(([, e]) => rate(e) >= PREFER_RATE)
+    .sort((a, b) => rate(b[1]) - rate(a[1]))
+    .map(([k]) => k);
+
+  const avoid = eligible
+    .filter(([, e]) => rate(e) <= AVOID_RATE)
+    .sort((a, b) => rate(a[1]) - rate(b[1]))
+    .map(([k]) => k)
+    .slice(0, maxAvoid);
+
+  return { prefer, avoid };
+}
+
+/**
+ * Traduz o perfil em regras acionáveis. Retorna `null` enquanto a amostra for
+ * pequena demais — regra derivada de 2 swipes é ruído, e travar a régua cedo
+ * demais mata a variedade da sessão inteira.
+ */
+export function deriveTasteRules(profile: TasteProfile): TasteRules | null {
+  const sampleSize = profile.liked.length + profile.superliked.length + profile.rejected.length;
+  if (sampleSize < 5) return null;
+
+  const tech = splitByRate(statsBy(profile, (c) => c.technique));
+  const fam = splitByRate(statsBy(profile, (c) => c.family || ''), MAX_AVOIDED_FAMILIES);
+
+  const approved = [...profile.liked, ...profile.superliked].map((c) => c.name.trim().length);
+  const lengthBand =
+    approved.length >= 3
+      ? { min: Math.max(3, Math.min(...approved) - 1), max: Math.max(...approved) + 1 }
+      : undefined;
+
+  return {
+    preferTechniques: tech.prefer,
+    avoidTechniques: tech.avoid,
+    preferFamilies: fam.prefer,
+    avoidFamilies: fam.avoid,
+    lengthBand,
+    sampleSize,
+  };
 }
 
 /* ── Persistência (localStorage) ────────────────────────────────────────── */

@@ -158,7 +158,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
             </Button>
           )}
           <p className="pt-1 text-center text-[10px] leading-relaxed text-neutral-600">
-            Paixão por nome só depois do INPI — antes disso, todo nome é hipótese.
+            Domínio checado por RDAP; marca registrada, não. Paixão por nome só depois do INPI.
           </p>
         </div>
       )}
@@ -256,6 +256,16 @@ function ShortlistRow({
               <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-600">
                 {formatTag(card.territory)}
               </span>
+
+              {card.availability?.status === 'partial' && (
+                <span
+                  title={`Já registrado: ${card.availability.registered.join(', ')}`}
+                  className="inline-flex items-center gap-1 text-[10px] text-amber-400/80"
+                >
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-amber-400/70" />
+                  {card.availability.registered.join(', ')} em uso
+                </span>
+              )}
 
               {/* Ações — uma linha, estilo uniforme */}
               <div className="flex items-center gap-1">

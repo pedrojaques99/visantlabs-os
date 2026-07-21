@@ -19,6 +19,7 @@ import {
   updateProfile,
   undoLast,
   pickTerritories,
+  deriveTasteRules,
   loadSession,
   saveSession,
   clearSession,
@@ -28,7 +29,11 @@ import {
   type NamingPhase,
   type NamingSession,
 } from '@/lib/naming/tasteProfile';
-import { DEFAULT_NAMING_SETTINGS, type NamingSettings } from '@/lib/naming/constants';
+import {
+  DEFAULT_NAMING_SETTINGS,
+  normalizeAvailabilityFilter,
+  type NamingSettings,
+} from '@/lib/naming/constants';
 import {
   generateNaming,
   namingEvent,
@@ -42,21 +47,27 @@ import { authService } from '@/services/authService';
 import { namingSessionApi, type NamingSessionScalars } from '@/services/namingSessionApi';
 import { getNamingSettings, updateNamingSettings } from '@/services/userSettingsService';
 
-/**
- * Extrai só os campos ≠ default para enviar ao generate-naming (request lean,
- * retrocompatível). Retorna undefined quando tudo está no padrão.
- */
 /** Backend valida cada lista (seen/liked/superliked/rejected) em ≤200 itens e
  *  dá 400 se passar — capa nos mais RECENTES antes de enviar. */
 const MAX_SENT = 200;
 
-function buildSettingsPayload(s: NamingSettings): NamingSettingsPayload | undefined {
-  const p: NamingSettingsPayload = {};
-  if (s.ruler !== DEFAULT_NAMING_SETTINGS.ruler) p.ruler = s.ruler;
-  if (s.maxLength !== DEFAULT_NAMING_SETTINGS.maxLength) p.maxLength = s.maxLength;
-  if (s.language !== DEFAULT_NAMING_SETTINGS.language) p.language = s.language;
-  if (s.techniques.length > 0) p.techniques = s.techniques; // vazio = todas (default)
-  return Object.keys(p).length > 0 ? p : undefined;
+/**
+ * Monta o payload de configurações do generate-naming.
+ *
+ * Envia SEMPRE todos os campos. A versão antiga mandava só o que diferia de
+ * `DEFAULT_NAMING_SETTINGS` para deixar o request enxuto — mas como as settings
+ * salvas do usuário são carregadas como estado inicial, qualquer preferência que
+ * coincidisse com o default de fábrica nunca era transmitida, e a geração caía
+ * no default do servidor. O ganho de bytes não valia a config fantasma.
+ */
+function buildSettingsPayload(s: NamingSettings): NamingSettingsPayload {
+  return {
+    ruler: s.ruler,
+    maxLength: s.maxLength, // 0 = "livre", valor legítimo — nunca usar falsy-check
+    language: s.language,
+    techniques: s.techniques, // [] = todas
+    availabilityFilter: normalizeAvailabilityFilter(s.availabilityFilter),
+  };
 }
 
 /**
@@ -110,6 +121,12 @@ export const NamingMachinePage: React.FC = () => {
   const generatingRef = useRef(false);
   const prefetchingRef = useRef(false);
   const territoriesRef = useRef<Set<string>>(new Set());
+  /**
+   * Nomes que foram descartados sem julgamento pelo "gerar novamente". Continuam
+   * na lista de exclusão para o LLM não devolver o mesmo nome na leva seguinte —
+   * eles saíram do deck, mas já apareceram na tela.
+   */
+  const retiredRef = useRef<Set<string>>(new Set());
   const defenseRequested = useRef<Set<string>>(new Set());
   const hydrated = useRef(false);
   const sessionIdRef = useRef<string | null>(null);
@@ -364,7 +381,7 @@ export const NamingMachinePage: React.FC = () => {
         // julgado) — não só o que foi swipado. Impede o LLM de regenerar nomes que
         // já estão na tela. Backend valida ≤200: mantém os mais recentes.
         const surfaced = Array.from(
-          new Set([...profile.seen, ...deckRef.current.map((c) => c.name)])
+          new Set([...profile.seen, ...deckRef.current.map((c) => c.name), ...retiredRef.current])
         );
         const resp = await generateNaming({
           brief: brief || '',
@@ -377,6 +394,9 @@ export const NamingMachinePage: React.FC = () => {
           territories: territories.length ? territories : undefined,
           brandGuidelineId: brandGuidelineId || undefined,
           settings: buildSettingsPayload(settings),
+          // Régua adaptativa: null enquanto a amostra for pequena (< 5 swipes),
+          // para não travar o gosto em cima de ruído.
+          tasteRules: deriveTasteRules(profile) || undefined,
           model: settings.model || undefined,
         });
 
@@ -384,7 +404,7 @@ export const NamingMachinePage: React.FC = () => {
         // "Tecta"/"TECTA"/"tecta " são o MESMO nome — comparar cru deixava duplicata passar.
         const norm = (s: string) => s.toLowerCase().trim();
         const existing = new Set(
-          [...profile.seen, ...deckRef.current.map((c) => c.name)].map(norm)
+          [...profile.seen, ...deckRef.current.map((c) => c.name), ...retiredRef.current].map(norm)
         );
         const fresh: NamingCard[] = [];
         for (const n of resp.names || []) {
@@ -413,6 +433,20 @@ export const NamingMachinePage: React.FC = () => {
     },
     [brief, profile, tasteReading, brandGuidelineId, settings, requireAuth, handleApiError]
   );
+
+  /**
+   * "Gerar novamente" — descarta o deck ainda não julgado e refaz a leva com os
+   * parâmetros atuais. Existe porque mudança de configuração só valia na PRÓXIMA
+   * leva: quem trocava a régua ficava preso aos nomes gerados pela régua antiga.
+   * Os nomes descartados seguem excluídos para não voltarem repetidos.
+   */
+  const regenerateDeck = useCallback(async () => {
+    if (generatingRef.current) return;
+    for (const c of deckRef.current) retiredRef.current.add(c.name);
+    deckRef.current = [];
+    setDeck([]);
+    await fetchBatch(false);
+  }, [fetchBatch]);
 
   /* ── Dispara primeira leva + prefetch ≤5 ────────────────────────────── */
   useEffect(() => {
@@ -598,6 +632,7 @@ export const NamingMachinePage: React.FC = () => {
     setNudgeDismissed(false);
     setLastSwiped(null);
     territoriesRef.current = new Set();
+    retiredRef.current = new Set();
     defenseRequested.current = new Set();
     setPhase('briefing');
   }, []);
@@ -709,6 +744,8 @@ export const NamingMachinePage: React.FC = () => {
               settings={settings}
               onChange={updateSettings}
               onReset={resetSettings}
+              onRegenerate={phase === 'deck' ? regenerateDeck : undefined}
+              regenerating={generating}
             />
           </div>
 
