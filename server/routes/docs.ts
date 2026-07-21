@@ -236,8 +236,14 @@ router.get('/mcp-setup', (_req: Request, res: Response) => {
 
 /**
  * GET /docs/providers
- * Which image/video/chat providers have API keys configured.
- * Frontend uses this to hide model groups for unconfigured providers.
+ * Which IMAGE/VIDEO providers have API keys configured. O frontend usa isto
+ * para esconder grupos de modelo de provider sem chave.
+ *
+ * NÃO serve para texto/chat, apesar do que este comentário dizia antes: aqui só
+ * se lê `process.env`, enquanto a disponibilidade de texto é BYOK-aware (um
+ * usuário com chave própria da OpenAI tem o provider mesmo sem chave de
+ * plataforma). Para texto use `GET /api/ai/text-providers`, que responde a
+ * partir de `cheapTextStatus()`.
  */
 router.get('/providers', (_req: Request, res: Response) => {
   const has = (key: string) => {

@@ -1,7 +1,7 @@
 import { authService } from './authService';
 import { API_BASE } from '@/config/api';
 import type { NamingCard, Verdict } from '@/lib/naming/tasteProfile';
-import type { NamingRuler, NamingLanguage } from '@/lib/naming/constants';
+import type { NamingRuler, NamingLanguage, AvailabilityFilter } from '@/lib/naming/constants';
 
 /* ── Shared request helper (padrão contentStudioApi) ─────────────────────── */
 
@@ -43,6 +43,8 @@ export interface NamingSettingsPayload {
   maxLength?: number; // 0 = sem limite
   techniques?: string[]; // vazio/ausente = todas
   language?: NamingLanguage;
+  /** Dureza do pré-filtro de domínio (RDAP). Default 'balanced'. */
+  availabilityFilter?: AvailabilityFilter;
 }
 
 export interface GenerateNamingParams {
@@ -56,14 +58,31 @@ export interface GenerateNamingParams {
   rejected?: string[];
   tasteReading?: string;
   territories?: string[];
-  /** Configurações avançadas — só os campos ≠ default são enviados. */
+  /** Configurações avançadas da régua de geração. */
   settings?: NamingSettingsPayload;
+  /** Régua aprendida com os swipes da sessão (deriveTasteRules). */
+  tasteRules?: {
+    preferTechniques?: string[];
+    avoidTechniques?: string[];
+    preferFamilies?: string[];
+    avoidFamilies?: string[];
+    lengthBand?: { min: number; max: number };
+    sampleSize?: number;
+  };
   /** Chat model (Gemini) escolhido no seletor de configurações. */
   model?: string;
 }
 
 export interface GenerateNamingResponse {
   names: NamingCard[];
+  /** Quantos nomes o pré-filtro de domínio descartou nesta leva (0 se desligado). */
+  filteredOut?: number;
+  /**
+   * Provider/modelo que REALMENTE serviu. Com a cascata multi-provider, o
+   * modelo escolhido nem sempre é o que responde — sem isto o usuário acharia
+   * que a escolha dele foi usada quando houve fallback.
+   */
+  servedBy?: { provider: string; model: string };
 }
 
 export function generateNaming(params: GenerateNamingParams): Promise<GenerateNamingResponse> {

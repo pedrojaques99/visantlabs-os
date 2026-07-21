@@ -35,6 +35,23 @@ export const GEMINI_MODELS = {
 export const DEFAULT_MODEL: GeminiModel = GEMINI_MODELS.IMAGE_NB2;
 export const DEFAULT_ASPECT_RATIO: AspectRatio = '16:9';
 
+/**
+ * Providers da cascata de texto do backend. Espelha `CheapTextProviderId` em
+ * `server/lib/ai-providers/cheapText.ts` — se um lado mudar, o outro precisa
+ * mudar junto (há teste de paridade).
+ */
+export type TextProvider = 'gemini' | 'openai' | 'groq' | 'cerebras' | 'nvidia' | 'openrouter';
+
+/** Rótulo legível por provider, para agrupar o seletor. */
+export const TEXT_PROVIDER_LABELS: Record<TextProvider, string> = {
+  gemini: 'Google Gemini',
+  openai: 'OpenAI',
+  groq: 'Groq',
+  cerebras: 'Cerebras',
+  nvidia: 'NVIDIA',
+  openrouter: 'OpenRouter',
+};
+
 // ── Per-model configuration ────────────────────────────────────────────────
 export interface ModelConfig {
   label: string;
@@ -56,6 +73,12 @@ export interface ModelConfig {
   inputTokenLimit: number;
   /** Domain for Logo.dev integration */
   providerDomain?: string;
+  /**
+   * Provider da cascata de texto (`server/lib/ai-providers/cheapText.ts`).
+   * Ausente = gemini, que era a premissa implícita quando tudo aqui era Gemini.
+   * O seletor usa isto para agrupar e para esconder provider sem chave.
+   */
+  provider?: TextProvider;
   /** Hidden by default in selectors, shown when user expands "older models" */
   deprecated?: boolean;
 }
@@ -163,6 +186,53 @@ export const MODEL_CONFIG: Record<string, ModelConfig> = {
     inputTokenLimit: 65_536,
     providerDomain: 'google.com',
   },
+
+  // ── Texto, não-Gemini ────────────────────────────────────────────────────
+  // Campos de imagem (maxHandles/maxRefImages/resolution) existem só porque o
+  // ModelConfig é compartilhado com o seletor de imagem; não valem para chat.
+  'gpt-4o': {
+    label: 'GPT-4o',
+    // `popular` para aparecer SEM "Show all models". O seletor esconde por
+    // padrão tudo que não é latest/popular — e uma alternativa ao Gemini que só
+    // aparece depois de expandir não serve para quando o Gemini está fora.
+    badge: 'popular',
+    emoji: '🧠',
+    maxHandles: 0,
+    maxRefImages: 0,
+    defaultResolution: undefined,
+    supportsImageConfig: false,
+    supportsThinking: false,
+    supportsSearchGrounding: false,
+    inputTokenLimit: 128_000,
+    providerDomain: 'openai.com',
+    provider: 'openai',
+  },
+  'gpt-4o-mini': {
+    label: 'GPT-4o mini',
+    badge: 'fast',
+    emoji: '⚡',
+    maxHandles: 0,
+    maxRefImages: 0,
+    defaultResolution: undefined,
+    supportsImageConfig: false,
+    supportsThinking: false,
+    supportsSearchGrounding: false,
+    inputTokenLimit: 128_000,
+    providerDomain: 'openai.com',
+    provider: 'openai',
+  },
+};
+
+/**
+ * Modelos de texto de OUTROS providers da cascata. Só IDs que o backend já
+ * roda (`cheapText.ts`) — o seletor não pode oferecer o que a cascata não sabe
+ * chamar. Os providers Llama (groq/cerebras/nvidia/openrouter) ficam de fora
+ * de propósito: são env-only, sem BYOK, e existem como fallback automático —
+ * escolhê-los à mão não agrega para o usuário final.
+ */
+export const OPENAI_CHAT_MODELS = {
+  GPT_4O: 'gpt-4o' as const,
+  GPT_4O_MINI: 'gpt-4o-mini' as const,
 };
 
 /** List of models suitable for Chat/Expert conversation */
@@ -171,6 +241,8 @@ export const CHAT_MODELS: string[] = [
   GEMINI_MODELS.PRO_3_1,
   GEMINI_MODELS.FLASH_3,
   GEMINI_MODELS.FLASH_2_5,
+  OPENAI_CHAT_MODELS.GPT_4O,
+  OPENAI_CHAT_MODELS.GPT_4O_MINI,
 ];
 
 export const IMAGE_MODELS: string[] = [
@@ -209,6 +281,14 @@ export function getDefaultResolution(model: string): Resolution | undefined {
 /** Get model config, falling back to FLASH config */
 export function getModelConfig(model: string): ModelConfig {
   return MODEL_CONFIG[model] ?? MODEL_CONFIG[GEMINI_MODELS.FLASH_2_5];
+}
+
+/**
+ * Provider de texto de um modelo. Default gemini — era a premissa implícita
+ * antes de a cascata existir, e todo modelo Gemini continua sem `provider`.
+ */
+export function textProviderForModel(modelId: string): TextProvider {
+  return MODEL_CONFIG[modelId]?.provider ?? 'gemini';
 }
 
 /** Resolve any model ID to a human-readable display name */

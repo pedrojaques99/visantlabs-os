@@ -4,7 +4,10 @@ import {
   MODEL_CONFIG,
   AVAILABLE_IMAGE_MODELS,
   getModelConfig,
+  textProviderForModel,
+  TEXT_PROVIDER_LABELS,
 } from '../../constants/geminiModels';
+import { useTextProviders, isTextProviderAvailable } from '@/hooks/useTextProviders';
 import {
   supportsOutputConfig,
   resolveGenerationContext,
@@ -102,6 +105,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const token = import.meta.env.VITE_LOGO_DEV_TOKEN || '';
   const [showAllModels, setShowAllModels] = useState(false);
   const availableProviders = useAvailableProviders();
+  const textProviders = useTextProviders();
 
   const options = useMemo(() => {
     const isVisible = (
@@ -363,12 +367,36 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     }
 
     // CHAT MODELS LOGIC
-    return CHAT_MODELS.filter((modelId) => isVisible(modelId, MODEL_CONFIG[modelId])).map(
-      (modelId) => {
+    // Agrupado por provider via ordenação (mesmo padrão do branch de imagem
+    // acima — o Select não tem cabeçalho de grupo). Provider sem chave some,
+    // senão o usuário escolhe um modelo que a cascata não consegue chamar.
+    return CHAT_MODELS.filter((modelId) => {
+      const config = MODEL_CONFIG[modelId];
+      if (!isVisible(modelId, config)) return false;
+      const provider = textProviderForModel(modelId);
+      return modelId === selectedModel || isTextProviderAvailable(textProviders, provider);
+    })
+      .sort((a, b) => {
+        // Gemini primeiro (default histórico), demais em ordem alfabética.
+        const pa = textProviderForModel(a);
+        const pb = textProviderForModel(b);
+        if (pa === pb) return 0;
+        if (pa === 'gemini') return -1;
+        if (pb === 'gemini') return 1;
+        return pa.localeCompare(pb);
+      })
+      .map((modelId) => {
         const config = MODEL_CONFIG[modelId];
+        const provider = textProviderForModel(modelId);
+        const cooling = textProviders.find((p) => p.id === provider)?.coolingDownMs ?? 0;
         return {
           value: modelId,
           label: config?.label || modelId,
+          badge: config?.badge,
+          // Mostra o provider — com a cascata, saber de quem é o modelo importa.
+          description: cooling > 0
+            ? `${TEXT_PROVIDER_LABELS[provider]} · instável agora`
+            : TEXT_PROVIDER_LABELS[provider],
           icon: config?.providerDomain ? (
             <img
               src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
@@ -378,9 +406,9 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             />
           ) : undefined,
         };
-      }
-    );
+      });
   }, [
+    textProviders,
     type,
     selectedModel,
     resolution,
