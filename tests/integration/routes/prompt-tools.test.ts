@@ -27,7 +27,10 @@ async function post(path: string, body: unknown) {
   const { user } = await createUser({ monthlyCredits: 50, creditsUsed: 0 });
   const token = signTestToken({ userId: user.id, email: user.email });
   const agent = await request();
-  const res = await agent.post(path).set('Authorization', bearer(token)).send(body as object);
+  const res = await agent
+    .post(path)
+    .set('Authorization', bearer(token))
+    .send(body as object);
   return { res, user };
 }
 

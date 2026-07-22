@@ -220,19 +220,15 @@ export async function checkNames(names: string[]): Promise<Map<string, NameAvail
   // Teto global: o que não terminou a tempo simplesmente não entra no mapa, e
   // quem consulta trata ausência como `unknown`. Melhor um deck sem selo do que
   // um usuário esperando 30s por uma checagem opcional.
-  await Promise.race([
-    work,
-    new Promise((resolve) => setTimeout(resolve, BATCH_TIMEOUT_MS)),
-  ]).catch(() => undefined);
+  await Promise.race([work, new Promise((resolve) => setTimeout(resolve, BATCH_TIMEOUT_MS))]).catch(
+    () => undefined
+  );
 
   return out;
 }
 
 /** Status de um nome, tolerante a ausência no mapa (timeout do lote). */
-export function statusOf(
-  map: Map<string, NameAvailability>,
-  name: string
-): NameAvailability {
+export function statusOf(map: Map<string, NameAvailability>, name: string): NameAvailability {
   const slug = slugifyName(name);
   return map.get(slug) || { slug, status: 'unknown', registered: [] };
 }

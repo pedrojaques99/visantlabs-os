@@ -46,10 +46,7 @@ describe('naming availability (RDAP)', () => {
   });
 
   it('marks a name as taken when BOTH .com and .com.br are registered', async () => {
-    vi.stubGlobal(
-      'fetch',
-      mockFetch({ 'galva.com': 200, 'galva.com.br': 200 })
-    );
+    vi.stubGlobal('fetch', mockFetch({ 'galva.com': 200, 'galva.com.br': 200 }));
     const { checkNames, statusOf } = await freshModule();
     const map = await checkNames(['GALVA']);
     const r = statusOf(map, 'GALVA');

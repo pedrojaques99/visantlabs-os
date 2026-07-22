@@ -18,7 +18,9 @@ describe('naming technique slug parity (client ↔ server)', () => {
   it('restricting to a single client slug yields exactly one technique', () => {
     for (const { slug } of NAMING_TECHNIQUES) {
       const prompt = buildNamingPrompt({ brief: 'brief', settings: { techniques: [slug] } });
-      expect(prompt, `slug "${slug}" fell back to all techniques`).toMatch(/Techniques — RESTRICTED/);
+      expect(prompt, `slug "${slug}" fell back to all techniques`).toMatch(
+        /Techniques — RESTRICTED/
+      );
       const listed = prompt.split('\n').filter((l) => /^\d+\. /.test(l));
       expect(listed, `slug "${slug}" listed ${listed.length} techniques`).toHaveLength(1);
     }

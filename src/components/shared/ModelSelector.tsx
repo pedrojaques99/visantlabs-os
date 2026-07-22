@@ -394,9 +394,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           label: config?.label || modelId,
           badge: config?.badge,
           // Mostra o provider — com a cascata, saber de quem é o modelo importa.
-          description: cooling > 0
-            ? `${TEXT_PROVIDER_LABELS[provider]} · instável agora`
-            : TEXT_PROVIDER_LABELS[provider],
+          description:
+            cooling > 0
+              ? `${TEXT_PROVIDER_LABELS[provider]} · instável agora`
+              : TEXT_PROVIDER_LABELS[provider],
           icon: config?.providerDomain ? (
             <img
               src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}

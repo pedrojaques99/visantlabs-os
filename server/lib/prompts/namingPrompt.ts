@@ -192,7 +192,7 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
         '- Read each candidate aloud fast, three times. If it trips once, discard it.',
         '- Generate broad internally (30-50 candidates), filter hard by this ruler, and surface only the survivors — never mention the discarded pool.',
         '',
-        'IMPORTANT — the rules above describe ROMANCE phonology and apply in full only to Romance-rooted candidates. Applying them literally to every language would ban BRAUN, ZEISS, STRIPE and KLARNA, which is wrong. For non-Romance candidates, enforce the EQUIVALENT bar in that language\'s own register:',
+        "IMPORTANT — the rules above describe ROMANCE phonology and apply in full only to Romance-rooted candidates. Applying them literally to every language would ban BRAUN, ZEISS, STRIPE and KLARNA, which is wrong. For non-Romance candidates, enforce the EQUIVALENT bar in that language's own register:",
         '- Germanic/Swiss: initial-syllable stress, hard stops (B/K/T/Z), consonant clusters are a FEATURE not a defect (BRAUN, ZEISS, BOSCH).',
         '- Nordic: two syllables, soft consonants, open or -a endings (KLARNA, OATLY, NOKIA).',
         '- Anglo: monosyllabic punch is legitimate — one strong syllable beats forced CVCV (STRIPE, SLACK, LUSH).',
@@ -256,7 +256,7 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
       '- Repeating a rejected name.',
       '- Monolingual thinking — a round where every name comes from one language family is an automatic failure, even for a local-market brand.',
       '- Proposing a name that is ALREADY an established company or product you recognise (VALEO, KAIZEN, LUMINA, ARKEN, APEXUS, INVAR are all taken). You know the major brands — screen your own list against them BEFORE returning it and replace any hit. Obvious dictionary words and well-known Japanese/Latin business terms are almost always taken; prefer coined/fused forms.',
-      '- Defaulting to the brief\'s language. Portuguese is ONE option among many, never the baseline.',
+      "- Defaulting to the brief's language. Portuguese is ONE option among many, never the baseline.",
       "- Promising availability/trademark clearance — that is not this tool's job.",
     ].join('\n')
   );
@@ -328,9 +328,13 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
     if (tr.preferTechniques?.length)
       lines.push(`- Favour these techniques (high like-rate): ${tr.preferTechniques.join(', ')}.`);
     if (tr.avoidTechniques?.length)
-      lines.push(`- Back off these techniques (consistently rejected): ${tr.avoidTechniques.join(', ')}.`);
+      lines.push(
+        `- Back off these techniques (consistently rejected): ${tr.avoidTechniques.join(', ')}.`
+      );
     if (tr.preferFamilies?.length)
-      lines.push(`- The user responds to these language families: ${tr.preferFamilies.join(', ')}.`);
+      lines.push(
+        `- The user responds to these language families: ${tr.preferFamilies.join(', ')}.`
+      );
     if (tr.avoidFamilies?.length)
       lines.push(`- De-emphasise these families: ${tr.avoidFamilies.join(', ')}.`);
     if (tr.lengthBand)

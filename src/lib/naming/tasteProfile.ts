@@ -282,7 +282,10 @@ export function deriveTasteRules(profile: TasteProfile): TasteRules | null {
   if (sampleSize < 5) return null;
 
   const tech = splitByRate(statsBy(profile, (c) => c.technique));
-  const fam = splitByRate(statsBy(profile, (c) => c.family || ''), MAX_AVOIDED_FAMILIES);
+  const fam = splitByRate(
+    statsBy(profile, (c) => c.family || ''),
+    MAX_AVOIDED_FAMILIES
+  );
 
   const approved = [...profile.liked, ...profile.superliked].map((c) => c.name.trim().length);
   const lengthBand =

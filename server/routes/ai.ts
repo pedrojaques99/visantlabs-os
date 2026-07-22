@@ -39,11 +39,7 @@ import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { chargeCredits, refundCredits } from '../lib/credits.js';
-import {
-  completeCheapText,
-  completeText,
-  parseJsonLoose,
-} from '../lib/ai-providers/cheapText.js';
+import { completeCheapText, completeText, parseJsonLoose } from '../lib/ai-providers/cheapText.js';
 import { getOpenAiApiKey } from '../utils/openAiApiKey.js';
 
 const router = express.Router();
@@ -1467,12 +1463,26 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
         // e só roda quando realmente faltou nome.
         if (survivors.length < count) {
           const burned = [...(seenArr || []), ...allTagged.map((n: any) => String(n?.name || ''))];
-          const topUp = await runRound(burned, Math.min(50, Math.ceil((count - survivors.length) * overshoot)));
+          const topUp = await runRound(
+            burned,
+            Math.min(50, Math.ceil((count - survivors.length) * overshoot))
+          );
           totalTokens = (totalTokens ?? 0) + (topUp.tokens ?? 0);
           if (Array.isArray(topUp.names) && topUp.names.length) {
-            const known = new Set(allTagged.map((n: any) => String(n?.name || '').toLowerCase().trim()));
+            const known = new Set(
+              allTagged.map((n: any) =>
+                String(n?.name || '')
+                  .toLowerCase()
+                  .trim()
+              )
+            );
             const fresh = topUp.names.filter(
-              (n: any) => !known.has(String(n?.name || '').toLowerCase().trim())
+              (n: any) =>
+                !known.has(
+                  String(n?.name || '')
+                    .toLowerCase()
+                    .trim()
+                )
             );
             if (fresh.length) {
               const second = await screen(fresh);

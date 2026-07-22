@@ -42,7 +42,10 @@ async function creditsUsed(userId: string): Promise<number> {
 async function post(path: string, userId: string, email: string, body: unknown) {
   const token = signTestToken({ userId, email });
   const agent = await request();
-  return agent.post(path).set('Authorization', bearer(token)).send(body as object);
+  return agent
+    .post(path)
+    .set('Authorization', bearer(token))
+    .send(body as object);
 }
 
 const GENERATE_BODY = { messages: [{ role: 'user', content: 'um node que inverte cores' }] };

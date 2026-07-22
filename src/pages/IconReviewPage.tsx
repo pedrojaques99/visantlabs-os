@@ -198,7 +198,9 @@ export function IconReviewPage() {
               </button>
             </div>
             <div className="border-b border-white/10 p-3">
-              {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+              {/* autoFocus é intencional (busca de painel interno). O plugin
+                  eslint-plugin-jsx-a11y não está instalado, então referenciar
+                  a regra num disable quebrava o `eslint .` do CI. */}
               <input
                 autoFocus
                 value={pickerQuery}

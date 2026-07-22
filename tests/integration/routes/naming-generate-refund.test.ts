@@ -48,11 +48,13 @@ async function creditsUsed(userId: string): Promise<number> {
 async function postNaming(userId: string, email: string) {
   const token = signTestToken({ userId, email });
   const agent = await request();
-  return agent
-    .post('/api/ai/generate-naming')
-    .set('Authorization', bearer(token))
-    // Filtro de domínio OFF: isola o caminho do crédito de chamadas RDAP reais.
-    .send({ brief: 'consultoria', count: 3, settings: { availabilityFilter: 'off' } });
+  return (
+    agent
+      .post('/api/ai/generate-naming')
+      .set('Authorization', bearer(token))
+      // Filtro de domínio OFF: isola o caminho do crédito de chamadas RDAP reais.
+      .send({ brief: 'consultoria', count: 3, settings: { availabilityFilter: 'off' } })
+  );
 }
 
 describe('generate-naming — estorno quando a cascata inteira falha', () => {
