@@ -40,14 +40,22 @@ router.post('/generate', authenticate, async (req: AuthRequest, res) => {
 
   let charged = false;
   try {
+    // canvasContext vem do body — sanitizar antes de concatenar no system
+    // prompt (strip de role-tags e markers de injeção). Mesmo padrão que a rota
+    // /shader-params já usa.
     const systemInstruction =
       NODE_BUILDER_SYSTEM_PROMPT +
-      (canvasContext ? `\n\nCurrent canvas context: ${canvasContext}` : '');
+      (canvasContext
+        ? `\n\nCurrent canvas context: ${sanitizeForPrompt(canvasContext, 4000)}`
+        : '');
 
     // A cascata fala system+user (OpenAI-compat), não turnos multi-role do
-    // Gemini. Transcrever o histórico preserva o contexto da conversa.
+    // Gemini. Transcrever o histórico preserva o contexto da conversa — as
+    // mensagens também são sanitizadas (conteúdo do usuário).
     const transcript = messages
-      .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .map(
+        (m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${sanitizeForPrompt(m.content, 4000)}`
+      )
       .join('\n\n');
 
     await chargeCredits(req.userId!, 1);
