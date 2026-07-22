@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, RotateCcw } from '@/lib/ui/icons';
+import { SlidersHorizontal, RotateCcw, RefreshCw } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -13,6 +13,8 @@ import {
   NAMING_LANGUAGES,
   NAMING_MAX_LENGTHS,
   NAMING_BATCH_SIZES,
+  NAMING_AVAILABILITY_FILTERS,
+  normalizeAvailabilityFilter,
   type NamingSettings,
 } from '@/lib/naming/constants';
 
@@ -22,7 +24,26 @@ export interface NamingSettingsPopoverProps {
   settings: NamingSettings;
   onChange: (patch: Partial<NamingSettings>) => void;
   onReset: () => void;
+  /** Refaz a leva com os parâmetros atuais. Ausente = fora da fase de deck. */
+  onRegenerate?: () => void;
+  regenerating?: boolean;
   className?: string;
+}
+
+/**
+ * Campos que mudam a geração. `batchSize` e `model` também contam — quem troca
+ * o modelo espera ver o efeito sem precisar swipar o deck inteiro.
+ */
+function settingsSignature(s: NamingSettings): string {
+  return JSON.stringify([
+    s.ruler,
+    s.maxLength,
+    [...s.techniques].sort(),
+    s.language,
+    s.model,
+    s.batchSize,
+    s.availabilityFilter,
+  ]);
 }
 
 /**
@@ -33,13 +54,24 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
   settings,
   onChange,
   onReset,
+  onRegenerate,
+  regenerating = false,
   className,
 }) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   useClickOutside(rootRef, () => setOpen(false), { enabled: open });
 
+  // Assinatura no momento da abertura: só oferece "gerar novamente" se o usuário
+  // realmente mexeu em algo nesta sessão do painel.
+  const openSignature = useRef<string | null>(null);
+  if (open && openSignature.current === null) openSignature.current = settingsSignature(settings);
+  if (!open && openSignature.current !== null) openSignature.current = null;
+  const dirty = open && openSignature.current !== settingsSignature(settings);
+
   const modelValue = settings.model || getPreferredChatModel() || CHAT_MODELS[0];
+  // Tolera o booleano das sessões salvas antes do filtro virar três níveis.
+  const availability = normalizeAvailabilityFilter(settings.availabilityFilter);
 
   const toggleTechnique = (slug: string) => {
     const has = settings.techniques.includes(slug);
@@ -142,6 +174,23 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
                 </div>
               </Group>
 
+              {/* Pré-filtro de domínio */}
+              <Group label="Disponibilidade">
+                <div className="flex flex-col gap-1">
+                  {NAMING_AVAILABILITY_FILTERS.map((f) => (
+                    <Chip
+                      key={f.value}
+                      active={availability === f.value}
+                      onClick={() => onChange({ availabilityFilter: f.value })}
+                      className="justify-between"
+                    >
+                      <span>{f.label}</span>
+                      <span className="text-[10px] text-neutral-600">{f.desc}</span>
+                    </Chip>
+                  ))}
+                </div>
+              </Group>
+
               {/* Modelo */}
               <Group label="Modelo">
                 <ModelSelector
@@ -166,7 +215,26 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
                 </div>
               </Group>
 
-              {/* Rodapé — restaurar padrão */}
+              {/* Rodapé — aplicar agora / restaurar padrão */}
+              {dirty && onRegenerate && (
+                <button
+                  type="button"
+                  disabled={regenerating}
+                  onClick={() => {
+                    setOpen(false);
+                    onRegenerate();
+                  }}
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] transition-colors',
+                    'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20',
+                    regenerating && 'pointer-events-none opacity-50'
+                  )}
+                >
+                  <RefreshCw size={11} className={cn(regenerating && 'animate-spin')} />
+                  {regenerating ? 'gerando...' : 'gerar novamente'}
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={onReset}

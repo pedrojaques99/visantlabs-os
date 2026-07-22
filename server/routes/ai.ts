@@ -3,7 +3,11 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { prisma } from '../db/prisma.js';
 import { buildBrandContextForImageGen } from '../lib/brandContextBuilder.js';
-import { GEMINI_MODELS, CHAT_MODELS } from '../../src/constants/geminiModels.js';
+import {
+  GEMINI_MODELS,
+  CHAT_MODELS,
+  textProviderForModel,
+} from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { redisClient, isRedisHealthy } from '../lib/redis.js';
 import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.js';
@@ -34,8 +38,9 @@ import type { UploadedImage, GeminiModel, Resolution } from '../../src/types/typ
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
-import { chargeCredits } from '../lib/credits.js';
-import { completeCheapText, parseJsonLoose } from '../lib/ai-providers/cheapText.js';
+import { chargeCredits, refundCredits } from '../lib/credits.js';
+import { completeCheapText, completeText, parseJsonLoose } from '../lib/ai-providers/cheapText.js';
+import { getOpenAiApiKey } from '../utils/openAiApiKey.js';
 
 const router = express.Router();
 
@@ -1045,6 +1050,22 @@ router.post('/generate/stream', apiRateLimiter, authenticate, async (req: AuthRe
 });
 
 /**
+ * GET /api/ai/text-providers
+ * Saúde da cascata de texto: quais providers têm chave e quais estão em
+ * cooldown. Autenticado porque `configured` é BYOK-aware (a chave do usuário
+ * conta). Alimenta o seletor de modelo — sem isso a UI ofereceria modelos de
+ * providers sem chave e o usuário só descobriria ao gerar.
+ */
+router.get('/text-providers', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { cheapTextStatus } = await import('../lib/ai-providers/cheapText.js');
+    res.json({ providers: await cheapTextStatus(req.userId) });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * GET /api/ai/metrics
  * Get AI system metrics (cache hits, circuit breaker status).
  * Admin only.
@@ -1064,12 +1085,22 @@ router.get('/metrics', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Naming Machine — allowlist of text/chat models accepted by `model` on
-// generate-naming. CHAT_MODELS is the SSoT (src/constants/geminiModels.ts);
-// GEMINI_MODELS.FLASH is kept for back-compat since it's the endpoint's
-// existing default.
-const NAMING_TEXT_MODELS = new Set<string>([...CHAT_MODELS, GEMINI_MODELS.FLASH]);
+// generate-naming. CHAT_MODELS is the SSoT (src/constants/geminiModels.ts).
+// GEMINI_MODELS.TEXT é o default do endpoint. NÃO reintroduzir GEMINI_MODELS.FLASH
+// aqui: é `gemini-2.5-flash-image`, um modelo de IMAGEM que ficou anos como
+// default de um endpoint de texto por "back-compat".
+const NAMING_TEXT_MODELS = new Set<string>([...CHAT_MODELS, GEMINI_MODELS.TEXT]);
 
 const NAMING_RULERS = new Set(['strict', 'balanced', 'free']);
+const AVAILABILITY_FILTERS = new Set(['off', 'balanced', 'strict']);
+
+/** Normaliza o filtro de domínio, tolerando o booleano das versões anteriores. */
+function normalizeAvailabilityFilter(v: unknown): 'off' | 'balanced' | 'strict' {
+  if (v === 'off' || v === 'balanced' || v === 'strict') return v;
+  if (v === false) return 'off';
+  if (v === true) return 'balanced';
+  return 'balanced';
+}
 const NAMING_LANGUAGES = new Set(['auto', 'pt', 'en', 'multi']);
 
 /**
@@ -1097,6 +1128,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     tasteReading,
     territories,
     settings,
+    tasteRules,
     model: modelOverride,
   } = req.body;
   if (!brief || typeof brief !== 'string') {
@@ -1129,6 +1161,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
         maxLength?: number;
         techniques?: string[];
         language?: 'auto' | 'pt' | 'en' | 'multi';
+        availabilityFilter?: 'off' | 'balanced' | 'strict';
       }
     | undefined;
   try {
@@ -1174,11 +1207,27 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
           status: 400,
         });
       }
+      // Aceita booleano legado ('true' = balanced) para não invalidar settings
+      // já salvas antes do filtro virar três níveis.
+      if (
+        settings.availabilityFilter !== undefined &&
+        typeof settings.availabilityFilter !== 'boolean' &&
+        !AVAILABILITY_FILTERS.has(settings.availabilityFilter)
+      ) {
+        throw Object.assign(
+          new Error('settings.availabilityFilter must be "off", "balanced" or "strict"'),
+          { status: 400 }
+        );
+      }
       settingsValidated = {
         ruler: settings.ruler,
         maxLength: settings.maxLength,
         techniques: techniquesArr,
         language: settings.language,
+        availabilityFilter:
+          settings.availabilityFilter === undefined
+            ? undefined
+            : normalizeAvailabilityFilter(settings.availabilityFilter),
       };
     }
   } catch (err: any) {
@@ -1187,6 +1236,48 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
   if (tasteReading !== undefined && typeof tasteReading !== 'string') {
     return res.status(400).json({ error: 'tasteReading must be a string' });
   }
+
+  // Régua aprendida (deriveTasteRules no cliente). Sanitizada como qualquer
+  // outro texto que entra no prompt — os rótulos vêm do output do próprio LLM.
+  let tasteRulesValidated:
+    | {
+        preferTechniques?: string[];
+        avoidTechniques?: string[];
+        preferFamilies?: string[];
+        avoidFamilies?: string[];
+        lengthBand?: { min: number; max: number };
+        sampleSize?: number;
+      }
+    | undefined;
+  if (tasteRules !== undefined) {
+    if (typeof tasteRules !== 'object' || tasteRules === null || Array.isArray(tasteRules)) {
+      return res.status(400).json({ error: 'tasteRules must be an object' });
+    }
+    const list = (v: unknown): string[] | undefined =>
+      Array.isArray(v)
+        ? v
+            .filter((s): s is string => typeof s === 'string')
+            .slice(0, 12)
+            .map((s) => sanitizeForPrompt(s, 60))
+        : undefined;
+    const band =
+      tasteRules.lengthBand &&
+      typeof tasteRules.lengthBand.min === 'number' &&
+      typeof tasteRules.lengthBand.max === 'number' &&
+      tasteRules.lengthBand.min > 0 &&
+      tasteRules.lengthBand.max >= tasteRules.lengthBand.min &&
+      tasteRules.lengthBand.max <= 40
+        ? { min: tasteRules.lengthBand.min, max: tasteRules.lengthBand.max }
+        : undefined;
+    tasteRulesValidated = {
+      preferTechniques: list(tasteRules.preferTechniques),
+      avoidTechniques: list(tasteRules.avoidTechniques),
+      preferFamilies: list(tasteRules.preferFamilies),
+      avoidFamilies: list(tasteRules.avoidFamilies),
+      lengthBand: band,
+      sampleSize: typeof tasteRules.sampleSize === 'number' ? tasteRules.sampleSize : undefined,
+    };
+  }
   if (modelOverride !== undefined) {
     if (typeof modelOverride !== 'string' || !NAMING_TEXT_MODELS.has(modelOverride)) {
       return res
@@ -1194,16 +1285,22 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
         .json({ error: 'model must be one of: ' + [...NAMING_TEXT_MODELS].join(', ') });
     }
   }
-  const resolvedModel = modelOverride || GEMINI_MODELS.FLASH;
+  // GEMINI_MODELS.FLASH é `gemini-2.5-flash-image` — modelo de IMAGEM. Era o
+  // default deste endpoint de TEXTO por "back-compat". TEXT é o correto.
+  const resolvedModel = modelOverride || GEMINI_MODELS.TEXT;
+
+  /** Fora do try: o catch precisa saber se houve cobrança para estornar. */
+  let charged = false;
 
   try {
-    const userOwnKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
-    const apiKey = userOwnKey || (await getGeminiApiKey(req.userId!));
-    if (!apiKey) throw new Error('Gemini API key not configured');
+    // Cobrança adiantada é o PORTÃO (chargeCredits lança sem saldo) — não inverter
+    // a ordem. Como a cascata só revela o provider depois, o desconto BYOK usa a
+    // pré-checagem de "o usuário tem chave própria de algum provider BYOK".
+    const userOwnKey =
+      (await getGeminiApiKey(req.userId!, { skipFallback: true })) ||
+      (await getOpenAiApiKey(req.userId!, { skipFallback: true }));
     await chargeCredits(req.userId!, 1, { isUserApiKey: !!userOwnKey });
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: resolvedModel });
+    charged = true;
 
     let brandContext = '';
     if (brandGuidelineId) {
@@ -1211,26 +1308,108 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       if (g) brandContext = buildBrandContextForImageGen(g as any);
     }
 
-    const { buildNamingPrompt } = await import('../lib/prompts/namingPrompt.js');
-    const prompt = buildNamingPrompt({
-      brief: sanitizeForPrompt(brief, 2000),
-      count,
-      style: style ? sanitizeForPrompt(style, 200) : undefined,
-      brandContext: brandContext || undefined,
-      seen: seenArr,
-      liked: likedArr,
-      superliked: superlikedArr,
-      rejected: rejectedArr,
-      tasteReading: tasteReading ? sanitizeForPrompt(tasteReading, 800) : undefined,
-      territories: territoriesArr,
-      settings: settingsValidated,
-    });
+    // As configurações salvas em User.namingSettings são a BASE; o que vier no
+    // request sobrescreve campo a campo. Sem isso, qualquer caller que não monta
+    // o payload de settings (a tool MCP `ai-generate-naming`, por exemplo) rodava
+    // sempre no default de fábrica e ignorava o que o usuário configurou no painel.
+    let effectiveSettings = settingsValidated;
+    try {
+      const u = await prisma.user.findUnique({
+        where: { id: req.userId! },
+        select: { namingSettings: true },
+      });
+      const stored = u?.namingSettings as Record<string, any> | null | undefined;
+      if (stored && typeof stored === 'object') {
+        const base = {
+          ruler: NAMING_RULERS.has(stored.ruler) ? stored.ruler : undefined,
+          maxLength:
+            typeof stored.maxLength === 'number' && stored.maxLength >= 0 && stored.maxLength <= 20
+              ? stored.maxLength
+              : undefined,
+          techniques: Array.isArray(stored.techniques)
+            ? stored.techniques.filter((t: unknown) => typeof t === 'string').slice(0, 9)
+            : undefined,
+          language: NAMING_LANGUAGES.has(stored.language) ? stored.language : undefined,
+          availabilityFilter:
+            stored.availabilityFilter === undefined
+              ? undefined
+              : normalizeAvailabilityFilter(stored.availabilityFilter),
+        };
+        // Só sobrescreve com o request onde ele realmente definiu algo.
+        const overrides = Object.fromEntries(
+          Object.entries(settingsValidated || {}).filter(([, v]) => v !== undefined)
+        );
+        effectiveSettings = { ...base, ...overrides };
+      }
+    } catch (err: any) {
+      // Preferência salva é um plus, não um requisito — nunca derruba a geração.
+      console.warn('[generate-naming] could not load stored namingSettings:', err?.message || err);
+    }
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse naming response' });
-    const parsed = JSON.parse(jsonMatch[0]);
+    // Com o pré-filtro ligado parte da leva será descartada por domínio ocupado.
+    // Sobregerar compensa isso sem custar crédito extra (a cobrança é fixa em 1).
+    const availabilityMode = normalizeAvailabilityFilter(effectiveSettings?.availabilityFilter);
+    const availabilityOn = availabilityMode !== 'off';
+    // Medido em produção: ~2/3 dos nomes curtos e pronunciáveis têm .com E
+    // .com.br registrados (VALEO, KAIZEN, LUMINA... são empresas reais). Com
+    // overshoot de 1.6× o deck chegava VAZIO. Estes fatores vêm da taxa real.
+    const overshoot = availabilityMode === 'strict' ? 3.5 : 3;
+    const requestCount = availabilityOn ? Math.min(50, Math.ceil(count * overshoot)) : count;
+
+    const { buildNamingPrompt } = await import('../lib/prompts/namingPrompt.js');
+
+    /** Provider que efetivamente serviu a última rodada — vai para a analytics. */
+    let servedBy: { provider: string; model: string } | null = null;
+
+    /** Uma rodada de geração, excluindo nomes já vistos/queimados nesta request. */
+    const runRound = async (exclude: string[], want: number) => {
+      const prompt = buildNamingPrompt({
+        brief: sanitizeForPrompt(brief, 2000),
+        count: want,
+        style: style ? sanitizeForPrompt(style, 200) : undefined,
+        brandContext: brandContext || undefined,
+        seen: exclude.slice(-200),
+        liked: likedArr,
+        superliked: superlikedArr,
+        rejected: rejectedArr,
+        tasteReading: tasteReading ? sanitizeForPrompt(tasteReading, 800) : undefined,
+        territories: territoriesArr,
+        settings: effectiveSettings,
+        tasteRules: tasteRulesValidated,
+      });
+      // Cascata multi-provider: Gemini fora do ar deixou de derrubar a rota.
+      // O prompt inteiro vai como `system` — é instrução, não turno de usuário.
+      const r = await completeText({
+        system: prompt,
+        user: `Generate the ${want} names now. Respond with the JSON object only.`,
+        userId: req.userId!,
+        json: true,
+        tier: 'quality',
+        maxTokens: 8000,
+        // Escolher um modelo na UI precisa (a) usar aquele modelo e (b) colocar
+        // o provider dele na FRENTE da cascata. Só (a) deixaria a escolha valer
+        // por acaso, já que a ordem padrão é por custo. O fallback segue ativo.
+        ...(modelOverride
+          ? {
+              modelOverride: { [textProviderForModel(modelOverride)]: modelOverride },
+              preferProvider: textProviderForModel(modelOverride) as any,
+            }
+          : {}),
+      });
+      servedBy = r;
+      const parsedRound = parseJsonLoose<{ names?: unknown }>(r.text);
+      return {
+        names: Array.isArray(parsedRound?.names) ? parsedRound!.names : [],
+        tokens: r.tokens ?? null,
+      };
+    };
+
+    const round1 = await runRound(seenArr || [], requestCount);
+    const parsed: any = { names: round1.names };
+    let totalTokens = round1.tokens;
+    if (!Array.isArray(parsed.names)) {
+      return res.status(500).json({ error: 'Failed to parse naming response' });
+    }
 
     // Server-side dedupe against `seen` — belt and suspenders on top of the prompt instruction.
     if (Array.isArray(parsed?.names) && seenArr?.length) {
@@ -1245,6 +1424,94 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       );
     }
 
+    // Pré-filtro de disponibilidade: descarta o que tem .com E .com.br ocupados,
+    // anexa o status nos sobreviventes para a UI selar os "só um TLD ocupado".
+    // `unknown` (RDAP fora do ar / rate limit) passa — falha de rede não pode
+    // esvaziar o deck.
+    let filteredOut = 0;
+    if (availabilityOn && Array.isArray(parsed?.names) && parsed.names.length) {
+      try {
+        const { checkNames, statusOf } = await import('../lib/naming/availability.js');
+
+        // 'unknown' sempre passa: RDAP fora do ar / rate-limited não é ocupação.
+        const clean = (n: any) =>
+          n.availability.status === 'free' || n.availability.status === 'unknown';
+        const ok = (n: any) => clean(n) || n.availability.status === 'partial';
+
+        /** Etiqueta a leva com o status de domínio e separa por dureza. */
+        const screen = async (names: any[]) => {
+          const av = await checkNames(names.map((n: any) => String(n?.name || '')));
+          const tagged = names.map((n: any) => {
+            const a = statusOf(av, String(n?.name || ''));
+            return { ...n, availability: { status: a.status, registered: a.registered } };
+          });
+          return {
+            tagged,
+            survivors: availabilityMode === 'strict' ? tagged.filter(clean) : tagged.filter(ok),
+          };
+        };
+
+        let seenSoFar = 0;
+        const first = await screen(parsed.names);
+        seenSoFar += first.tagged.length;
+        let survivors = first.survivors;
+        let allTagged = first.tagged;
+
+        // Reposição: a taxa real de descarte (~2/3) faz o deck chegar magro
+        // mesmo com sobregeração. Uma rodada extra completa a leva SEM cobrar
+        // crédito de novo (a cobrança é fixa em 1) — só custa token e latência,
+        // e só roda quando realmente faltou nome.
+        if (survivors.length < count) {
+          const burned = [...(seenArr || []), ...allTagged.map((n: any) => String(n?.name || ''))];
+          const topUp = await runRound(
+            burned,
+            Math.min(50, Math.ceil((count - survivors.length) * overshoot))
+          );
+          totalTokens = (totalTokens ?? 0) + (topUp.tokens ?? 0);
+          if (Array.isArray(topUp.names) && topUp.names.length) {
+            const known = new Set(
+              allTagged.map((n: any) =>
+                String(n?.name || '')
+                  .toLowerCase()
+                  .trim()
+              )
+            );
+            const fresh = topUp.names.filter(
+              (n: any) =>
+                !known.has(
+                  String(n?.name || '')
+                    .toLowerCase()
+                    .trim()
+                )
+            );
+            if (fresh.length) {
+              const second = await screen(fresh);
+              seenSoFar += second.tagged.length;
+              survivors = [...survivors, ...second.survivors];
+              allTagged = [...allTagged, ...second.tagged];
+            }
+          }
+        }
+
+        // A geração JÁ cobrou 1 crédito, então devolver deck vazio é o pior
+        // resultado possível: o usuário paga e não vê nada. Isso acontecia de
+        // verdade. Se o filtro zerar, afrouxa um degrau (e o card mostra o selo),
+        // que é honesto e usável; nunca entrega vazio em silêncio.
+        if (!survivors.length) survivors = allTagged.filter(ok);
+        if (!survivors.length) survivors = allTagged;
+
+        parsed.names = survivors;
+        filteredOut = seenSoFar - survivors.length;
+      } catch (err: any) {
+        console.warn('[generate-naming] availability filter skipped:', err?.message || err);
+      }
+    }
+    if (Array.isArray(parsed?.names)) parsed.names = parsed.names.slice(0, count);
+    parsed.filteredOut = filteredOut;
+    // Qual provider realmente serviu — deixa a UI mostrar quando houve fallback
+    // em vez de o usuário achar que "o modelo que escolhi" respondeu.
+    if (servedBy) parsed.servedBy = { provider: servedBy.provider, model: servedBy.model };
+
     res.json(parsed);
 
     // Fire-and-forget usage tracking for the naming admin analytics section
@@ -1257,12 +1524,17 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
         await db.collection('naming_events').insertOne({
           type: 'generate',
           userId: req.userId!,
-          model: resolvedModel,
+          // Modelo/provider REAIS que serviram — com a cascata, o pedido nem
+          // sempre é o que responde, e a analytics precisa refletir isso.
+          model: servedBy?.model || resolvedModel,
+          provider: servedBy?.provider || null,
           requested: typeof count === 'number' ? count : 10,
           returned: Array.isArray(parsed?.names) ? parsed.names.length : 0,
-          tokens: result.response.usageMetadata?.totalTokenCount ?? null,
+          tokens: totalTokens,
           brandGuidelineId: brandGuidelineId || undefined,
-          ruler: settingsValidated?.ruler || 'strict',
+          ruler: effectiveSettings?.ruler || 'strict',
+          availabilityFilter: availabilityMode,
+          filteredOut,
           createdAt: new Date(),
         });
       } catch (err: any) {
@@ -1270,7 +1542,26 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
       }
     })();
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    // O crédito é cobrado ANTES de gerar (portão de saldo). Se a geração falhou,
+    // o usuário pagou por nada — estorna. Antes, Gemini fora do ar queimava o
+    // crédito silenciosamente.
+    if (charged) {
+      try {
+        await refundCredits(req.userId!, 1);
+      } catch (refundErr: any) {
+        console.error(
+          '[generate-naming] REFUND FAILED — user charged without result:',
+          req.userId,
+          refundErr?.message || refundErr
+        );
+      }
+    }
+    const unavailable = String(error?.message || '').startsWith('cheaptext_unavailable');
+    res.status(unavailable ? 503 : 500).json({
+      error: unavailable
+        ? 'Nenhum provedor de IA disponível no momento. Seu crédito foi estornado.'
+        : error.message,
+    });
   }
 });
 

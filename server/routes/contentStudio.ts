@@ -21,8 +21,7 @@ import { isSeedreamModel } from '../../src/constants/seedreamModels.js';
 import { isOpenAIImageModel } from '../../src/constants/openaiModels.js';
 import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { withResilience } from '../lib/ai-resilience.js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { completeText, parseJsonLoose } from '../lib/ai-providers/cheapText.js';
 import { rateLimit } from 'express-rate-limit';
 
 const router = express.Router();
@@ -79,19 +78,6 @@ async function loadJob(jobId: string): Promise<ContentJob | null> {
 
 // ─── Copy generation via Gemini ──────────────────────────────────────────────
 
-let _copyModel: ReturnType<InstanceType<typeof GoogleGenerativeAI>['getGenerativeModel']> | null =
-  null;
-function getCopyModel() {
-  if (_copyModel) return _copyModel;
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY not set');
-  _copyModel = new GoogleGenerativeAI(key).getGenerativeModel({
-    model: GEMINI_MODELS.TEXT,
-    generationConfig: { responseMimeType: 'application/json' },
-  });
-  return _copyModel;
-}
-
 interface CopyResult {
   formatId: string;
   caption: string;
@@ -103,8 +89,9 @@ async function generateCopy(params: {
   formats: Array<{ id: string; platform: string; label: string; copyMaxChars: number }>;
   brandContext: string;
   tone?: string;
+  userId?: string;
 }): Promise<CopyResult[]> {
-  const { brief, formats, brandContext, tone } = params;
+  const { brief, formats, brandContext, tone, userId } = params;
 
   const formatList = formats
     .map((f) => `- ${f.id} (${f.platform}, ${f.label}): max ${f.copyMaxChars} chars`)
@@ -124,18 +111,25 @@ No markdown fences.`;
 
   const userMsg = `Brief: ${sanitizeForPrompt(brief, 2000)}\n\nGenerate copy for:\n${formatList}`;
 
-  const result = await withResilience('gemini', () =>
-    getCopyModel().generateContent([{ text: systemPrompt }, { text: userMsg }])
-  );
+  // Cascata multi-provider — Gemini fora do ar não zera mais a copy. Sem
+  // `withResilience` de propósito: a própria cascata é a resiliência, e
+  // aninhar as duas multiplicaria 6 providers por 3 retries.
+  // `tier: 'quality'` porque esta geração é paga (chargeCredits no caller).
+  const result = await completeText({
+    system: systemPrompt,
+    user: userMsg,
+    userId,
+    json: true,
+    tier: 'quality',
+    maxTokens: 4000,
+  });
 
-  const raw = result.response.text();
-  try {
-    const parsed = JSON.parse(raw) as { copies?: CopyResult[] };
-    return parsed.copies ?? [];
-  } catch {
-    console.error('[content-studio] Failed to parse copy response:', raw);
+  const parsed = parseJsonLoose<{ copies?: CopyResult[] }>(result.text);
+  if (!parsed) {
+    console.error('[content-studio] Failed to parse copy response:', result.text.slice(0, 300));
     return [];
   }
+  return parsed.copies ?? [];
 }
 
 // ─── Multi-provider image generation ─────────────────────────────────────────
@@ -298,7 +292,13 @@ async function runContentGeneration(params: {
     job.status = 'generating-copy';
     await saveJob(job);
 
-    const copies = await generateCopy({ brief, formats, brandContext: brandContextStr, tone });
+    const copies = await generateCopy({
+      brief,
+      formats,
+      brandContext: brandContextStr,
+      tone,
+      userId, // habilita BYOK na cascata
+    });
     const copyMap = new Map(copies.map((c) => [c.formatId, c]));
     for (const asset of job.assets) {
       const copy = copyMap.get(asset.formatId);

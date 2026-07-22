@@ -10,6 +10,8 @@ import {
   getMaxRefImages,
   getMaxHandles,
   isAdvancedModel,
+  textProviderForModel,
+  TEXT_PROVIDER_LABELS,
 } from '@/constants/geminiModels';
 import {
   SEEDREAM_MODELS,
@@ -70,6 +72,69 @@ describe('Gemini model registry', () => {
 
   it('CHAT_MODELS includes Gemini 3.5 Flash at the top', () => {
     expect(CHAT_MODELS[0]).toBe(GEMINI_MODELS.FLASH_3_5);
+  });
+
+  /**
+   * `GEMINI_MODELS.FLASH` é `gemini-2.5-flash-image` — um alias de IMAGEM cujo
+   * nome não denuncia isso. Ele foi por anos o default do endpoint de TEXTO
+   * `POST /ai/generate-naming` (e entrava no allowlist como "back-compat").
+   * Estes testes travam a confusão entre as duas famílias.
+   */
+  it('no chat model is secretly an image model', () => {
+    for (const id of CHAT_MODELS) {
+      expect(IMAGE_MODELS, `chat model ${id} is in IMAGE_MODELS`).not.toContain(id);
+    }
+  });
+
+  /**
+   * `TextProvider` (frontend) espelha `CheapTextProviderId` (backend). Divergir
+   * faz o seletor oferecer um provider que a cascata não sabe chamar — e o
+   * `modelOverride` é indexado por esse id, então o override some em silêncio.
+   * Mesma classe de bug do slug `afixo`/`afixos` do naming.
+   */
+  it('TextProvider labels cover exactly the backend cascade providers', () => {
+    const backendProviders = ['groq', 'cerebras', 'nvidia', 'openrouter', 'gemini', 'openai'];
+    expect(Object.keys(TEXT_PROVIDER_LABELS).sort()).toEqual([...backendProviders].sort());
+  });
+
+  it('every chat model resolves to a known text provider', () => {
+    for (const id of CHAT_MODELS) {
+      const provider = textProviderForModel(id);
+      expect(TEXT_PROVIDER_LABELS[provider], `unknown provider for ${id}`).toBeDefined();
+    }
+  });
+
+  /**
+   * O seletor esconde por padrão tudo que não é badge latest/popular. Se o
+   * único provider alternativo ficar escondido, o usuário com o Gemini fora do
+   * ar não acha a saída — que é justamente o caso de uso do multi-provider.
+   */
+  it('at least one non-Gemini chat model is visible without expanding', () => {
+    const visibleAlternatives = CHAT_MODELS.filter((id) => {
+      const cfg = MODEL_CONFIG[id];
+      return (
+        textProviderForModel(id) !== 'gemini' &&
+        (cfg?.badge === 'latest' || cfg?.badge === 'popular')
+      );
+    });
+    expect(visibleAlternatives.length).toBeGreaterThan(0);
+  });
+
+  it('non-Gemini chat models declare their provider explicitly', () => {
+    for (const id of CHAT_MODELS) {
+      const config = MODEL_CONFIG[id];
+      // Sem `provider`, o default é gemini — um modelo da OpenAI cairia lá.
+      if (!id.startsWith('gemini')) {
+        expect(config.provider, `${id} must declare a provider`).toBeDefined();
+      }
+    }
+  });
+
+  it('GEMINI_MODELS.TEXT is a text model, not an image alias', () => {
+    expect(GEMINI_MODELS.TEXT).not.toBe(GEMINI_MODELS.FLASH);
+    expect(GEMINI_MODELS.TEXT).not.toBe(GEMINI_MODELS.IMAGE_FLASH);
+    expect(IMAGE_MODELS).not.toContain(GEMINI_MODELS.TEXT);
+    expect(GEMINI_MODELS.TEXT).not.toMatch(/-image$/);
   });
 
   it('CHAT_MODELS includes flagship models', () => {

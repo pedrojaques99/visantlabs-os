@@ -1060,13 +1060,13 @@ export const improvePrompt = async (
   basePrompt: string,
   apiKey?: string
 ): Promise<ImprovedPromptResult> => {
-  return withRetry(
-    async () => {
-      if (!basePrompt || basePrompt.trim().length === 0) {
-        throw new Error('O prompt não pode estar vazio');
-      }
+  // SEM `withRetry`: a cascata multi-provider abaixo JÁ é a resiliência.
+  // Aninhar viraria 6 providers × 3 tentativas por chamada.
+  if (!basePrompt || basePrompt.trim().length === 0) {
+    throw new Error('O prompt não pode estar vazio');
+  }
 
-      const promptToGemini = `Melhore este prompt de texto de forma objetiva e concisa. Enriqueça apenas onde necessário, sem redundância ou decoração desnecessária. Mantenha o tom e estilo original.
+  const promptToGemini = `Melhore este prompt de texto de forma objetiva e concisa. Enriqueça apenas onde necessário, sem redundância ou decoração desnecessária. Mantenha o tom e estilo original.
 
 Original: "${basePrompt}"
 
@@ -1079,31 +1079,42 @@ Regras:
 
 Retorne APENAS o texto melhorado, sem explicações.`;
 
-      const response = await getAI(apiKey).models.generateContent({
-        model: GEMINI_MODELS.TEXT,
-        contents: [{ parts: [{ text: promptToGemini }] }],
-      });
+  // Cascata multi-provider: utilitário de texto puro. Com o Gemini fora do
+  // ar isto morria por completo — degradar para outro provider entrega uma
+  // melhoria talvez diferente, mas entrega.
+  // `apiKeyOverride` preserva o BYOK: a chave que o caller passa é tentada
+  // PRIMEIRO e marcada como do usuário; se ela falhar, a cascata segue nas
+  // chaves de plataforma. Sem isso, quem tem chave própria gastaria a da
+  // plataforma e a cobrança (`isUserApiKey`) sairia errada.
+  const { completeText } = await import('../lib/ai-providers/cheapText.js');
+  const response = await completeText({
+    // "sem aspas" é explícito porque o user prompt cita o original entre aspas
+    // e o modelo espelha o aspeamento — saía `"texto"` com aspas literais.
+    system:
+      'You improve prompts. Return ONLY the improved text itself: no explanation, no preamble, no surrounding quotation marks.',
+    user: promptToGemini,
+    maxTokens: 2000,
+    ...(apiKey ? { apiKeyOverride: { provider: 'gemini' as const, key: apiKey } } : {}),
+  });
 
-      // Extract usage metadata
-      const usageMetadata = (response as any).usageMetadata;
-      const inputTokens = usageMetadata?.promptTokenCount;
-      const outputTokens = usageMetadata?.candidatesTokenCount;
+  // A cascata só reporta o total; input/output separados não existem no shape
+  // OpenAI-compat de todos os providers.
+  // Tira aspas que envolvam o texto inteiro. O user prompt cita o original
+  // entre aspas e o modelo espelha isso — pedir "sem aspas" no system prompt
+  // NÃO resolveu (testado). Instrução a LLM não é garantia; isto é.
+  const improvedPrompt = (response.text || '')
+    .trim()
+    .replace(/^["'“”](.*)["'“”]$/s, '$1')
+    .trim();
+  if (!improvedPrompt) {
+    throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
+  }
 
-      const improvedPrompt = response.text || '';
-      if (!improvedPrompt) {
-        throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
-      }
-
-      return {
-        improvedPrompt,
-        inputTokens,
-        outputTokens,
-      };
-    },
-    {
-      model: GEMINI_MODELS.TEXT,
-    }
-  );
+  return {
+    improvedPrompt,
+    inputTokens: response.inputTokens,
+    outputTokens: response.outputTokens,
+  };
 };
 
 export interface PromptVariationsResult {
@@ -1116,9 +1127,8 @@ export const suggestPromptVariations = async (
   basePrompt: string,
   apiKey?: string
 ): Promise<PromptVariationsResult> => {
-  return withRetry(
-    async () => {
-      const promptToGemini = `Você é um engenheiro de prompts especializado. Sua tarefa é criar três variações diversas, criativas e eficazes de um prompt para gerador de imagens IA.
+  // SEM `withRetry`: a cascata abaixo já é a resiliência (ver improvePrompt).
+  const promptToGemini = `Você é um engenheiro de prompts especializado. Sua tarefa é criar três variações diversas, criativas e eficazes de um prompt para gerador de imagens IA.
 
     **Prompt Base:**
     "${basePrompt}"
@@ -1132,49 +1142,38 @@ export const suggestPromptVariations = async (
 
     Sua saída deve ser APENAS o objeto JSON.`;
 
-      const response = await getAI(apiKey).models.generateContent({
-        model: GEMINI_MODELS.TEXT,
-        contents: [{ parts: [{ text: promptToGemini }] }],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              suggestions: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.STRING,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      // Extract usage metadata
-      const usageMetadata = (response as any).usageMetadata;
-      const inputTokens = usageMetadata?.promptTokenCount;
-      const outputTokens = usageMetadata?.candidatesTokenCount;
-
-      const jsonString = (response.text || '').trim();
-      if (!jsonString) return { variations: [], inputTokens, outputTokens };
-
-      try {
-        const result = JSON.parse(jsonString);
-        return {
-          variations: result.suggestions || [],
-          inputTokens,
-          outputTokens,
-        };
-      } catch (e) {
-        console.error('Failed to parse prompt suggestions JSON:', e);
-        return { variations: [], inputTokens, outputTokens };
-      }
+  // `jsonSchema` substitui o `responseSchema` do Gemini: onde o provider
+  // suporta, o shape é garantido; nos demais o schema entra no prompt.
+  // `apiKeyOverride` preserva o BYOK do caller (ver improvePrompt).
+  const { completeText, parseJsonLoose } = await import('../lib/ai-providers/cheapText.js');
+  const response = await completeText({
+    system: 'You are a prompt engineer. Respond ONLY with the JSON object.',
+    user: promptToGemini,
+    maxTokens: 2000,
+    jsonSchema: {
+      name: 'prompt_variations',
+      schema: {
+        type: 'object',
+        properties: { suggestions: { type: 'array', items: { type: 'string' } } },
+        required: ['suggestions'],
+      },
     },
-    {
-      model: GEMINI_MODELS.TEXT,
-    }
-  );
+    ...(apiKey ? { apiKeyOverride: { provider: 'gemini' as const, key: apiKey } } : {}),
+  });
+
+  const inputTokens = response.inputTokens;
+  const outputTokens = response.outputTokens;
+
+  const result = parseJsonLoose<{ suggestions?: string[] }>(response.text);
+  if (!result) {
+    console.error('Failed to parse prompt suggestions JSON:', response.text.slice(0, 200));
+    return { variations: [], inputTokens, outputTokens };
+  }
+  return {
+    variations: result.suggestions || [],
+    inputTokens,
+    outputTokens,
+  };
 };
 
 export const changeObjectInMockup = async (
@@ -1658,16 +1657,15 @@ export const generateFigmaOperations = async (
   context: SerializedContext | EnrichedContext,
   userApiKey?: string
 ): Promise<FigmaOperationsResult> => {
-  return withRetry(
-    async () => {
-      const { processedPrompt, linearIssue, isLinearIssue } = preprocessPrompt(prompt);
-      const enriched = context as EnrichedContext;
-      const intent = detectIntent(prompt, context, isLinearIssue);
-      const nodesStr = JSON.stringify(context.nodes?.slice(0, 10) || [], null, 2);
+  // SEM `withRetry`: a cascata abaixo já é a resiliência (ver improvePrompt).
+  const { processedPrompt, linearIssue, isLinearIssue } = preprocessPrompt(prompt);
+  const enriched = context as EnrichedContext;
+  const intent = detectIntent(prompt, context, isLinearIssue);
+  const nodesStr = JSON.stringify(context.nodes?.slice(0, 10) || [], null, 2);
 
-      const systemPrompt = buildSystemPrompt(intent, enriched, linearIssue);
+  const systemPrompt = buildSystemPrompt(intent, enriched, linearIssue);
 
-      const userPrompt = `Selection context:
+  const userPrompt = `Selection context:
 ${nodesStr}
 
 User: ${isLinearIssue ? processedPrompt : prompt}
@@ -1676,43 +1674,38 @@ Intent detected: ${intent}
 
 Return JSON with "operations" array.`;
 
-      const response = await getAI(userApiKey).models.generateContent({
-        model: GEMINI_MODELS.TEXT,
-        contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              operations: {
-                type: Type.ARRAY,
-                items: { type: Type.OBJECT },
-              },
-            },
-          },
-        },
-      });
-
-      const usageMetadata = (response as any).usageMetadata;
-      const inputTokens = usageMetadata?.promptTokenCount;
-      const outputTokens = usageMetadata?.candidatesTokenCount;
-
-      const jsonString = (response.text || '').trim();
-      if (!jsonString) {
-        throw new Error('No operations were generated in the response.');
-      }
-
-      try {
-        const parsed = JSON.parse(jsonString);
-        const operations = Array.isArray(parsed?.operations) ? parsed.operations : [];
-        return { operations, inputTokens, outputTokens };
-      } catch (e) {
-        console.error('Failed to parse Figma operations JSON:', e);
-        throw new Error('Invalid JSON in AI response.');
-      }
+  // Cascata multi-provider. `jsonSchema` no lugar do `responseSchema`;
+  // `apiKeyOverride` preserva o BYOK do caller.
+  const { completeText, parseJsonLoose } = await import('../lib/ai-providers/cheapText.js');
+  const response = await completeText({
+    system: systemPrompt,
+    user: userPrompt,
+    maxTokens: 8000,
+    jsonSchema: {
+      name: 'figma_operations',
+      schema: {
+        type: 'object',
+        properties: { operations: { type: 'array', items: { type: 'object' } } },
+        required: ['operations'],
+      },
     },
-    { model: GEMINI_MODELS.TEXT }
-  );
+    ...(userApiKey ? { apiKeyOverride: { provider: 'gemini' as const, key: userApiKey } } : {}),
+  });
+
+  const inputTokens = response.inputTokens;
+  const outputTokens = response.outputTokens;
+
+  if (!response.text.trim()) {
+    throw new Error('No operations were generated in the response.');
+  }
+
+  const parsed = parseJsonLoose<{ operations?: FigmaOperation[] }>(response.text);
+  if (!parsed) {
+    console.error('Failed to parse Figma operations JSON:', response.text.slice(0, 200));
+    throw new Error('Invalid JSON in AI response.');
+  }
+  const operations: FigmaOperation[] = Array.isArray(parsed.operations) ? parsed.operations : [];
+  return { operations, inputTokens, outputTokens };
 };
 
 /**

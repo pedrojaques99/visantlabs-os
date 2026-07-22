@@ -59,6 +59,18 @@ export interface NamingPromptOptions {
   territories?: string[];
   /** Generation settings — loosen/tighten the rules. Default = current strict behavior. */
   settings?: NamingSettings;
+  /** Régua aprendida com os swipes desta sessão (deriveTasteRules). */
+  tasteRules?: TasteRules;
+}
+
+/** Espelha `TasteRules` do cliente (src/lib/naming/tasteProfile.ts). */
+export interface TasteRules {
+  preferTechniques?: string[];
+  avoidTechniques?: string[];
+  preferFamilies?: string[];
+  avoidFamilies?: string[];
+  lengthBand?: { min: number; max: number };
+  sampleSize?: number;
 }
 
 const MAX_LIST_ITEMS = 200;
@@ -70,16 +82,48 @@ const TECHNIQUE_LABELS: Record<string, string> = {
   metafora: 'Metaphor from another domain (Apple, Nest).',
   truncamento: 'Truncation — cut to the essence (Canva from canvas).',
   raizes:
-    'Foreign roots — Latin/Greek/other roots for resonance without literalness. Root yes, Latin ENDING no (still obeys the phonetic ruler).',
+    'Foreign roots — mine Latin/Greek BUT ALSO German, Nordic, Japanese, Slavic and Tupi roots for resonance without literalness. Root yes, Latin ENDING no (still obeys the phonetic ruler).',
   contrabando:
     'Letter smuggling — a real word hiding another inside it (AÇOR hides aço/steel; VIGOR hides viga/beam).',
   jargao:
     'Tribe jargon — backstage technical terms elevated to brand names, a password of belonging for a technical B2B decision-maker (TRAFO, PLENUM, PRUMADA).',
   'costura-invisivel':
-    'Invisible seam (signature technique) — fusion where the seam disappears (AMPARA, GALVA, MONTRIZ).',
+    'Invisible seam (signature technique) — fusion where the seam disappears. Works in ANY language: AMPARA, GALVA, MONTRIZ (Romance), KLARNA, NORDVIK (Nordic), STRALEN, KERNAU (Germanic).',
   afixos:
     'Affix families — a shared prefix/suffix that builds a naming system across a group of brands (SUPRA-, -MONT).',
 };
+
+/**
+ * Slugs legados que já estão persistidos em `User.namingSettings` e precisam
+ * continuar valendo. O cliente gravou 'afixo' por um tempo enquanto o prompt só
+ * conhecia 'afixos' — a divergência fazia a seleção do usuário virar array vazio
+ * e cair no fallback de "todas as técnicas", ou seja, a config não aplicava.
+ */
+const TECHNIQUE_ALIASES: Record<string, string> = {
+  afixo: 'afixos',
+};
+
+/**
+ * Normaliza slugs de técnica (resolve aliases) e descarta os desconhecidos.
+ * Avisa no log em vez de silenciar: descarte mudo aqui vira fallback de 9
+ * técnicas e o usuário não tem como perceber que a config foi ignorada.
+ */
+export function normalizeTechniqueSlugs(slugs: string[]): string[] {
+  const out: string[] = [];
+  const unknown: string[] = [];
+  for (const raw of slugs) {
+    const slug = TECHNIQUE_ALIASES[raw] || raw;
+    if (TECHNIQUE_LABELS[slug]) {
+      if (!out.includes(slug)) out.push(slug);
+    } else {
+      unknown.push(raw);
+    }
+  }
+  if (unknown.length) {
+    console.warn('[namingPrompt] unknown technique slugs ignored:', unknown.join(', '));
+  }
+  return out;
+}
 
 function clip(list: string[] | undefined, max = MAX_LIST_ITEMS): string[] {
   if (!Array.isArray(list)) return [];
@@ -105,7 +149,7 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
     opts.settings?.maxLength && opts.settings.maxLength > 0
       ? Math.min(opts.settings.maxLength, 20)
       : undefined;
-  const techniqueSlugs = clip(opts.settings?.techniques, 9).filter((s) => TECHNIQUE_LABELS[s]);
+  const techniqueSlugs = normalizeTechniqueSlugs(clip(opts.settings?.techniques, 9));
   const language: NamingLanguage = opts.settings?.language || 'auto';
 
   const sections: string[] = [];
@@ -115,7 +159,7 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
   }
 
   sections.push(
-    `You are a senior brand naming strategist trained in the Visant naming methodology — the discipline behind names like AMPARA, GALVA, MONTRIZ, NORDEM and KONDUZ. You do not generate generic startup names; you engineer names with phonetic craft AND hidden semantic layers.`
+    `You are a senior brand naming strategist trained in the Visant naming methodology — the discipline behind names like AMPARA, GALVA, MONTRIZ, NORDEM and KONDUZ. You do not generate generic startup names; you engineer names with phonetic craft AND hidden semantic layers.\nThose reference names are Portuguese because that is where the studio started — they calibrate the CRAFT LEVEL, not the language. You are equally fluent in the registers of BRAUN, ZEISS, BOSCH (German), KLARNA, OATLY, NOKIA (Nordic), STRIPE, SLACK, LUSH (Anglo), ON, LOGITECH, RICOLA (Swiss), MUJI, CANON (Japanese). A round that comes back entirely Romance is a failed round.`
   );
 
   sections.push(`Brief: ${opts.brief}`);
@@ -147,6 +191,13 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
         "- REJECT: hiatus and -io/-ia endings; Latin -us/-um endings; long proparoxytones (stress 3+ syllables back); clogged consonant clusters; foreign words outside the brand's symbolic universe.",
         '- Read each candidate aloud fast, three times. If it trips once, discard it.',
         '- Generate broad internally (30-50 candidates), filter hard by this ruler, and surface only the survivors — never mention the discarded pool.',
+        '',
+        "IMPORTANT — the rules above describe ROMANCE phonology and apply in full only to Romance-rooted candidates. Applying them literally to every language would ban BRAUN, ZEISS, STRIPE and KLARNA, which is wrong. For non-Romance candidates, enforce the EQUIVALENT bar in that language's own register:",
+        '- Germanic/Swiss: initial-syllable stress, hard stops (B/K/T/Z), consonant clusters are a FEATURE not a defect (BRAUN, ZEISS, BOSCH).',
+        '- Nordic: two syllables, soft consonants, open or -a endings (KLARNA, OATLY, NOKIA).',
+        '- Anglo: monosyllabic punch is legitimate — one strong syllable beats forced CVCV (STRIPE, SLACK, LUSH).',
+        '- Japanese: strict open syllables, no final consonant (MUJI, CANON).',
+        'The invariant across ALL families is the shop-floor test: says fast, reads clean, does not trip the tongue. That is the real ruler — CVCV is just how it looks in Portuguese.',
       ].join('\n')
     );
   } else if (ruler === 'balanced') {
@@ -203,10 +254,18 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
       '- A name that explains the product outright — a great name creates intrigue, not explanation.',
       '- Presenting a name with no rationale/defense.',
       '- Repeating a rejected name.',
-      '- Monolingual thinking — mine 2-3 language families, even for a local-market brand.',
+      '- Monolingual thinking — a round where every name comes from one language family is an automatic failure, even for a local-market brand.',
+      '- Proposing a name that is ALREADY an established company or product you recognise (VALEO, KAIZEN, LUMINA, ARKEN, APEXUS, INVAR are all taken). You know the major brands — screen your own list against them BEFORE returning it and replace any hit. Obvious dictionary words and well-known Japanese/Latin business terms are almost always taken; prefer coined/fused forms.',
+      "- Defaulting to the brief's language. Portuguese is ONE option among many, never the baseline.",
       "- Promising availability/trademark clearance — that is not this tool's job.",
     ].join('\n')
   );
+
+  // Antes, 'auto' (o DEFAULT) não emitia seção nenhuma — sem instrução de idioma
+  // o modelo seguia o idioma do briefing e devolvia rodada inteira em português.
+  // O default agora é explicitamente universal; quem quer PT puro escolhe PT.
+  const LANGUAGE_FAMILIES =
+    'Germanic (German/Dutch), Nordic (Swedish/Danish/Norwegian/Finnish), Anglo-Saxon, Swiss/Alpine, Romance (Portuguese/Spanish/Italian/French), Latin/Greek roots, Slavic, Japanese, Tupi-Guarani';
 
   if (language === 'pt') {
     sections.push(
@@ -218,7 +277,17 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
     );
   } else if (language === 'multi') {
     sections.push(
-      '## Language\nMine 2-3 distinct language families explicitly (e.g. Latin, Greek, Tupi-Guarani, Germanic, Japanese) and label diversity across the round — do not collapse into a single language.'
+      `## Language — mandatory diversity\nMine at least 4 DISTINCT language families across the round: ${LANGUAGE_FAMILIES}.\nNo single family may exceed 30% of the names. Name the family in each rationale.`
+    );
+  } else {
+    sections.push(
+      [
+        '## Language — universal by default',
+        `Do NOT default to the language of the brief. Spread the round across at least 3 distinct language families: ${LANGUAGE_FAMILIES}.`,
+        'Hard cap: no single language family may exceed 40% of the names in this round.',
+        'A Brazilian brief does NOT mean Portuguese names — BRAUN, KLARNA and STRIPE all sell fine in Brazil. Local market constrains MEANING and pronounceability, never the source language.',
+        'Before returning, count your own names by family. If one family dominates, replace the excess.',
+      ].join('\n')
     );
   }
 
@@ -248,6 +317,36 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
     sections.push(`## Taste reading (qualitative pattern from prior rounds)\n${opts.tasteReading}`);
   }
 
+  // Régua adaptativa: as preferências medidas nos swipes viram restrição de
+  // verdade, não só prosa. O piso de exploração é obrigatório — sem ele a
+  // rodada colapsa no que o usuário já viu, que é viés de exposição e não gosto.
+  const tr = opts.tasteRules;
+  if (tr) {
+    const lines: string[] = [
+      `## Learned ruler — derived from ${tr.sampleSize ?? 0} swipes THIS session (overrides generic defaults)`,
+    ];
+    if (tr.preferTechniques?.length)
+      lines.push(`- Favour these techniques (high like-rate): ${tr.preferTechniques.join(', ')}.`);
+    if (tr.avoidTechniques?.length)
+      lines.push(
+        `- Back off these techniques (consistently rejected): ${tr.avoidTechniques.join(', ')}.`
+      );
+    if (tr.preferFamilies?.length)
+      lines.push(
+        `- The user responds to these language families: ${tr.preferFamilies.join(', ')}.`
+      );
+    if (tr.avoidFamilies?.length)
+      lines.push(`- De-emphasise these families: ${tr.avoidFamilies.join(', ')}.`);
+    if (tr.lengthBand)
+      lines.push(
+        `- Approved names cluster at ${tr.lengthBand.min}-${tr.lengthBand.max} characters. Centre the round there.`
+      );
+    lines.push(
+      'Apply this as roughly 70% of the round (exploitation). The remaining ~30% MUST still explore outside these preferences — including language families not listed above. A round that satisfies the learned ruler 100% is overfitted and gives the user nothing new to react to.'
+    );
+    if (lines.length > 2) sections.push(lines.join('\n'));
+  }
+
   if (territories.length) {
     sections.push(
       `## Symbolic territories to distribute this round across\n${territories.join(
@@ -260,13 +359,14 @@ export function buildNamingPrompt(opts: NamingPromptOptions): string {
     [
       `## Output`,
       `Generate exactly ${count} name suggestions.`,
-      'Respond in the same language as the brief.',
+      'Write the RATIONALE in the same language as the brief. This does NOT constrain the names themselves — they should span language families regardless of the brief language.',
       'Respond ONLY with valid JSON, no prose, no code fences:',
-      '{ "names": [{ "name": string, "rationale": string, "riskFlag"?: string, "technique": string, "territory": string }] }',
+      '{ "names": [{ "name": string, "rationale": string, "riskFlag"?: string, "technique": string, "territory": string, "family": string }] }',
       '- "rationale": the 1-3 line defense of the name (why it works, what layer it hides). Every name needs one — a name with no defense is an anti-pattern.',
       '- "riskFlag": only when honestly warranted (e.g. an obvious famous homonym in another category) — omit otherwise, never fabricate a risk.',
       `- "technique": which of the ${activeTechniques.length} technique(s) above was used.`,
       '- "territory": the symbolic territory this name belongs to.',
+      '- "family": the language family the name is mined from (Germanic, Nordic, Anglo, Romance, Latin/Greek, Slavic, Japanese, Tupi-Guarani...). Required — it is how the system learns which sound the user actually responds to.',
     ].join('\n')
   );
 

@@ -11,6 +11,35 @@
 export type NamingRuler = 'strict' | 'balanced' | 'free';
 export type NamingLanguage = 'auto' | 'pt' | 'en' | 'multi';
 
+/**
+ * Dureza do pré-filtro de domínio (RDAP):
+ * - `off`      — não checa nada
+ * - `balanced` — descarta só quem tem .com E .com.br ocupados; sinaliza o resto
+ * - `strict`   — descarta qualquer nome com QUALQUER domínio já registrado
+ */
+export type AvailabilityFilter = 'off' | 'balanced' | 'strict';
+
+export const NAMING_AVAILABILITY_FILTERS: {
+  value: AvailabilityFilter;
+  label: string;
+  desc: string;
+}[] = [
+  { value: 'off', label: 'Tudo', desc: 'não checa domínio' },
+  { value: 'balanced', label: 'Equilibrado', desc: '.com e .com.br ocupados' },
+  { value: 'strict', label: 'Só livres', desc: 'nenhum domínio registrado' },
+];
+
+/**
+ * Normaliza o valor salvo. Sessões antigas gravaram booleano (`true`/`false`)
+ * antes do filtro virar três níveis — sem isso, quem já usava perderia a config.
+ */
+export function normalizeAvailabilityFilter(v: unknown): AvailabilityFilter {
+  if (v === 'off' || v === 'balanced' || v === 'strict') return v;
+  if (v === false) return 'off';
+  if (v === true) return 'balanced';
+  return 'balanced';
+}
+
 /** As 9 técnicas da metodologia de naming (slug do backend + label PT legível). */
 export const NAMING_TECHNIQUES: { slug: string; label: string }[] = [
   { slug: 'costura-invisivel', label: 'Costura invisível' },
@@ -21,7 +50,7 @@ export const NAMING_TECHNIQUES: { slug: string; label: string }[] = [
   { slug: 'raizes', label: 'Raízes estrangeiras' },
   { slug: 'contrabando', label: 'Contrabando de letras' },
   { slug: 'jargao', label: 'Jargão de tribo' },
-  { slug: 'afixo', label: 'Famílias por afixo' },
+  { slug: 'afixos', label: 'Famílias por afixo' },
 ];
 
 export const NAMING_RULERS: { value: NamingRuler; label: string; desc: string }[] = [
@@ -59,6 +88,8 @@ export interface NamingSettings {
   language: NamingLanguage;
   model: string;
   batchSize: number;
+  /** Dureza do pré-filtro de domínio. Falha de rede nunca descarta nome. */
+  availabilityFilter: AvailabilityFilter;
 }
 
 export const DEFAULT_NAMING_SETTINGS: NamingSettings = {
@@ -68,4 +99,5 @@ export const DEFAULT_NAMING_SETTINGS: NamingSettings = {
   language: 'auto',
   model: '',
   batchSize: 20,
+  availabilityFilter: 'balanced',
 };
