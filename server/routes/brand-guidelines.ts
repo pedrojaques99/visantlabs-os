@@ -3120,6 +3120,72 @@ router.post('/:id/health-check', apiRateLimiter, authenticate, async (req: AuthR
   }
 });
 
+// POST /api/brand-guidelines/scan — read a brand WITHOUT owning it
+//
+// Same engine as /:id/ingest + /:id/health-check, but nothing is created and
+// nothing is saved. That distinction is the whole point: the caller is looking
+// at *someone else's* brand — a prospect's website — and creating a guideline
+// for every website you merely inspect would turn the brand list into a junk
+// drawer within a week.
+//
+// Built for ProspectOS (backend/ponte_marca.py), which harvests the rendered
+// design tokens locally (dembrandt/Playwright) and sends them here for reading.
+// The split is deliberate: the tokens are measured facts and stay deterministic
+// on the caller's side; interpretation and the BrandGuideline schema stay here,
+// which is where they are already the source of truth.
+//
+// Auth: any Bearer token `authenticate` accepts, including `visant_sk_` API keys.
+router.post('/scan', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { url, tokens, images, skipHealth } = req.body || {};
+    if (!url && !tokens && !images) {
+      return res.status(400).json({ error: 'Provide at least one of: url, tokens, images' });
+    }
+
+    const chunks: any[] = url ? await parseUrl(url) : [];
+    if (tokens) {
+      // The design tokens the caller already measured (colors with usage counts,
+      // type families, radii, WCAG pairs). Feeding them in beats re-deriving
+      // style from HTML text: this is what the browser actually painted.
+      chunks.push({
+        text: JSON.stringify(tokens).slice(0, 8000),
+        source: 'design-tokens',
+        type: 'json' as const,
+      });
+    }
+    if (chunks.length === 0) chunks.push(parseImage('screenshot.png')[0]);
+
+    // Charge only after extraction succeeds — a network/parse/quota failure
+    // throws out of extractBrandData and is caught below, so a failed scan is
+    // never billed (same rule as /ingest).
+    const extracted = await extractBrandData(chunks, images, req.userId);
+    await chargeCredits(req.userId!, 1);
+
+    let health = null;
+    if (!skipHealth && !isBrandEmpty(extracted as any)) {
+      const apiKey = await getGeminiApiKey(req.userId).catch(() => undefined);
+      // Health is a bonus, not the payload: a quota error here must not throw
+      // away an extraction the caller already paid for.
+      health = await runBrandHealth(extracted as any, { apiKey }).catch((error: any) => {
+        console.warn('[Brand Scan] health skipped:', error?.message);
+        return null;
+      });
+    }
+
+    res.json({ scanned: url || null, brand: extracted, health });
+  } catch (error: any) {
+    console.error('[Brand Scan] Error:', error);
+    const raw = String(error?.message || '');
+    const status = /extraction_unavailable/.test(raw) ? 503 : 500;
+    res.status(status).json({
+      error: 'Failed to scan brand',
+      message: raw || 'Unknown error',
+    });
+  }
+});
+
 // ═══════════════════════════════════════════════════
 // PHASE 6: CONTEXT API FOR EXTERNAL TOOLS
 // ═══════════════════════════════════════════════════
