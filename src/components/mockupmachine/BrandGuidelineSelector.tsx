@@ -326,11 +326,11 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
 
       {selectedBrandGuideline && selectedGuidelineObj && (
         <div className="mt-2 px-1 flex items-center justify-between opacity-40">
-          {selectedGuidelineObj.extraction && (
+          {selectedGuidelineObj.extraction?.completeness ? (
             <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-tighter">
               DNA {selectedGuidelineObj.extraction.completeness}%
             </span>
-          )}
+          ) : null}
         </div>
       )}
     </div>

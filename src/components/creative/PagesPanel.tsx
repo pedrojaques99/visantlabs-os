@@ -85,8 +85,10 @@ const Thumb: React.FC<ThumbProps> = ({
         {page.format}
       </div>
 
-      {/* Hover controls */}
-      <div className="absolute -top-1 -right-1 z-10 flex items-center gap-0.5 opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+      {/* Hover controls — default visible where there's no hover (touch), reveal
+          on hover-capable pointers, and always on keyboard focus (Remove has no
+          other entry point, so it must not be hover-only). */}
+      <div className="absolute -top-1 -right-1 z-10 flex items-center gap-0.5 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/thumb:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
           type="button"
           onClick={(e) => {

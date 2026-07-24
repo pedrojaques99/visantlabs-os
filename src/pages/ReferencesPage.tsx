@@ -2738,7 +2738,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
                 : 'Clique para selecionar imagens (máx 10)'}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">
-              A IA extrai dimensões e infere a origem automaticamente. 1 crédito por imagem.
+              Grátis — as imagens entram na fila de revisão. Após aprovação, a IA extrai dimensões e infere a origem.
             </p>
           </div>
 

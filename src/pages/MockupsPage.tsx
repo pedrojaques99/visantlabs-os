@@ -286,15 +286,20 @@ export const MockupsPage: React.FC = () => {
       setMockups(sorted);
     } catch (err: any) {
       setMockups([]);
-      if (err?.message?.includes('Failed to fetch')) {
-        setError(t('mockupsPage.cannotConnectServer'));
-      }
+      // Every failure sets an error — not just 'Failed to fetch'. A 500/parse/
+      // timeout must not fall through to the "no mockups yet" empty state, which
+      // reads as an empty catalog rather than an outage (silent-empty lie).
+      setError(
+        err?.message?.includes('Failed to fetch')
+          ? t('mockupsPage.cannotConnectServer')
+          : t('mockupsPage.loadFailed') || 'Could not load mockups. Try again.'
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const showErrorBanner = error && error.includes('Cannot connect to server');
+  const showErrorBanner = Boolean(error);
 
   const headerActions = (
     <div className="relative flex-shrink-0">
@@ -405,8 +410,9 @@ export const MockupsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Empty State */}
-          {filteredMockups.length === 0 ? (
+          {/* Empty State — suppressed while an error banner is showing, so a
+              failed load never also claims "no mockups yet". */}
+          {error ? null : filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-center py-16">
               <ImageIcon size={64} className="text-neutral-700 mb-6" strokeWidth={1} />
               <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-3">

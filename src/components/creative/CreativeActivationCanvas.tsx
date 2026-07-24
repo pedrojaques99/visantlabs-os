@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Diamond, Pickaxe, ArrowRight } from '@/lib/ui/icons';
 import { useActiveBrand } from '@/contexts/ActiveBrandContext';
@@ -42,6 +42,10 @@ const STARTERS: { label: string; sub: string; prompt: string }[] = [
  */
 export const CreativeActivationCanvas: React.FC = () => {
   const navigate = useNavigate();
+  // A thumbnail that 404s should fall back to the same placeholder as a
+  // thumb-less project — hiding the <img> instead left a blank tile that read
+  // as "no image" rather than "broken image" (error ≠ empty).
+  const [failedThumbs, setFailedThumbs] = useState<Set<string>>(new Set());
   const { activeBrandId } = useActiveBrand();
   const setPrompt = useCreativeStore((s) => s.setPrompt);
   const { data: projects = [], isLoading } = useCreativeProjects(
@@ -92,7 +96,8 @@ export const CreativeActivationCanvas: React.FC = () => {
             </p>
             <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-5">
               {recent.map((p) => {
-                const thumb = p.thumbnailUrl || p.backgroundUrl;
+                const thumb =
+                  failedThumbs.has(p._id) ? null : p.thumbnailUrl || p.backgroundUrl;
                 return (
                   <button
                     key={p._id}
@@ -109,9 +114,9 @@ export const CreativeActivationCanvas: React.FC = () => {
                           src={thumb}
                           alt={p.name || 'Criativo'}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
+                          onError={() =>
+                            setFailedThumbs((prev) => new Set(prev).add(p._id))
+                          }
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

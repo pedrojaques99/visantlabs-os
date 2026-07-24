@@ -87,6 +87,7 @@ export const CanvasProjectsPage: React.FC = () => {
   const { hasAccess, isLoading: isLoadingAccess } = usePremiumAccess();
   const [projects, setProjects] = useState<CanvasProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -196,6 +197,7 @@ export const CanvasProjectsPage: React.FC = () => {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     setIsLoading(true);
+    setLoadError(false);
     try {
       const data = await canvasApi.getAll();
       setProjects(data);
@@ -205,6 +207,9 @@ export const CanvasProjectsPage: React.FC = () => {
       if (error?.status === 401) {
         setShowAuthModal(true);
       } else {
+        // A failed load must not fall through to the "no projects yet" empty
+        // state — that reads as "your account is empty" (silent-empty lie).
+        setLoadError(true);
         toast.error(t('canvas.failedToLoadProjects') || 'Failed to load canvas projects');
       }
     } finally {
@@ -326,7 +331,7 @@ export const CanvasProjectsPage: React.FC = () => {
       return;
     }
     try {
-      await canvasApi.save(trimmedName, project.nodes, project.edges, projectId);
+      await canvasApi.rename(projectId, trimmedName);
       setProjects((prev) =>
         prev.map((p) => (p._id === projectId ? { ...p, name: trimmedName } : p))
       );
@@ -503,22 +508,45 @@ export const CanvasProjectsPage: React.FC = () => {
       actions={headerActions}
     >
       <div className="relative z-10">
-        {filteredProjects.length === 0 && projects.length > 0 ? (
+        {loadError && projects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+            <FolderKanban size={64} className="text-destructive/60 mb-4" strokeWidth={1} />
+            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-400 mb-2">
+              {t('canvas.loadFailedTitle')?.toUpperCase() || 'COULD NOT LOAD PROJECTS'}
+            </h2>
+            <p className="text-sm text-neutral-500 font-mono mb-6">
+              {t('canvas.loadFailedBody') ||
+                'Something went wrong loading your projects. Your work is safe — try again.'}
+            </p>
+            <Button
+              variant="ghost"
+              onClick={loadProjects}
+              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
+            >
+              {t('common.retry') || 'Try Again'}
+            </Button>
+          </div>
+        ) : filteredProjects.length === 0 && projects.length > 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
             <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
             <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
               {t('canvas.noProjectsFound')?.toUpperCase() || 'NO PROJECTS FOUND'}
             </h2>
             <p className="text-sm text-neutral-600 font-mono mb-6">
-              {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
+              {searchQuery.trim()
+                ? t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'
+                : t('canvas.noProjectsForBrand') ||
+                  'No canvas projects are linked to the active brand.'}
             </p>
-            <Button
-              variant="ghost"
-              onClick={() => setSearchQuery('')}
-              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
-            >
-              {t('canvas.clearSearch') || 'Clear Search'}
-            </Button>
+            {searchQuery.trim() && (
+              <Button
+                variant="ghost"
+                onClick={() => setSearchQuery('')}
+                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
+              >
+                {t('canvas.clearSearch') || 'Clear Search'}
+              </Button>
+            )}
           </div>
         ) : projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
@@ -609,13 +637,17 @@ export const CanvasProjectsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60">
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
-                      {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
-                      {edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}
-                    </span>
+                  <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60 min-h-[1.25rem]">
+                    {nodeCount > 0 && (
+                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
+                        {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
+                      </span>
+                    )}
+                    {edgeCount > 0 && (
+                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
+                        {edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">

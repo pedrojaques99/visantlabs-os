@@ -305,7 +305,9 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
       {/* Layers list */}
       <div className="flex flex-col gap-1.5 overflow-hidden">
-        <label className="text-xs font-medium text-neutral-500">Layers ({layers.length})</label>
+        <label className="text-xs font-medium text-neutral-500">
+          Layers{layers.length ? ` (${layers.length})` : ''}
+        </label>
         <div className="flex flex-col gap-1 overflow-y-auto pr-1 max-h-[300px]">
           {layers.length === 0 && (
             <p className="text-[11px] text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
@@ -429,8 +431,10 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           />
         </div>
 
-        {/* Auto-save indicator */}
-        {isPersistedId(creativeId) && (
+        {/* Auto-save indicator — also show while the FIRST save of a brand-new
+            creative is in flight (creativeId not yet persisted), so a failure on
+            the most consequential save isn't invisible. */}
+        {(isPersistedId(creativeId) || autoSaveStatus !== 'idle') && (
           <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-500">
             {autoSaveStatus === 'saving' && <GlitchLoader size={10} />}
             {autoSaveStatus === 'saved' && <Check size={10} className="text-success" />}

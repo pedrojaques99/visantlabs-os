@@ -74,7 +74,22 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     selectedLightingTags,
     selectedEffectTags,
     selectedMaterialTags,
+    generateText,
+    withHuman,
+    removeText,
   } = useMockup();
+
+  // Chips must reflect the rules the prompt builder ACTUALLY injects (see
+  // buildGeminiPromptInstructionsTemplate) — a badge for a rule that isn't
+  // injected is a lie. Text/human rules flip with the flags; "no humans" is
+  // never an injected rule (absence of the withHuman instruction), so it's dropped.
+  const injectedRules = useMemo(() => {
+    const rules: string[] = ['📸 Focus Original Design'];
+    if (generateText) rules.push('📝 Placeholder Text');
+    else if (removeText) rules.push('🚫 No External Text');
+    if (withHuman) rules.push('🧍 Human In Scene');
+    return rules;
+  }, [generateText, removeText, withHuman]);
 
   // Combine all tags for highlighting
   const allSelectedTags = useMemo(() => {
@@ -395,35 +410,22 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         </div>
       )}
 
-      {/* System Directives Badge / Clarification */}
-      {!isCollapsed && promptPreview && (
+      {/* System Directives Badge — derived from the actual injected flags */}
+      {!isCollapsed && promptPreview && injectedRules.length > 0 && (
         <div className="mt-2 pl-1">
           <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
             <span className="text-[10px] mr-1 text-neutral-500">⚙️ Regras Injetadas:</span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-              )}
-            >
-              🚫 No External Text
-            </span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-              )}
-            >
-              📸 Focus Original Design
-            </span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-              )}
-            >
-              💎�‍♂️ No Humans Interaction
-            </span>
+            {injectedRules.map((rule) => (
+              <span
+                key={rule}
+                className={cn(
+                  'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+                )}
+              >
+                {rule}
+              </span>
+            ))}
           </div>
         </div>
       )}

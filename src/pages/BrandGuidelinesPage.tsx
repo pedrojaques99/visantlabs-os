@@ -255,7 +255,7 @@ const BrandCard = ({
                 <button
                   type="button"
                   aria-label={t('brandQuota.brandActions')}
-                  className="p-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="p-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical size={11} className="text-white/90" />
@@ -506,6 +506,13 @@ const BrandGrid = ({
       list = [...list].sort(
         (a, b) => computeBrandCompleteness(b).score - computeBrandCompleteness(a).score
       );
+    } else {
+      // 'recent' is the default the UI advertises — sort explicitly rather than
+      // trusting the API's array order, so the "Recent" label never lies.
+      list = [...list].sort(
+        (a, b) =>
+          new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+      );
     }
     return list;
   }, [guidelines, search, folderFilter, sort]);
@@ -692,7 +699,12 @@ export const BrandGuidelinesPage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Server state via react-query — dashboard only needs the list.
-  const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
+  const {
+    data: guidelines = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useBrandGuidelines(isAuthenticated === true);
 
   // Billing por marca ativa (flag FEATURE_BRAND_BILLING)
   const { data: brandQuota } = useBrandQuota(FEATURE_BRAND_BILLING && isAuthenticated === true);
@@ -838,13 +850,24 @@ export const BrandGuidelinesPage: React.FC = () => {
                   </h1>
                 </div>
               </div>
-              {FEATURE_BRAND_BILLING && brandQuota && (
-                <BrandQuotaMeter
-                  used={brandQuota.used}
-                  max={brandQuota.max}
-                  onUpgrade={handleQuotaUpgrade}
-                />
-              )}
+              <div className="flex items-center gap-3 shrink-0">
+                {FEATURE_BRAND_BILLING && brandQuota && (
+                  <BrandQuotaMeter
+                    used={brandQuota.used}
+                    max={brandQuota.max}
+                    onUpgrade={handleQuotaUpgrade}
+                  />
+                )}
+                {/* Primary action must live ON the surface, not only in the
+                    empty state — once the user has ≥1 brand the create path
+                    would otherwise be unreachable from the list header. */}
+                {guidelines.length > 0 && (
+                  <Button size="sm" onClick={() => handleOpenWizard()} className="gap-1.5">
+                    <Plus size={15} />
+                    {t('brandGuidelines.newBrand') || 'New brand'}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {FEATURE_BRAND_BILLING && brandQuota?.graceUntil && (
@@ -864,6 +887,25 @@ export const BrandGuidelinesPage: React.FC = () => {
                 >
                   <GlitchLoader size={40} />
                   <p className="text-muted-foreground text-xs animate-pulse">{t('common.loading')}</p>
+                </motion.div>
+              ) : isError ? (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center py-40 gap-4 text-center"
+                >
+                  <p className="text-sm font-medium text-foreground">
+                    {t('brandGuidelines.loadFailedTitle') || 'Could not load your brands'}
+                  </p>
+                  <p className="text-xs text-muted-foreground max-w-sm">
+                    {t('brandGuidelines.loadFailedBody') ||
+                      'Something went wrong. Your brands are safe — try again.'}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => refetch()}>
+                    {t('common.retry') || 'Try again'}
+                  </Button>
                 </motion.div>
               ) : guidelines.length === 0 ? (
                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />

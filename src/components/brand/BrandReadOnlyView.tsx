@@ -4,6 +4,7 @@ import { colord } from 'colord';
 import { Download, MousePointerClick, Diamond, User, Copy, FileCode } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { Button } from '@/components/ui/button';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { GlassPanel } from '@/components/ui/GlassPanel';
@@ -1306,8 +1307,12 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
                   </p>
                   <span className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
                     {color.hex}
-                    <span className="w-1 h-1 rounded-full bg-current opacity-20" />
-                    {color.role || 'Accent'}
+                    {color.role && (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-current opacity-20" />
+                        {color.role}
+                      </>
+                    )}
                   </span>
                 </div>
               </motion.button>
@@ -1384,18 +1389,25 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
                   The quick brown fox jumps over the lazy dog.
                 </p>
                 <div className="flex items-center gap-6 pt-2">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
-                      Style
-                    </span>
-                    <p className="text-sm font-bold opacity-70">{font.style || 'Regular'}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
-                      Base Size
-                    </span>
-                    <p className="text-sm font-bold opacity-70">{font.size || '16'}PX</p>
-                  </div>
+                  {/* Only render declared spec values — a fabricated "Regular"/"16PX"
+                      on a brand source-of-truth doc reads as declared data and
+                      propagates into generation. */}
+                  {font.style && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
+                        Style
+                      </span>
+                      <p className="text-sm font-bold opacity-70">{font.style}</p>
+                    </div>
+                  )}
+                  {font.size && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
+                        Base Size
+                      </span>
+                      <p className="text-sm font-bold opacity-70">{font.size}PX</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1694,7 +1706,7 @@ const BrandMediaCard: React.FC<{
         style={{ aspectRatio: loaded ? undefined : '4 / 5' }}
       />
 
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+      <div className={cn('absolute inset-0 duration-300 pointer-events-none', hoverReveal)}>
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
         <Button
           size="icon"

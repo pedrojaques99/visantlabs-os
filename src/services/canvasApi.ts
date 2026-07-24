@@ -375,6 +375,37 @@ export const canvasApi = {
     return result.project;
   },
 
+  /**
+   * Rename a project WITHOUT touching its canvas. The backend PUT merges any
+   * omitted field, so sending only `{ name }` preserves nodes/edges/drawings.
+   * `save()` must NOT be used for a list-level rename: it re-posts a stale
+   * nodes/edges snapshot and coerces `drawings` to null, wiping freehand work.
+   */
+  async rename(projectId: string, name: string): Promise<CanvasProject> {
+    const response = await fetch(`${API_BASE_URL}/canvas/${projectId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ name: name || 'Untitled' }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = 'Failed to rename canvas project';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        if (errorText) errorMessage = errorText;
+      }
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      throw error;
+    }
+
+    const result = await response.json();
+    return result.project;
+  },
+
   async delete(id: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/canvas/${id}`, {
       method: 'DELETE',
