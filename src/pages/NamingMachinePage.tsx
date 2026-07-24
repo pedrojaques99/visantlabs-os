@@ -11,7 +11,11 @@ import { useLayout } from '@/hooks/useLayout';
 import { copyToClipboard } from '@/utils/clipboard';
 import { BriefingFlow } from '@/components/naming/BriefingFlow';
 import { SwipeCard, type SwipeCardHandle } from '@/components/naming/SwipeCard';
-import { ShortlistPanel } from '@/components/naming/ShortlistPanel';
+import {
+  ShortlistPanel,
+  isDefenseFailure,
+  type DefenseFailure,
+} from '@/components/naming/ShortlistPanel';
 import { NamingSettingsPopover } from '@/components/naming/NamingSettingsPopover';
 import { NamingHistoryPopover } from '@/components/naming/NamingHistoryPopover';
 import {
@@ -108,7 +112,7 @@ export const NamingMachinePage: React.FC = () => {
   const [prefetching, setPrefetching] = useState(false);
   const [tasteReading, setTasteReading] = useState<string | undefined>();
   const [defenseCache, setDefenseCache] = useState<
-    Record<string, NamingDefenseInsightResponse | undefined>
+    Record<string, NamingDefenseInsightResponse | DefenseFailure | undefined>
   >({});
   const [finalists, setFinalists] = useState<string[]>([]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
@@ -476,11 +480,25 @@ export const NamingMachinePage: React.FC = () => {
         });
         setDefenseCache((p) => ({ ...p, [card.name]: d }));
       } catch {
+        // Grava sentinela de falha (em vez de só limpar `defenseRequested`) para a
+        // linha mostrar retry em vez de spinner eterno. Como a sentinela é truthy,
+        // o effect abaixo NÃO re-dispara sozinho — só o retry manual reprocessa.
         defenseRequested.current.delete(card.name);
+        setDefenseCache((p) => ({ ...p, [card.name]: { failed: true } }));
       }
     },
     [brief]
   );
+
+  /** Retry manual: apaga a sentinela de falha → o effect abaixo re-dispara a defesa. */
+  const retryDefense = useCallback((card: NamingCard) => {
+    defenseRequested.current.delete(card.name);
+    setDefenseCache((p) => {
+      const next = { ...p };
+      delete next[card.name];
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     profile.superliked.forEach((c) => {
@@ -588,7 +606,8 @@ export const NamingMachinePage: React.FC = () => {
     if (all.length === 0) return;
     const lines = all.map((c) => {
       const defense = defenseCache[c.name];
-      const summary = defense?.concept || c.rationale;
+      const summary =
+        (defense && !isDefenseFailure(defense) ? defense.concept : undefined) || c.rationale;
       const tag = c.territory && c.technique ? ` (${c.territory} · ${c.technique})` : '';
       return `- ${c.name}${tag}: ${summary}`;
     });
@@ -695,6 +714,7 @@ export const NamingMachinePage: React.FC = () => {
       onShowFinalists={showFinalists}
       onMoreLikeThis={handleMoreLikeThis}
       onRemove={handleRemove}
+      onRetryDefense={retryDefense}
       onTransformToBrand={transformToBrand}
       brandGuidelineId={brandGuidelineId}
       onSaveToBrand={handleSaveToBrand}
@@ -703,9 +723,11 @@ export const NamingMachinePage: React.FC = () => {
 
   const statusBar = (
     <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
-      <span className="text-neutral-400">
-        {seenCount} vistos · {likedCount} curtidos
-      </span>
+      {seenCount > 0 && (
+        <span className="text-neutral-400">
+          {seenCount} vistos{likedCount > 0 && ` · ${likedCount} curtidos`}
+        </span>
+      )}
       {prefetching && (
         <span className="flex items-center gap-1 text-brand-cyan/80">
           <Zap size={10} className="animate-pulse" /> calibrando pelo seu gosto

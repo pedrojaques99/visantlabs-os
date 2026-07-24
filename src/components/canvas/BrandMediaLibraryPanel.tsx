@@ -4,8 +4,6 @@ import React, {
   useContext,
   useDeferredValue,
   useCallback,
-  useRef,
-  useEffect,
 } from 'react';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -22,7 +20,6 @@ import {
   Eraser,
 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
-import { loadImage } from '@/utils/imageUtils';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -36,6 +33,10 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useReferenceSearch } from '@/hooks/useReferenceSearch';
 import { referenceApi, type ReferenceResult } from '@/services/referenceApi';
 import { getProxiedUrl } from '@/utils/proxyUtils';
+import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 interface BrandMediaLibraryPanelProps {
   onSelectAsset?: (url: string, type: 'image' | 'logo' | 'color') => void;
@@ -67,7 +68,12 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
-  const { data: guideline, isLoading } = useQuery({
+  const {
+    data: guideline,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['brand-guideline', selectedBrandGuidelineId],
     queryFn: () =>
       selectedBrandGuidelineId ? brandGuidelineApi.getById(selectedBrandGuidelineId) : null,
@@ -236,6 +242,8 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
               <SkeletonLoader key={i} height="80px" width="100%" className="rounded-lg" />
             ))}
           </div>
+        ) : isError && activeTab !== 'refs' ? (
+          <ErrorState onRetry={() => refetch()} />
         ) : (
           <div className="space-y-5 pb-6">
             {(activeTab === 'all' || activeTab === 'logos') && filteredLogos.length > 0 && (
@@ -300,7 +308,12 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         style={{ backgroundColor: color.hex }}
                       />
                       <span className="text-[9px] font-mono text-neutral-600">{color.hex}</span>
-                      <div className="absolute top-0.5 right-0.5 flex-col gap-0.5 hidden group-hover:flex">
+                      <div
+                        className={cn(
+                          'absolute top-0.5 right-0.5 flex flex-col gap-0.5',
+                          hoverReveal
+                        )}
+                      >
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -440,7 +453,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             )}
                           >
                             <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0 bg-neutral-950">
-                              <img
+                              <Thumb
                                 src={getProxiedUrl(ref.referenceImageUrl)}
                                 alt={ref.name}
                                 loading="lazy"
@@ -466,7 +479,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               </div>
                             </div>
                             {isRecommended && (
-                              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-brand-cyan/90 text-black">
+                              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
                                 <Zap size={7} />
                                 <span className="text-[7px] font-bold uppercase tracking-wider">
                                   Match
@@ -480,7 +493,10 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                   handleSanitize(ref);
                                 }}
                                 disabled={sanitizingIds.has(ref.id)}
-                                className="p-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                                className={cn(
+                                  'p-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 disabled:opacity-50',
+                                  hoverReveal
+                                )}
                                 title="Sanitizar — remover branding do studio"
                               >
                                 {sanitizingIds.has(ref.id) ? (
@@ -517,21 +533,26 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               : 'border-white/5 hover:border-neutral-700'
                           )}
                         >
-                          <img
+                          <Thumb
                             src={getProxiedUrl(ref.referenceImageUrl)}
                             alt={ref.name}
                             loading="lazy"
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
                           />
                           {isRecommended && (
-                            <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-brand-cyan/90 text-black">
+                            <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
                               <Zap size={7} />
                               <span className="text-[7px] font-bold uppercase tracking-wider">
                                 Match
                               </span>
                             </div>
                           )}
-                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div
+                            className={cn(
+                              'absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-5',
+                              hoverReveal
+                            )}
+                          >
                             <p className="text-[9px] font-medium text-white truncate">{ref.name}</p>
                             <div className="flex gap-0.5 mt-0.5">
                               {[
@@ -547,7 +568,12 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               ))}
                             </div>
                           </div>
-                          <div className="absolute top-1 right-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div
+                            className={cn(
+                              'absolute top-1 right-1 flex flex-col gap-1',
+                              hoverReveal
+                            )}
+                          >
                             <div className="w-4 h-4 rounded-full bg-brand-cyan/80 flex items-center justify-center">
                               <Plus size={8} className="text-black" />
                             </div>
@@ -603,44 +629,6 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
   );
 };
 
-// ─── Dark image detection ────────────────────────────────────────────────────
-function useNeedsLightBg(url: string) {
-  const [needsLight, setNeedsLight] = useState(false);
-  const urlRef = useRef(url);
-  urlRef.current = url;
-
-  useEffect(() => {
-    loadImage(url).then((img) => {
-      if (urlRef.current !== url) return;
-      try {
-        const size = 32;
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, size, size);
-        const { data } = ctx.getImageData(0, 0, size, size);
-        let darkOrTransparent = 0;
-        const total = size * size;
-        for (let i = 0; i < data.length; i += 4) {
-          const a = data[i + 3];
-          if (a < 30) {
-            darkOrTransparent++;
-            continue;
-          }
-          const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-          if (lum < 50) darkOrTransparent++;
-        }
-        setNeedsLight(darkOrTransparent / total > 0.7);
-      } catch {
-        /* CORS or canvas error — keep dark bg */
-      }
-    });
-  }, [url]);
-
-  return needsLight;
-}
-
 // ─── Asset Card (shared) ──────────────────────────────────────────────────────
 interface AssetCardProps {
   url: string;
@@ -673,7 +661,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
             needsLightBg ? 'bg-white' : 'bg-neutral-950'
           )}
         >
-          <img src={url} alt={label} className="w-full h-full object-contain" />
+          <Thumb src={url} alt={label} className="w-full h-full object-contain" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-mono font-bold text-neutral-400 truncate">{label}</p>
@@ -687,7 +675,10 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               e.stopPropagation();
               onAdd();
             }}
-            className="p-1 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 opacity-0 group-hover:opacity-100 transition-opacity"
+            className={cn(
+              'p-1 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20',
+              hoverReveal
+            )}
           >
             <Plus size={10} />
           </button>
@@ -709,7 +700,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
           needsLightBg ? 'bg-white' : 'bg-neutral-950'
         )}
       >
-        <img
+        <Thumb
           src={url}
           alt={label}
           className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-300"
@@ -720,7 +711,10 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               e.stopPropagation();
               onAdd();
             }}
-            className="absolute top-1 right-1 p-1 rounded bg-brand-cyan/90 text-black opacity-0 group-hover:opacity-100 transition-opacity"
+            className={cn(
+              'absolute top-1 right-1 p-1 rounded bg-brand-cyan/90 text-black',
+              hoverReveal
+            )}
           >
             <Plus size={10} />
           </button>

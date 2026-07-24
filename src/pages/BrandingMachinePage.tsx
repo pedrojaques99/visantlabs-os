@@ -4,6 +4,7 @@ import { BrandingWelcomeScreen } from '../components/branding/BrandingWelcomeScr
 import { BrandingMoodboard } from '../components/branding/BrandingMoodboard';
 import { BrandingExpertChat } from '../components/branding/BrandingExpertChat';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { markStepErrored, clearErroredSteps } from '../components/branding/EmptySectionCard';
 import { Target as BowArrow, Diamond } from '@/lib/ui/icons';
 import { authService } from '../services/authService';
 import { brandingApi } from '../services/brandingApi';
@@ -134,6 +135,8 @@ export const BrandingMachinePage: React.FC = () => {
 
     setIsLoadingProject(true);
     loadedProjectIdRef.current = projectId;
+    // Reset stale per-step error flags from any previously viewed project.
+    clearErroredSteps();
 
     try {
       const project = await brandingApi.getById(projectId);
@@ -477,6 +480,9 @@ export const BrandingMachinePage: React.FC = () => {
 
       setBrandingData(updatedData);
 
+      // Success: clear any prior error flag for this step.
+      markStepErrored(stepNumber, false);
+
       // Track usage and deduct credits AFTER successful generation
       if (!isLocalDevelopment()) {
         try {
@@ -526,6 +532,9 @@ export const BrandingMachinePage: React.FC = () => {
       return true;
     } catch (error: any) {
       console.error('Error generating step:', error);
+      // Flag the step so its tile renders a distinct error+retry state instead
+      // of an indistinguishable "click to generate" tile.
+      markStepErrored(stepNumber, true);
       if (!silent) {
         toast.error(error.message || t('branding.errors.failedToGenerateStep'));
       }
@@ -625,6 +634,7 @@ export const BrandingMachinePage: React.FC = () => {
       return;
     }
 
+    clearErroredSteps();
     setBrandingData({ prompt, ...(useVisantV2 ? { version: 'v2' as const } : {}) });
     await generateStep(useVisantV2 ? 101 : 1, true);
     setCurrentStep(10);
@@ -793,18 +803,31 @@ export const BrandingMachinePage: React.FC = () => {
     // Track which steps have been generated to avoid duplicates
     const generatedSet = new Set<number>();
 
-    // Generate steps in order, automatically handling dependencies
-    // Steps are automatically sorted by dependencies through the recursive function
+    // Generate steps in order, automatically handling dependencies.
+    // Steps are automatically sorted by dependencies through the recursive function.
+    let failedCount = 0;
     for (const stepNumber of stepsToGenerate.sort((a, b) => a - b)) {
-      // This will automatically generate dependencies first (silently)
-      await generateStepWithDependencies(stepNumber, generatedSet);
-      // Continue with next step even if one fails (silently)
+      // This will automatically generate dependencies first (silently).
+      const ok = await generateStepWithDependencies(stepNumber, generatedSet);
+      if (!ok) {
+        // Continue with next step even if one fails, but keep an honest tally
+        // and flag the step so its tile shows the error+retry state.
+        failedCount += 1;
+        markStepErrored(stepNumber, true);
+      }
     }
 
-    // Count how many were actually generated
-    const successfullyGenerated = generatedSet.size;
-    if (successfullyGenerated > 0) {
+    // Honest result: report how many of the requested steps actually generated.
+    const total = stepsToGenerate.length;
+    const succeeded = total - failedCount;
+    if (failedCount === 0) {
       toast.success(t('branding.allSectionsGeneratedSuccess'));
+    } else if (succeeded > 0) {
+      toast.warning(
+        `Generated ${succeeded} of ${total} sections — ${failedCount} failed. Retry the highlighted ones.`
+      );
+    } else {
+      toast.error(`Couldn't generate any sections (${failedCount} failed). Please try again.`);
     }
   };
 

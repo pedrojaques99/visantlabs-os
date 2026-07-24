@@ -13,6 +13,9 @@ import {
   Check,
   RotateCcw,
 } from '@/lib/ui/icons';
+import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -93,7 +96,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
           <div className="relative w-full sm:w-[42%] overflow-hidden cursor-zoom-in border-r border-border bg-neutral-950">
             {crop.url ? (
               <>
-                <img
+                <Thumb
                   src={crop.regeneratedUrl || crop.thumbnailUrl || crop.url}
                   alt={`Item ${index + 1}`}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -135,11 +138,12 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                     e.stopPropagation();
                     onToggleSelect(crop.id);
                   }}
-                  className={`absolute top-3 left-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 border shadow-lg ${
+                  className={cn(
+                    'absolute top-3 left-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 border shadow-lg',
                     isSelected
                       ? 'bg-white text-black border-white scale-110'
-                      : 'bg-black/40 text-white border-white/20 opacity-0 group-hover:opacity-100'
-                  }`}
+                      : cn('bg-black/40 text-white border-white/20', hoverReveal)
+                  )}
                 >
                   {isSelected ? (
                     <CheckSquare size={16} strokeWidth={2} />
@@ -175,7 +179,10 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                 e.stopPropagation();
                 onRemove(crop.id);
               }}
-              className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/40 backdrop-blur-md text-neutral-400 border border-white/10 opacity-0 group-hover:opacity-100 hover:bg-destructive/80 hover:text-white transition-all z-10"
+              className={cn(
+                'absolute top-3 right-3 p-1.5 rounded-lg bg-black/40 backdrop-blur-md text-neutral-400 border border-white/10 hover:bg-destructive/80 hover:text-white transition-all z-10',
+                hoverReveal
+              )}
             >
               <X size={14} strokeWidth={1.5} />
             </button>

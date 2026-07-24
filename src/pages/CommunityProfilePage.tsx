@@ -37,6 +37,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent } from '../components/ui/card';
 import { cn } from '../lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { workflowApi } from '../services/workflowApi';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
@@ -277,17 +278,17 @@ export const CommunityProfilePage: React.FC = () => {
       return;
     }
 
-    try {
-      const newLikedState = !workflow.isLikedByUser;
-      await workflowApi.toggleLike(workflow._id);
+    const newLikedState = !workflow.isLikedByUser;
 
+    // Optimistic update — reverted in catch if the write fails.
+    const applyLike = (liked: boolean) =>
       setWorkflows((prev) =>
         prev.map((w) => {
           if (w._id === workflow._id) {
             return {
               ...w,
-              isLikedByUser: newLikedState,
-              likesCount: newLikedState
+              isLikedByUser: liked,
+              likesCount: liked
                 ? (w.likesCount || 0) + 1
                 : Math.max(0, (w.likesCount || 0) - 1),
             };
@@ -295,8 +296,15 @@ export const CommunityProfilePage: React.FC = () => {
           return w;
         })
       );
+
+    applyLike(newLikedState);
+
+    try {
+      await workflowApi.toggleLike(workflow._id);
     } catch (err) {
       console.error('Failed to toggle like:', err);
+      // Revert the optimistic state so the UI matches the DB.
+      applyLike(!newLikedState);
       toast.error(t('community.failedToUpdateLike') || 'Failed to update like');
     }
   };
@@ -471,7 +479,7 @@ export const CommunityProfilePage: React.FC = () => {
                   >
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
-                        {profile.stats.mockups}
+                        {mockups.length}
                       </div>
                       <MicroTitle>{t('community.profile.mockups')}</MicroTitle>
                     </div>
@@ -485,7 +493,7 @@ export const CommunityProfilePage: React.FC = () => {
                     <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
-                        {profile.stats.presets}
+                        {allPresets.length}
                       </div>
                       <MicroTitle>Presets</MicroTitle>
                     </div>
@@ -622,7 +630,12 @@ export const CommunityProfilePage: React.FC = () => {
                           )}
 
                           {/* Overlay Actions */}
-                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                          <div
+                            className={cn(
+                              hoverReveal,
+                              'absolute inset-0 bg-neutral-950/60 duration-200 flex items-center justify-center gap-2'
+                            )}
+                          >
                             <Button
                               variant="brand"
                               size="sm"
@@ -780,19 +793,45 @@ export const CommunityProfilePage: React.FC = () => {
             onToggleLike={
               selectedMockup._id
                 ? async () => {
+                    const prevLiked = selectedMockup.isLiked || false;
+                    const prevCount = selectedMockup.likesCount || 0;
+                    const newLikedState = !prevLiked;
+                    const newCount = newLikedState
+                      ? prevCount + 1
+                      : Math.max(0, prevCount - 1);
+
+                    // INTEGRITY CAVEAT: mockupApi.update({ isLiked }) mutates the SHARED
+                    // mockup document's like flag — it is NOT an actor-scoped like, so any
+                    // viewer's toggle overwrites the same field and the count is not a real
+                    // per-user tally. Proper fix needs a backend actor-scoped like endpoint
+                    // (out of frontend scope). Optimistic update below reverts on failure.
+                    setMockups((prev) =>
+                      prev.map((m) =>
+                        m._id === selectedMockup._id
+                          ? { ...m, isLiked: newLikedState, likesCount: newCount }
+                          : m
+                      )
+                    );
+                    setSelectedMockup((prev) =>
+                      prev ? { ...prev, isLiked: newLikedState, likesCount: newCount } : null
+                    );
+
                     try {
-                      const newLikedState = !selectedMockup.isLiked;
                       await mockupApi.update(selectedMockup._id, { isLiked: newLikedState });
+                    } catch (error) {
+                      console.error('Failed to toggle like:', error);
+                      // Revert optimistic state so a failed write leaves no phantom like.
                       setMockups((prev) =>
                         prev.map((m) =>
-                          m._id === selectedMockup._id ? { ...m, isLiked: newLikedState } : m
+                          m._id === selectedMockup._id
+                            ? { ...m, isLiked: prevLiked, likesCount: prevCount }
+                            : m
                         )
                       );
                       setSelectedMockup((prev) =>
-                        prev ? { ...prev, isLiked: newLikedState } : null
+                        prev ? { ...prev, isLiked: prevLiked, likesCount: prevCount } : null
                       );
-                    } catch (error) {
-                      console.error('Failed to toggle like:', error);
+                      toast.error(t('community.failedToUpdateLike') || 'Failed to update like');
                     }
                   }
                 : undefined

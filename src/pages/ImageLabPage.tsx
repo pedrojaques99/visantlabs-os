@@ -1404,6 +1404,16 @@ export const ImageLabPage: React.FC = () => {
           if (mode === 'texture') {
             return textureRef.current?.renderAtScale(scale);
           }
+          if (mode === 'shaders') {
+            // Shaders have no synchronous hi-res re-render path (the WebGL render
+            // is async, but onExportScaled is sync). Rather than let ExportModal
+            // interpolate the screen canvas up to `scale` — a fake-resolution
+            // export whose readout would overclaim the true dims — return the
+            // native-resolution shader canvas so the export stays honest (1x).
+            // Known follow-up: ExportModal's dim readout still reflects the
+            // chosen scale for shaders; making it truthful needs an ExportModal change.
+            return canvasRef.current ?? undefined;
+          }
           return undefined;
         }}
       />
@@ -1489,8 +1499,10 @@ function useStatusItems(mode: ImageLabMode) {
           { label: `${Math.round(rZoom * 100)}%` },
           { label: `freq ${rFrequency}` },
           { label: `dot ${rDotSize.toFixed(2)}` },
-          { label: `misreg ${rMisregistration}px` },
-          { label: `${rLayers.filter((l) => l.visible).length} layers` },
+          ...(rMisregistration > 0 ? [{ label: `misreg ${rMisregistration}px` }] : []),
+          ...(rLayers.filter((l) => l.visible).length > 0
+            ? [{ label: `${rLayers.filter((l) => l.visible).length} layers` }]
+            : []),
           ...(rSoloLayer >= 0 ? [{ label: `solo L${rSoloLayer + 1}`, color: 'text-warning' }] : []),
           ...(rShaderEnabled ? [{ label: rShaderType, color: 'text-neutral-400' }] : []),
           ...extras,

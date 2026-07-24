@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { extractTextFromContent } from '@/utils/brandingHelpers';
 import { Button } from '@/components/ui/button';
 import { copyToClipboard } from '@/utils/clipboard';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { cn } from '@/lib/utils';
 
 interface SectionActionsProps {
   hasData: boolean;
@@ -100,7 +102,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
 
   // Normal mode: show all actions
   return (
-    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div className={cn('flex items-center gap-1 duration-200', hoverReveal)}>
       {hasData && onRegenerate && (
         <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
           <Button

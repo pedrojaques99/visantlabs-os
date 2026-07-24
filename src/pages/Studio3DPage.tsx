@@ -113,7 +113,15 @@ export const Studio3DPage: React.FC = () => {
     const autoplay = searchParams.get('autoplay') === 'true';
     const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
     fetch(`${API_BASE}/studio3d/${sceneId}`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        // A dead shared link (404/403/deleted) resolves but is not `ok`.
+        // Signal it instead of silently dropping the user on the default scene.
+        if (!r.ok) {
+          toast.error('Scene not found or no longer available');
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
         if (!data?.scene) return;
         const { config, svgData, inputMode, text, font } = data.scene;

@@ -102,10 +102,10 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
             }}
             className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
           >
-            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-cyan-500/30 group-hover:border-cyan-500/50 flex items-center justify-center transition-colors">
-              <Shuffle size={16} className="text-cyan-400" />
+            <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-white/10 group-hover:border-white/30 flex items-center justify-center transition-colors">
+              <Shuffle size={16} className="text-neutral-500 group-hover:text-neutral-300 transition-colors" />
             </div>
-            <span className="text-[9px] text-cyan-500 group-hover:text-cyan-300 transition-colors max-w-14 truncate">
+            <span className="text-[9px] text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
               Random
             </span>
           </button>

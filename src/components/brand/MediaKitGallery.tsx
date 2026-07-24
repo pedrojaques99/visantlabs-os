@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { getProxiedUrl } from '@/utils/proxyUtils';
+import { useNeedsLightBg } from '@/hooks/useNeedsLightBg';
+import { Thumb } from '@/components/ui/Thumb';
 
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 type MediaCategory = 'background' | 'graphic' | 'stock' | 'product' | 'texture' | 'other';
@@ -86,7 +88,7 @@ const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, class
       className={cn(
         'absolute text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10',
         isSvg
-          ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
+          ? 'bg-white/15 text-neutral-200 border border-white/20'
           : 'bg-white/10 text-neutral-400 border border-white/10',
         className || 'top-1 right-1'
       )}
@@ -433,61 +435,17 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                 compact ? 'grid-cols-4' : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6'
               )}
             >
-              {displayedLogos.map((logo) => {
-                const isSelected = selectedIds.has(logo.id);
-                return (
-                  <div
-                    key={logo.id}
-                    onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
-                    className={cn(
-                      'group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden',
-                      isSelected
-                        ? 'border-brand-cyan bg-brand-cyan/5 scale-[0.98]'
-                        : 'border-neutral-800 bg-neutral-900/40'
-                    )}
-                  >
-                    <img
-                      src={getProxiedUrl(logo.url)}
-                      alt={logo.label || logo.variant}
-                      className="w-full h-full object-contain p-2"
-                      loading="lazy"
-                      draggable={!!onAssetDragStart}
-                      onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
-                    />
-                    <FormatBadge url={logo.url} />
-
-                    <span
-                      className={cn(
-                        'absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase',
-                        isSelected && 'bg-brand-cyan text-black font-bold'
-                      )}
-                    >
-                      {logo.variant}
-                    </span>
-
-                    {/* Asset Click Indicator (Subtle) */}
-                    {onAssetClick && (
-                      <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
-                        <MousePointerClick size={14} className="text-brand-cyan/40" />
-                      </div>
-                    )}
-
-                    {/* Selection Checkbox */}
-                    {!readOnly && (
-                      <div
-                        className={cn(
-                          'absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg',
-                          isSelected
-                            ? 'bg-brand-cyan border-brand-cyan opacity-100'
-                            : 'bg-black/40 border-white/20 opacity-0 group-hover/logo:opacity-100'
-                        )}
-                      >
-                        {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {displayedLogos.map((logo) => (
+                <LogoTile
+                  key={logo.id}
+                  logo={logo}
+                  isSelected={selectedIds.has(logo.id)}
+                  readOnly={readOnly}
+                  showClickIndicator={!!onAssetClick}
+                  onClick={(e) => handleItemClick(logo.id, logo.url, 'logo', e)}
+                  onAssetDragStart={onAssetDragStart}
+                />
+              ))}
             </div>
           ) : (
             <MicroTitle className="text-[10px] text-neutral-700 ">
@@ -536,7 +494,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                   >
                     {item.type === 'image' ? (
                       <>
-                        <img
+                        <Thumb
                           src={getProxiedUrl(item.url)}
                           alt={item.label || 'Media'}
                           className="w-full h-full object-contain p-2"
@@ -572,7 +530,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
 
                     {/* Category selector */}
                     {!readOnly && item.type === 'image' && (
-                      <div className="absolute top-1 right-1 opacity-0 group-hover/media:opacity-100 transition-opacity z-10">
+                      <div className="absolute top-1 right-1 z-10 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/media:opacity-100 group-focus-within/media:opacity-100 transition-opacity">
                         <select
                           value={item.category || ''}
                           onChange={(e) => {
@@ -629,6 +587,83 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+// ─── Logo tile (per-logo so `useNeedsLightBg` can run as a hook) ───────────────
+interface LogoTileProps {
+  logo: LogoItem;
+  isSelected: boolean;
+  readOnly: boolean;
+  showClickIndicator: boolean;
+  onClick: (e: React.MouseEvent) => void;
+  onAssetDragStart?: (e: React.DragEvent, url: string, type: 'logo' | 'image') => void;
+}
+
+const LogoTile: React.FC<LogoTileProps> = ({
+  logo,
+  isSelected,
+  readOnly,
+  showClickIndicator,
+  onClick,
+  onAssetDragStart,
+}) => {
+  // SSoT dark-logo detection — dark/transparent logos need a light backdrop or
+  // they render invisible on the default dark tile.
+  const needsLightBg = useNeedsLightBg(getProxiedUrl(logo.url));
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        'group/logo relative aspect-square rounded-md border transition-all cursor-pointer overflow-hidden',
+        isSelected
+          ? 'border-brand-cyan bg-brand-cyan/5 scale-[0.98]'
+          : needsLightBg
+            ? 'border-neutral-800 bg-white'
+            : 'border-neutral-800 bg-neutral-900/40'
+      )}
+    >
+      <Thumb
+        src={getProxiedUrl(logo.url)}
+        alt={logo.label || logo.variant}
+        className="w-full h-full object-contain p-2"
+        loading="lazy"
+        draggable={!!onAssetDragStart}
+        onDragStart={(e) => onAssetDragStart?.(e, logo.url, 'logo')}
+      />
+      <FormatBadge url={logo.url} />
+
+      <span
+        className={cn(
+          'absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase',
+          isSelected && 'bg-brand-cyan text-black font-bold'
+        )}
+      >
+        {logo.variant}
+      </span>
+
+      {/* Asset Click Indicator (Subtle) */}
+      {showClickIndicator && (
+        <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
+          <MousePointerClick size={14} className="text-brand-cyan/40" />
+        </div>
+      )}
+
+      {/* Selection Checkbox */}
+      {!readOnly && (
+        <div
+          className={cn(
+            'absolute top-1 left-1 w-4 h-4 rounded-full border flex items-center justify-center transition-opacity shadow-lg',
+            isSelected
+              ? 'bg-brand-cyan border-brand-cyan opacity-100'
+              : 'bg-black/40 border-white/20 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/logo:opacity-100 group-focus-within/logo:opacity-100'
+          )}
+        >
+          {isSelected && <Check size={10} className="text-black" strokeWidth={4} />}
+        </div>
+      )}
     </div>
   );
 };

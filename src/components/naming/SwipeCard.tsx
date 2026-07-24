@@ -177,6 +177,18 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   </span>
                 )}
 
+                {/* Domínio não verificado — RDAP em timeout/erro; NUNCA tratar
+                  como livre (o servidor mantém 'unknown' de propósito) */}
+                {card.availability?.status === 'unknown' && (
+                  <span
+                    title="RDAP indisponível — não foi possível verificar o domínio"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[10px] font-mono text-neutral-500"
+                  >
+                    <Globe size={11} />
+                    domínio não verificado
+                  </span>
+                )}
+
                 {/* Flag de risco */}
                 {card.riskFlag && (
                   <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">

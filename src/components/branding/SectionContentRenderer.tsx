@@ -10,7 +10,8 @@ import { PersonaSection } from './PersonaSection';
 import { ArchetypesSection } from './ArchetypesSection';
 import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { TextSection } from './TextSection';
-import { EmptySectionCard } from './EmptySectionCard';
+import { EmptySectionCard, useStepErrored } from './EmptySectionCard';
+import { ErrorState } from '@/components/ui/ErrorState';
 import {
   CentralMessageSection,
   MarketResearchV2Section,
@@ -46,6 +47,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const errored = useStepErrored(stepNumber);
 
   if (isGenerating) {
     return (
@@ -61,6 +63,19 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
     // Don't show EmptySectionCard for step 12 (moodboard)
     if (stepNumber === 12) {
       return null;
+    }
+    // A failed generation must read as an error+retry, never as a fresh
+    // "click to generate" tile (which is indistinguishable from untouched).
+    if (errored) {
+      return (
+        <ErrorState
+          title="Generation failed"
+          description="This section could not be generated. Your other work is safe — try again."
+          onRetry={onGenerate}
+          retryLabel="Try again"
+          className="py-8"
+        />
+      );
     }
     return (
       <EmptySectionCard

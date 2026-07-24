@@ -194,6 +194,7 @@ function MoodboardStudio() {
         );
       } catch (err: any) {
         console.error('AI suggest failed', err);
+        toast.error('AI suggestion failed. Please try again.');
       } finally {
         setIsAISuggesting(false);
       }

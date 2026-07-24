@@ -445,7 +445,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <div
                   className={cn(
                     'w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity',
-                    videoPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+                    videoPlaying
+                      ? 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
+                      : 'opacity-100'
                   )}
                 >
                   {videoPlaying ? (
