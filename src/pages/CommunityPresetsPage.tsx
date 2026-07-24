@@ -7,6 +7,7 @@ import { copyToClipboard } from '@/utils/clipboard';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Fuse: any = FuseLib;
 import { PageShell } from '../components/ui/PageShell';
+import { Thumb } from '@/components/ui/Thumb';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -206,14 +207,11 @@ const PresetDetailModal: React.FC<{
           {/* Image */}
           <div className="md:w-2/5 shrink-0">
             {hasImage ? (
-              <img
+              <Thumb
                 src={migrated.referenceImageUrl}
                 alt={migrated.name}
                 loading="lazy"
                 className="w-full aspect-square object-cover rounded-xl border border-border"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
               />
             ) : (
               <div
@@ -888,7 +886,7 @@ export const CommunityPresetsPage: React.FC = () => {
         )}
 
         {/* ── Empty state ───────────────────────────────────────────────────── */}
-        {!isLoading && sorted.length === 0 && (viewMode === 'all' || isAuthenticated) && (
+        {!isLoading && !error && sorted.length === 0 && (viewMode === 'all' || isAuthenticated) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -898,7 +896,7 @@ export const CommunityPresetsPage: React.FC = () => {
               <Layers size={28} strokeWidth={1} className="text-muted-foreground" />
             </div>
             <div className="text-center space-y-2">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <p className="text-[10px] tracking-widest text-muted-foreground">
                 {searchQuery ? `No results for "${searchQuery}"` : 'No presets yet'}
               </p>
               {searchQuery && (

@@ -24,6 +24,8 @@ import { GlassPanel } from '../ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -218,7 +220,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className={cn(hoverReveal, 'flex items-center gap-2 flex-shrink-0')}>
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
             <Button

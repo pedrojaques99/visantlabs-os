@@ -15,6 +15,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/utils/localeUtils';
@@ -37,6 +38,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     hasMore: false,
   });
   const [serverStats, setServerStats] = useState<any>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     const loadUsageHistory = async () => {
@@ -70,7 +72,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     };
 
     loadUsageHistory();
-  }, [isAuthenticated, historyFilter, historyPagination.offset, historyPagination.limit, t]);
+  }, [isAuthenticated, historyFilter, historyPagination.offset, historyPagination.limit, reloadNonce, t]);
 
   useEffect(() => {
     setHistoryPagination((prev) => {
@@ -164,6 +166,19 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     );
   }
 
+  if (historyError && usageHistory.length === 0 && !isLoadingHistory) {
+    return (
+      <div className="border border-white/10 rounded-2xl bg-neutral-900/20">
+        <ErrorState
+          title={t('usageHistory.loadErrorTitle') || 'Não foi possível carregar o histórico'}
+          description={historyError}
+          onRetry={() => setReloadNonce((n) => n + 1)}
+          retryLabel={t('usageHistory.retry') || 'Tentar novamente'}
+        />
+      </div>
+    );
+  }
+
   if (usageHistory.length === 0 && !isLoadingHistory) {
     return (
       <div className="border border-white/10 rounded-2xl bg-neutral-900/20 p-12 flex flex-col items-center gap-4">
@@ -197,21 +212,39 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
       {/* Compact stats strip */}
       <div className="flex divide-x divide-white/5 border border-neutral-800 rounded-xl overflow-hidden bg-white/[0.03]">
         {[
-          { value: usageStats.totalRecords, label: 'Total de Usos' },
-          { value: usageStats.totalCredits, label: 'Créditos Gastos' },
-          { value: usageStats.byFeature.mockupmachine.count, label: 'Mockup Machine' },
-          { value: usageStats.byFeature.brandingmachine.count, label: 'Branding Machine' },
-          { value: usageStats.byFeature.canvas.count, label: 'Canvas' },
-        ].map((stat) => (
-          <div key={stat.label} className="flex-1 px-4 py-4 min-w-0">
-            <p className="text-xl font-bold text-neutral-100 font-mono tabular-nums leading-none">
-              {stat.value}
-            </p>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mt-1.5 truncate">
-              {stat.label}
-            </p>
-          </div>
-        ))}
+          // "Total de Usos" reflects the full result set, not just this page.
+          { value: historyPagination.total, label: 'Total de Usos' },
+          // Credits: real total when the server sends stats; otherwise only this page is known.
+          {
+            value: usageStats.totalCredits,
+            label: serverStats ? 'Créditos Gastos' : 'Créditos (esta página)',
+          },
+          // Per-tool activity counts — labelled as uses, and only shown when non-zero.
+          {
+            value: usageStats.byFeature.mockupmachine.count,
+            label: `${t('usageHistory.mockupMachine') || 'Mockup Machine'} · usos`,
+          },
+          {
+            value: usageStats.byFeature.brandingmachine.count,
+            label: `${t('usageHistory.brandingMachine') || 'Branding Machine'} · usos`,
+          },
+          {
+            value: usageStats.byFeature.canvas.count,
+            label: `${t('usageHistory.canvas') || 'Canvas'} · usos`,
+          },
+        ]
+          // Keep the Total + Credits tiles always; drop zero-value per-tool tiles.
+          .filter((stat, index) => index < 2 || stat.value > 0)
+          .map((stat) => (
+            <div key={stat.label} className="flex-1 px-4 py-4 min-w-0">
+              <p className="text-xl font-bold text-neutral-100 font-mono tabular-nums leading-none">
+                {stat.value}
+              </p>
+              <p className="text-[10px] tracking-wide text-neutral-600 mt-1.5 truncate">
+                {stat.label}
+              </p>
+            </div>
+          ))}
       </div>
 
       {/* Filter strip + table — unified container */}
@@ -244,19 +277,19 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
           <Table>
             <TableHeader>
               <TableRow className="border-neutral-800 hover:bg-transparent">
-                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                <TableHead className="text-neutral-500 text-xs tracking-wide">
                   {t('usageHistory.date') || 'Data'}
                 </TableHead>
-                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                <TableHead className="text-neutral-500 text-xs tracking-wide">
                   {t('usageHistory.feature') || 'Recurso'}
                 </TableHead>
-                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                <TableHead className="text-neutral-500 text-xs tracking-wide">
                   {t('usageHistory.credits') || 'Créditos'}
                 </TableHead>
-                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                <TableHead className="text-neutral-500 text-xs tracking-wide">
                   {t('usageHistory.model') || 'Modelo'}
                 </TableHead>
-                <TableHead className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest">
+                <TableHead className="text-neutral-500 text-xs tracking-wide">
                   {t('usageHistory.details') || 'Detalhes'}
                 </TableHead>
               </TableRow>

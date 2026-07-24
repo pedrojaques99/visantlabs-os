@@ -7,9 +7,10 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { GlassPanel } from '../components/ui/GlassPanel';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
-import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from '@/lib/ui/icons';
+import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit } from '@/lib/ui/icons';
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,8 @@ export const MyBudgetsPage: React.FC = () => {
   const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null);
   const [showDeletePresetModal, setShowDeletePresetModal] = useState(false);
   const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [presetLoadError, setPresetLoadError] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated === false) {
@@ -45,6 +48,7 @@ export const MyBudgetsPage: React.FC = () => {
 
   const loadBudgets = async () => {
     setIsLoading(true);
+    setLoadError(false);
     try {
       const data = await budgetApi.getAll();
       setBudgets(data);
@@ -53,6 +57,7 @@ export const MyBudgetsPage: React.FC = () => {
       if (error?.status === 401) {
         setShowAuthModal(true);
       } else {
+        setLoadError(true);
         toast.error(t('budget.errors.failedToLoad') || 'Failed to load budgets');
       }
     } finally {
@@ -62,12 +67,14 @@ export const MyBudgetsPage: React.FC = () => {
 
   const loadPresets = async () => {
     setIsLoadingPresets(true);
+    setPresetLoadError(false);
     try {
       const data = await budgetApi.getPdfPresets();
       setPresets(data);
     } catch (error: any) {
       console.error('Error loading presets:', error);
       if (error?.status !== 401) {
+        setPresetLoadError(true);
         toast.error(t('budget.errors.failedToLoadPresets') || 'Failed to load presets');
       }
     } finally {
@@ -186,14 +193,6 @@ export const MyBudgetsPage: React.FC = () => {
             <Button
               variant="ghost"
               onClick={() => navigate('/budget-machine')}
-              className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800/60 hover:border-neutral-700 rounded-md text-xs text-neutral-300 transition-colors flex items-center gap-2 cursor-pointer"
-            >
-              <Layout className="h-3.5 w-3.5" />
-              {t('budget.selectTemplate') || 'Ver Templates'}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/budget-machine')}
               className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm transition-colors flex items-center gap-2 cursor-pointer"
             >
               <Pickaxe className="h-4 w-4" />
@@ -228,6 +227,12 @@ export const MyBudgetsPage: React.FC = () => {
                     </span>
                   </div>
                 </div>
+              ) : presetLoadError && presets.length === 0 ? (
+                <ErrorState
+                  title={t('budget.errors.failedToLoadPresets') || 'Failed to load presets'}
+                  description={t('budget.errors.loadRetry') || 'Your presets are safe. Try loading again.'}
+                  onRetry={loadPresets}
+                />
               ) : presets.length === 0 ? (
                 <div className="text-center py-8">
                   <FileText size={48} className="text-neutral-700 mx-auto mb-3" strokeWidth={1} />
@@ -287,7 +292,13 @@ export const MyBudgetsPage: React.FC = () => {
           )}
 
           {/* Budgets Grid */}
-          {budgets.length === 0 ? (
+          {loadError && budgets.length === 0 ? (
+            <ErrorState
+              title={t('budget.errors.failedToLoad') || 'Failed to load budgets'}
+              description={t('budget.errors.loadRetry') || 'Your budgets are safe. Try loading again.'}
+              onRetry={loadBudgets}
+            />
+          ) : budgets.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <FileText size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
               <h2 className="text-lg font-semibold text-neutral-200 mb-1.5">

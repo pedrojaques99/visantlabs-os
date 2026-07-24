@@ -8,6 +8,7 @@ import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
 import { GlassPanel } from '@/components/ui/GlassPanel';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -48,6 +49,28 @@ export const ContentStudioPage: React.FC = () => {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const pollCountRef = useRef(0);
+  // Job-lifecycle honesty: a terminal failure must render an error/retry state,
+  // never an eternal spinner or a "nothing generated yet" empty state.
+  const [pageError, setPageError] = useState<string | null>(null);
+
+  // When polling dies (network catch / timeout), flip any still-pending assets
+  // to `error` so their cards stop spinning forever, and raise a page-level
+  // error flag so a job with no assets still shows the error/retry state.
+  const failPending = useCallback((message: string) => {
+    setPageError(message);
+    setJob((prev) =>
+      prev
+        ? {
+            ...prev,
+            assets: prev.assets.map((a) =>
+              a.status === 'pending' || a.status === 'generating'
+                ? { ...a, status: 'error', error: a.error || message }
+                : a
+            ),
+          }
+        : prev
+    );
+  }, []);
 
   const toneOptions = [
     { value: '', label: t('contentStudio.toneAuto') },
@@ -70,6 +93,7 @@ export const ContentStudioPage: React.FC = () => {
           pollRef.current = null;
           setIsGenerating(false);
           localStorage.removeItem(STORAGE_KEY);
+          failPending(t('contentStudio.generationTimeout'));
           toast.error(t('contentStudio.generationTimeout'));
           return;
         }
@@ -87,15 +111,18 @@ export const ContentStudioPage: React.FC = () => {
               toast.error(t('contentStudio.generationFailed', { error: updated.error }));
             }
           }
-        } catch {
+        } catch (err: any) {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
           setIsGenerating(false);
           localStorage.removeItem(STORAGE_KEY);
+          const raw = err?.message || '';
+          failPending(raw || t('contentStudio.generationTimeout'));
+          toast.error(t('contentStudio.generationFailed', { error: raw }));
         }
       }, 3000);
     },
-    [t]
+    [t, failPending]
   );
 
   // Resume polling from localStorage on mount
@@ -113,11 +140,13 @@ export const ContentStudioPage: React.FC = () => {
           toast.info(t('contentStudio.resuming'));
           startPolling(savedJobId);
         }
-      } catch {
+      } catch (err: any) {
         localStorage.removeItem(STORAGE_KEY);
+        const raw = err?.message || '';
+        failPending(raw || t('contentStudio.generationTimeout'));
       }
     })();
-  }, [startPolling, t]);
+  }, [startPolling, t, failPending]);
 
   const toggleFormat = useCallback((id: string) => {
     setSelectedFormats((prev) =>
@@ -140,6 +169,7 @@ export const ContentStudioPage: React.FC = () => {
       .map((id) => SOCIAL_FORMATS.find((f) => f.id === id))
       .filter(Boolean) as SocialFormat[];
 
+    setPageError(null);
     setIsGenerating(true);
     try {
       const result = await startContentGeneration({
@@ -185,6 +215,7 @@ export const ContentStudioPage: React.FC = () => {
   }, []);
 
   const hasResults = job && job.assets.length > 0;
+  const jobErrored = job?.status === 'error' || !!job?.error || !!pageError;
   const progress = job ? Math.round((job.completedCount / job.totalCount) * 100) : 0;
 
   return (
@@ -271,7 +302,7 @@ export const ContentStudioPage: React.FC = () => {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={isGenerating || !brief.trim() || selectedFormats.length === 0}
+            disabled={isGenerating}
             className={cn(
               'w-full py-3 rounded-lg font-mono text-sm font-bold tracking-wide transition-all',
               'flex items-center justify-center gap-2',
@@ -296,7 +327,20 @@ export const ContentStudioPage: React.FC = () => {
 
         {/* Main — Results Grid */}
         <main className="flex-1 overflow-y-auto custom-scrollbar p-6">
-          {!hasResults && !isGenerating && (
+          {/* Terminal failure with no salvageable assets → distinct error/retry
+              state, never the "nothing generated yet" empty state. */}
+          {jobErrored && !hasResults && !isGenerating && (
+            <div className="flex items-center justify-center h-full">
+              <ErrorState
+                title={t('contentStudio.generationFailed', { error: '' }).replace(/[:：]\s*$/, '')}
+                description={pageError || job?.error || undefined}
+                onRetry={handleGenerate}
+                className="max-w-md"
+              />
+            </div>
+          )}
+
+          {!hasResults && !isGenerating && !jobErrored && (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <GlassPanel padding="lg" className="max-w-md">
                 <Sparkles size={32} className="text-neutral-600 mx-auto mb-4" />

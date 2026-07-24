@@ -197,7 +197,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-80" />
 
         {/* Hover overlay (Abrir) — z-10, atrás dos botões de canto */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-neutral-950/40 backdrop-blur-[3px]">
+        <div className="absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 bg-neutral-950/40 backdrop-blur-[3px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100">
           <span className="text-sm font-medium text-white px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-2 shadow-lg">
             {isExternal ? t('apps.launch') : t('apps.open')}
             {isExternal ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
@@ -214,7 +214,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
             'absolute top-3 left-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 transition-all',
             pinned
               ? 'opacity-100 text-brand-cyan'
-              : 'opacity-0 group-hover:opacity-100 text-white/70 hover:text-white'
+              : 'text-white/70 hover:text-white opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100'
           )}
         >
           <Star size={12} className={pinned ? 'fill-brand-cyan' : ''} />
@@ -230,7 +230,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
                 onEdit(app);
               }}
               aria-label={t('apps.edit_app')}
-              className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-300 hover:text-white hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100"
+              className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-300 hover:text-white hover:scale-110 active:scale-95 transition-all opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100"
             >
               <Edit3 size={12} />
             </button>

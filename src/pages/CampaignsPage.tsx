@@ -16,6 +16,7 @@ import { PageShell } from '@/components/ui/PageShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { useCampaigns, useCampaign } from '@/hooks/queries/useCampaigns';
 import type { CampaignSummary } from '@/services/campaignApi';
@@ -36,7 +37,7 @@ export const CampaignsPage: React.FC = () => {
   const [brandId, setBrandId] = useState<string>(searchParams.get('brandId') || '');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { data: campaigns = [], isLoading } = useCampaigns(brandId || undefined);
+  const { data: campaigns = [], isLoading, isError, refetch } = useCampaigns(brandId || undefined);
 
   if (selectedId) {
     return <CampaignDetail id={selectedId} onBack={() => setSelectedId(null)} />;
@@ -107,6 +108,12 @@ export const CampaignsPage: React.FC = () => {
             </div>
           ))}
         </div>
+      ) : isError ? (
+        <ErrorState
+          title="Couldn't load your campaigns"
+          description="Your campaigns are safe. Something went wrong fetching them — try again."
+          onRetry={() => refetch()}
+        />
       ) : campaigns.length === 0 ? (
         <EmptyState
           icon={Megaphone}
@@ -160,11 +167,15 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
         </div>
       </div>
       <div className="p-3 space-y-2 border-t border-white/10">
-        <p className="text-[12px] font-mono text-neutral-200 truncate">{c.name}</p>
+        <p className="text-[12px] text-neutral-200 truncate">{c.name}</p>
         <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500">
-          <span>
-            {c.completedCount}/{c.totalCount} ads
-          </span>
+          {c.totalCount ? (
+            <span>
+              {c.completedCount}/{c.totalCount} ads
+            </span>
+          ) : (
+            <span className="capitalize">{c.status}</span>
+          )}
           <span className="truncate ml-2">{c.formats.join(' · ')}</span>
         </div>
         <div className="h-1 rounded-full bg-neutral-800 overflow-hidden">
@@ -182,7 +193,7 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
 }
 
 function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
-  const { data: campaign, isLoading } = useCampaign(id);
+  const { data: campaign, isLoading, isError, refetch } = useCampaign(id);
   const results = campaign?.results ?? [];
 
   return (
@@ -192,11 +203,11 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
       width="7xl"
       actions={
         <div className="flex items-center gap-3">
-          {campaign && (
+          {campaign && campaign.totalCount ? (
             <span className="text-xs text-neutral-500">
               {campaign.completedCount}/{campaign.totalCount}
             </span>
-          )}
+          ) : null}
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
@@ -212,6 +223,12 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
         <div className="flex items-center justify-center py-24">
           <Loader2 size={20} className="animate-spin text-neutral-600" />
         </div>
+      ) : isError ? (
+        <ErrorState
+          title="Couldn't load this campaign"
+          description="Your campaign is safe. Something went wrong fetching it — try again."
+          onRetry={() => refetch()}
+        />
       ) : results.length === 0 ? (
         <div className="flex items-center justify-center py-24">
           <GlassPanel padding="lg" className="max-w-md text-center">

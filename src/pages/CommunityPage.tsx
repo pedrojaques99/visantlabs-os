@@ -33,6 +33,7 @@ import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
 import { getGithubUrl } from '../config/branding';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import ClubLogo3D from '../components/3d/club-logo3d';
@@ -154,6 +155,7 @@ export const CommunityPage: React.FC = () => {
     totalBlankMockups: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
   const [activeUsersCount, setActiveUsersCount] = useState<number>(0);
   const [communityMockups, setCommunityMockups] = useState<any[]>([]);
   const [allPublicMockups, setAllPublicMockups] = useState<any[]>([]);
@@ -165,7 +167,7 @@ export const CommunityPage: React.FC = () => {
 
   // Check if user is admin (you might need to fetch user details or get from context if available)
   const [isAdmin, setIsAdmin] = useState(false); // Placeholder, ideally get from authService/context
-  const isMobile = useMediaQuery('(max-width: 7610px)');
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -189,9 +191,9 @@ export const CommunityPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const loadStats = async () => {
+  const loadStats = useCallback(async () => {
       setIsLoading(true);
+      setStatsError(false);
       try {
         const [allPresets, publicMockups, globalStats] = await Promise.all([
           getAllCommunityPresets(),
@@ -276,13 +278,15 @@ export const CommunityPage: React.FC = () => {
         setActiveUsersCount(uniqueUserIds.size);
       } catch (error) {
         console.error('Failed to load community stats:', error);
+        setStatsError(true);
       } finally {
         setIsLoading(false);
       }
-    };
-
-    loadStats();
   }, []);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   // Load workflows
   useEffect(() => {
@@ -566,71 +570,59 @@ export const CommunityPage: React.FC = () => {
                 transition={{ delay: 0.4 }}
                 className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-10 max-w-lg"
               >
-                <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
-                      {t('community.membros')}
-                    </span>
-                    <TrendingUp
-                      size={14}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                  </div>
-                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                    {isLoading ? (
-                      '...'
-                    ) : globalCommunityStats.totalUsers === 0 ? (
-                      '1'
-                    ) : (
-                      <CountUp value={globalCommunityStats.totalUsers} />
-                    )}
-                  </p>
-                </GlassPanel>
+                {(isLoading || globalCommunityStats.totalUsers > 0) && (
+                  <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                        {t('community.membros')}
+                      </span>
+                      <TrendingUp
+                        size={14}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                    </div>
+                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalUsers} />}
+                    </p>
+                  </GlassPanel>
+                )}
 
-                <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
-                      {t('community.criaes')}
-                    </span>
-                    <Diamond
-                      size={14}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                  </div>
-                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                    {isLoading ? (
-                      '...'
-                    ) : globalCommunityStats.totalPresets === 0 ? (
-                      '!'
-                    ) : (
-                      <CountUp value={globalCommunityStats.totalPresets} />
-                    )}
-                  </p>
-                </GlassPanel>
+                {(isLoading || globalCommunityStats.totalPresets > 0) && (
+                  <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                        {t('community.criaes')}
+                      </span>
+                      <Diamond
+                        size={14}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                    </div>
+                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalPresets} />}
+                    </p>
+                  </GlassPanel>
+                )}
 
-                <GlassPanel
-                  padding="sm"
-                  className={cn('hidden sm:flex group', glassSurface.control)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
-                      {t('community.publicado')}
-                    </span>
-                    <ImageIcon
-                      size={14}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                  </div>
-                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                    {isLoading ? (
-                      '...'
-                    ) : globalCommunityStats.totalBlankMockups === 0 ? (
-                      '+'
-                    ) : (
-                      <CountUp value={globalCommunityStats.totalBlankMockups} />
-                    )}
-                  </p>
-                </GlassPanel>
+                {(isLoading || globalCommunityStats.totalBlankMockups > 0) && (
+                  <GlassPanel
+                    padding="sm"
+                    className={cn('hidden sm:flex group', glassSurface.control)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                        {t('community.publicado')}
+                      </span>
+                      <ImageIcon
+                        size={14}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                    </div>
+                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalBlankMockups} />}
+                    </p>
+                  </GlassPanel>
+                )}
               </motion.div>
             </div>
           </div>
@@ -916,6 +908,14 @@ export const CommunityPage: React.FC = () => {
                       </Link>
                     </GlassPanel>
                   ))
+                ) : statsError ? (
+                  <ErrorState
+                    className="col-span-full min-h-[240px]"
+                    title="Não foi possível carregar a comunidade"
+                    description="Seus dados estão seguros. Tente carregar novamente."
+                    retryLabel="Tentar novamente"
+                    onRetry={loadStats}
+                  />
                 ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
