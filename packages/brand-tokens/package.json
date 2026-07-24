@@ -1,0 +1,16 @@
+{
+  "name": "@visant/brand-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Brand Token Engine — Layer 1 (brand identity) → Layer 2 (product craft), per-brand. Leonardo for contrast-driven color, a fixed craft skeleton for the invariants.",
+  "main": "src/engine.js",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "vitest run --config vitest.config.js"
+  },
+  "dependencies": {
+    "@adobe/leonardo-contrast-colors": "^1.0.0",
+    "culori": "^4.0.1"
+  }
+}
