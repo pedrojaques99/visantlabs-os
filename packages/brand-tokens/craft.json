@@ -1,0 +1,28 @@
+{
+  "_comment": "Layer 2 — the INVARIANT craft skeleton. Brand-agnostic on purpose: these encode throughput/hierarchy/a11y, which do not change per brand. The engine NEVER derives these; it only fills the color-coupled slots (--shadow hue, --brand for focus). See docs/PLAN-VISANT-LAYER2-CRAFT.md in visant-board.",
+  "radius": {
+    "control": "0.5rem",
+    "surface": "0.875rem",
+    "pill": "9999px"
+  },
+  "density": {
+    "comfortable": { "pad-card": "1.25rem", "control-h": "2.25rem", "gap-zone": "1rem" },
+    "compact": { "pad-card": "0.875rem", "control-h": "2rem", "gap-zone": "0.75rem" }
+  },
+  "elevation": {
+    "flat": "none",
+    "raised": "0 1px 2px hsl(var(--shadow) / 0.06), 0 6px 16px hsl(var(--shadow) / 0.10)",
+    "overlay": "0 2px 6px hsl(var(--shadow) / 0.12), 0 12px 32px hsl(var(--shadow) / 0.14)",
+    "modal": "0 8px 40px hsl(var(--shadow) / 0.22)"
+  },
+  "focus": "0 0 0 2px var(--background), 0 0 0 4px var(--brand)",
+  "motion": {
+    "ease-out": "cubic-bezier(0.23, 1, 0.32, 1)",
+    "ease-in-out": "cubic-bezier(0.77, 0, 0.175, 1)",
+    "ease-drawer": "cubic-bezier(0.32, 0.72, 0, 1)",
+    "dur-press": "120ms",
+    "dur-fast": "160ms",
+    "dur-base": "200ms",
+    "dur-slow": "300ms"
+  }
+}
