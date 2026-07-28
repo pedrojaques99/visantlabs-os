@@ -1143,6 +1143,58 @@ export const abacatepayService = {
           // Extract actual amount paid (in cents) - this handles coupons correctly
           const amountPaidInCents = billingStatus.amount || 0;
 
+          // ── PRODUTO AVULSO (e-book etc.) ──────────────────────────────────
+          // Espelha o ramo do Stripe em api/payments/webhook.ts: compra de
+          // produto concede ENTITLEMENT, não créditos. Precisa vir ANTES do
+          // cálculo de créditos, senão um preço que não casa com nenhum
+          // pacote (R$ 47 do e-book, p.ex.) cai no `credits <= 0` e o
+          // comprador paga sem receber nada.
+          // Idempotente por billId (mesmo contrato do sessionId no Stripe).
+          const billMetadata = data?.metadata || data?.billing?.metadata || {};
+          if (billMetadata.kind === 'product' && billMetadata.sku) {
+            const sku = String(billMetadata.sku);
+            const buyerEmail =
+              data?.customer?.email ||
+              data?.billing?.customer?.email ||
+              data?.pixQrCode?.customer?.email ||
+              billMetadata.email;
+
+            if (!buyerEmail) {
+              console.error('❌ Product purchase without email — cannot grant:', { billId, sku });
+              return { success: false, message: 'Product purchase without email' };
+            }
+
+            try {
+              const { grantProduct } = await import('./productGrantService.js');
+              const result = await grantProduct({
+                email: buyerEmail,
+                sku,
+                sessionId: billId,
+                source: 'abacatepay',
+                name: data?.customer?.name || data?.billing?.customer?.name || undefined,
+              });
+
+              console.log('✅ Product entitlement processed (AbacatePay):', {
+                sku,
+                email: buyerEmail,
+                userId: result.userId,
+                granted: result.granted,
+                accountCreated: result.created,
+                billId,
+              });
+              return { success: true, message: `Product ${sku} granted` };
+            } catch (grantError: any) {
+              console.error('❌ Failed to grant product entitlement (AbacatePay):', {
+                sku,
+                email: buyerEmail,
+                billId,
+                error: grantError?.message || String(grantError),
+              });
+              return { success: false, message: 'Failed to grant product entitlement' };
+            }
+          }
+          // ──────────────────────────────────────────────────────────────────
+
           // Use getCreditsByAmount to identify the correct package (supports coupons)
           let credits = 0;
 
