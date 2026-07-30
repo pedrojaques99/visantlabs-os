@@ -13,6 +13,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { computeThumbHash } from '../thumbHash.js';
 import { describeImage, getMultimodalEmbedding } from '../../services/geminiService.js';
 import { makeSlug, pickName } from '../references/naming.js';
+import { isLowResolution, lowResolutionReason } from '../../../src/lib/references/quality.js';
 import { vectorService } from '../../services/vectorService.js';
 import { connectToMongoDB, getDb } from '../../db/mongodb.js';
 import { normalizeCountry, regionForCountry } from '../../../src/lib/references/taxonomy.js';
@@ -246,7 +247,16 @@ export async function ingestReferenceLight(
     extractImageFacts(imageBuffer),
   ]);
 
+  // Gate de resolucao. Os fatos ja foram computados acima — ate agora ninguem
+  // os comparava com nada, e uma miniatura de 110px entrava na biblioteca ao
+  // lado de um poster de 3000px. Curadoria admin nao e barrada (ha material
+  // legitimo pequeno, e o admin decide); upload de usuario e, porque a fila de
+  // moderacao nao deveria gastar atencao humana com imagem ilegivel.
   const trusted = params.isAdminCurated !== false;
+  if (!trusted && isLowResolution(facts)) {
+    throw new Error(`Imagem abaixo da resolucao minima: ${lowResolutionReason(facts)}`);
+  }
+
   await connectToMongoDB();
   const db = getDb();
   const doc = {

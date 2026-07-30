@@ -104,6 +104,9 @@ function filterParamsFromQuery(query: Request['query']): ReferenceFilterParams {
     tag: str(query.tag),
     // Narrows to refs tagged with this brand. `brandTerms` (ranking) is separate.
     brandGuidelineId: str(query.brandGuidelineId),
+    // TEMPORÁRIO — inspeção de procedência. Ver ReferenceFilterParams.
+    sourcePrefix: str(query.sourcePrefix),
+    color: str(query.color),
     dimensions,
   };
 }
@@ -326,6 +329,35 @@ router.post(
     }
   }
 );
+
+// ── GET /item/:handle — one reference by slug OR id (the permalink) ─────────
+// Sob /item/ de proposito: a raiz ja tem /facets, /mine, /collections, e um
+// /:handle solto na raiz engoliria qualquer rota nova que viesse depois.
+router.get('/item/:handle', apiRateLimiter, async (req: Request, res: Response) => {
+  try {
+    const handle = req.params.handle;
+    if (typeof handle !== 'string' || handle.length < 3 || handle.length > 80) {
+      return res.status(400).json({ error: 'Invalid reference handle' });
+    }
+    await connectToMongoDB();
+    const db = getDb();
+    // Aceita slug OU id: links antigos (por id) continuam resolvendo.
+    const reference = await db.collection('community_presets').findOne(
+      {
+        category: 'reference',
+        ...BROWSABLE,
+        ...visibilityFilter('public'),
+        $and: [{ $or: [{ slug: handle }, { id: handle }] }],
+      },
+      { projection: PUBLIC_PROJECTION as Record<string, 0 | 1> }
+    );
+    if (!reference) return res.status(404).json({ error: 'Reference not found' });
+    return res.json({ reference });
+  } catch (error: any) {
+    console.error('[references] item error:', error);
+    return res.status(500).json({ error: 'Failed to load reference' });
+  }
+});
 
 // ── GET /:id/similar — "more like this" (the exploration loop) ───────────────
 router.get('/:id/similar', apiRateLimiter, async (req: Request, res: Response) => {

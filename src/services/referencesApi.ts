@@ -29,6 +29,13 @@ export interface ReferenceItem {
   thumbnailUrl?: string;
   /** Base64 thumbhash for an instant LQIP placeholder. */
   thumbHash?: string;
+  /** Objective pixel facts (extractImageFacts). Drive space reservation + the
+   *  low-resolution notice — see src/lib/references/quality.ts. */
+  width?: number;
+  height?: number;
+  aspectRatio?: number;
+  /** Dominant colours, most-frequent first. Powers colour navigation. */
+  palette?: string[];
   dimensions: Record<string, string[]>;
   provenance?: ReferenceProvenance;
   country?: string;
@@ -117,6 +124,14 @@ export interface ReferenceListParams {
   brandTerms?: string;
   /** Rank a text query by meaning (vector search) instead of substring. */
   semantic?: boolean;
+  /**
+   * TEMPORÁRIO — inspeção de procedência. Só linhas cujo `sourcePath` começa
+   * com este prefixo. Existe pra conseguir OLHAR uma leva de ingest antes de
+   * decidir o que fazer com ela. Ver ReferencesPage (`?src=`).
+   */
+  sourcePrefix?: string;
+  /** Hex colour — ranks/filters by proximity to a reference's dominant palette. */
+  color?: string;
 }
 
 const BASE = '/api/references';
@@ -144,6 +159,8 @@ export const referencesApi = {
         if (v) qs.set(k, v);
       }
     }
+    if (params.sourcePrefix) qs.set('sourcePrefix', params.sourcePrefix);
+    if (params.color) qs.set('color', params.color);
     if (params.seed) qs.set('seed', params.seed);
     if (params.brandId) qs.set('brandId', params.brandId);
     if (params.brandTerms) qs.set('brandTerms', params.brandTerms);
@@ -196,6 +213,15 @@ export const referencesApi = {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error || 'Visual search failed');
     }
+    return resp.json();
+  },
+
+  /** Permalink lookup — accepts a slug or a legacy id. */
+  async item(handle: string): Promise<{ reference: ReferenceItem }> {
+    const resp = await fetch(`${BASE}/item/${encodeURIComponent(handle)}`, {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Reference not found');
     return resp.json();
   },
 

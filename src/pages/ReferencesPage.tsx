@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { thumbHashToDataURL } from 'thumbhash';
@@ -8,6 +8,7 @@ import {
   Upload,
   Search,
   Image as ImageIcon,
+  Link as LinkIcon,
   Globe,
   MapPin,
   X,
@@ -59,6 +60,7 @@ import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { brandRankingTerms } from '@/lib/references/brandTerms';
 import { localizedName, type LocalizableRef } from '@/lib/references/naming';
+import { isLowResolution } from '@/lib/references/quality';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   FACET_DIMENSION_KEYS,
@@ -217,12 +219,25 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
 
   // Active brand feeds the feed RANKING (not a hard filter): the BrandSwitcher in
   // the shell is the control. "Todas as marcas" (activeBrandId null) → neutral feed.
+  // TEMPORÁRIO — `?src=Z:/Jobs 2.0` isola uma leva de ingest pra inspeção visual
+  // antes de decidir o que fazer com ela. Remover junto com a decisão.
+  // Permalink: /references/:handle e /refs/:handle abrem o lightbox naquela ref.
+  const { handle: permalinkHandle } = useParams<{ handle?: string }>();
+  const navigate = useNavigate();
+
+  const sourcePrefix = searchParams.get('src') || '';
+  /** Navegação por cor — na URL, então um recorte por cor é compartilhável. */
+  const color = searchParams.get('color') || '';
+
   const activeBrand = useActiveBrandSafe();
   const activeBrandId = activeBrand?.activeBrandId ?? null;
   const brandTerms = useMemo(
     () => brandRankingTerms(activeBrand?.activeBrand),
     [activeBrand?.activeBrand]
   );
+  // Só nomeia a lente quando ela REALMENTE muda a ordem: marca sem termos
+  // utilizáveis cai no feed neutro, e anunciar afinidade ali seria mentira.
+  const activeBrandName = brandTerms ? activeBrand?.activeBrand?.name?.trim() || '' : '';
   // Rail slot — the tag facets live in the drill-in rail, below the categories.
   const railSlot = useRailSlot()?.railSlot ?? null;
 
@@ -369,6 +384,8 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                 brandId: activeBrandId || undefined,
                 brandTerms: brandTerms || undefined,
                 semantic: semanticSearch,
+                sourcePrefix: sourcePrefix || undefined,
+                color: color || undefined,
               });
         setItems((prev) => {
           if (!append) return data.references;
@@ -398,6 +415,8 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
       activeBrandId,
       brandTerms,
       semanticSearch,
+      sourcePrefix,
+      color,
     ]
   );
 
@@ -498,8 +517,12 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     if (kind !== 'all') p.set('kind', kind);
     if (scope !== 'library') p.set('scope', scope);
     for (const k of DIMENSION_FILTER_KEYS) if (dims[k]) p.set(k, dims[k]);
+    // `src` é inspeção, não filtro de usuário — mas some daqui se não for
+    // reescrito, porque esta serialização monta a query do zero.
+    if (sourcePrefix) p.set('src', sourcePrefix);
+    if (color) p.set('color', color);
     setSearchParams(p, { replace: true });
-  }, [debouncedSearch, country, region, activeTag, kind, scope, dims]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, country, region, activeTag, kind, scope, dims, sourcePrefix, color]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // infinite scroll — prefetch com margem proporcional a viewport.
   // Um lead fixo (900px) sumia em telas altas e em scroll rapido: o usuario
@@ -519,6 +542,29 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
     obs.observe(el);
     return () => obs.disconnect();
   }, [pages, isLoading, isLoadingMore, similar, collectionView, scope, loadList, prefetchLead]);
+
+  // Permalink → abre o lightbox naquela referência. Ela é prefixada no grid em
+  // vez de esperar o feed conter, porque um link compartilhado tem que resolver
+  // mesmo quando a ref não está na primeira página (ou nem no recorte atual).
+  useEffect(() => {
+    if (!permalinkHandle) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { reference } = await referencesApi.item(permalinkHandle);
+        if (cancelled) return;
+        setItems((prev) =>
+          prev.some((r) => r.id === reference.id) ? prev : [reference, ...prev]
+        );
+        setLightboxIndex(0);
+      } catch {
+        if (!cancelled) toast.error('Referência não encontrada');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [permalinkHandle]);
 
   // ── Auth gate ──────────────────────────────────────────────────
   const requireAuth = (): boolean => {
@@ -909,6 +955,61 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
           </div>
         }
       >
+        {/* Lente do feed — o que está moldando a ordem, dito em uma linha.
+            A marca ativa JÁ ranqueava o feed e isso não aparecia em lugar
+            nenhum: um default silencioso é uma recomendação anônima. Só
+            renderiza quando há de fato uma lente (nada é "zero informação"). */}
+        {(activeBrandName || sourcePrefix || color) && !similar && !collectionView && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 text-[11px] text-muted-foreground">
+            {activeBrandName && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1">
+                <Sparkles className="h-3 w-3 text-brand-cyan" />
+                Ordenado por afinidade com <strong className="font-medium text-foreground">{activeBrandName}</strong>
+              </span>
+            )}
+            {color && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-ring bg-muted px-2.5 py-1">
+                <span
+                  aria-hidden
+                  className="h-3 w-3 rounded-sm border border-border"
+                  style={{ backgroundColor: color }}
+                />
+                Cor <code className="font-mono text-foreground">{color}</code>
+                <button
+                  type="button"
+                  aria-label="Remover filtro de cor"
+                  className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={() => {
+                    const p = new URLSearchParams(searchParams);
+                    p.delete('color');
+                    setSearchParams(p, { replace: true });
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {sourcePrefix && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-ring bg-muted px-2.5 py-1">
+                <Folder className="h-3 w-3" />
+                Origem: <code className="font-mono text-foreground">{sourcePrefix}</code>
+                <button
+                  type="button"
+                  aria-label="Remover filtro de origem"
+                  className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={() => {
+                    const p = new URLSearchParams(searchParams);
+                    p.delete('src');
+                    setSearchParams(p, { replace: true });
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Similarity banner */}
         <AnimatePresence>
           {similar && (
@@ -1309,6 +1410,12 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
         onEdit={(ref) => setEditTarget(ref)}
         onDelete={(ref) => handleAdminDelete([ref.id])}
         similarSource={similar?.source}
+        onColor={(hex) => {
+          const p = new URLSearchParams(searchParams);
+          p.set('color', hex);
+          setSearchParams(p, { replace: false });
+          setLightboxIndex(null);
+        }}
       />
 
       {/* Admin moderation queue (pending user uploads) */}
@@ -2145,7 +2252,15 @@ const MasonryCard: React.FC<{
             selectionActive && !selected && 'opacity-55 hover:opacity-100'
           )}
         >
-          <div className="relative" style={{ aspectRatio: loaded ? undefined : '4 / 5' }}>
+          {/* Reserva a caixa com a proporção REAL da imagem (gravada no ingest
+              por extractImageFacts). O 4/5 fixo de antes acertava por acaso: em
+              qualquer outra proporção o tile pulava ao carregar, e num masonry
+              isso empurra a coluna inteira. Fallback só quando a proporção é
+              desconhecida. */}
+          <div
+            className="relative"
+            style={{ aspectRatio: loaded ? undefined : item.aspectRatio || '4 / 5' }}
+          >
             {/* LQIP: thumbhash if available, else a soft shimmer */}
             {!loaded &&
               (placeholder ? (
@@ -2164,7 +2279,7 @@ const MasonryCard: React.FC<{
                 reduce ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 34 }
               }
               src={src}
-              alt={item.name}
+              alt={refTitle(item, locale)}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoaded(true)}
@@ -2294,6 +2409,8 @@ const Lightbox: React.FC<{
   onEdit?: (ref: ReferenceItem) => void;
   onDelete?: (ref: ReferenceItem) => void;
   similarSource?: ReferenceItem;
+  /** Navegar por cor a partir de um swatch da paleta. */
+  onColor?: (hex: string) => void;
 }> = ({
   items,
   index,
@@ -2306,9 +2423,11 @@ const Lightbox: React.FC<{
   onEdit,
   onDelete,
   similarSource,
+  onColor,
 }) => {
   const { locale } = useTranslation();
   const item = index !== null ? items[index] : null;
+  const isLowRes = isLowResolution({ width: item?.width, height: item?.height });
   const prov = item?.provenance || {};
   const flag = item ? countryFlag(item.country) : '';
   const reduce = useReducedMotion();
@@ -2389,9 +2508,14 @@ const Lightbox: React.FC<{
                   reduce ? { duration: 0 } : { type: 'spring', stiffness: 280, damping: 32 }
                 }
                 src={item.referenceImageUrl}
-                alt={item.name}
+                alt={refTitle(item, locale)}
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-full max-w-full object-contain rounded-lg"
+                // `max-*` sozinho renderiza no tamanho NATURAL: uma ref de 110px
+                // virava um selo perdido no meio do preto. `w-auto h-auto` com um
+                // piso relativo escala a pequena pra um tamanho legível — a
+                // pixelação é honesta e o aviso de baixa resolução explica.
+                className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg"
+                style={isLowRes ? { minWidth: 'min(38vw, 420px)', imageRendering: 'auto' } : undefined}
               />
             </div>
 
@@ -2414,6 +2538,39 @@ const Lightbox: React.FC<{
                   </div>
                 );
               })()}
+
+              {/* Resolução — só quando é BAIXA. Um selo em 100% das refs seria
+                  ruído; aqui ele explica por que a imagem está pixelada. */}
+              {isLowRes && item.width && (
+                <p className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                  <ImageIcon className="h-3 w-3" />
+                  Baixa resolução · {item.width}×{item.height}
+                </p>
+              )}
+
+              {/* Paleta — gravada no ingest e até agora sem nenhum consumo.
+                  Clicar navega por cor, que é o gesto nativo de quem procura
+                  referência visual. */}
+              {item.palette && item.palette.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground mb-1.5">
+                    Paleta
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.palette.slice(0, 6).map((hex) => (
+                      <button
+                        key={hex}
+                        type="button"
+                        title={`Ver referências nesta cor (${hex})`}
+                        aria-label={`Ver referências na cor ${hex}`}
+                        onClick={() => onColor?.(hex)}
+                        className="h-6 w-6 rounded-md border border-border transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        style={{ backgroundColor: hex }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Why it matches — shared dimensions with the similarity source */}
               {typeof item.score === 'number' &&
@@ -2597,6 +2754,24 @@ const Lightbox: React.FC<{
                     </Button>
                   </div>
                 )}
+                {/* Copiar link — o permalink existe desde /item/:handle, mas sem
+                    uma afordância ninguém o alcança. Usa o slug quando há um e
+                    cai no id pra ref legada (a rota aceita os dois). */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-card border-border text-xs"
+                  onClick={() => {
+                    const url = `${window.location.origin}/references/${item.slug || item.id}`;
+                    navigator.clipboard
+                      .writeText(url)
+                      .then(() => toast.success('Link copiado'))
+                      .catch(() => toast.error('Não foi possível copiar'));
+                  }}
+                >
+                  <LinkIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Copiar link
+                </Button>
                 {(item.sourceUrl || prov.sourceUrl) && (
                   <a
                     href={item.sourceUrl || prov.sourceUrl}

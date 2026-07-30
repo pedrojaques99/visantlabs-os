@@ -112,6 +112,36 @@ export const AGENT_PROJECTION = {
   prompt: 1,
 } as const;
 
+/** `#RRGGBB` → [r,g,b], or undefined when the input isn't a usable hex. */
+export function normalizeHex(raw?: string): [number, number, number] | undefined {
+  const m = /^#?([0-9a-f]{6})$/i.exec((raw || '').trim());
+  if (!m) return undefined;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * Regexes matching any hex whose channels fall in the same coarse bucket as
+ * `rgb` (±1 bucket per channel, 32 levels each). Returned as a $in list so the
+ * query stays index-friendly instead of scanning every palette in memory.
+ */
+export function paletteBucketRegexes(rgb: [number, number, number]): RegExp[] {
+  const nibble = (v: number) => Math.min(15, Math.max(0, v >> 4));
+  const around = (v: number) => {
+    const c = nibble(v);
+    return [...new Set([Math.max(0, c - 1), c, Math.min(15, c + 1)])];
+  };
+  const out: RegExp[] = [];
+  for (const r of around(rgb[0])) {
+    for (const g of around(rgb[1])) {
+      for (const b of around(rgb[2])) {
+        out.push(new RegExp(`^#${r.toString(16)}.${g.toString(16)}.${b.toString(16)}.$`, 'i'));
+      }
+    }
+  }
+  return out;
+}
+
 /** Escape regex metacharacters so user input can't alter the query's shape. */
 export function escapeRegex(input: string): string {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -138,6 +168,24 @@ export interface ReferenceFilterParams {
    * Orthogonal to `brandTerms`, which only ever RANKS.
    */
   brandGuidelineId?: string;
+  /**
+   * TEMPORARIO — inspecao de procedencia. Restringe a linhas cujo `sourcePath`
+   * comeca com este prefixo, pra conseguir OLHAR uma leva de ingest antes de
+   * decidir o que fazer com ela (ex.: `Z:/Jobs 2.0`, ~1100 artefatos de build
+   * varridos de uma pasta de trabalho). Remover junto com a decisao.
+   */
+  sourcePrefix?: string;
+  /**
+   * Hex (#rrggbb). Restringe a referências cuja paleta dominante contém uma cor
+   * PRÓXIMA desta. `palette` é gravada no ingest e, até aqui, nunca era lida —
+   * navegar por cor é o gesto nativo de quem procura referência visual.
+   *
+   * O casamento é por bucket, não por distância: cada canal é quantizado em 3
+   * bits e comparado por prefixo de regex, o que o Mongo resolve no índice em
+   * vez de trazer a biblioteca inteira pra memória. Grosso de propósito — cor
+   * "parecida" é uma faixa, não um ponto.
+   */
+  color?: string;
 }
 
 function toList(value: string | string[] | undefined, lowercase = false): string[] | undefined {
@@ -201,6 +249,12 @@ export function buildReferenceFilter(params: ReferenceFilterParams = {}): Record
 
   const region = params.region?.trim();
   if (region) filter.region = region;
+
+  const color = normalizeHex(params.color);
+  if (color) and.push({ palette: { $in: paletteBucketRegexes(color) } });
+
+  const sourcePrefix = params.sourcePrefix?.trim();
+  if (sourcePrefix) filter.sourcePath = { $regex: '^' + escapeRegex(sourcePrefix), $options: 'i' };
 
   const tags = toList(params.tag, true);
   if (tags) filter.tags = { $in: tags };

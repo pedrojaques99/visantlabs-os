@@ -394,6 +394,10 @@ const App: React.FC = () => {
                         pra abrir direto no navegador ou dentro de um painel de
                         plugin do Figma. Shell 'bare' vem do navConfig. */}
                     <Route path="/refs" element={<ReferencesPage embedded />} />
+                    {/* Permalink por referência — o átomo compartilhável.
+                        Mesma página; o handle abre o lightbox naquela ref. */}
+                    <Route path="/references/:handle" element={<ReferencesPage />} />
+                    <Route path="/refs/:handle" element={<ReferencesPage embedded />} />
                     <Route path="/upscale" element={<UpscalePage />} />
                     <Route path="/favicon" element={<FaviconPage />} />
                     <Route path="/color-converter" element={<ColorConverterPage />} />
