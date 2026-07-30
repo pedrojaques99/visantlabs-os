@@ -26,14 +26,55 @@ background's hue (warm-true, not pure grey). Dark mode is synthesized automatica
 ## Usage
 
 ```bash
-node scripts/build.js [path/to/brand.json]   # defaults to the Visant fixture
-# → prints the AA report, writes dist/visant.tokens.css (OKLCH, Tailwind v4)
-npm test                                      # 17 tests; AA verified independently via culori
+node scripts/build.js                          # the Visant fixture
+node scripts/build.js src/fixtures/hockey-direct.json
+node scripts/build.js --brand <brandId>        # live, needs VISANT_API_TOKEN
+# → prints the AA report, writes dist/<brand-slug>.tokens.css (OKLCH, Tailwind v4)
+npm test                                       # 39 tests; AA verified independently via culori
 ```
 
-Brand seed shape: `{ colors: [{hex, role}], typography: [{family, role}] }`, roles
-= background/text/accent/secondary/primary and primary/secondary. See
-`src/fixtures/visant.json`.
+Brand seed: `{ id, name, colors: [{hex, role, usageRank}], typography: [{family, role, size}] }`.
+Fixtures for three real brands live in `src/fixtures/`. A build that emits a
+failing contrast pair exits non-zero — it must not look like a success.
+
+## Role resolution — a chain, not a lookup
+
+**Brands do not share a role vocabulary.** Sampled from the live API, 2026-07-30:
+
+| Brand | colour roles | type roles |
+|---|---|---|
+| Visant® | background · primary · secondary · accent · text | primary · secondary |
+| Hockey Direct | background · surface · secondary · accent · accent-secondary · text-on-dark · muted · text | display · body · label · feature |
+| Days n' Days | text · accent | heading |
+
+Every slot resolves through a **fallback chain**, then by `usageRank`, and
+**throws** when nothing matches. Two silent bugs this fixed:
+
+1. **Cross-brand font leak.** The old lookup read only `typography[role=primary|secondary]`
+   and defaulted to `Manrope`/`Oswald`. Hockey Direct — roles `display/body/label` —
+   compiled with **Visant's fonts**, no error. A whole site would have shipped
+   off-brand, and only a human eye would have caught it.
+2. **Inverted type mapping.** Visant labels its 96px Manrope `primary` and its
+   16px Oswald `secondary`; the old map sent `primary`→`--font-sans` and
+   `secondary`→`--font-display`, putting a body face in the headlines. `size` is
+   now the tiebreaker when role names are ambiguous.
+
+A single-face brand (Days n' Days) correctly gets the same family in both roles —
+a brand decision, not a gap, so the engine does not invent a second face.
+
+## Provenance
+
+Every compile carries `meta { name, brandId, version, completeness }` and states
+it in the emitted CSS. When someone asks where a colour came from, the answer
+travels with the file:
+
+```css
+/* brand: Hockey Direct · id: 6a35570c13ded9555a7435d7 · version: 10 · completeness: 36% */
+```
+
+**`completeness` is not a token-readiness score.** Hockey Direct sits at 36% with
+the richest colour and type data of the three; Days n' Days sits at 64% with three
+colours and one face. Gate on whether the slots resolve, not on the number.
 
 ## Output tokens
 
@@ -45,6 +86,12 @@ muted-foreground, secondary, accent, border, input` + `brand` (identity fill),
 
 ## Status
 
-v0: seeds from a JSON fixture; emits `dist/` for inspection. Roadmap: live API
-fetch by brand id, Style Dictionary emit, plug into consuming apps. Consumed by the
-`visant-new-site` skill's token step.
+**v0.1 — fit to use.** Seeds from a fixture *or* live by brand id
+(`src/fetch-brand.js`). Role resolution is chain-based and fails loud. Output is
+named per brand. 39 tests, AA verified independently across all three brands.
+
+Next: expose as the dynamic `registry:theme` route at `ui.visantlabs.com/r/theme-{brandId}.json`,
+so `npx shadcn add @brand/<brandId>` installs a client's tokens in one command.
+See `Z:\Cursor\Vintageuiuxlibrary\VISANT-REGISTRY-PLANO.md`.
+
+Consumed by the `visant-new-site` skill's token step.

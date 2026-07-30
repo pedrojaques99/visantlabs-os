@@ -34,9 +34,106 @@ const NEUTRAL = {
 };
 const INK_RATIO = 4.7; // brand-colored text on bg (AA + margin)
 
-function role(brand, r) {
-  const c = brand.colors.find((x) => x.role === r);
-  return c ? c.hex.toLowerCase() : null;
+// --- Role resolution ---------------------------------------------------------
+// Brands do NOT share a role vocabulary. Sampled from the live API on
+// 2026-07-30:
+//
+//   Visant®        colors: background primary secondary accent text
+//                  type:   primary secondary
+//   Hockey Direct  colors: background surface secondary accent
+//                          accent-secondary text-on-dark muted text
+//                  type:   display body label feature
+//   Days n' Days   colors: text accent          type: heading
+//
+// An exact-match lookup with a hardcoded default silently paints one brand in
+// another brand's identity. That is worse than crashing: it ships, and nobody
+// sees it until a human opens the site. So every slot is a fallback CHAIN, and
+// when nothing in the chain matches we throw with the roles we actually saw.
+
+const COLOR_CHAINS = {
+  background: ["background", "bg", "canvas", "surface", "base"],
+  accent: ["accent", "primary", "brand", "accent-secondary", "secondary"],
+  secondary: ["secondary", "accent-secondary", "surface", "primary", "accent"],
+};
+
+const TYPE_CHAINS = {
+  // The face that carries headings.
+  display: ["display", "heading", "headline", "title", "primary"],
+  // The face that carries running text.
+  sans: ["body", "text", "paragraph", "secondary", "primary"],
+};
+
+function pickColor(brand, slot, { required = false } = {}) {
+  for (const r of COLOR_CHAINS[slot]) {
+    const c = brand.colors?.find((x) => x.role === r);
+    if (c?.hex) return c.hex.toLowerCase();
+  }
+  // Nothing matched. If the brand published ANY colour, the most-used one beats
+  // a hardcoded default from another brand.
+  const byUsage = [...(brand.colors ?? [])].sort(
+    (a, b) => (a.usageRank ?? 99) - (b.usageRank ?? 99),
+  )[0];
+  if (byUsage?.hex) return byUsage.hex.toLowerCase();
+
+  if (required) {
+    throw new BrandTokenError(
+      `no colour resolves the "${slot}" slot`,
+      { slot, tried: COLOR_CHAINS[slot], saw: (brand.colors ?? []).map((c) => c.role) },
+    );
+  }
+  return null;
+}
+
+/**
+ * Which family carries headings and which carries body.
+ *
+ * Role names alone are not enough: Visant® labels its 96px Manrope as `primary`
+ * and its 16px Oswald as `secondary`, so a naive primary→body / secondary→display
+ * mapping puts the display face in body text and a 16px body face in the
+ * headlines — inverted. `size` is the honest tiebreaker, because a type spec
+ * that carries a size is telling you what it is for.
+ */
+function pickType(brand) {
+  const list = brand.typography ?? [];
+  if (!list.length) {
+    throw new BrandTokenError("brand publishes no typography", { saw: [] });
+  }
+
+  const byChain = (slot) => {
+    for (const r of TYPE_CHAINS[slot]) {
+      const t = list.find((x) => x.role === r);
+      if (t?.family) return t;
+    }
+    return null;
+  };
+
+  let display = byChain("display");
+  let sans = byChain("sans");
+
+  // Both landed on the same entry, or one is missing: split by size instead.
+  if (!display || !sans || display === sans) {
+    const sized = [...list].filter((t) => Number.isFinite(t.size));
+    if (sized.length >= 2) {
+      const sorted = [...sized].sort((a, b) => b.size - a.size);
+      display = display ?? sorted[0];
+      sans = sans && sans !== display ? sans : sorted[sorted.length - 1];
+    } else {
+      // Single-face brand: the same family does both jobs. That is a legitimate
+      // brand decision, not a gap — do not invent a second family.
+      display = display ?? list[0];
+      sans = sans ?? display;
+    }
+  }
+
+  return { display: display.family, sans: sans.family };
+}
+
+export class BrandTokenError extends Error {
+  constructor(message, detail) {
+    super(`@visant/brand-tokens: ${message}`);
+    this.name = "BrandTokenError";
+    this.detail = detail;
+  }
 }
 
 function hex(oklchObj) {
@@ -72,9 +169,11 @@ function buildTheme({ bgHex, neutralKeys, brandKeys, mode }) {
 }
 
 export function compileBrandTokens(brand) {
-  const bg = role(brand, "background") || "#f4ebeb";
-  const accent = role(brand, "accent") || "#52ddeb";
-  const secondary = role(brand, "secondary") || accent; // dark key → lets ink reach AA
+  // Required: without a ground and an identity colour there is no brand to
+  // compile. Failing here is the point — a default would be another brand's.
+  const bg = pickColor(brand, "background", { required: true });
+  const accent = pickColor(brand, "accent", { required: true });
+  const secondary = pickColor(brand, "secondary") ?? accent; // dark key → ink hits AA
   const bgO = toOklch(bg);
   const accentO = toOklch(accent);
   const bgHue = Number.isFinite(bgO.h) ? bgO.h : 30; // warm default
@@ -124,11 +223,17 @@ export function compileBrandTokens(brand) {
   return {
     themes: { light: pack(light), dark: pack(dark) },
     shadow: { light: `${hslHue} 30% 12%`, dark: "0 0% 0%" },
-    type: {
-      sans: brand.typography.find((t) => t.role === "primary")?.family || "Manrope",
-      display: brand.typography.find((t) => t.role === "secondary")?.family || "Oswald",
+    type: pickType(brand),
+    // Carimbo de proveniência: quando alguém perguntar de onde veio a cor, a
+    // resposta viaja junto com o token, não na memória de quem gerou.
+    meta: {
+      name: brand.name ?? brand.identity?.name ?? null,
+      brandId: brand.id ?? null,
+      completeness: brand.extraction?.completeness ?? null,
+      version: brand.currentVersion ?? null,
+      source: brand._source ?? null,
+      bgHue: hslHue,
     },
-    meta: { brand: brand.colors.find((c) => c.role === "background")?.name ? "brand" : "brand", bgHue: hslHue },
   };
 }
 
@@ -137,7 +242,9 @@ export function loadCraft() {
 }
 
 // hex → "oklch(l c h)" with stable rounding (determinism + readability).
-function oklchStr(value) {
+// Exported so consumers (e.g. the registry theme-item builder) emit the exact
+// same string this file writes into CSS — one converter, one source of truth.
+export function oklchStr(value) {
   const o = toOklch(value);
   const r = (x, d) => {
     const n = Number(x.toFixed(d));
@@ -147,7 +254,7 @@ function oklchStr(value) {
 }
 
 export function emitCss(compiled, craft) {
-  const { themes, shadow, type } = compiled;
+  const { themes, shadow, type, meta = {} } = compiled;
   const colorBlock = (t) =>
     Object.entries(t)
       .map(([k, v]) => `  --${k}: ${oklchStr(v)};`)
@@ -162,8 +269,19 @@ export function emitCss(compiled, craft) {
       .map(([k, v]) => `  --${k}: ${v};`)
       .join("\n");
 
-  return `/* Visant® — generated by @visant/brand-tokens. DO NOT EDIT BY HAND. */
-/* Layer 1 (identity) derived per-brand + Layer 2 (craft) skeleton. */
+  const provenance = [
+    meta.name && `brand: ${meta.name}`,
+    meta.brandId && `id: ${meta.brandId}`,
+    meta.version != null && `version: ${meta.version}`,
+    meta.completeness != null && `completeness: ${meta.completeness}%`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return `/* Generated by @visant/brand-tokens. DO NOT EDIT BY HAND. */
+/* Layer 1 (identity) derived per-brand + Layer 2 (craft) skeleton. */${
+    provenance ? `\n/* ${provenance} */` : ""
+  }
 
 :root {
 ${colorBlock(themes.light)}

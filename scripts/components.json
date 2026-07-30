@@ -18,5 +18,7 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@visant": "https://visant-ui.vercel.app/r/{name}.json"
+  }
 }

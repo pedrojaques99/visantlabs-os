@@ -1,14 +1,50 @@
 {
   "_source": "brand-guidelines-get(69b4709a694d7c824cbc8060, [colors,typography]) — Visant®, 2026-07-24",
+  "id": "69b4709a694d7c824cbc8060",
+  "name": "Visant",
+  "extraction": {
+    "completeness": 64
+  },
+  "currentVersion": 27,
   "colors": [
-    { "hex": "#0d0d0d", "name": "Chumbo", "role": "primary" },
-    { "hex": "#52ddeb", "name": "Azul Destaque", "role": "accent" },
-    { "hex": "#1f7878", "name": "Mid Tone", "role": "secondary" },
-    { "hex": "#f3e9e9", "name": "Offwhite", "role": "background" },
-    { "hex": "#000000", "name": "Escura", "role": "text" }
+    {
+      "hex": "#0d0d0d",
+      "name": "Chumbo",
+      "role": "primary"
+    },
+    {
+      "hex": "#52ddeb",
+      "name": "Azul Destaque",
+      "role": "accent"
+    },
+    {
+      "hex": "#1f7878",
+      "name": "Mid Tone",
+      "role": "secondary"
+    },
+    {
+      "hex": "#f3e9e9",
+      "name": "Offwhite",
+      "role": "background"
+    },
+    {
+      "hex": "#000000",
+      "name": "Escura",
+      "role": "text"
+    }
   ],
   "typography": [
-    { "family": "Manrope", "style": "Bold", "role": "primary", "size": 96 },
-    { "family": "Oswald", "style": "Regular", "role": "secondary", "size": 16 }
+    {
+      "family": "Manrope",
+      "style": "Bold",
+      "role": "primary",
+      "size": 96
+    },
+    {
+      "family": "Oswald",
+      "style": "Regular",
+      "role": "secondary",
+      "size": 16
+    }
   ]
 }

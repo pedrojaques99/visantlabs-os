@@ -1,0 +1,23 @@
+{
+  "_source": "brand-guidelines-get(6a35570c13ded9555a7435d7, [colors,typography]) — Hockey Direct, 2026-07-30",
+  "id": "6a35570c13ded9555a7435d7",
+  "name": "Hockey Direct",
+  "extraction": { "completeness": 36 },
+  "currentVersion": 10,
+  "colors": [
+    { "hex": "#011301", "name": "Pitch Black", "role": "background" },
+    { "hex": "#1C2D1B", "name": "Turf Deep", "role": "surface" },
+    { "hex": "#145132", "name": "Goal Green", "role": "secondary" },
+    { "hex": "#BFFF53", "name": "Astro Lime", "role": "accent" },
+    { "hex": "#85D2A0", "name": "Final Whistle", "role": "accent-secondary" },
+    { "hex": "#CCF1BD", "name": "Ball Mint", "role": "text-on-dark" },
+    { "hex": "#DCE0DC", "name": "Line Grey", "role": "muted" },
+    { "hex": "#F1F1F1", "name": "Ball White", "role": "text" }
+  ],
+  "typography": [
+    { "family": "Archivo", "role": "display", "style": "Bold 700 a Black 900", "size": 64 },
+    { "family": "Archivo", "role": "body", "style": "Regular 400", "size": 17 },
+    { "family": "Archivo", "role": "label", "style": "SemiBold 600", "size": 12 },
+    { "family": "Syncopate", "role": "feature", "style": "Bold 700", "size": 60 }
+  ]
+}
