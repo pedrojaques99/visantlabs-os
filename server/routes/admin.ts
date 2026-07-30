@@ -3169,6 +3169,153 @@ router.get('/references/duplicates', validateAdmin, async (_req: Request, res: R
  * run — deleting is opt-in, and the ids are recomputed server-side rather than
  * trusted from the client so a stale page can't delete a keeper.
  */
+/**
+ * Referencias pequenas demais pra carregar uma ideia de design — tiras de 654x4,
+ * fragmentos de UI raspados, divisorias. Ate existir o gate de ingest elas
+ * entravam livremente, e no grid viram ruido.
+ *
+ * Mesma disciplina do dedupe: este GET so RELATA. O POST abaixo e que apaga, com
+ * dry-run por padrao e os ids recomputados no servidor — um cliente desatualizado
+ * nao consegue mandar apagar o que ele acha que e pequeno.
+ *
+ * `maxShortSide` e parametro, nao constante: a barra de APAGAR (300px) e mais
+ * dura que a de AVISAR no lightbox (400px, src/lib/references/quality.ts).
+ * Apagar exige mais certeza que alertar.
+ */
+const LOW_RES_DEFAULT = 300;
+const LOW_RES_CEILING = 800;
+
+function lowResFilter(maxShortSide: number) {
+  return {
+    category: 'reference',
+    // Sem medida NAO e pequena: linhas legadas antecedem extractImageFacts, e
+    // tratar "nao medido" como "ruim" apagaria material bom.
+    width: { $gt: 0 },
+    height: { $gt: 0 },
+    // O catalogo PSD nao pertence a este botao. Ele ja esta fora do grid pelo
+    // BROWSABLE do engine, mas ESTE filtro varre a colecao inteira — sem a
+    // guarda, 4 cenas de 256x171 dos Mockups Sovieticos entrariam no lote e a
+    // limpeza de ruido apagaria catalogo. Mesmo predicado do engine: `psdPath`
+    // sendo STRING (ha ~1100 linhas com `psdPath: null` que nao sao PSD).
+    psdPath: { $not: { $type: 'string' } },
+    $or: [{ width: { $lt: maxShortSide } }, { height: { $lt: maxShortSide } }],
+  };
+}
+
+function parseMaxShortSide(raw: unknown): number {
+  const n = parseInt(String(raw ?? ''), 10);
+  if (!Number.isFinite(n)) return LOW_RES_DEFAULT;
+  return Math.min(LOW_RES_CEILING, Math.max(1, n));
+}
+
+router.get('/references/low-res', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const maxShortSide = parseMaxShortSide(req.query.maxShortSide);
+
+    const rows = (await db
+      .collection('community_presets')
+      .find(lowResFilter(maxShortSide), {
+        projection: { _id: 0, id: 1, name: 1, width: 1, height: 1, thumbnailUrl: 1 },
+      })
+      .sort({ width: 1 })
+      .limit(500)
+      .toArray()) as any[];
+
+    const total = await db.collection('community_presets').countDocuments(lowResFilter(maxShortSide));
+
+    // Uma ref salva no board de alguem nao e lixo, seja qual for o tamanho.
+    const ids = rows.map((r) => r.id);
+    const protectedIds = ids.length
+      ? ((await db
+          .collection('reference_collections')
+          .distinct('refIds', { refIds: { $in: ids } })) as string[]).filter((id) =>
+          ids.includes(id)
+        )
+      : [];
+
+    return res.json({
+      maxShortSide,
+      total,
+      protected: protectedIds.length,
+      samples: rows.slice(0, 60).map((r) => ({ ...r, isProtected: protectedIds.includes(r.id) })),
+    });
+  } catch (error: any) {
+    console.error('[admin] low-res report error:', error);
+    return res.status(500).json({ error: 'Failed to load low-resolution references' });
+  }
+});
+
+/**
+ * Apaga as referencias abaixo da barra. Dry-run por padrao. Nunca toca numa ref
+ * que alguma colecao referencia — o board de um usuario nao perde item por uma
+ * regra de tamanho.
+ */
+router.post('/references/low-res/purge', validateAdmin, async (req: Request, res: Response) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const dryRun = req.body?.dryRun !== false;
+    const maxShortSide = parseMaxShortSide(req.body?.maxShortSide);
+
+    const ids = (
+      await db
+        .collection('community_presets')
+        .find(lowResFilter(maxShortSide), { projection: { id: 1 } })
+        .toArray()
+    ).map((r: any) => r.id);
+
+    const referenced = ids.length
+      ? ((await db
+          .collection('reference_collections')
+          .distinct('refIds', { refIds: { $in: ids } })) as string[])
+      : [];
+    const guarded = new Set(referenced);
+    const doomed = ids.filter((id: string) => !guarded.has(id));
+
+    if (dryRun) {
+      return res.json({
+        dryRun: true,
+        maxShortSide,
+        matched: ids.length,
+        protected: ids.length - doomed.length,
+        wouldDelete: doomed.length,
+      });
+    }
+    if (!doomed.length) {
+      return res.json({ dryRun: false, maxShortSide, matched: ids.length, deleted: 0 });
+    }
+
+    const result = await db
+      .collection('community_presets')
+      .deleteMany({ id: { $in: doomed }, category: 'reference' });
+
+    // Mesma razao do dedupe: vetor orfao segue servindo ref apagada em "parecidas".
+    let vectorsDeleted = 0;
+    for (const id of doomed) {
+      try {
+        await vectorService.delete(id);
+        vectorsDeleted++;
+      } catch {
+        /* vector may not exist */
+      }
+    }
+
+    return res.json({
+      dryRun: false,
+      maxShortSide,
+      matched: ids.length,
+      protected: ids.length - doomed.length,
+      deleted: result.deletedCount,
+      vectorsDeleted,
+    });
+  } catch (error: any) {
+    console.error('[admin] low-res purge error:', error);
+    return res.status(500).json({ error: 'Failed to purge low-resolution references' });
+  }
+});
+
 router.post('/references/dedupe', validateAdmin, async (req: Request, res: Response) => {
   try {
     await connectToMongoDB();

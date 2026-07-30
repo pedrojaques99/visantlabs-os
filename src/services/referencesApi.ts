@@ -91,6 +91,21 @@ export interface CollectionDetail {
   items: ReferenceItem[];
 }
 
+export interface LowResReport {
+  maxShortSide: number;
+  total: number;
+  /** Quantas estão salvas em alguma coleção — essas nunca são apagadas. */
+  protected: number;
+  samples: Array<{
+    id: string;
+    name?: string;
+    width?: number;
+    height?: number;
+    thumbnailUrl?: string;
+    isProtected: boolean;
+  }>;
+}
+
 export interface ReferenceUploadInput {
   data: string; // base64 (no data: prefix)
   name?: string;
@@ -407,6 +422,37 @@ export const adminReferencesApi = {
       body: JSON.stringify({ dryRun }),
     });
     if (!resp.ok) throw new Error('Failed to dedupe');
+    return resp.json();
+  },
+
+  /** Referências pequenas demais. Admin-only; read-only. */
+  async lowRes(maxShortSide = 300): Promise<LowResReport> {
+    const resp = await fetch(
+      `${API_BASE}/admin/references/low-res?maxShortSide=${maxShortSide}`,
+      { headers: authHeaders() }
+    );
+    if (!resp.ok) throw new Error('Failed to load low-resolution references');
+    return resp.json();
+  },
+
+  /** Apaga as abaixo da barra. Dry run salvo instrução contrária. */
+  async purgeLowRes(
+    maxShortSide = 300,
+    dryRun = true
+  ): Promise<{
+    dryRun: boolean;
+    maxShortSide: number;
+    matched: number;
+    protected?: number;
+    wouldDelete?: number;
+    deleted?: number;
+  }> {
+    const resp = await fetch(`${API_BASE}/admin/references/low-res/purge`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maxShortSide, dryRun }),
+    });
+    if (!resp.ok) throw new Error('Failed to purge low-resolution references');
     return resp.json();
   },
 

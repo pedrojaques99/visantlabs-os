@@ -79,11 +79,19 @@ import {
   type ReferenceCollection,
   type CollectionDetail,
   type TasteHint,
+  type LowResReport,
 } from '@/services/referencesApi';
 
 // Constante: o servidor pagina por skip=(page-1)*limit, entao o limit nao pode
 // variar entre paginas do mesmo feed (geraria buraco/duplicata). Teto do server = 60.
 const PAGE_SIZE = 48;
+
+/**
+ * Barra de APAGAR. Mais dura que a de AVISAR (MIN_SHORT_SIDE = 400 em
+ * src/lib/references/quality.ts): abaixo de 300px o menor lado não sustenta
+ * nenhuma leitura de design — são tiras (654×4) e fragmentos de UI raspados.
+ */
+const LOW_RES_PURGE_BAR = 300;
 
 // O sentinel dispara a proxima pagina enquanto ainda existem ~2.5 telas de feed
 // abaixo do fold — assim o usuario nunca alcanca o fim antes do fetch terminar.
@@ -290,6 +298,8 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
   );
   const [dupeReport, setDupeReport] = useState<DuplicateReport | null>(null);
   const [deduping, setDeduping] = useState(false);
+  const [lowResReport, setLowResReport] = useState<LowResReport | null>(null);
+  const [purgingLowRes, setPurgingLowRes] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [moderationOpen, setModerationOpen] = useState(false);
   // Batch multi-select (Set of ref ids) + shift-range anchor.
@@ -462,6 +472,11 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
         setDupeMap(map);
         setDupeReport(report);
       })
+      .catch(() => {});
+    // Referências pequenas demais pra servir de referência.
+    adminReferencesApi
+      .lowRes(LOW_RES_PURGE_BAR)
+      .then(setLowResReport)
       .catch(() => {});
     // Moderation queue count — how many user uploads await review.
     adminReferencesApi
@@ -781,6 +796,36 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
       setDeduping(false);
     }
   }, [dupeReport]);
+
+  // Limpeza de baixa resolução. Confirma com o número REAL de apagáveis (o
+  // servidor exclui as que estão em coleção), e o servidor recomputa os ids —
+  // uma página velha não consegue mandar apagar o que ela acha que é pequeno.
+  const handlePurgeLowRes = useCallback(async () => {
+    if (!lowResReport) return;
+    const deletable = lowResReport.total - lowResReport.protected;
+    if (!deletable) return;
+    const ok = window.confirm(
+      `Apagar ${deletable} referência(s) com menor lado abaixo de ${lowResReport.maxShortSide}px?` +
+        (lowResReport.protected
+          ? `\n\n${lowResReport.protected} está(ão) em coleção e será(ão) preservada(s).`
+          : '') +
+        '\n\nAção irreversível.'
+    );
+    if (!ok) return;
+    setPurgingLowRes(true);
+    try {
+      const res = await adminReferencesApi.purgeLowRes(lowResReport.maxShortSide, false);
+      setLowResReport(null);
+      // Refetch em vez de filtrar em memória: os ids apagados são recomputados
+      // no servidor, então a lista local não sabe quais morreram.
+      await loadList(1, false);
+      toast.success(`${res.deleted ?? 0} referência(s) de baixa resolução removida(s)`);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao apagar baixa resolução');
+    } finally {
+      setPurgingLowRes(false);
+    }
+  }, [lowResReport, loadList]);
 
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
@@ -1264,6 +1309,14 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             explicit and one-way, so it confirms first. */}
         {isAdmin && dupeReport && dupeReport.redundant > 0 && (
           <DuplicateAdminBar report={dupeReport} onDedupe={handleDedupe} deduping={deduping} />
+        )}
+
+        {isAdmin && lowResReport && lowResReport.total > 0 && (
+          <LowResAdminBar
+            report={lowResReport}
+            onPurge={handlePurgeLowRes}
+            purging={purgingLowRes}
+          />
         )}
 
         {/* Content */}
@@ -2120,6 +2173,63 @@ const DuplicateAdminBar: React.FC<{
     </Button>
   </div>
 );
+
+/**
+ * Barra de limpeza de baixa resolução — irmã da DuplicateAdminBar.
+ *
+ * Duas barras de propósito: a de APAGAR (300px) é mais dura que a de AVISAR no
+ * lightbox (400px). Apagar exige mais certeza que alertar.
+ *
+ * Nunca oferece apagar o que está em coleção — se houver protegidas, a contagem
+ * diz quantas ficam de fora, porque um número que some sem explicação parece bug.
+ */
+const LowResAdminBar: React.FC<{
+  report: LowResReport;
+  onPurge: () => void;
+  purging: boolean;
+}> = ({ report, onPurge, purging }) => {
+  const deletable = report.total - report.protected;
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+      <span className="text-xs font-mono text-amber-500">
+        {report.total} abaixo de {report.maxShortSide}px
+      </span>
+      <span className="text-[11px] text-muted-foreground">
+        Tiras e fragmentos raspados (ex.: 654×4) que não carregam ideia de design
+        {report.protected > 0 && ` · ${report.protected} em coleção, preservada(s)`}
+      </span>
+      {report.samples.length > 0 && (
+        <span className="flex items-center gap-1">
+          {report.samples.slice(0, 6).map((sample) => (
+            <span
+              key={sample.id}
+              title={`${sample.name || 'sem nome'} — ${sample.width}×${sample.height}`}
+              className="h-6 w-6 overflow-hidden rounded border border-border bg-muted"
+            >
+              {sample.thumbnailUrl && (
+                <img src={sample.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+              )}
+            </span>
+          ))}
+        </span>
+      )}
+      <Button
+        size="sm"
+        variant="outline"
+        className="ml-auto h-7 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+        disabled={purging || deletable === 0}
+        onClick={onPurge}
+      >
+        {purging ? (
+          <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+        ) : (
+          <Trash2 className="mr-1.5 h-3 w-3" />
+        )}
+        Apagar {deletable}
+      </Button>
+    </div>
+  );
+};
 
 const FilterControls: React.FC<{
   search: string;
