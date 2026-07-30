@@ -94,7 +94,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                       key={logo.id}
                       onClick={() => handlePickLogo(logo)}
                       className={cn(
-                        'group relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer',
+                        'group relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors cursor-pointer',
                         svg
                           ? 'border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/5'
                           : 'border-white/10 hover:border-white/30 hover:bg-white/5'
@@ -144,7 +144,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                   onClick={() => setSelectedGuideline(g)}
                   className={cn(
                     'flex items-center gap-3 p-3 rounded-lg border border-white/10',
-                    'hover:border-white/30 hover:bg-white/5 transition-all text-left'
+                    'hover:border-white/30 hover:bg-white/5 transition-colors text-left'
                   )}
                 >
                   <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">

@@ -8,6 +8,7 @@ import {
 } from '@/services/imagelabApi';
 import { useMaskCanvas } from './useMaskCanvas';
 import { toast } from 'sonner';
+import { translate } from '@/utils/localeUtils';
 interface Options {
   imageUrl: string;
   imageWidth: number;
@@ -55,11 +56,11 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
   const handleInpaint = useCallback(async () => {
     const state = useImageEditorStore.getState();
     if (state.maskOperations.length === 0) {
-      toast.error('Select an area to edit first');
+      toast.error(translate('imagelab.selectAreaFirst'));
       return;
     }
     if (state.activeMode === 'replace' && !state.prompt.trim()) {
-      toast.error('Enter a prompt describing what to generate');
+      toast.error(translate('imagelab.enterPromptFirst'));
       return;
     }
 
@@ -79,10 +80,10 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
       clearPendingJob();
 
       useImageEditorStore.getState().setResult(result.imageUrl, result.base64);
-      toast.success('Image edited successfully!');
+      toast.success(translate('imagelab.imageEdited'));
     } catch (err: any) {
       clearPendingJob();
-      toast.error(err?.message || 'Failed to edit image');
+      toast.error(err?.message || translate('errors.imageEditFailed'));
     } finally {
       useImageEditorStore.getState().setGenerating(false);
     }
@@ -98,7 +99,7 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
       expandEdges.left > 0;
 
     if (!hasExpansion) {
-      toast.error('Drag an edge to expand the image');
+      toast.error(translate('imagelab.dragEdgeFirst'));
       return;
     }
 
@@ -134,10 +135,10 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
       clearPendingJob();
 
       useImageEditorStore.getState().setResult(result.imageUrl, result.base64);
-      toast.success('Image expanded!');
+      toast.success(translate('imagelab.imageExpanded'));
     } catch (err: any) {
       clearPendingJob();
-      toast.error(err?.message || 'Failed to expand image');
+      toast.error(err?.message || translate('errors.imageExpandFailed'));
     } finally {
       useImageEditorStore.getState().setGenerating(false);
     }
@@ -150,9 +151,9 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
     try {
       const result = await imagelabApi.removeBackground({ imageUrl });
       state.setResult(result.imageUrl);
-      toast.success(`Background removed (${result.engine})`);
+      toast.success(translate('imagelab.backgroundRemoved', undefined, { engine: result.engine }));
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to remove background');
+      toast.error(err?.message || translate('errors.removeBackgroundFailed'));
     } finally {
       state.setGenerating(false);
     }
@@ -167,19 +168,21 @@ export function useImageEditorActions({ imageUrl, imageWidth, imageHeight }: Opt
     let cancelled = false;
     const state = useImageEditorStore.getState();
     state.setGenerating(true);
-    toast.info('Resuming in-progress edit…');
+    toast.info(translate('imagelab.resumingEdit'));
 
     pollImageLabJob<GenerativeExpandResult | InpaintResult>(pending.jobId)
       .then((result) => {
         if (cancelled) return;
         clearPendingJob();
         useImageEditorStore.getState().setResult(result.imageUrl, result.base64);
-        toast.success(pending.kind === 'expand' ? 'Image expanded!' : 'Image edited successfully!');
+        toast.success(
+          translate(pending.kind === 'expand' ? 'imagelab.imageExpanded' : 'imagelab.imageEdited')
+        );
       })
       .catch((err: any) => {
         if (cancelled) return;
         clearPendingJob();
-        toast.error(err?.message || 'Could not resume the previous edit');
+        toast.error(err?.message || translate('errors.resumeEditFailed'));
       })
       .finally(() => {
         if (!cancelled) useImageEditorStore.getState().setGenerating(false);

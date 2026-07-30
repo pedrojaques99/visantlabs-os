@@ -10,7 +10,7 @@ import { ArrowRight } from '@/lib/ui/icons';
 import { FEATURE_ONBOARDING_V2 } from '@/config/featureFlags';
 import { OnboardingWizardV2 } from '@/components/onboarding/OnboardingWizardV2';
 import { PersonaGrid } from '@/components/onboarding/PersonaGrid';
-import { SEGMENTS, DEFAULT_ROUTE } from '@/components/onboarding/onboardingSegments';
+import { SEGMENTS, NO_BRAND_ROUTE } from '@/components/onboarding/onboardingSegments';
 
 // Legacy wizard (flag off): 2 passos por persona, sem passo de marca.
 // O wizard v2 (FEATURE_ONBOARDING_V2) adiciona o passo "Traga sua marca" para
@@ -35,7 +35,12 @@ const OnboardingWizardV1: React.FC = () => {
     }
   };
 
-  const handleSkip = () => finish(DEFAULT_ROUTE);
+  // O v1 NUNCA cria marca (não tem passo de marca), então quem pula aqui sai do
+  // onboarding com zero marcas — o mesmo estado órfão do v2 quando a demo falha.
+  // Por isso o destino é NO_BRAND_ROUTE e não DEFAULT_ROUTE: sem marca, o
+  // mockupmachine entrega metade do produto. Não há o que avisar aqui (nada
+  // falhou, o usuário só pulou), então não há toast: só o destino honesto.
+  const handleSkip = () => finish(NO_BRAND_ROUTE);
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">

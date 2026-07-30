@@ -174,7 +174,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                   e.stopPropagation();
                   onToggleLike();
                 }}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-[10px] font-mono flex-shrink-0 whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-[10px] font-mono flex-shrink-0 whitespace-nowrap ${
                   isLiked
                     ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
                     : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'

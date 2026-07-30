@@ -171,7 +171,7 @@ export const TextNode = memo(
                 'pr-12 pb-8',
                 'bg-neutral-900/60 border-neutral-700/40',
                 'focus:border-neutral-600 ',
-                'backdrop-blur-sm transition-all duration-200',
+                'backdrop-blur-sm transition-[color,background-color,border-color,filter] duration-200',
                 'placeholder:text-neutral-500 placeholder:font-mono',
                 'overflow-y-auto'
               )}
@@ -190,7 +190,7 @@ export const TextNode = memo(
                 onMouseDown={(e) => e.stopPropagation()}
                 disabled={isImproving || !text.trim()}
                 className={cn(
-                  'absolute top-2 right-2 transition-all nodrag shadow-sm backdrop-blur-sm',
+                  'absolute top-2 right-2 transition-[color,background-color,border-color,box-shadow,filter] nodrag shadow-sm backdrop-blur-sm',
                   !isImproving &&
                     text.trim() &&
                     'text-brand-cyan border-neutral-800 bg-brand-cyan/5 hover:bg-brand-cyan/10'
@@ -212,7 +212,7 @@ export const TextNode = memo(
             {/* Character Counter - Bottom Right */}
             <div
               className={cn(
-                'absolute bottom-2 right-2 text-[10px] font-mono transition-all duration-200',
+                'absolute bottom-2 right-2 text-[10px] font-mono transition-[color,background-color,border-color,filter] duration-200',
                 'px-2 py-0.5 rounded-full backdrop-blur-sm',
                 isVeryLongText
                   ? 'text-warning bg-warning/10 border-node border-warning/20'

@@ -150,7 +150,7 @@ export const MyBrandingsPage: React.FC = () => {
                 <GlassPanel
                   key={project._id}
                   padding="none"
-                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer bg-[#141414]"
+                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-colors duration-300 group cursor-pointer bg-[#141414]"
                   onClick={() => handleView(project)}
                 >
                   <div className="flex items-start justify-between mb-4">

@@ -91,7 +91,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <Button
             variant="brand"
             onClick={addProjectDetailSection}
-            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addSection') || 'Adicionar Seção'}
@@ -131,7 +131,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                         <Button
                           variant="ghost"
                           onClick={() => addParagraph(sectionIndex)}
-                          className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded text-brand-cyan font-mono text-xs transition-all duration-300 flex items-center gap-1"
+                          className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded text-brand-cyan font-mono text-xs transition-colors duration-300 flex items-center gap-1"
                         >
                           <Plus size={12} />
                           {t('budget.addParagraph') || 'Parágrafo'}
@@ -185,7 +185,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <Button
             variant="brand"
             onClick={addInfoBox}
-            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addInfoBox') || 'Adicionar Caixa'}

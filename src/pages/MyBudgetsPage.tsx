@@ -248,7 +248,7 @@ export const MyBudgetsPage: React.FC = () => {
                       <GlassPanel
                         key={presetId}
                         padding="none"
-                        className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 bg-neutral-900"
+                        className="p-6 md:p-8 hover:border-neutral-700/60 transition-colors duration-300 bg-neutral-900"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
@@ -321,7 +321,7 @@ export const MyBudgetsPage: React.FC = () => {
                 <GlassPanel
                   key={budget._id}
                   padding="none"
-                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer bg-[#141414]"
+                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-colors duration-300 group cursor-pointer bg-[#141414]"
                   onClick={() => handleView(budget)}
                 >
                   <div className="flex items-start justify-between mb-4">

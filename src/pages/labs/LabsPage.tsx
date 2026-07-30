@@ -45,7 +45,7 @@ export function LabsPage() {
           {TOOLS.map((tool) => {
             const isLive = tool.status === 'live';
             const card = (
-              <Card className="h-full transition-all group-hover:border-[var(--brand-cyan)]/40 group-hover:shadow-lg group-hover:shadow-[var(--brand-cyan)]/5">
+              <Card className="h-full transition-[color,background-color,border-color,box-shadow] group-hover:border-[var(--brand-cyan)]/40 group-hover:shadow-lg group-hover:shadow-[var(--brand-cyan)]/5">
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <div className="p-2 rounded-md bg-neutral-900 text-[var(--brand-cyan)]">

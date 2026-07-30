@@ -13,6 +13,7 @@ import { applyVariables } from '@/utils/canvas/resolveVariables';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import { toast } from 'sonner';
 
 interface UseBatchRunnerHandlersParams {
@@ -57,11 +58,11 @@ export function useBatchRunnerHandlers({
       );
 
       if (!dataNode) {
-        toast.error('Connect a Data node to the Batch Runner first.');
+        toast.error(translate('canvas.batchConnectDataNode'));
         return;
       }
       if (!promptNode) {
-        toast.error('Connect a Prompt node to the Batch Runner first.');
+        toast.error(translate('canvas.batchConnectPromptNode'));
         return;
       }
 
@@ -70,7 +71,7 @@ export function useBatchRunnerHandlers({
       const rows = dataData.rows ?? [];
 
       if (!rows.length) {
-        toast.error('Data node has no rows. Upload a CSV or JSON file first.');
+        toast.error(translate('canvas.batchNoRows'));
         return;
       }
 
@@ -111,7 +112,12 @@ export function useBatchRunnerHandlers({
 
       const runRow = async (i: number) => {
         if (cancelRef.current) {
-          results[i] = { ...results[i], status: 'error', error: 'Cancelled' };
+          // Rendered per row by BatchRunnerNode
+          results[i] = {
+            ...results[i],
+            status: 'error',
+            error: translate('canvas.batchRowCancelled'),
+          };
           updateNodeData<BatchRunnerNodeData>(
             batchNodeId,
             { results: [...results] },
@@ -140,7 +146,7 @@ export function useBatchRunnerHandlers({
           results[i] = {
             ...results[i],
             status: 'error',
-            error: err?.message || 'Generation failed',
+            error: err?.message || translate('canvas.batchRowFailed'),
           };
         }
         updateNodeData<BatchRunnerNodeData>(batchNodeId, { results: [...results] }, 'batchRunner');
@@ -177,9 +183,9 @@ export function useBatchRunnerHandlers({
         { rows: rows.length, done, failed }
       );
       if (!hadCancel) {
-        toast.success(`Batch complete — ${done} generated, ${failed} failed.`);
+        toast.success(translate('canvas.batchComplete', undefined, { done, failed }));
       } else {
-        toast.info(`Batch cancelled — ${done} generated before cancel.`);
+        toast.info(translate('canvas.batchCancelled', undefined, { done }));
       }
     },
     [nodesRef, edgesRef, updateNodeData]
@@ -189,7 +195,7 @@ export function useBatchRunnerHandlers({
     (batchNodeId: string) => {
       cancelRef.current = true;
       updateNodeData<BatchRunnerNodeData>(batchNodeId, { status: 'cancelled' }, 'batchRunner');
-      toast.info('Cancelling batch after current row…');
+      toast.info(translate('canvas.batchCancelling'));
     },
     [updateNodeData]
   );

@@ -105,7 +105,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         )}
       >
         {/* Thumb Reference */}
-        <div className="group relative w-11 h-11 rounded-2xl overflow-hidden border border-white/10 hover:border-neutral-700 transition-all cursor-pointer shadow-lg shadow-black/20">
+        <div className="group relative w-11 h-11 rounded-2xl overflow-hidden border border-white/10 hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,opacity,filter] cursor-pointer shadow-lg shadow-black/20">
           {uploadedImage?.url ? (
             <img src={uploadedImage.url} alt="Ref" className="w-full h-full object-cover" />
           ) : uploadedImage?.base64 ? (
@@ -168,7 +168,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           {/* Start Over Button */}
           <button
             onClick={onStartOver}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-700 hover:text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/20 transition-all outline-none"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-neutral-700 hover:text-destructive hover:bg-destructive/5 border border-transparent hover:border-destructive/20 transition-[color,background-color,border-color,box-shadow] outline-none"
             title="Start Over"
           >
             <RotateCcw size={18} />
@@ -184,7 +184,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         ref={sidebarRef}
         id="sidebar"
         className={cn(
-          'relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-300 custom-scrollbar',
+          'relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-[color,background-color,border-color,box-shadow] duration-300 custom-scrollbar',
           'max-h-auto',
           'p-3 sm:p-4 md:p-6 lg:p-8',
           'w-full', // Base width

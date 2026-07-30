@@ -15,6 +15,7 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { formatBytes } from '@/utils/formatUtils';
 import { pdfApi, type CompressPreset } from '@/services/pdfApi';
 import JSZip from 'jszip';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 const fadeUp = {
@@ -79,6 +80,7 @@ async function processItem(
 }
 
 export const PdfCompressPage: React.FC = () => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [convertProgress, setConvertProgress] = useState(0);
@@ -214,7 +216,7 @@ export const PdfCompressPage: React.FC = () => {
               key={opt.value}
               onClick={() => setPreset(opt.value)}
               className={cn(
-                'px-3 py-1.5 rounded text-xs font-medium transition-all',
+                'px-3 py-1.5 rounded text-xs font-medium transition-colors',
                 preset === opt.value
                   ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
                   : 'text-neutral-500 hover:text-neutral-300 border border-transparent'
@@ -230,7 +232,7 @@ export const PdfCompressPage: React.FC = () => {
       <div className="h-px bg-neutral-800" />
 
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add more PDFs
         <input
@@ -310,8 +312,9 @@ export const PdfCompressPage: React.FC = () => {
   return (
     <MiniAppShell
       icon={FileDown}
-      title="PDF Compress"
-      documentTitle="PDF Compress"
+      title={t('apps.pdfCompress.name')}
+      toolId="pdf-compress"
+      documentTitle={t('apps.pdfCompress.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
       panelLabel="Settings & actions"

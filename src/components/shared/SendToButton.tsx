@@ -3,9 +3,45 @@ import { Send } from '@/lib/ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { pipelineApi, type AssetSource } from '@/services/pipelineApi';
-import { getCompatibleTargets, type ToolDef } from '@/lib/toolRegistry';
+import { getCompatibleTargets, getToolById, toolLabel, type ToolDef } from '@/lib/toolRegistry';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { useTranslation } from '@/hooks/useTranslation';
 import { toast } from 'sonner';
+
+/**
+ * `source` is a pipeline provenance tag (`AssetSource`), NOT a tool id — the two
+ * vocabularies only overlap by convention. `halftone`, `riso`, `texture-filter`
+ * and `shaders` were standalone tools that got consolidated into modes of
+ * `/image-lab`; their pages are gone but the provenance tags stayed (the backend
+ * stores them, so renaming them would rewrite history). Without this map their
+ * `excludeId` matched nothing and Image Lab offered itself as a "send to" target.
+ *
+ * Only sources whose tool id DIFFERS from the tag belong here; every other
+ * source is passed through and validated against the registry below.
+ */
+const SOURCE_TO_TOOL_ID: Partial<Record<AssetSource, string>> = {
+  halftone: 'image-lab',
+  riso: 'image-lab',
+  'texture-filter': 'image-lab',
+  shaders: 'image-lab',
+};
+
+/**
+ * Resolves the originating tool so it can be excluded from its own target list.
+ * Returns `undefined` for a source with no registry counterpart (e.g. `extractor`,
+ * `creative`) — an explicit "nothing to exclude", not a silent miss.
+ */
+function resolveSourceToolId(source: AssetSource): string | undefined {
+  const id = SOURCE_TO_TOOL_ID[source] ?? source;
+  if (getToolById(id)) return id;
+  if (import.meta.env.DEV) {
+    console.warn(
+      `[SendToButton] source "${source}" has no tool in toolRegistry — the origin ` +
+        `tool will not be excluded from its own targets. Add it to SOURCE_TO_TOOL_ID.`
+    );
+  }
+  return undefined;
+}
 
 interface SendToButtonProps {
   source: AssetSource;
@@ -41,8 +77,12 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
   const [sending, setSending] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const targets = useMemo(() => getCompatibleTargets(outputMime, source), [outputMime, source]);
+  const targets = useMemo(
+    () => getCompatibleTargets(outputMime, resolveSourceToolId(source)),
+    [outputMime, source]
+  );
 
   useClickOutside(containerRef, () => setOpen(false), { enabled: open });
 
@@ -54,7 +94,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
       const captured = getImageBase64 ? await getImageBase64() : undefined;
       const payloadBase64 = captured ?? imageBase64;
       if (!payloadBase64 && !imageUrl) {
-        toast.error('Nothing to send yet');
+        toast.error(t('pipeline.nothingToSend'));
         return;
       }
       await pipelineApi.send({
@@ -64,10 +104,10 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
         mimeType,
         label,
       });
-      toast.success(`Opening ${target.name}…`);
+      toast.success(t('pipeline.opening', { tool: toolLabel(target, t) }));
       navigate(target.path);
     } catch {
-      toast.error('Failed to send asset');
+      toast.error(t('pipeline.sendFailed'));
     } finally {
       setSending(false);
     }
@@ -85,7 +125,7 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
       <button
         onClick={toggleOpen}
         disabled={sending}
-        title="Send to →"
+        title={t('pipeline.sendTo')}
         className={cn(
           'flex items-center gap-1 rounded-md transition-colors disabled:opacity-50',
           variant === 'node'
@@ -94,19 +134,19 @@ export const SendToButton: React.FC<SendToButtonProps> = ({
         )}
       >
         <Send size={12} strokeWidth={2} />
-        {variant === 'icon' && <span className="text-xs font-mono">Send to</span>}
+        {variant === 'icon' && <span className="text-xs font-mono">{t('pipeline.sendTo')}</span>}
       </button>
 
       {open && (
         <div className="absolute right-0 bottom-full mb-1 z-50 bg-neutral-900 border border-neutral-700/50 rounded-lg shadow-xl py-1 min-w-[160px] max-h-[240px] overflow-y-auto">
-          {targets.map((t) => (
+          {targets.map((target) => (
             <button
-              key={t.id}
-              onClick={(e) => handleSend(e, t)}
+              key={target.id}
+              onClick={(e) => handleSend(e, target)}
               className="w-full text-left px-3 py-1.5 text-xs font-mono text-neutral-300 hover:bg-neutral-800 hover:text-brand-cyan transition-colors flex items-center gap-2"
             >
-              <t.icon size={12} className="shrink-0 opacity-60" />
-              {t.name}
+              <target.icon size={12} className="shrink-0 opacity-60" />
+              {toolLabel(target, t)}
             </button>
           ))}
         </div>

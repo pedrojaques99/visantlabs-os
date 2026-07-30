@@ -3,6 +3,7 @@ import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import type { DrawingStroke } from './useCanvasDrawing';
 import { toast } from 'sonner';
+import { translate } from '@/utils/localeUtils';
 
 const maxHistorySize = 50;
 
@@ -145,7 +146,7 @@ export const useCanvasHistory = (
 
   const handleUndo = useCallback(() => {
     if (state.index <= 0) {
-      toast.info('Nothing to undo', { duration: 1500 });
+      toast.info(translate('canvas.nothingToUndo'), { duration: 1500 });
       return;
     }
 
@@ -157,13 +158,13 @@ export const useCanvasHistory = (
         setDrawings(entry.drawings);
       }
       dispatch({ type: 'UNDO' });
-      toast.success('Undone', { duration: 1500 });
+      toast.success(translate('canvas.undone'), { duration: 1500 });
     }
   }, [state, setNodes, setEdges, setDrawings]);
 
   const handleRedo = useCallback(() => {
     if (state.index >= state.entries.length - 1) {
-      toast.info('Nothing to redo', { duration: 1500 });
+      toast.info(translate('canvas.nothingToRedo'), { duration: 1500 });
       return;
     }
 
@@ -175,7 +176,7 @@ export const useCanvasHistory = (
         setDrawings(entry.drawings);
       }
       dispatch({ type: 'REDO' });
-      toast.success('Redone', { duration: 1500 });
+      toast.success(translate('canvas.redone'), { duration: 1500 });
     }
   }, [state, setNodes, setEdges, setDrawings]);
 

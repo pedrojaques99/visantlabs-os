@@ -47,7 +47,15 @@ import {
 // Tipos
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type ShellKind = 'marketing' | 'app';
+/**
+ * `bare` = superficie embeddable: NENHUM chrome da Visant Labs (sem rail, sem
+ * spine, sem header de marketing). Existe porque a biblioteca de referencias
+ * precisa rodar (a) como pagina publica focada e (b) dentro de um painel de
+ * plugin do Figma, onde qualquer navegacao do app seria ruido e o painel tem
+ * ~400px de largura. Nao confundir com `focus`: focus RESERVA a faixa do topo
+ * pra AppSpine (ver editorHasOwnChrome); bare nao reserva nada.
+ */
+export type ShellKind = 'marketing' | 'app' | 'bare';
 export type ShellMode = 'full' | 'focus';
 export type SectionId =
   | 'cockpit'
@@ -114,6 +122,21 @@ function normalize(pathname: string): string {
   return clean || '/';
 }
 
+/**
+ * Rotas embeddable — sem NENHUM chrome do app, logado ou não.
+ *
+ * `/refs` é a biblioteca de referências como superfície própria: uma pessoa
+ * abre direto no navegador, ou um painel de plugin do Figma a carrega num
+ * iframe. Qualquer rail/spine/header aqui rouba largura de um painel de ~400px
+ * e mostra features que não são o assunto.
+ *
+ * Nota: é a MESMA página de `/references`, renderizada em modo embedded — não
+ * uma segunda implementação. Ver ReferencesPage.
+ */
+function isBare(p: string): boolean {
+  return p === '/refs' || p.startsWith('/refs/');
+}
+
 /** Rotas de website público — sempre no MarketingShell, mesmo logado. */
 function isMarketing(p: string): boolean {
   if (p === '/') return true;
@@ -133,7 +156,6 @@ function isMarketing(p: string): boolean {
     '/forgot-password',
     '/verify-email',
     '/welcome',
-    '/onboard',
     '/recharge-success',
   ];
   if (authExact.includes(p)) return true;
@@ -273,6 +295,7 @@ function sectionFor(p: string): SectionId | null {
  */
 export function classifyRoute(pathname: string): RouteClass {
   const p = normalize(pathname);
+  if (isBare(p)) return { shell: 'bare', mode: 'focus', section: sectionFor(p) };
   if (isMarketing(p)) return { shell: 'marketing', mode: 'full', section: null };
   if (isEditor(p)) return { shell: 'app', mode: 'focus', section: sectionFor(p) };
   return { shell: 'app', mode: 'full', section: sectionFor(p) };
@@ -286,6 +309,9 @@ export function classifyRoute(pathname: string): RouteClass {
  */
 export function resolveShell(pathname: string, isAuthenticated: boolean | null): ShellKind {
   const cls = classifyRoute(pathname);
+  // bare nunca depende de sessao: a rota e publica pra leitura, e as acoes que
+  // exigem conta pedem login no clique (nao na entrada).
+  if (cls.shell === 'bare') return 'bare';
   if (cls.shell === 'marketing') return 'marketing';
   return isAuthenticated === true ? 'app' : 'marketing';
 }

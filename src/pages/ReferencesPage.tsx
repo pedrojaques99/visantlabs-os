@@ -58,6 +58,8 @@ import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryFlag } from '@/lib/ref
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { brandRankingTerms } from '@/lib/references/brandTerms';
+import { localizedName, type LocalizableRef } from '@/lib/references/naming';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   FACET_DIMENSION_KEYS,
   DIMENSION_LABELS,
@@ -77,7 +79,18 @@ import {
   type TasteHint,
 } from '@/services/referencesApi';
 
-const PAGE_SIZE = 30;
+// Constante: o servidor pagina por skip=(page-1)*limit, entao o limit nao pode
+// variar entre paginas do mesmo feed (geraria buraco/duplicata). Teto do server = 60.
+const PAGE_SIZE = 48;
+
+// O sentinel dispara a proxima pagina enquanto ainda existem ~2.5 telas de feed
+// abaixo do fold — assim o usuario nunca alcanca o fim antes do fetch terminar.
+const PREFETCH_VIEWPORTS = 2.5;
+const PREFETCH_LEAD_MIN = 1200;
+function computePrefetchLead(): number {
+  if (typeof window === 'undefined') return PREFETCH_LEAD_MIN;
+  return Math.max(PREFETCH_LEAD_MIN, Math.round(window.innerHeight * PREFETCH_VIEWPORTS));
+}
 
 // Per-session feed seed — persisted so the order is stable across pages/reloads
 // within a browser session, but fresh on a new session (or when reshuffled).
@@ -130,26 +143,27 @@ interface SimilarView {
 // Generic source labels that aren't real titles (studio field is often just a provenance tag).
 const GENERIC_STUDIO = /^(visant|curated|visant\s*curated|reference|ref)$/i;
 
-/** Human-facing title — never surface the raw slug id (ref_urbanstay_56, club_ref_69…). */
-function refTitle(item: Pick<ReferenceItem, 'name' | 'studio' | 'provenance'>): string {
-  const prov = item.provenance || {};
-  const designer = prov.designer?.trim();
+/**
+ * Human-facing title, in the viewer's language.
+ *
+ * Precedence used to be designer/studio FIRST, because names were junk — which
+ * made every curated row render as "Visant Curated". Names are real now, so the
+ * name leads and attribution is the fallback. Generic studio labels still lose
+ * to anything more specific. Internal id-slugs (ref_urbanstay_56, club_ref_69)
+ * are never surfaced — `localizedName` rewrites them.
+ */
+function refTitle(
+  item: Pick<ReferenceItem, 'name' | 'nameI18n' | 'studio' | 'provenance' | 'dimensions'>,
+  locale: string
+): string {
+  const title = localizedName(item as LocalizableRef, locale, '');
+  if (title) return title;
+
+  const designer = item.provenance?.designer?.trim();
   const studio = item.studio?.trim();
   if (designer && !GENERIC_STUDIO.test(designer)) return designer;
   if (studio && !GENERIC_STUDIO.test(studio)) return studio;
-  const raw = (item.name || '').trim();
-  // Rewrite our internal ref-id slugs; leave real human names untouched.
-  const m = raw.match(/^(?:userref[-_]|club[-_]?ref[-_]|ref[-_])(.+)$/i);
-  if (m) {
-    const cleaned = m[1]
-      .replace(/[-_]\d+$/, '')
-      .replace(/[-_]+/g, ' ')
-      .trim();
-    // A meaningful name survived → title-case it; otherwise the slug is just an id (e.g. "69").
-    if (cleaned && !/^\d+$/.test(cleaned)) return cleaned.replace(/\b\w/g, (c) => c.toUpperCase());
-    return studio || designer || 'Referência';
-  }
-  return raw || 'Referência';
+  return designer || studio || 'Referência';
 }
 
 /** Dimension values two references share — powers the "why it matches" explanation. */
@@ -182,7 +196,17 @@ function useThumbPlaceholder(hash?: string): string | null {
 
 // Masonry column count now comes from the shared `useMasonryColumns` (src/components/ui/Masonry).
 
-export const ReferencesPage: React.FC = () => {
+/**
+ * `embedded` = rota `/refs`: a mesma biblioteca servida como superfície própria
+ * (navegador focado, ou painel de plugin do Figma num iframe). Não é uma segunda
+ * implementação — é esta, com o chrome do app e as ferramentas de gestão fora.
+ *
+ * O que sai: hero do PageShell, upload, fila de moderação, barra de duplicatas,
+ * ações de admin. O que fica: busca, facetas, grid, lightbox, "parecidas".
+ * Ações que exigem conta continuam visíveis e pedem login NO CLIQUE — a rota é
+ * pública pra leitura.
+ */
+export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   // Read initial filter state from the URL once (shareable / back-button friendly).
   const initialDims: Record<string, string> = {};
@@ -278,6 +302,14 @@ export const ReferencesPage: React.FC = () => {
   const searchByImageInput = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
+
+  // Distancia (px) antes do fim do feed em que a proxima pagina ja comeca a carregar.
+  const [prefetchLead, setPrefetchLead] = useState(() => computePrefetchLead());
+  useEffect(() => {
+    const onResize = () => setPrefetchLead(computePrefetchLead());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const cols = useMasonryColumns();
   const activeDimEntries = Object.entries(dims).filter(([, v]) => v);
@@ -391,9 +423,9 @@ export const ReferencesPage: React.FC = () => {
     if (!authService.isAuthenticated()) return;
     authService
       .verifyToken()
-      .then((u) => setIsAdmin(!!u?.isAdmin))
+      .then((u) => setIsAdmin(!embedded && !!u?.isAdmin))
       .catch(() => {});
-  }, []);
+  }, [embedded]);
 
   // Duplicate map — admin only. The library predates ingest dedup, so identical
   // bytes exist more than once; this marks them in place so the grouping can be
@@ -469,7 +501,10 @@ export const ReferencesPage: React.FC = () => {
     setSearchParams(p, { replace: true });
   }, [debouncedSearch, country, region, activeTag, kind, scope, dims]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // infinite scroll
+  // infinite scroll — prefetch com margem proporcional a viewport.
+  // Um lead fixo (900px) sumia em telas altas e em scroll rapido: o usuario
+  // chegava no fim do grid antes da proxima pagina existir. Aqui a proxima
+  // pagina comeca a carregar enquanto ainda ha ~2.5 telas de conteudo abaixo.
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el || similar || collectionView || scope === 'collections') return;
@@ -479,11 +514,11 @@ export const ReferencesPage: React.FC = () => {
           loadList(pageRef.current + 1, true);
         }
       },
-      { rootMargin: '900px' }
+      { rootMargin: `${prefetchLead}px 0px` }
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [pages, isLoading, isLoadingMore, similar, collectionView, scope, loadList]);
+  }, [pages, isLoading, isLoadingMore, similar, collectionView, scope, loadList, prefetchLead]);
 
   // ── Auth gate ──────────────────────────────────────────────────
   const requireAuth = (): boolean => {
@@ -835,7 +870,8 @@ export const ReferencesPage: React.FC = () => {
         microTitle="Library // References"
         title="Reference Library"
         description="Referências de design world-class, taggeadas por conteúdo e por país de origem. Suba, arraste ou cole uma imagem para achar parecidas — ou mergulhe de uma ref pra outra."
-        width="7xl"
+        width={embedded ? 'full' : '7xl'}
+        hideHeader={embedded}
         actions={
           <div className="flex items-center gap-2">
             <input
@@ -852,20 +888,24 @@ export const ReferencesPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="bg-card border-border text-xs"
+              title="Buscar por imagem"
+              className="shrink-0 bg-card border-border text-xs px-2 sm:px-3"
               onClick={() => requireAuth() && searchByImageInput.current?.click()}
             >
-              <ScanSearch className="h-3.5 w-3.5 mr-1.5" />
-              Buscar por imagem
+              <ScanSearch className="h-3.5 w-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Buscar por imagem</span>
             </Button>
-            <Button
-              size="sm"
-              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-              onClick={() => requireAuth() && setUploadOpen(true)}
-            >
-              <Upload className="h-3.5 w-3.5 mr-1.5" />
-              Subir referência
-            </Button>
+            {!embedded && (
+              <Button
+                size="sm"
+                title="Subir referência"
+                className="shrink-0 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs px-2 sm:px-3"
+                onClick={() => requireAuth() && setUploadOpen(true)}
+              >
+                <Upload className="h-3.5 w-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">Subir referência</span>
+              </Button>
+            )}
           </div>
         }
       >
@@ -1104,8 +1144,8 @@ export const ReferencesPage: React.FC = () => {
         {/* Admin-only: user uploads awaiting moderation. Nothing here is public
             or AI-analysed yet — approving runs enrichment, then reveals it. */}
         {isAdmin && pendingCount > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-brand-cyan/30 bg-brand-cyan/5 px-3 py-2">
-            <span className="text-xs font-mono text-brand-cyan">
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+            <span className="text-xs font-mono text-warning">
               {pendingCount} referência(s) aguardando revisão
             </span>
             <Button
@@ -1622,6 +1662,7 @@ const CardContextMenu: React.FC<{
   onEdit: (r: ReferenceItem) => void;
   onDelete: (r: ReferenceItem) => void;
 }> = ({ menu, isAdmin, onClose, onSave, onSimilar, onEdit, onDelete }) => {
+  const { locale } = useTranslation();
   const { x, y, item } = menu;
   return (
     <DropdownMenu
@@ -1635,7 +1676,7 @@ const CardContextMenu: React.FC<{
         <span aria-hidden className="fixed" style={{ left: x, top: y }} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
-        <DropdownMenuLabel className="truncate">{refTitle(item)}</DropdownMenuLabel>
+        <DropdownMenuLabel className="truncate">{refTitle(item, locale)}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => onSave(item)}>
           <Bookmark className="h-3.5 w-3.5 mr-2" />
@@ -1691,7 +1732,7 @@ const BatchActionBar: React.FC<{
         initial={{ scale: 0.7, opacity: 0.4 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 600, damping: 24 }}
-        className="inline-block text-brand-cyan"
+        className="inline-block text-foreground"
       >
         {count}
       </motion.span>{' '}
@@ -1700,7 +1741,7 @@ const BatchActionBar: React.FC<{
     {count < total && (
       <button
         onClick={onSelectAll}
-        className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         Tudo
       </button>
@@ -2055,6 +2096,7 @@ const MasonryCard: React.FC<{
   onContextMenu,
   dupe,
 }) => {
+  const { locale } = useTranslation();
   const [loaded, setLoaded] = useState(false);
   const reduce = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -2086,8 +2128,8 @@ const MasonryCard: React.FC<{
         <button
           aria-label={
             selectionActive
-              ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item)}`
-              : `Abrir ${refTitle(item)}`
+              ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item, locale)}`
+              : `Abrir ${refTitle(item, locale)}`
           }
           onClick={(e) => {
             // Once anything is selected, clicking a card toggles it (fast multi-select).
@@ -2133,7 +2175,7 @@ const MasonryCard: React.FC<{
             />
             {/* gradient + meta on hover */}
             <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-[11px] font-medium text-white truncate">{refTitle(item)}</p>
+              <p className="text-[11px] font-medium text-white truncate">{refTitle(item, locale)}</p>
               {item.country && (
                 <p className="text-[10px] font-mono text-neutral-300 truncate">
                   {countryFlag(item.country)} {item.country}
@@ -2265,6 +2307,7 @@ const Lightbox: React.FC<{
   onDelete,
   similarSource,
 }) => {
+  const { locale } = useTranslation();
   const item = index !== null ? items[index] : null;
   const prov = item?.provenance || {};
   const flag = item ? countryFlag(item.country) : '';
@@ -2358,7 +2401,7 @@ const Lightbox: React.FC<{
               className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-border bg-card p-5 sm:p-6 overflow-y-auto space-y-4"
             >
               {(() => {
-                const title = refTitle(item);
+                const title = refTitle(item, locale);
                 const sub = item.studio?.trim() || item.provenance?.designer?.trim();
                 return (
                   <div>
@@ -2438,7 +2481,7 @@ const Lightbox: React.FC<{
 
               {prov.designer && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                  <span className="text-[11px] text-muted-foreground">
                     Designer
                   </span>
                   <p className="text-sm text-muted-foreground">{prov.designer}</p>
@@ -2447,7 +2490,7 @@ const Lightbox: React.FC<{
 
               {item.description && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                  <span className="text-[11px] text-muted-foreground">
                     Descrição
                   </span>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-6">
@@ -2459,7 +2502,7 @@ const Lightbox: React.FC<{
               {/* Tags — click to drop into the library filtered by it (shareable route) */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                  <span className="text-[11px] text-muted-foreground">
                     Tags
                   </span>
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -2744,7 +2787,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 País (opcional)
               </label>
               <Select
@@ -2755,7 +2798,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 Designer / Estúdio
               </label>
               <Input
@@ -2768,7 +2811,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 Fonte (URL)
               </label>
               <Input
@@ -2779,7 +2822,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 Award / Arquivo
               </label>
               <Input

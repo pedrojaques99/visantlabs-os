@@ -253,7 +253,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-all shrink-0"
+                className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/persona:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
                 onClick={() => remove(i)}
                 aria-label="Remove"
               >

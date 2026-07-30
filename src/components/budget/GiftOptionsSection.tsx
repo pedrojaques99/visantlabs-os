@@ -40,7 +40,7 @@ export const GiftOptionsSection: React.FC<GiftOptionsSectionProps> = ({
         <Button
           variant="brand"
           onClick={addGiftOption}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-colors duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addGiftOption') || 'Adicionar Brinde'}

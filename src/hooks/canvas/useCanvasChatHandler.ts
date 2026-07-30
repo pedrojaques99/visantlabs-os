@@ -17,6 +17,7 @@ import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBran
 import type { BrandGuideline } from '@/lib/figma-types';
 
 import type { ImageNodeData } from '@/types/reactFlow';
+import { translate } from '@/utils/localeUtils';
 
 // Node creation functions type
 type NodeCreationFunctions = {
@@ -87,7 +88,7 @@ export const useCanvasChatHandler = ({
   const handleChatRemoveNode = useCallback(
     (targetNodeId: string): boolean => {
       if (!setNodes) {
-        toast.error('Canvas state not available');
+        toast.error(translate('canvas.canvasStateUnavailable'));
         return false;
       }
       setNodes((nds: Node<FlowNodeData>[]) => nds.filter((n) => n.id !== targetNodeId));
@@ -114,7 +115,7 @@ export const useCanvasChatHandler = ({
     ): string | undefined => {
       const chatNode = nodesRef.current.find((n) => n.id === chatNodeId);
       if (!chatNode) {
-        toast.error('Chat node not found');
+        toast.error(translate('canvas.chatNodeNotFound'));
         return undefined;
       }
 
@@ -178,13 +179,13 @@ export const useCanvasChatHandler = ({
           }
           break;
         default:
-          toast.error(`Node type "${nodeType}" not supported`);
+          toast.error(translate('canvas.nodeTypeNotSupported', undefined, { type: nodeType }));
           return undefined;
       }
 
       if (newNodeId) {
         const label = nodeTypeLabels[nodeType] || nodeType;
-        toast.success(`${label} node created!`, { duration: 2000 });
+        toast.success(translate('canvas.nodeCreated', undefined, { label }), { duration: 2000 });
 
         // Auto-connect from chat node output to the new node if requested
         if (connectToChat && setEdges && edgesRef) {
@@ -218,7 +219,7 @@ export const useCanvasChatHandler = ({
           }, 100);
         }
       } else {
-        toast.error(`Unable to create ${nodeType} node. Feature may not be available.`);
+        toast.error(translate('canvas.nodeCreateFailed', undefined, { type: nodeType }));
       }
 
       return newNodeId;
@@ -243,7 +244,7 @@ export const useCanvasChatHandler = ({
 
       // Validate message
       if (!message || message.trim().length === 0) {
-        toast.error('Message cannot be empty', { duration: 3000 });
+        toast.error(translate('canvas.messageEmpty'), { duration: 3000 });
         return;
       }
 
@@ -260,7 +261,7 @@ export const useCanvasChatHandler = ({
 
         if (canvasCmd.action === 'clear-chat') {
           updateNodeData<ChatNodeData>(nodeId, { messages: [], userMessageCount: 0 }, 'chat');
-          toast.success('Chat cleared', { duration: 2000 });
+          toast.success(translate('canvas.chatCleared'), { duration: 2000 });
           return;
         }
 
@@ -368,7 +369,7 @@ export const useCanvasChatHandler = ({
                   { messages: [...currentMsgs, completionMsg] },
                   'chat'
                 );
-                toast.success(`Campaign done — ${done.length} ads generated!`);
+                toast.success(translate('canvas.campaignDone', undefined, { count: done.length }));
               } catch (err: any) {
                 const currentNode = nodesRef.current.find((n) => n.id === nodeId);
                 const currentMsgs = (currentNode?.data as ChatNodeData)?.messages || [];
@@ -528,7 +529,7 @@ export const useCanvasChatHandler = ({
           'chat'
         );
 
-        toast.error(error?.message || 'Failed to send message. Please try again.', {
+        toast.error(error?.message || translate('canvas.sendMessageFailed'), {
           duration: 5000,
         });
       }
@@ -562,7 +563,7 @@ export const useCanvasChatHandler = ({
         },
         'chat'
       );
-      toast.success('Chat history cleared', { duration: 2000 });
+      toast.success(translate('canvas.chatHistoryCleared'), { duration: 2000 });
     },
     [updateNodeData]
   );
@@ -570,7 +571,7 @@ export const useCanvasChatHandler = ({
   const handleChatAddPromptNode = useCallback(
     (nodeId: string, prompt: string) => {
       if (!creators.addPromptNode) {
-        toast.error('Unable to create prompt node');
+        toast.error(translate('canvas.promptNodeCreateFailed'));
         return;
       }
 
@@ -578,7 +579,7 @@ export const useCanvasChatHandler = ({
       if (!node) return;
 
       creators.addPromptNode(undefined, { prompt });
-      toast.success('Prompt node created!', { duration: 2000 });
+      toast.success(translate('canvas.promptNodeCreated'), { duration: 2000 });
     },
     [creators, nodesRef]
   );
@@ -590,19 +591,19 @@ export const useCanvasChatHandler = ({
     (targetNodeId: string, updates: Partial<FlowNodeData>): boolean => {
       const targetNode = nodesRef.current.find((n) => n.id === targetNodeId);
       if (!targetNode) {
-        toast.error('Target node not found');
+        toast.error(translate('canvas.targetNodeNotFound'));
         return false;
       }
 
       const nodeType = targetNode.type;
       if (!nodeType) {
-        toast.error('Unknown node type');
+        toast.error(translate('canvas.unknownNodeType'));
         return false;
       }
 
       try {
         updateNodeData(targetNodeId, updates, nodeType);
-        toast.success('Node updated!', { duration: 2000 });
+        toast.success(translate('canvas.nodeUpdated'), { duration: 2000 });
 
         if (saveImmediately) {
           setTimeout(() => saveImmediately(), 100);
@@ -610,7 +611,7 @@ export const useCanvasChatHandler = ({
         return true;
       } catch (error) {
         console.error('[ChatHandler] Error editing node:', error);
-        toast.error('Failed to update node');
+        toast.error(translate('canvas.nodeUpdateFailed'));
         return false;
       }
     },
@@ -646,7 +647,7 @@ export const useCanvasChatHandler = ({
     (chatNodeId: string, imageBase64: string, mimeType: string): string | undefined => {
       const chatNode = nodesRef.current.find((n) => n.id === chatNodeId);
       if (!chatNode) {
-        toast.error('Chat node not found');
+        toast.error(translate('canvas.chatNodeNotFound'));
         return undefined;
       }
 
@@ -720,7 +721,7 @@ export const useCanvasChatHandler = ({
         }
       }
 
-      toast.error('Unable to create image node. Feature may not be available.');
+      toast.error(translate('canvas.imageNodeCreateFailed'));
       return undefined;
     },
     [nodesRef, creators, updateNodeData, setEdges, edgesRef]

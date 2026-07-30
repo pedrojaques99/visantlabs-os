@@ -708,7 +708,7 @@ function PromptChip({
       type="button"
       onClick={() => onCopy(text, id)}
       className={cn(
-        'group w-full text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-all duration-200',
+        'group w-full text-left flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-[color,background-color,border-color,opacity] duration-200',
         isCopied
           ? 'border-success/30 bg-success/5'
           : 'border-border/60 hover:border-border hover:bg-muted/20'
@@ -739,7 +739,7 @@ function ProviderRow({
     <div
       className={cn(
         'group flex items-center justify-between rounded-xl border border-border/60 px-4 py-3',
-        'hover:border-border hover:bg-muted/20 transition-all duration-200'
+        'hover:border-border hover:bg-muted/20 transition-colors duration-200'
       )}
     >
       <div className="flex items-center gap-3 min-w-0">

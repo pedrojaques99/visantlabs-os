@@ -25,7 +25,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
-        <h2 className={cn(sectionTitleClass(theme === 'dark'), 'transition-all duration-300')}>
+        <h2 className={cn(sectionTitleClass(theme === 'dark'), 'transition-colors duration-300')}>
           {t('mockup.designType')}
         </h2>
       </div>
@@ -41,7 +41,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             }}
             variant="outline"
             className={cn(
-              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all',
+              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-[color,background-color,border-color,box-shadow]',
               designType === 'logo'
                 ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
@@ -57,7 +57,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             }}
             variant="outline"
             className={cn(
-              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all',
+              'w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-[color,background-color,border-color,box-shadow]',
               designType === 'layout'
                 ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'

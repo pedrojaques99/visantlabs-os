@@ -264,7 +264,7 @@ function Group({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+      <span className="text-[10px] uppercase tracking-widest text-neutral-500">
         {label}
         {hint && <span className="ml-1.5 text-neutral-700">· {hint}</span>}
       </span>

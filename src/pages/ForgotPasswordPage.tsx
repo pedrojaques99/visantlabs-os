@@ -124,7 +124,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold rounded-md transition-all duration-200 text-sm font-mono"
+              className="px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold rounded-md transition-colors duration-200 text-sm font-mono"
             >
               {t('auth.backToHome') || 'Back to Home'}
             </Button>
@@ -137,8 +137,8 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
       <div className="bg-neutral-900 border border-white/10 rounded-md p-8 w-full max-w-md relative z-10">
-        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">
-          <Lock className="w-8 h-8 text-brand-cyan" />
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-neutral-800">
+          <Lock className="w-8 h-8 text-neutral-300" />
         </div>
 
         <h1 className="text-2xl font-semibold font-mono text-neutral-200 text-center mb-2">
@@ -192,7 +192,7 @@ export const ForgotPasswordPage: React.FC = () => {
             variant="brand"
             type="submit"
             disabled={isLoading || !password || !confirmPassword}
-            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-colors duration-200 text-sm font-mono"
           >
             {isLoading ? (
               <>

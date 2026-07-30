@@ -170,7 +170,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
               size={10}
               className={cn('transition-transform', expanded && 'rotate-180')}
             />
-            <span className="font-mono uppercase tracking-wider">
+            <span className="uppercase tracking-wider">
               My presets{!loading && ` (${presets.length})`}
             </span>
             {loading && <Loader2 size={8} className="animate-spin" />}
@@ -190,7 +190,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                     <span className="truncate">{p.name}</span>
                     <span
                       className={cn(
-                        'text-[10px] font-mono uppercase shrink-0',
+                        'text-[10px] uppercase shrink-0',
                         p.data?.mode === 'halftone' && 'text-cyan-600',
                         p.data?.mode === 'texture' && 'text-purple-600',
                         p.data?.mode === 'riso' && 'text-warning',
@@ -203,7 +203,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                   <button
                     onClick={() => handleDelete(p.id)}
                     aria-label={`Delete ${p.name}`}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-neutral-600 hover:text-destructive transition-all shrink-0"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-neutral-600 hover:text-destructive transition-[color,background-color,border-color,opacity] shrink-0"
                   >
                     <Trash2 size={9} />
                   </button>

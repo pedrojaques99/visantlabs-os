@@ -223,7 +223,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-all"
+            className="p-2 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors"
           >
             <X size={20} />
           </Button>
@@ -249,7 +249,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
             <Button
               variant="ghost"
               onClick={selectAll}
-              className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-colors whitespace-nowrap"
             >
               {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? (
                 <CheckSquare size={14} className="text-neutral-400" />
@@ -270,7 +270,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                   key={format}
                   onClick={() => setExportFormat(format)}
                   className={cn(
-                    'px-3 py-1 text-[10px] font-mono rounded transition-all',
+                    'px-3 py-1 text-[10px] font-mono rounded transition-colors',
                     exportFormat === format
                       ? 'bg-neutral-700/20 text-neutral-400 border border-neutral-600/30'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -336,7 +336,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                       >
                         {img.name}
                       </p>
-                      <p className="text-[10px] text-neutral-400 font-mono uppercase mt-0.5">
+                      <p className="text-[10px] text-neutral-400 uppercase mt-0.5">
                         {img.type}
                       </p>
                     </div>
@@ -377,7 +377,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
               onClick={handleExport}
               disabled={selectedImages.size === 0 || isExporting}
               className={cn(
-                'px-6 py-2 bg-neutral-700 hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-neutral-600/10',
+                'px-6 py-2 bg-neutral-700 hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs font-mono transition-[color,background-color,border-color,box-shadow] flex items-center gap-2 shadow-lg shadow-neutral-600/10',
                 isExporting && 'animate-pulse'
               )}
             >

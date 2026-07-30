@@ -69,6 +69,9 @@ export const PUBLIC_PROJECTION = {
   _id: 0,
   id: 1,
   name: 1,
+  // Bilingual short title + friendly handle (see src/lib/references/naming.ts).
+  nameI18n: 1,
+  slug: 1,
   studio: 1,
   description: 1,
   referenceImageUrl: 1,
@@ -94,6 +97,9 @@ export const AGENT_PROJECTION = {
   _id: 0,
   id: 1,
   name: 1,
+  // Bilingual short title + friendly handle (see src/lib/references/naming.ts).
+  nameI18n: 1,
+  slug: 1,
   studio: 1,
   description: 1,
   referenceImageUrl: 1,
@@ -143,10 +149,39 @@ function toList(value: string | string[] | undefined, lowercase = false): string
   return parts.length ? parts : undefined;
 }
 
+/**
+ * A reference with no image is not a reference — it renders as a hole in the
+ * grid. ~900 rows in `community_presets` are a PSD CATALOGUE (`local-*-psd-*`,
+ * `source: 'local-ingest'`, a `psdPath` and no preview): an index of the
+ * Mockups Soviéticos library. Those belong to the mockup-store, not to the
+ * image library, and are deliberately left in place — this filter hides them
+ * from the visual feed instead of deleting a catalogue.
+ *
+ * Written as "has an image", not "is not a PSD", so any future failed ingest is
+ * covered by the same rule without anyone remembering to extend a blocklist.
+ */
+export const HAS_IMAGE = { referenceImageUrl: { $exists: true, $nin: [null, ''] } };
+
+/**
+ * PSD mockup scenes are NOT reference images. They are the mockup-store's
+ * catalogue (Mockups Soviéticos, `psdPath` pointing at the .psd), and they are
+ * browsed there — not in this grid. The rows stay in the collection untouched;
+ * only the visual feed excludes them, so nothing the mockup pipeline reads
+ * changes.
+ *
+ * Matched on `psdPath` being a real string: ~1100 rows carry `psdPath: null`
+ * from the same local ingest without being PSDs, so `$exists` would over-match.
+ */
+export const NOT_PSD_SCENE = { psdPath: { $not: { $type: 'string' } } };
+
+/** Rows that belong in the visual grid: has an image, and is not a PSD scene. */
+export const BROWSABLE = { ...HAS_IMAGE, ...NOT_PSD_SCENE };
+
 /** Build the Mongo filter for a reference query. The only place that shape exists. */
 export function buildReferenceFilter(params: ReferenceFilterParams = {}): Record<string, any> {
   const filter: Record<string, any> = {
     category: REFERENCE_CATEGORY,
+    ...BROWSABLE,
     ...visibilityFilter(params.visibility ?? 'public'),
   };
 

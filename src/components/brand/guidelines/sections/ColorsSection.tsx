@@ -250,7 +250,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             <Button
               variant="danger"
               size="icon-sm"
-              className="opacity-0 group-hover/color:opacity-100 transition-all shrink-0"
+              className="opacity-0 group-hover/color:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => removeColor(i)}
               aria-label="Remove color"
             >

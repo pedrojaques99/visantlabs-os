@@ -86,7 +86,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                 type="button"
                 onClick={() => patch({ philosophy: opt.value })}
                 className={cn(
-                  'flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all',
+                  'flex-1 h-6 rounded border text-[10px] uppercase transition-colors',
                   motion.philosophy === opt.value
                     ? 'border-white/20 bg-white/5 text-neutral-200'
                     : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -128,7 +128,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                   type="button"
                   onClick={() => patch({ easing: p.value })}
                   className={cn(
-                    'px-2 h-5 rounded border text-[10px] font-mono transition-all',
+                    'px-2 h-5 rounded border text-[10px] font-mono transition-colors',
                     motion.easing === p.value
                       ? 'border-white/20 bg-white/5 text-neutral-200'
                       : 'border-neutral-800 text-neutral-600 hover:border-white/10'

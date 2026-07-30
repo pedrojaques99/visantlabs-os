@@ -12,6 +12,7 @@ import { randomUUID, createHash } from 'crypto';
 import { GoogleGenAI, Type } from '@google/genai';
 import { computeThumbHash } from '../thumbHash.js';
 import { describeImage, getMultimodalEmbedding } from '../../services/geminiService.js';
+import { makeSlug, pickName } from '../references/naming.js';
 import { vectorService } from '../../services/vectorService.js';
 import { connectToMongoDB, getDb } from '../../db/mongodb.js';
 import { normalizeCountry, regionForCountry } from '../../../src/lib/references/taxonomy.js';
@@ -250,8 +251,10 @@ export async function ingestReferenceLight(
   const db = getDb();
   const doc = {
     id,
-    // No AI title yet — fall back to the caller's name or the filename.
-    name: name || 'Reference',
+    // No AI title yet. `pickName` rejects filenames/placeholders, so enrichment
+    // can later replace this without a real caller title being overwritten.
+    name: pickName(name),
+    slug: makeSlug(name, id),
     description: '',
     prompt: prompt || '',
     referenceImageUrl: imageUrl,
@@ -458,14 +461,18 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
     ...(provenance.year ? { year: provenance.year } : {}),
   });
 
-  // 5. Patch the existing doc with the AI-derived fields. `name` keeps the
-  // human/filename title if there was one; only fills from AI when blank.
+  // 5. Patch the existing doc with the AI-derived fields. `name` keeps a REAL
+  // human title, but a placeholder (`'Reference'`, `IMG_2841.jpg`, `Untitled`)
+  // loses to the AI title — the old `name || analysis.title` guard treated the
+  // truthy ingest fallback as a real name and shadowed the AI title forever.
+  const resolvedName = pickName(name, analysis.title);
   const dimTags = Object.values(dimensions).flat();
   await db.collection('community_presets').updateOne(
     { id, category: 'reference' },
     {
       $set: {
-        name: name || analysis.title || 'Reference',
+        name: resolvedName,
+        slug: makeSlug(resolvedName, id),
         description: analysis.description,
         dimensions,
         provenance,

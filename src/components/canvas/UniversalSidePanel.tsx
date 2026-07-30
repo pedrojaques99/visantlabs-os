@@ -200,7 +200,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
         'backdrop-blur-xl border',
         isLight ? 'border-neutral-300/50' : 'border-neutral-800/50',
         'rounded-md shadow-2xl',
-        'transition-all duration-300 ease-out flex flex-col',
+        'transition-[color,background-color,border-color,box-shadow,filter] duration-300 ease-out flex flex-col',
         isResizing ? 'transition-none select-none' : ''
       )}
       style={{

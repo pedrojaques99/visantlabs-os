@@ -289,7 +289,7 @@ const RunBenchmark: React.FC = () => {
               onClick={() => selectTier(tier)}
               disabled={isStreaming}
               className={cn(
-                'px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-wider transition-all',
+                'px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-wider transition-[color,background-color,border-color,opacity]',
                 cfg.color,
                 'hover:bg-white/5 disabled:opacity-40'
               )}
@@ -333,7 +333,7 @@ const RunBenchmark: React.FC = () => {
                         onClick={() => toggleModel(model.id)}
                         disabled={isStreaming || (!model.available && !isSelected)}
                         className={cn(
-                          'relative flex flex-col items-start p-3 rounded-lg border text-left transition-all',
+                          'relative flex flex-col items-start p-3 rounded-lg border text-left transition-[color,background-color,border-color,opacity]',
                           !model.available && 'opacity-30 cursor-not-allowed',
                           isSelected
                             ? 'border-white/30 bg-white/5'
@@ -392,7 +392,7 @@ const RunBenchmark: React.FC = () => {
                   key={r}
                   onClick={() => setResolution(r)}
                   className={cn(
-                    'px-3 py-1.5 rounded text-xs font-mono transition-all',
+                    'px-3 py-1.5 rounded text-xs font-mono transition-colors',
                     resolution === r
                       ? 'bg-white/10 text-white'
                       : 'bg-white/[0.03] text-white/40 hover:text-white/60'
@@ -411,7 +411,7 @@ const RunBenchmark: React.FC = () => {
                   key={ar}
                   onClick={() => setAspectRatio(ar)}
                   className={cn(
-                    'px-3 py-1.5 rounded text-xs font-mono transition-all',
+                    'px-3 py-1.5 rounded text-xs font-mono transition-colors',
                     aspectRatio === ar
                       ? 'bg-white/10 text-white'
                       : 'bg-white/[0.03] text-white/40 hover:text-white/60'
@@ -455,7 +455,7 @@ const RunBenchmark: React.FC = () => {
             <GlassPanel className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  <Sparkles className="w-4 h-4 text-white/60 animate-pulse" />
                   <span className="text-xs text-white/60">
                     Generating {streamingResults.length}/{selectedModels.size}
                   </span>
@@ -475,7 +475,7 @@ const RunBenchmark: React.FC = () => {
               </div>
               <div className="w-full bg-white/5 rounded-full h-1">
                 <motion.div
-                  className="bg-cyan-400 h-1 rounded-full"
+                  className="bg-white/50 h-1 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${(streamingResults.length / selectedModels.size) * 100}%` }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -510,7 +510,7 @@ const RunBenchmark: React.FC = () => {
                   >
                     <GlassPanel
                       className={cn(
-                        'overflow-hidden transition-all',
+                        'overflow-hidden transition-colors',
                         isWinner && 'ring-1 ring-warning/30',
                         result.isNew && 'ring-1 ring-cyan-400/40'
                       )}
@@ -750,7 +750,7 @@ const BenchmarkGallery: React.FC = () => {
             whileHover={{ y: -2 }}
           >
             <GlassPanel
-              className="overflow-hidden cursor-pointer hover:border-white/15 transition-all"
+              className="overflow-hidden cursor-pointer hover:border-white/15 transition-colors"
               onClick={() => openBenchmark(item.id)}
             >
               <div className="grid grid-cols-2 gap-0.5 aspect-square bg-black/20">

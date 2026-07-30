@@ -60,4 +60,21 @@ export const SEGMENTS: Segment[] = [
   },
 ];
 
+/** Destino padrão de quem termina o onboarding COM uma marca na mão. */
 export const DEFAULT_ROUTE = '/mockupmachine';
+
+/**
+ * Destino de quem termina o onboarding SEM marca nenhuma (a marca demo falhou, ou
+ * o wizard legado que nem tenta criar uma).
+ *
+ * Por que não o `DEFAULT_ROUTE`: o mockupmachine sem marca gera fora de contexto,
+ * que é justamente a metade do produto que o usuário veio buscar. Ele sai do
+ * onboarding sem entender por que o resultado veio genérico.
+ *
+ * Por que `/cockpit` e não `/brand-guidelines`: o `HomeRoute` (App.tsx) passou a
+ * renderizar a checklist de ativação quando `brands.length === 0`, em vez de fazer
+ * bounce pra lista. `/cockpit` é agora o ÚNICO lugar onde o estado "sem marca" se
+ * resolve — mandar pra `/brand-guidelines` recriaria a perda de contexto (tela de
+ * gerenciamento de arquivos com copy de utilitário) que o fix de ativação removeu.
+ */
+export const NO_BRAND_ROUTE = '/cockpit';

@@ -44,7 +44,7 @@ const NumPair: React.FC<{
   labelB: string;
 }> = ({ label, ax, ay, onA, onB, labelA, labelB }) => (
   <div className="flex flex-col gap-1">
-    <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">{label}</span>
+    <span className="text-[10px] text-neutral-400 uppercase tracking-wider">{label}</span>
     <div className="grid grid-cols-2 gap-1">
       <label className="flex items-center gap-1 text-[10px] font-mono">
         <span className="text-neutral-500 w-4">{labelA}</span>

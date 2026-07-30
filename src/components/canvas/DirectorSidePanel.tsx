@@ -82,7 +82,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   return (
     <div
       className={cn(
-        'rounded-md border transition-all duration-200',
+        'rounded-md border transition-colors duration-200',
         theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
       )}
     >
@@ -90,7 +90,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
+          'w-full flex justify-between items-center text-left p-3 transition-colors duration-200',
           'hover:bg-neutral-800/10',
           isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50')
         )}
@@ -254,7 +254,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   return (
     <div
       className={cn(
-        'rounded-md border transition-all duration-200',
+        'rounded-md border transition-colors duration-200',
         theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
       )}
     >
@@ -262,7 +262,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
+          'w-full flex justify-between items-center text-left p-3 transition-colors duration-200',
           'hover:bg-neutral-800/10',
           isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50')
         )}
@@ -350,7 +350,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onBlur={handleBlur}
                 placeholder={t('mockup.customCategoryPlaceholder')}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px]',
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px]',
                   theme === 'dark'
                     ? 'bg-neutral-800/50 text-neutral-300'
                     : 'bg-neutral-100/50 text-neutral-800'
@@ -410,7 +410,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
   return (
     <div
       className={cn(
-        'rounded-md border transition-all duration-200',
+        'rounded-md border transition-colors duration-200',
         theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
       )}
     >
@@ -418,7 +418,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
+          'w-full flex justify-between items-center text-left p-3 transition-colors duration-200',
           'hover:bg-neutral-800/10',
           isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50')
         )}
@@ -583,7 +583,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 onClick={onAnalyze}
                 disabled={isAnalyzing}
                 className={cn(
-                  'w-full px-4 py-3 rounded-md border transition-all duration-200',
+                  'w-full px-4 py-3 rounded-md border transition-colors duration-200',
                   'flex items-center justify-center gap-2',
                   'text-sm',
                   isAnalyzing

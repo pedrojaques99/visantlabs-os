@@ -136,7 +136,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/grad:opacity-100 transition-all shrink-0"
+                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/grad:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
                 onClick={() => removeGradient(gi)}
                 aria-label="Remove"
               >
@@ -153,7 +153,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       type="button"
                       onClick={() => updateItem(gi, { type: t })}
                       className={cn(
-                        'flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all',
+                        'flex-1 h-6 rounded border text-[10px] uppercase transition-colors',
                         g.type === t
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -180,7 +180,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       type="button"
                       onClick={() => updateItem(gi, { usage: u })}
                       className={cn(
-                        'px-2 h-5 rounded border text-[10px] font-mono transition-all',
+                        'px-2 h-5 rounded border text-[10px] font-mono transition-colors',
                         g.usage === u
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'

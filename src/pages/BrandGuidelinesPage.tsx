@@ -201,7 +201,7 @@ const BrandCard = ({
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
       className={cn(
-        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-ring hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left',
+        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-ring hover:shadow-lg hover:shadow-black/20 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-200 overflow-hidden text-left',
         archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
       )}
     >
@@ -349,7 +349,7 @@ const BrandCard = ({
             <div className="relative z-[2] flex items-center gap-1.5">
               <div className="w-16 h-1 rounded-full bg-muted overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', SCORE_COLORS[status])}
+                  className={cn('h-full rounded-full transition-colors', SCORE_COLORS[status])}
                   style={{ width: `${report.score}%` }}
                 />
               </div>
@@ -391,7 +391,7 @@ const BrandQuotaMeter = ({
         <div className="hidden sm:block w-16 h-1 rounded-full bg-muted overflow-hidden">
           <div
             className={cn(
-              'h-full rounded-full transition-all',
+              'h-full rounded-full transition-colors',
               full ? 'bg-warning' : 'bg-muted-foreground'
             )}
             style={{ width: `${pct}%` }}

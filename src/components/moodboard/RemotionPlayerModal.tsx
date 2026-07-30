@@ -20,7 +20,7 @@ interface ControlGroupProps {
   children: React.ReactNode;
 }
 const ControlGroup: React.FC<ControlGroupProps> = ({ label, icon, children }) => (
-  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-neutral-900/60 border border-border hover:border-border/70 transition-all">
+  <div className="flex flex-col gap-3 p-4 rounded-2xl bg-neutral-900/60 border border-border hover:border-border/70 transition-colors">
     <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">
       {icon}
       {label}
@@ -151,7 +151,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-neutral-800 rounded-full transition-all md:hidden text-white"
+                className="p-2 hover:bg-neutral-800 rounded-full transition-colors md:hidden text-white"
               >
                 <X size={20} />
               </button>
@@ -233,7 +233,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
               </div>
               <button
                 onClick={onClose}
-                className="hidden md:flex p-2 hover:bg-neutral-800 rounded-full transition-all text-white"
+                className="hidden md:flex p-2 hover:bg-neutral-800 rounded-full transition-colors text-white"
               >
                 <X size={18} />
               </button>

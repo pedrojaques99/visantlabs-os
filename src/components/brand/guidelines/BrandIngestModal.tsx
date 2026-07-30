@@ -68,7 +68,7 @@ const ItemCheck: React.FC<{
   dim?: boolean;
 }> = ({ checked, onToggle, children, dim }) => (
   <div
-    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-white/[0.03] transition-all ${
+    className={`flex items-center gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-white/[0.03] transition-[color,background-color,border-color,opacity] ${
       dim && !checked ? 'opacity-30' : ''
     }`}
     onClick={onToggle}
@@ -125,7 +125,7 @@ const SectionShell: React.FC<{
           <div className="w-2 h-0.5 bg-neutral-400 rounded" />
         ) : null}
       </div>
-      <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 flex-1">
+      <span className="text-[10px] uppercase tracking-widest text-neutral-500 flex-1">
         {label}
       </span>
       {loading && <GlitchLoader size={11} className="flex-shrink-0" />}
@@ -305,7 +305,7 @@ const AssetsSection: React.FC<{
     {data.map((src, i) => (
       <div
         key={i}
-        className={`relative aspect-square rounded border overflow-hidden cursor-pointer transition-all ${
+        className={`relative aspect-square rounded border overflow-hidden cursor-pointer transition-[color,background-color,border-color,opacity] ${
           sel.has(i) ? 'border-white/20' : 'border-neutral-800 opacity-30'
         }`}
         onClick={() => toggle(i)}
@@ -591,7 +591,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
                       ? 'Add selected tokens, keep existing'
                       : 'Replace tokens with selected data'
                   }
-                  className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-all ${
+                  className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-colors ${
                     mode === m
                       ? 'bg-white/10 text-neutral-200'
                       : 'text-neutral-600 hover:text-neutral-400'

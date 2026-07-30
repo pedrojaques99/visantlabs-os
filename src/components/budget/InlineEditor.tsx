@@ -179,7 +179,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       onClick={handleClick}
       className={`cursor-pointer group relative ${
         hasLineBreaks ? 'block' : 'inline-block'
-      } ${className} transition-all hover:bg-brand-cyan/10 hover:rounded px-1 py-0.5`}
+      } ${className} transition-colors hover:bg-brand-cyan/10 hover:rounded px-1 py-0.5`}
       title="Click to edit"
       style={{
         ...style,

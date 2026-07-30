@@ -182,7 +182,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <span
           key={i}
           className={cn(
-            'underline decoration-brand-cyan/30 underline-offset-4 transition-all duration-300',
+            'underline decoration-brand-cyan/30 underline-offset-4 transition-colors duration-300',
             'hover:text-brand-cyan hover:decoration-brand-cyan hover:bg-brand-cyan/10 px-0.5 rounded-sm'
           )}
         >
@@ -257,7 +257,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     <section
       id="prompt-section"
       className={cn(
-        'p-3 rounded-xl border transition-all duration-300',
+        'p-3 rounded-xl border transition-colors duration-300',
         theme === 'dark'
           ? 'bg-neutral-900/10 border-neutral-800/40 hover:bg-neutral-900/20'
           : 'bg-neutral-50 border-neutral-200 focus-within:border-brand-cyan/30'
@@ -281,7 +281,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             {isPromptReady ? (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 border border-success/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
                 <div className="w-1 h-1 rounded-full bg-success" />
-                <span className="text-[10px] font-mono text-success uppercase tracking-wider">
+                <span className="text-[10px] text-success uppercase tracking-wider">
                   {t('mockup.promptSynced')}
                 </span>
               </div>
@@ -295,7 +295,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                     size={8}
                     className="text-warning group-hover/sync:rotate-180 transition-transform duration-500"
                   />
-                  <span className="text-[10px] font-mono text-warning uppercase tracking-wider">
+                  <span className="text-[10px] text-warning uppercase tracking-wider">
                     {t('mockup.promptOutOfSync')}
                   </span>
                 </button>
@@ -330,7 +330,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <div
           onClick={() => setIsCollapsed(false)}
           className={cn(
-            'flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1',
+            'flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-colors mt-1',
             theme === 'dark'
               ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-neutral-700 text-neutral-400'
               : 'bg-white border-neutral-200 hover:border-neutral-700 text-neutral-600'
@@ -338,7 +338,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         >
           {isGeneratingPrompt ? (
             <>
-              <GlitchLoader size={10} className="text-brand-cyan shrink-0" />
+              <GlitchLoader size={10} className="text-muted-foreground shrink-0" />
               <span className="truncate flex-1">{statusMessages[messageIndex]}...</span>
             </>
           ) : promptPreview ? (
@@ -379,7 +379,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                   aria-label={statusMessages[messageIndex]}
                 >
                   <div className="flex items-center gap-1">
-                    <GlitchLoader size={10} className="text-brand-cyan" />
+                    <GlitchLoader size={10} className="text-muted-foreground" />
                   </div>
                 </div>
               )

@@ -436,7 +436,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         'backdrop-blur-md border',
         isLight ? 'border-neutral-300/50' : 'border-neutral-800/50',
         'rounded-lg shadow-2xl',
-        'transition-all duration-300 ease-out',
+        'transition-[color,background-color,border-color,box-shadow,filter] duration-300 ease-out',
         'flex flex-col'
       )}
       style={{

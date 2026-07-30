@@ -17,7 +17,12 @@ export interface ReferenceProvenance {
 
 export interface ReferenceItem {
   id: string;
+  /** Canonical title (EN) — matches the legacy library and seeds the slug. */
   name: string;
+  /** Short title per locale. Render via `localizedName`, never `name` directly. */
+  nameI18n?: { en?: string; pt?: string };
+  /** URL-safe handle. The `id` stays the key — see src/lib/references/naming.ts. */
+  slug?: string;
   studio?: string;
   description: string;
   referenceImageUrl: string;

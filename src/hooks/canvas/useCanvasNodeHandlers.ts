@@ -105,6 +105,7 @@ import {
 } from './utils/nodeGenerationUtils';
 import { uploadImageToR2Auto as uploadImageToR2AutoUtil } from './utils/r2UploadUtils';
 import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
+import { translate } from '@/utils/localeUtils';
 
 export const useCanvasNodeHandlers = (
   nodes: Node<FlowNodeData>[],
@@ -551,10 +552,10 @@ export const useCanvasNodeHandlers = (
           setTimeout(() => saveImmediately(), 100);
         }
 
-        toast.success(`Extracted ${result.colors.length} colors successfully`, { duration: 2000 });
+        toast.success(translate('canvas.colorsExtracted', undefined, { count: result.colors.length }), { duration: 2000 });
       } catch (error: any) {
         console.error('Error extracting colors:', error);
-        toast.error(error?.message || 'Failed to extract colors', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.colorsExtractFailed'), { duration: 5000 });
         updateNodeData<ColorExtractorNodeData>(nodeId, { isExtracting: false }, 'colorExtractor');
       }
     },
@@ -665,22 +666,22 @@ export const useCanvasNodeHandlers = (
           setTimeout(async () => {
             try {
               await saveImmediately();
-              toast.success('Brand identity extracted and saved successfully!', { duration: 3000 });
+              toast.success(translate('canvas.brandIdentitySaved'), { duration: 3000 });
             } catch (saveError) {
               // If save fails, still show success for analysis but warn about save
               console.error('Failed to save brand identity analysis:', saveError);
               toast.warning(
-                'Analysis saved locally but failed to save to database. Changes may be lost on reload.',
+                translate('canvas.brandIdentitySaveWarning'),
                 { duration: 5000 }
               );
             }
           }, 100); // Small delay to ensure state is updated
         } else {
-          toast.success('Brand identity extracted successfully!', { duration: 3000 });
+          toast.success(translate('canvas.brandIdentityExtracted'), { duration: 3000 });
         }
       } catch (error: any) {
         console.error('Error extracting brand identity:', error);
-        toast.error(error?.message || 'Failed to extract brand identity. Please try again.', {
+        toast.error(error?.message || translate('canvas.brandIdentityExtractFailed'), {
           duration: 5000,
         });
 
@@ -1230,7 +1231,7 @@ export const useCanvasNodeHandlers = (
         );
       } catch (err) {
         console.error('[handleCustomNodeExecute]', err);
-        toast.error('Node execution failed');
+        toast.error(translate('canvas.nodeExecutionFailed'));
       } finally {
         updateNodeData(nodeId, { isLoading: false });
       }

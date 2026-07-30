@@ -501,7 +501,7 @@ export const CommunityPage: React.FC = () => {
                 className="mb-6"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
                   <span className="text-[11px] text-muted-foreground">Comunidade ativa</span>
                 </div>
               </motion.div>
@@ -545,7 +545,7 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => navigate('/community/presets')}
-                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-all flex items-center gap-2"
+                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-[color,background-color,border-color,filter] flex items-center gap-2"
                   >
                     <Globe size={18} className="text-muted-foreground" />
                     <span className="font-manrope font-semibold">
@@ -556,7 +556,7 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => setShowWorkflowLibrary(true)}
-                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-all flex items-center gap-2"
+                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-[color,background-color,border-color,filter] flex items-center gap-2"
                   >
                     <FolderOpen size={18} className="text-muted-foreground" />
                   </Button>
@@ -705,7 +705,7 @@ export const CommunityPage: React.FC = () => {
                           </div>
                         ))
                       ) : (
-                        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest text-left">
+                        <p className="text-xs text-muted-foreground text-left">
                           {t('community.vazio')}
                         </p>
                       )}
@@ -821,7 +821,7 @@ export const CommunityPage: React.FC = () => {
                     <div className={cn('p-6 rounded-full', glassSurface.control)}>
                       <Workflow size={32} strokeWidth={1} className="text-muted-foreground" />
                     </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       Nenhum workflow público ainda
                     </p>
                   </motion.div>
@@ -900,7 +900,7 @@ export const CommunityPage: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <Plus size={10} className="text-neutral-500" />
-                            <span className="text-[10px] text-neutral-400 font-mono uppercase">
+                            <span className="text-[11px] text-neutral-400">
                               {t('community.usar_como_referncia')}
                             </span>
                           </div>
@@ -925,7 +925,7 @@ export const CommunityPage: React.FC = () => {
                     <div className={cn('p-6 rounded-full', glassSurface.control)}>
                       <ImageIcon size={32} strokeWidth={1} className="text-muted-foreground" />
                     </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       Galeria pública vazia
                     </p>
                   </motion.div>
@@ -989,7 +989,7 @@ export const CommunityPage: React.FC = () => {
                       className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-md transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
                     >
                       <Github size={22} className="group-hover:rotate-12 transition-transform" />
-                      <span className="font-mono uppercase tracking-widest">
+                      <span>
                         {t('community.ver_repositrio')}
                       </span>
                       <ArrowRight

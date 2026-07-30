@@ -335,7 +335,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         <Button
           variant="ghost"
           onClick={onClose}
-          className="absolute top-2 right-2 p-1.5 rounded-md text-neutral-400/40 hover:text-neutral-300/80 hover:bg-neutral-950/20 transition-all z-20"
+          className="absolute top-2 right-2 p-1.5 rounded-md text-neutral-400/40 hover:text-neutral-300/80 hover:bg-neutral-950/20 transition-[color,background-color,border-color,box-shadow,filter] z-20"
           title="Close (Esc)"
         >
           <X size={16} />
@@ -382,7 +382,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="inline-flex items-center justify-center rounded-md bg-neutral-950/30 px-3 py-2 border border-neutral-800">
-                    <Pickaxe size={20} className="text-brand-cyan pickaxe-swing" />
+                    <Pickaxe size={20} className="text-muted-foreground pickaxe-swing" />
                   </div>
                 </div>
               </div>
@@ -403,7 +403,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   variant="ghost"
                   onClick={handleDownload}
                   disabled={isDownloading}
-                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-all backdrop-blur-sm border border-neutral-800"
+                  className="p-2 rounded-md bg-neutral-950/70 text-neutral-400 hover:text-white hover:bg-neutral-950/60 transition-[color,background-color,border-color,filter] backdrop-blur-sm border border-neutral-800"
                   title={t('common.download') || 'Download'}
                 >
                   {isDownloading ? (
@@ -430,7 +430,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                       feedback.submit('up');
                     }}
                     className={cn(
-                      'w-8 h-8 rounded-md transition-all',
+                      'w-8 h-8 rounded-md transition-colors',
                       feedback.rating === 'up'
                         ? 'text-success bg-success/10 hover:bg-success/20'
                         : 'text-neutral-400 hover:text-white hover:bg-white/10'
@@ -456,7 +456,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                       feedback.submit('down');
                     }}
                     className={cn(
-                      'w-8 h-8 rounded-md transition-all',
+                      'w-8 h-8 rounded-md transition-colors',
                       feedback.rating === 'down'
                         ? 'text-destructive bg-destructive/10 hover:bg-destructive/20'
                         : 'text-neutral-400 hover:text-white hover:bg-white/10'
@@ -479,7 +479,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                     e.stopPropagation();
                     handleToggleLike();
                   }}
-                  className={`p-2 rounded-md transition-all backdrop-blur-sm ${
+                  className={`p-2 rounded-md transition-[color,background-color,border-color,filter] backdrop-blur-sm ${
                     localIsLiked
                       ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
                       : 'bg-neutral-950/70 text-neutral-400 hover:bg-neutral-950/60 hover:text-neutral-200'
@@ -561,7 +561,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomIn();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${
+                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
                   editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 title="Zoom In (Move camera closer)"
@@ -583,7 +583,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomOut();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${
+                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
                   editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 title="Zoom Out (Move camera further)"
@@ -605,7 +605,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   setShowReImaginePanel(true);
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-brand-cyan border border-brand-cyan/20 hover:border-brand-cyan/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${
+                className={`flex items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-brand-cyan border border-brand-cyan/20 hover:border-brand-cyan/40 hover:bg-brand-cyan/10 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
                   editButtonsDisabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 title="Re-imagine with AI"
@@ -629,7 +629,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               variant="ghost"
               onClick={handleOpenInEditor}
               disabled={isConvertingImage}
-              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${
+              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-neutral-950/10 backdrop-blur-sm text-neutral-400 border border-neutral-800 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-[color,background-color,border-color,opacity,filter] duration-200 ${
                 isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               title="Open in Editor"
@@ -654,7 +654,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
           <div className="flex-shrink-0 space-y-3 border-t border-neutral-800/50 pt-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-neutral-500 uppercase">
+                <span className="text-xs text-neutral-400 uppercase tracking-wider">
                   {mockup.designType}
                 </span>
                 <span className="text-xs font-mono text-neutral-500">{mockup.aspectRatio}</span>

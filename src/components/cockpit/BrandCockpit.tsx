@@ -368,7 +368,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     >
                       <div className="h-1 w-20 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-brand-cyan/70 transition-all"
+                          className="h-full rounded-full bg-brand-cyan/70 transition-colors"
                           style={{ width: `${depthReport.score}%` }}
                         />
                       </div>
@@ -412,7 +412,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     className="flex items-center justify-between gap-2 w-full text-left group/nba"
                   >
                     <MicroTitle className="text-muted-foreground">{t('cockpit.nba.title')}</MicroTitle>
-                    <span className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover/nba:text-foreground transition-colors">
+                    <span className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground group-hover/nba:text-foreground transition-colors">
                       {nbaCollapsed && <span className="tabular-nums">{nextActions.length}</span>}
                       <ChevronDown
                         size={14}
@@ -566,7 +566,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                               <p className="text-xs font-medium text-foreground truncate">
                                 {item.title}
                               </p>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">
+                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground truncate">
                                 {item.meta}
                               </p>
                             </div>

@@ -196,7 +196,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <Button
             variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md"
+            className="p-2 text-neutral-500 hover:text-white transition-[color,background-color,border-color,box-shadow,filter] hover:bg-neutral-800/50 rounded-md"
           >
             <X size={20} />
           </Button>
@@ -243,7 +243,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 variant="ghost"
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
-                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
+                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] duration-300 backdrop-blur-sm disabled:opacity-50"
               >
                 {isUploadingCover ? (
                   <GlitchLoader size={24} />

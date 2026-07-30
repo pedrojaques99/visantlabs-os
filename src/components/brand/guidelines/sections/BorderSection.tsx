@@ -126,7 +126,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/border:opacity-100 transition-all shrink-0"
+                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/border:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
                 onClick={() => removeBorder(bi)}
                 aria-label="Remove"
               >
@@ -143,7 +143,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       type="button"
                       onClick={() => update(bi, { style: s })}
                       className={cn(
-                        'flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all',
+                        'flex-1 h-6 rounded border text-[10px] uppercase transition-colors',
                         b.style === s
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -200,7 +200,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       type="button"
                       onClick={() => update(bi, { role: r })}
                       className={cn(
-                        'px-2 h-5 rounded border text-[10px] font-mono transition-all',
+                        'px-2 h-5 rounded border text-[10px] font-mono transition-colors',
                         b.role === r
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'

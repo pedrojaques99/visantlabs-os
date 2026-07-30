@@ -63,7 +63,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
           <button
             type="button"
             className={cn(
-              'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-all hover:opacity-90',
+              'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-[color,background-color,border-color,opacity] hover:opacity-90',
               style.ring
             )}
             aria-label={`Prontidão pra IA ${report.score}%`}
@@ -83,7 +83,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
           {/* Header: enquadra pelo OUTPUT (não pela vaidade "% completo"). Sem as
               6 barrinhas de grupo — não diziam nada e eram cara de dashboard slop. */}
           <div className="p-4 border-b border-neutral-800">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+            <div className="text-[10px] uppercase tracking-wider text-neutral-600">
               Prontidão pra IA
             </div>
             <p className="mt-1.5 text-[13px] text-neutral-300 leading-snug">

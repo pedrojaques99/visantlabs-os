@@ -102,9 +102,9 @@ const IdeaCard: React.FC<{
   <div className="group relative">
     <button
       onClick={onPrimary}
-      className="w-full min-h-[104px] flex flex-col text-left rounded-xl border border-[var(--brand-text)]/10 bg-transparent p-5 pr-11 hover:border-[var(--brand-text)]/25 hover:bg-[var(--brand-text)]/[0.02] transition-all"
+      className="w-full min-h-[104px] flex flex-col text-left rounded-xl border border-[var(--brand-text)]/10 bg-transparent p-5 pr-11 hover:border-[var(--brand-text)]/25 hover:bg-[var(--brand-text)]/[0.02] transition-colors"
     >
-      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--brand-text)]/35">
+      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--brand-text)]/35">
         {kicker}
       </span>
       <span className="mt-2 text-[15px] font-medium tracking-tight leading-snug text-[var(--brand-text)]">
@@ -259,7 +259,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           <div className="flex items-baseline gap-3 min-w-0">
             <MicroTitle className="text-[var(--brand-text)]/50">Make something</MicroTitle>
             {seasonal && (
-              <span className="hidden sm:inline truncate text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/30">
+              <span className="hidden sm:inline truncate text-[10px] uppercase tracking-widest text-[var(--brand-text)]/30">
                 {seasonal.label} · {seasonal.daysAway}d out
               </span>
             )}
@@ -268,7 +268,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             <button
               onClick={() => load(true)}
               disabled={loading || refreshing}
-              className="flex items-center gap-1.5 shrink-0 text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/35 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 shrink-0 text-[10px] uppercase tracking-widest text-[var(--brand-text)]/35 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
               aria-label="Regenerate ideas"
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />

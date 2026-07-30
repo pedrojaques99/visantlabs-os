@@ -201,11 +201,27 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
         </p>
       </div>
 
-      {/* Error */}
+      {/* Error over stale data: the rows/stats below are from the PREVIOUS
+          successful load, so label them as such and offer a retry. An error
+          banner with no recourse leaves the user staring at money data that
+          may silently be out of date. */}
       {historyError && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-2">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-sm text-destructive font-mono flex items-center gap-3">
           <X size={14} className="shrink-0" />
-          <span className="flex-1">{historyError}</span>
+          <span className="flex-1">
+            {historyError}
+            {' — '}
+            {t('usageHistory.showingStale') || 'exibindo os dados do carregamento anterior'}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setReloadNonce((n) => n + 1)}
+            disabled={isLoadingHistory}
+            className="h-7 px-3 text-[11px] font-mono shrink-0"
+          >
+            {t('usageHistory.retry') || 'Tentar novamente'}
+          </Button>
         </div>
       )}
 

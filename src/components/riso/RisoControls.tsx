@@ -318,7 +318,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     aria-label={`Set ink layer count to ${n}`}
                     onClick={() => store.updateSetting('colorCount', n)}
                     className={cn(
-                      'w-8 h-8 rounded-md text-[11px] font-mono transition-all duration-200 border',
+                      'w-8 h-8 rounded-md text-[11px] font-mono transition-colors duration-200 border',
                       store.colorCount === n
                         ? 'bg-white/10 text-white border-white/20'
                         : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'

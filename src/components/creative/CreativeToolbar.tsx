@@ -225,7 +225,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={logoUrl || ''}
               onChange={(e) => updateLogo(e.target.value)}
-              className="bg-neutral-800 text-[10px] font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-all hover:bg-neutral-750"
+              className="bg-neutral-800 text-[10px] font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
             >
               <option disabled value="">
                 Trocar...

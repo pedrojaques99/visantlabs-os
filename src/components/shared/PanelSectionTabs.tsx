@@ -69,7 +69,7 @@ export const PanelSectionTabs: React.FC<PanelSectionTabsProps> = ({
         className="flex-1 min-w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent focus-visible:outline-none"
       >
         <div className="px-4 pt-3 pb-2 border-b border-neutral-800/50 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+          <span className="text-[10px] uppercase tracking-widest text-neutral-400">
             {t.label}
           </span>
           {t.action}

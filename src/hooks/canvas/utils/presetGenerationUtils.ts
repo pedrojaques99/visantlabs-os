@@ -28,6 +28,7 @@ import { uploadImageToR2Auto } from './r2UploadUtils';
 import { DEFAULT_MODEL } from '@/constants/geminiModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 
 interface Preset {
   id: string;
@@ -87,8 +88,8 @@ export const generateImageWithPreset = async ({
   addToHistory,
   refreshSubscriptionStatus,
   canvasId,
-  errorMessage = `Connect an image to generate ${nodeType}`,
-  successMessage = `${nodeType} applied successfully!`,
+  errorMessage = translate('canvas.presetConnectImage'),
+  successMessage = translate('canvas.presetApplied'),
   onSuccess,
   promptOverride,
 }: PresetGenerationParams): Promise<void> => {
@@ -123,10 +124,11 @@ export const generateImageWithPreset = async ({
   try {
     imageBase64 = await normalizeImageToBase64(imageToUse);
     if (!validateBase64Image(imageBase64)) {
-      throw new Error('Invalid base64 format after conversion');
+      // Surfaced to the user by the catch below via error.message
+      throw new Error(translate('canvas.imageReadFailed'));
     }
   } catch (error: any) {
-    toast.error(error?.message || 'Failed to process image');
+    toast.error(error?.message || translate('canvas.failedToProcessImage'));
     updateNodeLoadingState(nodeId, false, nodeType);
     return;
   }
@@ -207,6 +209,8 @@ export const generateImageWithPreset = async ({
     cleanupFailedNode(newOutputNodeId, setNodes, setEdges);
     updateNodeLoadingState(nodeId, false, nodeType);
     const hint = error?.hint ? `\n${error.hint}` : '';
-    toast.error(`${error?.message || `Failed to generate ${nodeType}`}${hint}`, { duration: 6000 });
+    toast.error(`${error?.message || translate('canvas.presetGenerateFailed')}${hint}`, {
+      duration: 6000,
+    });
   }
 };

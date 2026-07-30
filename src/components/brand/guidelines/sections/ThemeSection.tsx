@@ -48,7 +48,7 @@ function ThemePreview({ theme }: { theme: BrandColorTheme }) {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: theme.primary }} />
           <span
-            className="text-[10px] font-mono uppercase tracking-widest opacity-60"
+            className="text-[10px] uppercase tracking-widest opacity-60"
             style={{ color: theme.text }}
           >
             {theme.name || 'Theme'}
@@ -220,7 +220,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                           />
                           {ROLES.map((role) => (
                             <div key={role} className="flex items-center gap-2">
-                              <label className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 w-16 shrink-0">
+                              <label className="text-[10px] uppercase tracking-widest text-neutral-600 w-16 shrink-0">
                                 {ROLE_LABELS[role]}
                               </label>
                               <div className="flex items-center gap-1.5 flex-1">

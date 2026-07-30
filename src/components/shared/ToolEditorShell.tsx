@@ -97,9 +97,19 @@ export const ToolEditorShell: React.FC<ToolEditorShellProps> = ({
     [isMobile, panelVisible, controlsPanelWidth, mobileSheetOpen]
   );
 
+  // NOTE (motion): this padding is LAYOUT, not decoration — it reserves the strip
+  // the controls panel / mobile sheet sits over, so the canvas content centers and
+  // scrolls inside the remaining box. It cannot become a transform: a transform
+  // would shift the painted content without resizing the box (breaking centering,
+  // scroll extent and hit-testing) and would turn this element into the containing
+  // block for any `position: fixed` descendant of the canvas.
+  // What we can do is stop `transition-all` from sweeping every animatable property
+  // into the same 300ms window — only padding actually changes here. Easing is left
+  // at the Tailwind default on purpose: `AppShellPanel` (src/components/ui/AppShell.tsx)
+  // slides with the same default curve, and the two must stay locked.
   const defaultCanvasClassName = hideTopBar
-    ? 'absolute inset-0 transition-all duration-300'
-    : 'absolute inset-0 pt-10 transition-all duration-300';
+    ? 'absolute inset-0 transition-[padding] duration-[var(--dur-slow)]'
+    : 'absolute inset-0 pt-10 transition-[padding] duration-[var(--dur-slow)]';
 
   return (
     <AppShell>

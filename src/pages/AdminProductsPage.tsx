@@ -527,7 +527,7 @@ export const AdminProductsPage: React.FC = () => {
               {filteredProducts.map((product) => (
                 <Card
                   key={product.id}
-                  className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all group"
+                  className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-colors group"
                 >
                   <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                     <div>
@@ -816,7 +816,7 @@ export const AdminProductsPage: React.FC = () => {
                               <label
                                 key={res}
                                 className={cn(
-                                  'flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-all',
+                                  'flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-colors',
                                   isChecked
                                     ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
                                     : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-600'
@@ -874,7 +874,7 @@ export const AdminProductsPage: React.FC = () => {
                               <label
                                 key={id}
                                 className={cn(
-                                  'flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-all',
+                                  'flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer transition-colors',
                                   isChecked
                                     ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
                                     : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-600'
@@ -1129,7 +1129,7 @@ export const AdminProductsPage: React.FC = () => {
                             <label
                               key={key}
                               className={cn(
-                                'flex items-center gap-2 px-3 py-2.5 rounded-md border cursor-pointer transition-all',
+                                'flex items-center gap-2 px-3 py-2.5 rounded-md border cursor-pointer transition-colors',
                                 isChecked
                                   ? 'bg-purple-500/10 border-purple-500/40 text-purple-400'
                                   : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-600'
@@ -1300,7 +1300,7 @@ export const AdminProductsPage: React.FC = () => {
                             <label
                               key={key}
                               className={cn(
-                                'flex items-center justify-center gap-2 px-3 py-2.5 rounded-md border cursor-pointer transition-all',
+                                'flex items-center justify-center gap-2 px-3 py-2.5 rounded-md border cursor-pointer transition-colors',
                                 isChecked
                                   ? `bg-${color}-500/10 border-${color}-500/40 text-${color}-400`
                                   : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-600'

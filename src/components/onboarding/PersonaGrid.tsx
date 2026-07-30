@@ -23,7 +23,7 @@ export const PersonaGrid: React.FC<PersonaGridProps> = ({ selectedId, onSelect, 
           key={seg.id}
           onClick={() => onSelect(seg.id)}
           className={cn(
-            'flex flex-col items-center gap-2 p-4 rounded-lg border transition-all text-center',
+            'flex flex-col items-center gap-2 p-4 rounded-lg border transition-colors text-center',
             selectedId === seg.id
               ? 'border-brand-cyan/40 bg-brand-cyan/5 text-white'
               : 'border-neutral-700/50 bg-neutral-800/30 text-neutral-400 hover:border-neutral-600'

@@ -200,7 +200,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
               variant="ghost"
               key={template.id}
               onClick={() => onSelectTemplate(template.id)}
-              className={`relative p-6 bg-neutral-900 border rounded-xl transition-all duration-300 text-left group ${
+              className={`relative p-6 bg-neutral-900 border rounded-xl transition-colors duration-300 text-left group ${
                 selectedTemplate === template.id
                   ? 'border-neutral-600 bg-brand-cyan/10'
                   : 'border-neutral-800 hover:border-neutral-700'
@@ -256,7 +256,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                 return (
                   <div
                     key={presetId}
-                    className="relative p-6 bg-neutral-900 border border-neutral-800 rounded-xl transition-all duration-300 group"
+                    className="relative p-6 bg-neutral-900 border border-neutral-800 rounded-xl transition-colors duration-300 group"
                   >
                     <div className="absolute top-4 right-4">
                       <Upload size={20} className="text-neutral-500" />
@@ -319,7 +319,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
               {budgets.map((budget) => (
                 <div
                   key={budget._id}
-                  className="relative p-6 bg-neutral-900 border border-neutral-800 rounded-xl transition-all duration-300 group"
+                  className="relative p-6 bg-neutral-900 border border-neutral-800 rounded-xl transition-colors duration-300 group"
                 >
                   <div className="absolute top-4 left-4">
                     <FileText size={20} className="text-neutral-500" />

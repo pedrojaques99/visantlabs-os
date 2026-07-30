@@ -461,7 +461,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
   // Unified top-right control pill — same design system as HOME/VOLTAR (contrast-safe hover).
   const ctrlBtnClass = cn(
-    'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-all',
+    'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
     navBtnClass
   );
   // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
@@ -508,7 +508,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => navigate('/')}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
@@ -518,7 +518,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
@@ -624,7 +624,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {/* Import / Create — edit mode only */}
             {canEdit && editMode && (
               <>
-                <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
                   Import / Create
                 </DropdownMenuLabel>
                 {guideline.id && (
@@ -640,7 +640,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             )}
 
             {/* Export / Connect — always available */}
-            <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
               Export / Connect
             </DropdownMenuLabel>
             <Button variant="menuItem" onClick={handleDownloadJSON}>
@@ -673,7 +673,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {canEdit && editMode && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
                   Quality
                 </DropdownMenuLabel>
                 <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
@@ -684,7 +684,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
             {/* Display — theme (always) + advanced editor (edit mode) */}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
               Display
             </DropdownMenuLabel>
             {canEdit && editMode && (
@@ -1028,7 +1028,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         >
           <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400">
+              <SheetTitle className="text-base font-semibold text-neutral-200">
                 {t('public.brand.guideline.editing_section')}
                 {activeEditSection && (
                   <span className="text-white ml-2">— {SECTION_LABELS[activeEditSection]}</span>
@@ -1061,7 +1061,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto z-[1100]"
           >
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400 flex items-center gap-2">
+              <SheetTitle className="text-base font-semibold text-neutral-200 flex items-center gap-2">
                 <SlidersHorizontal size={14} /> Advanced editor
               </SheetTitle>
             </SheetHeader>

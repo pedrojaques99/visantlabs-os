@@ -152,7 +152,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                   type="button"
                   onClick={() => seedIdea(s.prompt)}
                   className={cn(
-                    'group text-left rounded-2xl p-5 min-h-[9rem] flex flex-col justify-between hover:border-neutral-700 transition-all',
+                    'group text-left rounded-2xl p-5 min-h-[9rem] flex flex-col justify-between hover:border-neutral-700 transition-colors',
                     glassSurface.tile
                   )}
                 >

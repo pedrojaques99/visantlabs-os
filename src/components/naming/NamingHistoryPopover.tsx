@@ -112,7 +112,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
               className="max-h-[70vh] gap-2 overflow-y-auto scrollbar-none bg-neutral-900/80 p-4 backdrop-blur-xl shadow-2xl shadow-black/40"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                <span className="text-[10px] uppercase tracking-widest text-neutral-500">
                   Sessões anteriores
                 </span>
                 <button

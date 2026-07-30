@@ -97,7 +97,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+        className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
           theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
         }`}
       >
@@ -109,7 +109,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTags.length > 0) && (
               <MicroTitle className="text-[10px] truncate max-w-[200px]">
-                {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
+                {hasSelection && <span className="text-foreground">{selectionSummary}</span>}
                 {hasSelection && poolTags.length > 0 && (
                   <span className="text-neutral-500"> · </span>
                 )}
@@ -450,7 +450,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               </MicroTitle>
               {!isSectionExpanded && hasSectionSelection && (
                 <span className="text-[10px] truncate max-w-[200px]">
-                  <span className="text-brand-cyan">{sectionSelectionSummary}</span>
+                  <span className="text-foreground">{sectionSelectionSummary}</span>
                 </span>
               )}
             </div>
@@ -467,7 +467,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     clearAllTags();
                   }}
                   className={cn(
-                    'p-1.5 rounded-md transition-all duration-200 z-10',
+                    'p-1.5 rounded-md transition-colors duration-200 z-10',
                     theme === 'dark'
                       ? ' hover:text-neutral-300 hover:bg-neutral-800/50 border border-transparent hover:border-neutral-700/50'
                       : ' hover:text-neutral-700 hover:bg-neutral-100 border border-transparent hover:border-neutral-300'
@@ -524,7 +524,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 <Button
                   variant="ghost"
                   onClick={() => setIsFinalExpanded(!isFinalExpanded)}
-                  className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+                  className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
                     theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
                   }`}
                 >
@@ -596,7 +596,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     {/* Custom tags section - inside OUTROS */}
                     <div
                       className={cn(
-                        'rounded-md border p-2.5 transition-all duration-200',
+                        'rounded-md border p-2.5 transition-colors duration-200',
                         customSelectedTags.length > 0 || isEditingCustom
                           ? theme === 'dark'
                             ? 'bg-neutral-800/30 border-neutral-800'
@@ -644,7 +644,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                             onBlur={handleBlur}
                             placeholder={t('mockup.customCategoryPlaceholder')}
                             className={cn(
-                              'px-3 py-1 text-[10px] h-7 transition-all duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
+                              'px-3 py-1 text-[10px] h-7 transition-colors duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
                               theme === 'dark'
                                 ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-neutral-600'
                                 : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-neutral-600'

@@ -14,7 +14,7 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({ checked, onClick, label, d
   const toggle = (
     <div
       className={cn(
-        'w-8 h-4 rounded-full border transition-all duration-300 relative cursor-pointer',
+        'w-8 h-4 rounded-full border transition-colors duration-300 relative cursor-pointer',
         checked
           ? 'bg-brand-cyan/20 border-brand-cyan/40'
           : dark
@@ -52,7 +52,7 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({ checked, onClick, label, d
       {toggle}
       <span
         className={cn(
-          'text-[10px] uppercase tracking-widest font-mono transition-colors',
+          'text-[10px] uppercase tracking-widest transition-colors',
           checked
             ? 'text-brand-cyan'
             : dark

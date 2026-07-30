@@ -19,6 +19,7 @@ import { isSeedreamModel, getSeedreamModelConfig } from '@/constants/seedreamMod
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { collectVariables, applyVariables } from '@/utils/canvas/resolveVariables';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import { toast } from 'sonner';
 
 interface UsePromptNodeHandlersParams {
@@ -95,7 +96,7 @@ export const usePromptNodeHandlers = ({
       if (!node || node.type !== 'prompt') return;
 
       if (!prompt.trim()) {
-        toast.error('Please enter a prompt first', { duration: 3000 });
+        toast.error(translate('canvas.enterPromptFirst'), { duration: 3000 });
         return;
       }
 
@@ -117,7 +118,7 @@ export const usePromptNodeHandlers = ({
         );
       } catch (err: any) {
         console.error('Error suggesting prompts:', err);
-        toast.error(err?.message || 'Failed to generate prompt suggestions', { duration: 5000 });
+        toast.error(err?.message || translate('canvas.suggestionsFailed'), { duration: 5000 });
         updateNodeData<PromptNodeData>(nodeId, { isSuggestingPrompts: false }, 'prompt');
       }
     },
@@ -211,9 +212,11 @@ export const usePromptNodeHandlers = ({
                 ? getSeedreamModelConfig(selectedModel)?.label
                 : getModelConfig(selectedModel as GeminiModel).label;
             toast.error(
-              `Maximum ${maxImages} images allowed for ${
-                modelLabel || selectedModel
-              } model. You have ${uploadedImages.length} images connected.`,
+              translate('canvas.maxImagesForModel', undefined, {
+                model: modelLabel || selectedModel,
+                max: maxImages,
+                count: uploadedImages.length,
+              }),
               { duration: 5000 }
             );
             return;
@@ -358,7 +361,7 @@ export const usePromptNodeHandlers = ({
           model: selectedModel,
           provider,
         });
-        toast.success('Image generated successfully!', { duration: 3000 });
+        toast.success(translate('canvas.imageGenerated'), { duration: 3000 });
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'prompt', undefined, {
           model: selectedModel,
@@ -379,7 +382,7 @@ export const usePromptNodeHandlers = ({
 
         if (error?.errorData?.isModelQuestion) {
           const modelMessage =
-            error.errorData.message || 'The AI needs more information to generate the image.';
+            error.errorData.message || translate('canvas.aiNeedsMoreInfo');
           toast(modelMessage, {
             duration: 8000,
             icon: '💬',
@@ -396,7 +399,7 @@ export const usePromptNodeHandlers = ({
           error?.errorData?.message ||
           error?.errorData?.error ||
           error?.message ||
-          'Failed to generate image';
+          translate('canvas.imageGenerateFailed');
         toast.error(errorMessage, { duration: 5000 });
       }
     },

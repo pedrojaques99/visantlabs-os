@@ -268,7 +268,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={toggleAll}
-                  className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors"
+                  className="text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors"
                 >
                   {selected.size === emptySections.length ? 'Desmarcar tudo' : 'Selecionar tudo'}
                 </button>
@@ -292,7 +292,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                             key={key}
                             onClick={() => toggleSection(key)}
                             className={cn(
-                              'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left transition-all',
+                              'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left transition-colors',
                               selected.has(key)
                                 ? 'border-warning/30 bg-warning/[0.06] text-neutral-200'
                                 : 'border-neutral-800 bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
@@ -333,7 +333,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
           {loading && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
+              <p className="text-[11px] text-neutral-500 uppercase tracking-widest">
                 Gerando conteúdo…
               </p>
             </div>
@@ -352,7 +352,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                     <div
                       key={key}
                       className={cn(
-                        'rounded-lg border p-3 transition-all',
+                        'rounded-lg border p-3 transition-[color,background-color,border-color,opacity]',
                         isExcluded
                           ? 'border-neutral-800 bg-white/[0.03] opacity-40'
                           : 'border-success/20 bg-success/[0.04]'
@@ -369,7 +369,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                         <button
                           onClick={() => toggleExclude(key)}
                           className={cn(
-                            'text-[10px] font-mono uppercase tracking-widest transition-colors',
+                            'text-[10px] uppercase tracking-widest transition-colors',
                             isExcluded
                               ? 'text-neutral-600 hover:text-success'
                               : 'text-neutral-500 hover:text-destructive'
@@ -387,7 +387,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between mt-4">
                 <button
                   onClick={() => setPatch(null)}
-                  className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                 >
                   ← Voltar
                 </button>

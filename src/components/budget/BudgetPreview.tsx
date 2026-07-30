@@ -460,8 +460,10 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
                   </div>
                 </td>
                 <td className="text-center py-3 px-4 tabular-nums">{deliverable.quantity}</td>
-                <td className="text-right py-3 px-4">{formatCurrency(deliverable.unitValue)}</td>
-                <td className="text-right py-3 px-4 font-semibold">
+                <td className="text-right py-3 px-4 tabular-nums">
+                  {formatCurrency(deliverable.unitValue)}
+                </td>
+                <td className="text-right py-3 px-4 font-semibold tabular-nums">
                   {formatCurrency(calculateTotal(deliverable))}
                 </td>
               </tr>
@@ -473,7 +475,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
                 {t('budget.total')}:
               </td>
               <td
-                className="text-right py-4 px-4 font-bold text-lg"
+                className="text-right py-4 px-4 font-bold text-lg tabular-nums"
                 style={{ color: primaryColor }}
               >
                 {formatCurrency(calculateGrandTotal())}
@@ -501,8 +503,10 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
           </h3>
           <div className="space-y-4">
             {data.faq.map((item, index) => (
-              <div key={index} className="border-l-4 pl-4" style={{ borderColor: secondaryColor }}>
-                <h4 className="font-semibold mb-1">{item.question}</h4>
+              <div key={index} className="border-l pl-4" style={{ borderColor: secondaryColor }}>
+                <h4 className="font-semibold mb-1" style={{ color: secondaryColor }}>
+                  {item.question}
+                </h4>
                 <p className="text-neutral-700 text-sm">{item.answer}</p>
               </div>
             ))}

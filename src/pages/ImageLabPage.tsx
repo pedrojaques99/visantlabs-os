@@ -68,6 +68,7 @@ import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { ImageLabSavePreset } from '@/components/shared/ImageLabSavePreset';
 import { useToolInput } from '@/hooks/useToolInput';
+import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 
 const VALID_MODES = new Set<string>(['halftone', 'texture', 'riso', 'shaders']);
 
@@ -949,8 +950,17 @@ export const ImageLabPage: React.FC = () => {
         dropMessage={dropMessage}
         showLegalMenu={false}
         hideTopBar
-        canvasClassName="absolute inset-0 transition-all duration-300"
+        canvasClassName="absolute inset-0 transition-[color,background-color,border-color,filter] duration-300"
       >
+        {/* Funil de marca (Fase 5). Precisa ficar DENTRO do AppShell (zIndex 40),
+            senão o z-30 do banner some por baixo do shell. Posição custom: a
+            faixa top-center default colide com a FX bar (top-0 + mt-3, z-30),
+            então ancoramos no canto inferior esquerdo — livre em desktop (status
+            bar é bottom-center) e acima do mobile sheet (~56px) no mobile. */}
+        <BrandFunnelBanner
+          toolId="image-lab"
+          className="fixed bottom-16 md:bottom-3 left-3 z-30 flex items-center gap-3 rounded-full border border-white/10 bg-neutral-950/80 backdrop-blur-xl pl-3 pr-1.5 py-1.5 max-w-[calc(100vw-2rem)]"
+        />
         {/* Proximity sensor for FX bar auto-hide (z-0: works when magic hand inactive) */}
         <div className="absolute inset-0 z-0" onPointerMove={handleCanvasPointerMove} />
         {/* Top-strip proximity trigger — z-20 above magic hand overlay (z-10).
@@ -1065,7 +1075,7 @@ export const ImageLabPage: React.FC = () => {
               }}
               title="Show FX bar"
               className={cn(
-                'flex items-center justify-center h-5 px-8 rounded-b-lg transition-all duration-300',
+                'flex items-center justify-center h-5 px-8 rounded-b-lg transition-[color,background-color,border-color,opacity,filter] duration-300',
                 'bg-neutral-900/60 backdrop-blur-xl border-b border-x border-neutral-800/60',
                 'text-neutral-600 hover:text-neutral-400 hover:bg-neutral-900/90',
                 fxBarVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
@@ -1114,7 +1124,7 @@ export const ImageLabPage: React.FC = () => {
                     key={m.id}
                     onClick={() => handleModeChange(m.id)}
                     className={cn(
-                      'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 text-[11px] font-medium whitespace-nowrap',
+                      'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-[color,background-color,border-color,box-shadow] duration-200 text-[11px] font-medium whitespace-nowrap',
                       isActive
                         ? 'bg-white/12 text-white shadow-sm'
                         : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
@@ -1299,9 +1309,7 @@ export const ImageLabPage: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
-                  Keyboard Shortcuts
-                </span>
+                <span className="text-sm font-semibold text-neutral-200">Keyboard Shortcuts</span>
                 <button
                   onClick={() => setShortcutsOpen(false)}
                   className="text-neutral-600 hover:text-neutral-300 p-1"

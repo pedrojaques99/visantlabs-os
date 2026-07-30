@@ -121,7 +121,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     <div className={cn('group w-full flex flex-col gap-1.5', className)}>
       <div
         className={cn(
-          'relative flex flex-col w-full rounded-2xl transition-all duration-300',
+          'relative flex flex-col w-full rounded-2xl transition-[color,background-color,border-color,opacity] duration-300',
           'bg-white/5 border border-white/10 focus-within:border-white/20 focus-within:bg-white/10',
           disabled && 'opacity-50 grayscale cursor-not-allowed'
         )}

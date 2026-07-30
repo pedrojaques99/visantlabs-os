@@ -207,7 +207,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
         {canInteract && (
           <div className="absolute inset-0 z-20 pointer-events-none">
             {/* Top Buttons: Remove & Like - only the buttons block clicks, not the full row */}
-            <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-300">
+            <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300">
               {onRemove && (
                 <Button
                   variant="ghost"
@@ -215,7 +215,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                     e.stopPropagation();
                     onRemove();
                   }}
-                  className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-destructive/20 hover:text-destructive border border-neutral-800 transition-all shadow-lg pointer-events-auto"
+                  className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-destructive/20 hover:text-destructive border border-neutral-800 transition-[color,background-color,border-color,box-shadow,opacity,filter] shadow-lg pointer-events-auto"
                   title="Remove"
                 >
                   <X size={12} />
@@ -228,7 +228,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                     e.stopPropagation();
                     handleToggleLike();
                   }}
-                  className={`p-2 rounded-md backdrop-blur-md border transition-all shadow-lg pointer-events-auto ${
+                  className={`p-2 rounded-md backdrop-blur-md border transition-[color,background-color,border-color,box-shadow,filter] shadow-lg pointer-events-auto ${
                     localIsLiked
                       ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
                       : 'bg-neutral-950/60 text-neutral-400 border-neutral-800 hover:text-white hover:bg-neutral-950/80'
@@ -240,7 +240,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
               )}
             </div>
 
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-300">
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300">
               <GlassPanel
                 padding="none"
                 className="flex flex-row items-center gap-0.5 p-1 bg-neutral-950/80 backdrop-blur-xl border-white/10 rounded-lg shadow-2xl pointer-events-auto"
@@ -249,7 +249,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                   <a
                     href={imageUrl}
                     download={`mockup-${Date.now()}.png`}
-                    className="p-1.5 w-8 h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+                    className="p-1.5 w-8 h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-[color,background-color,border-color,box-shadow,opacity,filter]"
                     onClick={async (e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -292,7 +292,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                       onRedraw();
                     }}
                     disabled={editButtonsDisabled || isRedrawing}
-                    className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${
+                    className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] min-w-0 ${
                       editButtonsDisabled || isRedrawing
                         ? 'text-neutral-600 cursor-not-allowed opacity-50'
                         : 'text-neutral-300 hover:text-white hover:bg-white/10'
@@ -323,7 +323,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                         setShowReImaginePanel(true);
                       }}
                       disabled={editButtonsDisabled || isRedrawing}
-                      className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${
+                      className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] min-w-0 ${
                         editButtonsDisabled || isRedrawing
                           ? 'text-neutral-600 cursor-not-allowed opacity-50'
                           : 'text-brand-cyan hover:bg-brand-cyan/20'
@@ -358,7 +358,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                         feedback.submit('up');
                       }}
                       className={cn(
-                        'w-8 h-8 rounded-md transition-all',
+                        'w-8 h-8 rounded-md transition-colors',
                         feedback.rating === 'up'
                           ? 'text-success bg-success/10 hover:bg-success/20'
                           : 'text-neutral-400 hover:text-white hover:bg-white/10'
@@ -388,7 +388,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                         feedback.submit('down');
                       }}
                       className={cn(
-                        'w-8 h-8 rounded-md transition-all',
+                        'w-8 h-8 rounded-md transition-colors',
                         feedback.rating === 'down'
                           ? 'text-destructive bg-destructive/10 hover:bg-destructive/20'
                           : 'text-neutral-400 hover:text-white hover:bg-white/10'

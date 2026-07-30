@@ -120,7 +120,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/shadow:opacity-100 transition-all shrink-0"
+                className="h-5 w-5 text-neutral-800 hover:text-destructive opacity-0 group-hover/shadow:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity] shrink-0"
                 onClick={() => removeShadow(si)}
                 aria-label="Remove"
               >
@@ -137,7 +137,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                       type="button"
                       onClick={() => update(si, { type: t })}
                       className={cn(
-                        'flex-1 h-6 rounded border text-[10px] font-mono uppercase transition-all',
+                        'flex-1 h-6 rounded border text-[10px] uppercase transition-[color,background-color,border-color,box-shadow]',
                         s.type === t
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'

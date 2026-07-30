@@ -14,6 +14,7 @@ import { copyImageAsPng, downloadBlob, copyToClipboard } from '@/utils/clipboard
 import { validateFile } from '@/utils/fileUtils';
 import { Input } from '@/components/ui/input';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
@@ -195,6 +196,7 @@ function TemplateThumbnail({ id, active }: { id: OgTemplate; active: boolean }) 
 /* ------------------------------------------------------------------ */
 
 export const OgImagePage: React.FC = () => {
+  const { t } = useTranslation();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
@@ -397,7 +399,7 @@ export const OgImagePage: React.FC = () => {
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Logo</label>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors">
             <Upload size={10} />
             Upload
             <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -420,7 +422,7 @@ export const OgImagePage: React.FC = () => {
             Background Image
           </label>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors">
               <Upload size={10} />
               Upload
               <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
@@ -508,8 +510,9 @@ export const OgImagePage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Image}
-      title="OG Image Generator"
-      documentTitle="OG Image Generator"
+      title={t('apps.ogImage.name')}
+      toolId="og-image"
+      documentTitle={t('apps.ogImage.name')}
       onReset={handleReset}
       panel={panel}
       statusBar={statusBar}

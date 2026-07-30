@@ -30,6 +30,7 @@ import {
 import { CanvasErrorBoundary } from '@/components/shared/CanvasErrorBoundary';
 import { AppShellLegalMenu } from '@/components/ui/AppShellLegalMenu';
 import { SendToButton } from '@/components/shared/SendToButton';
+import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { AppShellMobileSheet } from '@/components/ui/AppShellMobileSheet';
 import { useIsMobile } from '@/hooks/use-media-query';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -1045,6 +1046,10 @@ export const GridPaintPage: React.FC = () => {
           onTouchEnd={onPointerUp}
         />
       </CanvasErrorBoundary>
+
+      {/* Funil de marca (Fase 5). Dentro do AppShell (zIndex 40) de propósito —
+          o banner é z-30 e sumiria por baixo do shell se ficasse fora. */}
+      <BrandFunnelBanner toolId="grid-paint" />
 
       {/* Top bar */}
       <AppShellTopBar

@@ -576,7 +576,7 @@ export const BudgetMachinePage: React.FC = () => {
           <Button
             onClick={handleDuplicate}
             variant="ghost"
-            className="p-2 h-9 w-9 text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all"
+            className="p-2 h-9 w-9 text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5 transition-colors"
             aria-label={t('budget.machine.duplicate_budget')}
           >
             <Copy size={16} />

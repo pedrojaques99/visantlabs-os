@@ -203,7 +203,7 @@ export function createGenericPresetNode<
             }}
             disabled={isLoading}
             className={cn(
-              'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
+              'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-[color,background-color,border-color,opacity] text-left node-interactive',
               'bg-neutral-900/30 border-neutral-800 hover:bg-neutral-800/50 hover:border-neutral-700',
               isLoading && 'opacity-50 cursor-not-allowed'
             )}

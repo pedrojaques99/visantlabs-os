@@ -283,7 +283,7 @@ function ShortlistRow({
                 <p className="text-xs leading-relaxed text-neutral-400">{card.rationale}</p>
               )}
 
-              <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+              <span className="block text-[10px] uppercase tracking-wider text-neutral-600">
                 {formatTag(card.territory)}
               </span>
 

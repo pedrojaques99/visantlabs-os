@@ -340,7 +340,7 @@ export const CreativeStudio: React.FC = () => {
               <button
                 onClick={() => setActiveTool(activeTool === 'lasso' ? 'select' : 'lasso')}
                 className={cn(
-                  'px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex items-center gap-2',
+                  'px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-[0.1em] transition-colors flex items-center gap-2',
                   activeTool === 'lasso'
                     ? 'border-brand-cyan/60 bg-brand-cyan/20 text-brand-cyan'
                     : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white hover:border-white/20'
@@ -351,7 +351,7 @@ export const CreativeStudio: React.FC = () => {
               </button>
               <button
                 onClick={() => setStatus('setup')}
-                className="px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700 transition-all flex items-center gap-2"
+                className="px-4 py-1.5 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-[10px] font-bold uppercase tracking-[0.1em] text-brand-cyan hover:bg-brand-cyan/20 hover:border-neutral-700 transition-colors flex items-center gap-2"
               >
                 <Diamond size={12} /> Gerar Novo
               </button>

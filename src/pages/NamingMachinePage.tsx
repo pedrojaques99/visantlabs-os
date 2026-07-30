@@ -50,6 +50,7 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { authService } from '@/services/authService';
 import { namingSessionApi, type NamingSessionScalars } from '@/services/namingSessionApi';
 import { getNamingSettings, updateNamingSettings } from '@/services/userSettingsService';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /** Backend valida cada lista (seen/liked/superliked/rejected) em ≤200 itens e
  *  dá 400 se passar — capa nos mais RECENTES antes de enviar. */
@@ -97,6 +98,7 @@ function deriveScalars(s: NamingSession): NamingSessionScalars {
 }
 
 export const NamingMachinePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { requireAuth } = useAuthGuard();
   const { onCreditPackagesModalOpen } = useLayout();
@@ -729,7 +731,7 @@ export const NamingMachinePage: React.FC = () => {
         </span>
       )}
       {prefetching && (
-        <span className="flex items-center gap-1 text-brand-cyan/80">
+        <span className="flex items-center gap-1 text-neutral-400">
           <Zap size={10} className="animate-pulse" /> calibrando pelo seu gosto
         </span>
       )}
@@ -739,8 +741,9 @@ export const NamingMachinePage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Zap}
-      title="Naming Machine"
-      documentTitle="Naming Machine"
+      title={t('apps.namingMachine.name')}
+      toolId="naming-machine"
+      documentTitle={t('apps.namingMachine.name')}
       onReset={handleReset}
       panel={phase === 'deck' ? panel : undefined}
       panelLabel="Shortlist"
@@ -854,7 +857,7 @@ function DeckSkeleton({ generating }: { generating: boolean }) {
       <div className="h-4 w-24 animate-pulse rounded-full bg-neutral-800/40" />
       <div className="h-10 w-48 animate-pulse rounded-lg bg-neutral-800/50" />
       <div className="h-3 w-56 animate-pulse rounded-full bg-neutral-800/30" />
-      <p className="mt-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+      <p className="mt-4 text-xs text-neutral-500">
         {generating ? 'gerando nomes…' : 'preparando o deck…'}
       </p>
     </GlassPanel>

@@ -87,7 +87,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* Close Button */}
         <Button
           onClick={onClose}
-          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${
+          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-[color,background-color,border-color,filter] duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${
             theme === 'dark'
               ? 'text-neutral-400 hover:text-neutral-200'
               : 'text-neutral-500 hover:text-neutral-700'
@@ -199,7 +199,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 onCreateMockup();
                 onClose();
               }}
-              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
+              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-[color,background-color,border-color,box-shadow] duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
                 theme === 'dark'
                   ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-neutral-600/30'
                   : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-neutral-600/30'

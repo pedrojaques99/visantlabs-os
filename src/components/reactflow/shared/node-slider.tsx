@@ -109,7 +109,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           onMouseDown={handleMouseDown}
           className={cn(
             'w-full h-1.5 bg-neutral-800 rounded-md appearance-none cursor-pointer',
-            'transition-all duration-150',
+            'transition-colors duration-150',
             className
           )}
           style={{

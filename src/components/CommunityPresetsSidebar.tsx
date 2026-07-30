@@ -36,7 +36,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             key={cat}
             onClick={() => onCategoryChange(cat)}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono tracking-wide transition-all duration-100 border',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono tracking-wide transition-colors duration-100 border',
               isActive
                 ? 'bg-muted border-border text-foreground'
                 : 'border-transparent text-neutral-600 hover:text-neutral-300 hover:bg-white/[0.03]'
@@ -55,7 +55,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
         <button
           onClick={() => onFilterTagChange(null)}
           className={cn(
-            'shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono border transition-all duration-100',
+            'shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono border transition-colors duration-100',
             filterTag === null
               ? 'bg-muted border-border text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -69,7 +69,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             key={tag}
             onClick={() => onFilterTagChange(filterTag === tag ? null : tag)}
             className={cn(
-              'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono border transition-all duration-100',
+              'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono border transition-colors duration-100',
               filterTag === tag
                 ? 'bg-muted border-border text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground'

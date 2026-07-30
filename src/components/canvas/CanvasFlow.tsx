@@ -865,7 +865,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     <div
       ref={reactFlowWrapper}
       className={cn(
-        'w-full h-full transition-all duration-300 ease-in-out',
+        'w-full h-full transition-colors duration-300 ease-in-out',
         isDragging && 'is-dragging',
         `edge-style-${edgeStyle}`
       )}

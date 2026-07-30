@@ -129,7 +129,7 @@ export const AboutPage: React.FC = () => {
                 <BreadcrumbLink asChild>
                   <Link
                     to="/"
-                    className="text-neutral-600 hover:text-neutral-400 font-mono text-[10px] uppercase tracking-widest transition-colors"
+                    className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors"
                   >
                     {t('common.home') || 'Home'}
                   </Link>
@@ -137,7 +137,7 @@ export const AboutPage: React.FC = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="text-neutral-800" />
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-neutral-500 font-mono text-[10px] uppercase tracking-widest">
+                <BreadcrumbPage className="text-neutral-400 text-xs">
                   Info
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -199,14 +199,14 @@ export const AboutPage: React.FC = () => {
                 <motion.div key={member.name} {...inView(i * 0.08)}>
                   <Link
                     to={member.profile}
-                    className="group flex items-start gap-4 p-4 rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] transition-all duration-200"
+                    className="group flex items-start gap-4 p-4 rounded-xl border border-neutral-800 bg-white/[0.03] hover:bg-white/5 hover:border-white/[0.1] transition-[color,background-color,border-color,opacity,filter] duration-200"
                     aria-label={member.name}
                   >
                     <div className="relative shrink-0">
                       <img
                         src={member.avatar}
                         alt={member.name}
-                        className="w-10 h-10 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-300"
+                        className="w-10 h-10 rounded-full object-cover grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-[color,background-color,border-color,opacity,filter] duration-300"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
@@ -222,7 +222,7 @@ export const AboutPage: React.FC = () => {
                       <p className="text-sm font-semibold text-neutral-200 group-hover:text-white transition-colors truncate">
                         {member.name}
                       </p>
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mt-0.5">
+                      <p className="text-xs text-neutral-500 mt-0.5">
                         {member.role}
                       </p>
                       <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
@@ -307,7 +307,7 @@ export const AboutPage: React.FC = () => {
             {...inView(0)}
             className="mt-10 pt-6 border-t border-neutral-800 flex items-center justify-between"
           >
-            <span className="font-mono text-[10px] text-neutral-700 uppercase tracking-widest">
+            <span className="text-xs text-neutral-500">
               {t('about.openSource.description') || 'Open source'}
             </span>
             <div className="flex items-center gap-4">
@@ -315,14 +315,14 @@ export const AboutPage: React.FC = () => {
                 href={getGithubUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 font-mono text-[10px] text-neutral-600 hover:text-neutral-300 transition-colors uppercase tracking-widest"
+                className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-200 transition-colors"
               >
-                <Github size={11} />
+                <Github size={12} />
                 GitHub
               </a>
               <Link
                 to="/apps"
-                className="font-mono text-[10px] text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-widest"
+                className="font-mono text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors"
               >
                 /apps →
               </Link>

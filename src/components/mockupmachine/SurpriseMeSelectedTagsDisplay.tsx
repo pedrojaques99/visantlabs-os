@@ -203,14 +203,14 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className={cn('relative flex-1 min-w-0 transition-all', isOpen && 'z-50')}
+      className={cn('relative flex-1 min-w-0 transition-colors', isOpen && 'z-50')}
     >
       <Button
         variant="ghost"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-all duration-200 border',
+          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-colors duration-200 border',
           selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
@@ -286,7 +286,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                     : 'text-brand-cyan hover:bg-neutral-100'
                 )}
               >
-                <Diamond size={12} className="text-brand-cyan" />
+                <Diamond size={12} className="text-muted-foreground" />
                 <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
               </Button>
             )}
@@ -338,7 +338,7 @@ interface ToggleCheckboxProps {
 const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label, theme }) => (
   <div
     className={cn(
-      'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all duration-200',
+      'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-colors duration-200',
       theme === 'dark'
         ? 'bg-neutral-800/40 border-neutral-700/40 hover:bg-neutral-800/60'
         : 'bg-neutral-100 border-neutral-200 hover:bg-neutral-200'
@@ -347,7 +347,7 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
   >
     <div
       className={cn(
-        'w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200',
+        'w-3.5 h-3.5 rounded flex items-center justify-center border transition-colors duration-200',
         value
           ? 'bg-brand-cyan/80 border-brand-cyan'
           : theme === 'dark'

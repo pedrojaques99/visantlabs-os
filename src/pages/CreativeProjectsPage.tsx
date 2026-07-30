@@ -344,7 +344,7 @@ export const CreativeProjectsPage: React.FC = () => {
                         e.stopPropagation();
                         handleOpen(project._id);
                       }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
+                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-[color,background-color,border-color,opacity] duration-300 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
                       Open
@@ -353,7 +353,7 @@ export const CreativeProjectsPage: React.FC = () => {
                       variant="ghost"
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deleteMutation.isPending}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-[color,background-color,border-color,opacity] duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

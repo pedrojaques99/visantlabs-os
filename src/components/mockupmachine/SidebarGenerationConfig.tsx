@@ -273,7 +273,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={onSwitchToEssential}
-          className="flex items-center gap-1 group text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+          className="flex items-center gap-1 group text-[10px] text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
         >
           <ChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
           {t('mockup.switchToEssential') || 'ESSENTIAL'}

@@ -56,7 +56,7 @@ export const BrandSelector: React.FC<BrandSelectorProps> = ({
   return (
     <div
       className={cn(
-        'flex items-center px-1.5 bg-neutral-900/40 border border-white/5 rounded-[10px] hover:bg-[#252525]/60 hover:border-white/10 transition-all duration-200 shadow-sm h-9',
+        'flex items-center px-1.5 bg-neutral-900/40 border border-white/5 rounded-[10px] hover:bg-[#252525]/60 hover:border-white/10 transition-[color,background-color,border-color,box-shadow] duration-200 shadow-sm h-9',
         className
       )}
     >

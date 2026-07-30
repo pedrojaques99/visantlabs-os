@@ -187,7 +187,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 disabled={isGeneratingPrompt || isLoading}
-                variant="purple"
+                variant="accent"
                 size="full"
                 className="node-interactive group/prompt"
               >

@@ -208,7 +208,7 @@ export const ColorPalettePage: React.FC = () => {
         {!imageUrl ? (
           <label
             className={cn(
-              'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-all',
+              'flex flex-col items-center justify-center gap-3 w-full h-48 rounded-xl border-2 border-dashed cursor-pointer transition-colors',
               isDragOver
                 ? 'border-brand-cyan bg-brand-cyan/5'
                 : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
@@ -317,7 +317,7 @@ export const ColorPalettePage: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => setAddingColor(true)}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-neutral-700 hover:border-neutral-500 flex items-center justify-center text-neutral-500 hover:text-neutral-300 transition-all"
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-neutral-700 hover:border-neutral-500 flex items-center justify-center text-neutral-500 hover:text-neutral-300 transition-colors"
                       >
                         <Plus size={16} />
                       </button>

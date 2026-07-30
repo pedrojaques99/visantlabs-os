@@ -67,7 +67,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
       <div
         id={id}
         className={cn(
-          'group flex flex-col gap-2 p-1 transition-all duration-300 col-span-full',
+          'group flex flex-col gap-2 p-1 transition-colors duration-300 col-span-full',
           spanClasses[span] || 'lg:col-span-12',
           rowSpan === '2' && 'lg:row-span-2',
           className
@@ -122,7 +122,7 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
         <GlassPanel
           padding="sm"
           intensity="default"
-          className="flex-1 flex flex-col transition-all duration-200"
+          className="flex-1 flex flex-col transition-colors duration-200"
         >
           <div className="flex-1 flex flex-col h-full w-full">{children}</div>
         </GlassPanel>

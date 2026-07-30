@@ -57,7 +57,7 @@
       "noMessages": "No messages yet. Start by describing what you want to create.",
       "undoingLast": "Undoing last operation…",
       "retrying": "Retrying…",
-      "noBrandPick": "No brand — pick one"
+      "noBrandPick": "No brand, pick one"
     },
     "message": {
       "mockupLoadFailed": "Failed to load mockup image",
@@ -178,10 +178,10 @@
         "roleSrf": "Srf",
         "roleTxt": "Txt",
         "fileVariables": "File variables",
-        "selected": "{name} selected — tap a slot below",
+        "selected": "{name} selected, tap a slot below",
         "tapHint": "Tap a color, then tap a slot to assign",
         "assign": "Assign {hex} to {label}",
-        "clickHint": "Click: pick from selection · Double-click: custom color"
+        "clickHint": "Click to pick from selection, double-click for a custom color"
       },
       "guideline": {
         "noTemplateOnPage": "No [Template] on this page",
@@ -196,7 +196,7 @@
         "syncAria": "Sync [Template] frames to the preview",
         "syncTitle": "Sync this page's [Template] frames with the preview",
         "sync": "Sync",
-        "empty": "No guidelines yet. Create one to get started.",
+        "empty": "No guidelines yet. Create the first one.",
         "namingGuide": "Naming Guide"
       },
       "intelligence": {
@@ -350,13 +350,13 @@
       },
       "automation": {
         "scanningColors": "Scanning colors…",
-        "aiNaming": "AI naming…",
+        "aiNaming": "Naming the colors…",
         "applying": "Applying…",
-        "smartColorRename": "Smart Color Rename",
-        "smartColorRenameTitle": "AI-rename selected color swatches using brand strategy + populate library",
+        "smartColorRename": "Rename colors by strategy",
+        "smartColorRenameTitle": "Renames the selected swatches using the brand strategy and populates the library",
         "varyingColors": "Varying colors…",
         "smartColorVariationsTitle": "Generate color variations of the selection using brand palette",
-        "smartColorVariations": "Smart Color Variations",
+        "smartColorVariations": "Generate color variations",
         "generatingVariants": "Generating variants…",
         "generateVariantsTitle": "Clone selection into Lava, Off-White and Terra color variants",
         "generateVariants": "Generate Variants",
@@ -486,7 +486,7 @@
         "copyPhotosOff": "Copy photos from Figma: OFF",
         "generateCards": "Generate {count} cards",
         "influencersStatus": "{count} influencers",
-        "timedOut": "Still running — check the canvas."
+        "timedOut": "Still running. Check the canvas."
       },
       "connectors": {
         "templatesStatus": "{count} templates",
@@ -543,7 +543,7 @@
         "empty": "No references yet",
         "savingAnalyzing": "Analysing and saving…",
         "savingProgress": "Saving {done} of {total}…",
-        "saveTimedOut": "Took too long to answer. The upload may still be finishing — check the library before retrying."
+        "saveTimedOut": "Took too long to answer. The upload may still be finishing, check the library before retrying."
       }
     },
     "nav": {
@@ -556,13 +556,13 @@
   },
   "brandMockupDialog": {
     "title": "Create Mockup",
-    "description": "{brandName} · logos, colors and typography injected automatically.",
+    "description": "{brandName}: logos, colors and typography injected automatically.",
     "brandFallback": "Brand",
-    "mediaLabel": "Mockup — {label}",
+    "mediaLabel": "Mockup: {label}",
     "back": "Back",
     "tryAgain": "Try again",
     "form": {
-      "brandPreviewTitle": "Brand preview — {aspectRatio} · {resolution}",
+      "brandPreviewTitle": "Brand preview: {aspectRatio}, {resolution}",
       "injectedFromBrand": "Injected from brand · {aspectRatio}",
       "scene": "Scene",
       "surpriseMe": "Surprise me",
@@ -621,7 +621,7 @@
     },
     "result": {
       "alt": "Generated mockup",
-      "fellBack": "Generated with {provider} — the chosen model was unavailable.",
+      "fellBack": "Generated with {provider}, the chosen model was unavailable.",
       "generateAnother": "Generate another",
       "download": "Download",
       "saved": "Saved",
@@ -637,7 +637,7 @@
       "describeScene": "Describe the mockup scene",
       "generated": "Mockup generated ({count} credit{plural})",
       "suggestError": "Error suggesting mockups",
-      "cancelled": "Cancelled — {count} mockup{plural} generated",
+      "cancelled": "Cancelled. {count} mockup{plural} generated",
       "batchDone": "{count}/{total} mockups generated",
       "noneGenerated": "No mockup generated",
       "savedToMediaKit": "Saved to Media Kit",
@@ -825,64 +825,64 @@
       "cancelar": "Cancelar",
       "ordem": "Ordem:",
       "produto_ativo": "Produto Ativo",
-      "link_de_pagamento_usd_stripe": "[EN] Link de Pagamento USD (Stripe)",
-      "link_de_pagamento_brl_stripe": "[EN] Link de Pagamento BRL (Stripe)",
+      "link_de_pagamento_usd_stripe": "USD payment link (Stripe)",
+      "link_de_pagamento_brl_stripe": "BRL payment link (Stripe)",
       "abacate_bill_id_pix": "Abacate Bill ID (PIX)",
       "abacate_product_id": "Abacate Product ID",
       "stripe_product_id": "Stripe Product ID",
-      "preo_usd_opcional": "[EN] Preço $ (USD) - Opcional",
-      "preo_r_brl": "[EN] Preço R$ (BRL)",
-      "crditos_2": "[EN] Créditos",
-      "cor_do_badge": "[EN] Cor do Badge",
+      "preo_usd_opcional": "Price $ (USD), optional",
+      "preo_r_brl": "Price R$ (BRL)",
+      "crditos_2": "Credits",
+      "cor_do_badge": "Badge color",
       "ex_50_off": "ex: 50% OFF",
       "badge_customizado": "Badge Customizado",
       "sla_horas": "SLA (horas)",
       "rollover": "Rollover %",
       "desconto_anual": "Desconto Anual %",
       "trial_dias": "Trial (dias)",
-      "reteno_histrico_dias": "[EN] Retenção Histórico (dias)",
+      "reteno_histrico_dias": "History retention (days)",
       "max_membros_time": "Max Membros Time",
       "prioridade_fila": "Prioridade Fila",
-      "resoluo_max": "[EN] Resolução Max",
-      "max_vdeo_seg": "[EN] Max Vídeo (seg)",
+      "resoluo_max": "Max resolution",
+      "max_vdeo_seg": "Max video (sec)",
       "max_ref_images": "Max Ref Images",
       "max_guidelines": "Max Guidelines",
       "max_projetos": "Max Projetos",
-      "geraeshora": "[EN] Gerações/Hora",
-      "geraesdia": "[EN] Gerações/Dia",
+      "geraeshora": "Generations/hour",
+      "geraesdia": "Generations/day",
       "intervalo": "Intervalo",
       "modelos_unlimited": "Modelos Unlimited",
-      "resolues_unlimited_nb2": "[EN] Resoluções Unlimited (NB2)",
+      "resolues_unlimited_nb2": "Unlimited resolutions (NB2)",
       "storage_gb": "Storage (GB)",
       "ex_starter_creator_agency_studio": "ex: starter, creator, agency, studio",
       "tier_id": "Tier ID",
-      "benefcio_110benefcio_210benefcio_3": "[EN] Benefício 1&#10;Benefício 2&#10;Benefício 3...",
-      "benefcios_um_por_linha_para_lista_e": "[EN] Benefícios (um por linha para lista em marcadores)",
-      "descrio_breve_do_que_este_produto_o": "[EN] Descrição breve do que este produto oferece...",
-      "descrio": "[EN] Descrição",
+      "benefcio_110benefcio_210benefcio_3": "Benefit 1&#10;Benefit 2&#10;Benefit 3...",
+      "benefcios_um_por_linha_para_lista_e": "Benefits (one per line for a bullet list)",
+      "descrio_breve_do_que_este_produto_o": "Short description of what this product offers...",
+      "descrio": "Description",
       "ex_pacote_gamer": "ex: Pacote Gamer",
       "nome_comercial": "Nome Comercial",
       "tipo": "Tipo",
       "ex_credits20_planpro": "ex: credits_20, plan_pro",
-      "id_do_produto_nico": "[EN] ID do Produto (único)",
+      "id_do_produto_nico": "Product ID (unique)",
       "fechar": "Fechar",
-      "preencha_os_detalhes_do_produto_e_l": "[EN] Preencha os detalhes do produto e links de pagamento.",
+      "preencha_os_detalhes_do_produto_e_l": "Fill in the product details and payment links.",
       "nenhum_produto_encontrado_nesta_cat": "Nenhum produto encontrado nesta categoria.",
       "payments": "Payments",
       "stripe": "Stripe",
       "unlimited": "Unlimited",
-      "crditos": "[EN] Créditos",
-      "preo_brl": "[EN] Preço BRL",
+      "crditos": "Credits",
+      "preo_brl": "Price BRL",
       "buscar_produto": "Buscar produto...",
-      "gerencie_pacotes_de_crditos_e_plano": "[EN] Gerencie pacotes de créditos e planos de assinatura.",
+      "gerencie_pacotes_de_crditos_e_plano": "Manage credit packs and subscription plans.",
       "produtos": "Produtos",
       "admin_produtos": "Admin | Produtos",
       "produto_removido": "Produto removido",
-      "tem_certeza_que_deseja_deletar_este": "[EN] Tem certeza que deseja deletar este produto?",
-      "preencha_os_campos_obrigatrios_id_d": "[EN] Preencha os campos obrigatórios (ID do Produto e Nome)",
-      "produtos_semeados_com_sucesso": "[EN] Produtos semeados com sucesso!",
-      "deseja_popular_a_base_com_os_pacote": "[EN] Deseja popular a base com os pacotes de créditos e planos padrão?",
-      "seed_error": "[EN] Erro ao semear: {error}",
+      "tem_certeza_que_deseja_deletar_este": "Delete this product? This cannot be undone.",
+      "preencha_os_campos_obrigatrios_id_d": "Fill in the required fields (Product ID and Name)",
+      "produtos_semeados_com_sucesso": "Products seeded",
+      "deseja_popular_a_base_com_os_pacote": "Seed the database with the default credit packs and plans?",
+      "seed_error": "Seeding failed: {error}",
       "title": "Products"
     },
     "profit": "Profit",
@@ -931,13 +931,13 @@
     "videosByModel": "Videos by Model",
     "saveError": "Save Error",
     "saveSuccess": "Save Success",
-    "todos_os_tipos_de_gerao_includos": "[EN] Todos os tipos de geração incluídos",
-    "crditos": "[EN] Créditos",
+    "todos_os_tipos_de_gerao_includos": "Every generation type included",
+    "crditos": "Credits",
     "stats": "Stats",
     "tipo": "Tipo",
     "modelo": "Modelo",
     "data": "Data",
-    "nenhum_registro_encontrado_para_este_usu": "[EN] Nenhum registro encontrado para este usuário.",
+    "nenhum_registro_encontrado_para_este_usu": "No records found for this user.",
     "carregando_registros": "Carregando registros...",
     "click_refresh_to_load_feedback_analytics": "Click refresh to load feedback analytics",
     "no_downvotes_in_this_window": "No downvotes in this window",
@@ -971,37 +971,37 @@
     "thumbs_down": "Thumbs Down",
     "vectorizationeligible": "vectorization-eligible",
     "approval_rate": "Approval Rate",
-    "sem_dados_de_canvas_events_ainda": "[EN] Sem dados de canvas events ainda",
-    "eventos_por_dia": "[EN] Eventos por Dia",
-    "ranking_de_nodes": "[EN] Ranking de Nodes",
+    "sem_dados_de_canvas_events_ainda": "No canvas event data yet",
+    "eventos_por_dia": "Events per day",
+    "ranking_de_nodes": "Node ranking",
     "carregando_analytics": "Carregando analytics...",
-    "resolues": "[EN] Resoluções:",
+    "resolues": "Resolutions:",
     "input_output": "Input + Output",
     "total_tokens": "Total Tokens",
-    "processamento_de_ia": "[EN] Processamento de IA",
-    "passos_de_texto": "[EN] Passos de Texto",
+    "processamento_de_ia": "AI processing",
+    "passos_de_texto": "Text steps",
     "total_gerado_2": "Total gerado",
     "total_gerado": "Total gerado",
-    "ltimos_30_dias": "[EN] Últimos 30 dias",
-    "novos_usurios": "[EN] Novos Usuários",
+    "ltimos_30_dias": "Last 30 days",
+    "novos_usurios": "New users",
     "failed_to_load_feedback_stats": "Failed to load feedback stats",
     "presets": {
-      "digite_uma_tag_e_pressione_enter": "[EN] Digite uma tag e pressione Enter",
+      "digite_uma_tag_e_pressione_enter": "Type a tag and press Enter",
       "nenhuma": "Nenhuma",
       "nenhum": "Nenhum",
-      "ou_faa_upload_de_uma_nova_imagem": "[EN] Ou faça upload de uma nova imagem:",
-      "fazendo_upload_da_imagem": "[EN] Fazendo upload da imagem...",
+      "ou_faa_upload_de_uma_nova_imagem": "Or upload a new image:",
+      "fazendo_upload_da_imagem": "Uploading the image...",
       "ex_mycustompreset": "ex: my-custom-preset",
       "erros_2": "Erros:",
       "resultado": "Resultado:",
       "erros": "Erros:",
-      "resultado_da_importao": "[EN] Resultado da importação:",
-      "falha_failed_itens_no_puderam_ser_cr": "[EN] Falha: ${failed} itens não puderam ser criados (podem já existir).",
-      "tem_certeza_que_deseja_deletar_este_": "[EN] Tem certeza que deseja deletar este preset?",
+      "resultado_da_importao": "Import result:",
+      "falha_failed_itens_no_puderam_ser_cr": "Failed: ${failed} items could not be created (they may already exist).",
+      "tem_certeza_que_deseja_deletar_este_": "Delete this preset? This cannot be undone.",
       "editar_preset": "Editar preset"
     },
     "chat": {
-      "assistente_estratgico_exclusivo_para_ad": "[EN] Assistente estratégico exclusivo para administradores da Visant Labs.",
+      "assistente_estratgico_exclusivo_para_ad": "Strategic assistant for Visant Labs administrators only.",
       "admin_strategic_chat_visant_labs": "Admin Strategic Chat | Visant Labs"
     },
     "pages": "Pages"
@@ -1058,7 +1058,7 @@
     "viewTable": "Table",
     "select": "Select",
     "clickToEdit": "Click To Edit",
-    "failedToCreatePreset": "Failed To Create Preset",
+    "failedToCreatePreset": "Could not create the preset. Try again.",
     "reference": "Reference",
     "removeImage": "Remove Image"
   },
@@ -1142,7 +1142,7 @@
       "description": "Extract, upscale and animate images from moodboards. Generate cinematic videos with Veo 3."
     },
     "mockupMachine": {
-      "description": "Generate professional mockups with AI",
+      "description": "Your designs on real products. In seconds.",
       "name": "Mockup Machine"
     },
     "seoDescription": "Choose from our creative tools: Mockup Machine, Branding Machine, Budget Machine and Canvas Editor.",
@@ -1150,7 +1150,7 @@
     "searchPlaceholder": "Search apps...",
     "seoTitle": "Creative Apps",
     "subscribeNow": "SUBSCRIBE NOW",
-    "subtitle": "Choose an app to get started",
+    "subtitle": "Pick an app and start",
     "title": "Apps",
     "vsnLabs": {
       "description": "Experimental interactive effects laboratory",
@@ -1161,7 +1161,7 @@
       "name": "YouTube Mixer"
     },
     "edit_app": "Edit App",
-    "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode",
+    "failed_to_load_apps_from_database_using": "Could not load apps from the database. Showing the offline list.",
     "microTitle": "Platform // Tools",
     "headerDescription": "Your creative toolkit of pro design tools and free experiments.",
     "addApp": "Add App",
@@ -1173,7 +1173,7 @@
     "hidden": "Hidden",
     "featuredLabel": "Featured",
     "quickTools": "Quick tools",
-    "quickToolsDesc": "Converters, generators, image and experiments — one click away.",
+    "quickToolsDesc": "Converters, generators, image and experiments, one click away.",
     "access": {
       "all": "All",
       "free": "Free",
@@ -1250,7 +1250,7 @@
     },
     "backgroundRemover": {
       "name": "Background Remover",
-      "description": "Remove backgrounds with AI or simple mode. Batch supported."
+      "description": "Removes the background automatically or by threshold. Batch supported."
     },
     "watermark": {
       "name": "Watermark",
@@ -1284,13 +1284,17 @@
       "name": "OG Image Generator",
       "description": "Create Open Graph images with templates, custom text and colors."
     },
+    "pdfCompress": {
+      "name": "PDF Compress",
+      "description": "Shrink PDF file size with selectable compression levels. Batch supported."
+    },
     "labs": {
       "name": "Labs",
       "description": "Generative design experiments and mini-tools. Wind tunnels, reaction diffusion and more."
     },
     "smartAnalyzer": {
       "name": "Smart Analyzer",
-      "description": "AI-powered image analysis. Auto-detects image type and generates optimized prompts for the Figma plugin or image generation."
+      "description": "Reads the image, detects its type and writes prompts ready for the Figma plugin or image generation."
     }
   },
   "auth": {
@@ -1305,7 +1309,7 @@
     "availableCredits": "Available credits: {count}. Click to view details.",
     "backToHome": "Back to Home",
     "backToLogin": "Back to Login",
-    "backendNotRunning": "Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all",
+    "backendNotRunning": "The server is not running. Start it with npm run dev:server or npm run dev:all.",
     "bySigningUp": "By signing up, you agree to our",
     "checkEmailInstructions": "Check your inbox and follow the instructions to reset your password.",
     "completeCaptcha": "Please complete the CAPTCHA verification.",
@@ -1367,7 +1371,7 @@
   },
   "brandQuota": {
     "meter": "{used} of {max} active brands",
-    "meterUnlimited": "{used} active brands · unlimited",
+    "meterUnlimited": "{used} active brands, unlimited",
     "upgrade": "Upgrade",
     "limitMessage": "Active brand limit reached, {used}/{max}. Upgrade your plan to activate more brands.",
     "graceMessage": "You're over your new plan's brand limit. In {days} day{plural} the excess brands get archived. Upgrade to keep them all active.",
@@ -1379,14 +1383,14 @@
     "archiveConfirmTitle": "Archive this brand?",
     "archiveConfirmMessage": "The brand becomes read-only and stops counting toward your active brand limit. Nothing is deleted, you can reactivate it anytime.",
     "archiveSuccess": "Brand archived",
-    "archiveError": "Failed to archive brand",
+    "archiveError": "Could not archive the brand. Try again.",
     "unarchiveSuccess": "Brand reactivated",
-    "unarchiveError": "Failed to reactivate brand",
+    "unarchiveError": "Could not reactivate the brand. Try again.",
     "brandActions": "Brand actions",
     "quickEdit": "Quick edit",
     "byok": {
       "activeTitle": "BYOK Mode Active",
-      "activeDesc": "Your key covers the generation; your plan covers the platform, brand context, storage and orchestration.",
+      "activeDesc": "Your key covers the generation. The plan covers the platform, brand context, storage and orchestration.",
       "inactiveTitle": "Using Platform Credits",
       "inactiveDesc": "Each generation deducts credits from your plan's fair-use. Add your own API key in Settings to cover generation costs yourself."
     }
@@ -1412,7 +1416,7 @@
     "dontPlaceholder": "e.g., Don't use jargon",
     "donts": "Don't",
     "dos": "Do",
-    "emptyState": "No brand guidelines yet. Create one to get started.",
+    "emptyState": "No brand guidelines yet. Create the first one.",
     "emptyStateDesc": "Create and organize your brand guidelines in one place.",
     "fontFamily": "Font family",
     "fontRole": "Role (heading...)",
@@ -1456,17 +1460,20 @@
     "allFolders": "All",
     "sortRecent": "Recent",
     "sortName": "Name",
-    "sortCompleteness": "Completeness",
+    "sortCompleteness": "Readiness",
     "countBrands": "{filtered} of {total} brands",
     "noMatch": "No brands match “{term}”",
-    "completenessFull": "{score}% complete · all set",
-    "completenessMissing": "{score}% complete · missing: {items}",
+    "completenessFull": "{score}% ready, all set",
+    "completenessMissing": "{score}% ready, missing: {items}",
     "completenessMore": "+{count}",
-    "completenessAllSet": "All set."
+    "completenessAllSet": "All set.",
+    "loadFailedTitle": "Could not load your brands",
+    "loadFailedBody": "Your brands are safe. Try loading again.",
+    "newBrand": "New brand"
   },
   "branding": {
     "allSectionsGenerated": "All sections have already been generated",
-    "allSectionsGeneratedSuccess": "All sections generated successfully!",
+    "allSectionsGeneratedSuccess": "All sections generated",
     "approveContinue": "Approve & Continue",
     "backToPreviousStep": "Back to Previous Step",
     "cancelEdit": "Cancel Edit",
@@ -1526,7 +1533,7 @@
       "errors": {
         "failedToDelete": "Failed to delete project",
         "failedToLoad": "Failed to load branding projects",
-        "invalidProjectId": "Invalid Project Id"
+        "invalidProjectId": "Invalid project ID"
       },
       "noProjects": "No projects yet",
       "seoDescription": "Manage your branding projects.",
@@ -1636,14 +1643,18 @@
     "feedbackGiven": "Feedback Given",
     "thumbsUp": "Thumbs Up",
     "machine": {
-      "falar_com_especialista": "[EN] Falar com Especialista",
-      "crie_estratgias_completas_de_bran": "[EN] Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
-      "branding_machine_com_ia": "[EN] Branding Machine com IA"
+      "falar_com_especialista": "Talk to a specialist",
+      "crie_estratgias_completas_de_bran": "Build your brand identity from zero to concept in guided steps. From brief to full manual.",
+      "branding_machine_com_ia": "Branding Machine"
     },
     "expert": {
-      "converse_com_nosso_assistente_espe": "[EN] Converse com nosso assistente especialista em estratégia e metodologia de branding.",
+      "converse_com_nosso_assistente_espe": "Refine your strategy. Question every decision. Land on a brand that holds up.",
       "especialista_em_branding_visant_la": "Especialista em Branding | Visant Labs"
-    }
+    },
+    "partialGenerationWarning": "Generated {succeeded} of {total} sections, {failed} failed. Retry the ones marked in red.",
+    "allSectionsFailed": "No section generated ({failed} failed). Try again in a moment.",
+    "generateAllSkipped": "{skipped} were already running and weren't counted.",
+    "generateAllAllSkipped": "All {total} sections were already being generated. Wait for them to finish before generating again."
   },
   "budget": {
     "addDeliverable": "Add Deliverable",
@@ -1695,7 +1706,8 @@
       "failedToSave": "Failed to save budget",
       "failedToShare": "Failed to generate share link",
       "invalidDates": "End date must be after start date",
-      "requiredFields": "Please fill in all required fields"
+      "requiredFields": "Please fill in all required fields",
+      "loadRetry": "Your presets are safe. Try loading again."
     },
     "faq": "Frequently Asked Questions",
     "finalCTAText": "Final CTA Text",
@@ -1818,11 +1830,11 @@
       "copiar": "Copiar",
       "share_link": "Share Link:",
       "duplicate_budget": "Duplicate budget",
-      "loading_budget": "Loading budget...",
-      "please_sign_in_to_duplicate_budgets": "Please sign in to duplicate budgets",
-      "please_save_the_budget_first_2": "Please save the budget first",
-      "please_save_the_budget_first": "Please save the budget first",
-      "please_sign_in_to_save_budgets": "Please sign in to save budgets"
+      "loading_budget": "Loading budget…",
+      "please_sign_in_to_duplicate_budgets": "Sign in to duplicate budgets.",
+      "please_save_the_budget_first_2": "Save the budget first.",
+      "please_save_the_budget_first": "Save the budget first.",
+      "please_sign_in_to_save_budgets": "Sign in to save budgets."
     }
   },
   "canvas": {
@@ -1924,7 +1936,7 @@
     "projects": {
       "manage_your_visual_canvas_projects": "Manage your visual canvas projects.",
       "invalid_file_not_a_visant_canvas_j": "Invalid file, not a Visant canvas JSON.",
-      "imported_opening": "Imported \"{name}\", opening canvas...",
+      "imported_opening": "Imported \"{name}\", opening the canvas…",
       "title": "Projects"
     },
     "projectsCount": "{count} {count, plural, =1 {project} other {projects}}",
@@ -1959,31 +1971,203 @@
     "storageQuotaExceeded": "Storage quota exceeded. Please clear some data and try again.",
     "title": "Canvas",
     "unsavedCanvasProject": "You have an unsaved Canvas project. Would you like to save it as a new project?",
-    "untitled": "Untitled",
+    "untitled": "Unnamed project",
     "assetAdded": "Asset Added",
     "download": "Download",
     "hideGrid": "Hide Grid",
-    "noImagesToExport": "No Images To Export",
-    "exportingImages": "Exporting Images",
-    "exportComplete": "Export Complete",
+    "noImagesToExport": "No images to export",
+    "exportingImages": "Exporting images…",
+    "exportComplete": "Export complete",
     "exportFailed": "Export Failed",
     "textPasted": "Text Pasted",
     "pasteFailed": "Paste Failed",
-    "deleteChatNode": "Delete Chat Node",
-    "deleteChatNodeMessage": "Delete Chat Node Message",
+    "deleteChatNode": "Delete chat node",
+    "deleteChatNodeMessage": "Delete this chat node? Its conversation is lost.",
     "cancel": "Cancel",
-    "searchProjects": "Search Projects",
-    "noProjectsFound": "No Projects Found",
-    "noProjectsMatchSearch": "No Projects Match Search",
+    "searchProjects": "Search projects",
+    "noProjectsFound": "No projects found",
+    "noProjectsMatchSearch": "No projects match your search",
     "clearSearch": "Clear Search",
     "shared": {
-      "project_not_found": "Project Not Found",
+      "project_not_found": "Project not found",
       "shared_canvas": "Shared Canvas",
-      "failed_to_load_shared_project": "Failed to load shared project"
+      "failed_to_load_shared_project": "Could not load the shared project."
     },
-    "brand_asset_added_to_canvas": "Brand asset added to canvas",
-    "import_failed": "[EN] Falha ao importar: {error}",
-    "unknown_error": "[EN] erro desconhecido"
+    "brand_asset_added_to_canvas": "Brand asset added to the canvas",
+    "import_failed": "Import failed: {error}",
+    "unknown_error": "unknown error",
+    "loadFailedTitle": "Could not load your projects",
+    "loadFailedBody": "Your work is safe. Try loading again.",
+    "noProjectsForBrand": "No canvas projects are linked to the active brand.",
+    "mockupConnectImage": "Connect an image to generate the mockup.",
+    "mockupConnectLogoOrImage": "Connect a logo or an image to generate the mockup.",
+    "presetNotFound": "Preset {presetId} not found. Pick another one from the list.",
+    "logoProcessFallback": "Couldn't process the logo. Continuing with the connected image.",
+    "imageReadFailed": "Couldn't read this image. Try another one or upload the file again.",
+    "imageNotAccessible": "Couldn't open the image. Check that the link is still live and try again.",
+    "baseImageEmpty": "The base image came through empty. Reconnect the source node and try again.",
+    "mockupGenerated": "Mockup generated.",
+    "mockupGenerateFailed": "Couldn't generate the mockup. Try again in a moment.",
+    "presetConnectImage": "Connect an image to generate.",
+    "presetApplied": "Effect applied.",
+    "presetGenerateFailed": "Couldn't generate the image. Try again in a moment.",
+    "angleConnectImage": "Connect an image to generate the angle.",
+    "angleApplied": "Angle generated.",
+    "textureConnectImage": "Connect an image to generate the texture.",
+    "textureApplied": "Texture applied.",
+    "ambienceConnectImage": "Connect an image to generate the ambience.",
+    "ambienceApplied": "Ambience applied.",
+    "luminanceConnectImage": "Connect an image to generate the lighting.",
+    "luminanceApplied": "Lighting applied.",
+    "editConnectImage": "Connect an image to edit.",
+    "editNoImageConnected": "The connected node has no image. Generate or upload one before editing.",
+    "imageEditedNewNode": "Image edited. We created a new node with the result.",
+    "editImageFailed": "Couldn't edit the image. Try again in a moment.",
+    "upscaleConnectImage": "Connect an image to upscale.",
+    "imageUpscaledTo": "Image upscaled to {resolution}.",
+    "upscaleImageFailed": "Couldn't upscale the image. Try again in a moment.",
+    "imageUploaded": "Image uploaded.",
+    "completeStepsBeforePrompt": "Complete the previous steps before generating the prompt.",
+    "promptGenerated": "Prompt generated.",
+    "promptGenerateFailed": "Couldn't generate the prompt. Try again.",
+    "enterPromptFirst": "Write a prompt before continuing.",
+    "suggestionsFailed": "Couldn't generate suggestions. Try again.",
+    "maxImagesForModel": "The {model} model takes at most {max} images. You connected {count}. Disconnect the extra ones.",
+    "imageGenerated": "Image generated.",
+    "aiNeedsMoreInfo": "The AI needs more detail to generate the image.",
+    "imageGenerateFailed": "Couldn't generate the image. Try again in a moment.",
+    "brandIdentityAnalyzed": "Brand identity analyzed.",
+    "brandIdentityAnalyzeFailed": "Couldn't analyze the identity. Check the logo and the uploaded material, then try again.",
+    "analysisCancelled": "Analysis cancelled.",
+    "brandIdentityRequired": "Connect the logo and the identity material before generating the prompts.",
+    "visualPromptsFailed": "Couldn't generate the visual prompts. Try again in a moment.",
+    "consolidateStrategiesFailed": "Couldn't consolidate the strategies. Try again.",
+    "batchConnectDataNode": "Connect a Data node to the Batch Runner to start.",
+    "batchConnectPromptNode": "Connect a Prompt node to the Batch Runner to start.",
+    "batchNoRows": "The Data node is empty. Upload a CSV or JSON before running.",
+    "batchRowCancelled": "Cancelled",
+    "batchRowFailed": "Generation failed",
+    "batchComplete": "Batch complete. {done} generated, {failed} failed.",
+    "batchCancelled": "Batch cancelled. {done} generated before stopping.",
+    "batchCancelling": "Cancelling the batch after the current row.",
+    "brandBatchConnectImage": "Connect at least one image to the Brand Batch node.",
+    "brandBatchComplete": "Brand Batch complete. {done} generated, {failed} failed.",
+    "brandBatchCancelled": "Brand Batch cancelled. {done} generated before stopping.",
+    "brandBatchCancelling": "Cancelling the batch after the current item.",
+    "videoUploaded": "Video uploaded.",
+    "videoGenerated": "Video generated.",
+    "videoAlreadyGenerating": "A video is already being generated. Wait for it to finish before starting another.",
+    "videoGenerateFailed": "Couldn't generate the video. Try again in a moment.",
+    "shaderConnectMedia": "Connect an image or video to apply the effect.",
+    "shaderVideoApplied": "Effect applied to the video.",
+    "processingVideoFrames": "Processing video frames.",
+    "shaderProcessFailed": "Couldn't apply the effect. Try again in a moment.",
+    "upscaleConnectMedia": "Connect an image or video to upscale.",
+    "videoUpscaled": "Video upscaled.",
+    "saveProjectFailed": "Couldn't save the project. Try again.",
+    "loadProjectTimeout": "Loading the project took too long. Try again.",
+    "projectNotFound": "Project not found.",
+    "optimizingImagesForSize": "Optimizing images to fit the size limit...",
+    "optimizingImagesToSave": "Optimizing images to save...",
+    "optimizingImagesProgress": "Optimizing images... {current} of {total}",
+    "imagesOptimized": "{count} image(s) optimized",
+    "imagesOptimizeFailed": "{count} image(s) couldn't be optimized.",
+    "imagesOptimizeFailedSaving": "{count} image(s) couldn't be optimized. Saving anyway...",
+    "imagesOptimizedPartial": "{ok} optimized, {failed} failed. Saving anyway...",
+    "imagesOptimizeError": "Couldn't optimize some images.",
+    "imagesOptimizeErrorSaving": "Couldn't optimize some images. Saving anyway...",
+    "projectTooLargeDb": "Your project is too large ({size}MB) to save to the database. Reduce the number of images on canvas.",
+    "saveProjectTooLarge": "Project too large to save. The limit is 50MB. Reduce the number of images or set up R2 storage in system settings.",
+    "saveProjectCheckSize": "Couldn't save. Check whether the project got too large.",
+    "sessionExpired": "Your session expired. Log in again.",
+    "serverError": "Server error. Try again in a moment.",
+    "canvasNotReady": "Canvas isn't ready yet. Wait a moment and try again.",
+    "imageNodeAdded": "Image node added. Upload an image to fill it.",
+    "noImageFoundPaste": "No image found. Try pasting again.",
+    "uploadingImage": "Uploading...",
+    "imageTooLargeMax": "Image too large ({size}MB). The maximum is {max}MB.",
+    "pasteUploadFailedNodes": "Couldn't upload the image to {count} node(s). Using the fallback method.",
+    "pastePartialNodes": "Image pasted into {success} node(s), but failed in {failed} node(s).",
+    "pastedIntoNodes": "Image pasted into {count} node(s).",
+    "imagePasted": "Image pasted.",
+    "imagePastedFallback": "Image pasted (fallback method).",
+    "processImageFailed": "Couldn't process the image. Try again.",
+    "uploadServerFailedFallback": "Couldn't reach the server. Using the fallback method.",
+    "uploadFailedFallback": "Upload failed. Using the fallback method.",
+    "pasteRetryingFallback": "{error}. Trying the fallback method...",
+    "projectUnsavedUpload": "Project not saved. Save the project to upload large images directly.",
+    "processPastedImageFailed": "Couldn't process the pasted image. Try again.",
+    "brandKitCreated": "Brand Kit created with 5 mockup presets.",
+    "enterBrandDescription": "Enter a brand description first.",
+    "strategyGenerateFailed": "Couldn't generate the strategy. Try again.",
+    "strategyNodeNotFound": "Strategy node not found.",
+    "initialAnalysisDone": "Initial analysis done. You can generate the sections now.",
+    "initialAnalysisFailed": "Couldn't run the initial analysis. Try again.",
+    "waitCurrentSection": "Wait for the current section to finish generating.",
+    "generationCancelled": "Generation cancelled.",
+    "sectionGenerateFailed": "Couldn't generate {section}. Try again.",
+    "allSectionsAlreadyGenerated": "All sections are already generated.",
+    "allSectionsGenerated": "All sections generated.",
+    "allSectionsGenerateFailed": "Couldn't generate all sections. Try again.",
+    "noStrategyToExport": "No strategy data to export yet.",
+    "pdfGenerated": "PDF generated.",
+    "pdfGenerateFailed": "Couldn't generate the PDF. Try again.",
+    "strategySaved": "Strategy saved to the branding project.",
+    "strategySaveFailed": "Couldn't save the strategy. Try again.",
+    "canvasStateUnavailable": "Canvas state isn't available. Reload the page.",
+    "chatNodeNotFound": "Chat node not found.",
+    "nodeTypeNotSupported": "Node type \"{type}\" isn't supported.",
+    "nodeCreated": "{label} node created.",
+    "nodeCreateFailed": "Couldn't create the {type} node. The feature may not be available.",
+    "messageEmpty": "Write a message first.",
+    "chatCleared": "Chat cleared.",
+    "campaignDone": "Campaign done. {count} ads generated.",
+    "sendMessageFailed": "Couldn't send the message. Try again.",
+    "chatHistoryCleared": "Chat history cleared.",
+    "promptNodeCreateFailed": "Couldn't create the prompt node.",
+    "promptNodeCreated": "Prompt node created.",
+    "targetNodeNotFound": "Target node not found.",
+    "unknownNodeType": "Unknown node type.",
+    "nodeUpdated": "Node updated.",
+    "nodeUpdateFailed": "Couldn't update the node. Try again.",
+    "imageNodeCreateFailed": "Couldn't create the image node. The feature may not be available.",
+    "directorNodeNotFound": "Director node not found.",
+    "directorNoImageConnected": "No image connected to the Director node.",
+    "imageAnalyzedSelectTags": "Image analyzed. Pick tags to generate your prompt.",
+    "selectAtLeastOneTag": "Select at least one tag.",
+    "selectAtLeastOneTagOrPool": "Select at least one tag or add tags to the pool.",
+    "promptGeneratedNodeCreated": "Prompt generated and PromptNode created.",
+    "mockupNotAvailable": "Mockup generation isn't available right now.",
+    "connectImageToText": "You can't connect an image handle to a text handle.",
+    "connectTextToImage": "You can't connect a text handle to an image handle.",
+    "connectHandleTypeMismatch": "You can't connect a {source} handle to a {target} handle. The types must match.",
+    "connectSameFlowType": "You can't connect two flow nodes of the same type.",
+    "logoInputAccepts": "The logo input only accepts Image, Logo, or Output nodes.",
+    "identityInputAccepts": "The identity input only accepts PDF, Image, or Output nodes.",
+    "connectionRemoved": "Connection removed.",
+    "colorsExtracted": "{count} colors extracted.",
+    "colorsExtractFailed": "Couldn't extract the colors. Try again.",
+    "brandIdentitySaved": "Brand identity extracted and saved.",
+    "brandIdentitySaveWarning": "Analysis saved locally but not to the database. It may be lost on reload.",
+    "brandIdentityExtracted": "Brand identity extracted.",
+    "brandIdentityExtractFailed": "Couldn't extract the brand identity. Try again.",
+    "nodeExecutionFailed": "The node failed to run. Try again.",
+    "nothingToUndo": "Nothing to undo.",
+    "undone": "Undone.",
+    "nothingToRedo": "Nothing to redo.",
+    "redone": "Redone.",
+    "uploadImageFailed": "Couldn't upload the image. Try again.",
+    "nodesRemovedR2Warning": "{count} node(s) removed. The images are lost for good once you save. Press Ctrl+Z to recover.",
+    "nodesRemoved": "{count} node(s) removed.",
+    "canvasSaved": "Canvas saved.",
+    "videoCopied": "Video copied to clipboard.",
+    "imageCopied": "Image copied to clipboard.",
+    "copyMediaFailed": "Couldn't copy the media to the clipboard. Try again.",
+    "imageCopiedPng": "Image copied to clipboard as PNG.",
+    "copyPngFailed": "Couldn't copy the image as PNG. Try again.",
+    "noMediaInNode": "No media found in this node.",
+    "imageFetchHttpError": "Couldn't download the image (error {status}). Try again.",
+    "imageProcessUnknownError": "Something went wrong while processing the image."
   },
   "canvasBottomToolbar": {
     "color": "Color",
@@ -2079,8 +2263,8 @@
       "noProjectsFoundMatchingSearch": "No projects found matching your search",
       "searchProjects": "Search projects...",
       "selectBrandingProject": "Select Branding Project",
-      "untitled": "Untitled",
-      "searchProjectsPlaceholder": "Search Projects Placeholder"
+      "untitled": "Unnamed project",
+      "searchProjectsPlaceholder": "Search projects…"
     },
     "chatNode": {
       "and": "and",
@@ -2170,7 +2354,7 @@
       "defaultPrompt": "Apply the requested changes to this image while maintaining its overall composition and quality.",
       "editedResult": "Edited result",
       "title": "Mockup Machine",
-      "comingSoon": "Coming Soon"
+      "comingSoon": "Coming soon"
     },
     "editNodeControls": {
       "editHandlerNotAvailable": "Edit handler not available. Please try refreshing the page."
@@ -2184,7 +2368,7 @@
       "copyDescription": "Copy description",
       "deleteMockup": "Delete Mockup",
       "deleteMockupMessage": "Are you sure you want to delete this mockup? This action cannot be undone.",
-      "describeImageWithAI": "Describe image with AI",
+      "describeImageWithAI": "Describe the image",
       "description": "Description",
       "descriptionCleared": "Description cleared",
       "descriptionCopied": "Description copied to clipCanvas!",
@@ -2200,14 +2384,14 @@
       "uploadImage": "Upload an image",
       "uploadImageTitle": "Upload Image",
       "viewFullScreen": "View Full Screen",
-      "pleaseSelectImageFile": "Please Select Image File",
+      "pleaseSelectImageFile": "Select an image file",
       "imageInput": "Image Input",
       "removeImage": "Remove Image",
       "canvasImage": "Canvas Image",
-      "failedToSaveImage": "Failed To Save Image",
-      "failedToFindCurrentNode": "Failed To Find Current Node",
-      "invalidNodePosition": "Invalid Node Position",
-      "failedToCreateTextNode": "Failed To Create Text Node"
+      "failedToSaveImage": "Could not save the image. Try again.",
+      "failedToFindCurrentNode": "Current node not found. Reload the canvas.",
+      "invalidNodePosition": "Invalid node position",
+      "failedToCreateTextNode": "Could not create the text node. Try again."
     },
     "logoNode": {
       "failedToProcessLogo": "Failed to process logo image",
@@ -2287,7 +2471,7 @@
     "outputNode": {
       "analyzingImage": "Analyzing image...",
       "connectNodeToSeeResult": "Connect a node to see result",
-      "describeImageWithAI": "Describe image with AI",
+      "describeImageWithAI": "Describe the image",
       "downloadImage": "Download Image",
       "failedToUpdateLikeStatus": "Failed to update like status",
       "imageDescriptionGenerated": "Image description generated!",
@@ -2357,21 +2541,21 @@
       "textDirectionFromBrandCore": "Text Direction (from BrandCore)",
       "textInput": "Text",
       "title": "Prompt Node",
-      "creditsRequired": "Credits Required",
-      "brandConnected": "Brand Connected",
+      "creditsRequired": "Credits required",
+      "brandConnected": "Brand connected",
       "selectModel": "Select Model"
     },
     "shaderNode": {
       "connectImage": "Connect an image or video",
       "inputImage": "Input Image",
       "uploadImageOrVideo": "Upload Image or Video",
-      "processingVideo": "Processing Video",
-      "applyingShader": "Applying Shader"
+      "processingVideo": "Processing video…",
+      "applyingShader": "Applying shader…"
     },
     "shared": {
       "imageDownloaded": "Image downloaded!",
       "downloading": "Downloading",
-      "downloadFailed": "Download Failed"
+      "downloadFailed": "Download failed. Try again."
     },
     "strategyNode": {
       "analyze": "Analyze",
@@ -2416,16 +2600,16 @@
       "selectExistingProject": "Select Existing Project",
       "strategySavedSuccessfully": "Strategy saved successfully",
       "title": "Strategy Node",
-      "generatingAllSections": "Generating All Sections"
+      "generatingAllSections": "Generating all sections…"
     },
     "textNode": {
-      "aiHint": "Click the diamond to enhance with AI",
+      "aiHint": "Click the diamond to rewrite the prompt",
       "characters": "chars",
       "copied": "Text copied!",
       "copy": "Copy text",
       "copyFailed": "Failed to copy text",
       "errorImprovingPrompt": "Failed to improve prompt",
-      "improvePrompt": "Improve with AI",
+      "improvePrompt": "Improve prompt",
       "improvingPrompt": "Improving prompt...",
       "placeholder": "Enter text here...",
       "promptImproved": "Prompt improved!",
@@ -2662,7 +2846,8 @@
       "emptySubtitle": "Your brand is ready to work. Pick where to start:",
       "emptyTitle": "Start the brand's first piece of work",
       "new": "New",
-      "title": "In progress"
+      "title": "In progress",
+      "loadError": "Could not load your work in progress. Try again."
     }
   },
   "common": {
@@ -2765,12 +2950,14 @@
     "show": "Show",
     "yes": "Yes",
     "no": "No",
-    "presetSelected": "Preset Selected",
+    "presetSelected": "Preset selected",
     "dismiss": "Dismiss",
     "brand": "Brand",
     "recent": "Recent",
     "dragToPosition": "Drag to position",
-    "applyBrand": "On-brand"
+    "applyBrand": "On-brand",
+    "retry": "Try again",
+    "unavailable": "unavailable"
   },
   "community": {
     "failedToDuplicateWorkflow": "Failed to duplicate workflow",
@@ -2783,18 +2970,18 @@
     "workflowDuplicated": "Workflow duplicated to your library",
     "youtube": "YouTube",
     "title": "Title",
-    "ver_repositrio": "[EN] Ver Repositório",
-    "usar_como_referncia": "[EN] Usar como referência",
-    "galeria_da_comunidade": "[EN] Galeria da Comunidade",
-    "workflows_da_comunidade": "[EN] Workflows da Comunidade",
+    "ver_repositrio": "View repository",
+    "usar_como_referncia": "Use as reference",
+    "galeria_da_comunidade": "Community gallery",
+    "workflows_da_comunidade": "Community workflows",
     "vazio": "vazio",
-    "explorar_por_categoria": "[EN] Explorar por Categoria",
+    "explorar_por_categoria": "Browse by category",
     "curadoria": "Curadoria",
     "publicado": "Publicado",
-    "criaes": "[EN] Criações",
+    "criaes": "Creations",
     "membros": "Membros",
-    "explorar_galeria": "Explorar Galeria",
-    "criar_um_novo_prompt": "[EN] Criar um novo prompt",
+    "explorar_galeria": "Browse the gallery",
+    "criar_um_novo_prompt": "Create a new prompt",
     "presets": {
       "duplicate_this_preset_into_your_": "Duplicate this preset into your collection?",
       "search_presets_2": "Search presets",
@@ -2805,7 +2992,7 @@
       "duplicate_to_my_library": "Duplicate to my library",
       "workflows": "Workflows",
       "mockups": "Mockups",
-      "loading_profile": "Loading profile..."
+      "loading_profile": "Loading profile…"
     }
   },
   "communityPresets": {
@@ -2886,7 +3073,7 @@
       "presetDuplicated": "Preset duplicated successfully",
       "presetUpdated": "Preset updated successfully!",
       "presetApplied": "Preset Applied",
-      "presetImported": "Preset Imported"
+      "presetImported": "Preset imported"
     },
     "modelOptional": "Model (optional)",
     "myPresets": "My Presets",
@@ -2964,7 +3151,7 @@
     "useCasePlaceholder": "Describe when and how to use this prompt",
     "viewAll": "All",
     "viewMy": "My Presets",
-    "searchPlaceholder": "Search Placeholder",
+    "searchPlaceholder": "Search presets…",
     "buttons": {
       "create": "Create"
     }
@@ -2991,10 +3178,10 @@
     "title": "Configuration",
     "updateHint": "To update, just paste your new key above.",
     "warning": "Your API key is encrypted and stored securely. Only you can access it.",
-    "seedreamApiKey": "Seedream Api Key",
-    "seedreamPlaceholder": "Seedream Placeholder",
-    "deleteSeedream": "Delete Seedream",
-    "deleteSeedreamConfirm": "Delete Seedream Confirm"
+    "seedreamApiKey": "Seedream API key",
+    "seedreamPlaceholder": "Paste your Seedream API key",
+    "deleteSeedream": "Remove Seedream key",
+    "deleteSeedreamConfirm": "Remove the Seedream key? Generation goes back to platform credits."
   },
   "confirmationModal": {
     "defaultConfirm": "Continue",
@@ -3055,7 +3242,7 @@
     "planApprovedWithAnswers": "Approved. {answers}. You can generate the proposed mockups.",
     "planApproved": "Approved. You can generate the proposed mockups.",
     "approvePlanError": "Error approving plan.",
-    "rejected": "Rejected — nothing saved",
+    "rejected": "Rejected, nothing saved",
     "rejectError": "Failed to reject"
   },
   "copilot": {
@@ -3090,8 +3277,8 @@
     "getStarted": "Start Creating",
     "previousCredits": "Previous credits",
     "subtitle": "Your credits have been added to your account",
-    "support": "Need help? Contact us.",
-    "title": "Credits Added Successfully!",
+    "support": "Need help? Talk to us.",
+    "title": "Credits added",
     "totalCredits": "Total credits available",
     "verifying": "Verifying credits..."
   },
@@ -3100,7 +3287,7 @@
     "available": "Available",
     "buyCredits": "Buy",
     "freeGenerationsUsed": "Free Generations Used",
-    "manualCredits": "Manual Credits",
+    "manualCredits": "Manual credits",
     "monthlyUsage": "Monthly Usage",
     "noneAvailable": "No credits available",
     "upgradeCta": "Upgrade to keep going",
@@ -3112,14 +3299,14 @@
     "storage": "Storage",
     "title": "CREDITS",
     "used": "Used",
-    "noSubscription": "No Subscription"
+    "noSubscription": "No subscription"
   },
   "creditsPackages": {
     "buy": "Buy",
     "credits": "Credits",
     "note": "Credits never expire and can be used at any time",
-    "purchaseSuccess": "Credits added successfully!",
-    "subtitle": "Choose a credit package that works for you",
+    "purchaseSuccess": "Credits added to your account",
+    "subtitle": "Pick the pack by how much you generate",
     "title": "BUY CREDITS",
     "viewPlans": "View subscription plans"
   },
@@ -3285,7 +3472,7 @@
       "quickStart1": "Browse components and their variants",
       "quickStart2": "Copy CSS variables and class names",
       "quickStart3": "Understand spacing and layout patterns",
-      "quickStartDescription": "Get started with our design system by exploring the color palette, typography, and components.",
+      "quickStartDescription": "Start with the color palette, typography and components.",
       "spacingDescription": "Spacing scale and system",
       "typographyDescription": "Fonts and text styles",
       "usage": "Usage",
@@ -3423,43 +3610,51 @@
   "errorBoundary": {
     "chunkErrorDescription": "Could not load required files",
     "chunkErrorHint": "Try reloading the page or clearing your browser cache.",
-    "chunkErrorMessage": "A problem occurred while loading the page files. This is usually caused by network or cache issues.",
-    "chunkErrorTitle": "Page Load Error",
+    "chunkErrorMessage": "The page files did not download, usually a network or stale cache issue.",
+    "chunkErrorTitle": "Page load error",
     "goHome": "Go Home",
-    "layoutError": "This error suggests a component is trying to use layout context outside of the Layout component. Please refresh the page or contact support if the issue persists.",
+    "layoutError": "A component tried to use layout context outside of Layout. Reload the page, and if it persists, contact support.",
     "reloadPage": "Reload Page",
     "retrying": "Retrying...",
     "stackTrace": "Stack Trace",
     "tryAgain": "Try Again",
-    "unexpectedError": "An unexpected error occurred",
-    "unexpectedErrorDescription": "Something went wrong",
-    "unexpectedErrorTitle": "Unexpected Error"
+    "unexpectedError": "This screen failed to load",
+    "unexpectedErrorDescription": "Reload the page. If it keeps happening, contact support.",
+    "unexpectedErrorTitle": "Unexpected error"
   },
   "errors": {
-    "aiBusy": "The AI is a bit busy. We've switched to a simpler prompt that you can edit manually, or try regenerating.",
-    "authenticationError": "Authentication error. Please sign in again.",
-    "authenticationRequired": "Please sign in to generate mockups.",
-    "completeSteps": "Please complete all steps before generating.",
-    "couldNotBrainstorm": "The AI couldn't brainstorm new ideas. Please try again in a moment.",
-    "couldNotGenerateSuggestions": "The AI couldn't generate suggestions right now. Please choose from the list below.",
-    "failedToStartCheckout": "Failed to start checkout. Please try again.",
-    "generationError": "An error occurred during generation. Please try again or adjust your prompt.",
-    "invalidImageFormat": "Invalid image format. Please upload a valid PNG, JPG, or WEBP image.",
+    "aiBusy": "The model is congested. We switched to a simpler prompt, edit it by hand or try generating again.",
+    "authenticationError": "Your session expired. Sign in again to continue.",
+    "authenticationRequired": "Sign in to generate mockups.",
+    "brandHealthCheckFailed": "Could not run the brand health check. Try again in a few seconds.",
+    "completeSteps": "Complete every step before generating.",
+    "couldNotBrainstorm": "The model came back with no new ideas. Try again in a moment.",
+    "couldNotGenerateSuggestions": "The model did not return suggestions. Pick from the list below.",
+    "couldNotLoadIdeas": "Could not load the ideas. Try again in a moment.",
+    "failedToStartCheckout": "Could not open checkout. Try again in a few seconds.",
+    "generationError": "The generation failed. Try again or adjust your prompt.",
+    "ideasNotEnabled": "AI ideas are not enabled for this workspace yet. Talk to support to turn them on.",
+    "ideasUnavailable": "AI ideas are unavailable right now. Try again in a few minutes.",
+    "imageEditFailed": "Could not edit the image. Try again or adjust the selected area.",
+    "imageExpandFailed": "Could not expand the image. Try again with a smaller expansion.",
+    "invalidImageFormat": "Invalid format. Upload a PNG, JPG or WEBP file.",
     "needCredits": "You need {needed} credit{plural} but only have {remaining} remaining. Credits will renew on {date}.",
-    "needGenerations": "You need {needed} generation{plural} but only have {remaining} remaining. Please subscribe to continue.",
+    "needGenerations": "You need {needed} generation{plural} and only have {remaining}. Subscribe to continue.",
     "nextBillingCycle": "your next billing cycle",
     "paymentLinkNotConfigured": "Payment link not configured for this currency",
-    "promptGenerationFailed": "Prompt generation failed. Please try again.",
-    "promptGenerationTimeout": "Prompt generation timed out. Please try again.",
-    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 💎�",
+    "promptGenerationFailed": "Prompt generation failed. Try again.",
+    "promptGenerationTimeout": "Prompt generation timed out. Try again.",
+    "rateLimit": "Too many generations running right now. Wait about 10 minutes and try again, that is what keeps access fair for everyone.",
+    "removeBackgroundFailed": "Could not remove the background. Try again in a few seconds.",
+    "resumeEditFailed": "Could not resume the previous edit. Run it again.",
     "storageLimitExceeded": "Storage limit exceeded. You are using {used} of {limit}. This file ({fileSize}) would exceed your limit.",
-    "storageLimitExceededDescription": "Please delete some files or upgrade your plan to continue uploading.",
+    "storageLimitExceededDescription": "Delete some files or upgrade your plan to keep uploading.",
     "storageLimitExceededGB": "Storage limit exceeded. You are using {used} MB of {limit} GB. This file ({fileSize} MB) would exceed your limit.",
     "storageLimitExceededMB": "Storage limit exceeded. You are using {used} MB of {limit} MB. This file ({fileSize} MB) would exceed your limit.",
-    "subscriptionRequired": "Subscription required. Please upgrade to continue generating mockups.",
-    "unableToProcessImage": "Unable to process the uploaded image. Please try a different image or check if the file is corrupted.",
-    "imageUploadFailed": "Image Upload Failed",
-    "uploadFailed": "Upload Failed"
+    "subscriptionRequired": "Subscription required. Upgrade to keep generating mockups.",
+    "unableToProcessImage": "Could not process the image. Try another one or check whether the file is corrupted.",
+    "imageUploadFailed": "Image upload failed. Try again.",
+    "uploadFailed": "Upload failed. Try again."
   },
   "footer": {
     "english": "English",
@@ -3484,7 +3679,7 @@
     "heroSubtitle": "and go straight to the Mockup Machine setup",
     "heroTitle": "Upload your logo or layout",
     "sendImage": "Upload image",
-    "seoDescription": "High-performance experimentation and design environment.",
+    "seoDescription": "Creative tooling lab for designers and brand teams.",
     "seoTitle": "Visant Labs®, Experimental Laboratory"
   },
   "messages": {
@@ -3513,13 +3708,13 @@
     "needCreditsSubscription": "You need {creditsNeeded} credit{plural} but only have {remaining} remaining{pluralRemaining}. Credits will renew on {resetDate}.",
     "networkError": "Network error occurred.",
     "networkErrorSuggestion": "Please check your internet connection and try again.",
-    "newAngleGenerated": "New angle generated! 📷",
-    "newEnvironmentGenerated": "New environment generated! 🌍",
+    "newAngleGenerated": "New angle generated",
+    "newEnvironmentGenerated": "New environment generated",
     "outputRemoved": "Output removed from display",
     "promptGeneratedSuccessfully": "Prompt generated successfully!",
     "promptGenerationFailed": "Prompt generation failed. Please try again.",
     "promptGenerationTimeout": "Prompt generation timed out. Please try again.",
-    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 💎�",
+    "rateLimit": "Too many generations running right now. Wait about 10 minutes and try again, that is what keeps access fair for everyone.",
     "requestTimeout": "Request timed out.",
     "requestTimeoutSuggestion": "The AI service is taking longer than expected. This may be due to high load. Your credits have not been deducted. Please try again.",
     "resetAnyway": "Discard",
@@ -3531,7 +3726,7 @@
     "serviceUnavailable": "The AI service is temporarily unavailable.",
     "serviceUnavailableSuggestion": "The service is experiencing high load. Your credits have not been deducted. Please try again in a few minutes.",
     "subscriptionRequired": "Subscription required. Please upgrade to continue generating mockups.",
-    "surpriseSelectionGenerated": "Surprise selection generated! 🎲",
+    "surpriseSelectionGenerated": "Surprise selection generated",
     "switchedTo4K": "Switched to Pro (4K). Resolution control enabled.",
     "switchedToHD": "Switched to Standard (HD). Resolution control disabled.",
     "tagsChanged": "Tags were changed. Please regenerate the prompt to match your current selections.",
@@ -3542,8 +3737,8 @@
     "unsavedOutputsMessage": "You have {count} unsaved output{plural}. If you discard, you will lose them permanently. Are you sure?",
     "unsavedOutputsTitle": "Unsaved Outputs",
     "yourNextBillingCycle": "your next billing cycle",
-    "selectDesignTypeFirst": "Select Design Type First",
-    "unsavedChangesMessage": "Unsaved Changes Message"
+    "selectDesignTypeFirst": "Pick the design type first",
+    "unsavedChangesMessage": "You have unsaved changes. Leave anyway?"
   },
   "mockup": {
     "addCustomCategoryHint": "Personalize your mockup",
@@ -3573,7 +3768,9 @@
       "scanning colors and contrast",
       "identifying visual style",
       "detecting categories",
-      "optimizing suggestions"
+      "optimizing suggestions",
+      "analyzing the project",
+      "honing the prompt"
     ],
     "analyzeImage": "ANALYZE IMAGE",
     "analyzeProject": "Analyze Project",
@@ -3763,7 +3960,7 @@
     "mediaKit": {
       "addLogo": "Add logo",
       "addMedia": "Add media",
-      "deleteError": "Failed to remove media",
+      "deleteError": "Could not remove the media. Try again.",
       "deleteSuccess": "Media removed",
       "dropHere": "Drop files here or click to upload",
       "fileTooLarge": "File too large (max 10MB)",
@@ -3772,11 +3969,11 @@
       "noLogos": "No logos yet",
       "noMedia": "No media assets yet",
       "title": "Media Kit",
-      "uploadError": "Failed to upload media",
-      "uploadSuccess": "Media uploaded successfully",
+      "uploadError": "Could not upload the media. Try again.",
+      "uploadSuccess": "Media uploaded",
       "vaultEmpty": "Vault is empty",
-      "bulkDeleteSuccess": "Bulk Delete Success",
-      "bulkDeleteError": "Bulk Delete Error",
+      "bulkDeleteSuccess": "Media removed",
+      "bulkDeleteError": "Could not remove the media. Try again.",
       "duplicateSkipped": "{count} duplicate skipped, already in your library",
       "duplicatesSkipped": "{count} duplicates skipped, already in your library",
       "nearDuplicate": "Looks similar to \"{label}\", added anyway",
@@ -3833,7 +4030,8 @@
     "promptStatusMessages": [
       "understanding your design",
       "searching for the best visual solutions",
-      "thinking as a senior graphic designer"
+      "thinking as a senior graphic designer",
+      "refining the prompt"
     ],
     "outOfSyncTooltip": "Prompt and selected tags are out of sync. Click to regenerate the smart prompt.",
     "promptSynced": "Synced",
@@ -3850,7 +4048,7 @@
     "regenerate": "REGENERATE",
     "regenerateTooltip": "Regenerate outputs using current prompt",
     "regenerating": "Regenerating...",
-    "reimagineTooltip": "Re-imagine with AI",
+    "reimagineTooltip": "Generate another version",
     "removeFileTitle": "Remove file",
     "removeImage": "Remove image",
     "removeText": "Remove text",
@@ -3888,7 +4086,8 @@
       "designing compositions...",
       "searching visual balance...",
       "polishing details...",
-      "almost there..."
+      "almost there...",
+      "honing the prompt..."
     ],
     "skipToContent": "Skip to main content",
     "startOver": "Start Over",
@@ -3914,28 +4113,28 @@
     "uploadRequired": "Upload required",
     "uploadedDesignAlt": "Uploaded design",
     "visualEffects": "VISUAL_EFFECTS",
-    "openMediaLibrary": "Open Media Library",
+    "openMediaLibrary": "Open media library",
     "suggested": "Suggested",
     "angle": "Angle",
     "lighting": "Lighting",
     "effect": "Effect",
-    "generatedPrompt": "Generated Prompt",
+    "generatedPrompt": "Generated prompt",
     "clearAllTags": "Clear All Tags",
-    "addInstructions": "Add Instructions",
+    "addInstructions": "Add instructions",
     "collapse": "Collapse",
     "expand": "Expand",
     "tags": "Tags",
-    "presetSaveError": "Preset Save Error",
+    "presetSaveError": "Could not save the preset. Try again.",
     "presetLoaded": "Preset Loaded",
-    "removeInstructionHint": "Remove Instruction Hint",
-    "switchToEssential": "Switch To Essential",
-    "generatePromptFirst": "Generate Prompt First",
+    "removeInstructionHint": "Remove instruction",
+    "switchToEssential": "Switch to essential mode",
+    "generatePromptFirst": "Generate the prompt first",
     "generateAll": "Generate All",
     "vibeTitle": "Vibe Title",
-    "selectModelToGenerate": "Select Model To Generate",
+    "selectModelToGenerate": "Pick a model to generate",
     "title": "Title",
     "machine": {
-      "gere_mockups_profissionais_com_inte": "[EN] Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
+      "gere_mockups_profissionais_com_inte": "Your designs on real products in seconds. Integrated mockup and asset tooling for brand teams."
     }
   },
   "mockupsPage": {
@@ -3946,7 +4145,8 @@
     "noMockupsYet": "NO MOCKUPS YET",
     "retry": "Retry",
     "searchPlaceholder": "Search...",
-    "tryAdjustingSearch": "Try adjusting your search or filter."
+    "tryAdjustingSearch": "Try adjusting your search or filter.",
+    "loadFailed": "Could not load mockups. Try again."
   },
   "myOutputs": {
     "seoDescription": "View and manage your generated outputs.",
@@ -3954,7 +4154,7 @@
   },
   "notFound": {
     "brandingMachine": "Branding Machine",
-    "description": "Oops! The page you're looking for doesn't exist or has been moved.",
+    "description": "This page does not exist or has moved.",
     "goBack": "Go back",
     "goHome": "Go to home page",
     "helpfulLinks": "Helpful links:",
@@ -3977,9 +4177,9 @@
     "invalidTaxId": "CPF must have 11 digits or CNPJ must have 14 digits",
     "openCheckout": "Open Stripe checkout",
     "openPaymentLink": "Open payment link",
-    "paid": "✓ Payment confirmed!",
+    "paid": "Payment confirmed",
     "payWithPix": "Pay with PIX",
-    "paymentError": "Unable to create PIX payment. Please try again later or use another payment method.",
+    "paymentError": "Could not create the PIX payment. Try again in a few minutes or pay by card.",
     "qrCode": "PIX QR Code",
     "showQrCode": "Show QR Code",
     "step1": "Open your bank app",
@@ -3991,7 +4191,7 @@
     "taxIdRequired": "Required to process PIX payment",
     "title": "Pay with PIX",
     "waiting": "Waiting for payment...",
-    "paymentExpired": "Payment Expired"
+    "paymentExpired": "Payment expired"
   },
   "pricing": {
     "allPlansInclude": "All plans include access to our mockup generation tools",
@@ -4021,7 +4221,7 @@
       "feature4": "Cancel anytime"
     },
     "subscribe": "SUBSCRIBE",
-    "subtitle": "Choose the plan that works for you",
+    "subtitle": "Pick the plan by the volume your team uses",
     "tabs": {
       "credits": "Credits",
       "subscriptions": "Subscriptions",
@@ -4032,7 +4232,7 @@
       "googleApi": "Google API (At cost)",
       "visantInfra": "Visant Infra (Processing/CDN)",
       "total": "Total per Generation",
-      "description": "You pay Google API cost + a small Visant processing fee. Total transparency is our core value."
+      "description": "You pay Google infrastructure cost plus a Visant processing fee. The math stays open."
     },
     "community": {
       "buildInPublic": "Build in Public",
@@ -4049,16 +4249,16 @@
     "yearly": "Yearly",
     "yearlyDiscount": "-16%",
     "storage": {
-      "byokTitle": "Byok Title",
-      "byokDescription": "Byok Description",
-      "subscriptionNote": "Subscription Note"
+      "byokTitle": "Your own API key (BYOK)",
+      "byokDescription": "Connect your provider key and generation bills to your own account. The plan still covers brand context, storage and orchestration.",
+      "subscriptionNote": "Storage comes with the plan. Need more room, move up a tier."
     },
     "included": "Included",
-    "selectPlan": "Select Plan",
+    "selectPlan": "Select plan",
     "visant_processingcdn": "Visant Processing/CDN",
     "google_api_gemini_31": "Google API (Gemini 3.1)",
-    "planos_e_pacotes_de_crditos_para_gerar_m": "[EN] Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design.",
-    "preos_e_planos": "[EN] Preços e Planos",
+    "planos_e_pacotes_de_crditos_para_gerar_m": "Plans and credit packs for your mockups and assets. Pick the volume your team actually uses.",
+    "preos_e_planos": "Pricing and plans",
     "api": {
       "includedTitle": "Included with your plan",
       "includedDesc": "The API draws from the same credit balance and scopes as your account, there is no separate subscription. Your plan sets the rate limit.",
@@ -4067,7 +4267,7 @@
       "cta": "Get API key & docs"
     },
     "hero": {
-      "subtitle": "Your brand as context, priced by active brand. Copilot, MCP and seats per tier; credits are generation fair-use.",
+      "subtitle": "Your brand as context, priced by active brand. Copilot, MCP and seats per tier. Credits are generation fair-use.",
       "tier": "Plan",
       "brands": "Active brands",
       "copilot": "Copilot",
@@ -4096,8 +4296,8 @@
     },
     "fairUse": {
       "title": "Generation fair-use",
-      "desc": "Credits cover AI generation (images, video, mockups). Every plan includes a monthly fair-use amount, top up anytime in the Credits tab.",
-      "byok": "BYOK: your key covers the generation; the plan covers the platform."
+      "desc": "Credits cover image, video and mockup generation. Every plan includes a monthly fair-use amount, top up anytime in the Credits tab.",
+      "byok": "BYOK: your key covers the generation. The plan covers the platform."
     }
   },
   "privacy": {
@@ -4674,7 +4874,7 @@
     "allFreeGenerationsUsed": "All free generations used ({used} / 3)",
     "cancelAnytime": "Cancel anytime",
     "creditsPerInterval": "{credits} credits per {interval}",
-    "failedToLoad": "Failed to load subscription information",
+    "failedToLoad": "Could not load your subscription. Reload the page.",
     "freeGenerationsRemaining": "Free generations remaining: {remaining} / 3",
     "loadingPlanInfo": "Loading plan information...",
     "mockupGenerationsPerInterval": "{credits} mockup generations per {interval}",
@@ -4685,21 +4885,21 @@
     "subscribeForUnlimited": "Subscribe for unlimited generations",
     "subscribeNow": "Subscribe Now",
     "subscribeToContinue": "Subscribe to continue generating mockups",
-    "subscriptionActivated": "Subscription activated! Welcome to Premium! 🎉",
+    "subscriptionActivated": "Subscription activated. Welcome to Premium.",
     "tierFeatures": "{tier} tier features",
     "upgrade": "Upgrade",
     "upgradeTo": "UPGRADE TO {tier}",
     "upgradeToPremium": "UPGRADE TO PREMIUM",
-    "portalError": "Portal Error"
+    "portalError": "Could not open the subscription portal. Try again."
   },
   "subscriptionStatus": {
     "active": "Active",
     "credits": "{remaining}/{total} credits",
-    "failedToOpen": "Failed to open subscription management. Please try again.",
+    "failedToOpen": "Could not open subscription management. Try again.",
     "free": "Free",
     "manage": "Manage",
     "manageSubscription": "Manage subscription",
-    "portalError": "Failed to open subscription portal",
+    "portalError": "Could not open the subscription portal. Try again.",
     "premium": "Premium",
     "pro": "Pro",
     "renews": "Renews {date}",
@@ -5069,7 +5269,7 @@
     "benefitPro": "Priority Support and 20GB Storage",
     "benefitVision": "Fast Support and 100GB Storage",
     "creditsAvailable": "Credits available",
-    "getStarted": "Get Started",
+    "getStarted": "Start creating",
     "subscriptionActive": "{plan} Subscription Active",
     "subtitle": "Your subscription has been successfully activated",
     "support": "Need help? Contact us.",
@@ -5157,12 +5357,12 @@
     },
     "subtitle": "Quick user journey guide",
     "surpriseMe": "Click 'Surprise Me' for instant inspiration, or customize with categories and tags",
-    "tip": "💡 Tip: Use 'Me Surpreenda!' to get instant inspiration!",
+    "tip": "Tip: use Me Surpreenda for an instant mockup.",
     "title": "How to Use Mockup Machine®",
     "tutorialVideo": "Tutorial video",
     "uploadImage": "Upload your design or logo",
     "videoStep": {
-      "description": "Watch the tutorial video to get started with Mockup Machine®"
+      "description": "Watch the tutorial and start using Mockup Machine®"
     }
   },
   "upload": {
@@ -5388,16 +5588,19 @@
     "subtitle": "Visualize your usage history and credit consumption",
     "title": "Usage History",
     "totalCreditsUsed": "Credits Used",
-    "totalRecords": "Total Records"
+    "totalRecords": "Total Records",
+    "loadErrorTitle": "Could not load the history",
+    "retry": "Try again",
+    "showingStale": "the numbers on screen are from the previous load"
   },
   "waitlist": {
     "addAnotherEmail": "Add another email",
-    "addedToWaitlist": "✓ You've been added to the waitlist!",
+    "addedToWaitlist": "You are on the waitlist.",
     "emailLabel": "Email Address",
     "emailPlaceholder": "your.email@example.com",
     "errors": {
-      "failedToJoin": "Failed to join waitlist. Please try again.",
-      "invalidEmail": "Please enter a valid email address"
+      "failedToJoin": "Could not join the waitlist. Try again.",
+      "invalidEmail": "Enter a valid email address"
     },
     "joinWaitlist": "Join Waitlist",
     "joinWhatsAppGroup": "Join WhatsApp Group",
@@ -5406,9 +5609,9 @@
     "seoDescription": "Join the waitlist to get early access to Visant Labs® premium tools.",
     "seoKeywords": "waitlist, early access, premium access",
     "seoTitle": "Waitlist",
-    "subtitle": "Be among the first to access our premium tools. Get notified when we open access.",
+    "subtitle": "Get in line for early access. We email you when it opens.",
     "success": {
-      "addedToWaitlist": "Thank you! You've been added to the waitlist."
+      "addedToWaitlist": "Done, you are on the waitlist."
     },
     "title": "Closed Alpha // VSN Labs®",
     "tryMockupMachineNow": "Try Mockup Machine Now"
@@ -5529,18 +5732,18 @@
       "title": "Title"
     },
     "projects": {
-      "are_you_sure_you_want_to_delete_": "Are you sure you want to delete this creative? This action cannot be undone.",
-      "delete_creative": "Delete Creative",
+      "are_you_sure_you_want_to_delete_": "Delete this creative? This cannot be undone.",
+      "delete_creative": "Delete creative",
       "my_creatives_2": "My Creatives",
-      "manage_your_aigenerated_creative": "Manage your AI-generated creatives.",
+      "manage_your_aigenerated_creative": "Manage your generated creatives.",
       "my_creatives": "My Creatives",
-      "search_project_name": "Search project name…"
+      "search_project_name": "Search by name…"
     }
   },
   "mockups": {
     "title": "Title",
-    "explore_designs_profissionais_e_inspires": "Explore designs profissionais e inspire-se.",
-    "galeria_da_comunidade": "[EN] Galeria da Comunidade"
+    "explore_designs_profissionais_e_inspires": "Browse professional designs and get inspired.",
+    "galeria_da_comunidade": "Community gallery"
   },
   "studio3d": {
     "title": "3D STUDIO",
@@ -5770,7 +5973,14 @@
   "imagelab": {
     "title": "IMAGE LAB",
     "documentTitle": "Image Lab, Visant",
-    "dropPrompt": "Drop or paste an image or video to begin"
+    "dropPrompt": "Drop or paste an image or video to begin",
+    "selectAreaFirst": "Select an area on the image before editing",
+    "enterPromptFirst": "Describe what you want to generate in that area",
+    "dragEdgeFirst": "Drag one of the edges to set how far to expand",
+    "imageEdited": "Image edited",
+    "imageExpanded": "Image expanded",
+    "backgroundRemoved": "Background removed with {engine}",
+    "resumingEdit": "Resuming the edit that was still running"
   },
   "wind": {
     "tunnel": {
@@ -5778,14 +5988,14 @@
       "restart_simulation_2": "Restart simulation",
       "wind_tunnel": "Wind Tunnel",
       "back_to_labs": "Back to Labs",
-      "drop_image_to_use_as_obstacle": "Drop image to use as obstacle",
+      "drop_image_to_use_as_obstacle": "Drop an image to use as an obstacle",
       "preset_deleted": "Preset deleted.",
       "export_failed": "Export failed.",
       "png_exported_at_multiplierx": "PNG exported at ${multiplier}x.",
-      "failed_to_load_image": "Failed to load image.",
-      "unsupported_format_use_png_svg_jpeg_or": "Unsupported format. Use PNG, SVG, JPEG, or WebP.",
+      "failed_to_load_image": "Could not load the image.",
+      "unsupported_format_use_png_svg_jpeg_or": "Format not supported. Use PNG, SVG, JPEG or WebP.",
       "reset_all": "Reset All",
-      "restart_simulation": "Restart Simulation",
+      "restart_simulation": "Restart simulation",
       "toggle_grid": "Toggle grid",
       "grid_overlay": "Grid overlay",
       "toggle_obstacle_visibility": "Toggle obstacle visibility",
@@ -5807,7 +6017,7 @@
       "transform": "Transform",
       "toggle_bold": "Toggle bold",
       "obstacle_text": "Obstacle text",
-      "or_drag_drop_onto_canvas": "or drag & drop onto canvas",
+      "or_drag_drop_onto_canvas": "or drag and drop onto the canvas",
       "clear_image": "Clear image",
       "upload_obstacle_image": "Upload obstacle image",
       "obstacle": "Obstacle",
@@ -5843,7 +6053,7 @@
       "png_exported": "PNG exported"
     },
     "machine": {
-      "this_will_remove_the_current_svg_and_": "This will remove the current SVG and reset all settings.",
+      "this_will_remove_the_current_svg_and_": "This removes the current SVG and resets the settings.",
       "clear_workspace": "Clear workspace",
       "or_click_ctrlv_to_paste": "or click / Ctrl+V to paste",
       "drop_an_svg_file_here": "Drop an SVG file here",
@@ -5853,32 +6063,32 @@
       "export_failed": "Export failed",
       "png_exported_2x": "PNG exported (2x)",
       "only_svg_files_are_supported": "Only SVG files are supported",
-      "please_upload_an_svg_file": "Please upload an SVG file",
+      "please_upload_an_svg_file": "Upload an SVG file",
       "loaded_name_anchors_anchors_handles_h": "Loaded ${name}, ${anchors} anchors, ${handles} handles"
     }
   },
   "extractor": {
     "format": "Format",
     "content_type": "Content Type",
-    "encontre_qualquer_imagem": "Encontre qualquer imagem...",
-    "extrator_de_imagens_inteligente_de_mltip": "[EN] Extrator de imagens inteligente de múltiplas fontes.",
-    "erro_ao_processar_pdf": "Erro ao processar PDF",
-    "extrao_de_pdf_concluda": "[EN] Extração de PDF concluída",
-    "asset_copied_to_clipboard": "Asset copied to clipboard",
-    "processing_for_clipboard": "Processing for clipboard...",
-    "failed_to_upscale_image": "Failed to upscale image",
-    "asset_upscaled_and_delivered": "Asset upscaled and delivered",
-    "upscaling_asset_to_2x_ultra_hd": "Upscaling asset to 2x ULTRA HD...",
-    "erro_ao_gerar_zip": "Erro ao gerar ZIP",
-    "download_concludo": "[EN] Download concluído!",
-    "iniciando_download_de_imagestodownloadle": "[EN] Iniciando download de ${imagesToDownload.length} imagens...",
-    "falha_na_extrao": "[EN] Falha na extração",
+    "encontre_qualquer_imagem": "Find any image…",
+    "extrator_de_imagens_inteligente_de_mltip": "Pulls images from several sources at once.",
+    "erro_ao_processar_pdf": "Could not process the PDF. Try another file.",
+    "extrao_de_pdf_concluda": "PDF extraction finished",
+    "asset_copied_to_clipboard": "Asset copied",
+    "processing_for_clipboard": "Preparing to copy…",
+    "failed_to_upscale_image": "Could not upscale the image. Try again.",
+    "asset_upscaled_and_delivered": "Upscale finished",
+    "upscaling_asset_to_2x_ultra_hd": "Upscaling to 2x…",
+    "erro_ao_gerar_zip": "Could not generate the ZIP. Try again.",
+    "download_concludo": "Download finished",
+    "iniciando_download_de_imagestodownloadle": "Downloading ${imagesToDownload.length} images…",
+    "falha_na_extrao": "Extraction failed. Try again.",
     "mais_resultimageslength_imageslength_str": "Mais ${result.images.length - images.length} streams identificados",
     "view_original": "View Original",
     "search_with_google_lens": "Search with Google Lens",
     "upscale_to_ultra_hd": "Upscale to ULTRA HD",
     "copy_as_png": "Copy as PNG",
-    "download_original": "Download Original"
+    "download_original": "Download original"
   },
   "api": {
     "keys": {
@@ -5893,28 +6103,30 @@
       "no_api_keys_yet": "No API keys yet",
       "scopes": "Scopes",
       "copy_to_clipboard": "Copy to clipboard",
-      "this_key_will_not_be_shown_again_copy_it": "This key will not be shown again. Copy it and store it securely.",
+      "this_key_will_not_be_shown_again_copy_it": "This key will not be shown again. Copy it and store it somewhere safe.",
       "save_your_api_key_now": "Save your API key now",
-      "manage_your_api_keys_for_agent_and_progr": "Manage your API keys for agent and programmatic access",
-      "please_sign_in_to_manage_api_keys": "Please sign in to manage API keys",
+      "manage_your_api_keys_for_agent_and_progr": "Manage the API keys for agents and programmatic access",
+      "please_sign_in_to_manage_api_keys": "Sign in to manage API keys.",
       "copied_to_clipboard": "Copied to clipboard",
-      "select_at_least_one_scope": "Select at least one scope",
-      "please_enter_a_name_for_the_key": "Please enter a name for the key"
+      "select_at_least_one_scope": "Pick at least one scope",
+      "please_enter_a_name_for_the_key": "Give the key a name",
+      "load_failed": "Could not load your API keys",
+      "try_again": "Try again"
     }
   },
   "moodboard": {
     "studio": {
       "ai_analyzing": "AI Analyzing",
-      "single_image_for_ai_grid_detectio": "Single image for AI grid detection · Multiple for batch processing",
-      "upload_or_drop_moodboard": "Upload or Drop Moodboard",
+      "single_image_for_ai_grid_detectio": "One image to detect the grid, several to process in batch",
+      "upload_or_drop_moodboard": "Upload or drop a moodboard",
       "extract_upscale_and_animate_image": "Extract, upscale and animate images from moodboards",
-      "generating_full_moodboard_video_w": "Generating full moodboard video with Veo 3...",
-      "generating_frame_animation_with_v": "Generating frame animation with Veo 3...",
+      "generating_full_moodboard_video_w": "Generating the full moodboard video with Veo 3…",
+      "generating_frame_animation_with_v": "Generating the frame animation with Veo 3…",
       "ai_regeneration_ready": "AI Regeneration ready",
       "detected_newcropslength_images": "Detected ${newCrops.length} images",
       "no_grid_detected_try_a_moodboard_": "No grid detected. Try a moodboard with clearly separated images.",
       "regen_failed": "Item {id}: {error}",
-      "regeneration_failed": "Regeneration failed"
+      "regeneration_failed": "Regeneration failed. Try again."
     }
   },
   "public": {
@@ -5925,7 +6137,7 @@
         "connect_to_your_ai": "Connect your AI",
         "connecting": "Connecting…",
         "assets": "Assets",
-        "search_assets_colors_or_spe": "Search assets, colors, or specs...",
+        "search_assets_colors_or_spe": "Search assets, colors or specs…",
         "download_brand_variables_as": "Download brand variables as CSS",
         "download_brand_guidelines_a": "Download brand guidelines as JSON",
         "brand_sections": "Brand sections",
@@ -5949,14 +6161,16 @@
   "brand": {
     "guidelines": {
       "review": "Review →",
-      "design_system_review_pending": "Design System Review pending",
+      "design_system_review_pending": "Design system review pending",
       "toggle_sections": "Toggle sections",
       "menu": "Menu",
       "open_menu": "Open menu",
-      "brand_guideline_content": "Brand Guideline Content",
-      "brand_guidelines_selection": "Brand Guidelines Selection",
-      "awaiting_selection": "Awaiting Selection"
-    }
+      "brand_guideline_content": "Brand guideline content",
+      "brand_guidelines_selection": "Brand guidelines selection",
+      "awaiting_selection": "Awaiting selection"
+    },
+    "untitled": "Unnamed brand",
+    "noBrand": "No brand"
   },
   "home": {
     "community": "community",
@@ -5965,27 +6179,27 @@
     "contact": "contact",
     "info": "info",
     "sign_in": "sign in",
-    "ver_todos_os_apps": "Ver todos os apps",
-    "selecione_um_app": "[EN] Selecione um app"
+    "ver_todos_os_apps": "See all apps",
+    "selecione_um_app": "Pick an app"
   },
   "my": {
     "outputs": {
       "delete_output": "Delete output",
-      "loading_your_outputs": "Loading your outputs...",
-      "failed_to_remove_canvas_image": "Failed to remove canvas image",
+      "loading_your_outputs": "Loading your outputs…",
+      "failed_to_remove_canvas_image": "Could not remove the canvas image. Try again.",
       "canvas_image_removed": "Canvas image removed",
-      "failed_to_delete_output": "Failed to delete output",
-      "output_deleted_successfully": "Output deleted successfully"
+      "failed_to_delete_output": "Could not delete the output. Try again.",
+      "output_deleted_successfully": "Output deleted"
     },
     "budgets": {
-      "carregando_presets": "Carregando presets...",
+      "carregando_presets": "Loading presets…",
       "invalid_budget_id": "Invalid budget ID"
     }
   },
   "halftone": {
-    "all_halftone_settings_will_return_to_def": "All halftone settings will return to defaults. This cannot be undone.",
+    "all_halftone_settings_will_return_to_def": "All settings return to defaults. This cannot be undone.",
     "reset_settings": "Reset settings",
-    "drop_image_here": "Drop image here",
+    "drop_image_here": "Drop the image here",
     "png_exported": "PNG exported",
     "loaded_file": "Loaded {name}",
     "pasted_image": "pasted image"
@@ -5993,10 +6207,10 @@
   "q": {
     "r": {
       "code": {
-        "enter_text_to_generate_qr_code": "Enter text to generate QR code",
-        "select_error_correction_level": "Select error correction level",
-        "enter_text_url_or_any_data": "Enter text, URL, or any data...",
-        "qr_code_generator": "QR Code Generator"
+        "enter_text_to_generate_qr_code": "Enter text to generate the QR Code",
+        "select_error_correction_level": "Select the error correction level",
+        "enter_text_url_or_any_data": "Enter text, URL or any data…",
+        "qr_code_generator": "QR Code generator"
       }
     }
   },
@@ -6051,14 +6265,14 @@
       "titleLine1": "Stop correcting outputs",
       "titleLine2": "that ignore your brand.",
       "subtitle": "Your brand guidelines become structured context for any model. Everything generated always looks like you.",
-      "icp": "For designers, agencies and marketing teams that generate with AI.",
+      "icp": "For designers, agencies and marketing teams producing with generative models.",
       "ctaPrimary": "Start free",
       "ctaSecondary": "See the apps"
     },
     "proof": {
-      "eyebrow": "Real output",
+      "eyebrow": "Generated pieces",
       "title": "One brand. Every format. Always on-brand.",
-      "subtitle": "Every piece below was generated from a live brand guideline — nothing redesigned by hand. From coffee bag to dashboard, it all pulls the same identity."
+      "subtitle": "Every piece below came out of a live brand guideline, with nothing redesigned by hand. From coffee bag to dashboard, it all pulls the same identity."
     },
     "howItWorks": {
       "eyebrow": "How it works",
@@ -6085,7 +6299,7 @@
       "mockupName": "Mockup Machine",
       "mockupDesc": "Realistic product mockups in seconds.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Your identity in every generation. Not just in documents.",
+      "brandDesc": "Your identity enters the generation before the model draws.",
       "canvasName": "Canvas",
       "canvasDesc": "Draw, connect, generate. All in one canvas.",
       "studioName": "3D Studio",
@@ -6096,10 +6310,10 @@
     "finalCta": {
       "title": "Your brand. Consistent in everything you generate.",
       "button": "Start free",
-      "anchor": "Free to start · No credit card · Cancel anytime"
+      "anchor": "Free to start. No credit card, cancel anytime."
     },
     "footer": {
-      "tagline": "The only one that truly knows your brand."
+      "tagline": "Your brand feeds the generation."
     }
   },
   "funnel": {
@@ -6124,21 +6338,21 @@
         "label": "Designer",
         "desc": "UI/UX, branding, visual design",
         "actionTitle": "Create your first mockup",
-        "actionDesc": "See the platform's power — a professional mockup in seconds.",
+        "actionDesc": "A professional mockup in seconds, straight from your logo.",
         "actionCta": "Create mockup"
       },
       "agency": {
         "label": "Agency",
         "desc": "Clients, campaigns, deliverables",
         "actionTitle": "Centralize your clients' brands",
-        "actionDesc": "One source of truth per client — share, generate and repeat without copying hex by hand.",
+        "actionDesc": "One source of truth per client. Share, generate and repeat without copying hex by hand.",
         "actionCta": "Create brand guideline"
       },
       "marketing": {
         "label": "Marketing",
         "desc": "Social, content, growth",
         "actionTitle": "Generate content for every channel",
-        "actionDesc": "One brief, many pieces — copy and imagery consistent with the brand, all at once.",
+        "actionDesc": "One brief, many pieces. Copy and imagery consistent with the brand, all at once.",
         "actionCta": "Open Content Studio"
       },
       "developer": {
@@ -6167,6 +6381,10 @@
     "manualError": "Could not create the brand. Try again.",
     "demoCreating": "Preparing the demo brand…",
     "demoError": "Could not create the demo brand, create a quick one below instead.",
+    "skipDemoError": "Couldn't create the demo brand. You came in without any brand, bring yours here.",
+    "skipDemoRetry": "Try again",
+    "skipDemoRetryDone": "Demo brand created and already active.",
+    "skipDemoRetryError": "Still didn't work. Create your brand right here.",
     "ingestDone": "Brand imported, on-brand from the first output.",
     "step2Ready": "Your brand is ready",
     "step2Desc": "Your brand is loaded as context. Next stop: your first on-brand piece.",
@@ -6175,8 +6393,8 @@
     "back": "Back",
     "skip": "Skip",
     "continue": "Continue",
-    "finishError": "Failed to complete onboarding",
-    "welcomeToast": "Welcome to Visant Labs!",
+    "finishError": "Could not finish onboarding. Try again.",
+    "welcomeToast": "Welcome to Visant Labs.",
     "demoBanner": {
       "label": "You're on the demo brand",
       "message": "bring yours to generate truly on-brand work.",
@@ -6208,5 +6426,11 @@
     "radius": "Radius tokens",
     "media": "Media kit or knowledge",
     "public_or_figma": "Sharing or linked Figma"
+  },
+  "pipeline": {
+    "sendTo": "Send to",
+    "opening": "Opening {tool}...",
+    "nothingToSend": "Nothing to send yet. Generate or select an asset first.",
+    "sendFailed": "Couldn't send the asset. Try again in a moment."
   }
 }

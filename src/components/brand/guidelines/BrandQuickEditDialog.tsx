@@ -45,7 +45,7 @@ const fileToBase64 = (file: File): Promise<string> =>
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <label className="block space-y-1.5">
-    <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-500">
+    <span className="text-[11px] uppercase tracking-widest text-neutral-500">
       {label}
     </span>
     {children}

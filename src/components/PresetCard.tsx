@@ -78,7 +78,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
   return (
     <div
       className={cn(
-        'group relative flex flex-col bg-neutral-900/30 border rounded-xl overflow-hidden cursor-pointer transition-all duration-150',
+        'group relative flex flex-col bg-neutral-900/30 border rounded-xl overflow-hidden cursor-pointer transition-colors duration-150',
         selected
           ? 'border-white/20 bg-white/5'
           : 'border-neutral-800 hover:border-white/10 hover:bg-neutral-900/50'

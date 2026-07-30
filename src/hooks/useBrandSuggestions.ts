@@ -13,6 +13,7 @@ import {
   type BrandSuggestion,
   type BrandSuggestionKind,
 } from '@/services/brandGuidelineApi';
+import { translate } from '@/utils/localeUtils';
 
 /**
  * Seasonal/contextual on-brand suggestions — SSoT extracted from
@@ -46,10 +47,10 @@ export const SUGGESTION_KIND_META: Record<
 function friendlyError(e: unknown): { code?: string; message: string } {
   const code = (e as { code?: string })?.code;
   if (code === 'suggestions_not_configured')
-    return { code, message: 'AI ideas aren’t enabled for this workspace yet.' };
+    return { code, message: translate('errors.ideasNotEnabled') };
   if (code === 'suggestions_unavailable')
-    return { code, message: 'AI ideas are temporarily unavailable — try again shortly.' };
-  return { code, message: e instanceof Error ? e.message : 'Could not load ideas.' };
+    return { code, message: translate('errors.ideasUnavailable') };
+  return { code, message: e instanceof Error ? e.message : translate('errors.couldNotLoadIdeas') };
 }
 
 // ── Client-side mirror of the last generated set ──────────────────────────────

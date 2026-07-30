@@ -79,7 +79,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
 
   const Mock = item.Component;
 
-  const label = 'text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/40';
+  const label = 'text-[10px] uppercase tracking-widest text-[var(--brand-text)]/40';
   const input =
     'w-full rounded-lg border border-[var(--brand-text)]/12 bg-transparent px-3 py-2 text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-text)]/30 focus:border-[var(--accent)]/50 focus:outline-none transition-colors';
 

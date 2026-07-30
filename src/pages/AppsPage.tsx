@@ -197,7 +197,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-80" />
 
         {/* Hover overlay (Abrir) — z-10, atrás dos botões de canto */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 bg-neutral-950/40 backdrop-blur-[3px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100">
+        <div className="absolute inset-0 z-10 flex items-center justify-center transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300 bg-neutral-950/40 backdrop-blur-[3px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100">
           <span className="text-sm font-medium text-white px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-2 shadow-lg">
             {isExternal ? t('apps.launch') : t('apps.open')}
             {isExternal ? <ExternalLink size={14} /> : <ChevronRight size={14} />}
@@ -211,7 +211,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
           aria-label={pinned ? t('nav.unpin') : t('nav.pin')}
           title={pinned ? t('nav.unpin') : t('nav.pin')}
           className={cn(
-            'absolute top-3 left-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 transition-all',
+            'absolute top-3 left-3 z-20 p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 transition-[color,background-color,border-color,opacity,filter]',
             pinned
               ? 'opacity-100 text-brand-cyan'
               : 'text-white/70 hover:text-white opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100'
@@ -236,7 +236,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
             </button>
           )}
           {isPremium && !hasAccess ? (
-            <div className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-brand-cyan">
+            <div className="p-2 rounded-xl bg-neutral-950/50 backdrop-blur-md border border-white/10 text-neutral-300">
               <Lock size={12} />
             </div>
           ) : isExternal ? (
@@ -314,7 +314,7 @@ function CategoryChip({ icon: Icon, label, count, active, onClick }: RailItemPro
     <button
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-all shrink-0',
+        'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap border transition-colors shrink-0',
         active
           ? 'text-neutral-200 bg-white/5 border-white/10 font-medium'
           : 'text-neutral-500 hover:text-neutral-300 border-transparent bg-white/[0.03]'
@@ -1111,7 +1111,7 @@ export const AppsPage: React.FC = () => {
                     key={key}
                     onClick={() => setAccessFilter(key)}
                     className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all',
+                      'px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors',
                       accessFilter === key
                         ? 'bg-white/5 text-neutral-100 font-medium'
                         : 'text-neutral-500 hover:text-neutral-300'
@@ -1136,7 +1136,7 @@ export const AppsPage: React.FC = () => {
                       : t('apps.sort.hintDefault')
                 }
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-all shrink-0',
+                  'flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm border transition-colors shrink-0',
                   sortBy !== 'default'
                     ? 'border-white/10 text-neutral-200 bg-white/5'
                     : 'border-neutral-800 text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'

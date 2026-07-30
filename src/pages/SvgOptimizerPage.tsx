@@ -28,19 +28,15 @@ import { formatBytes } from '@/utils/formatUtils';
 import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
+import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
 
-const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
+/** Local scale-fade — no scale preset in the module; tokens supply ease/duration. */
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
 
 const SvgVectorEditor = lazy(() =>
@@ -73,6 +69,7 @@ function isSvgFile(file: File): boolean {
 }
 
 export const SvgOptimizerPage: React.FC = () => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [pasteMode, setPasteMode] = useState(false);
@@ -281,7 +278,7 @@ export const SvgOptimizerPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Queue: Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add files
         <input
@@ -299,12 +296,10 @@ export const SvgOptimizerPage: React.FC = () => {
           <motion.div
             key={item.id}
             layout
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: i * 0.03, ease }}
+            {...itemEnter(i)}
             onClick={() => setSelectedId(item.id)}
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
+              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
               selectedItem?.id === item.id
                 ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
                 : 'hover:bg-neutral-900/60'
@@ -348,7 +343,7 @@ export const SvgOptimizerPage: React.FC = () => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all duration-200 flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
             >
               <X size={12} />
             </button>
@@ -383,7 +378,7 @@ export const SvgOptimizerPage: React.FC = () => {
       {selectedItem && selectedItem.source === 'png' && selectedItem.status !== 'tracing' && (
         <>
           <div className="h-px bg-neutral-800" />
-          <motion.div {...fadeUp} className="space-y-2">
+          <motion.div {...fadeInUp} className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-warning">Trace preset</span>
             </div>
@@ -391,11 +386,11 @@ export const SvgOptimizerPage: React.FC = () => {
               {(['logo', 'lettering', 'lineArt', 'stamp', 'custom'] as const).map((p) => (
                 <motion.button
                   key={p}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.04, transition: transitions.fast }}
+                  whileTap={{ scale: 0.96, transition: transitions.press }}
                   onClick={() => handlePresetChange(p)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
                     localPreset === p
                       ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
                       : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
@@ -508,8 +503,9 @@ export const SvgOptimizerPage: React.FC = () => {
   return (
     <MiniAppShell
       icon={FileCode}
-      title="SVG Optimizer"
-      documentTitle="SVG Optimizer"
+      title={t('apps.svgOptimizer.name')}
+      toolId="svg-optimizer"
+      documentTitle={t('apps.svgOptimizer.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
       panelLabel="Queue & controls"
@@ -524,7 +520,7 @@ export const SvgOptimizerPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           /* ── Empty / Upload state ── */
-          <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
+          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
             <div className="flex flex-col items-center gap-2">
               <FileCode size={28} className="text-neutral-500" />
               <h2 className="text-sm font-medium text-neutral-300">Optimize & trace SVG files</h2>
@@ -534,10 +530,10 @@ export const SvgOptimizerPage: React.FC = () => {
             </div>
 
             <motion.label
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01, transition: transitions.fast }}
+              whileTap={{ scale: 0.98, transition: transitions.press }}
               className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200',
+                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
                 isDragOver
                   ? 'border-brand-cyan bg-brand-cyan/5'
                   : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
@@ -564,14 +560,14 @@ export const SvgOptimizerPage: React.FC = () => {
               {!pasteMode ? (
                 <motion.button
                   key="paste-toggle"
-                  {...fadeUp}
+                  {...fadeInUp}
                   onClick={() => setPasteMode(true)}
                   className="w-full max-w-md text-center text-[11px] font-medium text-neutral-600 hover:text-neutral-400 transition-colors duration-200"
                 >
                   or paste SVG code
                 </motion.button>
               ) : (
-                <motion.div key="paste-area" {...fadeUp} className="w-full max-w-md space-y-2">
+                <motion.div key="paste-area" {...fadeInUp} className="w-full max-w-md space-y-2">
                   <textarea
                     value={pasteValue}
                     onChange={(e) => setPasteValue(e.target.value)}
@@ -614,13 +610,13 @@ export const SvgOptimizerPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.2, ease }}
+              transition={transitions.base}
               className="flex items-center gap-1 p-2 border-b border-neutral-800"
             >
               <button
                 onClick={() => setViewMode('preview')}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
                   viewMode === 'preview'
                     ? 'bg-brand-cyan/20 text-brand-cyan'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -631,7 +627,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <button
                 onClick={() => setViewMode('edit')}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
                   viewMode === 'edit'
                     ? 'bg-warning/20 text-warning'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -642,7 +638,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <button
                 onClick={() => setViewMode('code')}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
                   viewMode === 'code'
                     ? 'bg-brand-cyan/20 text-brand-cyan'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -660,7 +656,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease }}
+                  transition={transitions.base}
                   className="flex-1 flex items-center justify-center p-4"
                 >
                   <FlyingPaperLoader label={`Tracing ${selectedItem.fileName}...`} />
@@ -673,7 +669,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease }}
+                  transition={transitions.base}
                   className="flex-1 flex flex-col items-center justify-center gap-3 p-4"
                 >
                   <AlertCircle size={24} className="text-destructive" />
@@ -698,7 +694,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease }}
+                  transition={transitions.base}
                   className="flex-1 flex items-center justify-center p-4 overflow-hidden pointer-events-none"
                   style={{ maxHeight: '60vh' }}
                   dangerouslySetInnerHTML={{
@@ -713,7 +709,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease }}
+                  transition={transitions.base}
                   className="flex-1 flex flex-col"
                 >
                   <Suspense
@@ -741,7 +737,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease }}
+                  transition={transitions.base}
                   className="flex-1 p-4 text-xs font-mono text-neutral-400 overflow-auto whitespace-pre-wrap break-all"
                   style={{ maxHeight: '60vh' }}
                 >

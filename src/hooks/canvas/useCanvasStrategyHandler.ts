@@ -4,7 +4,7 @@ import type { FlowNodeData, StrategyNodeData } from '@/types/reactFlow';
 import type { BrandingData } from '@/types/types';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
 import { toast } from 'sonner';
-import { formatDate } from '@/utils/localeUtils';
+import { formatDate, translate } from '@/utils/localeUtils';
 
 interface UseStrategyNodeHandlerParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -47,7 +47,7 @@ export const useCanvasStrategyHandler = ({
       const brandPrompt = prompt || strategyData.prompt || '';
 
       if (!brandPrompt.trim()) {
-        toast.error('Please enter a brand description', { duration: 3000 });
+        toast.error(translate('canvas.enterBrandDescription'), { duration: 3000 });
         return;
       }
 
@@ -104,7 +104,7 @@ export const useCanvasStrategyHandler = ({
           error: error?.message,
         });
         console.error('Error generating strategy:', error);
-        toast.error(error?.message || 'Failed to generate strategy', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.strategyGenerateFailed'), { duration: 5000 });
         updateNodeData<StrategyNodeData>(
           nodeId,
           { isGenerating: false, generatingStep: undefined },
@@ -177,7 +177,7 @@ export const useCanvasStrategyHandler = ({
         await new Promise((resolve) => setTimeout(resolve, 100));
         node = nodesRef.current.find((n) => n.id === nodeId);
         if (!node || node.type !== 'strategy') {
-          toast.error('Strategy node not found', { duration: 3000 });
+          toast.error(translate('canvas.strategyNodeNotFound'), { duration: 3000 });
           return;
         }
       }
@@ -188,7 +188,7 @@ export const useCanvasStrategyHandler = ({
         (promptOverride !== undefined ? promptOverride : strategyData.prompt) || '';
 
       if (!brandPrompt.trim()) {
-        toast.error('Please enter a brand description', { duration: 3000 });
+        toast.error(translate('canvas.enterBrandDescription'), { duration: 3000 });
         return;
       }
 
@@ -222,10 +222,10 @@ export const useCanvasStrategyHandler = ({
           setTimeout(() => saveImmediately(), 100);
         }
 
-        toast.success('Initial analysis completed. You can now generate sections manually.');
+        toast.success(translate('canvas.initialAnalysisDone'));
       } catch (error: any) {
         console.error('Error in initial analysis:', error);
-        toast.error(error?.message || 'Failed to perform initial analysis', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.initialAnalysisFailed'), { duration: 5000 });
         updateNodeData<StrategyNodeData>(
           nodeId,
           { isGenerating: false, generatingStep: undefined },
@@ -245,7 +245,7 @@ export const useCanvasStrategyHandler = ({
       const brandPrompt = strategyData.prompt || '';
 
       if (!brandPrompt.trim()) {
-        toast.error('Please enter a brand description', { duration: 3000 });
+        toast.error(translate('canvas.enterBrandDescription'), { duration: 3000 });
         return;
       }
 
@@ -258,7 +258,7 @@ export const useCanvasStrategyHandler = ({
 
       // Prevent generating multiple sections at once
       if (currentGeneratingSteps.length > 0) {
-        toast.error('Please wait for the current section to finish generating', { duration: 3000 });
+        toast.error(translate('canvas.waitCurrentSection'), { duration: 3000 });
         return;
       }
 
@@ -297,7 +297,7 @@ export const useCanvasStrategyHandler = ({
             },
             'strategy'
           );
-          toast.info('Generation cancelled');
+          toast.info(translate('canvas.generationCancelled'));
           return;
         }
         const {
@@ -435,11 +435,11 @@ export const useCanvasStrategyHandler = ({
             },
             'strategy'
           );
-          toast.info('Generation cancelled');
+          toast.info(translate('canvas.generationCancelled'));
         }
       } catch (error: any) {
         console.error(`Error generating ${sectionType}:`, error);
-        toast.error(error?.message || `Failed to generate ${sectionType}`, { duration: 5000 });
+        toast.error(error?.message || translate('canvas.sectionGenerateFailed', undefined, { section: sectionType }), { duration: 5000 });
 
         // Remove this section from generating steps on error
         const node = nodesRef.current.find((n) => n.id === nodeId);
@@ -482,7 +482,7 @@ export const useCanvasStrategyHandler = ({
       const brandPrompt = strategyData.prompt || '';
 
       if (!brandPrompt.trim()) {
-        toast.error('Please enter a brand description', { duration: 3000 });
+        toast.error(translate('canvas.enterBrandDescription'), { duration: 3000 });
         return;
       }
 
@@ -563,7 +563,7 @@ export const useCanvasStrategyHandler = ({
             },
             'strategy'
           );
-          toast.info('All sections have already been generated');
+          toast.info(translate('canvas.allSectionsAlreadyGenerated'));
           return;
         }
 
@@ -579,7 +579,7 @@ export const useCanvasStrategyHandler = ({
               },
               'strategy'
             );
-            toast.info('Generation cancelled');
+            toast.info(translate('canvas.generationCancelled'));
             return;
           }
 
@@ -608,7 +608,7 @@ export const useCanvasStrategyHandler = ({
                 },
                 'strategy'
               );
-              toast.info('Generation cancelled');
+              toast.info(translate('canvas.generationCancelled'));
               return;
             }
           }
@@ -758,7 +758,7 @@ export const useCanvasStrategyHandler = ({
           if (saveImmediately) {
             setTimeout(() => saveImmediately(), 100);
           }
-          toast.success('All sections generated successfully');
+          toast.success(translate('canvas.allSectionsGenerated'));
         } else {
           updateNodeData<StrategyNodeData>(
             nodeId,
@@ -768,11 +768,11 @@ export const useCanvasStrategyHandler = ({
             },
             'strategy'
           );
-          toast.info('Generation cancelled');
+          toast.info(translate('canvas.generationCancelled'));
         }
       } catch (error: any) {
         console.error('Error generating all sections:', error);
-        toast.error(error?.message || 'Failed to generate all sections', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.allSectionsGenerateFailed'), { duration: 5000 });
         updateNodeData<StrategyNodeData>(
           nodeId,
           { isGenerating: false, generatingStep: undefined },
@@ -841,7 +841,7 @@ export const useCanvasStrategyHandler = ({
 
       const strategyData = node.data as any;
       if (!strategyData.strategyData) {
-        toast.error('No strategy data to export', { duration: 3000 });
+        toast.error(translate('canvas.noStrategyToExport'), { duration: 3000 });
         return;
       }
 
@@ -886,10 +886,10 @@ export const useCanvasStrategyHandler = ({
 
         const t = (key: string) => key; // Simple translation function
         generateBrandingPDF(brandingData, brandingData.prompt, t, defaultSteps);
-        toast.success('PDF generated successfully');
+        toast.success(translate('canvas.pdfGenerated'));
       } catch (error: any) {
         console.error('Error generating PDF:', error);
-        toast.error(error?.message || 'Failed to generate PDF', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.pdfGenerateFailed'), { duration: 5000 });
       }
     },
     [nodesRef]
@@ -907,7 +907,7 @@ export const useCanvasStrategyHandler = ({
       const projectId = strategyData.projectId;
 
       if (!prompt.trim()) {
-        toast.error('Please enter a brand description', { duration: 3000 });
+        toast.error(translate('canvas.enterBrandDescription'), { duration: 3000 });
         return;
       }
 
@@ -976,11 +976,11 @@ export const useCanvasStrategyHandler = ({
           await saveImmediately();
         }
 
-        toast.success('Strategy saved to branding project successfully');
+        toast.success(translate('canvas.strategySaved'));
         return savedProjectId;
       } catch (error: any) {
         console.error('Error saving strategy node:', error);
-        toast.error(error?.message || 'Failed to save strategy', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.strategySaveFailed'), { duration: 5000 });
         return undefined;
       }
     },

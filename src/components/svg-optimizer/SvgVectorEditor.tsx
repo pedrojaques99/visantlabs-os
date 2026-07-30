@@ -776,7 +776,7 @@ const ToolBtn: React.FC<{
     disabled={disabled}
     title={title}
     className={cn(
-      'flex items-center justify-center w-6 h-6 rounded transition-all text-neutral-500',
+      'flex items-center justify-center w-6 h-6 rounded transition-[color,background-color,border-color,opacity] text-neutral-500',
       active && !danger && 'bg-brand-cyan/20 text-brand-cyan',
       danger && 'hover:text-destructive',
       !active && !danger && 'hover:bg-neutral-800 hover:text-neutral-300',

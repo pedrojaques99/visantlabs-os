@@ -17,7 +17,7 @@ interface Props {
 export function MultiInputPanel({ config, description, onChange, disabled }: Props) {
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+      <p className="text-[10px] text-neutral-500 uppercase tracking-wider">
         {config.inputCount} image{config.inputCount > 1 ? 's' : ''} expected
       </p>
       <textarea

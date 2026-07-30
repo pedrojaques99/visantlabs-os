@@ -341,7 +341,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
             <div className="space-y-8">
               {(editable || identity.tagline) && (
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono text-[var(--brand-text)]/50 uppercase tracking-widest">
+                  <span className="text-[10px] text-[var(--brand-text)]/50 uppercase tracking-widest">
                     Brand Tagline
                   </span>
                   <InlineEditable
@@ -811,12 +811,12 @@ const ArchetypesInteractive: React.FC<{
               <div className="space-y-1">
                 <h4 className="text-2xl font-bold tracking-tight opacity-90">{arch.name}</h4>
                 {arch.role && (
-                  <span className="block text-[10px] font-mono uppercase tracking-widest opacity-40">
+                  <span className="block text-[10px] uppercase tracking-widest opacity-40">
                     {arch.role}
                   </span>
                 )}
               </div>
-              <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest opacity-40 group-hover:opacity-70 transition-opacity">
+              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest opacity-40 group-hover:opacity-70 transition-opacity">
                 <MousePointerClick size={11} aria-hidden="true" />
                 {isActive ? 'Hide' : 'Details'}
               </span>
@@ -971,7 +971,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                   )}
                 </div>
                 {persona.occupation && (
-                  <p className="text-xs font-mono uppercase tracking-widest opacity-40">
+                  <p className="text-xs uppercase tracking-widest opacity-40">
                     {persona.occupation}
                   </p>
                 )}
@@ -1107,7 +1107,7 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
                 className="p-6 rounded-[24px] border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5"
               >
                 {c.type && (
-                  <span className="text-[10px] font-mono uppercase tracking-wider opacity-30">
+                  <span className="text-[10px] uppercase tracking-wider opacity-30">
                     {c.type}
                   </span>
                 )}
@@ -1174,7 +1174,7 @@ const ColorUsagePalette: React.FC<{
               pct !== null ? ` — ${pct}% usage` : ''
             }`}
             className={cn(
-              'group relative rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-all hover:border-[var(--accent)]/30 shadow-2xl text-left',
+              'group relative rounded-2xl overflow-hidden border border-[var(--brand-text)]/10 transition-[color,background-color,border-color,box-shadow] hover:border-[var(--accent)]/30 shadow-2xl text-left',
               rankSpan(color.usageRank)
             )}
           >
@@ -1341,7 +1341,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
               >
                 {t.family}
               </span>
-              <span className="text-[9px] font-mono uppercase text-neutral-600 tracking-widest shrink-0">
+              <span className="text-[9px] uppercase text-neutral-600 tracking-widest shrink-0">
                 {t.role}
               </span>
             </div>
@@ -1367,7 +1367,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
           {typography.map((font, i) => (
             <div
               key={i}
-              className="group flex flex-col md:flex-row md:items-center gap-8 md:gap-16 p-8 rounded-3xl border transition-all bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10"
+              className="group flex flex-col md:flex-row md:items-center gap-8 md:gap-16 p-8 rounded-3xl border transition-[color,background-color,border-color,opacity] bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5 hover:border-[var(--brand-text)]/10"
             >
               <div
                 className="text-7xl md:text-8xl font-bold tracking-tighter w-40 text-center shrink-0 opacity-90"
@@ -1394,7 +1394,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
                       propagates into generation. */}
                   {font.style && (
                     <div className="space-y-1">
-                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
+                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-30">
                         Style
                       </span>
                       <p className="text-sm font-bold opacity-70">{font.style}</p>
@@ -1402,7 +1402,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
                   )}
                   {font.size && (
                     <div className="space-y-1">
-                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold opacity-30">
+                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-30">
                         Base Size
                       </span>
                       <p className="text-sm font-bold opacity-70">{font.size}PX</p>
@@ -1522,7 +1522,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                 className="w-full h-full object-contain p-2"
                 loading="lazy"
               />
-              <span className="absolute bottom-0 left-0 right-0 text-[9px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
+              <span className="absolute bottom-0 left-0 right-0 text-[9px] text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
                 {logo.variant}
               </span>
             </button>
@@ -1623,7 +1623,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                   <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">
                     {logo.label || 'Untitled Asset'}
                   </p>
-                  <p className="text-[10px] font-mono uppercase tracking-widest mt-1 opacity-40">
+                  <p className="text-[10px] uppercase tracking-widest mt-1 opacity-40">
                     {logo.variant} Variant
                   </p>
                 </div>

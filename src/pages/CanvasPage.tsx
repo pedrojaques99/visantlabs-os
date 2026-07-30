@@ -832,6 +832,8 @@ export const CanvasPage: React.FC = () => {
     const pollInterval = setInterval(async () => {
       try {
         const project = await canvasApi.getById(projectId);
+        // PERSISTED value — `projectName` feeds autosave/rename, so it keeps the
+        // literal sentinel. `CanvasHeader` localizes it at render time.
         const latestName = project.name || 'Untitled';
 
         // Only update if name changed (to avoid unnecessary re-renders)

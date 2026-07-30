@@ -78,17 +78,17 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
         <button
           onClick={() => setIsSelectionModalOpen(true)}
           className={cn(
-            'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 font-mono text-[10px] uppercase tracking-wider group',
+            'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-[color,background-color,border-color,box-shadow] duration-300 font-mono text-[10px] uppercase tracking-wider group',
             selectedBrandGuideline
               ? 'bg-brand-cyan text-black border-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.3)]'
-              : 'bg-neutral-900/60 border-white/10 text-brand-cyan hover:bg-brand-cyan hover:text-black hover:border-neutral-700'
+              : 'bg-neutral-900/60 border-white/10 text-muted-foreground hover:bg-brand-cyan hover:text-black hover:border-neutral-700'
           )}
         >
           <Gem
             size={10}
             className={cn(
               'transition-colors',
-              selectedBrandGuideline ? 'text-black' : 'text-brand-cyan group-hover:text-black'
+              selectedBrandGuideline ? 'text-black' : 'text-muted-foreground group-hover:text-black'
             )}
           />
           <span>
@@ -103,7 +103,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
           type="button"
           onClick={() => setIsSelectionModalOpen(true)}
           className={cn(
-            'w-full p-4 flex items-center justify-between group transition-all duration-300',
+            'w-full p-4 flex items-center justify-between group transition-colors duration-300',
             'bg-neutral-900/40 hover:bg-neutral-900/60 border border-neutral-800 hover:border-white/10 rounded-xl',
             selectedBrandGuideline && 'border-brand-cyan/20 bg-brand-cyan/[0.02]'
           )}
@@ -125,7 +125,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                     />
                   </div>
                 )}
-                <span className="text-[11px] font-mono text-white truncate max-w-[150px] uppercase font-bold tracking-wider">
+                <span className="text-[11px] text-foreground truncate max-w-[150px] font-bold tracking-wide">
                   {selectedGuidelineObj?.identity?.name || 'Selected'}
                 </span>
               </div>
@@ -175,7 +175,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
             <button
               onClick={() => handleSelect(null)}
               className={cn(
-                'w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all border font-mono text-[10px] uppercase tracking-wider',
+                'w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-colors border text-[11px] tracking-wide',
                 !selectedBrandGuideline
                   ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
                   : 'bg-neutral-900/40 border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-900/60'
@@ -217,7 +217,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                     <button
                       onClick={() => handleSelect(g.id!)}
                       className={cn(
-                        'w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all border font-mono text-[10px] uppercase tracking-wider text-left',
+                        'w-full flex items-center justify-between px-3 py-3 rounded-xl transition-[color,background-color,border-color,box-shadow] border text-[11px] tracking-wide text-left',
                         selectedBrandGuideline === g.id
                           ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
                           : 'bg-neutral-900/40 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-900/60 shadow-sm'
@@ -227,7 +227,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                         {/* Brand Thumbnail */}
                         <div
                           className={cn(
-                            'w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center border shrink-0 transition-all duration-300',
+                            'w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center border shrink-0 transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                             selectedBrandGuideline === g.id
                               ? 'border-brand-cyan/40 bg-brand-cyan/5'
                               : 'border-neutral-800 bg-neutral-950/50 group-hover:border-white/10'
@@ -293,7 +293,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
                 </span>
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="text-[10px] text-brand-cyan border-b border-brand-cyan/30 leading-none pb-0.5 hover:text-white hover:border-white transition-all cursor-pointer"
+                  className="text-[10px] text-brand-cyan border-b border-brand-cyan/30 leading-none pb-0.5 hover:text-white hover:border-white transition-[color,background-color,border-color,opacity] cursor-pointer"
                 >
                   Limpar busca
                 </button>
@@ -304,7 +304,7 @@ export const BrandGuidelineSelector: React.FC<BrandGuidelineSelectorProps> = ({
           <div className="pt-2 border-t border-neutral-800">
             <button
               onClick={handleOpenCreate}
-              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-all font-mono text-[11px] font-bold uppercase tracking-widest shadow-[0_10px_20px_rgba(var(--brand-cyan-rgb),0.2)]"
+              className="w-full flex items-center justify-center gap-2 p-4 rounded-xl bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-[color,background-color,border-color,box-shadow] font-mono text-[11px] font-bold uppercase tracking-widest shadow-[0_10px_20px_rgba(var(--brand-cyan-rgb),0.2)]"
             >
               <Plus size={16} strokeWidth={3} />
               {t('mockup.createNewBrandGuideline') || 'ADICIONAR NOVO DNA'}

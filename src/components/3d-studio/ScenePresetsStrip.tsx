@@ -69,7 +69,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
             <button
               key={name}
               onClick={() => store.applyScenePreset(name)}
-              className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+              className="shrink-0 flex flex-col items-center gap-1 group transition-colors duration-150"
             >
               <div
                 className="w-14 h-14 rounded-md overflow-hidden border border-white/10 group-hover:border-white/30 transition-colors"
@@ -100,7 +100,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 toast.success('Surprise!');
               }
             }}
-            className="shrink-0 flex flex-col items-center gap-1 group transition-all duration-150"
+            className="shrink-0 flex flex-col items-center gap-1 group transition-colors duration-150"
           >
             <div className="w-14 h-14 rounded-md overflow-hidden border border-dashed border-white/10 group-hover:border-white/30 flex items-center justify-center transition-colors">
               <Shuffle size={16} className="text-neutral-500 group-hover:text-neutral-300 transition-colors" />

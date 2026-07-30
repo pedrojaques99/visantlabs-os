@@ -120,7 +120,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-all shrink-0 mt-0.5"
+              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0 mt-0.5"
               onClick={() => remove(i)}
               aria-label="Remove"
             >
@@ -166,7 +166,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/copy:opacity-100 transition-all shrink-0"
+              className="h-6 w-6 text-neutral-700 hover:text-destructive opacity-0 group-hover/copy:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => removeCopy(i)}
               aria-label="Remove copy example"
             >

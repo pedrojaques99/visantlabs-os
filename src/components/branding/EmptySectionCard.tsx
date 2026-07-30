@@ -151,7 +151,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
 
         {/* Emoji Icon */}
         <div
-          className={`text-3xl md:text-4xl filter transition-all duration-200 ${
+          className={`text-3xl md:text-4xl filter transition-[color,background-color,border-color,opacity,filter] duration-200 ${
             isBlocked ? 'grayscale opacity-50' : 'grayscale group-hover:grayscale-0'
           }`}
         >
@@ -188,7 +188,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {/* Credits Badge - Pilula style */}
         {!isBlocked && !showError && (
           <div
-            className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-all duration-200 ${
+            className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-colors duration-200 ${
               theme === 'dark'
                 ? 'bg-white/10 border-white/20 group-hover:bg-white/15'
                 : 'bg-neutral-200 border-neutral-300 group-hover:bg-neutral-300'

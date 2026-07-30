@@ -237,7 +237,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setActionMode('layer')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-colors group"
                 >
                   <Plus
                     size={18}
@@ -250,7 +250,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 </button>
                 <button
                   onClick={() => setActionMode('edit')}
-                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg border border-neutral-800 bg-neutral-800/50 hover:border-neutral-700 hover:bg-brand-cyan/5 transition-colors group"
                 >
                   <Diamond
                     size={18}

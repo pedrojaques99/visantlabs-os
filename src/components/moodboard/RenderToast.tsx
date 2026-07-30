@@ -51,7 +51,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
           </span>
           <button
             onClick={job.status === 'rendering' || job.status === 'queued' ? onCancel : onDismiss}
-            className="p-1 hover:bg-neutral-800 rounded-full transition-all flex-shrink-0"
+            className="p-1 hover:bg-neutral-800 rounded-full transition-colors flex-shrink-0"
           >
             <X size={12} className="text-neutral-500" />
           </button>
@@ -98,7 +98,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
             </span>
             <button
               onClick={handleDownload}
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all"
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-[color,background-color,border-color,opacity]"
             >
               <Download size={10} /> Save
             </button>

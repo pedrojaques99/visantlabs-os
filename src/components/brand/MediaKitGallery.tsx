@@ -359,8 +359,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
     >
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && !readOnly && (
-        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-          <span className="text-[10px] font-mono text-brand-cyan font-bold px-2 uppercase">
+        <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-muted/40 border border-ring rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+          <span className="text-[10px] text-foreground font-bold px-2 uppercase tabular-nums">
             {selectedIds.size} SELECTED
           </span>
           <div className="flex gap-2">
@@ -539,7 +539,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                           }}
                           onClick={(e) => e.stopPropagation()}
                           className={cn(
-                            'h-5 pl-1 pr-4 rounded text-[10px] font-mono uppercase tracking-wider appearance-none cursor-pointer',
+                            'h-5 pl-1 pr-4 rounded text-[10px] uppercase tracking-wider appearance-none cursor-pointer',
                             'bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300',
                             'hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors',
                             !item.category && 'text-neutral-600'
@@ -562,8 +562,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
 
                     {/* Asset Click Indicator */}
                     {onAssetClick && item.type === 'image' && (
-                      <div className="absolute inset-0 bg-brand-cyan/0 group-hover/media:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-all pointer-events-none">
-                        <MousePointerClick size={14} className="text-brand-cyan/40" />
+                      <div className="absolute inset-0 bg-foreground/0 group-hover/media:bg-foreground/5 flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity] pointer-events-none">
+                        <MousePointerClick size={14} className="text-muted-foreground" />
                       </div>
                     )}
 
@@ -637,7 +637,7 @@ const LogoTile: React.FC<LogoTileProps> = ({
 
       <span
         className={cn(
-          'absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase',
+          'absolute bottom-0 left-0 right-0 text-[10px] text-neutral-300 text-center py-0.5 bg-black/60 uppercase',
           isSelected && 'bg-brand-cyan text-black font-bold'
         )}
       >
@@ -646,8 +646,8 @@ const LogoTile: React.FC<LogoTileProps> = ({
 
       {/* Asset Click Indicator (Subtle) */}
       {showClickIndicator && (
-        <div className="absolute inset-0 bg-brand-cyan/0 group-hover/logo:bg-brand-cyan/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-all pointer-events-none">
-          <MousePointerClick size={14} className="text-brand-cyan/40" />
+        <div className="absolute inset-0 bg-foreground/0 group-hover/logo:bg-foreground/5 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-[color,background-color,border-color,box-shadow,opacity] pointer-events-none">
+          <MousePointerClick size={14} className="text-muted-foreground" />
         </div>
       )}
 

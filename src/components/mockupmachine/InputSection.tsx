@@ -238,7 +238,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   }) => (
     <div
       className={cn(
-        'relative flex flex-col p-2 rounded-2xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-500',
+        'relative flex flex-col p-2 rounded-2xl border transition-[color,background-color,border-color,box-shadow] group w-full animate-in fade-in zoom-in-95 duration-500',
         highlight
           ? 'bg-brand-cyan/[0.02] border-brand-cyan/20 shadow-[0_10px_32px_rgba(var(--brand-cyan-rgb),0.05)]'
           : 'bg-neutral-900/20 border-white/[0.03] hover:border-white/10'
@@ -266,7 +266,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <div className="p-3 rounded-full bg-brand-cyan text-black shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.4)]">
               <ArrowLeftRight size={20} />
             </div>
-            <span className="text-[10px] font-bold font-mono tracking-widest text-white uppercase">
+            <span className="text-[10px] font-bold tracking-widest text-white uppercase">
               {t('mockup.replace') || 'Substituir'}
             </span>
           </button>
@@ -298,7 +298,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('layout')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-all',
+                  'px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
                   designType === 'layout'
                     ? 'bg-white/10 text-white shadow-lg'
                     : 'text-neutral-600 hover:text-neutral-400'
@@ -309,7 +309,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('logo')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-all',
+                  'px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
                   designType === 'logo'
                     ? 'bg-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
                     : 'text-neutral-600 hover:text-neutral-400'
@@ -327,7 +327,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               size="icon"
               onClick={() => setShowInstructions(!showInstructions)}
               className={cn(
-                'w-10 h-10 rounded-xl border transition-all',
+                'w-10 h-10 rounded-xl border transition-[color,background-color,border-color,box-shadow]',
                 showInstructions
                   ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
                   : 'bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:text-white'
@@ -349,7 +349,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 t('mockup.instructionsPlaceholder') ||
                 'Descreva detalhes específicos para a composição (ex: mesa de mármore, iluminação de pôr do sol, estilo tropical brasileiro...)'
               }
-              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-neutral-600 focus:ring-brand-cyan/10 transition-all placeholder:text-neutral-700 custom-scrollbar"
+              className="relative min-h-[100px] bg-neutral-900/40 border-white/10 rounded-2xl text-sm focus:border-neutral-600 focus:ring-brand-cyan/10 transition-[color,background-color,border-color,opacity,filter] placeholder:text-neutral-700 custom-scrollbar"
               value={mockupContext.instructions}
               onChange={(e) => mockupContext.setInstructions(e.target.value)}
             />
@@ -421,7 +421,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {canAddMoreReferences && (
           <label
             htmlFor="multiple-image-upload"
-            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-neutral-800 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.03] transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-neutral-800 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.03] transition-colors cursor-pointer group"
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
             <span className="text-[10px] font-medium text-neutral-600 group-hover:text-neutral-400">

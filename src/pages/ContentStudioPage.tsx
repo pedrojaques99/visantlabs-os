@@ -192,7 +192,12 @@ export const ContentStudioPage: React.FC = () => {
       setJob(initialJob);
       startPolling(result.jobId);
     } catch (err: any) {
-      toast.error(err.message);
+      // Kick-off failure with no job yet: without this flag the page falls back
+      // to the "nothing generated yet" empty state and the only trace of the
+      // failure is a toast that disappears — error collapsing into empty.
+      const raw = err?.message || '';
+      setPageError(raw || t('contentStudio.generationTimeout'));
+      toast.error(raw || t('contentStudio.generationTimeout'));
       setIsGenerating(false);
     }
   }, [brief, selectedFormats, brandGuidelineId, model, tone, requireAuth, startPolling, t]);
@@ -250,7 +255,7 @@ export const ContentStudioPage: React.FC = () => {
                   key={opt.value}
                   onClick={() => setTone(opt.value)}
                   className={cn(
-                    'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-all',
+                    'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-colors',
                     tone === opt.value
                       ? 'border-white/20 bg-white/10 text-neutral-200'
                       : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
@@ -286,7 +291,7 @@ export const ContentStudioPage: React.FC = () => {
                     key={fmt.id}
                     onClick={() => toggleFormat(fmt.id)}
                     className={cn(
-                      'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-all',
+                      'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-colors',
                       isSelected
                         ? 'border-white/20 bg-white/10 text-neutral-200'
                         : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
@@ -304,7 +309,7 @@ export const ContentStudioPage: React.FC = () => {
             onClick={handleGenerate}
             disabled={isGenerating}
             className={cn(
-              'w-full py-3 rounded-lg font-mono text-sm font-bold tracking-wide transition-all',
+              'w-full py-3 rounded-lg font-mono text-sm font-bold tracking-wide transition-colors',
               'flex items-center justify-center gap-2',
               isGenerating
                 ? 'bg-neutral-800 text-neutral-400 cursor-wait'
@@ -498,7 +503,7 @@ function ContentAssetCard({
                     index
                   )
                 }
-                className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-all"
+                className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
               >
                 {copiedIndex === index ? <Check size={10} /> : <Copy size={10} />}
                 {copiedIndex === index ? t('contentStudio.copied') : t('contentStudio.copy')}
@@ -509,7 +514,7 @@ function ContentAssetCard({
                   download={`${asset.formatId}.png`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-all"
+                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
                 >
                   <Download size={10} />
                   {t('contentStudio.image')}

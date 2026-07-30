@@ -30,7 +30,7 @@ const FILTER_PRESET_ITEMS = Object.keys(FILTER_PRESETS).map((name) => ({ name })
 const ResetBtn: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider"
+    className="text-[10px] text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider"
   >
     Reset
   </button>

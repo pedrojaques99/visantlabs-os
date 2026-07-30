@@ -56,7 +56,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        'rounded-2xl border overflow-hidden transition-all duration-300',
+        'rounded-2xl border overflow-hidden transition-colors duration-300',
         state === 'approved'
           ? 'border-brand-cyan/20 bg-brand-cyan/[0.02]'
           : 'border-neutral-800 bg-white/[0.03]',
@@ -70,7 +70,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
             <p className="text-[11px] font-bold text-white truncate">{title}</p>
             <div className={cn('flex items-center gap-1 px-1.5 py-0.5 rounded-md border', cfg.bg)}>
               <StateIcon size={9} className={cfg.color} />
-              <span className={cn('text-[10px] font-mono uppercase tracking-widest', cfg.color)}>
+              <span className={cn('text-[10px] uppercase tracking-widest', cfg.color)}>
                 {cfg.label}
               </span>
             </div>
@@ -90,7 +90,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
           onClick={() => onApprove(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-all',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-colors',
             state === 'approved'
               ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan cursor-default'
               : 'border-success/20 bg-success/5 text-success hover:bg-success/15 hover:border-success/40'
@@ -103,7 +103,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
           onClick={() => onNeedsWork(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-all',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-colors',
             state === 'approved'
               ? 'border-neutral-800 text-neutral-700 cursor-default'
               : 'border-rose-400/20 bg-rose-400/5 text-rose-400 hover:bg-rose-400/15 hover:border-rose-400/40'

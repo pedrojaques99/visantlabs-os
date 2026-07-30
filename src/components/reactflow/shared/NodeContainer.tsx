@@ -75,7 +75,7 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         // Apply default padding unless overridden by className - maintain padding during dragging
         !className?.includes('p-') && 'node-padding',
         // Smooth transitions for visual consistency
-        'transition-all duration-200 ease-out',
+        'transition-[color,background-color,border-color,box-shadow] duration-200 ease-out',
         className
       )}
       style={

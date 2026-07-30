@@ -699,7 +699,7 @@ export const Studio3DPage: React.FC = () => {
         fileName={fileName}
         isDragOver={isDragOver}
         hideTopBar
-        canvasClassName="absolute inset-0 transition-all duration-300"
+        canvasClassName="absolute inset-0 transition-colors duration-300"
         dragProps={{
           onDragOver: (e: React.DragEvent) => {
             e.preventDefault();
@@ -901,7 +901,7 @@ export const Studio3DPage: React.FC = () => {
               <button
                 onClick={() => setShowShortcuts((v) => !v)}
                 title="Keyboard shortcuts (?)"
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
               >
                 <Keyboard size={15} />
               </button>
@@ -1053,7 +1053,7 @@ export const Studio3DPage: React.FC = () => {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="3"
-                      className="text-brand-cyan"
+                      className="text-neutral-300"
                       strokeDasharray={`${2 * Math.PI * 36}`}
                       strokeDashoffset={`${2 * Math.PI * 36 * (1 - autoRenderProgress / 100)}`}
                       strokeLinecap="round"

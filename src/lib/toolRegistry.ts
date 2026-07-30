@@ -64,8 +64,16 @@ export type ToolCategory =
   | 'admin';
 
 export interface ToolDef {
+  /** Stable identifier — NEVER localized. Used as pipeline `source`, lookup key. */
   id: string;
+  /** English literal. Fallback label only — prefer `nameKey` via `toolLabel()`. */
   name: string;
+  /**
+   * i18n key for the UI label, pointing at the SAME `apps.<key>.name` the /apps
+   * catalog renders, so a tool never shows two different names across screens.
+   * Optional: registry tools without a catalog entry fall back to `name`.
+   */
+  nameKey?: string;
   path: string;
   icon: LucideIcon;
   category: ToolCategory;
@@ -87,6 +95,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'mockupmachine',
     name: 'Mockup Machine',
+    nameKey: 'apps.mockupMachine.name',
     path: '/',
     icon: Crown,
     category: 'pro',
@@ -99,6 +108,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'canvas',
     name: 'Canvas',
+    nameKey: 'apps.canvas.name',
     path: '/canvas',
     icon: LayoutGrid,
     category: 'pro',
@@ -111,6 +121,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'content-studio',
     name: 'Content Studio',
+    nameKey: 'apps.contentStudio.name',
     path: '/content-studio',
     icon: Wand2,
     category: 'pro',
@@ -137,6 +148,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'image-lab',
     name: 'Image Lab',
+    nameKey: 'apps.imageLab.name',
     path: '/image-lab',
     icon: CircleDot,
     category: 'creative',
@@ -149,6 +161,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'grid-machine',
     name: 'Grid Machine',
+    nameKey: 'apps.gridMachine.name',
     path: '/grid-machine',
     icon: LayoutGrid,
     category: 'creative',
@@ -161,6 +174,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: '3d-studio',
     name: '3D Studio',
+    nameKey: 'apps.studio3d.name',
     path: '/3d-studio',
     icon: Box,
     category: 'creative',
@@ -175,6 +189,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'compress',
     name: 'Compressor',
+    nameKey: 'apps.imageCompressor.name',
     path: '/compress',
     icon: Minimize2,
     category: 'image',
@@ -187,6 +202,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'upscale',
     name: 'Upscale',
+    nameKey: 'apps.bicubicUpscale.name',
     path: '/upscale',
     icon: Maximize2,
     category: 'image',
@@ -199,6 +215,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'remove-bg',
     name: 'Remove BG',
+    nameKey: 'apps.backgroundRemover.name',
     path: '/remove-bg',
     icon: Eraser,
     category: 'image',
@@ -211,6 +228,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'watermark',
     name: 'Watermark',
+    nameKey: 'apps.watermark.name',
     path: '/watermark',
     icon: Stamp,
     category: 'image',
@@ -223,6 +241,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'visual-search',
     name: 'Visual Search',
+    nameKey: 'apps.visualSearch.name',
     path: '/visual-search',
     icon: Search,
     category: 'image',
@@ -249,6 +268,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'converter',
     name: 'Converter',
+    nameKey: 'apps.fileConverter.name',
     path: '/converter',
     icon: ArrowLeftRight,
     category: 'converters',
@@ -261,6 +281,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'svg-optimizer',
     name: 'SVG Optimizer',
+    nameKey: 'apps.svgOptimizer.name',
     path: '/svg-optimizer',
     icon: FileCode,
     category: 'converters',
@@ -273,6 +294,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'color-converter',
     name: 'Color Converter',
+    nameKey: 'apps.colorConverter.name',
     path: '/color-converter',
     icon: Pipette,
     category: 'converters',
@@ -287,6 +309,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'grid-paint',
     name: 'Grid Paint',
+    nameKey: 'apps.gridPaint.name',
     path: '/grid-paint',
     icon: Grid3X3,
     category: 'creative',
@@ -313,6 +336,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'pdf-compress',
     name: 'PDF Compress',
+    nameKey: 'apps.pdfCompress.name',
     path: '/pdf-compress',
     icon: FileDown,
     category: 'converters',
@@ -327,6 +351,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'qrcode',
     name: 'QR Code',
+    nameKey: 'apps.qrCode.name',
     path: '/qrcode',
     icon: QrCode,
     category: 'generators',
@@ -339,6 +364,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'favicon',
     name: 'Favicon Generator',
+    nameKey: 'apps.faviconGenerator.name',
     path: '/favicon',
     icon: Image,
     category: 'generators',
@@ -351,6 +377,7 @@ export const TOOL_REGISTRY: ToolDef[] = [
   {
     id: 'og-image',
     name: 'OG Image',
+    nameKey: 'apps.ogImage.name',
     path: '/og-image',
     icon: Image,
     category: 'generators',
@@ -367,6 +394,17 @@ export const TOOL_REGISTRY: ToolDef[] = [
 // ---------------------------------------------------------------------------
 
 const byId = new Map(TOOL_REGISTRY.map((t) => [t.id, t]));
+
+/**
+ * Localized UI label for a tool. Falls back to the English `name` literal when
+ * the tool has no catalog entry, or when the key is missing from the locales
+ * (our `translate()` echoes the key back in that case).
+ */
+export function toolLabel(tool: ToolDef, t: (key: string) => string): string {
+  if (!tool.nameKey) return tool.name;
+  const translated = t(tool.nameKey);
+  return translated && translated !== tool.nameKey ? translated : tool.name;
+}
 
 export function getToolById(id: string): ToolDef | undefined {
   return byId.get(id);

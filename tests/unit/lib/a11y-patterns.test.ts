@@ -50,6 +50,11 @@ describe('Accessibility anti-pattern scanner', () => {
         if (!line.includes('<img')) return;
         // Skip <img> inside JS template strings (e.g. window.open write)
         if (line.includes('`') || line.includes("'<img") || line.includes('"<img')) return;
+        // Skip prose: a comment that mentions `<img>` is not JSX. Without this
+        // the scanner demands an alt on a sentence (CreativeActivationCanvas
+        // documents its own broken-thumb fallback and tripped the rule).
+        const code = line.trimStart();
+        if (code.startsWith('//') || code.startsWith('*') || code.startsWith('/*')) return;
         // Check the img tag and next 10 lines (multi-attribute tags span many lines)
         const context = lines.slice(i, i + 11).join(' ');
         if (

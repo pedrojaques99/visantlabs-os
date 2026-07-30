@@ -70,7 +70,7 @@ const Thumb: React.FC<ThumbProps> = ({
         onDrop();
       }}
       onClick={() => !isActive && onActivate()}
-      className={`group/thumb shrink-0 relative cursor-pointer transition-all duration-200 ${
+      className={`group/thumb shrink-0 relative cursor-pointer transition-[color,background-color,border-color,opacity] duration-200 ${
         isActive
           ? 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-neutral-950'
           : 'opacity-60 hover:opacity-100'

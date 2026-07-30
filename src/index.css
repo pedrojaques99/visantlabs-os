@@ -58,10 +58,35 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /*
-   * Motion tokens (SSoT) — the two easings the app already uses in practice,
-   * plus a duration scale. `--ease-*` generates `ease-brand` / `ease-spring`
-   * utilities; durations are consumed via `duration-[var(--duration-base)]`
+   * Motion tokens (SSoT). `--ease-*` generates `ease-out` / `ease-in-out` /
+   * `ease-drawer` utilities; durations are consumed via `duration-[var(--dur-base)]`
    * or the JS mirror in `src/lib/ui/motion.ts`.
+   *
+   * Which token for what:
+   *   --ease-out      → default. Anything entering or leaving the screen.
+   *   --ease-in-out   → an element MOVING/morphing while staying on screen.
+   *   --ease-drawer   → sheets, drawers, bottom panels.
+   *   --dur-press     → press/active feedback on controls.
+   *   --dur-fast      → hover, small state flips.
+   *   --dur-base      → default for UI transitions.
+   *   --dur-slow      → ceiling for UI. Nothing interactive goes past 300ms.
+   * Never `ease-in` on UI. Only animate transform + opacity.
+   */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 120ms;
+  --dur-fast: 160ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+
+  /*
+   * Legacy motion tokens — kept for back-compat. Values NOT changed:
+   * `--duration-*` names are also emitted by the brand token compiler
+   * (server/lib/brand-token-compiler.ts) into customer-exported CSS, where a
+   * 400ms "slow" is legitimate (marketing/scroll surfaces). Prefer the
+   * `--ease-out` / `--dur-*` set above for product UI.
+   * `--ease-brand` is an ease-in-out; `--ease-spring` overshoots (bounce).
    */
   --ease-brand: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -2183,4 +2208,21 @@ select.w-full.font-mono.node-interactive {
 .creative-layer:hover {
   outline: 1px solid rgba(0, 229, 255, 0.25);
   outline-offset: -1px;
+}
+
+/*
+ * Reduced motion — global guard. Last in the cascade on purpose so it wins over
+ * every rule above (including the `!important` toast/overlay styles).
+ * Cuts movement and looping animation; colors, opacity and layout stay intact.
+ * Component-level `motion-reduce:` handling stays where it is — this is the floor.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

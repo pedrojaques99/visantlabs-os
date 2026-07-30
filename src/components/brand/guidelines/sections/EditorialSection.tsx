@@ -125,7 +125,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
                   type="button"
                   onClick={() => update({ person: opt.value })}
                   className={cn(
-                    'flex-1 h-6 rounded border text-[10px] font-mono transition-all',
+                    'flex-1 h-6 rounded border text-[10px] font-mono transition-colors',
                     local.person === opt.value
                       ? 'border-white/20 bg-white/5 text-neutral-200'
                       : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'
@@ -145,7 +145,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
                   type="button"
                   onClick={() => update({ emojiPolicy: opt.value })}
                   className={cn(
-                    'flex-1 h-6 rounded border text-[10px] font-mono transition-all',
+                    'flex-1 h-6 rounded border text-[10px] font-mono transition-colors',
                     local.emojiPolicy === opt.value
                       ? 'border-white/20 bg-white/5 text-neutral-200'
                       : 'border-neutral-800 text-neutral-600 hover:border-white/10 hover:text-neutral-400'

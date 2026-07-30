@@ -335,7 +335,7 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-neutral-700 hover:bg-neutral-900/80 hover:text-neutral-200 transition-all duration-200"
+        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-neutral-700 hover:bg-neutral-900/80 hover:text-neutral-200 transition-colors duration-200"
         title={label}
       >
         {icon}

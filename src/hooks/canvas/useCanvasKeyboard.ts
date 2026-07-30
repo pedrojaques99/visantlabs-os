@@ -5,6 +5,7 @@ import type { FlowNodeData } from '@/types/reactFlow';
 import type { DrawingStroke } from './useCanvasDrawing';
 import { toast } from 'sonner';
 import { collectR2UrlsForDeletion } from './utils/r2UploadHelpers';
+import { translate } from '@/utils/localeUtils';
 import {
   copyMediaFromNode,
   getMediaFromNodeForCopy,
@@ -66,7 +67,7 @@ export const useCanvasKeyboard = (
         });
       } catch (error) {
         console.error('Failed to process uploaded image:', error);
-        toast.error('Failed to upload image', { duration: 3000 });
+        toast.error(translate('canvas.uploadImageFailed'), { duration: 3000 });
       }
 
       document.body.removeChild(input);
@@ -135,14 +136,12 @@ export const useCanvasKeyboard = (
 
           if (hasR2Assets) {
             toast.warning(
-              `Removed ${selectedNodes.length} node${
-                selectedNodes.length > 1 ? 's' : ''
-              } — images will be permanently lost on save. Undo with Ctrl+Z to recover.`,
+              translate('canvas.nodesRemovedR2Warning', undefined, { count: selectedNodes.length }),
               { duration: 5000 }
             );
           } else {
             toast.success(
-              `Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`,
+              translate('canvas.nodesRemoved', undefined, { count: selectedNodes.length }),
               { duration: 2000 }
             );
           }
@@ -272,11 +271,11 @@ export const useCanvasKeyboard = (
               const result = await copyMediaFromNode(node);
               if (result.success) {
                 toast.success(
-                  media.isVideo ? 'Video copied to clipboard!' : 'Image copied to clipboard!',
+                  media.isVideo ? translate('canvas.videoCopied') : translate('canvas.imageCopied'),
                   { duration: 2000 }
                 );
               } else {
-                toast.error(result.error || 'Failed to copy media to clipboard', {
+                toast.error(result.error || translate('canvas.copyMediaFailed'), {
                   duration: 3000,
                 });
               }
@@ -303,9 +302,9 @@ export const useCanvasKeyboard = (
             (async () => {
               const result = await copyMediaAsPngFromNode(node);
               if (result.success) {
-                toast.success('Image copied to clipboard as PNG!', { duration: 2000 });
+                toast.success(translate('canvas.imageCopiedPng'), { duration: 2000 });
               } else {
-                toast.error(result.error || 'Failed to copy image as PNG to clipboard', {
+                toast.error(result.error || translate('canvas.copyPngFailed'), {
                   duration: 3000,
                 });
               }
@@ -382,7 +381,7 @@ export const useCanvasKeyboard = (
     () => {
       if (saveImmediately) {
         saveImmediately().then(() => {
-          toast.success('Canvas saved', { duration: 1500 });
+          toast.success(translate('canvas.canvasSaved'), { duration: 1500 });
         });
       }
     },

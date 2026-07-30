@@ -75,7 +75,7 @@ const CreativeProjectCard: React.FC<{
   return (
     <div
       className={cn(
-        'group space-y-3 p-4 rounded-xl shadow-sm transition-all duration-200',
+        'group space-y-3 p-4 rounded-xl shadow-sm transition-[color,background-color,border-color,box-shadow,opacity] duration-200',
         glassSurface.tile
       )}
     >
@@ -173,20 +173,20 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
             'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border',
             !isAssistant
               ? 'bg-muted border-border'
-              : 'bg-card border-brand-cyan/20'
+              : 'bg-card border-border'
           )}
         >
           {!isAssistant ? (
             <User size={16} className="text-muted-foreground" />
           ) : (
-            <Bot size={16} className="text-brand-cyan" />
+            <Bot size={16} className="text-muted-foreground" />
           )}
         </div>
       )}
 
       <div
         className={cn(
-          'max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-all border',
+          'max-w-[85%] md:max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed relative group transition-colors border',
           !isAssistant
             ? 'bg-brand-cyan/10 border-brand-cyan/20 text-neutral-100'
             : 'bg-muted border-border text-muted-foreground'
@@ -264,7 +264,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                       isError
                         ? 'bg-destructive/5 border-destructive/20 text-destructive'
                         : isRunning
-                          ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/80'
+                          ? 'bg-muted border-ring text-foreground'
                           : isExpanded
                             ? 'bg-muted border-border text-muted-foreground'
                             : 'bg-muted/40 border-border text-muted-foreground',

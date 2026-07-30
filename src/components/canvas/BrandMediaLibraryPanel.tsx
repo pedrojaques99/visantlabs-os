@@ -367,7 +367,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         <button
                           onClick={() => setExpandedDim(isExp ? null : key)}
                           className={cn(
-                            'px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider border transition-all',
+                            'px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider border transition-[color,background-color,border-color,box-shadow]',
                             activeValue
                               ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
                               : 'bg-neutral-900/60 border-neutral-800 text-neutral-500 hover:text-white'
@@ -446,7 +446,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               toast.success('Reference added');
                             }}
                             className={cn(
-                              'flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border transition-all group cursor-pointer',
+                              'flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border transition-colors group cursor-pointer',
                               isRecommended
                                 ? 'border-brand-cyan/20'
                                 : 'border-white/5 hover:border-neutral-700'
@@ -604,7 +604,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   <button
                     onClick={() => refSearch.loadMore()}
                     disabled={refSearch.isLoading}
-                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-[10px] text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-all disabled:opacity-50"
+                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-[10px] text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-[color,background-color,border-color,opacity] disabled:opacity-50"
                   >
                     {refSearch.isLoading ? (
                       <GlitchLoader size={10} className="mx-auto" />
@@ -652,7 +652,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
       <div
         draggable
         onDragStart={handleDragStart}
-        className="flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-all group cursor-pointer"
+        className="flex items-center gap-3 p-2 rounded-md bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-colors group cursor-pointer"
         onClick={onClick}
       >
         <div
@@ -691,7 +691,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
     <div
       draggable
       onDragStart={handleDragStart}
-      className="flex flex-col gap-1.5 p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-all group cursor-pointer"
+      className="flex flex-col gap-1.5 p-2 rounded-lg bg-neutral-900/30 border border-white/5 hover:border-neutral-700 transition-colors group cursor-pointer"
       onClick={onClick}
     >
       <div

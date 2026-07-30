@@ -236,7 +236,7 @@ export const ProfilePage: React.FC = () => {
       >
         <div className="flex flex-col items-center justify-center gap-6 py-24 px-6 text-center animate-in fade-in duration-300">
           <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-            <UserCircle size={28} className="text-brand-cyan" />
+            <UserCircle size={28} className="text-muted-foreground" />
           </div>
           <div className="space-y-2 max-w-sm">
             <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">

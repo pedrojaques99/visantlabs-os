@@ -193,7 +193,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
                 <button
                   key={ref.id}
                   onClick={() => handleAddRef(ref)}
-                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-white/10 hover:border-white/20 transition-all"
+                  className="group relative flex-1 aspect-square rounded overflow-hidden bg-neutral-900 border border-white/10 hover:border-white/20 transition-[color,background-color,border-color,opacity]"
                   title={ref.name}
                 >
                   <img
@@ -268,7 +268,7 @@ export const BrandBatchNode = memo(({ data, selected, id, dragging }: NodeProps<
           </div>
           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-white/40 transition-all duration-300 rounded-full"
+              className="h-full bg-white/40 transition-colors duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>

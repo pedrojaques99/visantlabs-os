@@ -76,7 +76,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 key={seg.id}
                 onClick={() => onSelectSegment(seg.id as VibeSegment)}
                 className={cn(
-                  'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border',
+                  'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-[color,background-color,border-color,box-shadow] duration-300 group overflow-hidden border',
                   isSelected
                     ? 'bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]'
                     : 'bg-neutral-900/60 border-neutral-800 hover:border-white/20 hover:bg-neutral-900/80'
@@ -85,7 +85,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 {/* Icon Container */}
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-[color,background-color,border-color,box-shadow] duration-300',
                     isSelected
                       ? 'bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]'
                       : 'bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800'
@@ -96,7 +96,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
 
                 <span
                   className={cn(
-                    'text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
+                    'text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
                     isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
                   )}
                 >
@@ -133,7 +133,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 onClick={() => onSelectStyle(style.id as VibeStyle)}
                 disabled={!selectedSegment}
                 className={cn(
-                  'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-all duration-300 group overflow-hidden border',
+                  'relative flex flex-col items-center gap-2.5 p-3.5 rounded-xl transition-[color,background-color,border-color,box-shadow,opacity] duration-300 group overflow-hidden border',
                   !selectedSegment && 'opacity-20 cursor-not-allowed grayscale',
                   isSelected
                     ? 'bg-brand-cyan/10 border-brand-cyan/50 shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.1)]'
@@ -143,7 +143,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
                 {/* Icon Container */}
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-[color,background-color,border-color,box-shadow,opacity] duration-300',
                     isSelected
                       ? 'bg-brand-cyan text-black shadow-[0_0_10px_rgba(var(--brand-cyan-rgb),0.3)]'
                       : 'bg-neutral-800/50 text-neutral-500 group-hover:text-neutral-300 group-hover:bg-neutral-800'
@@ -154,7 +154,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
 
                 <span
                   className={cn(
-                    'text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
+                    'text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
                     isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
                   )}
                 >

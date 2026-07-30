@@ -34,6 +34,13 @@ export interface MiniAppShellDragDrop {
 
 export interface MiniAppShellProps {
   title: string;
+  /**
+   * Identificador ESTÁVEL da tool (ex.: 'qr-code-generator') — dimensão do
+   * analytics de funil e chave do dismiss em localStorage. Obrigatório de
+   * propósito: nunca derive de `title`, que é label de UI e vai ser traduzido
+   * (a métrica se bifurcaria por idioma e o dismiss do usuário perderia valor).
+   */
+  toolId: string;
   icon?: LucideIcon;
   documentTitle?: string;
   backTo?: string;
@@ -69,6 +76,7 @@ export interface MiniAppShellProps {
  */
 export const MiniAppShell: React.FC<MiniAppShellProps> = ({
   title,
+  toolId,
   icon: Icon,
   documentTitle,
   backTo = '/apps',
@@ -132,7 +140,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
                   <ChevronLeft size={16} />
                 </Button>
               </Tooltip>
-              {Icon && <Icon size={14} className="text-brand-cyan ml-0.5" />}
+              {Icon && <Icon size={14} className="text-muted-foreground ml-0.5" />}
               <MicroTitle className="text-[10px] text-neutral-500 ml-1.5">{title}</MicroTitle>
             </>
           )
@@ -169,13 +177,11 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
         }
       />
 
-      {!hideFunnelBanner && (
-        <BrandFunnelBanner toolId={title.toLowerCase().replace(/[^a-z0-9]+/g, '-')} />
-      )}
+      {!hideFunnelBanner && <BrandFunnelBanner toolId={toolId} />}
 
       <div
         className={cn(
-          'absolute inset-0 pt-10 overflow-auto transition-all duration-300',
+          'absolute inset-0 pt-10 overflow-auto transition-colors duration-300',
           centerContent && 'flex items-center justify-center',
           canvasClassName
         )}

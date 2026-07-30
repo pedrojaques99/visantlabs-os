@@ -71,7 +71,7 @@ export const BrandFunnelBanner: React.FC<BrandFunnelBannerProps> = ({ toolId, cl
       role="status"
       data-vsn-component="BrandFunnelBanner"
     >
-      <Compass size={13} className="text-brand-cyan shrink-0" />
+      <Compass size={13} className="text-muted-foreground shrink-0" />
       <span className="font-mono text-[11px] text-neutral-300 truncate">
         {t('funnel.banner.message')}
       </span>

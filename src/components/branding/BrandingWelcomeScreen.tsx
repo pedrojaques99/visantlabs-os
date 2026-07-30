@@ -59,7 +59,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
   return (
     <>
       <div
-        className={`relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-all duration-300 ${
+        className={`relative min-h-screen flex items-center justify-center p-6 overflow-hidden pt-16 md:pt-20 transition-colors duration-300 ${
           theme === 'dark'
         }`}
       >
@@ -82,7 +82,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
           </div>
 
           <div className="w-full animate-fade-in-down">
-            <GlassPanel className="p-6 md:p-8 space-y-6 transition-all duration-300">
+            <GlassPanel className="p-6 md:p-8 space-y-6 transition-colors duration-300">
               <div className="text-center">
                 <h2
                   className={`text-xl md:text-2xl font-semibold mb-2 normal-case ${

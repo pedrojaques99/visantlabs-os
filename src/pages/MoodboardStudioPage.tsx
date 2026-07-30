@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Scissors, Video, Upload, X, Play, Plus, Zap, Download } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { PageShell } from '../components/ui/PageShell';
+import { BrandFunnelBanner } from '../components/funnel/BrandFunnelBanner';
 import { Button } from '../components/ui/button';
 import { RenderQueueProvider } from '../hooks/moodboard/useRenderQueue';
 import { RenderToast } from '../components/moodboard/RenderToast';
@@ -602,6 +603,9 @@ function MoodboardStudio() {
       description={t('moodboard.studio.extract_upscale_and_animate_image')}
       breadcrumb={[{ label: 'Apps', to: '/apps' }, { label: 'Moodboard Studio' }]}
     >
+      {/* Funil de marca (Fase 5) — mesma instanciação da ColorPalettePage. */}
+      <BrandFunnelBanner toolId="moodboard" />
+
       <input
         type="file"
         ref={fileInputRef}
@@ -624,7 +628,7 @@ function MoodboardStudio() {
             <motion.div
               onClick={() => fileInputRef.current?.click()}
               whileHover={{ scale: 1.01 }}
-              className="aspect-video w-full max-w-lg rounded-2xl border-2 border-dashed border-border hover:border-neutral-600 flex flex-col items-center justify-center gap-6 transition-all duration-300 cursor-pointer bg-neutral-950/40 px-8 py-10"
+              className="aspect-video w-full max-w-lg rounded-2xl border-2 border-dashed border-border hover:border-neutral-600 flex flex-col items-center justify-center gap-6 transition-colors duration-300 cursor-pointer bg-neutral-950/40 px-8 py-10"
             >
               <Upload size={28} className="text-neutral-600" strokeWidth={1} />
               <div className="text-center">
@@ -656,7 +660,7 @@ function MoodboardStudio() {
               />
               <button
                 onClick={handleReset}
-                className="absolute top-4 right-4 p-2 rounded-lg bg-black/50 text-neutral-400 hover:text-white transition-all border border-white/10"
+                className="absolute top-4 right-4 p-2 rounded-lg bg-black/50 text-neutral-400 hover:text-white transition-colors border border-white/10"
               >
                 <X size={16} />
               </button>

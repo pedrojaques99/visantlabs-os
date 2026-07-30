@@ -344,7 +344,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
           <button
             onClick={onCreate}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 text-xs hover:border-white/10 hover:text-neutral-400 transition-all mt-1"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 border border-dashed border-neutral-800 text-xs hover:border-white/10 hover:text-neutral-400 transition-colors mt-1"
           >
             <Plus size={12} />
             <span>New Design System</span>

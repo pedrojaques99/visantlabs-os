@@ -149,7 +149,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
       ref={cardRef}
       className={cn(
         colSpan,
-        'p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down',
+        'p-6 md:p-8 transition-[color,background-color,border-color,box-shadow,opacity] duration-200 group relative animate-fade-in-down',
         isEditing
           ? 'border-brand-cyan/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
           : 'border-white/5',

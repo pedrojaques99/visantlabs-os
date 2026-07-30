@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import ralColorsData from '@/data/ralColors.json';
 import pantoneColorsData from '@/data/pantoneColors.json';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 const fadeUp = {
@@ -188,6 +189,7 @@ function Badge({ pass, label }: { pass: boolean; label: string }) {
 /* ── Main page ───────────────────────────────────────────── */
 
 export const ColorConverterPage: React.FC = () => {
+  const { t } = useTranslation();
   const inputColor = useColorConverterStore((s) => s.inputColor);
   const inputFormat = useColorConverterStore((s) => s.inputFormat);
   const colors = useColorConverterStore((s) => s.colors);
@@ -349,8 +351,9 @@ export const ColorConverterPage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Pipette}
-      title="Color Converter"
-      documentTitle="Color Converter"
+      title={t('apps.colorConverter.name')}
+      toolId="color-converter"
+      documentTitle={t('apps.colorConverter.name')}
       onReset={handleReset}
       panel={panel}
       panelLabel="Color Input"
