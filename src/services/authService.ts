@@ -570,6 +570,38 @@ class AuthService {
     }
   }
 
+  /**
+   * Upload da foto de perfil. Mora aqui, e não na tela, porque o endpoint precisa
+   * do mesmo `API_BASE_URL` e do mesmo token que o resto do serviço — a versão
+   * inline no modal montava `fetch('/api/...')` com o token lido do localStorage
+   * na mão.
+   */
+  async updateProfilePicture(imageBase64: string): Promise<User> {
+    if (!this.token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/profile/picture`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ imageBase64 }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: 'Failed to upload picture' }));
+      throw new Error(errorData.error || 'Failed to upload picture');
+    }
+
+    const result = await response.json();
+    return result.user;
+  }
+
   async forgotPassword(email: string): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {

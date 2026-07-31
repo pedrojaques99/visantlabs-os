@@ -144,9 +144,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
             <span
               className={cn(
                 'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0 whitespace-nowrap',
-                categoryConfig.color.replace('text-', 'bg-').replace('-400', '-500/20'),
-                categoryConfig.color.replace('text-', 'border-').replace('-400', '-500/30'),
-                categoryConfig.color
+                categoryConfig.badgeClass
               )}
             >
               {categoryConfig.label}

@@ -4,7 +4,7 @@ import { X, Trash2, UserCircle } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
-import { EditProfileModal } from '../components/EditProfilePage';
+import { EditProfileModal } from '../components/EditProfileModal';
 import { PageShell } from '../components/ui/PageShell';
 import { authService, type User as UserType } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';

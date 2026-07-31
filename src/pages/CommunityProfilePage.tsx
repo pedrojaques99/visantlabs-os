@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   Instagram,
   Youtube,
@@ -15,6 +15,8 @@ import {
   Share2,
 } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
+import { PageShell } from '../components/ui/PageShell';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { userProfileService, type UserProfile } from '../services/userProfileService';
 import { mockupApi, type Mockup } from '../services/mockupApi';
@@ -22,7 +24,6 @@ import { type CanvasWorkflow } from '../services/workflowApi';
 import { getImageUrl } from '@/utils/imageUtils';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
-import { SEO } from '../components/SEO';
 import { EditCommunityProfileModal } from '../components/EditCommunityProfileModal';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -35,12 +36,36 @@ import { BackButton } from '../components/ui/BackButton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Card, CardContent } from '../components/ui/card';
+import { CardContent } from '../components/ui/card';
 import { cn } from '../lib/utils';
 import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { workflowApi } from '../services/workflowApi';
 import { MicroTitle } from '../components/ui/MicroTitle';
 import { GlassPanel } from '../components/ui/GlassPanel';
+
+/**
+ * Empty state das abas do perfil. Helper local (não é componente de DS): as três
+ * abas repetiam o mesmo bloco, e o dono do perfil precisa de um CTA em vez de
+ * "esse usuário ainda não publicou nada" — que na própria página é beco sem saída.
+ */
+const renderEmptyTab = ({
+  icon,
+  title,
+  body,
+  action,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  action?: React.ReactNode;
+}) => (
+  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-card border border-dashed border-border rounded-2xl">
+    <div className="mb-4">{icon}</div>
+    <h2 className="text-lg font-semibold text-foreground mb-2">{title}</h2>
+    <p className="text-sm text-muted-foreground max-w-sm">{body}</p>
+    {action && <div className="mt-6">{action}</div>}
+  </div>
+);
 
 export const CommunityProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -60,11 +85,27 @@ export const CommunityProfilePage: React.FC = () => {
   const [workflows, setWorkflows] = useState<CanvasWorkflow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Default to mockups tab
-  const [activeTab, setActiveTab] = useState('mockups');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (() => {
+    const tab = searchParams.get('tab');
+    return tab === 'workflows' || tab === 'presets' ? tab : 'mockups';
+  })();
+  const setActiveTab = useCallback(
+    (tab: string) => {
+      // Aba no query param: refresh mantém o lugar e dá pra linkar direto.
+      const next = new URLSearchParams(searchParams);
+      if (tab === 'mockups') next.delete('tab');
+      else next.set('tab', tab);
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<any | null>(null);
   const [openModalType, setOpenModalType] = useState<
@@ -97,9 +138,32 @@ export const CommunityProfilePage: React.FC = () => {
     return currentUserId === profile.id;
   }, [isAuthenticated, profile, currentUserId]);
 
+  // SSoT do fetch do perfil: as 4 chamadas viviam duplicadas verbatim aqui e em
+  // handleProfileUpdate.
+  const fetchProfileBundle = useCallback(async (id: string) => {
+    const [profileData, mockupsData, presetsData, workflowsData] = await Promise.all([
+      userProfileService.getUserProfile(id),
+      userProfileService.getUserMockups(id),
+      userProfileService.getUserPresets(id),
+      userProfileService.getUserWorkflows(id),
+    ]);
+    return { profileData, mockupsData, presetsData, workflowsData };
+  }, []);
+
+  const applyProfileBundle = useCallback(
+    (bundle: Awaited<ReturnType<typeof fetchProfileBundle>>) => {
+      setProfile(bundle.profileData);
+      setMockups(bundle.mockupsData);
+      setPresets(bundle.presetsData);
+      setWorkflows(bundle.workflowsData);
+    },
+    []
+  );
+
   useEffect(() => {
     if (!identifier) {
-      setError('Invalid profile identifier');
+      setError(t('community.profile.invalidIdentifier'));
+      setNotFound(false);
       setIsLoading(false);
       lastIdentifierRef.current = null;
       has404ErrorRef.current = false;
@@ -128,38 +192,33 @@ export const CommunityProfilePage: React.FC = () => {
       isLoadingRef.current = true;
       setIsLoading(true);
       setError(null);
+      setNotFound(false);
 
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
       try {
-        const [profileData, mockupsData, presetsData, workflowsData] = await Promise.all([
-          userProfileService.getUserProfile(identifier),
-          userProfileService.getUserMockups(identifier),
-          userProfileService.getUserPresets(identifier),
-          userProfileService.getUserWorkflows(identifier),
-        ]);
+        const bundle = await fetchProfileBundle(identifier);
 
         if (abortController.signal.aborted) {
           return;
         }
 
         has404ErrorRef.current = false;
-        setProfile(profileData);
-        setMockups(mockupsData);
-        setPresets(presetsData);
-        setWorkflows(workflowsData);
+        applyProfileBundle(bundle);
       } catch (err: any) {
         if (abortController.signal.aborted) {
           return;
         }
 
         console.error('Failed to load profile:', err);
+        // 404 e falha de leitura são estados diferentes: um é "não existe",
+        // o outro é "não deu pra ler" e merece retry.
         if (err.status === 404) {
           has404ErrorRef.current = true;
-          setError('User not found');
+          setNotFound(true);
         } else {
-          setError(err.message || 'Failed to load profile');
+          setError(err.message || t('community.profile.loadFailed'));
         }
       } finally {
         if (!abortController.signal.aborted) {
@@ -179,7 +238,14 @@ export const CommunityProfilePage: React.FC = () => {
       }
       isLoadingRef.current = false;
     };
-  }, [identifier]);
+    // `reloadKey` é o gatilho do retry; `isAuthenticated` revalida o estado de
+    // like depois do login (antes só reagia a `identifier`).
+  }, [identifier, reloadKey, isAuthenticated, fetchProfileBundle, applyProfileBundle, t]);
+
+  const retryLoad = useCallback(() => {
+    has404ErrorRef.current = false;
+    setReloadKey((k) => k + 1);
+  }, []);
 
   const handleView = useCallback((mockup: Mockup) => {
     setSelectedMockup(mockup);
@@ -239,29 +305,15 @@ export const CommunityProfilePage: React.FC = () => {
     [t, handleClosePresetModal, selectedPreset, navigate]
   );
 
-  const handleSelectAngle = useCallback(
-    (angleId: string) => {
-      toast.success(t('common.presetSelected') || 'Preset selected');
-      handleClosePresetModal();
-    },
-    [t, handleClosePresetModal]
-  );
+  // Ângulo navega pro canvas igual aos outros tipos. Antes só disparava um toast
+  // e não fazia nada — irmão de mockup/texture com comportamento diferente.
+  const handleSelectAngle = handleSelectPreset;
 
   const handleProfileUpdate = async () => {
     if (!identifier) return;
 
     try {
-      const [profileData, mockupsData, presetsData, workflowsData] = await Promise.all([
-        userProfileService.getUserProfile(identifier),
-        userProfileService.getUserMockups(identifier),
-        userProfileService.getUserPresets(identifier),
-        userProfileService.getUserWorkflows(identifier),
-      ]);
-
-      setProfile(profileData);
-      setMockups(mockupsData);
-      setPresets(presetsData);
-      setWorkflows(workflowsData);
+      applyProfileBundle(await fetchProfileBundle(identifier));
       toast.success(t('common.profileUpdatedSuccess'));
     } catch (err: any) {
       console.error('Failed to reload profile:', err);
@@ -335,7 +387,8 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-neutral-700 hover:bg-neutral-900/80 hover:text-neutral-200 transition-colors duration-200"
+        className="p-2 bg-muted border border-border rounded-lg text-muted-foreground hover:border-ring hover:text-foreground transition-colors duration-200"
+        aria-label={label}
         title={label}
       >
         {icon}
@@ -343,61 +396,91 @@ export const CommunityProfilePage: React.FC = () => {
     );
   };
 
+  const profileName = profile?.name || profile?.username || t('common.user');
+  const PROFILE_BREADCRUMB = [
+    { label: t('common.community'), to: '/community' },
+    { label: t('common.profile') },
+  ];
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0"></div>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-neutral-400 text-sm">{t('community.profile.loading_profile')}</p>
-            </div>
+      <PageShell
+        pageId="community-profile"
+        title={t('common.profile')}
+        breadcrumb={PROFILE_BREADCRUMB}
+        hideHeader
+      >
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <GlitchLoader size={36} className="mx-auto mb-4" />
+            <p className="text-muted-foreground text-sm">
+              {t('community.profile.loading_profile')}
+            </p>
           </div>
         </div>
-      </div>
+      </PageShell>
+    );
+  }
+
+  // 404 ("esse perfil não existe") e falha de leitura ("não deu pra ler") são
+  // telas diferentes: só a segunda oferece retry.
+  if (notFound || (!profile && !error)) {
+    return (
+      <PageShell
+        pageId="community-profile"
+        title={t('common.profile')}
+        breadcrumb={PROFILE_BREADCRUMB}
+        hideHeader
+      >
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
+          <User size={40} strokeWidth={1} className="text-muted-foreground" />
+          <p className="text-foreground">{t('community.profile.notFound')}</p>
+          <div className="flex items-center gap-3">
+            <BackButton className="mb-0" />
+            <Button variant="surface" size="sm" asChild>
+              <Link to="/community">{t('common.community')}</Link>
+            </Button>
+          </div>
+        </div>
+      </PageShell>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
-        <div className="fixed inset-0 z-0"></div>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <p className="text-destructive mb-4">{error || 'User not found'}</p>
-              <BackButton className="mb-0" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageShell
+        pageId="community-profile"
+        title={t('common.profile')}
+        breadcrumb={PROFILE_BREADCRUMB}
+        hideHeader
+      >
+        <ErrorState
+          className="min-h-[60vh]"
+          title={t('community.profile.loadFailed')}
+          description={error ?? undefined}
+          retryLabel={t('common.retry')}
+          onRetry={retryLoad}
+        />
+      </PageShell>
     );
   }
 
   return (
-    <>
-      <SEO
-        title={t('community.profileTitle', {
-          name: profile.name || profile.username || t('common.user'),
-        })}
-        description={
-          profile.bio ||
-          t('community.viewProfile', { name: profile.name || profile.username || t('common.user') })
-        }
-      />
-
-      <div className="min-h-screen bg-neutral-950 text-neutral-300 relative overflow-hidden">
-        {/* Background */}
-        <div className="fixed inset-0 z-0 pointer-events-none"></div>
-
-        {/* Content */}
-        <div className="relative z-10 pt-20 md:pt-24 pb-12">
-          <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <PageShell
+      pageId="community-profile"
+      seoTitle={t('community.profileTitle', { name: profileName })}
+      seoDescription={profile.bio || t('community.viewProfile', { name: profileName })}
+      title={profileName}
+      breadcrumb={PROFILE_BREADCRUMB}
+      // O card de perfil abaixo já é a identidade da página — o header do shell
+      // em cima dele seria header duplo.
+      hideHeader
+    >
+      <div>
             {/* Profile Header Card */}
-            <div className="relative mb-8 rounded-md overflow-hidden bg-neutral-900/20 border border-white/10">
+            <div className="relative mb-8 rounded-2xl overflow-hidden bg-card border border-border">
               {/* Cover Image */}
-              <div className="h-48 md:h-64 relative w-full bg-neutral-900/50 overflow-hidden">
+              <div className="h-48 md:h-64 relative w-full bg-muted overflow-hidden">
                 {profile.coverImageUrl ? (
                   <>
                     <img
@@ -405,14 +488,14 @@ export const CommunityProfilePage: React.FC = () => {
                       alt={t('common.cover')}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
                   </>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-neutral-900/50">
-                    <div className="text-neutral-800">
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                    <div className="text-muted-foreground/30">
                       <ImageIcon size={64} strokeWidth={0.5} />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
                   </div>
                 )}
               </div>
@@ -422,7 +505,7 @@ export const CommunityProfilePage: React.FC = () => {
                 <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
                   {/* Avatar */}
                   <div className="relative group">
-                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-md bg-neutral-900 border-4 border-neutral-950 overflow-hidden flex items-center justify-center shadow-xl">
+                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl bg-muted border-4 border-card overflow-hidden flex items-center justify-center shadow-xl">
                       {profile.picture ? (
                         <img
                           src={profile.picture}
@@ -430,19 +513,19 @@ export const CommunityProfilePage: React.FC = () => {
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                       ) : (
-                        <User size={64} className="text-neutral-600" />
+                        <User size={64} className="text-muted-foreground" />
                       )}
                     </div>
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 text-center md:text-left min-w-0">
-                    <h1 className="text-3xl md:text-4xl font-bold text-neutral-100 font-manrope mb-2 tracking-tight">
-                      {profile.name || profile.username || t('common.user')}
+                    <h1 className="text-3xl md:text-4xl font-bold text-foreground font-manrope mb-2 tracking-tight">
+                      {profileName}
                     </h1>
 
                     {profile.bio && (
-                      <p className="text-neutral-400 text-sm md:text-base mb-4 max-w-2xl line-clamp-3">
+                      <p className="text-muted-foreground text-sm md:text-base mb-4 max-w-2xl line-clamp-3">
                         {profile.bio}
                       </p>
                     )}
@@ -463,10 +546,10 @@ export const CommunityProfilePage: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setIsEditModalOpen(true)}
-                          className="ml-2 gap-2 border-neutral-800/60 text-neutral-300 hover:bg-neutral-900/80 hover:text-neutral-100 hover:border-neutral-700"
+                          className="ml-2 gap-2"
                         >
                           <Edit size={14} />
-                          Edit Profile
+                          {t('community.profile.editProfile')}
                         </Button>
                       )}
                     </div>
@@ -475,27 +558,27 @@ export const CommunityProfilePage: React.FC = () => {
                   {/* Stats */}
                   <GlassPanel
                     padding="sm"
-                    className="flex-row gap-4 md:gap-8 mt-4 md:mt-0 bg-neutral-900/40 backdrop-blur-sm"
+                    className="flex-row gap-4 md:gap-8 mt-4 md:mt-0 shrink-0"
                   >
                     <div className="text-center">
-                      <div className="text-xl md:text-2xl font-bold font-manrope text-white">
+                      <div className="text-xl md:text-2xl font-bold font-manrope text-foreground tabular-nums">
                         {mockups.length}
                       </div>
                       <MicroTitle>{t('community.profile.mockups')}</MicroTitle>
                     </div>
-                    <div className="w-px bg-neutral-800/50" />
+                    <div className="w-px bg-border" />
                     <div className="text-center">
-                      <div className="text-xl md:text-2xl font-bold font-manrope text-white">
+                      <div className="text-xl md:text-2xl font-bold font-manrope text-foreground tabular-nums">
                         {workflows.length}
                       </div>
                       <MicroTitle>{t('community.profile.workflows')}</MicroTitle>
                     </div>
-                    <div className="w-px bg-neutral-800/50" />
+                    <div className="w-px bg-border" />
                     <div className="text-center">
-                      <div className="text-xl md:text-2xl font-bold font-manrope text-white">
+                      <div className="text-xl md:text-2xl font-bold font-manrope text-foreground tabular-nums">
                         {allPresets.length}
                       </div>
-                      <MicroTitle>Presets</MicroTitle>
+                      <MicroTitle>{t('community.profile.presets')}</MicroTitle>
                     </div>
                   </GlassPanel>
                 </div>
@@ -505,34 +588,25 @@ export const CommunityProfilePage: React.FC = () => {
             {/* Content Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="flex items-center justify-between mb-6">
-                <TabsList className="bg-neutral-900/50 border border-white/10">
+                <TabsList className="bg-card border border-border">
                   <TabsTrigger value="mockups" className="gap-2">
                     <ImageIcon size={14} />
-                    Mockups
-                    <Badge
-                      variant="secondary"
-                      className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5"
-                    >
+                    {t('community.profile.mockups')}
+                    <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0 h-5">
                       {mockups.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="workflows" className="gap-2">
                     <Workflow size={14} />
-                    Workflows
-                    <Badge
-                      variant="secondary"
-                      className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5"
-                    >
+                    {t('community.profile.workflows')}
+                    <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0 h-5">
                       {workflows.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="presets" className="gap-2">
                     <Diamond size={14} />
-                    Presets
-                    <Badge
-                      variant="secondary"
-                      className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5"
-                    >
+                    {t('community.profile.presets')}
+                    <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0 h-5">
                       {allPresets.length}
                     </Badge>
                   </TabsTrigger>
@@ -545,13 +619,18 @@ export const CommunityProfilePage: React.FC = () => {
                 className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
               >
                 {mockups.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
-                    <ImageIcon size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">No mockups yet</h2>
-                    <p className="text-sm text-neutral-500 max-w-sm">
-                      This user hasn't published any mockups yet.
-                    </p>
-                  </div>
+                  renderEmptyTab({
+                    icon: <ImageIcon size={48} className="text-muted-foreground" strokeWidth={1} />,
+                    title: t('community.profile.noMockupsTitle'),
+                    body: isOwnProfile
+                      ? t('community.profile.ownerNoMockupsBody')
+                      : t('community.profile.noMockupsBody'),
+                    action: isOwnProfile ? (
+                      <Button variant="brand" size="sm" asChild>
+                        <Link to="/create">{t('community.profile.createMockup')}</Link>
+                      </Button>
+                    ) : null,
+                  })
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {mockups.map((mockup) => {
@@ -559,9 +638,10 @@ export const CommunityProfilePage: React.FC = () => {
                       if (!imageUrl) return null;
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={mockup._id}
-                          className="group relative bg-neutral-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-neutral-700 hover:shadow-lg transition-all duration-300 aspect-square cursor-pointer"
+                          className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:border-ring focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-lg transition-all duration-300 aspect-square"
                           onClick={() => handleView(mockup)}
                         >
                           <img
@@ -570,12 +650,20 @@ export const CommunityProfilePage: React.FC = () => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                          {/* Contagem de likes é informação, não controle: sem hover
+                              (touch) ela some. hoverReveal mantém visível onde não
+                              há ponteiro fino e revela no foco de teclado. */}
+                          <div
+                            className={cn(
+                              hoverReveal,
+                              'absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4'
+                            )}
+                          >
                             <div className="flex items-center gap-2 text-white">
                               <Heart
                                 size={14}
                                 className={cn(
-                                  mockup.isLiked ? 'fill-red-500 text-destructive' : 'text-white'
+                                  mockup.isLiked ? 'fill-current text-destructive' : 'text-white'
                                 )}
                               />
                               <span className="text-xs font-mono tabular-nums">
@@ -583,7 +671,7 @@ export const CommunityProfilePage: React.FC = () => {
                               </span>
                             </div>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -596,26 +684,26 @@ export const CommunityProfilePage: React.FC = () => {
                 className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
               >
                 {workflows.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
-                    <Workflow size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">
-                      No workflows yet
-                    </h2>
-                    <p className="text-sm text-neutral-500 max-w-sm">
-                      This user hasn't published any workflows yet.
-                    </p>
-                  </div>
+                  renderEmptyTab({
+                    icon: <Workflow size={48} className="text-muted-foreground" strokeWidth={1} />,
+                    title: t('community.profile.noWorkflowsTitle'),
+                    body: isOwnProfile
+                      ? t('community.profile.ownerNoWorkflowsBody')
+                      : t('community.profile.noWorkflowsBody'),
+                    action: isOwnProfile ? (
+                      <Button variant="brand" size="sm" asChild>
+                        <Link to="/canvas">{t('community.profile.createWorkflow')}</Link>
+                      </Button>
+                    ) : null,
+                  })
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {workflows.map((workflow) => (
                       <GlassPanel
                         key={workflow._id}
-                        className="group overflow-hidden hover:border-neutral-700 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full bg-neutral-900/40"
+                        className="group overflow-hidden hover:border-ring transition-all duration-300 flex flex-col h-full"
                       >
-                        <div
-                          className="aspect-video w-full bg-neutral-950 relative overflow-hidden cursor-pointer"
-                          onClick={() => navigate(`/canvas/${workflow._id}`)}
-                        >
+                        <div className="aspect-video w-full bg-muted relative overflow-hidden">
                           {workflow.thumbnailUrl ? (
                             <img
                               src={workflow.thumbnailUrl}
@@ -624,7 +712,7 @@ export const CommunityProfilePage: React.FC = () => {
                               loading="lazy"
                             />
                           ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-neutral-700">
+                            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
                               <Workflow size={48} strokeWidth={1} />
                             </div>
                           )}
@@ -633,35 +721,32 @@ export const CommunityProfilePage: React.FC = () => {
                           <div
                             className={cn(
                               hoverReveal,
-                              'absolute inset-0 bg-neutral-950/60 duration-200 flex items-center justify-center gap-2'
+                              'absolute inset-0 bg-background/70 duration-200 flex items-center justify-center gap-2'
                             )}
                           >
-                            <Button
-                              variant="brand"
-                              size="sm"
-                              className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/canvas/${workflow._id}`);
-                              }}
-                            >
-                              <Play size={14} className="fill-current" />
-                              Run
+                            <Button variant="brand" size="sm" className="gap-2" asChild>
+                              <Link to={`/canvas/${workflow._id}`}>
+                                <Play size={14} className="fill-current" />
+                                {t('community.profile.run')}
+                              </Link>
                             </Button>
                             <Button
                               size="icon"
                               variant="secondary"
                               onClick={(e) => handleDuplicateWorkflow(e, workflow)}
+                              aria-label={t('community.profile.duplicate_to_my_library')}
                               title={t('community.profile.duplicate_to_my_library')}
                             >
                               <Share2 size={14} />
                             </Button>
                           </div>
 
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          {/* Categoria é metadado, não ação: fica sempre visível.
+                              Antes só aparecia no hover — invisível no touch. */}
+                          <div className="absolute top-2 right-2">
                             <Badge
                               variant="secondary"
-                              className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-xs"
+                              className="bg-background/70 backdrop-blur-sm text-xs"
                             >
                               {workflow.category}
                             </Badge>
@@ -669,33 +754,36 @@ export const CommunityProfilePage: React.FC = () => {
                         </div>
 
                         <CardContent className="p-4 flex flex-col flex-1">
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <h3
-                              className="font-semibold text-neutral-200 line-clamp-1 group-hover:text-neutral-100 transition-colors cursor-pointer"
-                              onClick={() => navigate(`/canvas/${workflow._id}`)}
+                          <h3 className="font-semibold text-foreground line-clamp-1 mb-2">
+                            <Link
+                              to={`/canvas/${workflow._id}`}
+                              className="hover:underline underline-offset-2 focus-visible:outline-none focus-visible:underline"
                             >
                               {workflow.name}
-                            </h3>
-                          </div>
+                            </Link>
+                          </h3>
 
-                          <p className="text-sm text-neutral-500 line-clamp-2 mb-4 flex-1">
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
                             {workflow.description}
                           </p>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-white/10 mt-auto">
-                            <div className="flex items-center gap-1 text-neutral-500 text-xs font-mono">
-                              <span>{workflow.nodes?.length || 0} nodes</span>
+                          <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
+                            <div className="flex items-center gap-1 text-muted-foreground text-xs font-mono">
+                              <span>
+                                {t('community.nodesCount', { count: workflow.nodes?.length || 0 })}
+                              </span>
                             </div>
 
                             <div className="flex items-center gap-3">
                               <Button
                                 variant="ghost"
                                 onClick={(e) => handleToggleWorkflowLike(e, workflow)}
+                                aria-pressed={!!workflow.isLikedByUser}
                                 className={cn(
                                   'flex items-center gap-1.5 text-xs font-mono transition-colors',
                                   workflow.isLikedByUser
                                     ? 'text-destructive hover:text-destructive'
-                                    : 'text-neutral-500 hover:text-neutral-300'
+                                    : 'text-muted-foreground hover:text-foreground'
                                 )}
                               >
                                 <Heart
@@ -719,23 +807,30 @@ export const CommunityProfilePage: React.FC = () => {
                 className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300"
               >
                 {allPresets.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-white/10 rounded-xl border-dashed">
-                    <Diamond size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold text-neutral-200 mb-2">No presets yet</h2>
-                    <p className="text-sm text-neutral-500 max-w-sm">
-                      This user hasn't published any presets yet.
-                    </p>
-                  </div>
+                  renderEmptyTab({
+                    icon: <Diamond size={48} className="text-muted-foreground" strokeWidth={1} />,
+                    title: t('community.profile.noPresetsTitle'),
+                    body: isOwnProfile
+                      ? t('community.profile.ownerNoPresetsBody')
+                      : t('community.profile.noPresetsBody'),
+                    action: isOwnProfile ? (
+                      <Button variant="brand" size="sm" asChild>
+                        <Link to="/community/presets?view=my">
+                          {t('community.profile.createPreset')}
+                        </Link>
+                      </Button>
+                    ) : null,
+                  })
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {allPresets.map((preset) => (
                       <GlassPanel
                         asChild
                         key={preset._id || preset.id}
-                        className="group flex flex-col text-left h-full bg-neutral-900/40 hover:border-neutral-700 hover:bg-neutral-800/60 transition-all duration-300 cursor-pointer"
+                        className="group flex flex-col text-left h-full p-0 overflow-hidden hover:border-ring transition-all duration-300"
                       >
-                        <Button variant="ghost" onClick={() => handlePresetClick(preset)}>
-                          <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">
+                        <button type="button" onClick={() => handlePresetClick(preset)}>
+                          <div className="aspect-[3/2] w-full bg-muted relative overflow-hidden">
                             {preset.referenceImageUrl ? (
                               <img
                                 src={preset.referenceImageUrl}
@@ -745,37 +840,36 @@ export const CommunityProfilePage: React.FC = () => {
                               />
                             ) : (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <Diamond size={32} className="text-neutral-700" />
+                                <Diamond size={32} className="text-muted-foreground" />
                               </div>
                             )}
                             <div className="absolute bottom-2 right-2">
                               <Badge
                                 variant="secondary"
-                                className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase"
+                                className="bg-background/70 backdrop-blur-sm text-[10px] uppercase"
                               >
                                 {preset.presetType}
                               </Badge>
                             </div>
                           </div>
                           <div className="p-4 flex flex-col flex-1 w-full">
-                            <h3 className="font-semibold text-neutral-200 text-sm mb-1 line-clamp-1 group-hover:text-neutral-100 transition-colors">
+                            <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-1">
                               {preset.name}
                             </h3>
                             {preset.description && (
-                              <p className="text-xs text-neutral-500 line-clamp-2 mt-1">
+                              <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                                 {preset.description}
                               </p>
                             )}
                           </div>
-                        </Button>
+                        </button>
                       </GlassPanel>
                     ))}
                   </div>
                 )}
               </TabsContent>
             </Tabs>
-          </div>
-        </div>
+      </div>
 
         {/* Full Screen Viewer */}
         {selectedMockup && getImageUrl(selectedMockup) && (
@@ -912,7 +1006,6 @@ export const CommunityProfilePage: React.FC = () => {
             isLoading={false}
           />
         )}
-      </div>
-    </>
+    </PageShell>
   );
 };

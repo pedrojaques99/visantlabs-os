@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Image as ImageIcon } from '@/lib/ui/icons';
+import { X, Image as ImageIcon, AlertTriangle } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Select } from './ui/select';
 import { AdminImageUploader } from './ui/AdminImageUploader';
-import { FormField } from './ui/form-field';
-import { FormInput } from './ui/form-input';
-import { FormTextarea } from './ui/form-textarea';
 import type { UploadedImage, AspectRatio, GeminiModel } from '../types/types';
 import type { PromptCategory, LegacyPresetType } from '../types/communityPrompts';
 import { authService } from '../services/authService';
@@ -15,6 +12,8 @@ import { cn } from '../lib/utils';
 import { CATEGORY_CONFIG } from './PresetCard';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from './ui/MicroTitle';
+import { Modal } from '@/components/ui/Modal';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -361,9 +360,6 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
   if (!isOpen) return null;
 
-  const categoryIcon = CATEGORY_CONFIG[formData.category]?.icon || CATEGORY_CONFIG.presets.icon;
-  const Icon = categoryIcon;
-
   // Determinar se precisa mostrar referenceImageUrl
   // Para categoria mockup OU para outras categorias (3d, aesthetics, themes)
   // Categorias antigas (angle, texture, ambience, luminance) não precisam de imagem
@@ -375,33 +371,39 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
       !['angle', 'texture', 'ambience', 'luminance'].includes(formData.category));
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-10 bg-neutral-950/70 backdrop-blur-sm animate-fade-in"
-      onClick={handleClose}
-    >
-      <div
-        className="relative bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
-          <h2 className="text-lg font-semibold text-neutral-100">
-            {isCreating ? t('communityPresets.createPreset') : t('communityPresets.editPreset')}
-          </h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      id="community-preset"
+      size="lg"
+      title={isCreating ? t('communityPresets.createPreset') : t('communityPresets.editPreset')}
+      footer={
+        <div className="flex items-center justify-end gap-3">
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+            {t('common.cancel')}
+          </Button>
           <Button
-            variant="ghost"
-            onClick={handleClose}
-            className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
+            variant="brand"
+            onClick={handleSubmit}
+            disabled={isLoading || !formData.name || !formData.prompt}
+            className="gap-2"
           >
-            <X size={18} />
+            {isLoading ? (
+              <>
+                <GlitchLoader size={14} />
+                <span>{t('common.saving')}</span>
+              </>
+            ) : (
+              <span>{t('common.save')}</span>
+            )}
           </Button>
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+      }
+    >
+      <div>
           {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-md flex items-center gap-2 text-destructive text-sm">
-              <span>⚠</span>
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center gap-2 text-destructive text-sm">
+              <AlertTriangle size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -411,8 +413,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
-                <MicroTitle as="span" className="text-neutral-500 lowercase">
-                  {formData.prompt.length} chars
+                <MicroTitle as="span" className="text-muted-foreground lowercase">
+                  {t('communityPresets.charsCount', { count: formData.prompt.length })}
                 </MicroTitle>
               </div>
               <Textarea
@@ -420,11 +422,11 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                 onChange={(e) => handlePromptChange(e.target.value)}
                 rows={5}
                 autoFocus
-                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
+                className="w-full resize-none"
                 placeholder={t('communityPresets.describeWhatToGenerate')}
               />
               {isCreating && autoFilled && (
-                <p className="text-xs text-neutral-500 mt-1.5">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   {t('communityPresets.autoFilledHint')}
                 </p>
               )}
@@ -432,9 +434,9 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
             {/* Image Upload Section */}
             {needsReferenceImage && (
-              <div className="flex items-start gap-4 pb-5 border-b border-neutral-800/40">
+              <div className="flex items-start gap-4 pb-5 border-b border-border">
                 {formData.referenceImageUrl ? (
-                  <div className="relative w-16 h-16 rounded-md overflow-hidden border border-neutral-700/50 bg-neutral-800 group flex-shrink-0">
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted group flex-shrink-0">
                     <img
                       src={formData.referenceImageUrl}
                       alt={t('common.reference')}
@@ -447,22 +449,23 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         setFormData({ ...formData, referenceImageUrl: '' });
                         setImageUploadError(null);
                       }}
-                      className="absolute inset-0 bg-neutral-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label={t('communityPresets.removeImage2')}
+                      className={cn(hoverReveal, 'absolute inset-0 bg-background/70 flex items-center justify-center')}
                     >
-                      <X className="h-4 w-4 text-white" />
+                      <X className="h-4 w-4 text-foreground" />
                     </Button>
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-md border border-neutral-700/50 bg-neutral-800/50 flex items-center justify-center flex-shrink-0">
-                    <ImageIcon className="h-6 w-6 text-neutral-500" />
+                  <div className="w-16 h-16 rounded-lg border border-border bg-muted flex items-center justify-center flex-shrink-0">
+                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <MicroTitle as="p" className="text-neutral-200 mb-1">
+                  <MicroTitle as="p" className="text-foreground mb-1">
                     {t('communityPresets.referenceImage')}
                   </MicroTitle>
-                  <MicroTitle as="p" className="text-neutral-500 mb-2 lowercase">
-                    Image should be below 4 mb
+                  <MicroTitle as="p" className="text-muted-foreground mb-2 lowercase">
+                    {t('communityPresets.imageSizeHint')}
                   </MicroTitle>
                   <div className="flex items-center gap-2">
                     <AdminImageUploader
@@ -477,14 +480,14 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                           setFormData({ ...formData, referenceImageUrl: '' });
                           setImageUploadError(null);
                         }}
-                        className="px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 transition-colors"
+                        className="px-3 py-1.5 text-xs"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </Button>
                     )}
                   </div>
                   {isUploadingImage && (
-                    <div className="flex items-center gap-2 text-xs text-brand-cyan mt-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                       <GlitchLoader size={12} />
                       <span>{t('communityPresets.uploadingImage')}</span>
                     </div>
@@ -493,7 +496,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     <p className="text-xs text-destructive mt-2">{imageUploadError}</p>
                   )}
                   {(!formData.name || formData.name.trim() === '') && (
-                    <p className="text-xs text-neutral-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       {t('communityPresets.enterPresetNameFirst')}
                     </p>
                   )}
@@ -510,13 +513,13 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
-                placeholder="Enter preset name"
+                className="w-full"
+                placeholder={t('communityPresets.namePlaceholder')}
               />
               {isCreating && formData.id && (
-                <p className="text-xs text-neutral-500 mt-1.5">
+                <p className="text-xs text-muted-foreground mt-1.5">
                   {t('communityPresets.autoGeneratedId')}:{' '}
-                  <span className="text-neutral-300">{formData.id}</span>
+                  <span className="text-foreground">{formData.id}</span>
                 </p>
               )}
             </div>
@@ -571,7 +574,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                   type="text"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                  className="w-full"
                   placeholder={t('communityPresets.descriptionPlaceholder')}
                 />
               </div>
@@ -603,7 +606,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     setFormData({ ...formData, referenceImageUrl: e.target.value });
                     setImageUploadError(null);
                   }}
-                  className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                  className="w-full"
                   placeholder={t('communityPresets.referenceImageUrlPlaceholder')}
                 />
               </div>
@@ -633,7 +636,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     }
                   }}
                   placeholder={t('communityPresets.tags.placeholder')}
-                  className="flex-1 px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                  className="flex-1"
                 />
                 <Button
                   variant="ghost"
@@ -647,7 +650,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                       setTagInput('');
                     }
                   }}
-                  className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors"
+                  className="px-4 py-2 text-sm"
                 >
                   {t('communityPresets.tags.add')}
                 </Button>
@@ -657,9 +660,9 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                   {formData.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/70 border border-neutral-700/50 rounded-md text-xs text-neutral-300"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted border border-border rounded-lg text-xs text-foreground"
                     >
-                      <span className="text-neutral-500">#</span>
+                      <span className="text-muted-foreground">#</span>
                       {tag}
                       <Button
                         variant="ghost"
@@ -670,7 +673,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                             tags: formData.tags?.filter((_, i) => i !== index) || [],
                           });
                         }}
-                        className="text-neutral-500 hover:text-destructive transition-colors ml-0.5"
+                        aria-label={t('communityPresets.removeTag')}
+                        className="text-muted-foreground hover:text-destructive transition-colors ml-0.5"
                       >
                         <X size={12} />
                       </Button>
@@ -680,35 +684,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
               )}
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-800/60 bg-neutral-900/50">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-            className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors disabled:opacity-50"
-          >
-            {t('common.cancel')}
-          </Button>
-          <Button
-            variant="brand"
-            onClick={handleSubmit}
-            disabled={isLoading || !formData.name || !formData.prompt}
-            className="px-5 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-md text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <GlitchLoader size={14} />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <span>{t('common.save')}</span>
-            )}
-          </Button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
