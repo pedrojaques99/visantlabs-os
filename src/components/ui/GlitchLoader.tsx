@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/glitch-chars` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 'use client';
 
 import { useEffect, useState } from 'react';

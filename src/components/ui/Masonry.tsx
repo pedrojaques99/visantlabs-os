@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/masonry-gallery` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 /**
  * Masonry — round-robin JS masonry, shared by the reference library and the brand
  * preview. Items are distributed into N balanced columns by index (`i % cols`), so
