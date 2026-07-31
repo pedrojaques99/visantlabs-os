@@ -1,7 +1,7 @@
 {
-  "_source": "brand-guidelines-get(69f0c958c238db133a364810, [colors,typography]) — Days n' Days, 2026-07-30",
-  "id": "69f0c958c238db133a364810",
-  "name": "Days n' Days",
+  "_source": "fixture sintética — marca inventada para o teste; nenhum dado de cliente",
+  "id": "fixture000000000000turn",
+  "name": "Turno & Turno",
   "extraction": { "completeness": 64 },
   "currentVersion": 8,
   "colors": [

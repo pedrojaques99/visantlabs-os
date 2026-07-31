@@ -11,8 +11,8 @@ const fixture = (n) =>
   JSON.parse(readFileSync(join(here, `../src/fixtures/${n}.json`), "utf8"));
 
 const visant = fixture("visant");
-const hockey = fixture("hockey-direct");
-const days = fixture("days-n-days");
+const campo = fixture("campo-neon");
+const turno = fixture("turno-e-turno");
 const craft = loadCraft();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,8 +22,8 @@ const craft = loadCraft();
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("papéis de tipografia resolvem por marca, sem vazamento", () => {
-  it("Hockey Direct usa a própria fonte, não a fallback da Visant", () => {
-    const t = compileBrandTokens(hockey).type;
+  it("Campo Neon usa a própria fonte, não a fallback da Visant", () => {
+    const t = compileBrandTokens(campo).type;
     expect(t.display).toBe("Archivo");
     expect(t.sans).toBe("Archivo");
     // A regressão exata: Manrope/Oswald são da Visant.
@@ -40,32 +40,32 @@ describe("papéis de tipografia resolvem por marca, sem vazamento", () => {
   });
 
   it("marca de uma face só usa a mesma nos dois papéis, sem inventar a segunda", () => {
-    const t = compileBrandTokens(days).type;
+    const t = compileBrandTokens(turno).type;
     expect(t.display).toBe("Helvetica Neue LT");
     expect(t.sans).toBe("Helvetica Neue LT");
   });
 
   it("marca sem tipografia falha alto em vez de escolher por conta", () => {
-    expect(() => compileBrandTokens({ ...hockey, typography: [] })).toThrow(BrandTokenError);
+    expect(() => compileBrandTokens({ ...campo, typography: [] })).toThrow(BrandTokenError);
   });
 });
 
 describe("papéis de cor resolvem por cadeia de fallback", () => {
-  it("Hockey Direct mantém o lime como --brand", () => {
-    const c = compileBrandTokens(hockey);
+  it("Campo Neon mantém o lime como --brand", () => {
+    const c = compileBrandTokens(campo);
     expect(c.themes.light.brand.toLowerCase()).toBe("#bfff53");
   });
 
-  it("Days n' Days não tem `background`; usa cor da marca, nunca a da Visant", () => {
+  it("Turno & Turno não tem `background`; usa cor da marca, nunca a da Visant", () => {
     // Só publica `text` e `accent`. O default antigo era #f4ebeb — da Visant.
-    const c = compileBrandTokens(days);
-    const own = days.colors.map((x) => x.hex.toLowerCase());
+    const c = compileBrandTokens(turno);
+    const own = turno.colors.map((x) => x.hex.toLowerCase());
     expect(own).toContain(c.themes.light.brand.toLowerCase());
   });
 
   it("marca sem cor nenhuma falha alto, e diz o que procurou", () => {
     try {
-      compileBrandTokens({ ...hockey, colors: [] });
+      compileBrandTokens({ ...campo, colors: [] });
       expect.unreachable("deveria ter lançado");
     } catch (e) {
       expect(e).toBeInstanceOf(BrandTokenError);
@@ -77,8 +77,8 @@ describe("papéis de cor resolvem por cadeia de fallback", () => {
 describe("contraste AA vale para TODA marca, não só para a fixture original", () => {
   for (const [name, brand] of [
     ["Visant®", visant],
-    ["Hockey Direct", hockey],
-    ["Days n' Days", days],
+    ["Campo Neon", campo],
+    ["Turno & Turno", turno],
   ]) {
     for (const mode of ["light", "dark"]) {
       it(`${name} [${mode}]: corpo e tinta de marca passam AA`, () => {
@@ -93,36 +93,36 @@ describe("contraste AA vale para TODA marca, não só para a fixture original", 
 
 describe("proveniência viaja junto com o token", () => {
   it("meta carrega id, versão e completude da marca", () => {
-    const m = compileBrandTokens(hockey).meta;
-    expect(m.name).toBe("Hockey Direct");
-    expect(m.brandId).toBe("6a35570c13ded9555a7435d7");
+    const m = compileBrandTokens(campo).meta;
+    expect(m.name).toBe("Campo Neon");
+    expect(m.brandId).toBe("fixture000000000000cneo");
     expect(m.completeness).toBe(36);
     expect(m.version).toBe(10);
   });
 
   it("o CSS emitido diz de qual marca e versão ele veio", () => {
-    const css = emitCss(compileBrandTokens(hockey), craft);
-    expect(css).toContain("Hockey Direct");
-    expect(css).toContain("6a35570c13ded9555a7435d7");
+    const css = emitCss(compileBrandTokens(campo), craft);
+    expect(css).toContain("Campo Neon");
+    expect(css).toContain("fixture000000000000cneo");
     expect(css).toContain("DO NOT EDIT BY HAND");
   });
 
   it("o cabeçalho não afirma Visant® para outra marca", () => {
-    const css = emitCss(compileBrandTokens(hockey), craft);
+    const css = emitCss(compileBrandTokens(campo), craft);
     expect(css).not.toContain("Visant®");
   });
 });
 
 describe("saída por marca, sem sobrescrita silenciosa", () => {
   it("marcas diferentes geram nomes de arquivo diferentes", () => {
-    expect(brandSlug(hockey)).toBe("hockey-direct");
-    expect(brandSlug(days)).toBe("days-n-days");
-    expect(brandSlug(hockey)).not.toBe(brandSlug(days));
+    expect(brandSlug(campo)).toBe("campo-neon");
+    expect(brandSlug(turno)).toBe("turno-turno");
+    expect(brandSlug(campo)).not.toBe(brandSlug(turno));
   });
 
   it("marcas diferentes geram CSS diferente", () => {
-    const a = emitCss(compileBrandTokens(hockey), craft);
-    const b = emitCss(compileBrandTokens(days), craft);
+    const a = emitCss(compileBrandTokens(campo), craft);
+    const b = emitCss(compileBrandTokens(turno), craft);
     expect(a).not.toBe(b);
   });
 });

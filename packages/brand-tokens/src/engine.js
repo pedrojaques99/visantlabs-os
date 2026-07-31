@@ -11,11 +11,8 @@
 
 import { Theme, Color, BackgroundColor } from "@adobe/leonardo-contrast-colors";
 import { converter, wcagContrast } from "culori";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import craft from "../craft.json" with { type: "json" };
 
-const here = dirname(fileURLToPath(import.meta.url));
 const toOklch = converter("oklch");
 const toRgb = converter("rgb");
 
@@ -40,10 +37,10 @@ const INK_RATIO = 4.7; // brand-colored text on bg (AA + margin)
 //
 //   Visant®        colors: background primary secondary accent text
 //                  type:   primary secondary
-//   Hockey Direct  colors: background surface secondary accent
+//   Campo Neon  colors: background surface secondary accent
 //                          accent-secondary text-on-dark muted text
 //                  type:   display body label feature
-//   Days n' Days   colors: text accent          type: heading
+//   Turno & Turno   colors: text accent          type: heading
 //
 // An exact-match lookup with a hardcoded default silently paints one brand in
 // another brand's identity. That is worse than crashing: it ships, and nobody
@@ -238,7 +235,7 @@ export function compileBrandTokens(brand) {
 }
 
 export function loadCraft() {
-  return JSON.parse(readFileSync(join(here, "../craft.json"), "utf8"));
+  return craft;
 }
 
 // hex → "oklch(l c h)" with stable rounding (determinism + readability).

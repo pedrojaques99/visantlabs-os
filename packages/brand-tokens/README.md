@@ -27,7 +27,7 @@ background's hue (warm-true, not pure grey). Dark mode is synthesized automatica
 
 ```bash
 node scripts/build.js                          # the Visant fixture
-node scripts/build.js src/fixtures/hockey-direct.json
+node scripts/build.js src/fixtures/campo-neon.json
 node scripts/build.js --brand <brandId>        # live, needs VISANT_API_TOKEN
 # → prints the AA report, writes dist/<brand-slug>.tokens.css (OKLCH, Tailwind v4)
 npm test                                       # 39 tests; AA verified independently via culori
@@ -44,14 +44,14 @@ failing contrast pair exits non-zero — it must not look like a success.
 | Brand | colour roles | type roles |
 |---|---|---|
 | Visant® | background · primary · secondary · accent · text | primary · secondary |
-| Hockey Direct | background · surface · secondary · accent · accent-secondary · text-on-dark · muted · text | display · body · label · feature |
-| Days n' Days | text · accent | heading |
+| Campo Neon | background · surface · secondary · accent · accent-secondary · text-on-dark · muted · text | display · body · label · feature |
+| Turno & Turno | text · accent | heading |
 
 Every slot resolves through a **fallback chain**, then by `usageRank`, and
 **throws** when nothing matches. Two silent bugs this fixed:
 
 1. **Cross-brand font leak.** The old lookup read only `typography[role=primary|secondary]`
-   and defaulted to `Manrope`/`Oswald`. Hockey Direct — roles `display/body/label` —
+   and defaulted to `Manrope`/`Oswald`. Campo Neon — roles `display/body/label` —
    compiled with **Visant's fonts**, no error. A whole site would have shipped
    off-brand, and only a human eye would have caught it.
 2. **Inverted type mapping.** Visant labels its 96px Manrope `primary` and its
@@ -59,7 +59,7 @@ Every slot resolves through a **fallback chain**, then by `usageRank`, and
    `secondary`→`--font-display`, putting a body face in the headlines. `size` is
    now the tiebreaker when role names are ambiguous.
 
-A single-face brand (Days n' Days) correctly gets the same family in both roles —
+A single-face brand (Turno & Turno) correctly gets the same family in both roles —
 a brand decision, not a gap, so the engine does not invent a second face.
 
 ## Provenance
@@ -69,11 +69,11 @@ it in the emitted CSS. When someone asks where a colour came from, the answer
 travels with the file:
 
 ```css
-/* brand: Hockey Direct · id: 6a35570c13ded9555a7435d7 · version: 10 · completeness: 36% */
+/* brand: Campo Neon · id: fixture000000000000cneo · version: 10 · completeness: 36% */
 ```
 
-**`completeness` is not a token-readiness score.** Hockey Direct sits at 36% with
-the richest colour and type data of the three; Days n' Days sits at 64% with three
+**`completeness` is not a token-readiness score.** Campo Neon sits at 36% with
+the richest colour and type data of the three; Turno & Turno sits at 64% with three
 colours and one face. Gate on whether the slots resolve, not on the number.
 
 ## Output tokens

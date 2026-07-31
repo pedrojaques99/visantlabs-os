@@ -97,7 +97,7 @@ export function normalizeBrand(raw, brandId = null) {
   };
 }
 
-/** `Hockey Direct` → `hockey-direct`, for filenames and registry item names. */
+/** `Campo Neon` → `campo-neon`, for filenames and registry item names. */
 export function brandSlug(brand) {
   const name = brand?.name ?? brand?.identity?.name ?? brand?.id ?? "brand";
   return String(name)
