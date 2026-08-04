@@ -131,17 +131,27 @@ router.post('/reconcile-payments', verifyCronAuth, async (_req, res) => {
   }
 });
 
-// Brand billing: archives excess active brands of users whose 7-day downgrade
-// grace window expired (least recently updated first). No-op unless
+// Brand billing, as duas metades da janela de downgrade. No-op unless
 // FEATURE_BRAND_BILLING=true. Safe to run repeatedly — quota is recomputed at
 // execution time and grace flags are cleared after processing.
+//
+// A ordem importa: os avisos rodam ANTES do arquivamento, senão quem vence hoje
+// seria arquivado no mesmo tick em que receberia o lembrete.
+//   1. sendBrandQuotaReminders — retoma avisos que falharam e manda o lembrete
+//      de 48h para quem ainda está dentro do prazo.
+//   2. archiveExcessBrands — arquiva quem passou do prazo (menos usada
+//      primeiro) e avisa o que foi arquivado.
 router.post('/enforce-brand-quota', verifyCronAuth, async (_req, res) => {
   try {
-    const { archiveExcessBrands } = await import('../lib/brandQuota.js');
+    const { sendBrandQuotaReminders, archiveExcessBrands } = await import('../lib/brandQuota.js');
+    const notices = await sendBrandQuotaReminders();
     const result = await archiveExcessBrands();
     res.json({
-      message: `Brand quota enforcement done: ${result.brandsArchived} brands archived across ${result.usersProcessed} users`,
+      message: `Brand quota enforcement done: ${result.brandsArchived} brands archived across ${result.usersProcessed} users${
+        result.usersRemaining > 0 ? ` (${result.usersRemaining} users queued for the next run)` : ''
+      }`,
       ...result,
+      ...notices,
     });
   } catch (error: any) {
     console.error('Brand quota enforcement cron error:', error);

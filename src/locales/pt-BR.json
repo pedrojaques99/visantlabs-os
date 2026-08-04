@@ -1376,6 +1376,7 @@
     "limitMessage": "Limite de marcas ativas atingido, {used}/{max}. Faça upgrade do plano para ativar mais marcas.",
     "graceMessage": "Você passou do limite de marcas do novo plano. Em {days} dia{plural} as marcas em excesso são arquivadas. Faça upgrade para manter todas ativas.",
     "graceCta": "Manter minhas marcas",
+    "graceAtRisk": "Na fila para arquivar:",
     "archive": "Arquivar",
     "unarchive": "Reativar",
     "archivedBadge": "Arquivada",

@@ -75,7 +75,13 @@ export interface SubscriptionStatus {
   planMetadata?: PlanMetadata | null;
   planName?: string;
   // Billing por marca ativa (FEATURE_BRAND_BILLING) — null quando a flag server-side está off
-  brandQuota?: { used: number; max: number | null; tier: string } | null;
+  brandQuota?: {
+    used: number;
+    max: number | null;
+    tier: string;
+    graceUntil?: string | null;
+    atRisk?: { id: string; name: string }[];
+  } | null;
   // Seats de editor em uso (Fase 4 task 4.5): total de editores across marcas
   // do owner vs a política per-brand do plano. `used` foi renomeado para
   // `totalEditors` no backend para não colidir com o `used` de brandQuota;

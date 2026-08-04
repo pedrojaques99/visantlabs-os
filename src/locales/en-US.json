@@ -1376,6 +1376,7 @@
     "limitMessage": "Active brand limit reached, {used}/{max}. Upgrade your plan to activate more brands.",
     "graceMessage": "You're over your new plan's brand limit. In {days} day{plural} the excess brands get archived. Upgrade to keep them all active.",
     "graceCta": "Keep my brands",
+    "graceAtRisk": "Queued for archiving:",
     "archive": "Archive",
     "unarchive": "Reactivate",
     "archivedBadge": "Archived",

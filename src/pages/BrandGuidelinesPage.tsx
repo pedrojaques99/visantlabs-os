@@ -420,9 +420,12 @@ const BrandQuotaMeter = ({
  */
 const BrandGraceBanner = ({
   graceUntil,
+  atRisk,
   onUpgrade,
 }: {
   graceUntil: string;
+  /** Marcas que o cron vai arquivar, na ordem dele. Mesma lista do e-mail. */
+  atRisk?: { id: string; name: string }[];
   onUpgrade: () => void;
 }) => {
   const { t } = useTranslation();
@@ -431,19 +434,30 @@ const BrandGraceBanner = ({
   const days = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 86_400_000));
 
   return (
-    <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
-      <AlertTriangle size={16} className="text-warning shrink-0" />
-      <p className="text-sm text-foreground flex-1">
-        {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
-      </p>
-      <Button
-        variant="subtle"
-        size="sm"
-        className="h-7 px-3 text-xs shrink-0 self-start sm:self-auto"
-        onClick={onUpgrade}
-      >
-        {t('brandQuota.graceCta')}
-      </Button>
+    <div className="mb-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <AlertTriangle size={16} className="text-warning shrink-0" />
+        <p className="text-sm text-foreground flex-1">
+          {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
+        </p>
+        <Button
+          variant="subtle"
+          size="sm"
+          className="h-7 px-3 text-xs shrink-0 self-start sm:self-auto"
+          onClick={onUpgrade}
+        >
+          {t('brandQuota.graceCta')}
+        </Button>
+      </div>
+      {/* O e-mail de downgrade nomeia as marcas em risco; a tela precisa nomear
+          as MESMAS, senão o usuário chega pelo CTA "escolher quais manter" e vê
+          todas iguais, sem saber no que agir. */}
+      {atRisk && atRisk.length > 0 && (
+        <p className="mt-2 pl-0 sm:pl-7 text-xs text-muted-foreground">
+          {t('brandQuota.graceAtRisk')}{' '}
+          <span className="text-foreground">{atRisk.map((b) => b.name).join(', ')}</span>
+        </p>
+      )}
     </div>
   );
 };
@@ -871,7 +885,11 @@ export const BrandGuidelinesPage: React.FC = () => {
             </div>
 
             {FEATURE_BRAND_BILLING && brandQuota?.graceUntil && (
-              <BrandGraceBanner graceUntil={brandQuota.graceUntil} onUpgrade={handleQuotaUpgrade} />
+              <BrandGraceBanner
+                graceUntil={brandQuota.graceUntil}
+                atRisk={brandQuota.atRisk}
+                onUpgrade={handleQuotaUpgrade}
+              />
             )}
 
             {/* Content — dashboard/list. The per-brand editor lives in the unified

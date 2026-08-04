@@ -14,7 +14,16 @@
 import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { flagEnabled } from './featureFlags.js';
-import { sendBrandQuotaDowngradeEmail } from '../services/emailService.js';
+import {
+  sendBrandQuotaDowngradeEmail,
+  sendBrandQuotaReminderEmail,
+  sendBrandQuotaArchivedEmail,
+} from '../services/emailService.js';
+
+export interface AtRiskBrand {
+  id: string;
+  name: string;
+}
 
 export interface BrandQuota {
   /** Active (non-archived) brands OWNED by the user. Shared brands count on the owner. */
@@ -29,6 +38,42 @@ export interface BrandQuota {
    * Alimenta o banner de grace no frontend (RCD §3.5 — moldura de perda).
    */
   graceUntil?: string | null;
+  /**
+   * As marcas que o cron arquiva quando a janela expirar, na ordem em que ele
+   * vai pegá-las. Só é preenchido durante uma janela de grace.
+   *
+   * Existe porque o e-mail de downgrade nomeia as marcas em risco e a tela não
+   * nomeava: o usuário chegava pelo CTA "escolher quais manter" e via todas as
+   * marcas iguais. Vem do MESMO seletor que o e-mail e o cron usam
+   * (selectExcessBrands), então tela, e-mail e execução nunca divergem.
+   */
+  atRisk?: AtRiskBrand[];
+}
+
+/**
+ * SSoT de "quais marcas caem primeiro". Menos recentemente atualizada primeiro,
+ * que é a leitura de "menos usada" que o e-mail promete ao usuário.
+ *
+ * Três lugares precisam desta mesma lista (o aviso por e-mail, a quota que a
+ * tela lê, e o cron que executa). Ter a consulta copiada nos três era garantia
+ * de divergir com o tempo: bastava um mudar o `orderBy` e o e-mail passaria a
+ * mentir sobre o que ia acontecer.
+ */
+async function selectExcessBrands(userId: string, excess: number): Promise<AtRiskBrand[]> {
+  if (excess <= 0) return [];
+  const rows = await prisma.brandGuideline.findMany({
+    where: { userId, ...ACTIVE_BRAND_WHERE },
+    orderBy: { updatedAt: 'asc' },
+    take: excess,
+    select: { id: true, identity: true },
+  });
+  return rows.map((b) => {
+    const name = (b.identity as any)?.name;
+    return {
+      id: b.id,
+      name: typeof name === 'string' && name.trim() ? name.trim() : 'Marca sem nome',
+    };
+  });
 }
 
 /**
@@ -188,7 +233,12 @@ export async function getBrandQuota(user: QuotaUserShape): Promise<BrandQuota> {
       ? meta.brandQuotaGraceUntil
       : null;
 
-  return { used, max, tier, graceUntil };
+  // Só durante a janela: fora dela a consulta extra não paga o custo, e a tela
+  // não tem o que destacar.
+  const excess = max === null ? 0 : Math.max(0, used - max);
+  const atRisk = graceUntil && excess > 0 ? await selectExcessBrands(userId, excess) : undefined;
+
+  return { used, max, tier, graceUntil, atRisk };
 }
 
 /** Load the user and compute the quota. */
@@ -494,27 +544,26 @@ export async function enforceBrandQuotaOnDowngrade(
 
     // Warn the user ONCE per fresh grace window (not on every repeated webhook).
     // Non-blocking and non-throwing — the in-app banner is the fallback notice.
+    //
+    // Um envio que falha não pode sumir em silêncio: a janela de 7 dias corre
+    // igual, e o usuário perderia acesso de edição sem NUNCA ter sido avisado.
+    // Marcamos `brandQuotaNoticePending` e o cron reenvia até passar.
     if (user.email && graceUntil !== priorGrace) {
+      let delivered = false;
       try {
-        const atRisk = await prisma.brandGuideline.findMany({
-          where: { userId, ...ACTIVE_BRAND_WHERE },
-          orderBy: { updatedAt: 'asc' },
-          take: excess,
-          select: { identity: true },
-        });
-        const atRiskBrands = atRisk.map((b) => {
-          const name = (b.identity as any)?.name;
-          return typeof name === 'string' && name.trim() ? name.trim() : 'Marca sem nome';
-        });
-        await sendBrandQuotaDowngradeEmail({
+        delivered = await sendBrandQuotaDowngradeEmail({
           email: user.email,
           name: user.name ?? undefined,
-          atRiskBrands,
+          atRiskBrands: (await selectExcessBrands(userId, excess)).map((b) => b.name),
           keepCount: quota.max ?? 0,
           graceUntil,
         });
       } catch (err: any) {
         console.error('[BrandQuota] downgrade email failed:', err?.message || err);
+      }
+      if (!delivered) {
+        meta.brandQuotaNoticePending = true;
+        await prisma.user.update({ where: { id: userId }, data: { metadata: meta } });
       }
     }
 
@@ -522,12 +571,130 @@ export async function enforceBrandQuotaOnDowngrade(
   }
 
   // Back within limits — clear any pending grace window.
-  if (meta.brandQuotaGraceUntil !== undefined || meta.brandQuotaExcess !== undefined) {
-    delete meta.brandQuotaGraceUntil;
-    delete meta.brandQuotaExcess;
+  if (GRACE_META_KEYS.some((k) => meta[k] !== undefined)) {
+    clearGraceMeta(meta);
     await prisma.user.update({ where: { id: userId }, data: { metadata: meta } });
   }
   return { excess: 0, graceUntil: null };
+}
+
+/**
+ * Tudo que uma janela de grace escreve na metadata do usuário. Some junto, senão
+ * um `brandQuotaReminderSentFor` órfão faz o próximo downgrade nascer sem
+ * lembrete.
+ */
+const GRACE_META_KEYS = [
+  'brandQuotaGraceUntil',
+  'brandQuotaExcess',
+  'brandQuotaNoticePending',
+  'brandQuotaReminderSentFor',
+] as const;
+
+function clearGraceMeta(meta: Record<string, any>): void {
+  for (const k of GRACE_META_KEYS) delete meta[k];
+}
+
+/** Manda o lembrete quando faltarem 48h ou menos para o prazo. */
+const REMINDER_LEAD_MS = 48 * 60 * 60 * 1000;
+
+/**
+ * Segunda metade do cron (roda ANTES de archiveExcessBrands): cuida de quem
+ * ainda está dentro da janela.
+ *
+ * Duas coisas que faltavam na jornada:
+ * - o aviso inicial que falhou no webhook nunca era reenviado, e a janela corria
+ *   igual. Aqui ele é retomado enquanto houver prazo.
+ * - entre o dia 0 e o arquivamento havia 7 dias de silêncio. O lembrete de 48h
+ *   sai uma vez por janela, marcado por `brandQuotaReminderSentFor` (guarda o
+ *   graceUntil, então um downgrade novo ganha lembrete novo).
+ */
+export async function sendBrandQuotaReminders(
+  now: Date = new Date()
+): Promise<{ noticesRetried: number; remindersSent: number }> {
+  if (!brandBillingEnabled()) return { noticesRetried: 0, remindersSent: 0 };
+
+  await connectToMongoDB();
+  const db = getDb();
+
+  const nowIso = now.toISOString();
+  const dueUsers = await db
+    .collection('users')
+    .find(
+      {
+        'metadata.brandQuotaGraceUntil': { $gt: nowIso },
+        $or: [
+          { 'metadata.brandQuotaNoticePending': true },
+          {
+            'metadata.brandQuotaGraceUntil': {
+              $gt: nowIso,
+              $lte: new Date(now.getTime() + REMINDER_LEAD_MS).toISOString(),
+            },
+          },
+        ],
+      },
+      { projection: { _id: 1 } }
+    )
+    .limit(200)
+    .toArray();
+
+  let noticesRetried = 0;
+  let remindersSent = 0;
+
+  for (const doc of dueUsers) {
+    const userId = doc._id.toString();
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, name: true, metadata: true },
+      });
+      if (!user?.email) continue;
+
+      const meta = { ...((user.metadata as Record<string, any> | null) || {}) };
+      const graceUntil = meta.brandQuotaGraceUntil as string;
+
+      // Recalcula: o usuário pode ter arquivado à mão ou feito upgrade.
+      const quota = await getBrandQuotaForUserId(userId);
+      const excess = quota.max === null ? 0 : Math.max(0, quota.used - quota.max);
+      if (excess <= 0) {
+        clearGraceMeta(meta);
+        await prisma.user.update({ where: { id: userId }, data: { metadata: meta } });
+        continue;
+      }
+
+      const atRiskBrands = (await selectExcessBrands(userId, excess)).map((b) => b.name);
+      const common = {
+        email: user.email,
+        name: user.name ?? undefined,
+        atRiskBrands,
+        keepCount: quota.max ?? 0,
+        graceUntil,
+      };
+
+      if (meta.brandQuotaNoticePending === true) {
+        if (await sendBrandQuotaDowngradeEmail(common)) {
+          delete meta.brandQuotaNoticePending;
+          noticesRetried++;
+        }
+      } else if (
+        meta.brandQuotaReminderSentFor !== graceUntil &&
+        new Date(graceUntil).getTime() - now.getTime() <= REMINDER_LEAD_MS
+      ) {
+        if (await sendBrandQuotaReminderEmail(common)) {
+          meta.brandQuotaReminderSentFor = graceUntil;
+          remindersSent++;
+        }
+      }
+
+      await prisma.user.update({ where: { id: userId }, data: { metadata: meta } });
+    } catch (err: any) {
+      console.error('[BrandQuota] reminder pass failed for user', userId, err?.message);
+    }
+  }
+
+  if (noticesRetried || remindersSent) {
+    console.log('[BrandQuota] Reminder pass done', { noticesRetried, remindersSent });
+  }
+  return { noticesRetried, remindersSent };
 }
 
 /**
@@ -535,23 +702,30 @@ export async function enforceBrandQuotaOnDowngrade(
  * of users whose grace window expired. Archives the LEAST recently updated
  * first. Never deletes anything.
  */
+const ARCHIVE_BATCH = 200;
+
 export async function archiveExcessBrands(
   now: Date = new Date()
-): Promise<{ usersProcessed: number; brandsArchived: number }> {
-  if (!brandBillingEnabled()) return { usersProcessed: 0, brandsArchived: 0 };
+): Promise<{ usersProcessed: number; brandsArchived: number; usersRemaining: number }> {
+  if (!brandBillingEnabled())
+    return { usersProcessed: 0, brandsArchived: 0, usersRemaining: 0 };
 
   await connectToMongoDB();
   const db = getDb();
 
   // ISO strings compare lexicographically — $lte works for both Date and ISO string values.
+  const overdue = { 'metadata.brandQuotaGraceUntil': { $lte: now.toISOString() } };
   const dueUsers = await db
     .collection('users')
-    .find(
-      { 'metadata.brandQuotaGraceUntil': { $lte: now.toISOString() } },
-      { projection: { _id: 1 } }
-    )
-    .limit(200)
+    .find(overdue, { projection: { _id: 1 } })
+    .limit(ARCHIVE_BATCH)
     .toArray();
+  // Quantos ficaram para a próxima execução. Sem isso, uma fila maior que o lote
+  // se parece com "acabou o trabalho" no log e ninguém percebe o atraso.
+  const usersRemaining =
+    dueUsers.length < ARCHIVE_BATCH
+      ? 0
+      : Math.max(0, (await db.collection('users').countDocuments(overdue)) - dueUsers.length);
 
   let usersProcessed = 0;
   let brandsArchived = 0;
@@ -564,39 +738,58 @@ export async function archiveExcessBrands(
       const quota = await getBrandQuotaForUserId(userId);
       const excess = quota.max === null ? 0 : Math.max(0, quota.used - quota.max);
 
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true, metadata: true },
+      });
+      const meta = { ...((user?.metadata as Record<string, any> | null) || {}) };
+
+      let victims: AtRiskBrand[] = [];
       if (excess > 0) {
-        const victims = await prisma.brandGuideline.findMany({
-          where: { userId, ...ACTIVE_BRAND_WHERE },
-          orderBy: { updatedAt: 'asc' },
-          take: excess,
-          select: { id: true },
-        });
+        victims = await selectExcessBrands(userId, excess);
         if (victims.length > 0) {
           await prisma.brandGuideline.updateMany({
             where: { id: { in: victims.map((v) => v.id) } },
             data: { status: 'archived', archivedAt: now },
           });
           brandsArchived += victims.length;
+          // Quem foi arquivado POR BILLING, para separar de quem o usuário
+          // arquivou à mão — é o que um upgrade precisa saber para devolver.
+          meta.brandQuotaArchived = {
+            at: now.toISOString(),
+            ids: victims.map((v) => v.id),
+          };
         }
       }
 
       // Grace consumed either way — clear the flags.
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { metadata: true },
-      });
-      const meta = { ...((user?.metadata as Record<string, any> | null) || {}) };
-      delete meta.brandQuotaGraceUntil;
-      delete meta.brandQuotaExcess;
+      clearGraceMeta(meta);
       await prisma.user.update({ where: { id: userId }, data: { metadata: meta } });
       usersProcessed++;
+
+      // O arquivamento era silencioso: o usuário descobria sozinho que perdeu
+      // acesso de edição. Best-effort, nunca derruba o cron.
+      if (user?.email && victims.length > 0) {
+        await sendBrandQuotaArchivedEmail({
+          email: user.email,
+          name: user.name ?? undefined,
+          archivedBrands: victims.map((v) => v.name),
+          keepCount: quota.max ?? 0,
+        }).catch((err: any) =>
+          console.error('[BrandQuota] archived notice failed:', err?.message || err)
+        );
+      }
     } catch (err: any) {
       console.error('[BrandQuota] archiveExcessBrands failed for user', userId, err?.message);
     }
   }
 
   if (usersProcessed > 0) {
-    console.log('[BrandQuota] Grace enforcement done', { usersProcessed, brandsArchived });
+    console.log('[BrandQuota] Grace enforcement done', {
+      usersProcessed,
+      brandsArchived,
+      usersRemaining,
+    });
   }
-  return { usersProcessed, brandsArchived };
+  return { usersProcessed, brandsArchived, usersRemaining };
 }

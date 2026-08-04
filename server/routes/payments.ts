@@ -565,6 +565,7 @@ router.get(
         max: number | null;
         tier: string;
         graceUntil?: string | null;
+        atRisk?: { id: string; name: string }[];
       } | null = brandQuotaResult.status === 'fulfilled' ? brandQuotaResult.value : null;
       const seatQuota: { totalEditors: number; maxPerBrand: number | null; tier: string } | null =
         seatQuotaResult.status === 'fulfilled' ? seatQuotaResult.value : null;
