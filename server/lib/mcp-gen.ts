@@ -504,6 +504,26 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
     auth: true,
   },
   {
+    name: 'brand-guidelines-logo-rules',
+    description:
+      'Derive logo usage rules from the logo file itself: clear space, minimum reproduction size (screen + print), and which brand colors it may sit on (WCAG contrast). Deterministic measurement, not an AI guess. Runs automatically on upload — call this to backfill an older logo or to switch the clear-space module.',
+    required: ['id', 'logoId'],
+    properties: {
+      id: { type: 'string' },
+      logoId: { type: 'string' },
+      module: {
+        type: 'string',
+        enum: ['capHeight', 'halfCapHeight', 'stem'],
+        default: 'capHeight',
+      },
+      safety: { type: 'number', minimum: 1, maximum: 4, default: 1 },
+      persist: { type: 'boolean', default: true },
+    },
+    cost: 'free',
+    category: 'brand-guidelines',
+    auth: true,
+  },
+  {
     name: 'brand-guidelines-delete-logo',
     description: 'Delete a logo from a brand guideline by its logo ID.',
     required: ['id', 'logoId'],
@@ -515,7 +535,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   {
     name: 'brand-guidelines-upload-media',
     description:
-      'Upload a media asset (image or PDF) to a brand guideline media kit. Accepts base64-encoded data or a public URL.',
+      'Upload ONE media asset (image or PDF) to a brand guideline media kit, as base64 data or a public URL. For more than 2 files, or files above ~500 KB, use brand-guidelines-media-upload-urls instead — base64 puts the whole file through the conversation.',
     required: ['id'],
     properties: {
       id: { type: 'string' },
@@ -523,6 +543,54 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
       url: { type: 'string' },
       type: { type: 'string', enum: ['image', 'pdf'], default: 'image' },
       label: { type: 'string' },
+    },
+    cost: 'free',
+    category: 'brand-guidelines',
+    auth: true,
+  },
+  {
+    name: 'brand-guidelines-media-upload-urls',
+    description:
+      'Mint direct-to-storage upload URLs for a batch of local files (max 50). Returns one presignedUrl per file; PUT each file to its URL (e.g. curl -X PUT --data-binary @file), then call brand-guidelines-media-commit with the mediaIds. Use this for local files: the bytes never pass through the conversation.',
+    required: ['id', 'files'],
+    properties: {
+      id: { type: 'string' },
+      files: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            filename: { type: 'string' },
+            contentType: { type: 'string' },
+            size: { type: 'number' },
+            label: { type: 'string' },
+          },
+        },
+      },
+    },
+    cost: 'free',
+    category: 'brand-guidelines',
+    auth: true,
+  },
+  {
+    name: 'brand-guidelines-media-commit',
+    description:
+      'Register assets already uploaded via brand-guidelines-media-upload-urls into the brand media kit. Fingerprints each file server-side, so duplicates (including files already present as logos) are reported and skipped. Returns added, duplicates, failed and the new completeness score.',
+    required: ['id', 'items'],
+    properties: {
+      id: { type: 'string' },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            mediaId: { type: 'string' },
+            url: { type: 'string' },
+            label: { type: 'string' },
+            type: { type: 'string', enum: ['image', 'pdf'] },
+          },
+        },
+      },
     },
     cost: 'free',
     category: 'brand-guidelines',
@@ -610,6 +678,41 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
     cost: 'free',
     category: 'brand-guidelines',
     auth: false,
+  },
+  {
+    name: 'figma-extract-text',
+    description:
+      'Extract all text from a Figma file as markdown, in canvas reading order and grouped by page and frame. This is the raw material for a brand guideline: pipe the returned markdown straight into brand-guidelines-ingest (source=text). Works on any file your Figma token can read — no plugin and no open tab required.',
+    required: ['fileId'],
+    properties: { fileId: { type: 'string' } },
+    cost: 'free',
+    category: 'brand-guidelines',
+    auth: true,
+  },
+  {
+    name: 'brand-guidelines-figma-preview',
+    description:
+      'Dry-run for brand-guidelines-figma-sync: reports what the linked Figma file actually contains (color variables, text styles, components) and recommends which import path pays — "variables" when the file has a real token system, "text" when it does not (e.g. variables named after their own hex values). Reads only; changes nothing.',
+    required: ['id'],
+    properties: { id: { type: 'string' } },
+    cost: 'free',
+    category: 'brand-guidelines',
+    auth: true,
+  },
+  {
+    name: 'brand-guidelines-figma-sync',
+    description:
+      'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma VARIABLES and styles. Call brand-guidelines-figma-preview FIRST: most real files have no variable system, and on those this sync imports almost nothing. Requires Figma token configured in user settings.',
+    required: ['id', 'fileId'],
+    properties: {
+      id: { type: 'string' },
+      fileId: { type: 'string' },
+      includeVariables: { type: 'boolean', default: true },
+      includeComponents: { type: 'boolean', default: false },
+    },
+    cost: 'free',
+    category: 'brand-guidelines',
+    auth: true,
   },
 
   // ---- Canvas ----

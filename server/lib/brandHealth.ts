@@ -132,6 +132,28 @@ export function buildEmptyBrandHealthReport(bg: BrandGuideline): BrandHealthRepo
   };
 }
 
+/**
+ * Floor for `promptTokenCount` on a non-empty brand.
+ *
+ * SYSTEM alone is ~340 tokens, so a report generated from the rubric and nothing
+ * else lands at ~350 — which is exactly what shipped for months after
+ * chatWithAIContext started trading `context` away for `systemInstruction`. The
+ * model dutifully invented a plausible brand and scored it. A brand with any
+ * real content clears 1500 easily; anything under it means the context did not
+ * arrive, and a confident audit of nothing is worse than no audit at all.
+ */
+const MIN_CONTEXT_TOKENS = 1500;
+
+export class BrandHealthContextError extends Error {
+  constructor(public readonly inputTokens: number | undefined) {
+    super(
+      `Brand context did not reach the model (input=${inputTokens ?? 'unknown'} tokens, ` +
+        `floor=${MIN_CONTEXT_TOKENS}). Refusing to return an audit the model could not have made.`
+    );
+    this.name = 'BrandHealthContextError';
+  }
+}
+
 export async function runBrandHealth(
   guideline: BrandGuideline,
   options: { apiKey?: string } = {}
@@ -150,6 +172,16 @@ export async function runBrandHealth(
       systemInstruction: SYSTEM,
     }
   );
+
+  // Verify the context actually arrived BEFORE parsing. A findings-shaped JSON
+  // is not evidence the model read the brand — that is precisely how this failed.
+  if (
+    typeof result.inputTokens === 'number' &&
+    result.inputTokens > 0 &&
+    result.inputTokens < MIN_CONTEXT_TOKENS
+  ) {
+    throw new BrandHealthContextError(result.inputTokens);
+  }
 
   const raw: string = (result.text || '').trim();
   const parsed = parseJsonReport(raw);

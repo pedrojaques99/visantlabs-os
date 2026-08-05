@@ -80,6 +80,143 @@ function inferTypographyRole(name: string): string {
   return 'custom';
 }
 
+// ═══ Text extraction ═══
+
+export interface ExtractedFigmaText {
+  fileName: string;
+  markdown: string;
+  /** Pages that produced text, in canvas order. */
+  pages: Array<{ name: string; frames: number; characters: number }>;
+  textNodes: number;
+  characters: number;
+  truncated: boolean;
+}
+
+/** Nodes walked before we stop — a brand deck is hundreds, a design system is tens of thousands. */
+const MAX_TEXT_NODES = 4000;
+
+/** Frame/section-ish containers whose name is worth a heading. */
+const CONTAINER_TYPES = new Set(['FRAME', 'SECTION', 'COMPONENT', 'COMPONENT_SET', 'GROUP']);
+
+function isAutoName(name: string): boolean {
+  return /^(frame|group|rectangle|ellipse|vector|slice|component|instance)[\s_-]*\d*$/i.test(
+    String(name || '').trim()
+  );
+}
+
+/** Escape the few characters that would turn extracted copy into accidental markdown. */
+function escapeMd(s: string): string {
+  return s.replace(/([#*_`>[\]])/g, '\\$1');
+}
+
+/**
+ * Read every TEXT node in a Figma file and render it as markdown.
+ *
+ * This is the piece that turns a Figma file into raw material for a guideline,
+ * and it existed only as a button in the plugin that downloaded a file on the
+ * user's machine — an agent could not reach it and had to ask a human to click.
+ * The plugin runs it inside the sandbox against the open document; the REST API
+ * gives the same text for any file the user's token can read, with no plugin and
+ * no open tab, which is what makes it usable headless.
+ *
+ * Nodes are emitted in canvas reading order (top-to-bottom, then left-to-right)
+ * so a deck comes out in the order a person would read it, not in Figma's
+ * internal child order.
+ */
+export async function extractTextAsMarkdown(
+  fileKey: string,
+  token: string
+): Promise<ExtractedFigmaText> {
+  // No `depth` — the shallow fetch used elsewhere stops above every TEXT node.
+  const response = await fetch(`${FIGMA_API_BASE}/files/${fileKey}`, {
+    headers: { 'X-Figma-Token': token },
+  });
+  if (!response.ok) {
+    throw new Error(`Figma API error: ${response.status} - ${await response.text()}`);
+  }
+  const data: any = await response.json();
+
+  const fileName: string = data?.name || 'Figma file';
+  const lines: string[] = [`# ${fileName}`, ''];
+  const pages: ExtractedFigmaText['pages'] = [];
+  let textNodes = 0;
+  let characters = 0;
+  let truncated = false;
+
+  /** Collect TEXT descendants of a node, in reading order. */
+  const collectText = (node: any, out: Array<{ x: number; y: number; text: string }>): void => {
+    if (!node || truncated) return;
+    if (node.visible === false) return;
+    if (node.type === 'TEXT') {
+      const chars = String(node.characters || '').trim();
+      if (chars) {
+        if (textNodes >= MAX_TEXT_NODES) {
+          truncated = true;
+          return;
+        }
+        textNodes++;
+        characters += chars.length;
+        const box = node.absoluteBoundingBox || {};
+        out.push({ x: Number(box.x) || 0, y: Number(box.y) || 0, text: chars });
+      }
+      return;
+    }
+    for (const child of node.children || []) collectText(child, out);
+  };
+
+  for (const page of data?.document?.children || []) {
+    if (page?.type !== 'CANVAS') continue;
+    const pageLines: string[] = [];
+    let pageChars = 0;
+    let frameCount = 0;
+
+    for (const child of page.children || []) {
+      const nodes: Array<{ x: number; y: number; text: string }> = [];
+      collectText(child, nodes);
+      if (!nodes.length) continue;
+
+      // Reading order: rows top-to-bottom, then left-to-right within a row.
+      nodes.sort((a, b) => (Math.abs(a.y - b.y) > 8 ? a.y - b.y : a.x - b.x));
+
+      frameCount++;
+      if (CONTAINER_TYPES.has(child.type) && child.name && !isAutoName(child.name)) {
+        pageLines.push(`### ${escapeMd(child.name)}`, '');
+      }
+      for (const n of nodes) {
+        pageChars += n.text.length;
+        // Multi-line text nodes stay one block — a paragraph is one thought.
+        pageLines.push(escapeMd(n.text.replace(/\r\n/g, '\n')), '');
+      }
+      if (truncated) break;
+    }
+
+    if (pageLines.length) {
+      lines.push(`## ${escapeMd(page.name || 'Page')}`, '', ...pageLines);
+      pages.push({ name: page.name || 'Page', frames: frameCount, characters: pageChars });
+    }
+    if (truncated) break;
+  }
+
+  if (truncated) {
+    lines.push(
+      '',
+      `_Truncated at ${MAX_TEXT_NODES} text nodes. Extract specific pages for the rest._`
+    );
+  }
+
+  return {
+    fileName,
+    markdown: lines
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim(),
+    pages,
+    textNodes,
+    characters,
+    truncated,
+  };
+}
+
 // ═══ API Functions ═══
 
 /**

@@ -870,6 +870,55 @@ export async function generateMockupImageUploadUrl(
 }
 
 /**
+ * Presigned PUT for a brand media/logo asset.
+ *
+ * The base64 path (`uploadBrandMedia`) makes the caller carry the bytes. For an
+ * MCP agent that means the file crosses the model context: fourteen 1 MB assets
+ * is ~15 MB of base64 for something the model never needs to read. This mints a
+ * URL the client PUTs to directly, so the bytes go disk → R2 and the agent only
+ * handles ids.
+ *
+ * Same key convention as uploadBrandMedia (`brands/{userId}/{guidelineId}/{id}`)
+ * so both paths land in the same prefix and storage accounting stays whole.
+ * Unlike that path there is no webp re-encode — nothing here ever sees the bytes.
+ */
+export async function generateBrandMediaUploadUrl(
+  userId: string,
+  guidelineId: string,
+  mediaId: string,
+  contentType: string = 'image/png',
+  expiresIn: number = 3600
+): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
+
+  const ct = typeof contentType === 'string' ? contentType : 'image/png';
+  const exp =
+    typeof expiresIn === 'number' && Number.isFinite(expiresIn) && expiresIn > 0
+      ? Math.min(Math.floor(expiresIn), 86400)
+      : 3600;
+
+  let extension = 'png';
+  if (ct.includes('jpeg') || ct.includes('jpg')) extension = 'jpg';
+  else if (ct.includes('webp')) extension = 'webp';
+  else if (ct.includes('gif')) extension = 'gif';
+  else if (ct.includes('pdf')) extension = 'pdf';
+  else if (ct.includes('svg')) extension = 'svg';
+
+  const key = `brands/${userId}/${guidelineId}/${mediaId}.${extension}`;
+  const client = getR2Client();
+
+  try {
+    const command = new PutObjectCommand({ Bucket: bucketName, Key: key, ContentType: ct });
+    const presignedUrl = await getSignedUrl(client, command, { expiresIn: exp });
+    return { presignedUrl, finalUrl: `${publicUrl}/${key}`, key };
+  } catch (error: unknown) {
+    throw new Error(`Failed to generate presigned URL: ${getErrorMessage(error)}`);
+  }
+}
+
+/**
  * Generate presigned URL for canvas video upload
  */
 export async function generateCanvasVideoUploadUrl(

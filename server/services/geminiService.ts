@@ -1940,10 +1940,17 @@ export const chatWithAIContext = async (
     async () => {
       const ai = getAI(apiKey);
 
-      // Use the provided niche instruction or fallback to the generic intelligent one
-      const systemInstruction =
-        requestedSystemInstruction ||
-        `${GENERIC_SYSTEM_PROMPT}\n\nUTILIZE O CONTEXTO ABAIXO:\n${context}`;
+      // Use the provided niche instruction or fallback to the generic intelligent one.
+      //
+      // `context` is ALWAYS appended, never traded away for the caller's
+      // systemInstruction. Choosing between the two (the old `A || B` shape) made
+      // every caller that passed both silently audit an empty prompt — the brand
+      // health check shipped for months returning confident findings about a
+      // brand the model had never seen, at a telltale ~348 input tokens.
+      const baseInstruction = requestedSystemInstruction || GENERIC_SYSTEM_PROMPT;
+      const systemInstruction = context?.trim()
+        ? `${baseInstruction}\n\nUTILIZE O CONTEXTO ABAIXO:\n${context}`
+        : baseInstruction;
 
       const sanitizedQuery = stripHtml(query.substring(0, 4000));
 

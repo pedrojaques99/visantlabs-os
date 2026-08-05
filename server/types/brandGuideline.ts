@@ -1,5 +1,9 @@
 // server/types/brandGuideline.ts
 
+import type { LogoRules } from '../lib/brand/logoRules.js';
+
+export type { LogoRules };
+
 export interface BrandGuidelineIdentity {
   name?: string;
   website?: string;
@@ -24,6 +28,16 @@ export type {
 
 import type { BrandAssetAnalysis, BrandAssetKind } from '../lib/brand/visualSignature.js';
 
+// Single scorer for the whole product — the pill, the API and the MCP all read
+// the same 18 weighted rules. See calculateCompleteness below.
+import {
+  computeBrandCompleteness,
+  type CompletenessReport,
+} from '../../src/lib/brandCompleteness.js';
+import type { BrandGuideline as FigmaBrandGuideline } from '../../src/lib/figma-types.js';
+
+export type { CompletenessReport, CompletenessRule } from '../../src/lib/brandCompleteness.js';
+
 export interface BrandGuidelineLogo {
   id: string;
   url: string;
@@ -36,6 +50,11 @@ export interface BrandGuidelineLogo {
   figmaFileKey?: string;
   figmaNodeId?: string;
   analysis?: BrandAssetAnalysis;
+  /**
+   * Clear space, minimum size and background matrix, measured from this logo's
+   * own raster. Derived on upload; re-derivable via POST /logos/:logoId/rules.
+   */
+  rules?: LogoRules;
   hash?: string;
   size?: number;
   phash?: string;
@@ -257,22 +276,51 @@ export interface BrandGuideline {
 /**
  * Calculate completeness percentage based on filled sections.
  */
+/**
+ * Persisted completeness score — delegates to the SAME scorer the UI pill uses.
+ *
+ * This function used to be 14 independent checkboxes, each worth 7.14 points.
+ * That made the number lie in both directions: writing three personas, twelve
+ * competitors, a SWOT and a full graphic system moved it exactly one checkbox
+ * (57 → 64, because `personas`, `marketResearch`, `graphicSystem`, `positioning`
+ * and `copyExamples` were not checkboxes at all), while `gradients`, `shadows`,
+ * `motion` and `borders` — four fields that barely touch generation quality —
+ * were worth 28.5% of the bar between them.
+ *
+ * Meanwhile `src/lib/brandCompleteness.ts` already scored the same brand with 18
+ * weighted rules AND returned the missing ones. Two scorers, two numbers, one
+ * brand: the pill said one thing and the API/MCP said another. Reusing it is
+ * what makes the number mean the same thing everywhere it is shown.
+ */
 export function calculateCompleteness(bg: BrandGuideline): number {
-  const sections = [
-    bg.identity?.name ? 1 : 0,
-    (bg.logos?.length ?? 0) > 0 ? 1 : 0,
-    (bg.colors?.length ?? 0) > 0 ? 1 : 0,
-    (bg.typography?.length ?? 0) > 0 ? 1 : 0,
-    bg.tags && Object.keys(bg.tags).length > 0 ? 1 : 0,
-    bg.guidelines?.voice ? 1 : 0,
-    bg.strategy?.manifesto ? 1 : 0,
-    bg.strategy?.coreMessage?.product ? 1 : 0,
-    (bg.strategy?.pillars?.length ?? 0) > 0 ? 1 : 0,
-    (bg.strategy?.archetypes?.length ?? 0) > 0 ? 1 : 0,
-    (bg.gradients?.length ?? 0) > 0 ? 1 : 0,
-    (bg.shadows?.length ?? 0) > 0 ? 1 : 0,
-    bg.motion?.easing ? 1 : 0,
-    (bg.borders?.length ?? 0) > 0 ? 1 : 0,
-  ];
-  return Math.round((sections.reduce((a, b) => a + b, 0) / sections.length) * 100);
+  return assessCompleteness(bg).score;
+}
+
+/**
+ * Full completeness report: score + the rules that are still missing.
+ *
+ * A bare number tells the owner they are at 64 and nothing about where to spend
+ * the next hour. Callers that render or return completeness should prefer this.
+ */
+export function assessCompleteness(bg: BrandGuideline): CompletenessReport {
+  // The two BrandGuideline shapes (this file's persisted type and figma-types')
+  // describe the same Mongo document; the scorer only reads optional fields.
+  return computeBrandCompleteness(bg as unknown as FigmaBrandGuideline);
+}
+
+/**
+ * Extraction metadata with a freshly-computed completeness.
+ *
+ * SSoT for "the brand changed, restate how complete it is". Every write path
+ * must go through this: `POST /:id/logos` and `POST /:id/media` did not, which
+ * is why uploading a logo and fourteen media files left the score frozen — the
+ * assets were on the record and the number had never been asked again.
+ */
+export function recomputeExtraction(bg: BrandGuideline): { sources: any[]; completeness: number } {
+  const previous = (bg as any).extraction || {};
+  return {
+    ...previous,
+    sources: Array.isArray(previous.sources) ? previous.sources : [],
+    completeness: calculateCompleteness(bg),
+  };
 }

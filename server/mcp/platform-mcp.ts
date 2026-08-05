@@ -2653,11 +2653,11 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         if (!Object.keys(updateData).length) return ERR.validation('No fields provided to update');
 
         // Recalculate completeness
-        const { calculateCompleteness } = await import('../types/brandGuideline.js');
+        const { assessCompleteness } = await import('../types/brandGuideline.js');
         const fullData = { ...existing, ...updateData } as any;
-        const completeness = calculateCompleteness(fullData);
+        const assessment = assessCompleteness(fullData);
         const extraction = (updateData.extraction || existing.extraction || { sources: [] }) as any;
-        extraction.completeness = completeness;
+        extraction.completeness = assessment.score;
         updateData.extraction = extraction;
 
         const updated = await prisma.brandGuideline.update({
@@ -2686,10 +2686,20 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           /* webhook dispatch is best-effort */
         }
 
+        // A bare score tells the caller it is at 64 and nothing about where the
+        // next hour should go. `missing` is the same list the UI pill renders,
+        // heaviest rule first, so the agent and the owner chase the same gaps.
         return jsonResponse({
           id: updated.id,
           updated: Object.keys(updateData),
           guideline: { id: updated.id, identity: updated.identity },
+          completeness: {
+            score: assessment.score,
+            missing: assessment.missing
+              .slice()
+              .sort((a, b) => b.weight - a.weight)
+              .map((r) => ({ id: r.id, label: r.label, weight: r.weight, group: r.group })),
+          },
           _meta: slimMeta(quota),
         });
       } catch (err: any) {
@@ -3028,11 +3038,70 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        // Same rule as upload-media: a cross-collection duplicate is a 200 with
+        // no `logo`. Report it instead of returning an empty success.
         return jsonResponse({
-          logo: result.logo,
+          ...(result.duplicate
+            ? {
+                duplicate: result.duplicate,
+                skipped: true,
+                existing: result.existing,
+                note: `Already in this brand as "${result.existing?.label || result.existing?.id}". Nothing uploaded.`,
+              }
+            : { logo: result.logo }),
           allLogos: result.allLogos,
           _meta: slimMeta(quota),
         });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-logo-rules',
+    'Derive logo usage rules from the logo file itself: clear space, minimum reproduction size (screen + print), and which brand colors it may sit on (WCAG contrast). Deterministic measurement, not an AI guess. Runs automatically on upload — call this to backfill an older logo or to switch the clear-space module.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      logoId: z.string().describe('Logo ID to measure (from the logos array).'),
+      module: z
+        .enum(['capHeight', 'halfCapHeight', 'stem'])
+        .default('capHeight')
+        .describe(
+          'Which part of the logo defines one unit of clear space. The single conventional choice in this calculation.'
+        ),
+      safety: z
+        .number()
+        .min(1)
+        .max(4)
+        .default(1)
+        .describe('Multiplier on the physical minimum size. 1 = the bare legibility floor.'),
+      persist: z
+        .boolean()
+        .default(true)
+        .describe('Write the rules onto the logo. False returns them without saving.'),
+    },
+    { title: 'Derive Logo Rules', destructiveHint: false },
+    async ({ id, logoId, module, safety, persist }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const existing = await prisma.brandGuideline.findFirst({
+          where: { id, userId: currentUserId },
+        });
+        if (!existing) return ERR.notFound('Brand guideline');
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/logos/${logoId}/rules`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({ module, safety, persist }),
+          }
+        );
+        const result = (await resp.json()) as any;
+        if (!resp.ok) return ERR.internal(result?.error || `Derivation failed (${resp.status})`);
+        return jsonResponse({ ...result, _meta: slimMeta(quota) });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -3076,7 +3145,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'brand-guidelines-upload-media',
-    'Upload a media asset (image or PDF) to a brand guideline media kit. Accepts base64-encoded data or a public URL.',
+    'Upload ONE media asset (image or PDF) to a brand guideline media kit, as base64 data or a public URL. For more than 2 files, or files above ~500 KB, use brand-guidelines-media-upload-urls instead — base64 puts the whole file through the conversation.',
     {
       id: z.string().describe('Brand guideline ID.'),
       data: z.string().optional().describe('Base64-encoded image or PDF data.'),
@@ -3108,9 +3177,120 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        // The route dedups across BOTH collections (media + logos) and answers
+        // 200 with `duplicate:'exact'` and no `media`. Passing that through as
+        // `{media: undefined}` read as a silent success — the same file went up
+        // as a logo and again as media with nothing said. Say it out loud.
         return jsonResponse({
-          media: result.media,
+          ...(result.duplicate
+            ? {
+                duplicate: result.duplicate,
+                skipped: true,
+                existing: result.existing,
+                note: `Already in this brand as "${result.existing?.label || result.existing?.id}". Nothing uploaded.`,
+              }
+            : { media: result.media }),
+          ...(result.similar
+            ? {
+                similar: result.similar,
+                note: `Uploaded, but it looks like "${result.similar.label || result.similar.id}" already in this brand.`,
+              }
+            : {}),
           allMedia: result.allMedia,
+          _meta: slimMeta(quota),
+        });
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // Direct-to-storage batch upload. The base64 tool above is fine for one small
+  // file; for a real media kit it is not, because every byte crosses the model
+  // context (fourteen 1 MB assets ≈ 15 MB of base64). These two tools move the
+  // bytes disk → R2 and leave only ids in the conversation.
+  server.tool(
+    'brand-guidelines-media-upload-urls',
+    'Mint direct-to-storage upload URLs for a batch of local files (max 50). Returns one presignedUrl per file; PUT each file to its URL (e.g. curl -X PUT --data-binary @file -H "Content-Type: <contentType>"), then call brand-guidelines-media-commit with the mediaIds. Use this for local files: the bytes never pass through the conversation.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      files: z
+        .array(
+          z.object({
+            filename: z
+              .string()
+              .optional()
+              .describe('Original file name — used to infer the content type.'),
+            contentType: z.string().optional().describe('MIME type, e.g. "image/png".'),
+            size: z
+              .number()
+              .optional()
+              .describe('File size in bytes. Used to check the storage quota before uploading.'),
+            label: z.string().optional().describe('Human-readable label for this asset.'),
+          })
+        )
+        .describe('Files to upload (max 50).'),
+    },
+    { title: 'Mint Brand Media Upload URLs', destructiveHint: false },
+    async ({ id, files }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!files?.length) return ERR.validation('files must contain at least one entry.');
+      try {
+        const resp = await fetch(
+          `${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media/upload-urls`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+            body: JSON.stringify({ files }),
+          }
+        );
+        const result = (await resp.json()) as any;
+        if (!resp.ok)
+          return ERR.internal(result?.message || result?.error || `Failed (${resp.status})`);
+        return jsonResponse(result);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  server.tool(
+    'brand-guidelines-media-commit',
+    'Register assets already uploaded via brand-guidelines-media-upload-urls into the brand media kit. Fingerprints each file server-side, so duplicates (including files already present as logos) are reported and skipped. Returns added, duplicates, failed and the new completeness score.',
+    {
+      id: z.string().describe('Brand guideline ID.'),
+      items: z
+        .array(
+          z.object({
+            mediaId: z.string().describe('mediaId returned by brand-guidelines-media-upload-urls.'),
+            url: z.string().describe('finalUrl returned alongside that mediaId.'),
+            label: z.string().optional().describe('Human-readable label for this asset.'),
+            type: z.enum(['image', 'pdf']).optional().describe('Asset type. Defaults to image.'),
+          })
+        )
+        .describe('Uploaded assets to register (max 50).'),
+    },
+    { title: 'Commit Brand Media', destructiveHint: false },
+    async ({ id, items }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      if (!items?.length) return ERR.validation('items must contain at least one entry.');
+      try {
+        const quota = await getQuotaMeta(currentUserId);
+        const resp = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/media/commit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ items }),
+        });
+        const result = (await resp.json()) as any;
+        if (!resp.ok)
+          return ERR.internal(result?.message || result?.error || `Failed (${resp.status})`);
+        return jsonResponse({
+          added: result.added,
+          duplicates: result.duplicates,
+          failed: result.failed,
+          completeness: result.completeness,
           _meta: slimMeta(quota),
         });
       } catch (err: any) {
@@ -5324,7 +5504,7 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
   // ─── Brand: Figma sync ─────────────────────────────────────────────────────
   server.tool(
     'brand-guidelines-figma-sync',
-    'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma variables and styles. Requires Figma token configured in user settings.',
+    'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma VARIABLES and styles. Call brand-guidelines-figma-preview FIRST: most real files have no variable system, and on those this sync imports almost nothing — the preview says which path actually pays before you spend the call. Requires Figma token configured in user settings.',
     {
       id: z.string().describe('Brand guideline ID.'),
       fileId: z.string().describe('Figma file ID (from URL: figma.com/design/:fileId/...).'),
@@ -5349,6 +5529,81 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         });
         if (!res.ok) return ERR.internal(await res.text());
         return jsonResponse(await res.json());
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // The extractor that turns a Figma file into guideline raw material. It shipped
+  // only as a plugin button that downloaded a file on the user's machine — the
+  // one step in an agent-first product that still required a human click.
+  server.tool(
+    'figma-extract-text',
+    'Extract all text from a Figma file as markdown, in canvas reading order and grouped by page and frame. This is the raw material for a brand guideline: pipe the returned markdown straight into brand-guidelines-ingest (source=text). Works on any file your Figma token can read — no plugin and no open tab required. Requires a Figma token in user settings.',
+    {
+      fileId: z
+        .string()
+        .describe('Figma file key, or a full figma.com/design/... URL (either works).'),
+    },
+    { title: 'Extract Figma Text', readOnlyHint: true, destructiveHint: false },
+    async ({ fileId }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/figma-extract-text`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
+          body: JSON.stringify({ fileId }),
+        });
+        const result = (await res.json()) as any;
+        if (!res.ok)
+          return ERR.internal(
+            result?.message || result?.error || `Extraction failed (${res.status})`
+          );
+        return jsonResponse(result);
+      } catch (err: any) {
+        return ERR.internal(err.message);
+      }
+    }
+  );
+
+  // Dry-run for figma-sync. The sync's variables path is the face of the
+  // integration, but a file with three hex-named variables imports nothing from
+  // it — and "nothing happened" reads as a weak integration when the value was
+  // in the file's text all along. This reports what is actually in the file, and
+  // which path to take, before anything runs.
+  server.tool(
+    'brand-guidelines-figma-preview',
+    'Dry-run for brand-guidelines-figma-sync: reports what the linked Figma file actually contains (color variables, text styles, components) and recommends which import path pays — "variables" when the file has a real token system, "text" when it does not (e.g. variables named after their own hex values). Reads only; changes nothing.',
+    {
+      id: z.string().describe('Brand guideline ID (must already have a linked Figma file).'),
+    },
+    { title: 'Preview Figma Sync', readOnlyHint: true, destructiveHint: false },
+    async ({ id }) => {
+      const currentUserId = getMcpUserId();
+      if (!currentUserId) return ERR.auth();
+      try {
+        const res = await fetch(`${INTERNAL_API_BASE}/api/brand-guidelines/${id}/figma-preview`, {
+          headers: { 'x-mcp-user-id': currentUserId },
+        });
+        const result = (await res.json()) as any;
+        if (!res.ok)
+          return ERR.internal(result?.message || result?.error || `Preview failed (${res.status})`);
+        return jsonResponse({
+          verdict: result.verdict,
+          counts: {
+            colors: result.colors?.length ?? 0,
+            typography: result.typography?.length ?? 0,
+            components: result.components?.length ?? 0,
+          },
+          colors: result.colors,
+          typography: result.typography,
+          next:
+            result.verdict?.recommended === 'text'
+              ? "Prefer brand-guidelines-ingest (source=text or url) with the file's written content — running figma-sync here would import little or nothing."
+              : 'Run brand-guidelines-figma-sync to import these variables and styles.',
+        });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
