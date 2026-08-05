@@ -297,6 +297,10 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 - \`brand-guidelines-figma-sync\` (W) — Sync tokens to/from Figma (VARIABLES path)
 - \`figma-extract-text\` (R) — Figma file → markdown in reading order; raw material for \`brand-guidelines-ingest\`. No plugin, no open tab
 - \`brand-guidelines-knowledge-list\` (R) — List knowledge base entries for a guideline
+- \`brand-guidelines-logo-rules\` (R) — Derive clear space, minimum size and background rules from the logo file itself
+- \`brand-render-preset\` (W) — Render a web preset to PNG on the brand — headless, no Figma
+- \`figma-templates-list\` (R) — List the \`[Template]\` presets in the brand's Figma file
+- \`figma-preset-fill\` (W) — Build a deterministic FILL_TEMPLATE operation for the Visant Figma plugin
 
 ### Mockups
 
@@ -306,6 +310,9 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 - \`mockup-presets\` (R) — Browse community presets by category
 - \`mockup-update\` (W) — Update mockup metadata
 - \`mockup-delete\` (D) — Delete mockup
+- \`psd-scene-list\` (R) — Browse the PSD Scene Package catalog (pre-processed, renders instantly)
+- \`psd-scene-prepare\` (W) — Pre-process a PSD from the catalog into a Scene Package. Costs credits.
+- \`psd-mockup-produce\` (W) — End-to-end PSD production: generate the artwork and place it in a scene. Costs credits.
 
 ### Creative Studio
 
@@ -394,7 +401,9 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 ### Campaign
 
 - \`campaign-generate\` (W) — Batch-generate creatives for a campaign
-- \`campaign-status\` (R) — Check generation progress
+- \`campaign-status\` (R) — Check generation progress (job TTL is 2h)
+- \`campaign-list\` (R) — List persisted campaigns — these survive the job TTL
+- \`campaign-get\` (R) — Get one persisted campaign with its full results
 
 ### Community
 
