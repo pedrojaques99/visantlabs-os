@@ -551,7 +551,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   {
     name: 'brand-guidelines-media-upload-urls',
     description:
-      'Mint direct-to-storage upload URLs for a batch of local files (max 50). Returns one presignedUrl per file; PUT each file to its URL (e.g. curl -X PUT --data-binary @file), then call brand-guidelines-media-commit with the mediaIds. Use this for local files: the bytes never pass through the conversation.',
+      'Mint direct-to-storage upload URLs for a batch of local files (max 50). Returns one presignedUrl per file; PUT each file to its URL (e.g. curl -X PUT --data-binary @file -H "Content-Type: <contentType>"), then call brand-guidelines-media-commit with the mediaIds. Use this for local files: the bytes never pass through the conversation.',
     required: ['id', 'files'],
     properties: {
       id: { type: 'string' },
@@ -682,7 +682,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   {
     name: 'figma-extract-text',
     description:
-      'Extract all text from a Figma file as markdown, in canvas reading order and grouped by page and frame. This is the raw material for a brand guideline: pipe the returned markdown straight into brand-guidelines-ingest (source=text). Works on any file your Figma token can read — no plugin and no open tab required.',
+      'Extract all text from a Figma file as markdown, in canvas reading order and grouped by page and frame. This is the raw material for a brand guideline: pipe the returned markdown straight into brand-guidelines-ingest (source=text). Works on any file your Figma token can read — no plugin and no open tab required. Requires a Figma token in user settings.',
     required: ['fileId'],
     properties: { fileId: { type: 'string' } },
     cost: 'free',
@@ -702,7 +702,7 @@ const PLATFORM_TOOLS: PlatformToolDef[] = [
   {
     name: 'brand-guidelines-figma-sync',
     description:
-      'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma VARIABLES and styles. Call brand-guidelines-figma-preview FIRST: most real files have no variable system, and on those this sync imports almost nothing. Requires Figma token configured in user settings.',
+      'Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma VARIABLES and styles. Call brand-guidelines-figma-preview FIRST: most real files have no variable system, and on those this sync imports almost nothing — the preview says which path actually pays before you spend the call. Requires Figma token configured in user settings.',
     required: ['id', 'fileId'],
     properties: {
       id: { type: 'string' },

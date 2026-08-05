@@ -136,9 +136,10 @@ export function buildEmptyBrandHealthReport(bg: BrandGuideline): BrandHealthRepo
  * Floor for `promptTokenCount` on a non-empty brand.
  *
  * SYSTEM alone is ~340 tokens, so a report generated from the rubric and nothing
- * else lands at ~350 — which is exactly what shipped for months after
- * chatWithAIContext started trading `context` away for `systemInstruction`. The
- * model dutifully invented a plausible brand and scored it. A brand with any
+ * else lands at ~350 — which is exactly what this route served from 2026-04-29
+ * to 2026-08-05, while chatWithAIContext traded `context` away for
+ * `systemInstruction`. The model dutifully invented a plausible brand and scored
+ * it, and nothing in the output looked wrong. A brand with any
  * real content clears 1500 easily; anything under it means the context did not
  * arrive, and a confident audit of nothing is worse than no audit at all.
  */

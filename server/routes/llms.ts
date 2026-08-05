@@ -283,15 +283,19 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 - \`brand-guidelines-duplicate\` (W) — Clone a guideline
 - \`brand-guidelines-upload-logo\` (W) — Upload logo image to guideline
 - \`brand-guidelines-delete-logo\` (D) — Remove a logo by ID
-- \`brand-guidelines-upload-media\` (W) — Upload media asset (photo, pattern, etc.)
+- \`brand-guidelines-upload-media\` (W) — Upload ONE media asset as base64 or public URL
+- \`brand-guidelines-media-upload-urls\` (W) — Mint presigned upload URLs for a batch of local files (bytes never cross the conversation)
+- \`brand-guidelines-media-commit\` (W) — Register the uploaded batch; dedups against media AND logos, returns the new completeness
 - \`brand-guidelines-delete-media\` (D) — Remove media by ID
 - \`brand-guidelines-export\` (R) — Export guideline as structured data
 - \`brand-guidelines-compile\` (R) — Compile brand tokens to CSS, Tailwind config, or React theme
-- \`brand-guidelines-health-check\` (R) — Audit guideline completeness (missing sections, weak areas)
+- \`brand-guidelines-health-check\` (R) — AI audit of COHERENCE (strategy vs visual vs voice contradictions). Not completeness: for what is still missing, read \`completeness.missing\` from \`brand-guidelines-update\`
 - \`brand-guidelines-compliance-check\` (R) — Check design/text against brand rules
 - \`brand-guidelines-compare-versions\` (R) — Diff two versions
 - \`brand-guidelines-figma-link\` (W) — Link guideline to a Figma file
-- \`brand-guidelines-figma-sync\` (W) — Sync tokens to/from Figma
+- \`brand-guidelines-figma-preview\` (R) — Dry-run: what the linked file actually holds, and whether the variables or the text path pays. Call before figma-sync
+- \`brand-guidelines-figma-sync\` (W) — Sync tokens to/from Figma (VARIABLES path)
+- \`figma-extract-text\` (R) — Figma file → markdown in reading order; raw material for \`brand-guidelines-ingest\`. No plugin, no open tab
 - \`brand-guidelines-knowledge-list\` (R) — List knowledge base entries for a guideline
 
 ### Mockups
