@@ -517,7 +517,9 @@ export const ApiKeysPage: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left p-4 text-muted-foreground font-medium text-xs">Name</th>
+                        <th className="text-left p-4 text-muted-foreground font-medium text-xs">
+                          Name
+                        </th>
                         <th className="text-left p-4 text-muted-foreground font-medium text-xs">
                           {t('api.keys.key')}
                         </th>

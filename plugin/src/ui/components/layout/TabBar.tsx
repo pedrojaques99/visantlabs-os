@@ -52,7 +52,9 @@ export function TabBar() {
             }`}
           >
             <Icon size={16} />
-            <span className={`text-[10px] leading-none ${isActive ? 'font-semibold' : 'font-normal'}`}>
+            <span
+              className={`text-[10px] leading-none ${isActive ? 'font-semibold' : 'font-normal'}`}
+            >
               {t(TAB_LABEL[view])}
             </span>
             {isActive && (

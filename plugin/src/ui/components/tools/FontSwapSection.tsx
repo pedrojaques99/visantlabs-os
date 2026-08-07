@@ -207,7 +207,12 @@ export function FontSwapSection() {
         setFamilies((familyResult as any) ?? []);
         setTargets({});
       } catch {
-        showToast(s === 'page' ? t('plugin.tools.fontSwap.noTextOnPage') : t('plugin.tools.fontSwap.selectLayersWithText'), 'error');
+        showToast(
+          s === 'page'
+            ? t('plugin.tools.fontSwap.noTextOnPage')
+            : t('plugin.tools.fontSwap.selectLayersWithText'),
+          'error'
+        );
       } finally {
         setScanning(false);
       }

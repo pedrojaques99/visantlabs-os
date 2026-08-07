@@ -92,9 +92,7 @@ export const VectorPad = React.memo<VectorPadProps>(
     return (
       <div className={cn('inline-flex flex-col gap-1.5', className)}>
         {label && (
-          <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-            {label}
-          </span>
+          <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
         )}
         <div
           ref={padRef}

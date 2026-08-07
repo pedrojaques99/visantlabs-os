@@ -20,6 +20,9 @@ export const SMART_SCAN_REQUESTER = {
 export type SmartScanRequester = (typeof SMART_SCAN_REQUESTER)[keyof typeof SMART_SCAN_REQUESTER];
 
 /** True when this result answers `requester`'s own request. */
-export function isSmartScanFor(msg: { requester?: string }, requester: SmartScanRequester): boolean {
+export function isSmartScanFor(
+  msg: { requester?: string },
+  requester: SmartScanRequester
+): boolean {
   return msg.requester === requester;
 }

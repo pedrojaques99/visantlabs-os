@@ -3223,16 +3223,18 @@ router.get('/references/low-res', validateAdmin, async (req: Request, res: Respo
       .limit(500)
       .toArray()) as any[];
 
-    const total = await db.collection('community_presets').countDocuments(lowResFilter(maxShortSide));
+    const total = await db
+      .collection('community_presets')
+      .countDocuments(lowResFilter(maxShortSide));
 
     // Uma ref salva no board de alguem nao e lixo, seja qual for o tamanho.
     const ids = rows.map((r) => r.id);
     const protectedIds = ids.length
-      ? ((await db
-          .collection('reference_collections')
-          .distinct('refIds', { refIds: { $in: ids } })) as string[]).filter((id) =>
-          ids.includes(id)
-        )
+      ? (
+          (await db
+            .collection('reference_collections')
+            .distinct('refIds', { refIds: { $in: ids } })) as string[]
+        ).filter((id) => ids.includes(id))
       : [];
 
     return res.json({

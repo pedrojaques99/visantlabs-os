@@ -401,47 +401,81 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
       }
     >
       <div>
-          {error && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center gap-2 text-destructive text-sm">
-              <AlertTriangle size={16} className="shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+        {error && (
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-center gap-2 text-destructive text-sm">
+            <AlertTriangle size={16} className="shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-          <div className="space-y-5">
-            {/* Prompt First — paste and auto-fill */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
-                <MicroTitle as="span" className="text-muted-foreground lowercase">
-                  {t('communityPresets.charsCount', { count: formData.prompt.length })}
-                </MicroTitle>
-              </div>
-              <Textarea
-                value={formData.prompt}
-                onChange={(e) => handlePromptChange(e.target.value)}
-                rows={5}
-                autoFocus
-                className="w-full resize-none"
-                placeholder={t('communityPresets.describeWhatToGenerate')}
-              />
-              {isCreating && autoFilled && (
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  {t('communityPresets.autoFilledHint')}
-                </p>
+        <div className="space-y-5">
+          {/* Prompt First — paste and auto-fill */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
+              <MicroTitle as="span" className="text-muted-foreground lowercase">
+                {t('communityPresets.charsCount', { count: formData.prompt.length })}
+              </MicroTitle>
+            </div>
+            <Textarea
+              value={formData.prompt}
+              onChange={(e) => handlePromptChange(e.target.value)}
+              rows={5}
+              autoFocus
+              className="w-full resize-none"
+              placeholder={t('communityPresets.describeWhatToGenerate')}
+            />
+            {isCreating && autoFilled && (
+              <p className="text-xs text-muted-foreground mt-1.5">
+                {t('communityPresets.autoFilledHint')}
+              </p>
+            )}
+          </div>
+
+          {/* Image Upload Section */}
+          {needsReferenceImage && (
+            <div className="flex items-start gap-4 pb-5 border-b border-border">
+              {formData.referenceImageUrl ? (
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted group flex-shrink-0">
+                  <img
+                    src={formData.referenceImageUrl}
+                    alt={t('common.reference')}
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, referenceImageUrl: '' });
+                      setImageUploadError(null);
+                    }}
+                    aria-label={t('communityPresets.removeImage2')}
+                    className={cn(
+                      hoverReveal,
+                      'absolute inset-0 bg-background/70 flex items-center justify-center'
+                    )}
+                  >
+                    <X className="h-4 w-4 text-foreground" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-lg border border-border bg-muted flex items-center justify-center flex-shrink-0">
+                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                </div>
               )}
-            </div>
-
-            {/* Image Upload Section */}
-            {needsReferenceImage && (
-              <div className="flex items-start gap-4 pb-5 border-b border-border">
-                {formData.referenceImageUrl ? (
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted group flex-shrink-0">
-                    <img
-                      src={formData.referenceImageUrl}
-                      alt={t('common.reference')}
-                      className="w-full h-full object-cover"
-                    />
+              <div className="flex-1 min-w-0">
+                <MicroTitle as="p" className="text-foreground mb-1">
+                  {t('communityPresets.referenceImage')}
+                </MicroTitle>
+                <MicroTitle as="p" className="text-muted-foreground mb-2 lowercase">
+                  {t('communityPresets.imageSizeHint')}
+                </MicroTitle>
+                <div className="flex items-center gap-2">
+                  <AdminImageUploader
+                    onImageUpload={handleImageUpload}
+                    disabled={isUploadingImage || !formData.name || formData.name.trim() === ''}
+                  />
+                  {formData.referenceImageUrl && (
                     <Button
                       variant="ghost"
                       type="button"
@@ -449,241 +483,210 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         setFormData({ ...formData, referenceImageUrl: '' });
                         setImageUploadError(null);
                       }}
-                      aria-label={t('communityPresets.removeImage2')}
-                      className={cn(hoverReveal, 'absolute inset-0 bg-background/70 flex items-center justify-center')}
+                      className="px-3 py-1.5 text-xs"
                     >
-                      <X className="h-4 w-4 text-foreground" />
+                      {t('common.cancel')}
                     </Button>
-                  </div>
-                ) : (
-                  <div className="w-16 h-16 rounded-lg border border-border bg-muted flex items-center justify-center flex-shrink-0">
-                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <MicroTitle as="p" className="text-foreground mb-1">
-                    {t('communityPresets.referenceImage')}
-                  </MicroTitle>
-                  <MicroTitle as="p" className="text-muted-foreground mb-2 lowercase">
-                    {t('communityPresets.imageSizeHint')}
-                  </MicroTitle>
-                  <div className="flex items-center gap-2">
-                    <AdminImageUploader
-                      onImageUpload={handleImageUpload}
-                      disabled={isUploadingImage || !formData.name || formData.name.trim() === ''}
-                    />
-                    {formData.referenceImageUrl && (
-                      <Button
-                        variant="ghost"
-                        type="button"
-                        onClick={() => {
-                          setFormData({ ...formData, referenceImageUrl: '' });
-                          setImageUploadError(null);
-                        }}
-                        className="px-3 py-1.5 text-xs"
-                      >
-                        {t('common.cancel')}
-                      </Button>
-                    )}
-                  </div>
-                  {isUploadingImage && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-                      <GlitchLoader size={12} />
-                      <span>{t('communityPresets.uploadingImage')}</span>
-                    </div>
-                  )}
-                  {imageUploadError && (
-                    <p className="text-xs text-destructive mt-2">{imageUploadError}</p>
-                  )}
-                  {(!formData.name || formData.name.trim() === '') && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t('communityPresets.enterPresetNameFirst')}
-                    </p>
                   )}
                 </div>
+                {isUploadingImage && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                    <GlitchLoader size={12} />
+                    <span>{t('communityPresets.uploadingImage')}</span>
+                  </div>
+                )}
+                {imageUploadError && (
+                  <p className="text-xs text-destructive mt-2">{imageUploadError}</p>
+                )}
+                {(!formData.name || formData.name.trim() === '') && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {t('communityPresets.enterPresetNameFirst')}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Name Field */}
+          <div>
+            <MicroTitle as="label" className="mb-1.5">
+              {t('communityPresets.nameRequired')} *
+            </MicroTitle>
+            <Input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full"
+              placeholder={t('communityPresets.namePlaceholder')}
+            />
+            {isCreating && formData.id && (
+              <p className="text-xs text-muted-foreground mt-1.5">
+                {t('communityPresets.autoGeneratedId')}:{' '}
+                <span className="text-foreground">{formData.id}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Category & Preset Type Row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative z-50">
+              <MicroTitle as="label" className="mb-1.5">
+                {t('communityPresets.category')} *
+              </MicroTitle>
+              <Select
+                options={categoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
+                value={formData.category}
+                onChange={(value) => {
+                  const newCategory = value as PromptCategory;
+                  setFormData({
+                    ...formData,
+                    category: newCategory,
+                    presetType:
+                      newCategory === 'presets' ? formData.presetType || 'mockup' : undefined,
+                  });
+                }}
+                disabled={!isCreating}
+                placeholder={t('communityPresets.category')}
+              />
+            </div>
+            {formData.category === 'presets' && (
+              <div className="relative z-50">
+                <MicroTitle as="label" className="mb-1.5">
+                  {t('communityPresets.presetType')} *
+                </MicroTitle>
+                <Select
+                  options={presetTypeOptions}
+                  value={formData.presetType || 'mockup'}
+                  onChange={(value) =>
+                    setFormData({ ...formData, presetType: value as LegacyPresetType })
+                  }
+                  disabled={!isCreating}
+                  placeholder={t('communityPresets.presetType')}
+                />
               </div>
             )}
+          </div>
 
-            {/* Name Field */}
+          {/* Description & Aspect Ratio Row */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <MicroTitle as="label" className="mb-1.5">
-                {t('communityPresets.nameRequired')} *
+                {t('communityPresets.descriptionOptional')}
               </MicroTitle>
               <Input
                 type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full"
-                placeholder={t('communityPresets.namePlaceholder')}
+                placeholder={t('communityPresets.descriptionPlaceholder')}
               />
-              {isCreating && formData.id && (
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  {t('communityPresets.autoGeneratedId')}:{' '}
-                  <span className="text-foreground">{formData.id}</span>
-                </p>
-              )}
             </div>
-
-            {/* Category & Preset Type Row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="relative z-50">
-                <MicroTitle as="label" className="mb-1.5">
-                  {t('communityPresets.category')} *
-                </MicroTitle>
-                <Select
-                  options={categoryOptions.map((opt) => ({ value: opt.value, label: opt.label }))}
-                  value={formData.category}
-                  onChange={(value) => {
-                    const newCategory = value as PromptCategory;
-                    setFormData({
-                      ...formData,
-                      category: newCategory,
-                      presetType:
-                        newCategory === 'presets' ? formData.presetType || 'mockup' : undefined,
-                    });
-                  }}
-                  disabled={!isCreating}
-                  placeholder={t('communityPresets.category')}
-                />
-              </div>
-              {formData.category === 'presets' && (
-                <div className="relative z-50">
-                  <MicroTitle as="label" className="mb-1.5">
-                    {t('communityPresets.presetType')} *
-                  </MicroTitle>
-                  <Select
-                    options={presetTypeOptions}
-                    value={formData.presetType || 'mockup'}
-                    onChange={(value) =>
-                      setFormData({ ...formData, presetType: value as LegacyPresetType })
-                    }
-                    disabled={!isCreating}
-                    placeholder={t('communityPresets.presetType')}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Description & Aspect Ratio Row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <MicroTitle as="label" className="mb-1.5">
-                  {t('communityPresets.descriptionOptional')}
-                </MicroTitle>
-                <Input
-                  type="text"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full"
-                  placeholder={t('communityPresets.descriptionPlaceholder')}
-                />
-              </div>
-              <div className="relative z-50">
-                <MicroTitle as="label" className="mb-1.5">
-                  {t('communityPresets.aspectRatioOptional')}
-                </MicroTitle>
-                <Select
-                  options={aspectRatioOptions}
-                  value={formData.aspectRatio}
-                  onChange={(value) =>
-                    setFormData({ ...formData, aspectRatio: value as AspectRatio })
-                  }
-                  placeholder={t('communityPresets.aspectRatioPlaceholder')}
-                />
-              </div>
-            </div>
-
-            {/* Reference Image URL (manual) */}
-            {needsReferenceImage && (
-              <div>
-                <MicroTitle as="label" className="mb-1.5">
-                  {t('communityPresets.referenceImageManual')}
-                </MicroTitle>
-                <Input
-                  type="text"
-                  value={formData.referenceImageUrl || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, referenceImageUrl: e.target.value });
-                    setImageUploadError(null);
-                  }}
-                  className="w-full"
-                  placeholder={t('communityPresets.referenceImageUrlPlaceholder')}
-                />
-              </div>
-            )}
-
-            {/* Tags */}
-            <div>
+            <div className="relative z-50">
               <MicroTitle as="label" className="mb-1.5">
-                {t('communityPresets.tags.label')}
+                {t('communityPresets.aspectRatioOptional')}
               </MicroTitle>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && tagInput.trim()) {
-                      e.preventDefault();
-                      const newTag = tagInput.trim();
-                      if (!formData.tags?.includes(newTag)) {
-                        setFormData({
-                          ...formData,
-                          tags: [...(formData.tags || []), newTag],
-                        });
-                      }
-                      setTagInput('');
-                    }
-                  }}
-                  placeholder={t('communityPresets.tags.placeholder')}
-                  className="flex-1"
-                />
-                <Button
-                  variant="ghost"
-                  type="button"
-                  onClick={() => {
-                    if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
-                      setFormData({
-                        ...formData,
-                        tags: [...(formData.tags || []), tagInput.trim()],
-                      });
-                      setTagInput('');
-                    }
-                  }}
-                  className="px-4 py-2 text-sm"
-                >
-                  {t('communityPresets.tags.add')}
-                </Button>
-              </div>
-              {formData.tags && formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {formData.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted border border-border rounded-lg text-xs text-foreground"
-                    >
-                      <span className="text-muted-foreground">#</span>
-                      {tag}
-                      <Button
-                        variant="ghost"
-                        type="button"
-                        onClick={() => {
-                          setFormData({
-                            ...formData,
-                            tags: formData.tags?.filter((_, i) => i !== index) || [],
-                          });
-                        }}
-                        aria-label={t('communityPresets.removeTag')}
-                        className="text-muted-foreground hover:text-destructive transition-colors ml-0.5"
-                      >
-                        <X size={12} />
-                      </Button>
-                    </span>
-                  ))}
-                </div>
-              )}
+              <Select
+                options={aspectRatioOptions}
+                value={formData.aspectRatio}
+                onChange={(value) =>
+                  setFormData({ ...formData, aspectRatio: value as AspectRatio })
+                }
+                placeholder={t('communityPresets.aspectRatioPlaceholder')}
+              />
             </div>
           </div>
+
+          {/* Reference Image URL (manual) */}
+          {needsReferenceImage && (
+            <div>
+              <MicroTitle as="label" className="mb-1.5">
+                {t('communityPresets.referenceImageManual')}
+              </MicroTitle>
+              <Input
+                type="text"
+                value={formData.referenceImageUrl || ''}
+                onChange={(e) => {
+                  setFormData({ ...formData, referenceImageUrl: e.target.value });
+                  setImageUploadError(null);
+                }}
+                className="w-full"
+                placeholder={t('communityPresets.referenceImageUrlPlaceholder')}
+              />
+            </div>
+          )}
+
+          {/* Tags */}
+          <div>
+            <MicroTitle as="label" className="mb-1.5">
+              {t('communityPresets.tags.label')}
+            </MicroTitle>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && tagInput.trim()) {
+                    e.preventDefault();
+                    const newTag = tagInput.trim();
+                    if (!formData.tags?.includes(newTag)) {
+                      setFormData({
+                        ...formData,
+                        tags: [...(formData.tags || []), newTag],
+                      });
+                    }
+                    setTagInput('');
+                  }
+                }}
+                placeholder={t('communityPresets.tags.placeholder')}
+                className="flex-1"
+              />
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
+                    setFormData({
+                      ...formData,
+                      tags: [...(formData.tags || []), tagInput.trim()],
+                    });
+                    setTagInput('');
+                  }
+                }}
+                className="px-4 py-2 text-sm"
+              >
+                {t('communityPresets.tags.add')}
+              </Button>
+            </div>
+            {formData.tags && formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {formData.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted border border-border rounded-lg text-xs text-foreground"
+                  >
+                    <span className="text-muted-foreground">#</span>
+                    {tag}
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          tags: formData.tags?.filter((_, i) => i !== index) || [],
+                        });
+                      }}
+                      aria-label={t('communityPresets.removeTag')}
+                      className="text-muted-foreground hover:text-destructive transition-colors ml-0.5"
+                    >
+                      <X size={12} />
+                    </Button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </Modal>
   );

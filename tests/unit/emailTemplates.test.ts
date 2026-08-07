@@ -23,9 +23,7 @@ describe('templates de e-mail', () => {
   beforeEach(() => send.mockClear());
 
   it('escapa nome do usuário e nome de marca (sem injeção de HTML)', async () => {
-    const { sendBrandQuotaDowngradeEmail } = await import(
-      '../../server/services/emailService.js'
-    );
+    const { sendBrandQuotaDowngradeEmail } = await import('../../server/services/emailService.js');
 
     await sendBrandQuotaDowngradeEmail({
       email: 'x@y.com',
@@ -43,9 +41,7 @@ describe('templates de e-mail', () => {
   });
 
   it('monta o link sem barra dupla mesmo com FRONTEND_URL terminando em /', async () => {
-    const { sendBrandQuotaDowngradeEmail } = await import(
-      '../../server/services/emailService.js'
-    );
+    const { sendBrandQuotaDowngradeEmail } = await import('../../server/services/emailService.js');
 
     await sendBrandQuotaDowngradeEmail({
       email: 'x@y.com',
@@ -62,9 +58,8 @@ describe('templates de e-mail', () => {
   });
 
   it('não manda aviso nem lembrete com a fila vazia, e não pede retry', async () => {
-    const { sendBrandQuotaDowngradeEmail, sendBrandQuotaReminderEmail } = await import(
-      '../../server/services/emailService.js'
-    );
+    const { sendBrandQuotaDowngradeEmail, sendBrandQuotaReminderEmail } =
+      await import('../../server/services/emailService.js');
     const params = {
       email: 'x@y.com',
       name: 'Ronnie',
@@ -91,9 +86,7 @@ describe('templates de e-mail', () => {
   });
 
   it('não usa travessão nem bolinha separadora na copy (regra visant-copy)', async () => {
-    const { sendBrandQuotaDowngradeEmail } = await import(
-      '../../server/services/emailService.js'
-    );
+    const { sendBrandQuotaDowngradeEmail } = await import('../../server/services/emailService.js');
 
     await sendBrandQuotaDowngradeEmail({
       email: 'x@y.com',

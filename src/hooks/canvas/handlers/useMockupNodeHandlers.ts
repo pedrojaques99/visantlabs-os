@@ -245,9 +245,7 @@ export const useMockupNodeHandlers = ({
           baseImage = { base64: fallbackBase64, mimeType: fallbackMimeType };
         } catch (error: any) {
           console.error('Error converting fallback image to base64:', error);
-          toast.error(
-            error?.message || translate('canvas.imageNotAccessible')
-          );
+          toast.error(error?.message || translate('canvas.imageNotAccessible'));
           updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
           return;
         }

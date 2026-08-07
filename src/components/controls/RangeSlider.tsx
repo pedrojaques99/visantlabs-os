@@ -22,7 +22,17 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
  * Interaction model adapted from Pixel Point Toolcraft's range-slider (MIT).
  */
 export const RangeSlider = React.memo<RangeSliderProps>(
-  ({ value, onChange, min = 0, max = 100, step = 1, minGap = 0, label, suffix = '', className }) => {
+  ({
+    value,
+    onChange,
+    min = 0,
+    max = 100,
+    step = 1,
+    minGap = 0,
+    label,
+    suffix = '',
+    className,
+  }) => {
     const trackRef = React.useRef<HTMLDivElement>(null);
     const dragRef = React.useRef<'min' | 'max' | null>(null);
 
@@ -99,9 +109,7 @@ export const RangeSlider = React.memo<RangeSliderProps>(
       <div className={cn('flex flex-col gap-1.5', className)}>
         {label && (
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-              {label}
-            </span>
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
             <span className="text-[11px] font-mono text-neutral-300 tabular-nums">
               {lo}
               {suffix} – {hi}

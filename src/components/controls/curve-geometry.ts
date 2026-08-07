@@ -109,7 +109,10 @@ function endpointTangent(o: {
     ((2 * o.interval + o.adjacentInterval) * o.slope - o.interval * o.adjacentSlope) /
     (o.interval + o.adjacentInterval);
   if (Math.sign(tangent) !== Math.sign(o.slope)) return 0;
-  if (Math.sign(o.slope) !== Math.sign(o.adjacentSlope) && Math.abs(tangent) > Math.abs(3 * o.slope))
+  if (
+    Math.sign(o.slope) !== Math.sign(o.adjacentSlope) &&
+    Math.abs(tangent) > Math.abs(3 * o.slope)
+  )
     return 3 * o.slope;
   return tangent;
 }

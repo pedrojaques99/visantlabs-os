@@ -46,11 +46,15 @@ export function DesignSystemSection() {
                 {designSystem.name || t('plugin.brand.designSystem.importedFallback')}
               </p>
               <p className="text-[10px] text-muted-foreground mt-1">
-                {t('plugin.brand.designSystem.format', { format: designSystem.format || 'unknown' })}
+                {t('plugin.brand.designSystem.format', {
+                  format: designSystem.format || 'unknown',
+                })}
               </p>
               {designSystem.tokens && (
                 <p className="text-[10px] text-muted-foreground">
-                  {t('plugin.brand.designSystem.tokens', { count: Object.keys(designSystem.tokens).length })}
+                  {t('plugin.brand.designSystem.tokens', {
+                    count: Object.keys(designSystem.tokens).length,
+                  })}
                 </p>
               )}
             </div>

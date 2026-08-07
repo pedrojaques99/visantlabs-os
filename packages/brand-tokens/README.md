@@ -41,11 +41,11 @@ failing contrast pair exits non-zero — it must not look like a success.
 
 **Brands do not share a role vocabulary.** Sampled from the live API, 2026-07-30:
 
-| Brand | colour roles | type roles |
-|---|---|---|
-| Visant® | background · primary · secondary · accent · text | primary · secondary |
-| Campo Neon | background · surface · secondary · accent · accent-secondary · text-on-dark · muted · text | display · body · label · feature |
-| Turno & Turno | text · accent | heading |
+| Brand         | colour roles                                                                               | type roles                       |
+| ------------- | ------------------------------------------------------------------------------------------ | -------------------------------- |
+| Visant®       | background · primary · secondary · accent · text                                           | primary · secondary              |
+| Campo Neon    | background · surface · secondary · accent · accent-secondary · text-on-dark · muted · text | display · body · label · feature |
+| Turno & Turno | text · accent                                                                              | heading                          |
 
 Every slot resolves through a **fallback chain**, then by `usageRank`, and
 **throws** when nothing matches. Two silent bugs this fixed:
@@ -86,7 +86,7 @@ muted-foreground, secondary, accent, border, input` + `brand` (identity fill),
 
 ## Status
 
-**v0.1 — fit to use.** Seeds from a fixture *or* live by brand id
+**v0.1 — fit to use.** Seeds from a fixture _or_ live by brand id
 (`src/fetch-brand.js`). Role resolution is chain-based and fails loud. Output is
 named per brand. 39 tests, AA verified independently across all three brands.
 

@@ -183,7 +183,8 @@ const BrandCard = ({
     const extra = top.length - 3;
     return t('brandGuidelines.completenessMissing', {
       score: report.score,
-      items: extra > 0 ? `${items} ${t('brandGuidelines.completenessMore', { count: extra })}` : items,
+      items:
+        extra > 0 ? `${items} ${t('brandGuidelines.completenessMore', { count: extra })}` : items,
     });
   }, [report, t]);
   const primaryFont = guideline.typography?.find(
@@ -353,7 +354,9 @@ const BrandCard = ({
                   style={{ width: `${report.score}%` }}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground tabular-nums">{report.score}%</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums">
+                {report.score}%
+              </span>
             </div>
           </Tooltip>
           {fontHint && (
@@ -524,8 +527,7 @@ const BrandGrid = ({
       // 'recent' is the default the UI advertises — sort explicitly rather than
       // trusting the API's array order, so the "Recent" label never lies.
       list = [...list].sort(
-        (a, b) =>
-          new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+        (a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
       );
     }
     return list;
@@ -904,7 +906,9 @@ export const BrandGuidelinesPage: React.FC = () => {
                   className="flex flex-col items-center justify-center py-40 gap-6"
                 >
                   <GlitchLoader size={40} />
-                  <p className="text-muted-foreground text-xs animate-pulse">{t('common.loading')}</p>
+                  <p className="text-muted-foreground text-xs animate-pulse">
+                    {t('common.loading')}
+                  </p>
                 </motion.div>
               ) : isError ? (
                 <motion.div

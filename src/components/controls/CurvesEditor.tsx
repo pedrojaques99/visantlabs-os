@@ -62,17 +62,14 @@ export const CurvesEditor = React.memo<CurvesEditorProps>(
       return v || '#22d3ee';
     }, [color]);
 
-    const toNorm = React.useCallback(
-      (e: { clientX: number; clientY: number }): CurvePoint => {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (!rect) return { x: 0, y: 0 };
-        return {
-          x: clamp01((e.clientX - rect.left) / rect.width),
-          y: clamp01(1 - (e.clientY - rect.top) / rect.height),
-        };
-      },
-      []
-    );
+    const toNorm = React.useCallback((e: { clientX: number; clientY: number }): CurvePoint => {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return { x: 0, y: 0 };
+      return {
+        x: clamp01((e.clientX - rect.left) / rect.width),
+        y: clamp01(1 - (e.clientY - rect.top) / rect.height),
+      };
+    }, []);
 
     const findPoint = React.useCallback(
       (n: CurvePoint): number => {
@@ -151,7 +148,9 @@ export const CurvesEditor = React.memo<CurvesEditorProps>(
       ctx.lineWidth = 2;
       ctx.lineJoin = 'round';
       ctx.beginPath();
-      samples.forEach((p, i) => (i === 0 ? ctx.moveTo(X(p.x), Y(p.y)) : ctx.lineTo(X(p.x), Y(p.y))));
+      samples.forEach((p, i) =>
+        i === 0 ? ctx.moveTo(X(p.x), Y(p.y)) : ctx.lineTo(X(p.x), Y(p.y))
+      );
       ctx.stroke();
 
       // points

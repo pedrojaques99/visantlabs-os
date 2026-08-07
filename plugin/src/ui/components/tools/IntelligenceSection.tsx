@@ -21,7 +21,10 @@ export function IntelligenceSection() {
     const handler = (event: MessageEvent) => {
       const msg = event.data?.pluginMessage;
       // Only our own scan — the logo matrix listens for this result too.
-      if (msg?.type === 'SMART_SCAN_RESULT' && isSmartScanFor(msg, SMART_SCAN_REQUESTER.toolsIntelligence)) {
+      if (
+        msg?.type === 'SMART_SCAN_RESULT' &&
+        isSmartScanFor(msg, SMART_SCAN_REQUESTER.toolsIntelligence)
+      ) {
         setScanItems(msg.items || []);
         setScanModalOpen(true);
       }
@@ -83,8 +86,7 @@ export function IntelligenceSection() {
           message={{
             type: 'CREATE_STICKY_PROMPT',
             name: t('plugin.tools.intelligence.designNoteName'),
-            prompt:
-              t('plugin.tools.intelligence.designNotePrompt'),
+            prompt: t('plugin.tools.intelligence.designNotePrompt'),
           }}
           responseTypes={['OPERATIONS_DONE']}
           busyLabel="…"

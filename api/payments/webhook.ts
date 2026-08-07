@@ -263,9 +263,8 @@ const processWebhookEvent = async (event: Stripe.Event): Promise<void> => {
               }
 
               try {
-                const { grantProduct } = await import(
-                  '../../server/services/productGrantService.js'
-                );
+                const { grantProduct } =
+                  await import('../../server/services/productGrantService.js');
                 const result = await grantProduct({
                   email: buyerEmail,
                   sku,

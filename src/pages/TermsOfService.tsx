@@ -172,7 +172,9 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ isOpen, onClose 
             <h2 className="text-xl font-semibold text-foreground mb-4">
               {t('terms.sections.serviceAvailability.title')}
             </h2>
-            <p className="text-muted-foreground mb-3">{t('terms.sections.serviceAvailability.intro')}</p>
+            <p className="text-muted-foreground mb-3">
+              {t('terms.sections.serviceAvailability.intro')}
+            </p>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
               {getArray('terms.sections.serviceAvailability.items').map((item, idx) => (
                 <li key={idx}>{item}</li>
@@ -214,7 +216,9 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ isOpen, onClose 
             <h3 className="text-lg font-semibold text-muted-foreground mt-6 mb-3">
               {t('terms.sections.disclaimers.limitation.title')}
             </h3>
-            <p className="text-muted-foreground">{t('terms.sections.disclaimers.limitation.content')}</p>
+            <p className="text-muted-foreground">
+              {t('terms.sections.disclaimers.limitation.content')}
+            </p>
           </section>
 
           <section className="pt-8">

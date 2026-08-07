@@ -53,7 +53,9 @@ const OnboardingWizardV1: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <h2 className="text-xl font-semibold text-foreground font-mono mb-2">O que voce faz?</h2>
+              <h2 className="text-xl font-semibold text-foreground font-mono mb-2">
+                O que voce faz?
+              </h2>
               <p className="text-muted-foreground text-sm font-mono mb-6">
                 Isso nos leva direto a ferramenta certa pra voce.
               </p>

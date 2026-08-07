@@ -189,9 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
-          <span className="text-xs md:text-sm text-muted-foreground uppercase">
-            Visant Labs®
-          </span>
+          <span className="text-xs md:text-sm text-muted-foreground uppercase">Visant Labs®</span>
           <span className="text-[10px] font-mono text-muted-foreground">v1.1</span>
         </div>
       </Button>

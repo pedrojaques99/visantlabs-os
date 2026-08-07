@@ -72,7 +72,14 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     };
 
     loadUsageHistory();
-  }, [isAuthenticated, historyFilter, historyPagination.offset, historyPagination.limit, reloadNonce, t]);
+  }, [
+    isAuthenticated,
+    historyFilter,
+    historyPagination.offset,
+    historyPagination.limit,
+    reloadNonce,
+    t,
+  ]);
 
   useEffect(() => {
     setHistoryPagination((prev) => {

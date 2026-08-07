@@ -147,9 +147,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
           >
             <span className="flex shrink-0 items-center justify-center">{icon}</span>
             {label && (
-              <span className="text-xs font-bold uppercase tracking-[0.12em]">
-                {label}
-              </span>
+              <span className="text-xs font-bold uppercase tracking-[0.12em]">{label}</span>
             )}
           </Button>
         </Tooltip>

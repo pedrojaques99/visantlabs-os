@@ -79,7 +79,10 @@ export function ConnectorsSection() {
       if (msg.type === 'BRIDGE_DONE') {
         setStatus(
           msg.dryRun
-            ? t('plugin.tools.connectors.opsIssues', { ops: msg.operations?.length || 0, issues: msg.issueCount })
+            ? t('plugin.tools.connectors.opsIssues', {
+                ops: msg.operations?.length || 0,
+                issues: msg.issueCount,
+              })
             : t('plugin.tools.connectors.framesCreated', { count: msg.created })
         );
         setDotState('on');
@@ -131,7 +134,9 @@ export function ConnectorsSection() {
     }
     setBusy(true);
     setDotState('busy');
-    setStatus(dryRun ? t('plugin.tools.connectors.previewing') : t('plugin.tools.connectors.generating'));
+    setStatus(
+      dryRun ? t('plugin.tools.connectors.previewing') : t('plugin.tools.connectors.generating')
+    );
 
     const filterIssues = filterText.trim()
       ? filterText

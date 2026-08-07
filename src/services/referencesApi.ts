@@ -427,10 +427,9 @@ export const adminReferencesApi = {
 
   /** Referências pequenas demais. Admin-only; read-only. */
   async lowRes(maxShortSide = 300): Promise<LowResReport> {
-    const resp = await fetch(
-      `${API_BASE}/admin/references/low-res?maxShortSide=${maxShortSide}`,
-      { headers: authHeaders() }
-    );
+    const resp = await fetch(`${API_BASE}/admin/references/low-res?maxShortSide=${maxShortSide}`, {
+      headers: authHeaders(),
+    });
     if (!resp.ok) throw new Error('Failed to load low-resolution references');
     return resp.json();
   },

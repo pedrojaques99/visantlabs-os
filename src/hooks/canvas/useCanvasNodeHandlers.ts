@@ -552,7 +552,10 @@ export const useCanvasNodeHandlers = (
           setTimeout(() => saveImmediately(), 100);
         }
 
-        toast.success(translate('canvas.colorsExtracted', undefined, { count: result.colors.length }), { duration: 2000 });
+        toast.success(
+          translate('canvas.colorsExtracted', undefined, { count: result.colors.length }),
+          { duration: 2000 }
+        );
       } catch (error: any) {
         console.error('Error extracting colors:', error);
         toast.error(error?.message || translate('canvas.colorsExtractFailed'), { duration: 5000 });
@@ -670,10 +673,7 @@ export const useCanvasNodeHandlers = (
             } catch (saveError) {
               // If save fails, still show success for analysis but warn about save
               console.error('Failed to save brand identity analysis:', saveError);
-              toast.warning(
-                translate('canvas.brandIdentitySaveWarning'),
-                { duration: 5000 }
-              );
+              toast.warning(translate('canvas.brandIdentitySaveWarning'), { duration: 5000 });
             }
           }, 100); // Small delay to ensure state is updated
         } else {

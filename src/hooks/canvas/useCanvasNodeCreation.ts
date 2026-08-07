@@ -1111,7 +1111,9 @@ export const useCanvasNodeCreation = (
           // Show loading toast for large images
           const fileSizeMB = image.file.size / 1024 / 1024;
           const loadingToast =
-            fileSizeMB > 2 ? toast.loading(translate('canvas.uploadingImage'), { duration: Infinity }) : null;
+            fileSizeMB > 2
+              ? toast.loading(translate('canvas.uploadingImage'), { duration: Infinity })
+              : null;
 
           // Validate file size before processing (very large files may cause issues)
           const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB absolute limit
@@ -1228,7 +1230,10 @@ export const useCanvasNodeCreation = (
               );
             } else if (errorCount > 0) {
               toast.warning(
-                translate('canvas.pastePartialNodes', undefined, { success: successCount, failed: errorCount }),
+                translate('canvas.pastePartialNodes', undefined, {
+                  success: successCount,
+                  failed: errorCount,
+                }),
                 { duration: 4000 }
               );
             } else {
@@ -1387,7 +1392,10 @@ export const useCanvasNodeCreation = (
         } catch (error: any) {
           console.error('Error processing pasted image with direct upload:', error);
           const errorMessage = error?.message || translate('canvas.imageProcessUnknownError');
-          toast.error(translate('canvas.pasteRetryingFallback', undefined, { error: errorMessage }), { duration: 3000 });
+          toast.error(
+            translate('canvas.pasteRetryingFallback', undefined, { error: errorMessage }),
+            { duration: 3000 }
+          );
           // Fall through to base64 method below
         }
       }
@@ -1395,10 +1403,7 @@ export const useCanvasNodeCreation = (
       // Fallback to base64 method (for compatibility or when File is not available)
       // This happens when: File is not available, canvasId is missing, or direct upload failed
       if (!canvasId) {
-        toast.warning(
-          translate('canvas.projectUnsavedUpload'),
-          { duration: 4000 }
-        );
+        toast.warning(translate('canvas.projectUnsavedUpload'), { duration: 4000 });
       }
 
       let processedBase64 = image.base64;

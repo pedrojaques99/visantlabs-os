@@ -30,7 +30,8 @@ const NO_PENDING: PendingTurn = { hasPendingQuestion: false };
 
 /** Assistant messages often bury the '?' mid-text ("qual marca? As opções são: ..."). */
 const QUESTION_MARK = /\?/;
-const INTERROGATIVE = /\b(qual|quais|quer|deseja|prefere|escolha|informe|me diga|which|what|would you like|please (choose|specify|tell))\b/i;
+const INTERROGATIVE =
+  /\b(qual|quais|quer|deseja|prefere|escolha|informe|me diga|which|what|would you like|please (choose|specify|tell))\b/i;
 
 function asksSomething(content: string): boolean {
   return QUESTION_MARK.test(content) || INTERROGATIVE.test(content);

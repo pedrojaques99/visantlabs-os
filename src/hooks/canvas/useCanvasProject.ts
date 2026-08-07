@@ -707,13 +707,10 @@ export const useCanvasProject = (
           // MongoDB limit exceeded - show toast only once per session (never reset)
           if (!hasShownOversizedWarningRef.current) {
             hasShownOversizedWarningRef.current = true;
-            toast.error(
-              translate('canvas.projectTooLargeDb', undefined, { size: sizeMB }),
-              {
-                id: `payload-too-large-warning-global`,
-                duration: 8000,
-              }
-            );
+            toast.error(translate('canvas.projectTooLargeDb', undefined, { size: sizeMB }), {
+              id: `payload-too-large-warning-global`,
+              duration: 8000,
+            });
           }
         } else if (estimatedSize > WARNING_SIZE) {
           console.warn(`Payload size (${sizeMB}MB) is large, approaching limit`);

@@ -76,7 +76,10 @@ export function BrandTypographySection() {
     <div className="space-y-4">
       <div className="flex items-center justify-between pb-2 border-b border-border/50">
         <p className="text-[10px] text-muted-foreground font-mono">
-          {t('plugin.brand.typography.stylesFound', { styles: figmaStyles.length, families: fontFamilies.length })}
+          {t('plugin.brand.typography.stylesFound', {
+            styles: figmaStyles.length,
+            families: fontFamilies.length,
+          })}
         </p>
         <Button
           variant="ghost"

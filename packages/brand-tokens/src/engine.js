@@ -9,14 +9,14 @@
 // What it NEVER does: derive radius/density/elevation/motion per brand — those
 // encode throughput/hierarchy/a11y and are constant across brands.
 
-import { Theme, Color, BackgroundColor } from "@adobe/leonardo-contrast-colors";
-import { converter, wcagContrast } from "culori";
-import craft from "../craft.json" with { type: "json" };
+import { Theme, Color, BackgroundColor } from '@adobe/leonardo-contrast-colors';
+import { converter, wcagContrast } from 'culori';
+import craft from '../craft.json' with { type: 'json' };
 
-const toOklch = converter("oklch");
-const toRgb = converter("rgb");
+const toOklch = converter('oklch');
+const toRgb = converter('rgb');
 
-const CS = "CAM02"; // Leonardo interpolation space (perceptual, silences deprec.)
+const CS = 'CAM02'; // Leonardo interpolation space (perceptual, silences deprec.)
 
 // --- Ratio maps: the semantic target contrasts (vs the theme background) ------
 // Position in the array is the semantic slot; Leonardo returns values in order.
@@ -26,7 +26,7 @@ const NEUTRAL = {
   muted: { light: 1.14, dark: 1.4 },
   border: { light: 1.35, dark: 1.9 },
   input: { light: 1.5, dark: 2.3 },
-  "muted-foreground": { light: 4.7, dark: 4.7 },
+  'muted-foreground': { light: 4.7, dark: 4.7 },
   foreground: { light: 15, dark: 16 },
 };
 const INK_RATIO = 4.7; // brand-colored text on bg (AA + margin)
@@ -48,16 +48,16 @@ const INK_RATIO = 4.7; // brand-colored text on bg (AA + margin)
 // when nothing in the chain matches we throw with the roles we actually saw.
 
 const COLOR_CHAINS = {
-  background: ["background", "bg", "canvas", "surface", "base"],
-  accent: ["accent", "primary", "brand", "accent-secondary", "secondary"],
-  secondary: ["secondary", "accent-secondary", "surface", "primary", "accent"],
+  background: ['background', 'bg', 'canvas', 'surface', 'base'],
+  accent: ['accent', 'primary', 'brand', 'accent-secondary', 'secondary'],
+  secondary: ['secondary', 'accent-secondary', 'surface', 'primary', 'accent'],
 };
 
 const TYPE_CHAINS = {
   // The face that carries headings.
-  display: ["display", "heading", "headline", "title", "primary"],
+  display: ['display', 'heading', 'headline', 'title', 'primary'],
   // The face that carries running text.
-  sans: ["body", "text", "paragraph", "secondary", "primary"],
+  sans: ['body', 'text', 'paragraph', 'secondary', 'primary'],
 };
 
 function pickColor(brand, slot, { required = false } = {}) {
@@ -68,15 +68,16 @@ function pickColor(brand, slot, { required = false } = {}) {
   // Nothing matched. If the brand published ANY colour, the most-used one beats
   // a hardcoded default from another brand.
   const byUsage = [...(brand.colors ?? [])].sort(
-    (a, b) => (a.usageRank ?? 99) - (b.usageRank ?? 99),
+    (a, b) => (a.usageRank ?? 99) - (b.usageRank ?? 99)
   )[0];
   if (byUsage?.hex) return byUsage.hex.toLowerCase();
 
   if (required) {
-    throw new BrandTokenError(
-      `no colour resolves the "${slot}" slot`,
-      { slot, tried: COLOR_CHAINS[slot], saw: (brand.colors ?? []).map((c) => c.role) },
-    );
+    throw new BrandTokenError(`no colour resolves the "${slot}" slot`, {
+      slot,
+      tried: COLOR_CHAINS[slot],
+      saw: (brand.colors ?? []).map((c) => c.role),
+    });
   }
   return null;
 }
@@ -93,7 +94,7 @@ function pickColor(brand, slot, { required = false } = {}) {
 function pickType(brand) {
   const list = brand.typography ?? [];
   if (!list.length) {
-    throw new BrandTokenError("brand publishes no typography", { saw: [] });
+    throw new BrandTokenError('brand publishes no typography', { saw: [] });
   }
 
   const byChain = (slot) => {
@@ -104,8 +105,8 @@ function pickType(brand) {
     return null;
   };
 
-  let display = byChain("display");
-  let sans = byChain("sans");
+  let display = byChain('display');
+  let sans = byChain('sans');
 
   // Both landed on the same entry, or one is missing: split by size instead.
   if (!display || !sans || display === sans) {
@@ -128,7 +129,7 @@ function pickType(brand) {
 export class BrandTokenError extends Error {
   constructor(message, detail) {
     super(`@visant/brand-tokens: ${message}`);
-    this.name = "BrandTokenError";
+    this.name = 'BrandTokenError';
     this.detail = detail;
   }
 }
@@ -136,27 +137,44 @@ export class BrandTokenError extends Error {
 function hex(oklchObj) {
   // culori → #rrggbb, clamped to sRGB gamut.
   const { r, g, b } = toRgb(oklchObj);
-  const h = (v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0");
+  const h = (v) =>
+    Math.round(Math.max(0, Math.min(1, v)) * 255)
+      .toString(16)
+      .padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
 function bestForeground(bg) {
-  return wcagContrast("#ffffff", bg) >= wcagContrast("#0a0a0a", bg) ? "#ffffff" : "#0a0a0a";
+  return wcagContrast('#ffffff', bg) >= wcagContrast('#0a0a0a', bg) ? '#ffffff' : '#0a0a0a';
 }
 
 // Build one theme (light or dark) via Leonardo, returning hex tokens.
 function buildTheme({ bgHex, neutralKeys, brandKeys, mode }) {
   const ratiosNeutral = Object.values(NEUTRAL).map((r) => r[mode]);
-  const bg = new BackgroundColor({ name: "bg", colorKeys: [bgHex], ratios: [2], colorSpace: CS });
-  const neutral = new Color({ name: "neutral", colorKeys: neutralKeys, ratios: ratiosNeutral, colorSpace: CS });
-  const brandInk = new Color({ name: "ink", colorKeys: brandKeys, ratios: [INK_RATIO], colorSpace: CS });
+  const bg = new BackgroundColor({ name: 'bg', colorKeys: [bgHex], ratios: [2], colorSpace: CS });
+  const neutral = new Color({
+    name: 'neutral',
+    colorKeys: neutralKeys,
+    ratios: ratiosNeutral,
+    colorSpace: CS,
+  });
+  const brandInk = new Color({
+    name: 'ink',
+    colorKeys: brandKeys,
+    ratios: [INK_RATIO],
+    colorSpace: CS,
+  });
   const bgLightness = Math.round(toOklch(bgHex).l * 100);
-  const theme = new Theme({ colors: [neutral, brandInk], backgroundColor: bg, lightness: bgLightness });
+  const theme = new Theme({
+    colors: [neutral, brandInk],
+    backgroundColor: bg,
+    lightness: bgLightness,
+  });
 
   const out = theme.contrastColors;
   const background = out[0].background;
-  const neutralVals = out.find((c) => c.name === "neutral").values.map((v) => v.value);
-  const inkVal = out.find((c) => c.name === "ink").values[0].value;
+  const neutralVals = out.find((c) => c.name === 'neutral').values.map((v) => v.value);
+  const inkVal = out.find((c) => c.name === 'ink').values[0].value;
 
   const keys = Object.keys(NEUTRAL);
   const n = {};
@@ -168,58 +186,73 @@ function buildTheme({ bgHex, neutralKeys, brandKeys, mode }) {
 export function compileBrandTokens(brand) {
   // Required: without a ground and an identity colour there is no brand to
   // compile. Failing here is the point — a default would be another brand's.
-  const bg = pickColor(brand, "background", { required: true });
-  const accent = pickColor(brand, "accent", { required: true });
-  const secondary = pickColor(brand, "secondary") ?? accent; // dark key → ink hits AA
+  const bg = pickColor(brand, 'background', { required: true });
+  const accent = pickColor(brand, 'accent', { required: true });
+  const secondary = pickColor(brand, 'secondary') ?? accent; // dark key → ink hits AA
   const bgO = toOklch(bg);
   const accentO = toOklch(accent);
   const bgHue = Number.isFinite(bgO.h) ? bgO.h : 30; // warm default
 
   // --- LIGHT: neutral ramp anchored on the warm brand background --------------
-  const lightNeutralDark = hex({ mode: "oklch", l: 0.16, c: Math.min((bgO.c || 0.006) * 2, 0.02), h: bgHue });
+  const lightNeutralDark = hex({
+    mode: 'oklch',
+    l: 0.16,
+    c: Math.min((bgO.c || 0.006) * 2, 0.02),
+    h: bgHue,
+  });
   const light = buildTheme({
     bgHex: bg,
     neutralKeys: [bg, lightNeutralDark],
     brandKeys: [accent, secondary], // teal end lets brand-ink hit 4.7 on light
-    mode: "light",
+    mode: 'light',
   });
 
   // --- DARK: warm near-black ground, synthesized (auto; hand-refine later) -----
-  const darkBg = hex({ mode: "oklch", l: 0.12, c: Math.min(bgO.c || 0.006, 0.012), h: bgHue });
-  const darkNeutralLight = hex({ mode: "oklch", l: 0.95, c: Math.min((bgO.c || 0.006) * 1.5, 0.014), h: bgHue });
-  const darkInkLight = hex({ mode: "oklch", l: 0.92, c: Math.min(accentO.c || 0.1, 0.11), h: accentO.h ?? 195 });
+  const darkBg = hex({ mode: 'oklch', l: 0.12, c: Math.min(bgO.c || 0.006, 0.012), h: bgHue });
+  const darkNeutralLight = hex({
+    mode: 'oklch',
+    l: 0.95,
+    c: Math.min((bgO.c || 0.006) * 1.5, 0.014),
+    h: bgHue,
+  });
+  const darkInkLight = hex({
+    mode: 'oklch',
+    l: 0.92,
+    c: Math.min(accentO.c || 0.1, 0.11),
+    h: accentO.h ?? 195,
+  });
   const dark = buildTheme({
     bgHex: darkBg,
     neutralKeys: [darkBg, darkNeutralLight],
     brandKeys: [accent, darkInkLight], // light end lets brand-ink read on dark
-    mode: "dark",
+    mode: 'dark',
   });
 
   const pack = (t) => ({
     background: t.background,
     foreground: t.neutral.foreground,
     card: t.neutral.card,
-    "card-foreground": t.neutral.foreground,
+    'card-foreground': t.neutral.foreground,
     popover: t.neutral.card,
-    "popover-foreground": t.neutral.foreground,
+    'popover-foreground': t.neutral.foreground,
     muted: t.neutral.muted,
-    "muted-foreground": t.neutral["muted-foreground"],
+    'muted-foreground': t.neutral['muted-foreground'],
     secondary: t.neutral.muted,
-    "secondary-foreground": t.neutral.foreground,
+    'secondary-foreground': t.neutral.foreground,
     accent: t.neutral.muted, // shadcn convention: --accent = neutral hover surface
-    "accent-foreground": t.neutral.foreground,
+    'accent-foreground': t.neutral.foreground,
     border: t.neutral.border,
     input: t.neutral.input,
     brand: accent, // identity fill — un-forced
-    "brand-foreground": bestForeground(accent),
-    "accent-ink": t.ink, // brand-COLORED text, contrast-forced
+    'brand-foreground': bestForeground(accent),
+    'accent-ink': t.ink, // brand-COLORED text, contrast-forced
     ring: accent,
   });
 
   const hslHue = Math.round(((bgHue % 360) + 360) % 360);
   return {
     themes: { light: pack(light), dark: pack(dark) },
-    shadow: { light: `${hslHue} 30% 12%`, dark: "0 0% 0%" },
+    shadow: { light: `${hslHue} 30% 12%`, dark: '0 0% 0%' },
     type: pickType(brand),
     // Carimbo de proveniência: quando alguém perguntar de onde veio a cor, a
     // resposta viaja junto com o token, não na memória de quem gerou.
@@ -255,16 +288,16 @@ export function emitCss(compiled, craft) {
   const colorBlock = (t) =>
     Object.entries(t)
       .map(([k, v]) => `  --${k}: ${oklchStr(v)};`)
-      .join("\n");
+      .join('\n');
 
   const motion = Object.entries(craft.motion)
     .map(([k, v]) => `  --${k}: ${v};`)
-    .join("\n");
+    .join('\n');
 
   const density = (d) =>
     Object.entries(d)
       .map(([k, v]) => `  --${k}: ${v};`)
-      .join("\n");
+      .join('\n');
 
   const provenance = [
     meta.name && `brand: ${meta.name}`,
@@ -273,11 +306,11 @@ export function emitCss(compiled, craft) {
     meta.completeness != null && `completeness: ${meta.completeness}%`,
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join(' · ');
 
   return `/* Generated by @visant/brand-tokens. DO NOT EDIT BY HAND. */
 /* Layer 1 (identity) derived per-brand + Layer 2 (craft) skeleton. */${
-    provenance ? `\n/* ${provenance} */` : ""
+    provenance ? `\n/* ${provenance} */` : ''
   }
 
 :root {

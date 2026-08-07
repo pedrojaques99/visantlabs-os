@@ -134,7 +134,8 @@ function PhotoSequencer() {
       return [...prev, ...fresh];
     });
 
-    if (failed) showToast(t('plugin.tools.photoSequencer.layersFailedExport', { count: failed }), 'warning');
+    if (failed)
+      showToast(t('plugin.tools.photoSequencer.layersFailedExport', { count: failed }), 'warning');
   }
 
   function sortByPosition() {
@@ -167,7 +168,9 @@ function PhotoSequencer() {
     const payloadBytes = shots.reduce((sum, s) => sum + s.data.length, 0);
     if (payloadBytes > MAX_PAYLOAD_BYTES) {
       showToast(
-        t('plugin.tools.photoSequencer.photosTooHeavy', { size: (payloadBytes / 1024 / 1024).toFixed(0) }),
+        t('plugin.tools.photoSequencer.photosTooHeavy', {
+          size: (payloadBytes / 1024 / 1024).toFixed(0),
+        }),
         'error'
       );
       return;
@@ -192,13 +195,18 @@ function PhotoSequencer() {
       });
 
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: t('plugin.tools.photoSequencer.failedStatus', { status: res.status }) }));
+        const { error } = await res.json().catch(() => ({
+          error: t('plugin.tools.photoSequencer.failedStatus', { status: res.status }),
+        }));
         throw new Error(error);
       }
 
       const { videoUrl } = await res.json();
       setResult({ url: videoUrl, format });
-      showToast(t('plugin.tools.photoSequencer.videoReady', { seconds: total.toFixed(1) }), 'success');
+      showToast(
+        t('plugin.tools.photoSequencer.videoReady', { seconds: total.toFixed(1) }),
+        'success'
+      );
     } catch (e: any) {
       showToast(e?.message || t('plugin.tools.photoSequencer.renderFailed'), 'error');
     }
@@ -317,9 +325,13 @@ function PhotoSequencer() {
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{t('plugin.tools.photoSequencer.loops')}</span>
+              <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                {t('plugin.tools.photoSequencer.loops')}
+              </span>
               {!loopsApply && (
-                <span className="font-mono text-[8px] text-muted-foreground/70">{t('plugin.tools.photoSequencer.gifAlwaysLoops')}</span>
+                <span className="font-mono text-[8px] text-muted-foreground/70">
+                  {t('plugin.tools.photoSequencer.gifAlwaysLoops')}
+                </span>
               )}
             </div>
             <div className="grid grid-cols-4 gap-1">
@@ -355,7 +367,9 @@ function PhotoSequencer() {
               }`}
               title={t('plugin.tools.photoSequencer.randomTitle')}
             >
-              {order === 'random' ? t('plugin.tools.photoSequencer.orderRandom') : t('plugin.tools.photoSequencer.orderSequence')}
+              {order === 'random'
+                ? t('plugin.tools.photoSequencer.orderRandom')
+                : t('plugin.tools.photoSequencer.orderSequence')}
             </button>
             <div className="grid grid-cols-3 gap-1">
               {FORMATS.map((f) => (
@@ -386,7 +400,9 @@ function PhotoSequencer() {
             className="h-8 w-full text-[10px] font-bold uppercase tracking-wider"
           >
             <Film size={12} className="mr-1.5" />
-            {result ? t('plugin.tools.photoSequencer.renderAgain') : t('plugin.tools.photoSequencer.render')}
+            {result
+              ? t('plugin.tools.photoSequencer.renderAgain')
+              : t('plugin.tools.photoSequencer.render')}
           </OpButton>
         </>
       )}
@@ -394,7 +410,11 @@ function PhotoSequencer() {
       {result && (
         <div className="overflow-hidden rounded border border-border/50 bg-background/40">
           {result.format === 'gif' ? (
-            <img src={result.url} alt={t('plugin.tools.photoSequencer.previewAlt')} className="w-full" />
+            <img
+              src={result.url}
+              alt={t('plugin.tools.photoSequencer.previewAlt')}
+              className="w-full"
+            />
           ) : (
             // Points straight at R2: a media element loads cross-origin without CORS,
             // unlike the fetch in downloadFromUrl — that one needs the backend proxy.

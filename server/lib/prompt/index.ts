@@ -97,9 +97,7 @@ export function assemblePrompt(input: PromptAssemblerInput): AssembledPrompt {
   // Classify the whole turn (original request + answer) so "Visant" replying to
   // "which brand for the mockup?" stays a mockup instead of decaying into chat.
   const isContinuation = !!pendingTurn && isReplyToPendingQuestion(command, pendingTurn);
-  const continuationContext = isContinuation
-    ? buildContinuationContext(command, pendingTurn!)
-    : '';
+  const continuationContext = isContinuation ? buildContinuationContext(command, pendingTurn!) : '';
   const classifierInput =
     isContinuation && pendingTurn?.pendingRequest
       ? `${pendingTurn.pendingRequest}\n${command}`

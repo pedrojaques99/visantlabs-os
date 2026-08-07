@@ -146,9 +146,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
             <div className="space-y-4">
               {presets.length > 1 && (
                 <div className="space-y-1.5">
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-500">
-                    Template
-                  </p>
+                  <p className="text-[10px] uppercase tracking-widest text-neutral-500">Template</p>
                   <div className="flex flex-wrap gap-1.5">
                     {presets.map((p) => (
                       <button

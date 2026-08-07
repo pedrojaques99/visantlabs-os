@@ -79,9 +79,7 @@ export const SectionLabel: React.FC<{ children: React.ReactNode; className?: str
   children,
   className,
 }) => (
-  <span
-    className={cn('text-[10px] uppercase tracking-widest text-muted-foreground', className)}
-  >
+  <span className={cn('text-[10px] uppercase tracking-widest text-muted-foreground', className)}>
     {children}
   </span>
 );
@@ -132,9 +130,7 @@ export const ToolPanelSection: React.FC<{
 }> = ({ title, children, className, id, onReset }) => (
   <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
     <div className="group -mx-4 px-4 py-1.5 flex items-center justify-between">
-      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-        {title}
-      </span>
+      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{title}</span>
       {onReset && (
         <button
           onClick={onReset}
@@ -403,7 +399,13 @@ export const ExpandableColorPicker: React.FC<{
   // Paste-first: accept "#RRGGBB", "RRGGBB", or 3-digit shorthand, apply immediately.
   const handleHexInput = useCallback(
     (raw: string) => {
-      setHexInput(raw.replace(/^#/, '').replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase());
+      setHexInput(
+        raw
+          .replace(/^#/, '')
+          .replace(/[^0-9a-fA-F]/g, '')
+          .slice(0, 6)
+          .toUpperCase()
+      );
       const hex = parseHex(raw);
       if (hex) onChange(hex);
     },
@@ -529,7 +531,10 @@ export const ExpandableColorPicker: React.FC<{
           {showRgb && (
             <div className="grid grid-cols-3 gap-1.5">
               {(['R', 'G', 'B'] as const).map((ch, i) => (
-                <label key={ch} className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-1.5 py-0.5">
+                <label
+                  key={ch}
+                  className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-1.5 py-0.5"
+                >
                   <span className="text-[10px] font-mono text-neutral-500">{ch}</span>
                   <input
                     type="number"
