@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pickaxe, Lock } from '@/lib/ui/icons';
+import { Pickaxe, Lock, AlertTriangle, RotateCw } from '@/lib/ui/icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { getBrandingStepCredits } from '@/utils/creditCalculator';
@@ -7,6 +7,55 @@ import { getSectionEmoji } from '@/utils/brandingHelpers';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+
+// ──────────────────────────────────────────────────────────────────────────
+// Errored-steps store (module-level, subscribable)
+// A failed generation must NOT look like a never-attempted step. The generate
+// result is handled far away in BrandingMachinePage, and this tile is rendered
+// through intermediary components that don't forward per-step props — so the
+// error signal travels via this tiny external store instead of prop drilling.
+// ──────────────────────────────────────────────────────────────────────────
+const erroredSteps = new Set<number>();
+const erroredListeners = new Set<() => void>();
+
+const emitErrored = () => {
+  erroredListeners.forEach((listener) => listener());
+};
+
+/** Flag or unflag a step as having failed its last generation attempt. */
+export const markStepErrored = (stepNumber: number, errored: boolean): void => {
+  const has = erroredSteps.has(stepNumber);
+  if (errored) {
+    if (has) return;
+    erroredSteps.add(stepNumber);
+  } else {
+    if (!has) return;
+    erroredSteps.delete(stepNumber);
+  }
+  emitErrored();
+};
+
+/** Clear all error flags — call when switching projects or starting fresh. */
+export const clearErroredSteps = (): void => {
+  if (erroredSteps.size === 0) return;
+  erroredSteps.clear();
+  emitErrored();
+};
+
+const subscribeErrored = (listener: () => void): (() => void) => {
+  erroredListeners.add(listener);
+  return () => {
+    erroredListeners.delete(listener);
+  };
+};
+
+/** Subscribe to whether a given step's last generation attempt failed. */
+export const useStepErrored = (stepNumber: number): boolean =>
+  React.useSyncExternalStore(
+    subscribeErrored,
+    () => erroredSteps.has(stepNumber),
+    () => false
+  );
 
 interface EmptySectionCardProps {
   stepNumber: number;
@@ -31,6 +80,9 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
   const { theme } = useTheme();
   const creditsRequired = getBrandingStepCredits(stepNumber);
   const emoji = getSectionEmoji(stepNumber);
+  const errored = useStepErrored(stepNumber);
+  // A failed generation gets a distinct error+retry look; blocked/generating take precedence.
+  const showError = errored && !isBlocked && !isGenerating;
 
   const getMissingDepsText = () => {
     if (missingDependencies.length === 0) return '';
@@ -45,9 +97,12 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       asChild
       className={cn(
         'aspect-square border-2 active:scale-[0.98] transition-all duration-200 relative flex flex-col items-center justify-center gap-3 w-full',
-        isBlocked
-          ? 'opacity-60 cursor-not-allowed border-red-500/20'
-          : 'border-white/10 hover:border-white/20 hover:bg-white/5 cursor-pointer group',
+        showError
+          ? 'border-red-500/40 hover:border-red-500/60 hover:bg-red-500/5 cursor-pointer group'
+          : isBlocked
+            ? // Blocked = missing deps. Clickable so the click routes into the dep-generation flow.
+              'opacity-80 cursor-pointer border-red-500/20 hover:border-red-500/40'
+            : 'border-white/10 hover:border-white/20 hover:bg-white/5 cursor-pointer group',
         isGenerating && 'opacity-50 cursor-not-allowed'
       )}
       padding="none"
@@ -56,15 +111,35 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          if (!isBlocked) {
-            onGenerate();
-          }
+          // Always fire onGenerate: for a blocked step this routes into the
+          // dependency-generation flow (generateStep resolves missing deps via
+          // the confirmation modal); for an errored step it retries.
+          onGenerate();
         }}
-        disabled={isGenerating || isBlocked}
-        title={isBlocked ? `Bloqueado: requer ${getMissingDepsText()}` : undefined}
+        disabled={isGenerating}
+        title={
+          showError
+            ? 'Generation failed — click to try again'
+            : isBlocked
+              ? `Bloqueado: requer ${getMissingDepsText()}`
+              : undefined
+        }
       >
+        {/* Error Icon Overlay */}
+        {showError && (
+          <div
+            className={`absolute top-2 left-2 p-1.5 rounded-md ${
+              theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
+            }`}
+          >
+            <AlertTriangle
+              className={`h-3 w-3 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`}
+            />
+          </div>
+        )}
+
         {/* Blocked Icon Overlay */}
-        {isBlocked && (
+        {isBlocked && !showError && (
           <div
             className={`absolute top-2 left-2 p-1.5 rounded-md ${
               theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
@@ -76,7 +151,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
 
         {/* Emoji Icon */}
         <div
-          className={`text-3xl md:text-4xl filter transition-all duration-200 ${
+          className={`text-3xl md:text-4xl filter transition-[color,background-color,border-color,opacity,filter] duration-200 ${
             isBlocked ? 'grayscale opacity-50' : 'grayscale group-hover:grayscale-0'
           }`}
         >
@@ -92,10 +167,28 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
           {stepTitle}
         </h3>
 
-        {/* Credits Badge - Pilula style */}
-        {!isBlocked && (
+        {/* Error Retry Badge */}
+        {showError && (
           <div
-            className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-all duration-200 ${
+            className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 ${
+              theme === 'dark' ? 'bg-red-500/20 border-red-500/30' : 'bg-red-100 border-red-300'
+            }`}
+          >
+            <RotateCw size={12} className={theme === 'dark' ? 'text-red-400' : 'text-red-600'} />
+            <span
+              className={`text-xs font-mono font-semibold ${
+                theme === 'dark' ? 'text-red-400' : 'text-red-600'
+              }`}
+            >
+              Retry
+            </span>
+          </div>
+        )}
+
+        {/* Credits Badge - Pilula style */}
+        {!isBlocked && !showError && (
+          <div
+            className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-colors duration-200 ${
               theme === 'dark'
                 ? 'bg-white/10 border-white/20 group-hover:bg-white/15'
                 : 'bg-neutral-200 border-neutral-300 group-hover:bg-neutral-300'

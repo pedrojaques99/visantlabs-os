@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { Masonry, useMasonryColumns } from '@/components/ui/Masonry';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { thumbHashToDataURL } from 'thumbhash';
@@ -8,6 +8,7 @@ import {
   Upload,
   Search,
   Image as ImageIcon,
+  Link as LinkIcon,
   Globe,
   MapPin,
   X,
@@ -58,6 +59,9 @@ import { REGIONS, DESIGN_COUNTRIES, REGION_LABELS, countryFlag } from '@/lib/ref
 import { useActiveBrandSafe } from '@/contexts/ActiveBrandContext';
 import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { brandRankingTerms } from '@/lib/references/brandTerms';
+import { localizedName, type LocalizableRef } from '@/lib/references/naming';
+import { isLowResolution } from '@/lib/references/quality';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   FACET_DIMENSION_KEYS,
   DIMENSION_LABELS,
@@ -75,9 +79,28 @@ import {
   type ReferenceCollection,
   type CollectionDetail,
   type TasteHint,
+  type LowResReport,
 } from '@/services/referencesApi';
 
-const PAGE_SIZE = 30;
+// Constante: o servidor pagina por skip=(page-1)*limit, entao o limit nao pode
+// variar entre paginas do mesmo feed (geraria buraco/duplicata). Teto do server = 60.
+const PAGE_SIZE = 48;
+
+/**
+ * Barra de APAGAR. Mais dura que a de AVISAR (MIN_SHORT_SIDE = 400 em
+ * src/lib/references/quality.ts): abaixo de 300px o menor lado não sustenta
+ * nenhuma leitura de design — são tiras (654×4) e fragmentos de UI raspados.
+ */
+const LOW_RES_PURGE_BAR = 300;
+
+// O sentinel dispara a proxima pagina enquanto ainda existem ~2.5 telas de feed
+// abaixo do fold — assim o usuario nunca alcanca o fim antes do fetch terminar.
+const PREFETCH_VIEWPORTS = 2.5;
+const PREFETCH_LEAD_MIN = 1200;
+function computePrefetchLead(): number {
+  if (typeof window === 'undefined') return PREFETCH_LEAD_MIN;
+  return Math.max(PREFETCH_LEAD_MIN, Math.round(window.innerHeight * PREFETCH_VIEWPORTS));
+}
 
 // Per-session feed seed — persisted so the order is stable across pages/reloads
 // within a browser session, but fresh on a new session (or when reshuffled).
@@ -130,26 +153,27 @@ interface SimilarView {
 // Generic source labels that aren't real titles (studio field is often just a provenance tag).
 const GENERIC_STUDIO = /^(visant|curated|visant\s*curated|reference|ref)$/i;
 
-/** Human-facing title — never surface the raw slug id (ref_urbanstay_56, club_ref_69…). */
-function refTitle(item: Pick<ReferenceItem, 'name' | 'studio' | 'provenance'>): string {
-  const prov = item.provenance || {};
-  const designer = prov.designer?.trim();
+/**
+ * Human-facing title, in the viewer's language.
+ *
+ * Precedence used to be designer/studio FIRST, because names were junk — which
+ * made every curated row render as "Visant Curated". Names are real now, so the
+ * name leads and attribution is the fallback. Generic studio labels still lose
+ * to anything more specific. Internal id-slugs (ref_urbanstay_56, club_ref_69)
+ * are never surfaced — `localizedName` rewrites them.
+ */
+function refTitle(
+  item: Pick<ReferenceItem, 'name' | 'nameI18n' | 'studio' | 'provenance' | 'dimensions'>,
+  locale: string
+): string {
+  const title = localizedName(item as LocalizableRef, locale, '');
+  if (title) return title;
+
+  const designer = item.provenance?.designer?.trim();
   const studio = item.studio?.trim();
   if (designer && !GENERIC_STUDIO.test(designer)) return designer;
   if (studio && !GENERIC_STUDIO.test(studio)) return studio;
-  const raw = (item.name || '').trim();
-  // Rewrite our internal ref-id slugs; leave real human names untouched.
-  const m = raw.match(/^(?:userref[-_]|club[-_]?ref[-_]|ref[-_])(.+)$/i);
-  if (m) {
-    const cleaned = m[1]
-      .replace(/[-_]\d+$/, '')
-      .replace(/[-_]+/g, ' ')
-      .trim();
-    // A meaningful name survived → title-case it; otherwise the slug is just an id (e.g. "69").
-    if (cleaned && !/^\d+$/.test(cleaned)) return cleaned.replace(/\b\w/g, (c) => c.toUpperCase());
-    return studio || designer || 'Referência';
-  }
-  return raw || 'Referência';
+  return designer || studio || 'Referência';
 }
 
 /** Dimension values two references share — powers the "why it matches" explanation. */
@@ -182,7 +206,17 @@ function useThumbPlaceholder(hash?: string): string | null {
 
 // Masonry column count now comes from the shared `useMasonryColumns` (src/components/ui/Masonry).
 
-export const ReferencesPage: React.FC = () => {
+/**
+ * `embedded` = rota `/refs`: a mesma biblioteca servida como superfície própria
+ * (navegador focado, ou painel de plugin do Figma num iframe). Não é uma segunda
+ * implementação — é esta, com o chrome do app e as ferramentas de gestão fora.
+ *
+ * O que sai: hero do PageShell, upload, fila de moderação, barra de duplicatas,
+ * ações de admin. O que fica: busca, facetas, grid, lightbox, "parecidas".
+ * Ações que exigem conta continuam visíveis e pedem login NO CLIQUE — a rota é
+ * pública pra leitura.
+ */
+export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   // Read initial filter state from the URL once (shareable / back-button friendly).
   const initialDims: Record<string, string> = {};
@@ -193,12 +227,25 @@ export const ReferencesPage: React.FC = () => {
 
   // Active brand feeds the feed RANKING (not a hard filter): the BrandSwitcher in
   // the shell is the control. "Todas as marcas" (activeBrandId null) → neutral feed.
+  // TEMPORÁRIO — `?src=Z:/Jobs 2.0` isola uma leva de ingest pra inspeção visual
+  // antes de decidir o que fazer com ela. Remover junto com a decisão.
+  // Permalink: /references/:handle e /refs/:handle abrem o lightbox naquela ref.
+  const { handle: permalinkHandle } = useParams<{ handle?: string }>();
+  const navigate = useNavigate();
+
+  const sourcePrefix = searchParams.get('src') || '';
+  /** Navegação por cor — na URL, então um recorte por cor é compartilhável. */
+  const color = searchParams.get('color') || '';
+
   const activeBrand = useActiveBrandSafe();
   const activeBrandId = activeBrand?.activeBrandId ?? null;
   const brandTerms = useMemo(
     () => brandRankingTerms(activeBrand?.activeBrand),
     [activeBrand?.activeBrand]
   );
+  // Só nomeia a lente quando ela REALMENTE muda a ordem: marca sem termos
+  // utilizáveis cai no feed neutro, e anunciar afinidade ali seria mentira.
+  const activeBrandName = brandTerms ? activeBrand?.activeBrand?.name?.trim() || '' : '';
   // Rail slot — the tag facets live in the drill-in rail, below the categories.
   const railSlot = useRailSlot()?.railSlot ?? null;
 
@@ -251,6 +298,8 @@ export const ReferencesPage: React.FC = () => {
   );
   const [dupeReport, setDupeReport] = useState<DuplicateReport | null>(null);
   const [deduping, setDeduping] = useState(false);
+  const [lowResReport, setLowResReport] = useState<LowResReport | null>(null);
+  const [purgingLowRes, setPurgingLowRes] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [moderationOpen, setModerationOpen] = useState(false);
   // Batch multi-select (Set of ref ids) + shift-range anchor.
@@ -278,6 +327,14 @@ export const ReferencesPage: React.FC = () => {
   const searchByImageInput = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(1);
+
+  // Distancia (px) antes do fim do feed em que a proxima pagina ja comeca a carregar.
+  const [prefetchLead, setPrefetchLead] = useState(() => computePrefetchLead());
+  useEffect(() => {
+    const onResize = () => setPrefetchLead(computePrefetchLead());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const cols = useMasonryColumns();
   const activeDimEntries = Object.entries(dims).filter(([, v]) => v);
@@ -337,6 +394,8 @@ export const ReferencesPage: React.FC = () => {
                 brandId: activeBrandId || undefined,
                 brandTerms: brandTerms || undefined,
                 semantic: semanticSearch,
+                sourcePrefix: sourcePrefix || undefined,
+                color: color || undefined,
               });
         setItems((prev) => {
           if (!append) return data.references;
@@ -366,6 +425,8 @@ export const ReferencesPage: React.FC = () => {
       activeBrandId,
       brandTerms,
       semanticSearch,
+      sourcePrefix,
+      color,
     ]
   );
 
@@ -391,9 +452,9 @@ export const ReferencesPage: React.FC = () => {
     if (!authService.isAuthenticated()) return;
     authService
       .verifyToken()
-      .then((u) => setIsAdmin(!!u?.isAdmin))
+      .then((u) => setIsAdmin(!embedded && !!u?.isAdmin))
       .catch(() => {});
-  }, []);
+  }, [embedded]);
 
   // Duplicate map — admin only. The library predates ingest dedup, so identical
   // bytes exist more than once; this marks them in place so the grouping can be
@@ -411,6 +472,11 @@ export const ReferencesPage: React.FC = () => {
         setDupeMap(map);
         setDupeReport(report);
       })
+      .catch(() => {});
+    // Referências pequenas demais pra servir de referência.
+    adminReferencesApi
+      .lowRes(LOW_RES_PURGE_BAR)
+      .then(setLowResReport)
       .catch(() => {});
     // Moderation queue count — how many user uploads await review.
     adminReferencesApi
@@ -466,10 +532,17 @@ export const ReferencesPage: React.FC = () => {
     if (kind !== 'all') p.set('kind', kind);
     if (scope !== 'library') p.set('scope', scope);
     for (const k of DIMENSION_FILTER_KEYS) if (dims[k]) p.set(k, dims[k]);
+    // `src` é inspeção, não filtro de usuário — mas some daqui se não for
+    // reescrito, porque esta serialização monta a query do zero.
+    if (sourcePrefix) p.set('src', sourcePrefix);
+    if (color) p.set('color', color);
     setSearchParams(p, { replace: true });
-  }, [debouncedSearch, country, region, activeTag, kind, scope, dims]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, country, region, activeTag, kind, scope, dims, sourcePrefix, color]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // infinite scroll
+  // infinite scroll — prefetch com margem proporcional a viewport.
+  // Um lead fixo (900px) sumia em telas altas e em scroll rapido: o usuario
+  // chegava no fim do grid antes da proxima pagina existir. Aqui a proxima
+  // pagina comeca a carregar enquanto ainda ha ~2.5 telas de conteudo abaixo.
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el || similar || collectionView || scope === 'collections') return;
@@ -479,11 +552,34 @@ export const ReferencesPage: React.FC = () => {
           loadList(pageRef.current + 1, true);
         }
       },
-      { rootMargin: '900px' }
+      { rootMargin: `${prefetchLead}px 0px` }
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [pages, isLoading, isLoadingMore, similar, collectionView, scope, loadList]);
+  }, [pages, isLoading, isLoadingMore, similar, collectionView, scope, loadList, prefetchLead]);
+
+  // Permalink → abre o lightbox naquela referência. Ela é prefixada no grid em
+  // vez de esperar o feed conter, porque um link compartilhado tem que resolver
+  // mesmo quando a ref não está na primeira página (ou nem no recorte atual).
+  useEffect(() => {
+    if (!permalinkHandle) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { reference } = await referencesApi.item(permalinkHandle);
+        if (cancelled) return;
+        setItems((prev) =>
+          prev.some((r) => r.id === reference.id) ? prev : [reference, ...prev]
+        );
+        setLightboxIndex(0);
+      } catch {
+        if (!cancelled) toast.error('Referência não encontrada');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [permalinkHandle]);
 
   // ── Auth gate ──────────────────────────────────────────────────
   const requireAuth = (): boolean => {
@@ -701,6 +797,36 @@ export const ReferencesPage: React.FC = () => {
     }
   }, [dupeReport]);
 
+  // Limpeza de baixa resolução. Confirma com o número REAL de apagáveis (o
+  // servidor exclui as que estão em coleção), e o servidor recomputa os ids —
+  // uma página velha não consegue mandar apagar o que ela acha que é pequeno.
+  const handlePurgeLowRes = useCallback(async () => {
+    if (!lowResReport) return;
+    const deletable = lowResReport.total - lowResReport.protected;
+    if (!deletable) return;
+    const ok = window.confirm(
+      `Apagar ${deletable} referência(s) com menor lado abaixo de ${lowResReport.maxShortSide}px?` +
+        (lowResReport.protected
+          ? `\n\n${lowResReport.protected} está(ão) em coleção e será(ão) preservada(s).`
+          : '') +
+        '\n\nAção irreversível.'
+    );
+    if (!ok) return;
+    setPurgingLowRes(true);
+    try {
+      const res = await adminReferencesApi.purgeLowRes(lowResReport.maxShortSide, false);
+      setLowResReport(null);
+      // Refetch em vez de filtrar em memória: os ids apagados são recomputados
+      // no servidor, então a lista local não sabe quais morreram.
+      await loadList(1, false);
+      toast.success(`${res.deleted ?? 0} referência(s) de baixa resolução removida(s)`);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao apagar baixa resolução');
+    } finally {
+      setPurgingLowRes(false);
+    }
+  }, [lowResReport, loadList]);
+
   // ── Drag & paste to search ─────────────────────────────────────
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -835,7 +961,8 @@ export const ReferencesPage: React.FC = () => {
         microTitle="Library // References"
         title="Reference Library"
         description="Referências de design world-class, taggeadas por conteúdo e por país de origem. Suba, arraste ou cole uma imagem para achar parecidas — ou mergulhe de uma ref pra outra."
-        width="7xl"
+        width={embedded ? 'full' : '7xl'}
+        hideHeader={embedded}
         actions={
           <div className="flex items-center gap-2">
             <input
@@ -852,23 +979,82 @@ export const ReferencesPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="bg-card border-border text-xs"
+              title="Buscar por imagem"
+              className="shrink-0 bg-card border-border text-xs px-2 sm:px-3"
               onClick={() => requireAuth() && searchByImageInput.current?.click()}
             >
-              <ScanSearch className="h-3.5 w-3.5 mr-1.5" />
-              Buscar por imagem
+              <ScanSearch className="h-3.5 w-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Buscar por imagem</span>
             </Button>
-            <Button
-              size="sm"
-              className="bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs"
-              onClick={() => requireAuth() && setUploadOpen(true)}
-            >
-              <Upload className="h-3.5 w-3.5 mr-1.5" />
-              Subir referência
-            </Button>
+            {!embedded && (
+              <Button
+                size="sm"
+                title="Subir referência"
+                className="shrink-0 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-xs px-2 sm:px-3"
+                onClick={() => requireAuth() && setUploadOpen(true)}
+              >
+                <Upload className="h-3.5 w-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">Subir referência</span>
+              </Button>
+            )}
           </div>
         }
       >
+        {/* Lente do feed — o que está moldando a ordem, dito em uma linha.
+            A marca ativa JÁ ranqueava o feed e isso não aparecia em lugar
+            nenhum: um default silencioso é uma recomendação anônima. Só
+            renderiza quando há de fato uma lente (nada é "zero informação"). */}
+        {(activeBrandName || sourcePrefix || color) && !similar && !collectionView && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 text-[11px] text-muted-foreground">
+            {activeBrandName && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1">
+                <Sparkles className="h-3 w-3 text-brand-cyan" />
+                Ordenado por afinidade com <strong className="font-medium text-foreground">{activeBrandName}</strong>
+              </span>
+            )}
+            {color && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-ring bg-muted px-2.5 py-1">
+                <span
+                  aria-hidden
+                  className="h-3 w-3 rounded-sm border border-border"
+                  style={{ backgroundColor: color }}
+                />
+                Cor <code className="font-mono text-foreground">{color}</code>
+                <button
+                  type="button"
+                  aria-label="Remover filtro de cor"
+                  className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={() => {
+                    const p = new URLSearchParams(searchParams);
+                    p.delete('color');
+                    setSearchParams(p, { replace: true });
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {sourcePrefix && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-ring bg-muted px-2.5 py-1">
+                <Folder className="h-3 w-3" />
+                Origem: <code className="font-mono text-foreground">{sourcePrefix}</code>
+                <button
+                  type="button"
+                  aria-label="Remover filtro de origem"
+                  className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={() => {
+                    const p = new URLSearchParams(searchParams);
+                    p.delete('src');
+                    setSearchParams(p, { replace: true });
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Similarity banner */}
         <AnimatePresence>
           {similar && (
@@ -1104,8 +1290,8 @@ export const ReferencesPage: React.FC = () => {
         {/* Admin-only: user uploads awaiting moderation. Nothing here is public
             or AI-analysed yet — approving runs enrichment, then reveals it. */}
         {isAdmin && pendingCount > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-brand-cyan/30 bg-brand-cyan/5 px-3 py-2">
-            <span className="text-xs font-mono text-brand-cyan">
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+            <span className="text-xs font-mono text-warning">
               {pendingCount} referência(s) aguardando revisão
             </span>
             <Button
@@ -1123,6 +1309,14 @@ export const ReferencesPage: React.FC = () => {
             explicit and one-way, so it confirms first. */}
         {isAdmin && dupeReport && dupeReport.redundant > 0 && (
           <DuplicateAdminBar report={dupeReport} onDedupe={handleDedupe} deduping={deduping} />
+        )}
+
+        {isAdmin && lowResReport && lowResReport.total > 0 && (
+          <LowResAdminBar
+            report={lowResReport}
+            onPurge={handlePurgeLowRes}
+            purging={purgingLowRes}
+          />
         )}
 
         {/* Content */}
@@ -1269,6 +1463,12 @@ export const ReferencesPage: React.FC = () => {
         onEdit={(ref) => setEditTarget(ref)}
         onDelete={(ref) => handleAdminDelete([ref.id])}
         similarSource={similar?.source}
+        onColor={(hex) => {
+          const p = new URLSearchParams(searchParams);
+          p.set('color', hex);
+          setSearchParams(p, { replace: false });
+          setLightboxIndex(null);
+        }}
       />
 
       {/* Admin moderation queue (pending user uploads) */}
@@ -1622,6 +1822,7 @@ const CardContextMenu: React.FC<{
   onEdit: (r: ReferenceItem) => void;
   onDelete: (r: ReferenceItem) => void;
 }> = ({ menu, isAdmin, onClose, onSave, onSimilar, onEdit, onDelete }) => {
+  const { locale } = useTranslation();
   const { x, y, item } = menu;
   return (
     <DropdownMenu
@@ -1635,7 +1836,7 @@ const CardContextMenu: React.FC<{
         <span aria-hidden className="fixed" style={{ left: x, top: y }} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
-        <DropdownMenuLabel className="truncate">{refTitle(item)}</DropdownMenuLabel>
+        <DropdownMenuLabel className="truncate">{refTitle(item, locale)}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => onSave(item)}>
           <Bookmark className="h-3.5 w-3.5 mr-2" />
@@ -1691,7 +1892,7 @@ const BatchActionBar: React.FC<{
         initial={{ scale: 0.7, opacity: 0.4 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 600, damping: 24 }}
-        className="inline-block text-brand-cyan"
+        className="inline-block text-foreground"
       >
         {count}
       </motion.span>{' '}
@@ -1700,7 +1901,7 @@ const BatchActionBar: React.FC<{
     {count < total && (
       <button
         onClick={onSelectAll}
-        className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         Tudo
       </button>
@@ -1973,6 +2174,63 @@ const DuplicateAdminBar: React.FC<{
   </div>
 );
 
+/**
+ * Barra de limpeza de baixa resolução — irmã da DuplicateAdminBar.
+ *
+ * Duas barras de propósito: a de APAGAR (300px) é mais dura que a de AVISAR no
+ * lightbox (400px). Apagar exige mais certeza que alertar.
+ *
+ * Nunca oferece apagar o que está em coleção — se houver protegidas, a contagem
+ * diz quantas ficam de fora, porque um número que some sem explicação parece bug.
+ */
+const LowResAdminBar: React.FC<{
+  report: LowResReport;
+  onPurge: () => void;
+  purging: boolean;
+}> = ({ report, onPurge, purging }) => {
+  const deletable = report.total - report.protected;
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+      <span className="text-xs font-mono text-amber-500">
+        {report.total} abaixo de {report.maxShortSide}px
+      </span>
+      <span className="text-[11px] text-muted-foreground">
+        Tiras e fragmentos raspados (ex.: 654×4) que não carregam ideia de design
+        {report.protected > 0 && ` · ${report.protected} em coleção, preservada(s)`}
+      </span>
+      {report.samples.length > 0 && (
+        <span className="flex items-center gap-1">
+          {report.samples.slice(0, 6).map((sample) => (
+            <span
+              key={sample.id}
+              title={`${sample.name || 'sem nome'} — ${sample.width}×${sample.height}`}
+              className="h-6 w-6 overflow-hidden rounded border border-border bg-muted"
+            >
+              {sample.thumbnailUrl && (
+                <img src={sample.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+              )}
+            </span>
+          ))}
+        </span>
+      )}
+      <Button
+        size="sm"
+        variant="outline"
+        className="ml-auto h-7 border-destructive/40 text-xs text-destructive hover:bg-destructive/10"
+        disabled={purging || deletable === 0}
+        onClick={onPurge}
+      >
+        {purging ? (
+          <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+        ) : (
+          <Trash2 className="mr-1.5 h-3 w-3" />
+        )}
+        Apagar {deletable}
+      </Button>
+    </div>
+  );
+};
+
 const FilterControls: React.FC<{
   search: string;
   setSearch: (v: string) => void;
@@ -2055,6 +2313,7 @@ const MasonryCard: React.FC<{
   onContextMenu,
   dupe,
 }) => {
+  const { locale } = useTranslation();
   const [loaded, setLoaded] = useState(false);
   const reduce = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -2086,8 +2345,8 @@ const MasonryCard: React.FC<{
         <button
           aria-label={
             selectionActive
-              ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item)}`
-              : `Abrir ${refTitle(item)}`
+              ? `${selected ? 'Desmarcar' : 'Selecionar'} ${refTitle(item, locale)}`
+              : `Abrir ${refTitle(item, locale)}`
           }
           onClick={(e) => {
             // Once anything is selected, clicking a card toggles it (fast multi-select).
@@ -2103,7 +2362,15 @@ const MasonryCard: React.FC<{
             selectionActive && !selected && 'opacity-55 hover:opacity-100'
           )}
         >
-          <div className="relative" style={{ aspectRatio: loaded ? undefined : '4 / 5' }}>
+          {/* Reserva a caixa com a proporção REAL da imagem (gravada no ingest
+              por extractImageFacts). O 4/5 fixo de antes acertava por acaso: em
+              qualquer outra proporção o tile pulava ao carregar, e num masonry
+              isso empurra a coluna inteira. Fallback só quando a proporção é
+              desconhecida. */}
+          <div
+            className="relative"
+            style={{ aspectRatio: loaded ? undefined : item.aspectRatio || '4 / 5' }}
+          >
             {/* LQIP: thumbhash if available, else a soft shimmer */}
             {!loaded &&
               (placeholder ? (
@@ -2122,7 +2389,7 @@ const MasonryCard: React.FC<{
                 reduce ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 34 }
               }
               src={src}
-              alt={item.name}
+              alt={refTitle(item, locale)}
               loading="lazy"
               decoding="async"
               onLoad={() => setLoaded(true)}
@@ -2133,7 +2400,7 @@ const MasonryCard: React.FC<{
             />
             {/* gradient + meta on hover */}
             <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-[11px] font-medium text-white truncate">{refTitle(item)}</p>
+              <p className="text-[11px] font-medium text-white truncate">{refTitle(item, locale)}</p>
               {item.country && (
                 <p className="text-[10px] font-mono text-neutral-300 truncate">
                   {countryFlag(item.country)} {item.country}
@@ -2252,6 +2519,8 @@ const Lightbox: React.FC<{
   onEdit?: (ref: ReferenceItem) => void;
   onDelete?: (ref: ReferenceItem) => void;
   similarSource?: ReferenceItem;
+  /** Navegar por cor a partir de um swatch da paleta. */
+  onColor?: (hex: string) => void;
 }> = ({
   items,
   index,
@@ -2264,8 +2533,11 @@ const Lightbox: React.FC<{
   onEdit,
   onDelete,
   similarSource,
+  onColor,
 }) => {
+  const { locale } = useTranslation();
   const item = index !== null ? items[index] : null;
+  const isLowRes = isLowResolution({ width: item?.width, height: item?.height });
   const prov = item?.provenance || {};
   const flag = item ? countryFlag(item.country) : '';
   const reduce = useReducedMotion();
@@ -2346,9 +2618,14 @@ const Lightbox: React.FC<{
                   reduce ? { duration: 0 } : { type: 'spring', stiffness: 280, damping: 32 }
                 }
                 src={item.referenceImageUrl}
-                alt={item.name}
+                alt={refTitle(item, locale)}
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-full max-w-full object-contain rounded-lg"
+                // `max-*` sozinho renderiza no tamanho NATURAL: uma ref de 110px
+                // virava um selo perdido no meio do preto. `w-auto h-auto` com um
+                // piso relativo escala a pequena pra um tamanho legível — a
+                // pixelação é honesta e o aviso de baixa resolução explica.
+                className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg"
+                style={isLowRes ? { minWidth: 'min(38vw, 420px)', imageRendering: 'auto' } : undefined}
               />
             </div>
 
@@ -2358,7 +2635,7 @@ const Lightbox: React.FC<{
               className="lg:w-[340px] shrink-0 border-t lg:border-t-0 lg:border-l border-border bg-card p-5 sm:p-6 overflow-y-auto space-y-4"
             >
               {(() => {
-                const title = refTitle(item);
+                const title = refTitle(item, locale);
                 const sub = item.studio?.trim() || item.provenance?.designer?.trim();
                 return (
                   <div>
@@ -2371,6 +2648,39 @@ const Lightbox: React.FC<{
                   </div>
                 );
               })()}
+
+              {/* Resolução — só quando é BAIXA. Um selo em 100% das refs seria
+                  ruído; aqui ele explica por que a imagem está pixelada. */}
+              {isLowRes && item.width && (
+                <p className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                  <ImageIcon className="h-3 w-3" />
+                  Baixa resolução · {item.width}×{item.height}
+                </p>
+              )}
+
+              {/* Paleta — gravada no ingest e até agora sem nenhum consumo.
+                  Clicar navega por cor, que é o gesto nativo de quem procura
+                  referência visual. */}
+              {item.palette && item.palette.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground mb-1.5">
+                    Paleta
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.palette.slice(0, 6).map((hex) => (
+                      <button
+                        key={hex}
+                        type="button"
+                        title={`Ver referências nesta cor (${hex})`}
+                        aria-label={`Ver referências na cor ${hex}`}
+                        onClick={() => onColor?.(hex)}
+                        className="h-6 w-6 rounded-md border border-border transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        style={{ backgroundColor: hex }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Why it matches — shared dimensions with the similarity source */}
               {typeof item.score === 'number' &&
@@ -2438,7 +2748,7 @@ const Lightbox: React.FC<{
 
               {prov.designer && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                  <span className="text-[11px] text-muted-foreground">
                     Designer
                   </span>
                   <p className="text-sm text-muted-foreground">{prov.designer}</p>
@@ -2447,7 +2757,7 @@ const Lightbox: React.FC<{
 
               {item.description && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                  <span className="text-[11px] text-muted-foreground">
                     Descrição
                   </span>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-6">
@@ -2459,7 +2769,7 @@ const Lightbox: React.FC<{
               {/* Tags — click to drop into the library filtered by it (shareable route) */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                  <span className="text-[11px] text-muted-foreground">
                     Tags
                   </span>
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -2554,6 +2864,24 @@ const Lightbox: React.FC<{
                     </Button>
                   </div>
                 )}
+                {/* Copiar link — o permalink existe desde /item/:handle, mas sem
+                    uma afordância ninguém o alcança. Usa o slug quando há um e
+                    cai no id pra ref legada (a rota aceita os dois). */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-card border-border text-xs"
+                  onClick={() => {
+                    const url = `${window.location.origin}/references/${item.slug || item.id}`;
+                    navigator.clipboard
+                      .writeText(url)
+                      .then(() => toast.success('Link copiado'))
+                      .catch(() => toast.error('Não foi possível copiar'));
+                  }}
+                >
+                  <LinkIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Copiar link
+                </Button>
                 {(item.sourceUrl || prov.sourceUrl) && (
                   <a
                     href={item.sourceUrl || prov.sourceUrl}
@@ -2738,13 +3066,13 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
                 : 'Clique para selecionar imagens (máx 10)'}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">
-              A IA extrai dimensões e infere a origem automaticamente. 1 crédito por imagem.
+              Grátis — as imagens entram na fila de revisão. Após aprovação, a IA extrai dimensões e infere a origem.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 País (opcional)
               </label>
               <Select
@@ -2755,7 +3083,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 Designer / Estúdio
               </label>
               <Input
@@ -2768,7 +3096,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 Fonte (URL)
               </label>
               <Input
@@ -2779,7 +3107,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-mono text-muted-foreground uppercase">
+              <label className="text-xs text-muted-foreground">
                 Award / Arquivo
               </label>
               <Input

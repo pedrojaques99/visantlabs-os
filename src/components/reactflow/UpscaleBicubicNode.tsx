@@ -475,7 +475,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Diamond size={12} className="text-brand-cyan" />
-                <span className="text-[10px] font-mono text-neutral-400 uppercase ">
+                <span className="text-[10px] text-neutral-400 uppercase ">
                   Sharpening
                 </span>
               </div>
@@ -519,7 +519,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 <Maximize2 size={14} />
                 Connect an image or video
               </div>
-              <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
+              <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,filter] uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
                 <Upload size={14} />
                 Upload Image
                 <Input

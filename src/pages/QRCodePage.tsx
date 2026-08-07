@@ -175,8 +175,9 @@ export const QRCodePage: React.FC = () => {
   return (
     <MiniAppShell
       icon={QrCode}
-      title="QR Code Generator"
-      documentTitle="QR Code Generator"
+      title={t('apps.qrCode.name')}
+      toolId="qrcode"
+      documentTitle={t('apps.qrCode.name')}
       onReset={handleReset}
       panel={panel}
       statusBar={statusBar}

@@ -123,8 +123,10 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
         <h2
           className={cn(
             sectionTitleClass(theme === 'dark'),
-            isComplete || hasAnalyzed ? 'mb-1' : 'mb-3',
-            'transition-all duration-300'
+            // Static margin swap: the 8px delta was animated, which forces layout
+            // on every frame for an effect nobody can perceive — and the sibling
+            // <p> below unmounts in the same tick, so the block jumps regardless.
+            isComplete || hasAnalyzed ? 'mb-1' : 'mb-3'
           )}
         >
           {t('mockup.branding')}
@@ -141,7 +143,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
       )}
       <div>
         <div
-          className={cn('flex flex-wrap gap-2 cursor-pointer transition-all duration-300 relative')}
+          className={cn('flex flex-wrap gap-2 cursor-pointer transition-colors duration-300 relative')}
         >
           {tagsToDisplay.map((tag) => {
             const isSelected = selectedTags.includes(tag);
@@ -155,7 +157,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                 onClick={hasAnalyzed ? undefined : () => onTagToggle(tag)}
                 variant="outline"
                 className={cn(
-                  'text-xs font-medium transition-all duration-200',
+                  'text-xs font-medium transition-[color,background-color,border-color,box-shadow] duration-200',
                   !hasAnalyzed && 'cursor-pointer',
                   isSelected
                     ? theme === 'dark'
@@ -187,7 +189,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               onBlur={handleBlur}
               placeholder={t('mockup.customStylePlaceholder')}
               className={cn(
-                'px-3 py-1.5 text-xs font-medium transition-all duration-200 border-neutral-600/30 focus:ring-0 min-w-[120px] font-mono',
+                'px-3 py-1.5 text-xs font-medium transition-colors duration-200 border-neutral-600/30 focus:ring-0 min-w-[120px] font-mono',
                 theme === 'dark'
                   ? 'bg-brand-cyan/20 text-brand-cyan'
                   : 'bg-brand-cyan/20 text-neutral-800'

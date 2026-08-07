@@ -18,6 +18,7 @@ import { getBrandContextForNode, buildEnhancement } from '../useBrandContext';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import { toast } from 'sonner';
 
 interface UseBrandBatchHandlersParams {
@@ -106,7 +107,7 @@ export function useBrandBatchHandlers({
       const images = getConnectedImageUrls(batchNodeId, nodesRef.current, edgesRef.current);
 
       if (!images.length) {
-        toast.error('Connect at least one image to the Brand Batch node.');
+        toast.error(translate('canvas.brandBatchConnectImage'));
         return;
       }
 
@@ -298,9 +299,14 @@ export function useBrandBatchHandlers({
       );
 
       if (!hadCancel) {
-        toast.success(`Brand Batch complete — ${doneCount} generated, ${failedCount} failed.`);
+        toast.success(
+          translate('canvas.brandBatchComplete', undefined, {
+            done: doneCount,
+            failed: failedCount,
+          })
+        );
       } else {
-        toast.info(`Brand Batch cancelled — ${doneCount} generated before cancel.`);
+        toast.info(translate('canvas.brandBatchCancelled', undefined, { done: doneCount }));
       }
     },
     [
@@ -322,7 +328,7 @@ export function useBrandBatchHandlers({
     (batchNodeId: string) => {
       cancelRef.current = true;
       updateNodeData<BrandBatchNodeData>(batchNodeId, { status: 'cancelled' }, 'brandBatch');
-      toast.info('Cancelling batch after current item…');
+      toast.info(translate('canvas.brandBatchCancelling'));
     },
     [updateNodeData]
   );

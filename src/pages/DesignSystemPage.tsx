@@ -84,7 +84,7 @@ const ColorSwatch: React.FC<{
   };
 
   return (
-    <div className="bg-card border border-neutral-800/20 rounded-xl px-6 py-4 hover:border-neutral-700 transition-all">
+    <div className="bg-card border border-neutral-800/20 rounded-xl px-6 py-4 hover:border-neutral-700 transition-colors">
       <div className="flex items-start gap-4">
         <div
           className="w-16 h-16 rounded-xl border border-neutral-800/50 flex-shrink-0"
@@ -538,7 +538,7 @@ export const DesignSystemPage: React.FC = () => {
 
           {/* Main Content */}
           <div
-            className="flex-1 min-w-0 pt-10 md:pt-12 transition-all duration-300"
+            className="flex-1 min-w-0 pt-10 md:pt-12 transition-colors duration-300"
             style={{
               marginLeft:
                 typeof window !== 'undefined' && window.innerWidth >= 1024
@@ -620,7 +620,7 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('colors')}
                           >
                             <CardHeader>
@@ -637,7 +637,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('typography')}
                           >
                             <CardHeader>
@@ -654,7 +654,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('components')}
                           >
                             <CardHeader>
@@ -671,7 +671,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group"
+                            className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group"
                             onClick={() => setActiveTab('spacing')}
                           >
                             <CardHeader>
@@ -688,7 +688,7 @@ export const DesignSystemPage: React.FC = () => {
                             </CardContent>
                           </Card>
                           <Link to="/design-system/controls" className="block">
-                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group h-full">
+                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
                               <CardHeader>
                                 <Sliders className="w-8 h-8 text-brand-cyan mb-2" />
                                 <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
@@ -703,7 +703,7 @@ export const DesignSystemPage: React.FC = () => {
                             </Card>
                           </Link>
                           <Link to="/design-system/icons" className="block">
-                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-all duration-200 group h-full">
+                            <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
                               <CardHeader>
                                 <Sparkles className="w-8 h-8 text-neutral-500 mb-2" />
                                 <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">

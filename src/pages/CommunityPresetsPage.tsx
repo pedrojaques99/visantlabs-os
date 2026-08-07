@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, SlidersHorizontal, X, Heart, Layers } from '@/lib/ui/icons';
+import { Plus, Search, X, Heart, Layers } from '@/lib/ui/icons';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import FuseLib from 'fuse.js';
 import { copyToClipboard } from '@/utils/clipboard';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Fuse: any = FuseLib;
 import { PageShell } from '../components/ui/PageShell';
+import { Modal } from '@/components/ui/Modal';
+import { Thumb } from '@/components/ui/Thumb';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -36,12 +39,6 @@ const PRESET_TYPES = ['all', 'mockup', 'angle', 'texture', 'ambience', 'luminanc
 const PROMPT_CATEGORIES = Object.keys(CATEGORY_CONFIG) as PromptCategory[];
 
 type SortKey = 'newest' | 'likes' | 'used';
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'likes', label: 'Most liked' },
-  { value: 'used', label: 'Most used' },
-];
 
 // ─── Fuse config ──────────────────────────────────────────────────────────────
 const FUSE_OPTIONS = {
@@ -129,7 +126,9 @@ const PresetDetailModal: React.FC<{
   const migrated = migrateLegacyPreset(preset);
   const hasImage = !!migrated.referenceImageUrl;
   const config = CATEGORY_CONFIG[migrated.category] ?? CATEGORY_CONFIG['all'];
-  const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
+  // Papel diz "pode ver"; posse diz "de quem é a ação". Editar é do dono —
+  // antes qualquer autenticado via o botão e batia no 403 do servidor.
+  const isOwner = !!(currentUserId && migrated.userId && currentUserId === migrated.userId);
   const [copied, setCopied] = useState(false);
 
   const copyPrompt = () => {
@@ -139,81 +138,60 @@ const PresetDetailModal: React.FC<{
     });
   };
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [onClose]);
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.97 }}
-        transition={{ duration: 0.15 }}
-        className="bg-card border border-border rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-4 flex items-center gap-4 z-10">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-foreground font-mono truncate">
-              {migrated.name}
-            </h2>
-            <p className="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">
-              {migrated.description}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isAuthenticated && onToggleLike && (
-              <button
-                onClick={onToggleLike}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-[11px] font-mono"
-              >
-                <Heart size={12} className={isLiked ? 'fill-current text-foreground' : ''} />
-                {likesCount > 0 && likesCount}
-              </button>
-            )}
-            {(isOwner || isAuthenticated) && onEdit && (
-              <button
-                onClick={onEdit}
-                className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors text-[11px] font-mono"
-              >
-                Edit
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
+    <Modal
+      isOpen
+      onClose={onClose}
+      id="community-preset-detail"
+      size="lg"
+      title={migrated.name}
+      description={migrated.description}
+      headerAction={
+        <div className="flex items-center gap-2 shrink-0">
+          {isAuthenticated && onToggleLike && (
+            <Button
+              variant="surface"
+              size="sm"
+              onClick={onToggleLike}
+              aria-pressed={isLiked}
+              className="gap-1.5 text-[11px] font-mono"
             >
-              <X size={14} />
-            </button>
-          </div>
+              <Heart size={12} className={isLiked ? 'fill-current text-foreground' : ''} />
+              {likesCount > 0 && likesCount}
+            </Button>
+          )}
+          {isOwner && onEdit && (
+            <Button
+              variant="surface"
+              size="sm"
+              onClick={onEdit}
+              className="text-[11px] font-mono"
+            >
+              {t('communityPresets.edit')}
+            </Button>
+          )}
         </div>
-
-        {/* Content */}
-        <div className="p-6 flex flex-col md:flex-row gap-6">
+      }
+      footer={
+        <div className="flex gap-3">
+          <Button variant="surface" className="flex-1" onClick={onOpenInCanvas}>
+            {t('communityPresets.openInCanvas')}
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.close')}
+          </Button>
+        </div>
+      }
+    >
+      <div className="flex flex-col md:flex-row gap-6">
           {/* Image */}
           <div className="md:w-2/5 shrink-0">
             {hasImage ? (
-              <img
+              <Thumb
                 src={migrated.referenceImageUrl}
                 alt={migrated.name}
                 loading="lazy"
                 className="w-full aspect-square object-cover rounded-xl border border-border"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
               />
             ) : (
               <div
@@ -264,19 +242,17 @@ const PresetDetailModal: React.FC<{
             {/* Prompt */}
             <div className="bg-muted/40 border border-border rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  Prompt
+                <span className="text-[11px] text-muted-foreground">
+                  {t('community.promptLabel')}
                 </span>
                 <button
                   onClick={copyPrompt}
-                  className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {copied ? (
-                    <>
-                      <span className="text-success">{t('community.presets.copied')}</span>
-                    </>
+                    <span className="text-success">{t('community.presets.copied')}</span>
                   ) : (
-                    'Copy'
+                    t('communityPresets.copyPrompt')
                   )}
                 </button>
               </div>
@@ -302,19 +278,8 @@ const PresetDetailModal: React.FC<{
               </div>
             )}
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-border px-6 py-4 flex gap-3">
-          <Button variant="surface" className="flex-1" onClick={onOpenInCanvas}>
-            Open in Canvas
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </motion.div>
-    </div>
+      </div>
+    </Modal>
   );
 };
 
@@ -376,7 +341,7 @@ export const CommunityPresetsPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const grouped = await getAllCommunityPresets();
+      const grouped = await getAllCommunityPresets({ throwOnError: true });
       const map = new Map<string, CommunityPreset>();
       Object.values(grouped).forEach((arr) =>
         arr?.forEach((p) => {
@@ -430,10 +395,7 @@ export const CommunityPresetsPage: React.FC = () => {
     setFilterTag(null);
   }, [activeTab]);
 
-  // ── Fuse instance ──────────────────────────────────────────────────────────
   const source = viewMode === 'my' ? myPresets : allPresets;
-
-  const fuse = useMemo(() => new Fuse(source, FUSE_OPTIONS), [source]);
 
   // ── Filtering + search + sort ──────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -498,7 +460,11 @@ export const CommunityPresetsPage: React.FC = () => {
   }, [source]);
 
   // ── Virtual grid ──────────────────────────────────────────────────────────
-  const COLS = 3; // TODO: make responsive with useMediaQuery
+  // Precisa casar com o grid do render (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`):
+  // fixo em 3 a virtualização estimava altura de linha errada no mobile.
+  const isLgUp = useMediaQuery('(min-width: 1024px)');
+  const isSmUp = useMediaQuery('(min-width: 640px)');
+  const COLS = isLgUp ? 3 : isSmUp ? 2 : 1;
   const rowCount = Math.ceil(sorted.length / COLS);
 
   const virtualizer = useVirtualizer({
@@ -732,12 +698,14 @@ export const CommunityPresetsPage: React.FC = () => {
   // ── Keyboard shortcut (/) to focus search ─────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (
-        e.key === '/' &&
-        !e.ctrlKey &&
-        !e.metaKey &&
-        document.activeElement?.tagName !== 'INPUT'
-      ) {
+      const el = document.activeElement as HTMLElement | null;
+      // TEXTAREA e contentEditable também são campos de digitação: sem isso o "/"
+      // era sequestrado no meio de um prompt.
+      const isTyping =
+        !!el &&
+        (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey && !isTyping) {
         e.preventDefault();
         searchRef.current?.focus();
       }
@@ -747,6 +715,12 @@ export const CommunityPresetsPage: React.FC = () => {
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
+  const sortOptions = [
+    { value: 'newest', label: t('communityPresets.sortNewest') },
+    { value: 'likes', label: t('communityPresets.sortLikes') },
+    { value: 'used', label: t('communityPresets.sortUsed') },
+  ];
+
   const headerActions = (
     <div className="flex items-center gap-2">
       {/* View toggle */}
@@ -756,7 +730,7 @@ export const CommunityPresetsPage: React.FC = () => {
             key={mode}
             onClick={() => handleViewMode(mode)}
             className={cn(
-              'px-3 py-1.5 rounded-md text-xs font-mono transition-all',
+              'px-3 py-1.5 rounded-md text-xs font-mono transition-colors',
               viewMode === mode
                 ? 'bg-muted text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
@@ -781,8 +755,8 @@ export const CommunityPresetsPage: React.FC = () => {
   return (
     <PageShell
       pageId="community-presets"
-      seoTitle={viewMode === 'my' ? 'My Presets' : t('communityPresets.title')}
-      title={viewMode === 'my' ? 'My Presets' : t('communityPresets.title')}
+      seoTitle={viewMode === 'my' ? t('communityPresets.myPresets') : t('communityPresets.title')}
+      title={viewMode === 'my' ? t('communityPresets.myPresets') : t('communityPresets.title')}
       microTitle="Community // Library"
       description={t('communityPresets.subtitle')}
       breadcrumb={[
@@ -794,9 +768,12 @@ export const CommunityPresetsPage: React.FC = () => {
     >
       <div className="space-y-4">
         {/* ── Toolbar ──────────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-3">
+        {/* `flex-wrap` + busca fluida: em linha única e com largura fixa a barra
+            somava 192+144+contador e estourava a página em +40px a 390px
+            (medido). */}
+        <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
-          <div className="relative w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search
               size={13}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
@@ -808,7 +785,7 @@ export const CommunityPresetsPage: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('community.presets.search_presets')}
               className={cn(
-                'w-48 focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-all duration-200',
+                'w-full sm:w-48 sm:focus:w-64 pl-8 pr-8 py-2 rounded-lg text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring transition-all duration-200',
                 glassSurface.control
               )}
               aria-label={t('community.presets.search_presets_2')}
@@ -827,13 +804,15 @@ export const CommunityPresetsPage: React.FC = () => {
           <Select
             value={sortKey}
             onChange={(v) => setSortKey(v as SortKey)}
-            options={SORT_OPTIONS}
+            options={sortOptions}
             className="w-36 text-xs"
           />
 
           {/* Count */}
           <span className="text-[11px] font-mono text-muted-foreground shrink-0">
-            {sorted.length} preset{sorted.length !== 1 ? 's' : ''}
+            {sorted.length === 1
+              ? t('communityPresets.countOne', { count: sorted.length })
+              : t('communityPresets.countOther', { count: sorted.length })}
           </span>
         </div>
 
@@ -888,7 +867,7 @@ export const CommunityPresetsPage: React.FC = () => {
         )}
 
         {/* ── Empty state ───────────────────────────────────────────────────── */}
-        {!isLoading && sorted.length === 0 && (viewMode === 'all' || isAuthenticated) && (
+        {!isLoading && !error && sorted.length === 0 && (viewMode === 'all' || isAuthenticated) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -898,15 +877,17 @@ export const CommunityPresetsPage: React.FC = () => {
               <Layers size={28} strokeWidth={1} className="text-muted-foreground" />
             </div>
             <div className="text-center space-y-2">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {searchQuery ? `No results for "${searchQuery}"` : 'No presets yet'}
+              <p className="text-[10px] tracking-widest text-muted-foreground">
+                {searchQuery
+                  ? t('communityPresets.noResultsFor', { query: searchQuery })
+                  : t('communityPresets.noPresets')}
               </p>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
                   className="font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
                 >
-                  Clear search
+                  {t('communityPresets.clearSearch')}
                 </button>
               )}
             </div>
@@ -995,9 +976,9 @@ export const CommunityPresetsPage: React.FC = () => {
           setPresetToDuplicate(null);
         }}
         onConfirm={handleConfirmDuplicate}
-        title="Duplicate Preset"
+        title={t('communityPresets.duplicateTitle')}
         message={t('community.presets.duplicate_this_preset_into_your_')}
-        confirmText="Duplicate"
+        confirmText={t('communityPresets.duplicateConfirm')}
         cancelText={t('common.cancel')}
         variant="info"
       />

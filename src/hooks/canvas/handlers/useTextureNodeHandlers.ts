@@ -14,6 +14,7 @@ import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUt
 import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { uploadImageToR2Auto } from '@/hooks/canvas/utils/r2UploadUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
+import { translate } from '@/utils/localeUtils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseTextureNodeHandlersParams {
@@ -62,7 +63,7 @@ export const useTextureNodeHandlers = ({
     async (nodeId: string, imageInput: string, presetId: string) => {
       const preset = getTexturePreset(presetId as any);
       if (!preset) {
-        toast.error(`Texture preset ${presetId} not found`);
+        toast.error(translate('canvas.presetNotFound', undefined, { presetId }));
         return;
       }
 
@@ -94,8 +95,8 @@ export const useTextureNodeHandlers = ({
         addToHistory,
         refreshSubscriptionStatus,
         canvasId,
-        errorMessage: 'Connect an image to generate texture',
-        successMessage: 'Texture applied successfully!',
+        errorMessage: translate('canvas.textureConnectImage'),
+        successMessage: translate('canvas.textureApplied'),
         promptOverride,
         onSuccess: async (nodeId: string, resultImageBase64: string) => {
           // Update source node with result so manually connected nodes work

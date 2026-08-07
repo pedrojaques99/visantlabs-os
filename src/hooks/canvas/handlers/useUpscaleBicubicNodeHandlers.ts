@@ -9,6 +9,7 @@ import type { UpscaleBicubicNodeData, FlowNodeData } from '@/types/reactFlow';
 import type { Node } from '@xyflow/react';
 import { processImageOrVideoWithShader } from '@/hooks/canvas/utils/shaderProcessingUtils';
 import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
+import { translate } from '@/utils/localeUtils';
 
 interface UseUpscaleBicubicNodeHandlersParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -92,8 +93,8 @@ export const useUpscaleBicubicNodeHandlers = ({
         updateNodeLoadingState,
         canvasId,
         setNodes,
-        errorMessage: 'Connect an image or video to upscale',
-        videoSuccessMessage: 'Video upscaled successfully!',
+        errorMessage: translate('canvas.upscaleConnectMedia'),
+        videoSuccessMessage: translate('canvas.videoUpscaled'),
         isUpscale: true, // Upscale: no debounce, skip compression
         onImageResult: (resultBase64) => {
           // Log output size after processing

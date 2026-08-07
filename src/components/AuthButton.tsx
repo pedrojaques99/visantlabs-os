@@ -338,10 +338,10 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <Button
               variant="ghost"
               onClick={onCreditsClick}
-              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring transition-all cursor-pointer shadow-sm ${
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm ${
                 isLowCredits
                   ? 'text-warning border-warning/30'
-                  : 'text-brand-cyan border-brand-cyan/20'
+                  : 'text-foreground border-ring'
               }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
               title={
@@ -352,7 +352,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             >
               <Pickaxe
                 size={12}
-                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-warning' : 'text-brand-cyan'}`}
+                className={`md:w-3 md:h-3 ${isLowCredits ? 'text-warning' : 'text-muted-foreground'}`}
                 aria-hidden="true"
               />
               <span className="tabular-nums">{availableCredits}</span>
@@ -363,7 +363,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-muted-foreground font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring hover:text-foreground transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-muted-foreground font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring hover:text-foreground transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
             {user.picture ? (
@@ -622,7 +622,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                   !password ||
                   (isSignUp && captchaEnabled && !captchaToken)
                 }
-                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-colors duration-200 text-sm font-mono"
               >
                 {isAuthLoading ? (
                   <>

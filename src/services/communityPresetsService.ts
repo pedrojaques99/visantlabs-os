@@ -5,6 +5,14 @@ import { API_BASE } from '@/config/api';
 // Cache for community presets
 let presetsPromise: Promise<Record<string, any[]>> | null = null;
 let lastToken: string | null = null;
+/**
+ * O fallback vazio abaixo é intencional para os chamadores tolerantes (modais de
+ * preset, que preferem uma lista vazia a uma tela quebrada). Mas uma tela que
+ * MOSTRA a comunidade precisa distinguir "não tem nada" de "não deu pra ler" —
+ * senão a API caída vira "0 presets", que é uma mentira. Esta flag carrega essa
+ * diferença; ver `getAllCommunityPresets({ throwOnError: true })`.
+ */
+let lastLoadFailed = false;
 
 /**
  * Load community presets from API
@@ -21,6 +29,8 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
 
   // Update token tracker
   lastToken = token;
+
+  lastLoadFailed = false;
 
   presetsPromise = (async () => {
     try {
@@ -54,11 +64,13 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
       }
     } catch (error) {
       console.warn('Failed to load community presets from API, using empty fallback:', error);
+      lastLoadFailed = true;
       presetsPromise = null; // Reset on error to allow retry
       lastToken = null; // Reset token on error
     }
 
     // Return empty fallback on error or non-ok response
+    lastLoadFailed = true;
     return {
       '3d': [],
       presets: [],
@@ -123,8 +135,18 @@ export async function getPromptsByCategory(category: PromptCategory): Promise<an
 /**
  * Get all community presets
  */
-export async function getAllCommunityPresets(): Promise<Record<string, any[]>> {
-  return await loadPresetsFromAPI();
+export async function getAllCommunityPresets(options?: {
+  /**
+   * Telas que renderizam a comunidade passam `true`: aí uma leitura que falhou
+   * vira erro tratável (estado de erro + retry) em vez de um grid vazio.
+   */
+  throwOnError?: boolean;
+}): Promise<Record<string, any[]>> {
+  const presets = await loadPresetsFromAPI();
+  if (options?.throwOnError && lastLoadFailed) {
+    throw new Error('Failed to load community presets');
+  }
+  return presets;
 }
 
 /**
@@ -157,5 +179,7 @@ export async function getCommunityStats(): Promise<{
   } catch (error) {
     console.warn('Failed to fetch community stats:', error);
   }
-  return { totalUsers: 0, totalPresets: 0, totalBlankMockups: 0 };
+  // Zero aqui é indistinguível de zero real; quem exibe a métrica precisa saber
+  // que a leitura falhou.
+  throw new Error('Failed to fetch community stats');
 }

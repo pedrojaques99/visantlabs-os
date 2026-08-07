@@ -113,7 +113,15 @@ export const Studio3DPage: React.FC = () => {
     const autoplay = searchParams.get('autoplay') === 'true';
     const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
     fetch(`${API_BASE}/studio3d/${sceneId}`)
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        // A dead shared link (404/403/deleted) resolves but is not `ok`.
+        // Signal it instead of silently dropping the user on the default scene.
+        if (!r.ok) {
+          toast.error('Scene not found or no longer available');
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
         if (!data?.scene) return;
         const { config, svgData, inputMode, text, font } = data.scene;
@@ -691,7 +699,7 @@ export const Studio3DPage: React.FC = () => {
         fileName={fileName}
         isDragOver={isDragOver}
         hideTopBar
-        canvasClassName="absolute inset-0 transition-all duration-300"
+        canvasClassName="absolute inset-0 transition-colors duration-300"
         dragProps={{
           onDragOver: (e: React.DragEvent) => {
             e.preventDefault();
@@ -893,7 +901,7 @@ export const Studio3DPage: React.FC = () => {
               <button
                 onClick={() => setShowShortcuts((v) => !v)}
                 title="Keyboard shortcuts (?)"
-                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-colors"
               >
                 <Keyboard size={15} />
               </button>
@@ -1045,7 +1053,7 @@ export const Studio3DPage: React.FC = () => {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="3"
-                      className="text-brand-cyan"
+                      className="text-neutral-300"
                       strokeDasharray={`${2 * Math.PI * 36}`}
                       strokeDashoffset={`${2 * Math.PI * 36 * (1 - autoRenderProgress / 100)}`}
                       strokeLinecap="round"

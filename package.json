@@ -111,7 +111,9 @@
     "test:ci": "vitest run --project unit --project integration --project e2e --coverage",
     "test:validation": "vitest run server/utils/validation.test.ts",
     "check:glass-surfaces": "node scripts/scan-glass-surfaces.mjs",
-    "check:glass-surfaces:summary": "node scripts/scan-glass-surfaces.mjs --summary --no-fail"
+    "check:glass-surfaces:summary": "node scripts/scan-glass-surfaces.mjs --summary --no-fail",
+    "mcp:sync": "tsx server/lib/tools/sync-mcp-registry.ts",
+    "check:mcp-sync": "tsx server/lib/tools/sync-mcp-registry.ts --check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

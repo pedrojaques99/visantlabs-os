@@ -147,7 +147,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
           >
             <span className="flex shrink-0 items-center justify-center">{icon}</span>
             {label && (
-              <span className="text-xs font-mono font-bold uppercase tracking-[0.12em]">
+              <span className="text-xs font-bold uppercase tracking-[0.12em]">
                 {label}
               </span>
             )}
@@ -186,7 +186,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {isSurpriseMeMode && (
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 animate-fade-in">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pool-dot-breathe inline-block" />
-            <span className="text-[10px] font-mono font-bold text-brand-cyan tracking-[0.15em] uppercase whitespace-nowrap">
+            <span className="text-[10px] font-bold text-brand-cyan tracking-[0.15em] uppercase whitespace-nowrap">
               {t('mockup.surpriseMeModeActiveTooltip')}
             </span>
           </div>

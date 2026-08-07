@@ -229,7 +229,7 @@ export const CurvesEditor = React.memo<CurvesEditorProps>(
           onDoubleClick={onDoubleClick}
           onPointerLeave={() => dragRef.current === null && setHover(null)}
         />
-        <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-600 select-none">
+        <span className="text-[9px] uppercase tracking-widest text-neutral-600 select-none">
           click add · drag move · dbl-click remove
         </span>
       </div>

@@ -23,6 +23,7 @@ import { getBrandContextForNode, buildEnhancement } from '../useBrandContext';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import { toast } from 'sonner';
 
 interface UseMockupNodeHandlersParams {
@@ -136,7 +137,7 @@ export const useMockupNodeHandlers = ({
       });
 
       if (!imageToUse) {
-        toast.error('Connect an image to generate mockup');
+        toast.error(translate('canvas.mockupConnectImage'));
         return;
       }
 
@@ -165,7 +166,7 @@ export const useMockupNodeHandlers = ({
         preset = await getPresetAsync(presetId as any);
         if (!preset) {
           console.error(`[handleMockupGenerate] Preset not found: ${presetId}`);
-          toast.error(`Preset ${presetId} not found`);
+          toast.error(translate('canvas.presetNotFound', undefined, { presetId }));
           return;
         }
         console.log(`[handleMockupGenerate] Loaded preset:`, {
@@ -226,7 +227,7 @@ export const useMockupNodeHandlers = ({
           console.log('[handleMockupGenerate] Logo set as baseImage (primary focus)');
         } catch (error: any) {
           console.error('Error converting logo to base64:', error);
-          toast.error('Failed to process logo image. Using fallback.');
+          toast.error(translate('canvas.logoProcessFallback'));
         }
       }
 
@@ -236,7 +237,8 @@ export const useMockupNodeHandlers = ({
           const fallbackBase64 = await normalizeImageToBase64(imageToUse);
 
           if (!validateBase64Image(fallbackBase64)) {
-            throw new Error('Invalid base64 format after conversion');
+            // Surfaced to the user by the catch below via error.message
+            throw new Error(translate('canvas.imageReadFailed'));
           }
 
           const fallbackMimeType = detectMimeType(imageInput);
@@ -244,7 +246,7 @@ export const useMockupNodeHandlers = ({
         } catch (error: any) {
           console.error('Error converting fallback image to base64:', error);
           toast.error(
-            error?.message || 'Failed to process image. Please check if the image is accessible.'
+            error?.message || translate('canvas.imageNotAccessible')
           );
           updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
           return;
@@ -252,7 +254,7 @@ export const useMockupNodeHandlers = ({
       }
 
       if (!baseImage) {
-        toast.error('Connect a logo or image to generate mockup');
+        toast.error(translate('canvas.mockupConnectLogoOrImage'));
         updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
         return;
       }
@@ -345,7 +347,8 @@ export const useMockupNodeHandlers = ({
 
       try {
         if (!validateBase64Image(baseImage.base64)) {
-          throw new Error('Base image data is empty after processing');
+          // Surfaced to the user by the catch below via error.message
+          throw new Error(translate('canvas.baseImageEmpty'));
         }
 
         const isBaseImageLogo = !!mockupData.connectedLogo;
@@ -421,7 +424,7 @@ export const useMockupNodeHandlers = ({
         }
 
         trackCanvasEvent('generation_completed', 'mockup', undefined, { model, provider });
-        toast.success('Mockup generated successfully!', { duration: 3000 });
+        toast.success(translate('canvas.mockupGenerated'), { duration: 3000 });
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'mockup', undefined, {
           model,
@@ -430,7 +433,7 @@ export const useMockupNodeHandlers = ({
         });
         cleanupFailedNode(newOutputNodeId);
         updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
-        toast.error(error?.message || 'Failed to generate mockup', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.mockupGenerateFailed'), { duration: 5000 });
       }
     },
     [

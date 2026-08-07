@@ -695,7 +695,7 @@ export const SmartAnalyzerPage: React.FC = () => {
         <Button
           onClick={reset}
           variant="ghost"
-          className="h-10 px-4 text-neutral-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-neutral-800 transition-all rounded-lg"
+          className="h-10 px-4 text-neutral-500 hover:text-white hover:bg-white/5 border border-transparent hover:border-neutral-800 transition-colors rounded-lg"
         >
           <RefreshCw size={14} className="mr-2" />
           Reset
@@ -729,7 +729,7 @@ export const SmartAnalyzerPage: React.FC = () => {
               <GlassPanel
                 padding="lg"
                 className={cn(
-                  'group relative border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center h-[400px] text-center',
+                  'group relative border-2 border-dashed transition-colors duration-500 flex flex-col items-center justify-center h-[400px] text-center',
                   isDragging
                     ? 'border-brand-cyan bg-brand-cyan/5'
                     : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/20'
@@ -748,7 +748,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                 />
 
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800 group-hover:border-neutral-700 transition-all duration-500">
+                  <div className="w-20 h-20 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800 group-hover:border-neutral-700 transition-colors duration-500">
                     <ImageIcon
                       size={32}
                       className="text-neutral-500 group-hover:text-brand-cyan transition-colors"
@@ -784,7 +784,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                 <div className="w-24 h-24 rounded-full bg-neutral-950 flex items-center justify-center border border-neutral-800">
                   <GlitchLoader size={28} />
                 </div>
-                <div className="absolute inset-0 rounded-full border border-brand-cyan/20 animate-ping" />
+                <div className="absolute inset-0 rounded-full border border-neutral-700 animate-ping" />
               </div>
 
               <div className="text-center space-y-2">
@@ -932,7 +932,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             onClick={() => setIsEditingPrompt(!isEditingPrompt)}
                             variant="ghost"
                             className={cn(
-                              'h-8 px-3 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-all',
+                              'h-8 px-3 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-colors',
                               isEditingPrompt
                                 ? 'bg-brand-cyan text-black'
                                 : 'text-neutral-500 hover:text-white'
@@ -1001,7 +1001,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               disabled={isGenerating || isGeneratingVariations}
                               variant="outline"
                               className={cn(
-                                'h-12 px-5 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-all text-xs font-semibold',
+                                'h-12 px-5 border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/5 text-neutral-400 hover:text-brand-cyan rounded-xl transition-[color,background-color,border-color,opacity] text-xs font-semibold',
                                 isGenerating && 'opacity-80'
                               )}
                             >
@@ -1056,7 +1056,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                           <div className="relative group/input flex items-center min-w-[200px]">
                             <Input
                               placeholder="Custom..."
-                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-all"
+                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-colors"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = e.currentTarget.value.trim();
@@ -1148,7 +1148,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                         {result.tokens.colors.map((c, i) => (
                           <div
                             key={i}
-                            className="flex items-center gap-4 bg-neutral-950/50 p-3 rounded-2xl border border-neutral-900 group hover:border-neutral-700 transition-all"
+                            className="flex items-center gap-4 bg-neutral-950/50 p-3 rounded-2xl border border-neutral-900 group hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow]"
                           >
                             <div
                               className="w-10 h-10 rounded-xl shadow-sm border border-neutral-800"
@@ -1196,7 +1196,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   value={publishName}
                   onChange={(e) => setPublishName(e.target.value)}
                   placeholder="E.g. Professional Dashboard Dark"
-                  className="bg-neutral-900 border-neutral-800 h-12 focus:border-neutral-600 focus:ring-0 transition-all rounded-xl"
+                  className="bg-neutral-900 border-neutral-800 h-12 focus:border-neutral-600 focus:ring-0 transition-colors rounded-xl"
                 />
               </div>
 

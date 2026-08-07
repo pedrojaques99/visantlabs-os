@@ -146,7 +146,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
             <div className="space-y-4">
               {presets.length > 1 && (
                 <div className="space-y-1.5">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                  <p className="text-[10px] uppercase tracking-widest text-neutral-500">
                     Template
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -214,7 +214,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
           {view === 'rendering' && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-widest">
+              <p className="text-[11px] text-neutral-500 uppercase tracking-widest">
                 Renderizando…
               </p>
             </div>
@@ -228,7 +228,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between">
                 <button
                   onClick={reset}
-                  className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                 >
                   <RotateCcw size={10} /> Outro
                 </button>

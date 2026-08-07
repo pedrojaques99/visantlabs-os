@@ -33,7 +33,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
   return (
     <div
       className={cn(
-        'rounded-xl border p-3 transition-all duration-200 cursor-pointer space-y-2',
+        'rounded-xl border p-3 transition-colors duration-200 cursor-pointer space-y-2',
         theme === 'dark'
           ? 'bg-neutral-900/30 border-neutral-800/50 hover:bg-neutral-900/50'
           : 'bg-white/50 border-neutral-200 hover:bg-white/70'
@@ -87,7 +87,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
               }
             }}
             className={cn(
-              'h-9 text-sm font-mono rounded-md border transition-all duration-200 focus:ring-1',
+              'h-9 text-sm font-mono rounded-md border transition-[color,background-color,border-color,box-shadow] duration-200 focus:ring-1',
               theme === 'dark'
                 ? 'bg-black/20 border-white/10 text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
                 : 'bg-white border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-600 focus:ring-brand-cyan/20 shadow-inner'
@@ -111,7 +111,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                   onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
                   disabled={selectedTags.includes(tag)}
                   className={cn(
-                    'px-2 py-0.5 text-[10px] font-mono rounded-full border transition-all duration-200',
+                    'px-2 py-0.5 text-[10px] font-mono rounded-full border transition-colors duration-200',
                     selectedTags.includes(tag)
                       ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
                       : theme === 'dark'

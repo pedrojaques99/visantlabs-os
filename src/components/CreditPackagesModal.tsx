@@ -335,7 +335,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               <span className="text-4xl sm:text-5xl font-black font-mono text-foreground leading-none tabular-nums">
                                 {animatedCredits}
                               </span>
-                              <span className="text-xs font-mono text-muted-foreground uppercase">
+                              <span className="text-xs text-muted-foreground uppercase">
                                 créditos
                               </span>
                             </div>
@@ -446,7 +446,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             ))}
                             <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-border mt-1">
                               <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
-                              <span className="text-brand-cyan font-bold tabular-nums">
+                              <span className="text-foreground font-bold tabular-nums">
                                 {Math.floor(currentPackage.credits / 15)} vídeos
                               </span>
                             </div>
@@ -484,7 +484,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             setActiveTab('assinatura');
                           }}
-                          className="w-full text-muted-foreground hover:text-foreground text-[10px] font-mono uppercase tracking-widest transition-colors hover:bg-accent rounded-md py-2"
+                          className="w-full text-muted-foreground hover:text-foreground text-[10px] uppercase tracking-widest transition-colors hover:bg-accent rounded-md py-2"
                         >
                           {t('pricing.tabs.subscriptions') || 'Ver Assinatura'} →
                         </button>
@@ -512,7 +512,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 playClickSound();
                                 setBillingCycle(cycle);
                               }}
-                              className={`py-1.5 text-[11px] font-mono uppercase tracking-wide rounded transition-all flex items-center justify-center gap-1.5 ${
+                              className={`py-1.5 text-[11px] uppercase tracking-wide rounded transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                                 billingCycle === cycle
                                   ? 'bg-secondary text-secondary-foreground shadow-sm'
                                   : 'text-muted-foreground hover:text-foreground'
@@ -596,7 +596,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       currencyInfo?.locale || 'pt-BR'
                                     )}
                                   </span>
-                                  <div className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground uppercase mt-1">
+                                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground uppercase mt-1">
                                     <Pickaxe size={9} />
                                     <span>
                                       {plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}
@@ -695,7 +695,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 <span className="text-4xl sm:text-5xl font-black font-mono text-foreground leading-none">
                                   {totalCreditsAvailable}
                                 </span>
-                                <span className="text-xs font-mono text-muted-foreground uppercase">
+                                <span className="text-xs text-muted-foreground uppercase">
                                   créditos
                                 </span>
                               </div>
@@ -718,7 +718,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               </div>
                               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-muted-foreground rounded-full transition-all duration-500"
+                                  className="h-full bg-muted-foreground rounded-full transition-colors duration-500"
                                   style={{ width: `${usedPercentage}%` }}
                                 />
                               </div>
@@ -727,7 +727,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                           {/* Reset date */}
                           {creditsResetDate && (
-                            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
                               {hasActiveSubscription
                                 ? t('credits.renews', { date: formatDate(creditsResetDate) })
                                 : t('credits.resets', { date: formatDate(creditsResetDate) })}
@@ -800,7 +800,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }, 300);
                             }}
-                            className="w-full border-border hover:border-ring bg-card hover:bg-muted text-muted-foreground font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2"
+                            className="w-full border-border hover:border-ring bg-card hover:bg-muted text-muted-foreground font-semibold rounded-md text-xs sm:text-sm font-mono transition-colors duration-200 flex items-center justify-center gap-2"
                           >
                             <FileText size={14} />
                             {t('usageHistory.title') || 'Histórico de Uso'}

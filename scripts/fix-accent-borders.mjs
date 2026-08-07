@@ -80,6 +80,12 @@ for (const abs of FILES) {
   const violatingLines = [];
 
   lines.forEach((line, i) => {
+    // Prose that MENTIONS the class is not the class. A comment documenting why
+    // a file avoids `border-brand-cyan` was being reported as a violation of the
+    // very rule it explains — and the only way to "fix" it was to delete the
+    // explanation. Class names live in JSX/strings, never in a comment line.
+    const code = line.trimStart();
+    if (code.startsWith('//') || code.startsWith('*') || code.startsWith('/*')) return;
     if (/border-brand-cyan|border-\[brand-cyan\]/.test(line)) {
       // Prettier wraps `selected ? '…border-brand-cyan'` onto its own line, which
       // strips the condition the allow-patterns look for. Rejoin the previous line

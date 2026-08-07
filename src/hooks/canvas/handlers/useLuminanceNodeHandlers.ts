@@ -13,6 +13,7 @@ import { getLuminancePreset } from '@/services/luminancePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
+import { translate } from '@/utils/localeUtils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseLuminanceNodeHandlersParams {
@@ -61,7 +62,7 @@ export const useLuminanceNodeHandlers = ({
     async (nodeId: string, imageInput: string, presetId: string) => {
       const preset = getLuminancePreset(presetId as any);
       if (!preset) {
-        toast.error(`Luminance preset ${presetId} not found`);
+        toast.error(translate('canvas.presetNotFound', undefined, { presetId }));
         return;
       }
 
@@ -93,8 +94,8 @@ export const useLuminanceNodeHandlers = ({
         addToHistory,
         refreshSubscriptionStatus,
         canvasId,
-        errorMessage: 'Connect an image to generate luminance',
-        successMessage: 'Luminance applied successfully!',
+        errorMessage: translate('canvas.luminanceConnectImage'),
+        successMessage: translate('canvas.luminanceApplied'),
         promptOverride,
       });
     },

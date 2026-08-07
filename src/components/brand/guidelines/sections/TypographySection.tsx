@@ -150,7 +150,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-neutral-700 hover:text-destructive opacity-0 group-hover/font:opacity-100 transition-all shrink-0"
+              className="h-7 w-7 text-neutral-700 hover:text-destructive opacity-0 group-hover/font:opacity-100 transition-[color,background-color,border-color,opacity] shrink-0"
               onClick={() => removeFont(i)}
               aria-label="Remove font"
             >

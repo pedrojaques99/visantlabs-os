@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { extractTextFromContent } from '@/utils/brandingHelpers';
 import { Button } from '@/components/ui/button';
 import { copyToClipboard } from '@/utils/clipboard';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { cn } from '@/lib/utils';
 
 interface SectionActionsProps {
   hasData: boolean;
@@ -73,7 +75,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               onSave();
             }}
             disabled={isSaving}
-            className="h-7 w-7 px-2 hover:bg-brand-cyan/20 rounded-md flex items-center justify-center text-brand-cyan hover:bg-brand-cyan/30 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="h-7 w-7 px-2 hover:bg-brand-cyan/20 rounded-md flex items-center justify-center text-brand-cyan hover:bg-brand-cyan/30 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity]"
           >
             <Check className="h-4 w-4" />
           </Button>
@@ -85,7 +87,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               e.stopPropagation();
               onEdit(); // Toggle edit mode off (dismiss)
             }}
-            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${
+            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
               theme === 'dark'
                 ? 'text-neutral-400 hover:text-red-400'
                 : 'text-neutral-600 hover:text-red-500'
@@ -100,7 +102,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
 
   // Normal mode: show all actions
   return (
-    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div className={cn('flex items-center gap-1 duration-200', hoverReveal)}>
       {hasData && onRegenerate && (
         <Tooltip content={t('branding.regenerate') || 'Regenerate'} position="top">
           <Button
@@ -110,7 +112,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               onRegenerate();
             }}
             disabled={isGenerating}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-all duration-300 hover:text-brand-cyan ${
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-[color,background-color,border-color,box-shadow,opacity] duration-300 hover:text-brand-cyan ${
               theme === 'dark'
                 ? 'hover:bg-neutral-950/70 text-neutral-400 shadow-[0_0_10px_rgba(82,221,235,0.3)] hover:shadow-[0_0_12px_rgba(82,221,235,0.5)]'
                 : 'hover:bg-neutral-200 text-neutral-600'
@@ -174,7 +176,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               setFeedbackGiven('up');
             }}
             disabled={feedbackGiven !== null || isGenerating}
-            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+            className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity] duration-200 ${
               feedbackGiven === 'up'
                 ? 'text-brand-cyan'
                 : theme === 'dark'

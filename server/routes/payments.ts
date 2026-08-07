@@ -565,6 +565,7 @@ router.get(
         max: number | null;
         tier: string;
         graceUntil?: string | null;
+        atRisk?: { id: string; name: string }[];
       } | null = brandQuotaResult.status === 'fulfilled' ? brandQuotaResult.value : null;
       const seatQuota: { totalEditors: number; maxPerBrand: number | null; tier: string } | null =
         seatQuotaResult.status === 'fulfilled' ? seatQuotaResult.value : null;
@@ -2070,6 +2071,58 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
               console.error('❌ Stripe is not configured');
               break;
             }
+
+            // ── PRODUTO AVULSO (e-book etc.) ──────────────────────────────
+            // A visantismo vende produto avulso com metadata.kind='product' +
+            // metadata.sku (api/checkout.js). Concede ENTITLEMENT, não crédito
+            // e não tier — o comprador NÃO entra no Club.
+            //
+            // Esta é a VERDADE do acesso. O /auth/session-from-checkout que o
+            // success_url dispara é só conveniência: se o comprador fechar a
+            // aba depois de pagar, o grant tem que ter acontecido aqui.
+            // Idempotente por session.id (reprocessar é seguro).
+            if (session.metadata?.kind === 'product' && session.metadata?.sku) {
+              const sku = String(session.metadata.sku);
+              const buyerEmail = customerEmail;
+
+              if (!buyerEmail) {
+                console.error('❌ Product purchase without email — cannot grant:', {
+                  sessionId: session.id,
+                  sku,
+                });
+                break;
+              }
+
+              try {
+                const { grantProduct } = await import('../services/productGrantService.js');
+                const result = await grantProduct({
+                  email: buyerEmail,
+                  sku,
+                  sessionId: session.id,
+                  source: 'stripe',
+                  name: session.customer_details?.name || undefined,
+                  stripeCustomerId: customerId || undefined,
+                });
+
+                console.log('✅ Product entitlement processed:', {
+                  sku,
+                  email: buyerEmail,
+                  userId: result.userId,
+                  granted: result.granted,
+                  accountCreated: result.created,
+                  sessionId: session.id,
+                });
+              } catch (grantError: any) {
+                console.error('❌ Failed to grant product entitlement:', {
+                  sku,
+                  email: buyerEmail,
+                  sessionId: session.id,
+                  error: grantError?.message || String(grantError),
+                });
+              }
+              break; // não cai em club/tier nem no fluxo de créditos
+            }
+            // ──────────────────────────────────────────────────────────────
 
             // ── Visant Club: grant de tier por pagamento ÚNICO (Fundador vitalício) ──
             // A visantismo vende o Fundador como one-time com metadata.tier (ex: 'club')

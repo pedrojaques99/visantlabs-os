@@ -164,7 +164,7 @@ export const DirectorNode = memo(
           {activeGenerations > 0 && (
             <div className="p-2.5 rounded-md border-node border-neutral-800 bg-brand-cyan/5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-cyan">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-cyan">
                   {activeGenerations} {activeGenerations === 1 ? 'mockup' : 'mockups'}
                 </span>
                 <span className="text-[10px] font-mono text-neutral-500">

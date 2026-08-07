@@ -376,7 +376,7 @@ export const DocsPage: React.FC = () => {
           />
 
           <div
-            className="flex-1 min-w-0 pt-10 md:pt-12 transition-all duration-300 lg:ml-[var(--sidebar-width)]"
+            className="flex-1 min-w-0 pt-10 md:pt-12 transition-colors duration-300 lg:ml-[var(--sidebar-width)]"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
           >
             <div className="h-screen overflow-y-auto">
@@ -403,7 +403,7 @@ export const DocsPage: React.FC = () => {
                           new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })
                         )
                       }
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5 transition-all duration-200"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5 transition-colors duration-200"
                     >
                       <span>Search</span>
                       <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground">
@@ -415,7 +415,7 @@ export const DocsPage: React.FC = () => {
                       onClick={handleCopyMarkdown}
                       title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
                       className={cn(
-                        'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-all duration-200 shrink-0',
+                        'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-colors duration-200 shrink-0',
                         copied
                           ? 'bg-success/10 border-success/40 text-success'
                           : 'bg-secondary/60 border-border text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5'

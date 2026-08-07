@@ -70,7 +70,7 @@ export const MiniToolShell: React.FC<MiniToolShellProps> = ({
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
             <Icon size={16} className="text-brand-cyan" />
-            <h1 className="text-sm font-mono font-bold uppercase tracking-widest text-neutral-200">
+            <h1 className="text-sm font-bold uppercase tracking-widest text-neutral-200">
               {title}
             </h1>
             <AnimatePresence>

@@ -1335,7 +1335,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }
                 }}
                 variant="default"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
               >
                 <FolderOpen size={14} />
                 <span>{t('canvasNodes.strategyNode.selectExistingProject')}</span>
@@ -1350,7 +1350,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   setIsCreatingNew(true);
                 }}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
               >
                 <Plus size={14} />
                 <span>{t('canvasNodes.strategyNode.createNewProject')}</span>
@@ -1407,14 +1407,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onCancelGeneration?.(id);
                   }}
                   variant="default"
-                  className="flex-1 px-3 py-2.5 gap-3 border-destructive/50 text-destructive hover:bg-destructive/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-all nodrag nopan"
+                  className="flex-1 px-3 py-2.5 gap-3 border-destructive/50 text-destructive hover:bg-destructive/20 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter] nodrag nopan"
                 >
                   <XCircle size={14} />
                   <span>{t('common.cancel')}</span>
                 </NodeButton>
-                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border-node border-neutral-800 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
+                <div className="flex-1 px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
                   <GlitchLoader size={14} color="brand-cyan" />
-                  <span className="text-xs font-mono text-brand-cyan font-medium">
+                  <span className="text-xs text-foreground font-medium">
                     {t('canvasNodes.strategyNode.analyzing')}
                   </span>
                 </div>
@@ -1478,7 +1478,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 }}
                 disabled={!prompt.trim() || isGenerating}
                 variant="primary"
-                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
               >
                 <Target size={14} />
                 <span>
@@ -1577,10 +1577,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Single Generation Status - Shows when any section is generating */}
         {isGenerating && (generatingStep || generatingSteps.length > 0) && (
-          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="mb-5 px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <GlitchLoader size={12} color="brand-cyan" />
-              <span className="text-xs font-mono text-brand-cyan font-medium">
+              <span className="text-xs text-foreground font-medium">
                 {generatingStep === 'all'
                   ? t('canvasNodes.strategyNode.generatingAllSections') ||
                     'Generating all sections...'
@@ -1674,7 +1674,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 return (
                   <div
                     key={section.type}
-                    className="border-node border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                    className="border-node border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-[color,background-color,border-color,box-shadow,filter]"
                   >
                     <NodeButton
                       variant="ghost"
@@ -1689,7 +1689,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         {sectionHasData && !isGeneratingSection && (
                           <div
                             onClick={(e) => handleDeleteSection(section.type, e)}
-                            className="p-1 hover:bg-destructive/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                            className="p-1 hover:bg-destructive/20 rounded-md opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] cursor-pointer"
                             title={t('canvasNodes.strategyNode.deleteSection', {
                               section: section.label,
                             })}
@@ -1709,7 +1709,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         <NodeLabel className="mb-0 text-neutral-200">
                           {section.label}
                           {sectionHasData && !isGeneratingSection && (
-                            <span className="ml-2 text-brand-cyan text-[10px]">✓</span>
+                            <span className="ml-2 text-success text-[10px]">✓</span>
                           )}
                         </NodeLabel>
                       </div>

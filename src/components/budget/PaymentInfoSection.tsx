@@ -268,7 +268,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                     <Button
                       variant="ghost"
                       onClick={addPaymentMethod}
-                      className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
+                      className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-colors duration-200"
                       title={t('budget.addPaymentMethod') || 'Adicionar Método'}
                     >
                       <Plus size={16} />

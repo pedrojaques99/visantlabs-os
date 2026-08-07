@@ -13,6 +13,7 @@ import { useCanvasHeader } from '@/components/canvas/CanvasHeaderContext';
 import { saveCanvasToLocalStorage } from '@/utils/canvas/canvasLocalStorage';
 import { flushAllPendingUploads } from './utils/r2UploadUtils';
 import { isLocalDevelopment } from '@/utils/env';
+import { translate } from '@/utils/localeUtils';
 
 const STORAGE_KEY = 'canvas-flow-state';
 
@@ -99,7 +100,7 @@ export const useCanvasProject = (
       }
     } catch (error) {
       console.error('Failed to migrate project:', error);
-      toast.error('Failed to save project', {
+      toast.error(translate('canvas.saveProjectFailed'), {
         id: 'migrate-project-error',
         duration: 5000,
       });
@@ -146,7 +147,7 @@ export const useCanvasProject = (
         console.error('Project load timeout after 30 seconds');
         hasLoadedProject.current = false;
         setIsLoadingProject(false);
-        toast.error('Timeout loading project. Please try again.', {
+        toast.error(translate('canvas.loadProjectTimeout'), {
           id: `load-project-timeout-${id}`,
           duration: 5000,
         });
@@ -333,7 +334,9 @@ export const useCanvasProject = (
         hasLoadedProject.current = false;
         // Use unique ID to prevent duplicate toasts
         const errorMessage =
-          error?.status === 404 ? 'Project not found' : error?.message || 'Failed to load project';
+          error?.status === 404
+            ? translate('canvas.projectNotFound')
+            : error?.message || translate('canvas.failedToLoadProject');
         toast.error(errorMessage, {
           id: `load-project-error-${id}`,
           duration: 5000,
@@ -460,17 +463,20 @@ export const useCanvasProject = (
           const progressToastId = `r2-upload-progress-${id}`;
 
           try {
-            toast.loading('Otimizando imagens para evitar erro de tamanho...', {
+            toast.loading(translate('canvas.optimizingImagesForSize'), {
               id: progressToastId,
               duration: Infinity,
             });
 
             const result = await processNodesForR2Upload(nodes, id, (current, total) => {
               if (total > 0) {
-                toast.loading(`Otimizando imagens... ${current} de ${total}`, {
-                  id: progressToastId,
-                  duration: Infinity,
-                });
+                toast.loading(
+                  translate('canvas.optimizingImagesProgress', undefined, { current, total }),
+                  {
+                    id: progressToastId,
+                    duration: Infinity,
+                  }
+                );
               }
             });
 
@@ -490,18 +496,20 @@ export const useCanvasProject = (
             toast.dismiss(progressToastId);
 
             if (result.uploadedCount > 0 && result.failedCount === 0) {
-              toast.success(`${result.uploadedCount} imagem(ns) otimizada(s)`, {
-                duration: 3000,
-              });
+              toast.success(
+                translate('canvas.imagesOptimized', undefined, { count: result.uploadedCount }),
+                { duration: 3000 }
+              );
             } else if (result.failedCount > 0) {
-              toast.warning(`${result.failedCount} imagem(ns) não puderam ser otimizadas.`, {
-                duration: 4000,
-              });
+              toast.warning(
+                translate('canvas.imagesOptimizeFailed', undefined, { count: result.failedCount }),
+                { duration: 4000 }
+              );
             }
           } catch (processError: any) {
             console.error('Error processing nodes for R2:', processError);
             toast.dismiss(progressToastId);
-            toast.warning('Não foi possível otimizar algumas imagens.', {
+            toast.warning(translate('canvas.imagesOptimizeError'), {
               duration: 4000,
             });
             nodesToSave = nodes;
@@ -519,7 +527,7 @@ export const useCanvasProject = (
 
           try {
             // Show initial loading toast
-            toast.loading('Otimizando imagens para salvar...', {
+            toast.loading(translate('canvas.optimizingImagesToSave'), {
               id: progressToastId,
               duration: Infinity,
             });
@@ -527,10 +535,13 @@ export const useCanvasProject = (
             // Process nodes with progress callback
             const result = await processNodesForR2Upload(nodes, id, (current, total) => {
               if (total > 0) {
-                toast.loading(`Otimizando imagens... ${current} de ${total}`, {
-                  id: progressToastId,
-                  duration: Infinity,
-                });
+                toast.loading(
+                  translate('canvas.optimizingImagesProgress', undefined, { current, total }),
+                  {
+                    id: progressToastId,
+                    duration: Infinity,
+                  }
+                );
               }
             });
 
@@ -554,22 +565,24 @@ export const useCanvasProject = (
 
             // Show success/warning messages
             if (result.uploadedCount > 0 && result.failedCount === 0) {
-              toast.success(`${result.uploadedCount} imagem(ns) otimizada(s) com sucesso`, {
-                duration: 3000,
-              });
+              toast.success(
+                translate('canvas.imagesOptimized', undefined, { count: result.uploadedCount }),
+                { duration: 3000 }
+              );
             } else if (result.uploadedCount > 0 && result.failedCount > 0) {
               toast.warning(
-                `${result.uploadedCount} otimizada(s), ${result.failedCount} falharam. Tentando salvar mesmo assim...`,
-                {
-                  duration: 4000,
-                }
+                translate('canvas.imagesOptimizedPartial', undefined, {
+                  ok: result.uploadedCount,
+                  failed: result.failedCount,
+                }),
+                { duration: 4000 }
               );
             } else if (result.failedCount > 0) {
               toast.warning(
-                `${result.failedCount} imagem(ns) não puderam ser otimizadas. Tentando salvar mesmo assim...`,
-                {
-                  duration: 4000,
-                }
+                translate('canvas.imagesOptimizeFailedSaving', undefined, {
+                  count: result.failedCount,
+                }),
+                { duration: 4000 }
               );
             }
           } catch (processError: any) {
@@ -577,12 +590,7 @@ export const useCanvasProject = (
             toast.dismiss(progressToastId);
 
             // Show error but continue with original nodes (fallback)
-            toast.warning(
-              'Não foi possível otimizar algumas imagens. Tentando salvar mesmo assim...',
-              {
-                duration: 4000,
-              }
-            );
+            toast.warning(translate('canvas.imagesOptimizeErrorSaving'), { duration: 4000 });
             // Continue with original nodes if processing fails
             nodesToSave = nodes;
           }
@@ -592,7 +600,7 @@ export const useCanvasProject = (
         const sizeMB = (estimatedSize / 1024 / 1024).toFixed(2);
 
         // Always check and mark oversized nodes (regardless of total project size)
-        const oversizedWarningMessage = `Imagem muito grande para salvar. Reduza a resolução ou número de imagens no canvas.`;
+        const oversizedWarningMessage = translate('canvas.nodeOversizedWarning');
         setNodes((currentNodes) => {
           let hasChanges = false;
           const updatedNodes = currentNodes.map((node) => {
@@ -687,10 +695,8 @@ export const useCanvasProject = (
           if (!hasShownOversizedWarningRef.current) {
             hasShownOversizedWarningRef.current = true;
             const warningMessage = !r2Status.configured
-              ? `Seu projeto está muito grande (${sizeMB}MB) para salvar. ` +
-                `Configure o armazenamento R2 nas configurações do sistema para salvar projetos grandes.`
-              : `Seu projeto ainda está muito grande (${sizeMB}MB) mesmo após otimização. ` +
-                `Por favor, reduza o número de imagens ou elementos no canvas.`;
+              ? translate('canvas.projectTooLargeNoR2', undefined, { size: sizeMB })
+              : translate('canvas.projectTooLargeOnce', undefined, { size: sizeMB });
             toast.error(warningMessage, {
               id: `payload-too-large-warning-global`,
               duration: 8000,
@@ -702,8 +708,7 @@ export const useCanvasProject = (
           if (!hasShownOversizedWarningRef.current) {
             hasShownOversizedWarningRef.current = true;
             toast.error(
-              `Seu projeto está muito grande (${sizeMB}MB) para salvar no banco de dados. ` +
-                `Por favor, reduza o número de imagens no canvas.`,
+              translate('canvas.projectTooLargeDb', undefined, { size: sizeMB }),
               {
                 id: `payload-too-large-warning-global`,
                 duration: 8000,
@@ -769,7 +774,7 @@ export const useCanvasProject = (
         console.error('Failed to save project:', error);
 
         // Show user-friendly error message
-        let errorMessage = 'Falha ao salvar projeto';
+        let errorMessage = translate('canvas.saveProjectFailed');
         if (error?.message) {
           errorMessage = error.message;
         } else if (error?.status === 413 || error?.status === 400) {
@@ -779,17 +784,14 @@ export const useCanvasProject = (
             error?.message?.toLowerCase().includes('request entity too large') ||
             error?.status === 413
           ) {
-            errorMessage =
-              'Projeto muito grande para salvar. ' +
-              'O limite é 50MB (Vercel Pro). ' +
-              'Tente reduzir o número de imagens ou configure o R2 nas configurações do sistema.';
+            errorMessage = translate('canvas.saveProjectTooLarge');
           } else {
-            errorMessage = 'Não foi possível salvar. Verifique se o projeto não está muito grande.';
+            errorMessage = translate('canvas.saveProjectCheckSize');
           }
         } else if (error?.status === 401) {
-          errorMessage = 'Sessão expirada. Por favor, faça login novamente.';
+          errorMessage = translate('canvas.sessionExpired');
         } else if (error?.status === 500) {
-          errorMessage = 'Erro no servidor. Tente novamente em alguns instantes.';
+          errorMessage = translate('canvas.serverError');
         }
 
         toast.error(errorMessage, {
@@ -897,7 +899,7 @@ export const useCanvasProject = (
     } catch (error: any) {
       console.error('Failed to save project immediately:', error);
 
-      let errorMessage = 'Falha ao salvar projeto';
+      let errorMessage = translate('canvas.saveProjectFailed');
       if (error?.message) {
         errorMessage = error.message;
       }

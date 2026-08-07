@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/turbulence-field` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 

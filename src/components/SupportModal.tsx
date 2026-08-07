@@ -177,7 +177,7 @@ ${message}
                 variant="ghost"
                 type="button"
                 onClick={() => setContactType('customerService')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm font-mono ${
                   contactType === 'customerService'
                     ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                     : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
@@ -190,7 +190,7 @@ ${message}
                 variant="ghost"
                 type="button"
                 onClick={() => setContactType('reportBug')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-colors text-sm font-mono ${
                   contactType === 'reportBug'
                     ? 'bg-brand-cyan/20 border-neutral-600/50 text-brand-cyan'
                     : 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
@@ -280,7 +280,7 @@ ${message}
               variant="brand"
               type="submit"
               disabled={isSubmitting || !subject.trim() || !message.trim()}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-all duration-200"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-colors duration-200"
             >
               {isSubmitting ? (
                 <>

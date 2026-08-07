@@ -18,6 +18,7 @@ import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { collectR2UrlsForDeletion } from './utils/r2UploadHelpers';
 import { DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { translate } from '@/utils/localeUtils';
 
 interface UseImageNodeHandlersParams {
   imageContextMenu: { x: number; y: number; nodeId: string } | null;
@@ -168,7 +169,9 @@ export const useImageNodeHandlers = ({
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(
+              translate('canvas.imageFetchHttpError', undefined, { status: response.status })
+            );
           }
 
           blob = await response.blob();
@@ -206,11 +209,11 @@ export const useImageNodeHandlers = ({
 
       downloadBlob(blob, fileName);
 
-      toast.success(t('canvas.imageDownloaded') || 'Image downloaded!', { duration: 2000 });
+      toast.success(t('canvas.imageDownloaded'), { duration: 2000 });
     } catch (error: any) {
       console.error('Download error:', error);
       const errorMessage =
-        error?.message || t('canvas.failedToDownloadImage') || 'Failed to download image';
+        error?.message || t('canvas.failedToDownloadImage');
       toast.error(errorMessage, { duration: 3000 });
     }
   }, [imageContextMenu, nodes, getImageUrlFromNode, t]);
@@ -270,17 +273,17 @@ export const useImageNodeHandlers = ({
 
     const media = getMediaFromNodeForCopy(node);
     if (!media) {
-      toast.error('No media found in node', { duration: 2000 });
+      toast.error(t('canvas.noMediaInNode'), { duration: 2000 });
       return;
     }
 
     const result = await copyMediaFromNode(node);
     if (result.success) {
-      toast.success(media.isVideo ? 'Video copied to clipboard!' : 'Image copied to clipboard!', {
+      toast.success(media.isVideo ? t('canvas.videoCopied') : t('canvas.imageCopied'), {
         duration: 2000,
       });
     } else {
-      toast.error(result.error || 'Failed to copy media to clipboard', { duration: 3000 });
+      toast.error(result.error || t('canvas.copyMediaFailed'), { duration: 3000 });
     }
   }, [imageContextMenu, nodes]);
 
@@ -293,9 +296,9 @@ export const useImageNodeHandlers = ({
 
     const result = await copyMediaAsPngFromNode(node);
     if (result.success) {
-      toast.success('Image copied to clipboard as PNG!', { duration: 2000 });
+      toast.success(t('canvas.imageCopiedPng'), { duration: 2000 });
     } else {
-      toast.error(result.error || 'Failed to copy image as PNG to clipboard', { duration: 3000 });
+      toast.error(result.error || t('canvas.copyPngFailed'), { duration: 3000 });
     }
   }, [imageContextMenu, nodes]);
 

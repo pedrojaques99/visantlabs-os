@@ -13,6 +13,7 @@ import { getAmbiencePreset } from '@/services/ambiencePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
+import { translate } from '@/utils/localeUtils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseAmbienceNodeHandlersParams {
@@ -61,7 +62,7 @@ export const useAmbienceNodeHandlers = ({
     async (nodeId: string, imageInput: string, presetId: string) => {
       const preset = getAmbiencePreset(presetId as any);
       if (!preset) {
-        toast.error(`Ambience preset ${presetId} not found`);
+        toast.error(translate('canvas.presetNotFound', undefined, { presetId }));
         return;
       }
 
@@ -93,8 +94,8 @@ export const useAmbienceNodeHandlers = ({
         addToHistory,
         refreshSubscriptionStatus,
         canvasId,
-        errorMessage: 'Connect an image to generate ambience',
-        successMessage: 'Ambience applied successfully!',
+        errorMessage: translate('canvas.ambienceConnectImage'),
+        successMessage: translate('canvas.ambienceApplied'),
         promptOverride,
       });
     },

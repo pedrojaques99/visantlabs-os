@@ -80,7 +80,7 @@ export const SectionLabel: React.FC<{ children: React.ReactNode; className?: str
   className,
 }) => (
   <span
-    className={cn('text-[10px] font-mono uppercase tracking-widest text-neutral-500', className)}
+    className={cn('text-[10px] uppercase tracking-widest text-muted-foreground', className)}
   >
     {children}
   </span>
@@ -132,13 +132,13 @@ export const ToolPanelSection: React.FC<{
 }> = ({ title, children, className, id, onReset }) => (
   <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
     <div className="group -mx-4 px-4 py-1.5 flex items-center justify-between">
-      <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
         {title}
       </span>
       {onReset && (
         <button
           onClick={onReset}
-          className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
+          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
         >
           Reset
         </button>
@@ -160,19 +160,19 @@ export const ToolPanelDisclosure: React.FC<{
   return (
     <div
       id={id}
-      className="rounded-md border border-neutral-800/50 transition-all duration-200 scroll-mt-2"
+      className="rounded-md border border-neutral-800/50 transition-colors duration-200 scroll-mt-2"
     >
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          'w-full flex items-center justify-between text-left px-3 py-2.5 transition-all duration-200 rounded-md',
+          'w-full flex items-center justify-between text-left px-3 py-2.5 transition-colors duration-200 rounded-md',
           'hover:bg-neutral-800/10',
           open && 'bg-neutral-800/20'
         )}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <span className="text-neutral-500">{icon}</span>}
-          <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
             {label}
           </span>
         </div>
@@ -223,7 +223,7 @@ export const ToolPanelChip: React.FC<{
   <button
     onClick={onClick}
     className={cn(
-      'px-2.5 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all duration-200 text-left border',
+      'px-2.5 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-200 text-left border',
       active
         ? 'bg-white/10 text-white border-white/20'
         : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30 hover:text-neutral-200 hover:border-neutral-700/50',
@@ -321,7 +321,7 @@ export const ChannelRow: React.FC<{
         <HexTextInput value={color} onChange={onColorChange} ariaLabel={`${label} hex`} />
       </span>
       {!label.startsWith('#') && (
-        <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-wider truncate">
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">
           {label}
         </span>
       )}
@@ -546,7 +546,7 @@ export const ExpandableColorPicker: React.FC<{
           )}
           {recentColors && recentColors.length > 0 && (
             <div className="space-y-1">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-600">
+              <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
                 {t('common.recent')}
               </span>
               <div className="flex gap-1.5 flex-wrap">

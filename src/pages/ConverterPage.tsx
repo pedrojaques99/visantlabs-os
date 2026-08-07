@@ -18,19 +18,15 @@ import { formatBytes } from '@/utils/formatUtils';
 import { useToolInput } from '@/hooks/useToolInput';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
+import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
 
-const ease = [0.4, 0, 0.2, 1] as const;
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
+/** Local scale-fade — no scale preset in the module; tokens supply ease/duration. */
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
 
 /* ── Conversion logic (all client-side) ── */
@@ -112,6 +108,7 @@ const OUTPUT_FORMATS: OutputFormat[] = ['png', 'jpg', 'webp', 'pdf', 'ico'];
 /* ── Component ── */
 
 export const ConverterPage: React.FC = () => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -274,7 +271,7 @@ export const ConverterPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images / PDF
         <input
@@ -292,12 +289,10 @@ export const ConverterPage: React.FC = () => {
           <motion.div
             key={item.id}
             layout
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25, delay: i * 0.03 }}
+            {...itemEnter(i)}
             onClick={() => setPreviewId(item.id)}
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
+              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
               previewItem?.id === item.id
                 ? 'bg-neutral-800/60 ring-1 ring-neutral-600'
                 : 'hover:bg-neutral-900/60'
@@ -318,8 +313,9 @@ export const ConverterPage: React.FC = () => {
                 {item.status === 'done' && item.resultBlob && (
                   <AnimatePresence>
                     <motion.span
-                      initial={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
+                      transition={transitions.fast}
                       className="flex items-center gap-1"
                     >
                       <ArrowRight size={7} className="text-neutral-600" />
@@ -337,7 +333,7 @@ export const ConverterPage: React.FC = () => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all duration-200 flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
             >
               <X size={12} />
             </button>
@@ -356,12 +352,12 @@ export const ConverterPage: React.FC = () => {
             {OUTPUT_FORMATS.map((f) => (
               <motion.button
                 key={f}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05, transition: transitions.fast }}
+                whileTap={{ scale: 0.95, transition: transitions.press }}
                 onClick={() => setOutputFormat(f)}
                 disabled={isProcessing}
                 className={cn(
-                  'px-2.5 py-0.5 rounded text-xs font-mono transition-all duration-200',
+                  'px-2.5 py-0.5 rounded text-xs font-mono transition-colors duration-200',
                   outputFormat === f
                     ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
                     : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
@@ -460,8 +456,9 @@ export const ConverterPage: React.FC = () => {
   return (
     <MiniAppShell
       icon={ArrowLeftRight}
-      title="File Converter"
-      documentTitle="File Converter"
+      title={t('apps.fileConverter.name')}
+      toolId="converter"
+      documentTitle={t('apps.fileConverter.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
       panelLabel="Queue & settings"
@@ -476,15 +473,15 @@ export const ConverterPage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           /* ── Empty / Upload state ── */
-          <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
+          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
             <motion.div
               className={cn(
                 'w-16 h-16 rounded-2xl flex items-center justify-center',
                 glassSurface.panel
               )}
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+              transition={{ ...transitions.base, delay: 0.08 }}
             >
               <ArrowLeftRight size={28} className="text-neutral-500" />
             </motion.div>
@@ -493,7 +490,7 @@ export const ConverterPage: React.FC = () => {
               className="text-center space-y-2"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.35 }}
+              transition={{ ...transitions.base, delay: 0.12 }}
             >
               <p className="text-sm text-neutral-300 font-medium">Convert image formats</p>
               <p className="text-xs text-neutral-600 font-mono">
@@ -503,16 +500,16 @@ export const ConverterPage: React.FC = () => {
 
             <motion.label
               className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200',
+                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
                 isDragOver
                   ? 'border-brand-cyan bg-brand-cyan/5'
                   : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'
               )}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              transition={{ ...transitions.base, delay: 0.16 }}
+              whileHover={{ scale: 1.01, transition: transitions.fast }}
+              whileTap={{ scale: 0.99, transition: transitions.press }}
             >
               <Upload size={24} className="text-neutral-500" />
               <span className="text-xs font-medium text-neutral-500">
@@ -551,7 +548,7 @@ export const ConverterPage: React.FC = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={transitions.base}
                       className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm"
                     >
                       <FlyingPaperLoader
@@ -564,10 +561,10 @@ export const ConverterPage: React.FC = () => {
                 <AnimatePresence>
                   {previewItem.status === 'done' && (
                     <motion.span
-                      initial={{ opacity: 0, scale: 0.8 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.2, ease }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={transitions.fast}
                       className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded"
                     >
                       {outputFormat.toUpperCase()}

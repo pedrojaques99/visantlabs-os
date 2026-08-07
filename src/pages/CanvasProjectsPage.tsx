@@ -87,6 +87,7 @@ export const CanvasProjectsPage: React.FC = () => {
   const { hasAccess, isLoading: isLoadingAccess } = usePremiumAccess();
   const [projects, setProjects] = useState<CanvasProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -196,6 +197,7 @@ export const CanvasProjectsPage: React.FC = () => {
     if (isLoadingRef.current) return;
     isLoadingRef.current = true;
     setIsLoading(true);
+    setLoadError(false);
     try {
       const data = await canvasApi.getAll();
       setProjects(data);
@@ -205,6 +207,9 @@ export const CanvasProjectsPage: React.FC = () => {
       if (error?.status === 401) {
         setShowAuthModal(true);
       } else {
+        // A failed load must not fall through to the "no projects yet" empty
+        // state — that reads as "your account is empty" (silent-empty lie).
+        setLoadError(true);
         toast.error(t('canvas.failedToLoadProjects') || 'Failed to load canvas projects');
       }
     } finally {
@@ -270,6 +275,7 @@ export const CanvasProjectsPage: React.FC = () => {
 
   const handleCreateNew = async () => {
     try {
+      // PERSISTED value — never localize. The UI localizes this sentinel at render.
       const newProject = await canvasApi.save('Untitled', [], []);
       navigate(`/canvas/${newProject._id}`);
     } catch (error: any) {
@@ -304,6 +310,8 @@ export const CanvasProjectsPage: React.FC = () => {
   const handleNameEditStart = (project: CanvasProject, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingProjectId(project._id);
+    // Seeds an input whose value is persisted verbatim by `handleNameEditSave`
+    // → must stay the literal sentinel, not `t('canvas.untitled')`.
     setEditingName(project.name || 'Untitled');
     setTimeout(() => {
       editingInputRef.current?.focus();
@@ -326,7 +334,7 @@ export const CanvasProjectsPage: React.FC = () => {
       return;
     }
     try {
-      await canvasApi.save(trimmedName, project.nodes, project.edges, projectId);
+      await canvasApi.rename(projectId, trimmedName);
       setProjects((prev) =>
         prev.map((p) => (p._id === projectId ? { ...p, name: trimmedName } : p))
       );
@@ -371,11 +379,58 @@ export const CanvasProjectsPage: React.FC = () => {
     });
   }, [projects, searchQuery, brandId]);
 
+  // Ações secundárias (biblioteca de workflows + importar JSON). Abaixo de `xl`
+  // elas saem da espinha e vivem no corpo da página, acima da lista, sempre com
+  // label completo. Nenhuma ação some: só muda de lugar.
+  //
+  // O corte é `xl` (era `sm`) porque quem come a largura da espinha é o RAIL:
+  // ele entra em `md` (768px) e leva 240px fixos (`AppSidebar`: `hidden md:flex
+  // w-60`). Entre 768 e 1023 a espinha fica com ~496px úteis, e entre 1024 e
+  // 1279 com ~737px, contra um grupo direito (busca + ações + pílula de
+  // créditos de 205px) que pedia 672px e 847px — daí o estouro medido de +107
+  // (820px) e +79 (1024px). O antigo `lg:inline` devolvia os labels em 1024,
+  // exatamente onde o rail ainda apertava: os dois breakpoints estavam
+  // desalinhados. Agora a espinha só recebe as secundárias onde elas cabem
+  // INTEIRAS (`xl`), e a faixa do padrão "secundária no corpo" — já validado no
+  // mobile — simplesmente se estende até lá. Sem terceiro comportamento e sem
+  // label pela metade.
+  const secondaryActions = (
+    <>
+      <Button
+        variant="ghost"
+        onClick={() => setShowWorkflowLibrary(true)}
+        title={t('workflows.importWorkflow') || 'Library'}
+        className="shrink-0 h-10 px-2 sm:px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-colors rounded-md flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+      >
+        <FolderOpen className="h-4 w-4" />
+        <span>{t('workflows.importWorkflow') || 'Library'}</span>
+      </Button>
+
+      <Button variant="toolbar" onClick={handleImportJsonClick} title="JSON" className="shrink-0">
+        <FileJson className="h-4 w-4" />
+        <span>JSON</span>
+      </Button>
+    </>
+  );
+
   const headerActions = (
-    <div className="flex items-center gap-3">
+    // A espinha é estreita no mobile E na faixa em que o rail já entrou mas a
+    // janela ainda é curta: abaixo de `lg` sobram só a busca e o CTA. As
+    // secundárias vão pro corpo (ver secondaryActions).
+    <div className="flex items-center gap-1 sm:gap-3">
       {/* Search de projetos: expande INLINE dentro do header (não é popup
           flutuante); colapsa ao sair vazio. Fica visualmente distinto do
           Cmd+K global da espinha (que é navegação, não filtro de lista). */}
+      {/* Largura do campo ABERTO. Era `sm:flex-none sm:w-[200px] md:w-[240px]`:
+          largura fixa E `flex-none` (= `flex: none`, shrink 0), ou seja o campo
+          crescia justo onde o rail tirava 240px e ainda se recusava a ceder.
+          Aberto, a busca sozinha estourava a espinha em +76 (820px), +111
+          (1024px) e +31 (1280px) — o mesmo defeito de faixa, latente porque a
+          medição padrão pega o campo colapsado.
+          Agora a largura acompanha o rail (encolhe em `md`, volta a crescer em
+          `lg`/`xl`) e `flex-initial` mantém o shrink ligado como válvula: se
+          faltar espaço, quem cede é o filtro — nunca uma ação nem a pílula de
+          créditos, que seguem `shrink-0`. */}
       {showSearch ? (
         <SearchBar
           value={searchQuery}
@@ -383,7 +438,7 @@ export const CanvasProjectsPage: React.FC = () => {
           placeholder={t('canvas.searchProjects') || 'Buscar projetos...'}
           iconSize={14}
           className="h-10 bg-neutral-900/40 border-white/10 text-xs font-mono"
-          containerClassName="w-[200px] md:w-[240px]"
+          containerClassName="min-w-0 flex-1 max-w-[8.5rem] sm:flex-initial sm:max-w-none sm:w-[180px] md:w-[140px] lg:w-[180px] xl:w-[200px]"
           autoFocus
           onBlur={() => {
             if (!searchQuery.trim()) setShowSearch(false);
@@ -393,7 +448,7 @@ export const CanvasProjectsPage: React.FC = () => {
         <Button
           variant="ghost"
           onClick={() => setShowSearch(true)}
-          className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
+          className="shrink-0 p-1.5 sm:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-900/40"
           title={t('canvas.searchProjects') || 'Buscar projetos'}
         >
           <Search size={18} />
@@ -402,27 +457,23 @@ export const CanvasProjectsPage: React.FC = () => {
 
       <div className="h-6 w-[1px] bg-neutral-800/60 mx-1 hidden md:block" />
 
-      <Button
-        variant="ghost"
-        onClick={() => setShowWorkflowLibrary(true)}
-        className="h-10 px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-all rounded-md flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
-      >
-        <FolderOpen className="h-4 w-4" />
-        <span className="hidden lg:inline">{t('workflows.importWorkflow') || 'Library'}</span>
-      </Button>
+      <div className="hidden xl:contents">{secondaryActions}</div>
 
-      <Button variant="toolbar" onClick={handleImportJsonClick}>
-        <FileJson className="h-4 w-4" />
-        <span className="hidden lg:inline">JSON</span>
-      </Button>
-
+      {/* CTA: o label segue a MESMA lógica do rail. Aparece em `sm` (640–767,
+          sem rail, janela inteira disponível), some em `md` (768–1023, onde o
+          rail já levou 240px e a espinha ficou com ~496px) e volta em `lg`.
+          Sem label o botão é ícone + `title` — o padrão já validado no mobile,
+          não um terceiro comportamento. */}
       <Button
         variant="brand"
         onClick={handleCreateNew}
-        className="h-10 px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
+        title={t('canvas.newProject') || 'New Project'}
+        className="shrink-0 h-10 px-2 sm:px-6 md:px-2 lg:px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
       >
         <Plus className="h-4 w-4" />
-        {t('canvas.newProject') || 'New Project'}
+        <span className="hidden sm:inline md:hidden lg:inline">
+          {t('canvas.newProject') || 'New Project'}
+        </span>
       </Button>
 
       <Input
@@ -503,22 +554,49 @@ export const CanvasProjectsPage: React.FC = () => {
       actions={headerActions}
     >
       <div className="relative z-10">
-        {filteredProjects.length === 0 && projects.length > 0 ? (
+        {/* Secundárias abaixo de `xl` — mesmas ações da espinha, só
+            reposicionadas (ver secondaryActions: o corte acompanha o rail). */}
+        <div className="flex xl:hidden items-center gap-2 mb-4">{secondaryActions}</div>
+
+        {loadError && projects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+            <FolderKanban size={64} className="text-destructive/60 mb-4" strokeWidth={1} />
+            <h2 className="text-xl font-semibold font-mono uppercase text-neutral-400 mb-2">
+              {t('canvas.loadFailedTitle')?.toUpperCase() || 'COULD NOT LOAD PROJECTS'}
+            </h2>
+            <p className="text-sm text-neutral-500 font-mono mb-6">
+              {t('canvas.loadFailedBody') ||
+                'Something went wrong loading your projects. Your work is safe — try again.'}
+            </p>
+            <Button
+              variant="ghost"
+              onClick={loadProjects}
+              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
+            >
+              {t('common.retry') || 'Try Again'}
+            </Button>
+          </div>
+        ) : filteredProjects.length === 0 && projects.length > 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
             <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
             <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
               {t('canvas.noProjectsFound')?.toUpperCase() || 'NO PROJECTS FOUND'}
             </h2>
             <p className="text-sm text-neutral-600 font-mono mb-6">
-              {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
+              {searchQuery.trim()
+                ? t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'
+                : t('canvas.noProjectsForBrand') ||
+                  'No canvas projects are linked to the active brand.'}
             </p>
-            <Button
-              variant="ghost"
-              onClick={() => setSearchQuery('')}
-              className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
-            >
-              {t('canvas.clearSearch') || 'Clear Search'}
-            </Button>
+            {searchQuery.trim() && (
+              <Button
+                variant="ghost"
+                onClick={() => setSearchQuery('')}
+                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
+              >
+                {t('canvas.clearSearch') || 'Clear Search'}
+              </Button>
+            )}
           </div>
         ) : projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
@@ -549,7 +627,7 @@ export const CanvasProjectsPage: React.FC = () => {
               return (
                 <div
                   key={project._id}
-                  className="bg-neutral-900/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-neutral-700 transition-all duration-500 group cursor-pointer overflow-hidden shadow-xl"
+                  className="bg-neutral-900/40 backdrop-blur-sm border border-neutral-800/60 rounded-xl p-5 hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,filter] duration-500 group cursor-pointer overflow-hidden shadow-xl"
                   onClick={() => {
                     if (editingProjectId !== project._id) {
                       handleView(project);
@@ -593,7 +671,13 @@ export const CanvasProjectsPage: React.FC = () => {
                             onClick={(e) => handleNameEditStart(project, e)}
                             title={t('canvas.clickToEdit') || 'Click to edit'}
                           >
-                            {project.name || t('canvas.untitled') || 'Untitled'}
+                            {/* `'Untitled'` is the literal the backend persists as the
+                                default project name — it is a sentinel, not user text,
+                                so it gets localized on RENDER only. `project.name` keeps
+                                the literal (rename/export still round-trip it). */}
+                            {!project.name || project.name === 'Untitled'
+                              ? t('canvas.untitled')
+                              : project.name}
                           </h3>
                         )}
                       </div>
@@ -609,13 +693,17 @@ export const CanvasProjectsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60">
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
-                      {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
-                      {edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}
-                    </span>
+                  <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60 min-h-[1.25rem]">
+                    {nodeCount > 0 && (
+                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
+                        {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
+                      </span>
+                    )}
+                    {edgeCount > 0 && (
+                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
+                        {edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -625,7 +713,7 @@ export const CanvasProjectsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(project);
                       }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
+                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-[color,background-color,border-color,opacity] duration-300 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
                       {t('canvas.open') || 'Open'}
@@ -634,7 +722,7 @@ export const CanvasProjectsPage: React.FC = () => {
                       variant="ghost"
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-[color,background-color,border-color,opacity] duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

@@ -96,7 +96,7 @@ export const FigmaTokenSetup: React.FC = () => {
       {!isConnected ? (
         <div className="space-y-3">
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider font-mono">
+            <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
               Personal Access Token
             </label>
             <div className="flex gap-2">

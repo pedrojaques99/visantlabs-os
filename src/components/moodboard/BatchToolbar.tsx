@@ -72,7 +72,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
                 onClick={onAISuggest}
                 disabled={isAISuggesting}
                 title="AI Suggest"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-all disabled:opacity-40"
+                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-[color,background-color,border-color,opacity] disabled:opacity-40"
               >
                 <Video size={16} className={isAISuggesting ? 'animate-pulse' : ''} />
               </button>
@@ -82,14 +82,14 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
               <button
                 onClick={onBatchUpscale}
                 title="Upscale selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-all"
+                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-[color,background-color,border-color,opacity]"
               >
                 <Maximize2 size={16} strokeWidth={1} />
               </button>
               <button
                 onClick={onBatchDownload}
                 title="Download selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-all"
+                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-300 hover:text-white hover:border-neutral-500 transition-colors"
               >
                 <Download size={16} strokeWidth={1} />
               </button>
@@ -102,7 +102,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
                     <button
                       key={preset}
                       onClick={() => onBatchRemotion(preset)}
-                      className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-all text-[10px] font-bold uppercase tracking-widest text-neutral-400"
+                      className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-colors text-[10px] font-bold uppercase tracking-widest text-neutral-400"
                     >
                       {preset.split('-')[0]}
                     </button>
@@ -115,7 +115,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
               <button
                 onClick={onBatchRemove}
                 title="Remove selected"
-                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-all"
+                className="p-2.5 rounded-full bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-colors"
               >
                 <Trash2 size={16} strokeWidth={1} />
               </button>

@@ -214,7 +214,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
             </div>
             <button
               onClick={openEditor}
-              className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all"
+              className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]"
             >
               <Pencil size={14} />
               Open 3D Editor
@@ -263,7 +263,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
 
             <div
               className={cn(
-                'absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10',
+                'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] backdrop-blur-sm z-10',
                 selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
               )}
             >
@@ -311,7 +311,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
                   key={m}
                   onClick={() => updateSetting('material', m)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-all',
+                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-colors',
                     material === m
                       ? 'bg-white/10 text-white border-white/20'
                       : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
@@ -333,7 +333,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
 
             <button
               onClick={openEditor}
-              className="w-full px-2 py-1 rounded text-[10px] font-mono uppercase tracking-wider border-node bg-brand-cyan/10 text-brand-cyan border-white/20 hover:bg-brand-cyan/20 transition-all text-center"
+              className="w-full px-2 py-1 rounded text-[10px] font-mono uppercase tracking-wider border-node bg-brand-cyan/10 text-brand-cyan border-white/20 hover:bg-brand-cyan/20 transition-colors text-center"
             >
               Full Editor
             </button>
@@ -346,7 +346,7 @@ const Studio3DNodeComponent: React.FC<NodeProps<Node<Studio3DNodeData>>> = ({
         <div className="fixed inset-0 z-[9999] bg-neutral-950 flex flex-col">
           {/* Modal header */}
           <div className="h-10 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 shrink-0">
-            <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-widest">
+            <span className="text-[11px] text-neutral-400 uppercase tracking-widest">
               3D Studio — Node Editor
             </span>
             <button

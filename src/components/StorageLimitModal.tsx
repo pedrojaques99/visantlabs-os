@@ -89,7 +89,7 @@ export const StorageLimitModal: React.FC<StorageLimitModalProps> = ({
           <Button
             variant="brand"
             onClick={handleUpgrade}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-neutral-700 rounded-md transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 hover:border-neutral-700 rounded-md transition-colors"
           >
             <CreditCard size={14} />
             <span>Fazer Upgrade</span>

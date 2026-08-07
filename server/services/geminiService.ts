@@ -1940,10 +1940,20 @@ export const chatWithAIContext = async (
     async () => {
       const ai = getAI(apiKey);
 
-      // Use the provided niche instruction or fallback to the generic intelligent one
-      const systemInstruction =
-        requestedSystemInstruction ||
-        `${GENERIC_SYSTEM_PROMPT}\n\nUTILIZE O CONTEXTO ABAIXO:\n${context}`;
+      // Use the provided niche instruction or fallback to the generic intelligent one.
+      //
+      // `context` is ALWAYS appended, never traded away for the caller's
+      // systemInstruction. Choosing between the two (the old `A || B` shape,
+      // 12d320a5, 2026-04) made every caller that passed both silently prompt
+      // the model with no context at all: the brand health check returned
+      // confident findings about a brand it had never seen from 6e45ad83
+      // (2026-04-29) until 2026-08-05, at a telltale ~348 input tokens.
+      // knowledgeService.expertChat threw away every RAG retrieval over the same
+      // window, and the plugin pre-pass threw away the conversation history.
+      const baseInstruction = requestedSystemInstruction || GENERIC_SYSTEM_PROMPT;
+      const systemInstruction = context?.trim()
+        ? `${baseInstruction}\n\nUTILIZE O CONTEXTO ABAIXO:\n${context}`
+        : baseInstruction;
 
       const sanitizedQuery = stripHtml(query.substring(0, 4000));
 

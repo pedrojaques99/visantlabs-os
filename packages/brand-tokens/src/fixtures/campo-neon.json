@@ -1,0 +1,23 @@
+{
+  "_source": "fixture sintética — marca inventada para o teste; nenhum dado de cliente",
+  "id": "fixture000000000000cneo",
+  "name": "Campo Neon",
+  "extraction": { "completeness": 36 },
+  "currentVersion": 10,
+  "colors": [
+    { "hex": "#011301", "name": "Preto de Campo", "role": "background" },
+    { "hex": "#1C2D1B", "name": "Grama Funda", "role": "surface" },
+    { "hex": "#145132", "name": "Verde de Gol", "role": "secondary" },
+    { "hex": "#BFFF53", "name": "Lima Sintética", "role": "accent" },
+    { "hex": "#85D2A0", "name": "Apito Final", "role": "accent-secondary" },
+    { "hex": "#CCF1BD", "name": "Menta de Bola", "role": "text-on-dark" },
+    { "hex": "#DCE0DC", "name": "Cinza de Linha", "role": "muted" },
+    { "hex": "#F1F1F1", "name": "Branco de Bola", "role": "text" }
+  ],
+  "typography": [
+    { "family": "Archivo", "role": "display", "style": "Bold 700 a Black 900", "size": 64 },
+    { "family": "Archivo", "role": "body", "style": "Regular 400", "size": 17 },
+    { "family": "Archivo", "role": "label", "style": "SemiBold 600", "size": 12 },
+    { "family": "Syncopate", "role": "feature", "style": "Bold 700", "size": 60 }
+  ]
+}

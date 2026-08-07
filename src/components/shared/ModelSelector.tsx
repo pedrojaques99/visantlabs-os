@@ -144,7 +144,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -186,7 +186,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -224,7 +224,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -262,7 +262,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -300,7 +300,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -338,7 +338,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 src={`https://img.logo.dev/${config.providerDomain}?size=48${
                   token ? `&token=${token}` : ''
                 }`}
-                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+                className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
                 alt=""
               />
@@ -401,7 +401,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           icon: config?.providerDomain ? (
             <img
               src={`https://img.logo.dev/${config.providerDomain}?token=${token}`}
-              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all pointer-events-none"
+              className="w-3.5 h-3.5 rounded-sm filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity,filter] pointer-events-none"
               onError={(e) => (e.currentTarget.style.display = 'none')}
               alt=""
             />

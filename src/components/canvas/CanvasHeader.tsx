@@ -96,7 +96,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
 
   // Common button classes
   const headerButtonClass =
-    'h-9 w-9 p-0 border rounded-[10px] transition-all flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-all duration-200';
+    'h-9 w-9 p-0 border rounded-[10px] transition-[color,background-color,border-color,box-shadow] flex items-center justify-center bg-neutral-900/40 hover:bg-[#252525]/60 text-neutral-400 hover:text-neutral-200 border-white/5 hover:border-white/10 cursor-pointer shadow-sm transition-[color,background-color,border-color,box-shadow] duration-200';
   const activeHeaderButtonClass = 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20';
 
   // Handle share button click
@@ -168,6 +168,16 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     }
   }, [localName, projectName, onProjectNameChange, generateGenericName]);
 
+  /**
+   * `localName` holds the PERSISTED value — including the literal `'Untitled'`
+   * sentinel the backend writes as the default project name — because it feeds
+   * `onProjectNameChange` (autosave/rename). Only the rendered label is
+   * localized; translating the state would write "Projeto sem nome" /
+   * "Unnamed project" into the same Mongo `name` field, breaking name filtering
+   * and the export→import round-trip.
+   */
+  const displayName = !localName || localName === 'Untitled' ? t('canvas.untitled') : localName;
+
   // Handle keyboard shortcuts in edit mode
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -209,9 +219,9 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               <span
                 onClick={() => setIsEditing(true)}
                 className="text-neutral-300 truncate cursor-text hover:text-neutral-200 transition-colors"
-                title={localName}
+                title={displayName}
               >
-                {localName}
+                {displayName}
               </span>
             )}
           </div>
@@ -300,7 +310,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             >
               <Download size={16} />
             </Button>
-            <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-52 bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-[color,background-color,border-color,box-shadow,opacity,filter] z-[60] py-1 backdrop-blur-md">
               <Button
                 variant="ghost"
                 onClick={() => onExportImagesRequest?.()}

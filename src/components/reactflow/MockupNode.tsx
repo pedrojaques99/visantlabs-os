@@ -472,7 +472,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           }}
           disabled={isLoading}
           className={cn(
-            'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-all text-left node-interactive',
+            'w-full flex items-center gap-3 p-1.5 rounded-md border-node transition-[color,background-color,border-color,opacity] text-left node-interactive',
             'bg-brand-cyan/10 border-neutral-800 hover:bg-brand-cyan/15',
             isLoading && 'opacity-50 cursor-not-allowed'
           )}
@@ -532,7 +532,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
       {/* HIERARCHY: Logo (priority 1) as primary focus, Identity (priority 2) as context/colors/vibe */}
       <div
         className={cn(
-          'node-margin space-y-[var(--node-gap)] transition-all duration-300',
+          'node-margin space-y-[var(--node-gap)] transition-[color,background-color,border-color,opacity] duration-300',
           !isBrandActive && 'opacity-30 grayscale pointer-events-none'
         )}
       >
@@ -611,7 +611,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
-            'w-full flex items-center justify-between p-1.5 rounded-md border-node transition-all text-left node-interactive',
+            'w-full flex items-center justify-between p-1.5 rounded-md border-node transition-[color,background-color,border-color,opacity] text-left node-interactive',
             'bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 hover:border-neutral-600/50',
             'text-neutral-400 hover:text-brand-cyan',
             isLoading && 'opacity-50 cursor-not-allowed'
@@ -621,7 +621,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
             <FileText size={12} />
             <span className="text-xs font-mono">{t('canvasNodes.mockupNode.editPrompt')}</span>
             {customPrompt && customPrompt.trim() && (
-              <span className="text-[10px] text-brand-cyan">(custom)</span>
+              <span className="text-[10px] text-muted-foreground">(custom)</span>
             )}
           </div>
           <ChevronRight
@@ -664,7 +664,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           onMouseDown={(e) => e.stopPropagation()}
           disabled={isLoading}
           className={cn(
-            'w-full flex items-center justify-between p-1.5 rounded-md border-node transition-all text-left node-interactive',
+            'w-full flex items-center justify-between p-1.5 rounded-md border-node transition-[color,background-color,border-color,opacity] text-left node-interactive',
             'bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 hover:border-neutral-600/50',
             'text-neutral-400 hover:text-brand-cyan',
             isLoading && 'opacity-50 cursor-not-allowed'
@@ -838,7 +838,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
               >
                 <div
                   className={cn(
-                    'w-3.5 h-3.5 rounded-md flex items-center justify-center border-node transition-all duration-200',
+                    'w-3.5 h-3.5 rounded-md flex items-center justify-center border-node transition-colors duration-200',
                     withHuman
                       ? 'bg-brand-cyan/80 border-neutral-800'
                       : 'bg-neutral-700 border-neutral-600'
@@ -944,7 +944,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
           }}
           disabled={isLoading}
           className={cn(
-            'w-6 h-6 flex items-center justify-center rounded-md border-node transition-all node-interactive',
+            'w-6 h-6 flex items-center justify-center rounded-md border-node transition-[color,background-color,border-color,opacity] node-interactive',
             'bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 hover:border-neutral-600/50',
             'text-neutral-400 hover:text-brand-cyan',
             isLoading && 'opacity-50 cursor-not-allowed'

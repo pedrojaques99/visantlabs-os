@@ -13,6 +13,7 @@ import { canvasApi } from '@/services/canvasApi';
 import { validateVideoCredits } from '@/services/reactFlowService';
 import { videoToBase64 } from '@/utils/fileUtils';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import { toast } from 'sonner';
 
 interface UseVideoNodeHandlersParams {
@@ -126,7 +127,10 @@ export const useVideoNodeHandlers = ({
         }
       }
 
-      toast.success('Video uploaded!', { id: `upload-video-${nodeId}`, duration: 2000 });
+      toast.success(translate('canvas.videoUploaded'), {
+        id: `upload-video-${nodeId}`,
+        duration: 2000,
+      });
     },
     [nodesRef, setNodes, canvasId]
   );
@@ -249,7 +253,7 @@ export const useVideoNodeHandlers = ({
         }
 
         trackCanvasEvent('generation_completed', 'video', canvasId, { mode: params.mode });
-        toast.success('Video generated successfully!', { duration: 3000 });
+        toast.success(translate('canvas.videoGenerated'), { duration: 3000 });
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'video', canvasId, {
           mode: params.mode,
@@ -258,8 +262,8 @@ export const useVideoNodeHandlers = ({
         cleanupFailedNode(newOutputNodeId);
         const msg =
           error?.status === 409
-            ? 'Video generation already in progress. Please wait.'
-            : error?.message || 'Failed to generate video';
+            ? translate('canvas.videoAlreadyGenerating')
+            : error?.message || translate('canvas.videoGenerateFailed');
         toast.error(msg, { duration: 5000 });
       } finally {
         updateNodeLoadingState<VideoNodeData>(nodeId, false, 'video');

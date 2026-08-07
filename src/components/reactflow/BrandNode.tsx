@@ -78,7 +78,7 @@ const ColorEditRow = ({
         value={hexValue}
         onChange={handleHexChange}
         onBlur={handleBlur}
-        className="h-6 font-mono text-[10px] uppercase flex-1"
+        className="h-6 text-[10px] uppercase flex-1"
         placeholder="#000000"
       />
       <NodeButton

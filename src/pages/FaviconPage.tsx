@@ -19,6 +19,7 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 const fadeUp = {
@@ -119,6 +120,7 @@ function buildManifestSnippet(): string {
 }
 
 export const FaviconPage: React.FC = () => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
@@ -299,7 +301,7 @@ export const FaviconPage: React.FC = () => {
           <button
             onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
             className={cn(
-              'px-2 py-0.5 rounded text-[10px] font-mono transition-all duration-200 border',
+              'px-2 py-0.5 rounded text-[10px] font-mono transition-colors duration-200 border',
               isTransparentBg
                 ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
                 : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600'
@@ -407,8 +409,9 @@ export const FaviconPage: React.FC = () => {
   return (
     <MiniAppShell
       icon={ImageIcon}
-      title="Favicon Generator"
-      documentTitle="Favicon Generator"
+      title={t('apps.faviconGenerator.name')}
+      toolId="favicon"
+      documentTitle={t('apps.faviconGenerator.name')}
       onReset={handleReset}
       panel={panel}
       panelLabel="Settings"
@@ -444,7 +447,7 @@ export const FaviconPage: React.FC = () => {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200',
+                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
                 isDragOver
                   ? 'border-brand-cyan bg-brand-cyan/5'
                   : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'

@@ -14,6 +14,7 @@ import { applyShaderEffect, applyShaderEffectToVideo } from '@/utils/shaders/sha
 import type { ShaderSettings as ShaderRendererSettings } from '@/utils/shaders/shaderRenderer';
 import { uploadImageToR2Auto, uploadImageToR2Debounced } from './r2UploadUtils';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 
 interface ShaderProcessingParams<T extends FlowNodeData> {
   nodeId: string;
@@ -75,8 +76,8 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
   updateNodeLoadingState,
   canvasId,
   setNodes,
-  errorMessage = 'Connect an image or video to apply effect',
-  videoSuccessMessage = 'Effect applied to video successfully!',
+  errorMessage = translate('canvas.shaderConnectMedia'),
+  videoSuccessMessage = translate('canvas.shaderVideoApplied'),
   isUpscale = false,
   onImageResult,
   onVideoResult,
@@ -106,7 +107,7 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
 
     if (isVideo) {
       // Process video
-      toast.info('Processing video frames...', { duration: 2000 });
+      toast.info(translate('canvas.processingVideoFrames'), { duration: 2000 });
       const resultVideoBase64 = await applyShaderEffectToVideo(inputToUse, settings, 30, 10);
       const videoBase64Only = extractBase64(resultVideoBase64);
 
@@ -225,6 +226,6 @@ export const processImageOrVideoWithShader = async <T extends FlowNodeData>({
     });
     console.error(`Error processing ${nodeType}:`, error);
     updateNodeLoadingState<T>(nodeId, false, nodeType);
-    toast.error(error?.message || `Failed to process ${nodeType}`, { duration: 5000 });
+    toast.error(error?.message || translate('canvas.shaderProcessFailed'), { duration: 5000 });
   }
 };

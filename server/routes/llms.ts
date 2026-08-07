@@ -283,16 +283,24 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 - \`brand-guidelines-duplicate\` (W) — Clone a guideline
 - \`brand-guidelines-upload-logo\` (W) — Upload logo image to guideline
 - \`brand-guidelines-delete-logo\` (D) — Remove a logo by ID
-- \`brand-guidelines-upload-media\` (W) — Upload media asset (photo, pattern, etc.)
+- \`brand-guidelines-upload-media\` (W) — Upload ONE media asset as base64 or public URL
+- \`brand-guidelines-media-upload-urls\` (W) — Mint presigned upload URLs for a batch of local files (bytes never cross the conversation)
+- \`brand-guidelines-media-commit\` (W) — Register the uploaded batch; dedups against media AND logos, returns the new completeness
 - \`brand-guidelines-delete-media\` (D) — Remove media by ID
 - \`brand-guidelines-export\` (R) — Export guideline as structured data
 - \`brand-guidelines-compile\` (R) — Compile brand tokens to CSS, Tailwind config, or React theme
-- \`brand-guidelines-health-check\` (R) — Audit guideline completeness (missing sections, weak areas)
+- \`brand-guidelines-health-check\` (R) — AI audit of COHERENCE (strategy vs visual vs voice contradictions). Not completeness: for what is still missing, read \`completeness.missing\` from \`brand-guidelines-update\`
 - \`brand-guidelines-compliance-check\` (R) — Check design/text against brand rules
 - \`brand-guidelines-compare-versions\` (R) — Diff two versions
 - \`brand-guidelines-figma-link\` (W) — Link guideline to a Figma file
-- \`brand-guidelines-figma-sync\` (W) — Sync tokens to/from Figma
+- \`brand-guidelines-figma-preview\` (R) — Dry-run: what the linked file actually holds, and whether the variables or the text path pays. Call before figma-sync
+- \`brand-guidelines-figma-sync\` (W) — Sync tokens to/from Figma (VARIABLES path)
+- \`figma-extract-text\` (R) — Figma file → markdown in reading order; raw material for \`brand-guidelines-ingest\`. No plugin, no open tab
 - \`brand-guidelines-knowledge-list\` (R) — List knowledge base entries for a guideline
+- \`brand-guidelines-logo-rules\` (R) — Derive clear space, minimum size and background rules from the logo file itself
+- \`brand-render-preset\` (W) — Render a web preset to PNG on the brand — headless, no Figma
+- \`figma-templates-list\` (R) — List the \`[Template]\` presets in the brand's Figma file
+- \`figma-preset-fill\` (W) — Build a deterministic FILL_TEMPLATE operation for the Visant Figma plugin
 
 ### Mockups
 
@@ -302,6 +310,9 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 - \`mockup-presets\` (R) — Browse community presets by category
 - \`mockup-update\` (W) — Update mockup metadata
 - \`mockup-delete\` (D) — Delete mockup
+- \`psd-scene-list\` (R) — Browse the PSD Scene Package catalog (pre-processed, renders instantly)
+- \`psd-scene-prepare\` (W) — Pre-process a PSD from the catalog into a Scene Package. Costs credits.
+- \`psd-mockup-produce\` (W) — End-to-end PSD production: generate the artwork and place it in a scene. Costs credits.
 
 ### Creative Studio
 
@@ -390,7 +401,9 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 ### Campaign
 
 - \`campaign-generate\` (W) — Batch-generate creatives for a campaign
-- \`campaign-status\` (R) — Check generation progress
+- \`campaign-status\` (R) — Check generation progress (job TTL is 2h)
+- \`campaign-list\` (R) — List persisted campaigns — these survive the job TTL
+- \`campaign-get\` (R) — Get one persisted campaign with its full results
 
 ### Community
 

@@ -127,7 +127,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
   }) => (
     <div
       className={cn(
-        `flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all duration-200 ${className}`,
+        `flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-colors duration-200 ${className}`,
         theme === 'dark'
           ? 'bg-neutral-800/40 border-neutral-700/40 hover:bg-neutral-800/60'
           : 'bg-neutral-100 border-neutral-200 hover:bg-neutral-200'
@@ -136,7 +136,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     >
       <div
         className={cn(
-          'w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200 shrink-0',
+          'w-3.5 h-3.5 rounded flex items-center justify-center border transition-colors duration-200 shrink-0',
           value
             ? 'bg-brand-cyan/80 border-brand-cyan'
             : theme === 'dark'
@@ -252,7 +252,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
 
         {/* Color Palette Panel (collapsible) */}
         <div
-          className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+          className={`mt-2 rounded-xl border transition-colors duration-200 overflow-hidden ${
             theme === 'dark'
               ? 'bg-neutral-900/30 border-neutral-800'
               : 'bg-white/50 border-neutral-200'
@@ -261,7 +261,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
               theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
             }`}
           >
@@ -313,7 +313,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   <div
                     key={color}
                     onClick={() => onRemoveColor(color)}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-all duration-200 text-[10px] font-mono group ${
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-colors duration-200 text-[10px] font-mono group ${
                       theme === 'dark'
                         ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
                         : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
@@ -385,7 +385,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => colorPickerRef.current?.click()}
-                      className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${
+                      className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-colors duration-200 ${
                         theme === 'dark'
                           ? 'border-neutral-700/40 text-neutral-400 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-800/50'
                           : 'border-neutral-300 text-neutral-500 hover:border-neutral-700 hover:text-brand-cyan hover:bg-neutral-100'

@@ -5,7 +5,11 @@ import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  // Press feedback lives in the base so every variant reacts to a click.
+  // Transition is scoped (never `transition-all`) and includes `transform` so
+  // the press scale animates; timing = EASE_OUT @ press duration.
+  // Disabled + reduced-motion opt out of the movement, not the color/opacity.
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-[var(--dur-press)] ease-[var(--ease-out)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100 aria-disabled:active:scale-100 motion-reduce:active:scale-100 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -19,8 +23,10 @@ const buttonVariants = cva(
         // ── Brand ────────────────────────────────────────────────────────────
         brand:
           'bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black border border-neutral-800 hover:border-neutral-700 shadow-lg',
+        // Scale is owned by the base (press-in). The old `hover:scale-[1.02]` +
+        // `active:scale-100` inverted the feedback (grew on hover, dead on click).
         sidebarAction:
-          'bg-neutral-800/50 hover:bg-neutral-700/50 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-neutral-200 border border-neutral-700/50 hover:border-neutral-700 shadow-lg transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100',
+          'bg-neutral-800/50 hover:bg-neutral-700/50 disabled:bg-neutral-700 disabled:text-neutral-500 text-neutral-400 hover:text-neutral-200 border border-neutral-700/50 hover:border-neutral-700 shadow-lg',
         // ── Surface actions ──────────────────────────────────────────────────
         // Bordered muted button — toolbars, page headers, inline forms
         // Usage: px-4 py-2, border, muted text, subtle bg hover

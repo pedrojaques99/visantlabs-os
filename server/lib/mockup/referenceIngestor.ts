@@ -12,6 +12,13 @@ import { randomUUID, createHash } from 'crypto';
 import { GoogleGenAI, Type } from '@google/genai';
 import { computeThumbHash } from '../thumbHash.js';
 import { describeImage, getMultimodalEmbedding } from '../../services/geminiService.js';
+import { makeSlug, pickName } from '../references/naming.js';
+import { isLowResolution, lowResolutionReason } from '../../../src/lib/references/quality.js';
+import {
+  normalizeBilingual,
+  SHORT_TITLE_PROMPT,
+  type BilingualTitle,
+} from '../references/titlePrompt.js';
 import { vectorService } from '../../services/vectorService.js';
 import { connectToMongoDB, getDb } from '../../db/mongodb.js';
 import { normalizeCountry, regionForCountry } from '../../../src/lib/references/taxonomy.js';
@@ -245,13 +252,24 @@ export async function ingestReferenceLight(
     extractImageFacts(imageBuffer),
   ]);
 
+  // Gate de resolucao. Os fatos ja foram computados acima — ate agora ninguem
+  // os comparava com nada, e uma miniatura de 110px entrava na biblioteca ao
+  // lado de um poster de 3000px. Curadoria admin nao e barrada (ha material
+  // legitimo pequeno, e o admin decide); upload de usuario e, porque a fila de
+  // moderacao nao deveria gastar atencao humana com imagem ilegivel.
   const trusted = params.isAdminCurated !== false;
+  if (!trusted && isLowResolution(facts)) {
+    throw new Error(`Imagem abaixo da resolucao minima: ${lowResolutionReason(facts)}`);
+  }
+
   await connectToMongoDB();
   const db = getDb();
   const doc = {
     id,
-    // No AI title yet — fall back to the caller's name or the filename.
-    name: name || 'Reference',
+    // No AI title yet. `pickName` rejects filenames/placeholders, so enrichment
+    // can later replace this without a real caller title being overwritten.
+    name: pickName(name),
+    slug: makeSlug(name, id),
     description: '',
     prompt: prompt || '',
     referenceImageUrl: imageUrl,
@@ -352,6 +370,7 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
 
   const name = doc.name as string | undefined;
   let dimensions: ReferenceDimensions = {};
+  let shortTitle: BilingualTitle | undefined;
   try {
     const dimResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -364,7 +383,13 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
                 mimeType: 'image/png',
               },
             },
-            { text: DIMENSION_PROMPT },
+            // As regras de titulo seguem morando em titlePrompt.ts (o backfill
+            // usa as mesmas), so viajam anexadas ao prompt de dimensoes.
+            { text: `${DIMENSION_PROMPT}
+
+---
+
+${SHORT_TITLE_PROMPT}` },
           ],
         },
       ],
@@ -373,6 +398,11 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            // Titulo curto bilingue PIGGYBACKS nesta chamada — mesma imagem, mesmo
+            // round-trip, custo marginal zero. Uma chamada dedicada so pra nomear
+            // seria a terceira do pipeline por referencia.
+            title_en: { type: Type.STRING },
+            title_pt: { type: Type.STRING },
             dimensions: {
               type: Type.OBJECT,
               properties: {
@@ -404,6 +434,7 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
     const parsed = JSON.parse((dimResponse.text || '').trim());
     dimensions = parsed.dimensions || {};
     geoHint = parsed.geoHint || {};
+    shortTitle = normalizeBilingual(parsed);
     const dimUsage = (dimResponse as any).usageMetadata;
     cost.inputTokens += dimUsage?.promptTokenCount || 0;
     cost.outputTokens += dimUsage?.candidatesTokenCount || 0;
@@ -458,14 +489,25 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
     ...(provenance.year ? { year: provenance.year } : {}),
   });
 
-  // 5. Patch the existing doc with the AI-derived fields. `name` keeps the
-  // human/filename title if there was one; only fills from AI when blank.
+  // 5. Patch the existing doc with the AI-derived fields. `name` keeps a REAL
+  // human title, but a placeholder (`'Reference'`, `IMG_2841.jpg`, `Untitled`)
+  // loses to the AI title — the old `name || analysis.title` guard treated the
+  // truthy ingest fallback as a real name and shadowed the AI title forever.
+  //
+  // Precedencia do titulo: o curto bilingue vem antes de `analysis.title`, que e
+  // uma LEGENDA do describeImage ("Composicao Abstrata de Tubos Pretos e Cartao
+  // Cinza", 7 palavras) e nao serve num card de grid.
+  const resolvedName = pickName(name, shortTitle?.en, analysis.title);
   const dimTags = Object.values(dimensions).flat();
   await db.collection('community_presets').updateOne(
     { id, category: 'reference' },
     {
       $set: {
-        name: name || analysis.title || 'Reference',
+        name: resolvedName,
+        slug: makeSlug(resolvedName, id),
+        // So grava o par quando os DOIS lados existem — meio par deixaria um
+        // locale mostrando o nome que o outro acabou de substituir.
+        ...(shortTitle ? { nameI18n: shortTitle } : {}),
         description: analysis.description,
         dimensions,
         provenance,

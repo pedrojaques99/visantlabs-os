@@ -380,7 +380,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   key={type}
                   onClick={() => setActiveFilter(type)}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-[color,background-color,border-color,opacity] whitespace-nowrap border',
                     activeFilter === type
                       ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
@@ -425,7 +425,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 variant="ghost"
                 onClick={() => setPresetSource('all')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-[color,background-color,border-color,box-shadow]',
                   presetSource === 'all'
                     ? 'bg-neutral-800 text-white shadow-sm'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -439,7 +439,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 variant="ghost"
                 onClick={() => setPresetSource('official')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-[color,background-color,border-color,box-shadow]',
                   presetSource === 'official'
                     ? 'bg-warning/10 text-warning shadow-sm'
                     : 'text-neutral-500 hover:text-warning/70'
@@ -453,10 +453,10 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 variant="ghost"
                 onClick={() => setPresetSource('community')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-[color,background-color,border-color,box-shadow]',
                   presetSource === 'community'
                     ? 'bg-brand-cyan/10 text-brand-cyan shadow-sm'
-                    : 'text-neutral-500 hover:text-brand-cyan/70'
+                    : 'text-neutral-500 hover:text-neutral-200'
                 )}
                 title={t('communityPresets.filters.community') || 'Community'}
               >
@@ -474,7 +474,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         >
           {isLoadingPresets ? (
             <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-2">
-              <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
               <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loading')}</p>
             </div>
           ) : filteredPresets.length === 0 ? (

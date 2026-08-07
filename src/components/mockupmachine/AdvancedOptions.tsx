@@ -24,6 +24,8 @@ import { GlassPanel } from '../ui/GlassPanel';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -193,7 +195,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+        className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
           theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
         }`}
       >
@@ -205,7 +207,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
-                {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
+                {hasSelection && <span className="text-foreground">{selectionSummary}</span>}
                 {hasSelection && poolTagsList.length > 0 && (
                   <span className="text-neutral-500"> · </span>
                 )}
@@ -218,7 +220,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className={cn(hoverReveal, 'flex items-center gap-2 flex-shrink-0')}>
           {/* Clear selection button (only on hover when there are selected tags) */}
           {hasSelection && (
             <Button
@@ -276,7 +278,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 placeholder={isGenerating ? '' : t('mockup.customCategoryPlaceholder')}
-                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
+                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-colors duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
                   theme === 'dark'
                     ? 'bg-brand-cyan/10 text-brand-cyan'
                     : 'bg-brand-cyan/5 text-neutral-800'
@@ -522,7 +524,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
               theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
             }`}
           >
@@ -572,7 +574,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${
+            className={`w-full flex justify-between items-center text-left p-3 transition-colors duration-200 ${
               theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
             }`}
           >

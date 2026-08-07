@@ -693,6 +693,16 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
     );
 
     const [sceneHandle, setSceneHandle] = useState<SceneHandle | null>(null);
+    // Persistent signal for an unrecovered WebGL context loss. The transient
+    // toast alone leaves a blank/frozen canvas with no signal once dismissed.
+    const [contextLost, setContextLost] = useState(false);
+    const contextLostTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+      return () => {
+        if (contextLostTimer.current) clearTimeout(contextLostTimer.current);
+      };
+    }, []);
 
     const bg = s.transparentBg ? 'transparent' : s.background;
     const bgStyle: React.CSSProperties =
@@ -706,6 +716,7 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
 
     return (
       <SceneRefContext.Provider value={sceneHandle}>
+        <div className="relative w-full h-full">
         <Canvas
           key={`${s.resetKey}-${s.orthographic}`}
           orthographic={s.orthographic}
@@ -739,8 +750,17 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
               import('sonner').then(({ toast }) =>
                 toast.error('WebGL context lost — attempting recovery...', { id: 'webgl-context' })
               );
+              // If nothing restores the context shortly, surface a persistent
+              // overlay so the blank canvas isn't left without a signal.
+              if (contextLostTimer.current) clearTimeout(contextLostTimer.current);
+              contextLostTimer.current = setTimeout(() => setContextLost(true), 4000);
             });
             gl.domElement.addEventListener('webglcontextrestored', () => {
+              if (contextLostTimer.current) {
+                clearTimeout(contextLostTimer.current);
+                contextLostTimer.current = null;
+              }
+              setContextLost(false);
               import('sonner').then(({ toast }) =>
                 toast.success('WebGL context restored', { id: 'webgl-context' })
               );
@@ -754,6 +774,21 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
           <SceneContent />
           {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
         </Canvas>
+        {contextLost && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/85 text-center backdrop-blur-sm">
+            <p className="text-sm font-medium text-foreground">Rendering lost</p>
+            <p className="max-w-xs text-xs text-muted-foreground">
+              The 3D context could not be recovered. Reload the page to restore the scene.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-md border border-ring px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              Reload
+            </button>
+          </div>
+        )}
+        </div>
       </SceneRefContext.Provider>
     );
   }

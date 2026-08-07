@@ -1,0 +1,15 @@
+{
+  "_source": "fixture sintética — marca inventada para o teste; nenhum dado de cliente",
+  "id": "fixture000000000000turn",
+  "name": "Turno & Turno",
+  "extraction": { "completeness": 64 },
+  "currentVersion": 8,
+  "colors": [
+    { "hex": "#343434", "name": "#343434", "role": "text" },
+    { "hex": "#EEE9E3", "name": "#EEE9E3", "role": "accent" },
+    { "hex": "#0D0D0D", "name": "#0D0D0D", "role": "text" }
+  ],
+  "typography": [
+    { "family": "Helvetica Neue LT", "style": "Regular", "size": 441, "role": "heading" }
+  ]
+}

@@ -114,7 +114,7 @@ const ImageCard = memo<ImageCardProps>(
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         className={cn(
-          'group relative rounded-2xl overflow-hidden transition-all duration-300',
+          'group relative rounded-2xl overflow-hidden transition-colors duration-300',
           glassSurface.panel
         )}
       >
@@ -160,7 +160,7 @@ const ImageCard = memo<ImageCardProps>(
 
           {/* Subtle Hover Overlay */}
           {!batchSelecting && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] duration-300 flex flex-col justify-end p-4">
               <h4 className="text-white font-medium text-[10px] line-clamp-1 mb-3 opacity-90 uppercase tracking-tight">
                 {img.title || 'asset_stream'}
               </h4>
@@ -656,7 +656,7 @@ export default function ExtractorPage() {
                 className="
                   w-full bg-white/[0.03] border border-neutral-800 rounded-2xl py-4 px-6 pr-32
                   text-base font-medium text-white/90 focus:outline-none focus:border-white/10
-                  transition-all placeholder:text-neutral-600
+                  transition-colors placeholder:text-neutral-600
                 "
               />
               <div className="absolute right-2 top-2 bottom-2 flex gap-1.5">
@@ -664,7 +664,7 @@ export default function ExtractorPage() {
                   type="button"
                   onClick={() => setShowFilters(!showFilters)}
                   className={`
-                    aspect-square rounded-xl flex items-center justify-center transition-all
+                    aspect-square rounded-xl flex items-center justify-center transition-colors
                     ${
                       showFilters
                         ? 'bg-brand-cyan/20 text-brand-cyan'
@@ -679,7 +679,7 @@ export default function ExtractorPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className="
                     aspect-square bg-white/[0.03] text-neutral-500 rounded-xl
-                    flex items-center justify-center hover:bg-white/5 hover:text-neutral-300 transition-all
+                    flex items-center justify-center hover:bg-white/5 hover:text-neutral-300 transition-[color,background-color,border-color,opacity]
                   "
                 >
                   {extractingPdf ? <GlitchLoader size={16} /> : <FileText size={16} />}
@@ -689,7 +689,7 @@ export default function ExtractorPage() {
                   disabled={loading || !query.trim()}
                   className="
                     aspect-square bg-white/10 text-white rounded-xl
-                    flex items-center justify-center hover:bg-white/20 transition-all disabled:opacity-20
+                    flex items-center justify-center hover:bg-white/20 transition-[color,background-color,border-color,opacity] disabled:opacity-20
                   "
                 >
                   {loading ? <GlitchLoader size={18} /> : <ArrowRight size={18} />}
@@ -741,7 +741,7 @@ export default function ExtractorPage() {
                         <button
                           key={s}
                           onClick={() => setDesignerParams({ ...designerParams, size: s })}
-                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
                             designerParams.size === s
                               ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600'
@@ -778,7 +778,7 @@ export default function ExtractorPage() {
                           onClick={() =>
                             setDesignerParams({ ...designerParams, contentMode: value })
                           }
-                          className={`flex-none px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                          className={`flex-none px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
                             designerParams.contentMode === value
                               ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan'
                               : 'bg-transparent border-neutral-800 text-neutral-600 hover:text-neutral-400'
@@ -799,7 +799,7 @@ export default function ExtractorPage() {
                         <button
                           key={a}
                           onClick={() => setDesignerParams({ ...designerParams, aspect: a })}
-                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${
+                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
                             designerParams.aspect === a
                               ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600'
@@ -850,7 +850,7 @@ export default function ExtractorPage() {
                     setSelectedImages(new Set());
                   }}
                   className={`
-                    px-4 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-wider transition-all border
+                    px-4 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-wider transition-colors border
                     ${
                       batchSelecting
                         ? 'bg-white/10 border-white/20 text-white'
@@ -864,7 +864,7 @@ export default function ExtractorPage() {
                   onClick={handleDownloadAll}
                   className="
                     px-4 py-1.5 bg-white text-black text-[10px] font-bold uppercase tracking-wider rounded-lg 
-                    hover:bg-neutral-200 transition-all flex items-center gap-1.5
+                    hover:bg-neutral-200 transition-colors flex items-center gap-1.5
                   "
                 >
                   <CloudDownload size={12} />

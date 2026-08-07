@@ -130,7 +130,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                   delete next[cat];
                   persist(next);
                 }}
-                className="text-neutral-800 hover:text-destructive opacity-0 group-hover/cat:opacity-100 transition-all ml-1"
+                className="text-neutral-800 hover:text-destructive opacity-0 group-hover/cat:opacity-100 transition-[color,background-color,border-color,opacity] ml-1"
                 aria-label={`Delete category ${cat}`}
               >
                 <X size={9} />
@@ -166,7 +166,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                         e.stopPropagation();
                         deleteTag(cat, idx);
                       }}
-                      className="text-neutral-700 hover:text-destructive opacity-0 group-hover/tag:opacity-100 transition-all ml-0.5"
+                      className="text-neutral-700 hover:text-destructive opacity-0 group-hover/tag:opacity-100 transition-[color,background-color,border-color,opacity] ml-0.5"
                       aria-label="Remove tag"
                     >
                       <X size={9} />

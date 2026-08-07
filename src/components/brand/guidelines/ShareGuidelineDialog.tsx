@@ -250,7 +250,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                     size="sm"
                     aria-label="Copy link"
                     className={cn(
-                      'h-10 w-10 p-0 rounded-xl border shrink-0 transition-all',
+                      'h-10 w-10 p-0 rounded-xl border shrink-0 transition-colors',
                       copied
                         ? 'bg-success/15 border-success/30 text-success'
                         : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
@@ -274,13 +274,13 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
           {/* Invite collaborators */}
           <motion.div variants={item} className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+              <p className="text-[11px] uppercase tracking-widest text-neutral-500 flex items-center gap-2">
                 <UserPlus size={12} />
                 Invite to collaborate
               </p>
               {/* Seats do plano — só quando o backend manda seatQuota no detalhe. */}
               {guideline.seatQuota && guideline.seatQuota.max != null && (
-                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+                <span className="text-[10px] uppercase tracking-widest text-neutral-600">
                   {t('cockpit.seats.usage', {
                     used: guideline.seatQuota.used,
                     max: guideline.seatQuota.max,

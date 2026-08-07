@@ -189,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
-          <span className="text-xs md:text-sm font-mono text-muted-foreground uppercase">
+          <span className="text-xs md:text-sm text-muted-foreground uppercase">
             Visant Labs®
           </span>
           <span className="text-[10px] font-mono text-muted-foreground">v1.1</span>
@@ -198,7 +198,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-1.5 md:gap-4">
         {/* Pricing button hidden */}
         {/* <Button variant="ghost"           onClick={onPricingClick}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-muted-foreground hover:text-foreground transition-colors  uppercase"
+          className="hidden md:block text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
         >
           {t('header.pricing')}
         </Button> */}
@@ -279,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/branding-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-muted-foreground hover:text-foreground transition-colors  uppercase"
+          className="hidden md:block text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
         >
           Branding
         </Button> */}
@@ -287,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/budget-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-muted-foreground hover:text-foreground transition-colors  uppercase"
+          className="hidden md:block text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
         >
           Budget
         </Button> */}

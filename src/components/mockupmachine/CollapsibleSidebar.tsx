@@ -154,7 +154,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           <Button
             variant="ghost"
             onClick={(e) => handleTagClick(null, e)}
-            className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-all ${
+            className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-colors ${
               filterTag === null
                 ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
                 : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'
@@ -167,7 +167,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               variant="ghost"
               key={tag}
               onClick={(e) => handleTagClick(tag, e)}
-              className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs border whitespace-nowrap flex-shrink-0 transition-colors ${
                 filterTag === tag
                   ? 'text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent'
                   : 'text-sidebar-foreground/60 border-sidebar-border hover:bg-sidebar-accent'

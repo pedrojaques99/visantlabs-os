@@ -18,6 +18,9 @@ import { useInAppShell } from '@/components/shell/InAppShellContext';
 import { useRailSlot } from '@/components/shell/RailSlotContext';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { Thumb } from '@/components/ui/Thumb';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -421,7 +424,9 @@ export const MyOutputsPage: React.FC = () => {
         {/* Grid Gallery */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pb-12 md:pb-16">
           {/* Floating Column Control */}
-          {filteredMockups.length === 0 ? (
+          {error && mockups.length === 0 ? (
+            <ErrorState onRetry={loadMockups} />
+          ) : filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <ImageIcon size={64} className="text-muted-foreground mb-4" strokeWidth={1} />
               <h2 className="text-lg font-semibold text-foreground mb-1.5">
@@ -473,10 +478,11 @@ export const MyOutputsPage: React.FC = () => {
                       className="block w-full cursor-pointer focus:outline-none"
                       aria-label={t('apps.open')}
                     >
-                      <img
+                      <Thumb
                         src={imageUrl}
                         alt={mockup.prompt || 'Output'}
                         className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-300"
+                        fallbackLabel={t('common.unavailable') || 'unavailable'}
                         loading="lazy"
                       />
                     </button>
@@ -487,7 +493,10 @@ export const MyOutputsPage: React.FC = () => {
                           handleDelete(mockup._id!);
                         }}
                         disabled={deletingId === mockup._id}
-                        className="absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-destructive hover:border-destructive/50 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                        className={cn(
+                          hoverReveal,
+                          'absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-destructive hover:border-destructive/50 disabled:opacity-50 disabled:cursor-not-allowed z-10'
+                        )}
                         aria-label={t('my.outputs.delete_output')}
                       >
                         <Trash2 size={14} />

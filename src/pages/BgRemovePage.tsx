@@ -18,21 +18,17 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
+import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
 
-const ease = [0.4, 0, 0.2, 1] as const;
-
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
-
+/**
+ * Local scale-fade — the module has no scale preset, but the tokens do the work.
+ * Starts at .96 (never scale(0)) and rides the shared enter ease/duration.
+ */
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
 
 // ─── Focus Region Selector ─────────────────────────────────────────────────
@@ -160,9 +156,11 @@ function ProgressBar({ value, phase }: { value: number; phase?: string }) {
           {Math.round(value * 100)}%
         </span>
       </div>
+      {/* width is non-GPU, but a progress fill has no transform equivalent
+          (scaleX would distort the rounded cap). Scoped off `transition-colors`. */}
       <div className="h-1 bg-neutral-800 rounded-full overflow-hidden">
         <div
-          className="h-full bg-brand-cyan rounded-full transition-all duration-300 ease-out"
+          className="h-full bg-neutral-400 rounded-full transition-[width] duration-200 ease-out"
           style={{ width: `${Math.max(2, value * 100)}%` }}
         />
       </div>
@@ -407,7 +405,7 @@ export const BgRemovePage: React.FC = () => {
           onClick={() => setMode('ai')}
           disabled={isProcessing}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-all duration-200',
+            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-colors duration-200',
             mode === 'ai'
               ? 'bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30'
               : 'text-neutral-500 hover:text-neutral-300'
@@ -419,7 +417,7 @@ export const BgRemovePage: React.FC = () => {
           onClick={() => setMode('simple')}
           disabled={isProcessing}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-all duration-200',
+            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-colors duration-200',
             mode === 'simple'
               ? 'bg-white/10 text-white border border-white/20'
               : 'text-neutral-500 hover:text-neutral-300'
@@ -430,7 +428,7 @@ export const BgRemovePage: React.FC = () => {
       </div>
 
       {/* Add more + thumbnail queue */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -449,7 +447,7 @@ export const BgRemovePage: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={transitions.base}
           >
             <ProgressBar
               value={processingItem.progressValue ?? 0}
@@ -464,12 +462,10 @@ export const BgRemovePage: React.FC = () => {
           <motion.div
             key={item.id}
             onClick={() => setPreviewId(item.id)}
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25, delay: i * 0.03 }}
+            {...itemEnter(i)}
             layout
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
+              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
               previewItem?.id === item.id
                 ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
                 : 'hover:bg-neutral-900/60'
@@ -496,7 +492,7 @@ export const BgRemovePage: React.FC = () => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] flex-shrink-0"
             >
               <X size={12} />
             </button>
@@ -510,7 +506,7 @@ export const BgRemovePage: React.FC = () => {
       <div className="space-y-4">
         <AnimatePresence mode="wait">
           {mode === 'ai' ? (
-            <motion.div key="ai-controls" {...fadeUp} className="space-y-2">
+            <motion.div key="ai-controls" {...fadeInUp} className="space-y-2">
               <button
                 onClick={() => {
                   setFocusActive(!focusActive);
@@ -518,7 +514,7 @@ export const BgRemovePage: React.FC = () => {
                 }}
                 disabled={isProcessing}
                 className={cn(
-                  'w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-all duration-200 border',
+                  'w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-colors duration-200 border',
                   focusActive
                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                     : 'text-neutral-500 border-neutral-800 hover:border-neutral-600 hover:text-neutral-300'
@@ -534,6 +530,7 @@ export const BgRemovePage: React.FC = () => {
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
+                    transition={transitions.fast}
                   >
                     <span className="flex-1">Region selected — AI will focus here</span>
                     <button
@@ -550,6 +547,7 @@ export const BgRemovePage: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={transitions.fast}
                   >
                     Draw a rectangle around the subject on the preview
                   </motion.span>
@@ -557,7 +555,7 @@ export const BgRemovePage: React.FC = () => {
               </AnimatePresence>
             </motion.div>
           ) : (
-            <motion.div key="simple-controls" {...fadeUp} className="space-y-3">
+            <motion.div key="simple-controls" {...fadeInUp} className="space-y-3">
               {/* Threshold */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -617,7 +615,7 @@ export const BgRemovePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-all duration-200"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -678,8 +676,9 @@ export const BgRemovePage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Eraser}
-      title="Background Remover"
-      documentTitle="Background Remover"
+      title={t('apps.backgroundRemover.name')}
+      toolId="remove-bg"
+      documentTitle={t('apps.backgroundRemover.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
       panelLabel="Queue & settings"
@@ -694,15 +693,15 @@ export const BgRemovePage: React.FC = () => {
       <AnimatePresence mode="wait">
         {/* ─── Empty / Upload state ─── */}
         {!hasItems ? (
-          <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
+          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
             <motion.div
               className={cn(
                 'w-16 h-16 rounded-2xl flex items-center justify-center',
                 glassSurface.panel
               )}
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+              transition={{ ...transitions.base, delay: 0.08 }}
             >
               <Eraser size={28} className="text-neutral-500" />
             </motion.div>
@@ -711,7 +710,7 @@ export const BgRemovePage: React.FC = () => {
               className="text-center space-y-2"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.35 }}
+              transition={{ ...transitions.base, delay: 0.12 }}
             >
               <p className="text-sm text-neutral-300 font-medium">Remove image backgrounds</p>
               <p className="text-xs text-neutral-600 font-mono">
@@ -728,9 +727,9 @@ export const BgRemovePage: React.FC = () => {
               )}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              transition={{ ...transitions.base, delay: 0.16 }}
+              whileHover={{ scale: 1.01, transition: transitions.fast }}
+              whileTap={{ scale: 0.99, transition: transitions.press }}
             >
               <Upload size={24} className="text-neutral-500" />
               <span className="text-xs font-medium text-neutral-500">
@@ -774,7 +773,7 @@ export const BgRemovePage: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
+                    transition={transitions.base}
                   />
                 </AnimatePresence>
 
@@ -795,7 +794,7 @@ export const BgRemovePage: React.FC = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={transitions.base}
                     >
                       <GlitchLoader size={20} color="brand-cyan" />
                       {previewItem.progressValue != null && (
@@ -820,9 +819,9 @@ export const BgRemovePage: React.FC = () => {
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      transition={transitions.base}
+                      whileHover={{ scale: 1.05, transition: transitions.fast }}
+                      whileTap={{ scale: 0.95, transition: transitions.press }}
                     >
                       {showOriginal ? <EyeOff size={10} /> : <Eye size={10} />}
                       {showOriginal ? 'Original' : 'Result'}
@@ -838,6 +837,7 @@ export const BgRemovePage: React.FC = () => {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
+                      transition={transitions.base}
                     >
                       {previewItem.error || 'Processing failed'}
                     </motion.div>

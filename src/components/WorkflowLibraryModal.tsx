@@ -242,7 +242,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
               variant="ghost"
               onClick={() => setActiveTab('community')}
               className={cn(
-                'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
+                'px-4 py-2 text-xs font-mono uppercase transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                 activeTab === 'community'
                   ? 'text-brand-cyan border-neutral-600 bg-brand-cyan/5'
                   : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
@@ -257,7 +257,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                 variant="ghost"
                 onClick={() => setActiveTab('my')}
                 className={cn(
-                  'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
+                  'px-4 py-2 text-xs font-mono uppercase transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                   activeTab === 'my'
                     ? 'text-brand-cyan border-neutral-600 bg-brand-cyan/5'
                     : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
@@ -288,7 +288,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                   variant="ghost"
                   onClick={() => setSelectedCategory('all')}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-colors whitespace-nowrap border',
                     selectedCategory === 'all'
                       ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
@@ -305,7 +305,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                       key={key}
                       onClick={() => setSelectedCategory(key as WorkflowCategory)}
                       className={cn(
-                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-colors whitespace-nowrap border',
                         selectedCategory === key
                           ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                           : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
@@ -324,7 +324,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
           <div className="flex-1 overflow-y-auto p-4 relative custom-scrollbar bg-neutral-950/50">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-64 gap-2">
-                <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-2 border-muted border-t-foreground rounded-full animate-spin"></div>
                 <p className="text-xs font-mono text-neutral-500">Loading workflows...</p>
               </div>
             ) : displayedWorkflows.length === 0 ? (

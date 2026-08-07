@@ -654,7 +654,7 @@ const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = 
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       className={cn(
-        'py-16 text-center space-y-4 border-2 border-dashed rounded-2xl transition-all cursor-pointer',
+        'py-16 text-center space-y-4 border-2 border-dashed rounded-2xl transition-colors cursor-pointer',
         dragging
           ? 'border-brand-cyan/40 bg-brand-cyan/5'
           : 'border-white/[0.06] hover:border-white/10 hover:bg-white/[0.01]'
@@ -810,7 +810,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
         <Button
           onClick={onComplete}
           className={cn(
-            'h-10 px-6 gap-2 text-[11px] font-mono uppercase tracking-wider transition-all rounded-full',
+            'h-10 px-6 gap-2 text-[11px] font-mono uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] rounded-full',
             allDone
               ? 'bg-brand-cyan text-black hover:bg-brand-cyan/90 shadow-lg shadow-brand-cyan/20'
               : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white border border-white/10'

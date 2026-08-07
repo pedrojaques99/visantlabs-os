@@ -1,0 +1,5507 @@
+{
+  "$comment": "GERADO por scripts/sync-mcp-registry.ts a partir de server/mcp/platform-mcp.ts. NAO EDITE A MAO — rode `npm run mcp:sync`.",
+  "generatedFrom": "server/mcp/platform-mcp.ts",
+  "tools": [
+    {
+      "name": "account-profile",
+      "description": "Get the authenticated user profile including name, email, avatar, and subscription plan.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "account-usage",
+      "description": "Get credit usage, remaining balance, plan limits, storage quota (used/limit/remaining), and billing cycle info for the authenticated account.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "ai-apply-theme",
+      "description": "Apply visual themes to an existing mockup (e.g. \"christmas\", \"cyberpunk\", \"minimalist\"). Costs credits.",
+      "required": [
+        "themes"
+      ],
+      "properties": {
+        "imageUrl": {
+          "description": "Public URL of the image.",
+          "type": "string"
+        },
+        "base64": {
+          "description": "Base64 of the image.",
+          "type": "string"
+        },
+        "mimeType": {
+          "description": "MIME type if using base64.",
+          "type": "string"
+        },
+        "themes": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Theme keywords to apply (e.g. [\"christmas\", \"warm lighting\"])."
+        },
+        "model": {
+          "description": "AI model override.",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "Output resolution: hd, 1k, 2k, 4k.",
+          "type": "string"
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-change-object",
+      "description": "Replace or modify an object in an existing mockup image. Costs credits. Pass the image and describe what to change.",
+      "required": [
+        "newObject"
+      ],
+      "properties": {
+        "imageUrl": {
+          "description": "Public URL of the image to modify.",
+          "type": "string"
+        },
+        "base64": {
+          "description": "Base64 of the image to modify.",
+          "type": "string"
+        },
+        "mimeType": {
+          "description": "MIME type if using base64.",
+          "type": "string"
+        },
+        "newObject": {
+          "type": "string",
+          "description": "Description of what to replace/change (e.g. \"replace the coffee cup with a wine glass\")."
+        },
+        "model": {
+          "description": "AI model override.",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "Output resolution: hd, 1k, 2k, 4k.",
+          "type": "string"
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-describe-image",
+      "description": "Analyze an image and return a detailed text description. Provide either a URL or base64-encoded data. Free, no credit cost.",
+      "required": [],
+      "properties": {
+        "imageUrl": {
+          "description": "Public URL of the image to analyze.",
+          "type": "string",
+          "format": "uri"
+        },
+        "base64": {
+          "description": "Base64-encoded image data (include data URI prefix or raw base64).",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-extract-colors",
+      "description": "Extract a color palette from any image. Returns hex values, names, roles, and frequency. Free (no credits).",
+      "required": [],
+      "properties": {
+        "imageUrl": {
+          "description": "Public image URL.",
+          "type": "string"
+        },
+        "base64": {
+          "description": "Base64-encoded image data.",
+          "type": "string"
+        },
+        "mimeType": {
+          "description": "MIME type if using base64 (e.g. image/png).",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-generate-image",
+      "description": "Generate an image from a text prompt. No brand injection, no project saving — just prompt → image. For placing existing designs in scenes, use mockup-generate instead. Costs credits.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Full image description — style, composition, colors, lighting, mood."
+        },
+        "model": {
+          "default": "gemini-3.1-flash-image-preview",
+          "description": "gpt-image-2=best, gemini=fast, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).",
+          "type": "string",
+          "enum": [
+            "gpt-image-1",
+            "gpt-image-2",
+            "gemini-3.1-flash-image-preview",
+            "gemini-3-pro-image-preview",
+            "imagen-4.0-fast-generate-001",
+            "imagen-4.0-generate-001",
+            "imagen-4.0-ultra-generate-001",
+            "seedream-5-0-260128",
+            "seedream-4-5-250601",
+            "seedream-4-0-250828",
+            "seedream-3-0-t2i-250415",
+            "seededit-3-0-i2i-250415",
+            "ideogram-v4",
+            "ideogram-v3",
+            "reve-image-1.0"
+          ]
+        },
+        "aspectRatio": {
+          "default": "1:1",
+          "description": "Output aspect ratio.",
+          "type": "string",
+          "enum": [
+            "1:1",
+            "9:16",
+            "16:9",
+            "4:5"
+          ]
+        },
+        "resolution": {
+          "default": "1K",
+          "description": "Higher = more credits.",
+          "type": "string",
+          "enum": [
+            "1K",
+            "2K",
+            "4K"
+          ]
+        },
+        "referenceImages": {
+          "description": "Reference URLs or base64 to guide style. Use upload-image for local files.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "seed": {
+          "description": "Random seed for reproducible results.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-generate-naming",
+      "description": "Generate brand/product name ideas from a brief. Optionally uses brand guideline for tone consistency. Costs credits.",
+      "required": [
+        "brief"
+      ],
+      "properties": {
+        "brief": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description of what needs naming (e.g. \"eco-friendly water bottle brand targeting millennials\")."
+        },
+        "count": {
+          "default": 10,
+          "description": "Number of name suggestions.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "style": {
+          "description": "Naming style: minimal, playful, corporate, abstract, etc.",
+          "type": "string"
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID for tone/voice consistency.",
+          "type": "string"
+        },
+        "seen": {
+          "description": "Names already shown in prior rounds — never repeated.",
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "liked": {
+          "description": "Names the user liked so far.",
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "superliked": {
+          "description": "Names the user superliked — treated as the north star for this round.",
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rejected": {
+          "description": "Names the user rejected — their pattern is avoided.",
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tasteReading": {
+          "description": "Qualitative taste-pattern reading from a prior round (naming-insight).",
+          "type": "string"
+        },
+        "territories": {
+          "description": "Symbolic territories to distribute this round across.",
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-improve-prompt",
+      "description": "Enhance and refine a text prompt using AI to produce better generation results. Free, no credit cost.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The original prompt to improve."
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "ai-suggest-prompt-variations",
+      "description": "Generate multiple creative variations of a prompt. Free (cached). Use to give users options before spending credits on generation.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Original prompt to create variations of."
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "api-key-create",
+      "description": "Create a new Visant API key (visant_sk_xxx). Requires either an active API key (Bearer token) OR a JWT from auth-login/auth-register. The raw key is shown only once — save it immediately.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "A label for this key, e.g. \"Claude.ai MCP\" or \"Production\"."
+        },
+        "scopes": {
+          "default": [
+            "read",
+            "write",
+            "generate"
+          ],
+          "description": "Permission scopes.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "read",
+              "write",
+              "generate"
+            ]
+          }
+        },
+        "jwt": {
+          "description": "JWT token from auth-login or auth-register (if you have no API key yet).",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "api-key-list",
+      "description": "List all API keys for the authenticated user. Shows prefix, name, scopes, last used, and expiry — but not the raw key value.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "auth-login",
+      "description": "Sign in to an existing Visant Labs account. Returns a JWT token. Use api-key-create (passing this token) to generate a visant_sk_xxx API key for persistent MCP/API access.",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+          "description": "Account email."
+        },
+        "password": {
+          "type": "string",
+          "description": "Account password."
+        }
+      },
+      "cost": "free",
+      "category": "auth",
+      "auth": false
+    },
+    {
+      "name": "auth-register",
+      "description": "Create a new Visant Labs account. Returns a JWT token and user info. After registering, use api-key-create (passing the JWT) to generate a visant_sk_xxx API key for MCP/API access.",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+          "description": "User email address."
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "description": "Password (min 8 characters)."
+        },
+        "name": {
+          "description": "Display name.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "auth",
+      "auth": false
+    },
+    {
+      "name": "brand-guidelines-compare-versions",
+      "description": "Compare two versions of a brand guideline to see what changed (colors added, typography modified, strategy updated, etc.).",
+      "required": [
+        "id",
+        "v1",
+        "v2"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "v1": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "description": "First version number."
+        },
+        "v2": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991,
+          "description": "Second version number."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-compile",
+      "description": "Compile a brand guideline into design tokens — returns four ready-to-use files: CSS custom properties, a Tailwind theme extension, React/TS tokens, and SCSS variables. Use for design-to-code workflows.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-compliance-check",
+      "description": "Validate a brand's color palette for WCAG contrast and internal consistency. Returns a scored report with violations. (For strategy ↔ visual ↔ voice coherence, use brand-guidelines-health-check instead.)",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID to check."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-create",
+      "description": "Create a new brand guideline. Provide at minimum an identity.name. All other sections (colors, typography, guidelines, strategy, tokens) are optional and can be added now or via brand-guidelines-update later.",
+      "required": [
+        "identity"
+      ],
+      "properties": {
+        "identity": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Brand name (required)."
+            },
+            "tagline": {
+              "type": "string"
+            },
+            "website": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "description": "Brand identity."
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hex": {
+                "type": "string",
+                "description": "Hex color e.g. #FF5733"
+              },
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "description": "e.g. primary, secondary, background, text, accent",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hex",
+              "name"
+            ]
+          }
+        },
+        "typography": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "family": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "description": "e.g. heading, body, accent, mono"
+              },
+              "style": {
+                "description": "e.g. Bold, Regular, SemiBold",
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "family",
+              "role"
+            ]
+          }
+        },
+        "guidelines": {
+          "type": "object",
+          "properties": {
+            "voice": {
+              "description": "Brand tone of voice description.",
+              "type": "string"
+            },
+            "dos": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "donts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "imagery": {
+              "type": "string"
+            },
+            "accessibility": {
+              "type": "string"
+            },
+            "person": {
+              "type": "string",
+              "enum": [
+                "first",
+                "second",
+                "third"
+              ]
+            },
+            "emojiPolicy": {
+              "type": "string",
+              "enum": [
+                "none",
+                "informal",
+                "free"
+              ]
+            },
+            "casingRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "strategy": {
+          "type": "object",
+          "properties": {
+            "manifesto": {
+              "description": "Brand manifesto: plain text, or the provocation/tension/promise arc.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "provocation": {
+                      "type": "string"
+                    },
+                    "tension": {
+                      "type": "string"
+                    },
+                    "promise": {
+                      "type": "string"
+                    },
+                    "full": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "positioning": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "archetypes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "primary",
+                      "secondary"
+                    ]
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "examples": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "description"
+                ]
+              }
+            },
+            "personas": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "age": {
+                    "type": "number"
+                  },
+                  "occupation": {
+                    "type": "string"
+                  },
+                  "traits": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "bio": {
+                    "type": "string"
+                  },
+                  "desires": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "painPoints": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            "voiceValues": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "example"
+                ]
+              }
+            },
+            "copyExamples": {
+              "description": "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The copy, verbatim."
+                  },
+                  "type": {
+                    "description": "What kind of copy this is.",
+                    "type": "string",
+                    "enum": [
+                      "headline",
+                      "tagline",
+                      "cta",
+                      "body"
+                    ]
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            },
+            "coreMessage": {
+              "description": "Core brand message: what the product is, how it differs, emotional connection.",
+              "type": "object",
+              "properties": {
+                "product": {
+                  "type": "string"
+                },
+                "differential": {
+                  "type": "string"
+                },
+                "emotionalBond": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "product",
+                "differential",
+                "emotionalBond"
+              ]
+            },
+            "pillars": {
+              "description": "Brand pillars / core values.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value",
+                  "description"
+                ]
+              }
+            },
+            "marketResearch": {
+              "description": "Competitive landscape and market opportunities.",
+              "type": "object",
+              "properties": {
+                "competitors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "gaps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "opportunities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            },
+            "graphicSystem": {
+              "description": "Graphic system rules: patterns, grafisms, image guidelines, editorial grid.",
+              "type": "object",
+              "properties": {
+                "patterns": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "grafisms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "imageRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "editorialGrid": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "spacing": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "radius": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "shadows": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "blur": {
+                    "type": "number"
+                  },
+                  "spread": {
+                    "type": "number"
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "opacity": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "blur",
+                  "spread",
+                  "color",
+                  "opacity"
+                ]
+              }
+            },
+            "components": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          }
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-delete",
+      "description": "Permanently delete a brand guideline. This cannot be undone. Confirm with the user before calling.",
+      "required": [
+        "id",
+        "confirm"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The brand guideline ID to delete."
+        },
+        "confirm": {
+          "type": "boolean",
+          "const": true,
+          "description": "Must be true. Prevents accidental deletion."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-delete-logo",
+      "description": "Delete a logo from a brand guideline by its logo ID.",
+      "required": [
+        "id",
+        "logoId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "logoId": {
+          "type": "string",
+          "description": "Logo ID to delete (from the logos array)."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-delete-media",
+      "description": "Delete a media asset from a brand guideline by its media ID.",
+      "required": [
+        "id",
+        "mediaId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "mediaId": {
+          "type": "string",
+          "description": "Media asset ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-duplicate",
+      "description": "Duplicate a brand guideline, creating an independent copy with \"(copy)\" appended to the name. Useful for creating variants or testing changes without affecting the original.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID to duplicate."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-export",
+      "description": "Export a brand guideline as a portable JSON document for backup or migration — internal fields (ownership, view counts, sync state) are stripped. For working with a brand in-session, prefer brand-guidelines-get (supports section filtering and prompt format).",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-figma-link",
+      "description": "Link or unlink a Figma file to a brand guideline. Once linked, figma-sync can pull design tokens automatically.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "fileId": {
+          "description": "Figma file ID to link. Omit to unlink.",
+          "type": "string"
+        },
+        "fileName": {
+          "description": "Figma file name for display.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-figma-preview",
+      "description": "Dry-run for brand-guidelines-figma-sync: reports what the linked Figma file actually contains (color variables, text styles, components) and recommends which import path pays — \"variables\" when the file has a real token system, \"text\" when it does not (e.g. variables named after their own hex values). Reads only; changes nothing.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID (must already have a linked Figma file)."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-figma-sync",
+      "description": "Sync brand guideline with a Figma file. Imports colors, typography, and design tokens from Figma VARIABLES and styles. Call brand-guidelines-figma-preview FIRST: most real files have no variable system, and on those this sync imports almost nothing — the preview says which path actually pays before you spend the call. Requires Figma token configured in user settings.",
+      "required": [
+        "id",
+        "fileId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "fileId": {
+          "type": "string",
+          "description": "Figma file ID (from URL: figma.com/design/:fileId/...)."
+        },
+        "includeVariables": {
+          "default": true,
+          "description": "Import Figma variables as design tokens.",
+          "type": "boolean"
+        },
+        "includeComponents": {
+          "default": false,
+          "description": "Import component names and structure.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-get",
+      "description": "Get a brand guideline by ID. Use \"sections\" to fetch only what you need (e.g. [\"colors\",\"typography\"] for visual tasks). Presets: \"visual\" (colors/typo/tokens), \"copy\" (voice/strategy), \"minimal\" (identity/colors/typo), \"imageGen\", \"full\". Omit sections for full context.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The brand guideline ID."
+        },
+        "format": {
+          "default": "structured",
+          "description": "Output format: \"structured\" (JSON) or \"prompt\" (LLM-ready text).",
+          "type": "string",
+          "enum": [
+            "structured",
+            "prompt"
+          ]
+        },
+        "sections": {
+          "description": "Which brand sections to include. Pass an array of specific sections, or a preset name: \"visual\", \"copy\", \"minimal\", \"imageGen\", \"full\". Omit for full context.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "identity",
+              "colors",
+              "typography",
+              "voice",
+              "strategy",
+              "tokens",
+              "logos",
+              "media",
+              "tags",
+              "themes",
+              "knowledge"
+            ]
+          }
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-health-check",
+      "description": "Audit a brand guideline for completeness. Returns which sections are filled, which are missing, and suggestions for improvement.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-ingest",
+      "description": "Extract brand data (colors, typography, voice, strategy) from a URL or raw text and MERGE it into an existing brand guideline. Useful for bootstrapping a guideline from a website, landing page, or brand document. Returns the extracted values. Pass preview=true to see what would be extracted WITHOUT saving (dry run), then re-run without preview to commit.",
+      "required": [
+        "id",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID to merge extracted data into."
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "url",
+            "text"
+          ],
+          "description": "\"url\" to scrape a webpage; \"text\" to extract from raw text/markdown."
+        },
+        "url": {
+          "description": "URL to scrape (required when source=url).",
+          "type": "string"
+        },
+        "text": {
+          "description": "Raw text or markdown to extract from (required when source=text).",
+          "type": "string"
+        },
+        "preview": {
+          "description": "Dry run: return the extraction without saving. Re-run without preview to merge.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-invite",
+      "description": "Create an invite link for a brand guideline. The recipient gets a connect page where they can accept the invite, associate the brand to their account, and get one-click deep links to connect their AI tool (Cursor, VS Code, Claude, ChatGPT). Perfect for onboarding clients.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "role": {
+          "default": "viewer",
+          "description": "Access level: viewer (read-only) or editor (can modify).",
+          "type": "string",
+          "enum": [
+            "viewer",
+            "editor"
+          ]
+        },
+        "label": {
+          "description": "Display label for the invite (e.g. \"YSA — Brand Kit\"). Auto-generated if omitted.",
+          "type": "string"
+        },
+        "expiresInDays": {
+          "description": "Days until the invite expires. No expiration if omitted.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-knowledge-list",
+      "description": "List all knowledge documents (PDFs, brand docs) attached to a brand guideline.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-list",
+      "description": "List brand guidelines (identity vaults) owned by the authenticated user. Supports pagination and name search — use \"search\" to find a brand by name instead of listing every one.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max items to return (1-100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "search": {
+          "description": "Filter by brand name (case-insensitive, partial match).",
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-logo-rules",
+      "description": "Derive logo usage rules from the logo file itself: clear space, minimum reproduction size (screen + print), and which brand colors it may sit on (WCAG contrast). Deterministic measurement, not an AI guess. Runs automatically on upload — call this to backfill an older logo or to switch the clear-space module.",
+      "required": [
+        "id",
+        "logoId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "logoId": {
+          "type": "string",
+          "description": "Logo ID to measure (from the logos array)."
+        },
+        "module": {
+          "default": "capHeight",
+          "description": "Which part of the logo defines one unit of clear space. The single conventional choice in this calculation.",
+          "type": "string",
+          "enum": [
+            "capHeight",
+            "halfCapHeight",
+            "stem"
+          ]
+        },
+        "safety": {
+          "default": 1,
+          "description": "Multiplier on the physical minimum size. 1 = the bare legibility floor.",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "persist": {
+          "default": true,
+          "description": "Write the rules onto the logo. False returns them without saving.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-media-commit",
+      "description": "Register assets already uploaded via brand-guidelines-media-upload-urls into the brand media kit. Fingerprints each file server-side, so duplicates (including files already present as logos) are reported and skipped. Returns added, duplicates, failed and the new completeness score.",
+      "required": [
+        "id",
+        "items"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mediaId": {
+                "type": "string",
+                "description": "mediaId returned by brand-guidelines-media-upload-urls."
+              },
+              "url": {
+                "type": "string",
+                "description": "finalUrl returned alongside that mediaId."
+              },
+              "label": {
+                "description": "Human-readable label for this asset.",
+                "type": "string"
+              },
+              "type": {
+                "description": "Asset type. Defaults to image.",
+                "type": "string",
+                "enum": [
+                  "image",
+                  "pdf"
+                ]
+              }
+            },
+            "required": [
+              "mediaId",
+              "url"
+            ]
+          },
+          "description": "Uploaded assets to register (max 50)."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-media-upload-urls",
+      "description": "Mint direct-to-storage upload URLs for a batch of local files (max 50). Returns one presignedUrl per file; PUT each file to its URL (e.g. curl -X PUT --data-binary @file -H \"Content-Type: <contentType>\"), then call brand-guidelines-media-commit with the mediaIds. Use this for local files: the bytes never pass through the conversation.",
+      "required": [
+        "id",
+        "files"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "description": "Original file name — used to infer the content type.",
+                "type": "string"
+              },
+              "contentType": {
+                "description": "MIME type, e.g. \"image/png\".",
+                "type": "string"
+              },
+              "size": {
+                "description": "File size in bytes. Used to check the storage quota before uploading.",
+                "type": "number"
+              },
+              "label": {
+                "description": "Human-readable label for this asset.",
+                "type": "string"
+              }
+            }
+          },
+          "description": "Files to upload (max 50)."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-public",
+      "description": "Get a public brand guideline by its slug. No authentication required.",
+      "required": [
+        "slug"
+      ],
+      "properties": {
+        "slug": {
+          "type": "string",
+          "description": "The public slug of the brand guideline."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": false
+    },
+    {
+      "name": "brand-guidelines-restore-version",
+      "description": "Restore a brand guideline to a previous version. The current state is preserved as a version before restoring.",
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "description": "Version number to restore (from brand-guidelines-versions)."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-share",
+      "description": "Generate a public read-only link for a brand guideline. Once shared, anyone with the link can view colors, typography, logos, and brand strategy — without authentication. Returns the public URL.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID to share."
+        },
+        "disable": {
+          "description": "Pass true to revoke public access instead of enabling it.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-update",
+      "description": "Patch one or more sections of an existing brand guideline. Only the fields you provide are updated — others remain unchanged. Use this to iteratively build or refine a guideline section by section.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The brand guideline ID to update."
+        },
+        "identity": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "tagline": {
+              "type": "string"
+            },
+            "website": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        },
+        "colors": {
+          "description": "Replaces the full colors array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "hex": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "description": "e.g. primary, secondary, background, text, accent, cta",
+                "type": "string"
+              }
+            },
+            "required": [
+              "hex",
+              "name"
+            ]
+          }
+        },
+        "typography": {
+          "description": "Replaces the full typography array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "family": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "style": {
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              },
+              "lineHeight": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "family",
+              "role"
+            ]
+          }
+        },
+        "guidelines": {
+          "type": "object",
+          "properties": {
+            "voice": {
+              "type": "string"
+            },
+            "dos": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "donts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "imagery": {
+              "type": "string"
+            },
+            "accessibility": {
+              "type": "string"
+            },
+            "person": {
+              "description": "Point of view for brand copy.",
+              "type": "string",
+              "enum": [
+                "first",
+                "second",
+                "third"
+              ]
+            },
+            "emojiPolicy": {
+              "description": "When emojis are acceptable.",
+              "type": "string",
+              "enum": [
+                "none",
+                "informal",
+                "free"
+              ]
+            },
+            "casingRules": {
+              "description": "Capitalization rules, e.g. \"Always capitalize product name\"",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "strategy": {
+          "type": "object",
+          "properties": {
+            "manifesto": {
+              "description": "Brand manifesto: plain text, or the provocation/tension/promise arc.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "provocation": {
+                      "type": "string"
+                    },
+                    "tension": {
+                      "type": "string"
+                    },
+                    "promise": {
+                      "type": "string"
+                    },
+                    "full": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "positioning": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "archetypes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "primary",
+                      "secondary"
+                    ]
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "examples": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "description"
+                ]
+              }
+            },
+            "personas": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "age": {
+                    "type": "number"
+                  },
+                  "occupation": {
+                    "type": "string"
+                  },
+                  "traits": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "bio": {
+                    "type": "string"
+                  },
+                  "desires": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "painPoints": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            "voiceValues": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "example": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "example"
+                ]
+              }
+            },
+            "copyExamples": {
+              "description": "Real copy the brand has shipped, kept verbatim as few-shot material for generation. Unlike voiceValues (which describe the tone) these are the artifacts to imitate.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The copy, verbatim."
+                  },
+                  "type": {
+                    "description": "What kind of copy this is.",
+                    "type": "string",
+                    "enum": [
+                      "headline",
+                      "tagline",
+                      "cta",
+                      "body"
+                    ]
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            },
+            "coreMessage": {
+              "description": "Core brand message: what the product is, how it differs, emotional connection.",
+              "type": "object",
+              "properties": {
+                "product": {
+                  "type": "string"
+                },
+                "differential": {
+                  "type": "string"
+                },
+                "emotionalBond": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "product",
+                "differential",
+                "emotionalBond"
+              ]
+            },
+            "pillars": {
+              "description": "Brand pillars / core values.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value",
+                  "description"
+                ]
+              }
+            },
+            "marketResearch": {
+              "description": "Competitive landscape and market opportunities.",
+              "type": "object",
+              "properties": {
+                "competitors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "gaps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "opportunities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            },
+            "graphicSystem": {
+              "description": "Graphic system rules: patterns, grafisms, image guidelines, editorial grid.",
+              "type": "object",
+              "properties": {
+                "patterns": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "grafisms": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "imageRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "editorialGrid": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tokens": {
+          "type": "object",
+          "properties": {
+            "spacing": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "radius": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "shadows": {
+              "description": "Named shadow tokens, e.g. { \"sm\": { x:0, y:1, blur:2, ... } }",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "blur": {
+                    "type": "number"
+                  },
+                  "spread": {
+                    "type": "number"
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "opacity": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "blur",
+                  "spread",
+                  "color",
+                  "opacity"
+                ]
+              }
+            },
+            "components": {
+              "description": "Component-level design tokens as key-value pairs.",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          }
+        },
+        "tags": {
+          "description": "Industry/keyword tags by category, e.g. { \"style\": [\"premium\", \"minimal\"] }",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "gradients": {
+          "description": "Replaces the full gradients array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "linear",
+                  "radial"
+                ]
+              },
+              "angle": {
+                "type": "number"
+              },
+              "stops": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "color": {
+                      "type": "string"
+                    },
+                    "position": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "color",
+                    "position"
+                  ]
+                }
+              },
+              "usage": {
+                "type": "string",
+                "enum": [
+                  "hero",
+                  "decorative",
+                  "fill",
+                  "overlay"
+                ]
+              },
+              "css": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "type",
+              "angle",
+              "stops",
+              "usage"
+            ]
+          }
+        },
+        "shadows": {
+          "description": "Replaces the full shadows array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "blur": {
+                "type": "number"
+              },
+              "spread": {
+                "type": "number"
+              },
+              "color": {
+                "type": "string"
+              },
+              "opacity": {
+                "type": "number"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "outer",
+                  "inner",
+                  "glow"
+                ]
+              },
+              "css": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "x",
+              "y",
+              "blur",
+              "spread",
+              "color",
+              "opacity",
+              "type"
+            ]
+          }
+        },
+        "motion": {
+          "description": "Motion/animation design tokens. Shallow-merged with existing.",
+          "type": "object",
+          "properties": {
+            "easing": {
+              "type": "string"
+            },
+            "durations": {
+              "type": "object",
+              "properties": {
+                "fast": {
+                  "type": "number"
+                },
+                "medium": {
+                  "type": "number"
+                },
+                "slow": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "fast",
+                "medium",
+                "slow"
+              ]
+            },
+            "philosophy": {
+              "type": "string",
+              "enum": [
+                "minimal",
+                "moderate",
+                "expressive"
+              ]
+            },
+            "respectsReducedMotion": {
+              "type": "boolean"
+            }
+          }
+        },
+        "borders": {
+          "description": "Replaces the full borders array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "width": {
+                "type": "number"
+              },
+              "style": {
+                "type": "string",
+                "enum": [
+                  "solid",
+                  "dashed",
+                  "dotted"
+                ]
+              },
+              "color": {
+                "type": "string"
+              },
+              "opacity": {
+                "type": "number"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "default",
+                  "emphasis",
+                  "scaffold",
+                  "divider"
+                ]
+              },
+              "css": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "width",
+              "style",
+              "color",
+              "opacity",
+              "role"
+            ]
+          }
+        },
+        "colorThemes": {
+          "description": "Replaces the full color themes array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "colors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "hex": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "hex",
+                    "name"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "name",
+              "colors"
+            ]
+          }
+        },
+        "activeSections": {
+          "description": "Which guideline sections are visible/active in the UI.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "orderedBlocks": {
+          "description": "Custom ordering of guideline blocks in the UI.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation": {
+          "description": "Per-section validation state, e.g. { \"colors\": \"approved\", \"typography\": \"needs_work\" }",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "needs_work"
+            ]
+          }
+        },
+        "folder": {
+          "description": "Folder name for organizing guidelines.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-upload-logo",
+      "description": "Upload a logo to a brand guideline. Accepts base64-encoded image data or a public URL. Returns the uploaded logo with its URL and ID.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "data": {
+          "description": "Base64-encoded image data (PNG, SVG, WEBP).",
+          "type": "string"
+        },
+        "url": {
+          "description": "Public URL of the logo image (alternative to base64 data).",
+          "type": "string"
+        },
+        "variant": {
+          "default": "primary",
+          "description": "Logo variant.",
+          "type": "string",
+          "enum": [
+            "primary",
+            "dark",
+            "light",
+            "icon",
+            "accent",
+            "custom"
+          ]
+        },
+        "label": {
+          "description": "Human-readable label, e.g. \"Horizontal\", \"Dark mode\".",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-upload-media",
+      "description": "Upload ONE media asset (image or PDF) to a brand guideline media kit, as base64 data or a public URL. For more than 2 files, or files above ~500 KB, use brand-guidelines-media-upload-urls instead — base64 puts the whole file through the conversation.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "data": {
+          "description": "Base64-encoded image or PDF data.",
+          "type": "string"
+        },
+        "url": {
+          "description": "Public URL of the media asset (alternative to base64 data).",
+          "type": "string"
+        },
+        "type": {
+          "default": "image",
+          "description": "Asset type.",
+          "type": "string",
+          "enum": [
+            "image",
+            "pdf"
+          ]
+        },
+        "label": {
+          "description": "Label for this media asset, e.g. \"Brand Presentation\", \"Campaign Photo\".",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-guidelines-versions",
+      "description": "List the version history of a brand guideline — shows what changed and when. Useful for auditing edits or restoring a previous state. Returns versions in reverse chronological order.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "limit": {
+          "default": 10,
+          "description": "Max versions to return.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "brand-render-preset",
+      "description": "Render a web preset to a PNG image on the brand — fully headless, no Figma. The server resolves colors, fonts, and REAL assets (logo by contrast, photo by semantic relevance), optionally applies a Visant image effect (halftone/riso/texture) to the photo, and returns a ready image URL. You supply only the template id, the text content, and an optional brief. This is the CLIENT/web path (vs figma-preset-fill, which targets the Figma plugin).",
+      "required": [
+        "id",
+        "template"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "template": {
+          "type": "string",
+          "description": "Web preset id, e.g. \"Post/Launch\"."
+        },
+        "text": {
+          "description": "Text slot content, e.g. { \"h1\": \"...\", \"infos\": [\"a\",\"b\"] }.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "brief": {
+          "description": "Short brief/vibe to semantically pick the photo from brand media.",
+          "type": "string"
+        },
+        "effect": {
+          "description": "Optional Visant image effect applied to the photo.",
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "halftone",
+                "riso",
+                "texture"
+              ]
+            },
+            "preset": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "branding-delete",
+      "description": "Permanently delete a branding project by ID. Cannot be undone — confirm with the user first.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Branding project ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "branding-generate",
+      "description": "Generate brand identity elements from a text prompt. Use step=\"full\" for complete generation or target a specific step for iterative refinement. Costs credits.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Brand brief (e.g. \"modern tech startup called Acme, targets developers, dark aesthetic\")."
+        },
+        "step": {
+          "default": "full",
+          "description": "Generation step. RECOMMENDED: use \"visant-full\" for the complete Metodologia Visant pipeline (10 steps, higher quality). Legacy: \"full\" runs the older single-pass pipeline. For iterative refinement, use individual \"visant-*\" steps in order and pass previousData between calls.",
+          "type": "string",
+          "enum": [
+            "full",
+            "market-research",
+            "swot",
+            "persona",
+            "archetype",
+            "concept-ideas",
+            "color-palettes",
+            "moodboard",
+            "visant-full",
+            "visant-central-message",
+            "visant-market-research",
+            "visant-persona",
+            "visant-archetypes-tone",
+            "visant-manifesto",
+            "visant-swot",
+            "visant-color-palette",
+            "visant-typography",
+            "visant-graphic-system",
+            "visant-logo-concept"
+          ]
+        },
+        "previousData": {
+          "description": "Output from a previous step to use as context for the next step. Pass the result of the previous branding-generate call here.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "brandGuidelineId": {
+          "description": "Existing brand guideline ID to use as context/reference.",
+          "type": "string"
+        }
+      },
+      "cost": "credits",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "branding-get",
+      "description": "Get a branding project by ID, including logo, colors, typography, and brand assets.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The branding project ID."
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "branding-list",
+      "description": "List branding projects owned by the authenticated user. Supports pagination and name search.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max items to return (1-100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "search": {
+          "description": "Filter by project name (case-insensitive, partial match).",
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "branding-save",
+      "description": "Create or update a branding project. If projectId is provided and the project exists, it updates it; otherwise creates a new one. Returns the saved project.",
+      "required": [
+        "prompt",
+        "data"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Brand brief or description used to generate the project."
+        },
+        "data": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {},
+          "description": "Branding project data (colors, typography, logos, etc.)."
+        },
+        "projectId": {
+          "description": "Existing project ID to update. Omit to create a new project.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Project display name.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "budget-create",
+      "description": "Create a new budget document with client and project details. Returns the created budget.",
+      "required": [
+        "clientName",
+        "projectDescription"
+      ],
+      "properties": {
+        "clientName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Client or company name."
+        },
+        "projectDescription": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Brief description of the project scope."
+        },
+        "brandName": {
+          "description": "Brand name if different from client name.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "budget",
+      "auth": true
+    },
+    {
+      "name": "budget-delete",
+      "description": "Permanently delete a budget project by ID. Cannot be undone — confirm with the user first.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Budget project ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "budget",
+      "auth": true
+    },
+    {
+      "name": "budget-duplicate",
+      "description": "Duplicate an existing budget project. Returns the new project.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Budget project ID to duplicate."
+        }
+      },
+      "cost": "free",
+      "category": "budget",
+      "auth": true
+    },
+    {
+      "name": "budget-get",
+      "description": "Get a budget document by ID, including line items, totals, and client info.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The budget document ID."
+        }
+      },
+      "cost": "free",
+      "category": "budget",
+      "auth": true
+    },
+    {
+      "name": "budget-list",
+      "description": "List budget documents created by the authenticated user. Supports pagination and search by budget or client name.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max items to return (1-100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "search": {
+          "description": "Filter by budget or client name (case-insensitive, partial match).",
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "cost": "free",
+      "category": "budget",
+      "auth": true
+    },
+    {
+      "name": "budget-update",
+      "description": "Update an existing budget project by ID. Accepts any subset of budget fields — only provided fields are modified.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Budget project ID to update."
+        },
+        "name": {
+          "description": "Project name.",
+          "type": "string"
+        },
+        "clientName": {
+          "description": "Client name.",
+          "type": "string"
+        },
+        "projectDescription": {
+          "description": "Project description.",
+          "type": "string"
+        },
+        "startDate": {
+          "description": "Start date (ISO string).",
+          "type": "string"
+        },
+        "endDate": {
+          "description": "End date (ISO string).",
+          "type": "string"
+        },
+        "deliverables": {
+          "description": "Deliverables list.",
+          "type": "array",
+          "items": {}
+        },
+        "observations": {
+          "description": "Additional observations.",
+          "type": "string"
+        },
+        "data": {
+          "description": "Full budget data object (replaces existing data field).",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "cost": "free",
+      "category": "budget",
+      "auth": true
+    },
+    {
+      "name": "campaign-generate",
+      "description": "Start a batch ad campaign generation. Returns a jobId for polling. Creates multiple mockup variations across formats (square, story, banner, portrait). Costs credits per image.",
+      "required": [
+        "productImageUrl"
+      ],
+      "properties": {
+        "productImageUrl": {
+          "type": "string",
+          "description": "Public URL of the product/design image."
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID for brand-consistent ad copy and styling.",
+          "type": "string"
+        },
+        "brief": {
+          "description": "Campaign brief: target audience, goal, tone (e.g. \"launch campaign for Gen Z, playful tone\").",
+          "type": "string"
+        },
+        "count": {
+          "default": 10,
+          "description": "Number of ad variations to generate.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "formats": {
+          "default": [
+            "square"
+          ],
+          "description": "Output formats to generate.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "square",
+              "story",
+              "banner",
+              "portrait"
+            ]
+          }
+        },
+        "model": {
+          "description": "AI model override (e.g. gpt-image-1).",
+          "type": "string"
+        }
+      },
+      "cost": "credits",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "campaign-get",
+      "description": "Get a single persisted campaign by id, including its full results (generated ad image URLs per format/angle).",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Campaign id returned by campaign-generate or campaign-list."
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "campaign-list",
+      "description": "List persisted campaigns owned by the authenticated user. Campaigns survive the 2h job TTL. Filter by brandGuidelineId to see all campaigns for one brand.",
+      "required": [],
+      "properties": {
+        "brandId": {
+          "description": "Brand guideline ID to filter campaigns by (brand cockpit view).",
+          "type": "string"
+        },
+        "limit": {
+          "default": 60,
+          "description": "Max items to return.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "campaign-status",
+      "description": "Poll a batch campaign job for progress. Returns status (planning/generating/done/error) and completed results with image URLs.",
+      "required": [
+        "jobId"
+      ],
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "description": "Job ID returned by campaign-generate."
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "canvas-create",
+      "description": "Create a new empty canvas (whiteboard) project.",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name for the new canvas."
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-delete",
+      "description": "Permanently delete a canvas project by ID. Cannot be undone — confirm with the user first.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Canvas project ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-get",
+      "description": "Get a canvas project by ID, including elements, collaborators, and metadata.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The canvas project ID."
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-list",
+      "description": "List canvas (whiteboard) projects owned by the authenticated user. Supports pagination and name search.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max items to return (1-100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "search": {
+          "description": "Filter by canvas name (case-insensitive, partial match).",
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-list-projects",
+      "description": "List canvas projects for the authenticated user with node type summary.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 10,
+          "description": "Max projects to return.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-parse-csv",
+      "description": "Parse a CSV string and return the rows as an array of objects. Use this to preview what a DataNode will produce from a CSV file before uploading it to the canvas.",
+      "required": [
+        "csv"
+      ],
+      "properties": {
+        "csv": {
+          "type": "string",
+          "description": "Raw CSV text with a header row."
+        },
+        "preview_rows": {
+          "default": 5,
+          "description": "Number of rows to return in the preview (1-50).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-resolve-variables",
+      "description": "Given a prompt string and a variables map (key→value pairs), resolve all {{placeholder}} tokens and return the final prompt. Useful for previewing what a VariablesNode or DataNode will produce before generation.",
+      "required": [
+        "prompt",
+        "variables"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "The prompt text containing {{variable}} placeholders."
+        },
+        "variables": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Map of variable name to value, e.g. {\"brand\":\"Nike\",\"color\":\"red\"}."
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-share",
+      "description": "Share a canvas project with other users. Generates a shareId and sets collaborative mode. Accepts user emails or user IDs for canEdit/canView lists.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Canvas project ID to share."
+        },
+        "canEdit": {
+          "default": [],
+          "description": "List of user emails or IDs who can edit.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "canView": {
+          "default": [],
+          "description": "List of user emails or IDs who can view.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "canvas-update",
+      "description": "Update a canvas project by ID. Provide any combination of name, nodes, edges, drawings, or linkedGuidelineId. Only provided fields are updated.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Canvas project ID to update."
+        },
+        "name": {
+          "description": "New project name.",
+          "type": "string"
+        },
+        "nodes": {
+          "description": "Updated node array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "edges": {
+          "description": "Updated edge array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "drawings": {
+          "description": "Updated drawings array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "linkedGuidelineId": {
+          "description": "Brand guideline ID to link.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "cost": "free",
+      "category": "canvas",
+      "auth": true
+    },
+    {
+      "name": "community-my-presets",
+      "description": "List your own community presets (approved and pending). Requires auth.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max presets to return.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "skip": {
+          "default": 0,
+          "description": "Items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-preset-create",
+      "description": "Create a new community preset. Requires auth. The preset will be publicly visible once approved.",
+      "required": [
+        "name",
+        "description",
+        "prompt",
+        "category"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Preset name."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000,
+          "description": "What this preset does."
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000,
+          "description": "The generation prompt."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "3d",
+            "presets",
+            "aesthetics",
+            "themes",
+            "mockup",
+            "angle",
+            "texture",
+            "ambience",
+            "luminance"
+          ],
+          "description": "Preset category."
+        },
+        "presetType": {
+          "description": "Required when category is \"presets\".",
+          "type": "string",
+          "enum": [
+            "mockup",
+            "angle",
+            "texture",
+            "ambience",
+            "luminance"
+          ]
+        },
+        "aspectRatio": {
+          "default": "1:1",
+          "description": "Aspect ratio (e.g. 1:1, 16:9, 9:16, 4:5).",
+          "type": "string",
+          "maxLength": 20
+        },
+        "model": {
+          "description": "AI model used (e.g. gemini-2.0-flash).",
+          "type": "string",
+          "maxLength": 100
+        },
+        "tags": {
+          "description": "Tags for discoverability.",
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          }
+        },
+        "referenceImageUrl": {
+          "description": "Reference image URL.",
+          "type": "string",
+          "maxLength": 2000,
+          "format": "uri"
+        },
+        "difficulty": {
+          "description": "Difficulty level.",
+          "type": "string",
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ]
+        },
+        "context": {
+          "description": "Usage context.",
+          "type": "string",
+          "enum": [
+            "canvas",
+            "mockup",
+            "branding",
+            "general"
+          ]
+        },
+        "useCase": {
+          "description": "Example use case description.",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "examples": {
+          "description": "Example outputs or variations.",
+          "maxItems": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-preset-delete",
+      "description": "Delete your own community preset permanently. Requires auth.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Preset ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-preset-get",
+      "description": "Get a single community preset by ID. No auth required.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Preset ID."
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-preset-like",
+      "description": "Toggle like/unlike on a community preset. Returns updated like count. Requires auth.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Preset ID to like/unlike."
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-preset-update",
+      "description": "Update your own community preset. Only provided fields are changed. Requires auth.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Preset ID to update."
+        },
+        "name": {
+          "description": "New name.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "description": {
+          "description": "New description.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000
+        },
+        "prompt": {
+          "description": "New prompt.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "category": {
+          "description": "New category.",
+          "type": "string",
+          "enum": [
+            "3d",
+            "presets",
+            "aesthetics",
+            "themes",
+            "mockup",
+            "angle",
+            "texture",
+            "ambience",
+            "luminance"
+          ]
+        },
+        "presetType": {
+          "description": "New preset type.",
+          "type": "string",
+          "enum": [
+            "mockup",
+            "angle",
+            "texture",
+            "ambience",
+            "luminance"
+          ]
+        },
+        "aspectRatio": {
+          "description": "New aspect ratio.",
+          "type": "string",
+          "maxLength": 20
+        },
+        "model": {
+          "description": "New model.",
+          "type": "string",
+          "maxLength": 100
+        },
+        "tags": {
+          "description": "New tags.",
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          }
+        },
+        "referenceImageUrl": {
+          "description": "New reference image URL.",
+          "type": "string",
+          "maxLength": 2000,
+          "format": "uri"
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ]
+        },
+        "context": {
+          "type": "string",
+          "enum": [
+            "canvas",
+            "mockup",
+            "branding",
+            "general"
+          ]
+        },
+        "useCase": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "examples": {
+          "maxItems": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-presets",
+      "description": "Browse approved community presets. Filter by category or search by keyword. No auth required.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max presets to return (1-50).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "category": {
+          "description": "Filter by category.",
+          "type": "string",
+          "enum": [
+            "3d",
+            "presets",
+            "aesthetics",
+            "themes",
+            "mockup",
+            "angle",
+            "texture",
+            "ambience",
+            "luminance"
+          ]
+        },
+        "search": {
+          "description": "Search presets by name or tags.",
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "community-profiles",
+      "description": "Browse public community creator profiles. No auth required.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max profiles to return (1-50).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "free",
+      "category": "community",
+      "auth": true
+    },
+    {
+      "name": "creative-full",
+      "description": "Full creative pipeline in one call. Generates layout plan → background image → renders to PNG → saves project. Returns imageUrl, projectId, plan, and per-step credits. Use this instead of chaining creative-generate + mockup-generate + creative-render manually.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Creative brief describing the desired visual."
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID to inject brand context.",
+          "type": "string"
+        },
+        "format": {
+          "default": "1:1",
+          "description": "Output aspect ratio.",
+          "type": "string",
+          "enum": [
+            "1:1",
+            "16:9",
+            "9:16",
+            "4:5"
+          ]
+        },
+        "model": {
+          "default": "gemini-3.1-flash-image-preview",
+          "description": "Model for background image generation.",
+          "type": "string",
+          "enum": [
+            "gpt-image-1",
+            "gpt-image-2",
+            "gemini-3.1-flash-image-preview",
+            "gemini-3-pro-image-preview",
+            "imagen-4.0-fast-generate-001",
+            "imagen-4.0-generate-001",
+            "imagen-4.0-ultra-generate-001",
+            "seedream-5-0-260128",
+            "seedream-4-5-250601",
+            "seedream-4-0-250828",
+            "seedream-3-0-t2i-250415",
+            "seededit-3-0-i2i-250415",
+            "ideogram-v4",
+            "ideogram-v3",
+            "reve-image-1.0"
+          ]
+        },
+        "resolution": {
+          "default": "1K",
+          "description": "Resolution for background image generation.",
+          "type": "string",
+          "enum": [
+            "1K",
+            "2K",
+            "4K"
+          ]
+        },
+        "autoSave": {
+          "default": true,
+          "description": "Persist result as a creative project.",
+          "type": "boolean"
+        }
+      },
+      "cost": "credits",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-generate",
+      "description": "Generate a structured marketing creative layout (background, text layers, logo, shapes) from a prompt. Optionally inject brand guideline context. Returns a layered creative plan ready for the Creative Studio. Costs credits.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Creative brief (e.g. \"Summer sale banner for a surf brand, bold and energetic\")."
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID to inject colors, fonts, and voice into the creative.",
+          "type": "string"
+        },
+        "format": {
+          "default": "1:1",
+          "description": "Output aspect ratio.",
+          "type": "string",
+          "enum": [
+            "1:1",
+            "16:9",
+            "9:16",
+            "4:5"
+          ]
+        }
+      },
+      "cost": "credits",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-projects-create",
+      "description": "Save a creative project to the database. Requires prompt, format, and layers (from creative-generate). Optionally attach a brand guideline and background/thumbnail URLs.",
+      "required": [
+        "prompt",
+        "format",
+        "layers"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Creative brief used to generate this project."
+        },
+        "format": {
+          "type": "string",
+          "description": "Aspect ratio (e.g. \"1:1\", \"16:9\")."
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "description": "Layer array from creative-generate."
+        },
+        "name": {
+          "description": "Project display name. Defaults to \"Untitled Creative\".",
+          "type": "string"
+        },
+        "brandId": {
+          "description": "Brand guideline ID to associate.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "campaignId": {
+          "description": "Campaign ID to link this creative to (groups creatives under a campaign).",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "backgroundUrl": {
+          "description": "Background image URL.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overlay": {
+          "description": "Overlay config from creative plan.",
+          "anyOf": [
+            {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "thumbnailUrl": {
+          "description": "Thumbnail image URL.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-projects-delete",
+      "description": "Permanently delete a creative project by ID. Cannot be undone — confirm with the user first.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Creative project ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-projects-get",
+      "description": "Get a creative project by ID, including all layers, background, and generated assets.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The creative project ID."
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-projects-list",
+      "description": "List creative studio projects owned by the authenticated user.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max items to return.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "skip": {
+          "default": 0,
+          "description": "Items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-projects-update",
+      "description": "Update an existing creative project (partial update). All fields are optional — only provided fields are updated.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Creative project ID to update."
+        },
+        "name": {
+          "description": "New project name.",
+          "type": "string"
+        },
+        "prompt": {
+          "description": "Updated creative prompt.",
+          "type": "string"
+        },
+        "format": {
+          "description": "Updated aspect ratio.",
+          "type": "string"
+        },
+        "layers": {
+          "description": "Updated layers array.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "brandId": {
+          "description": "Brand guideline ID to associate.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "backgroundUrl": {
+          "description": "Updated background image URL.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overlay": {
+          "description": "Updated overlay config.",
+          "anyOf": [
+            {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "thumbnailUrl": {
+          "description": "Updated thumbnail URL.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "creative-render",
+      "description": "Render a creative plan (from creative-generate) into a PNG image server-side. Pass the plan JSON and the pre-generated background image URL. Returns imageUrl (public R2 URL). Use this to close the generate→image loop without a browser: generate plan, render, inspect image with vision, adjust, re-render.",
+      "required": [
+        "plan"
+      ],
+      "properties": {
+        "plan": {
+          "type": "object",
+          "properties": {
+            "background": {
+              "type": "object",
+              "properties": {
+                "prompt": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            },
+            "overlay": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "gradient",
+                        "solid"
+                      ]
+                    },
+                    "direction": {
+                      "type": "string",
+                      "enum": [
+                        "bottom",
+                        "top",
+                        "left",
+                        "right"
+                      ]
+                    },
+                    "opacity": {
+                      "type": "number"
+                    },
+                    "color": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "opacity"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "layers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              "description": "Layer array from creative-generate."
+            }
+          },
+          "required": [
+            "layers"
+          ],
+          "description": "Creative plan from creative-generate."
+        },
+        "backgroundImageUrl": {
+          "description": "Pre-generated background image URL (from mockup-generate or any image URL).",
+          "type": "string"
+        },
+        "format": {
+          "default": "1:1",
+          "description": "Output format.",
+          "type": "string",
+          "enum": [
+            "1:1",
+            "16:9",
+            "9:16",
+            "4:5"
+          ]
+        },
+        "accentColor": {
+          "description": "Hex color for <accent> words in text layers. Defaults to white.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "branding",
+      "auth": true
+    },
+    {
+      "name": "delete-studio3d-scene",
+      "description": "Delete a saved 3D Studio scene.",
+      "required": [
+        "sceneId"
+      ],
+      "properties": {
+        "sceneId": {
+          "type": "string",
+          "description": "Scene ID to delete."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "document-extract",
+      "description": "Extract content from a PDF using a 2-phase pipeline: algorithmic (exact colors, fonts, embedded images) then Gemini semantic analysis (strategy, personas, voice, dos/donts, asset classification). Returns markdownText (structured, page-separated — ideal for RAG chunking) plus brand tokens. Accepts either pdf_base64 (base64-encoded PDF content, preferred for remote MCP usage) or pdf_path (server-side path). IMPORTANT: before calling, ask the user whether they want the result saved to disk as a .md file or returned inline.",
+      "required": [
+        "output"
+      ],
+      "properties": {
+        "pdf_base64": {
+          "description": "Base64-encoded PDF content. Preferred when calling from a remote agent — read the file locally and encode it. Mutually exclusive with pdf_path.",
+          "type": "string"
+        },
+        "pdf_filename": {
+          "description": "Original filename (e.g. \"brand.pdf\"). Required when using pdf_base64 with output=\"disk\" so the .md file can be named correctly.",
+          "type": "string"
+        },
+        "pdf_path": {
+          "description": "Absolute server-side path to a PDF. Only use when the file is on the same machine as the MCP server.",
+          "type": "string"
+        },
+        "output": {
+          "type": "string",
+          "enum": [
+            "disk",
+            "inline"
+          ],
+          "description": "\"disk\" — saves a .md file alongside the PDF (pdf_path) or in the current directory (pdf_base64) and returns { saved_to, characters, preview }. \"inline\" — returns the full markdownText in the response (no file written)."
+        },
+        "include_brand_tokens": {
+          "default": true,
+          "description": "Include colors, typography, strategy, and asset classifications. Default: true.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "figma-extract-text",
+      "description": "Extract all text from a Figma file as markdown, in canvas reading order and grouped by page and frame. This is the raw material for a brand guideline: pipe the returned markdown straight into brand-guidelines-ingest (source=text). Works on any file your Figma token can read — no plugin and no open tab required. Requires a Figma token in user settings.",
+      "required": [
+        "fileId"
+      ],
+      "properties": {
+        "fileId": {
+          "type": "string",
+          "description": "Figma file key, or a full figma.com/design/... URL (either works)."
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "figma-preset-fill",
+      "description": "Build a complete, deterministic FILL_TEMPLATE operation for the Visant Figma plugin. The server resolves the brand's REAL colors (variable modes) AND images (logos by variant/contrast, photos by semantic relevance) into a [Template]'s #slots. You supply only the brand, the template name, the text content, and an optional brief — never URLs or geometry. Run the returned operation in the Visant Figma plugin to produce an on-brand design with zero hallucinated layout.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "templateName": {
+          "description": "The [Template] frame name (e.g. \"Post/Launch\"). Provide this or templateNodeId.",
+          "type": "string"
+        },
+        "templateNodeId": {
+          "description": "The [Template] frame node id (alternative to templateName).",
+          "type": "string"
+        },
+        "text": {
+          "description": "Text slot content keyed by slot id, e.g. { \"h1\": \"...\", \"infos\": [\"a\",\"b\"] }.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "imageSlots": {
+          "description": "Image slots to resolve (default: logo, photo1, photo2, icon). variant picks a logo variant (e.g. \"dark\").",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "variant": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        "brief": {
+          "description": "Short brief/vibe used to semantically pick the best photo from the brand media.",
+          "type": "string"
+        },
+        "clone": {
+          "description": "Fill a clone (default true) so the master template stays pristine.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "figma-templates-list",
+      "description": "List the [Template] presets in a brand's Figma file (or a given fileKey), with each template's name, aspect, and #slots (id, type text/image, optional, variant). Use this to discover what exists and what to fill BEFORE calling figma-preset-fill. Read-only.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Brand guideline ID."
+        },
+        "fileKey": {
+          "description": "Figma file key (defaults to the brand's linked file).",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "brand-guidelines",
+      "auth": true
+    },
+    {
+      "name": "image-extract-url",
+      "description": "Extract high-resolution images from any public URL (Behance, Pinterest, Dribbble, portfolios, blogs). Returns a list of image URLs with metadata. Supports lazy-loaded images, srcset, and background images.",
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The public URL to extract images from (e.g. Behance gallery, portfolio page)."
+        },
+        "limit": {
+          "default": 80,
+          "description": "Maximum number of images to return (default 80).",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "images-to-pdf",
+      "description": "Create a multi-page PDF from images. Each image becomes one page sized to fit the image dimensions. Accepts PNG and JPEG base64-encoded images.",
+      "required": [
+        "images"
+      ],
+      "properties": {
+        "images": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of base64-encoded images (PNG or JPEG)"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "mockup-delete",
+      "description": "Permanently delete a mockup by ID. Cannot be undone — confirm with the user first.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Mockup MongoDB ObjectId to delete."
+        }
+      },
+      "cost": "free",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "mockup-generate",
+      "description": "Generate a mockup image placing a design into a realistic scene.\n\nTwo workflows:\nA) With referenceImages: upload-image first to get a URL, then pass it in referenceImages array. Prompt describes the SCENE only (surface, lighting, angle), never the design content.\nB) With brandGuidelineId: pass the brand guideline ID and the logo/colors/typography are auto-injected. No upload needed.\n\nExample call: { \"prompt\": \"laptop on marble desk, soft studio lighting, top-down\", \"referenceImages\": [\"https://...logo.png\"] }\nExample call: { \"prompt\": \"business card on white surface, natural light\", \"brandGuidelineId\": \"abc123\" }",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Scene/environment ONLY — surface material, lighting, camera angle, wear/texture, background color. NEVER describe the design content (text, logo, layout) here — the AI will hallucinate it. Pass the actual design via referenceImages or brandGuidelineId instead."
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID. Auto-injects logo, colors, typography into generation. Alternative to referenceImages — use one or the other.",
+          "type": "string"
+        },
+        "model": {
+          "default": "gemini-3.1-flash-image-preview",
+          "description": "gpt-image-2=best quality (recommended), gemini=fast/creative, seedream=photorealistic (requires your own BytePlus API key via Settings → BYOK).",
+          "type": "string",
+          "enum": [
+            "gpt-image-1",
+            "gpt-image-2",
+            "gemini-3.1-flash-image-preview",
+            "gemini-3-pro-image-preview",
+            "imagen-4.0-fast-generate-001",
+            "imagen-4.0-generate-001",
+            "imagen-4.0-ultra-generate-001",
+            "seedream-5-0-260128",
+            "seedream-4-5-250601",
+            "seedream-4-0-250828",
+            "seedream-3-0-t2i-250415",
+            "seededit-3-0-i2i-250415",
+            "ideogram-v4",
+            "ideogram-v3",
+            "reve-image-1.0"
+          ]
+        },
+        "provider": {
+          "description": "Provider override. Inferred from model by default.",
+          "type": "string",
+          "enum": [
+            "openai",
+            "gemini",
+            "imagen",
+            "seedream",
+            "ideogram",
+            "reve"
+          ]
+        },
+        "aspectRatio": {
+          "default": "1:1",
+          "description": "1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.",
+          "type": "string",
+          "enum": [
+            "1:1",
+            "9:16",
+            "16:9",
+            "4:5"
+          ]
+        },
+        "resolution": {
+          "default": "1K",
+          "description": "Higher = more credits.",
+          "type": "string",
+          "enum": [
+            "1K",
+            "2K",
+            "4K"
+          ]
+        },
+        "designType": {
+          "description": "Hint: business-card, social-media, packaging, apparel, signage, sticker, etc.",
+          "type": "string"
+        },
+        "baseImageUrl": {
+          "description": "Base image for img2img transformation (rare). For placing a design in a scene, use referenceImages instead.",
+          "type": "string"
+        },
+        "referenceImages": {
+          "description": "URLs of the design/artwork to place in the scene (e.g. logo, poster, card). Get URLs via upload-image tool first. Also accepts base64 data URIs. This is NOT a preset ID — it must be an image URL.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "seed": {
+          "description": "Random seed for reproducible results.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "credits",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "mockup-get",
+      "description": "Get a single mockup by its ID, including image URL, prompt, and metadata.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The mockup ID."
+        }
+      },
+      "cost": "free",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "mockup-list",
+      "description": "List mockups created by the authenticated user. Supports pagination.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "default": 20,
+          "description": "Max items to return (1-100).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "skip": {
+          "default": 0,
+          "description": "Number of items to skip for pagination.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "free",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "mockup-presets",
+      "description": "Browse proven scene descriptions (presets) by category. Returns prompt templates you can use directly as the prompt parameter in mockup-generate. These are NOT image references — they are scene descriptions.",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "business-card",
+            "social-media",
+            "packaging",
+            "apparel",
+            "stationery",
+            "device",
+            "signage",
+            "print",
+            "other"
+          ],
+          "description": "The preset category to browse."
+        }
+      },
+      "cost": "free",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "mockup-update",
+      "description": "Update a mockup's metadata (prompt, tags, isLiked, designType, aspectRatio). Does not regenerate the image.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Mockup MongoDB ObjectId."
+        },
+        "prompt": {
+          "description": "Updated prompt text.",
+          "type": "string"
+        },
+        "designType": {
+          "description": "Design type (e.g. \"social\", \"banner\").",
+          "type": "string"
+        },
+        "aspectRatio": {
+          "description": "Aspect ratio (e.g. \"16:9\").",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Tag list.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "brandingTags": {
+          "description": "Branding tag list.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isLiked": {
+          "description": "Mark/unmark as liked.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "moodboard-detect-grid",
+      "description": "Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.",
+      "required": [
+        "imageBase64"
+      ],
+      "properties": {
+        "imageBase64": {
+          "type": "string",
+          "description": "Base64-encoded moodboard image to analyze."
+        }
+      },
+      "cost": "free",
+      "category": "moodboard",
+      "auth": true
+    },
+    {
+      "name": "moodboard-suggest",
+      "description": "Analyze images from a moodboard and suggest Remotion animation presets and Veo video generation prompts for each cell. Useful for turning static moodboard cells into motion content.",
+      "required": [
+        "images"
+      ],
+      "properties": {
+        "images": {
+          "minItems": 1,
+          "maxItems": 9,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Cell identifier (e.g. \"cell-1\")."
+              },
+              "base64": {
+                "type": "string",
+                "description": "Base64-encoded image data for this cell."
+              }
+            },
+            "required": [
+              "id",
+              "base64"
+            ]
+          },
+          "description": "Array of moodboard cells to analyze."
+        }
+      },
+      "cost": "credits",
+      "category": "moodboard",
+      "auth": true
+    },
+    {
+      "name": "moodboard-upscale",
+      "description": "Upscale an image to 1K, 2K, or 4K resolution using Gemini image enhancement. Use after extracting a cell from a moodboard to get a high-resolution standalone version.",
+      "required": [
+        "imageBase64"
+      ],
+      "properties": {
+        "imageBase64": {
+          "type": "string",
+          "description": "Base64-encoded image to upscale."
+        },
+        "size": {
+          "default": "4K",
+          "description": "Target resolution.",
+          "type": "string",
+          "enum": [
+            "1K",
+            "2K",
+            "4K"
+          ]
+        }
+      },
+      "cost": "credits",
+      "category": "moodboard",
+      "auth": true
+    },
+    {
+      "name": "oauth-authorized-apps",
+      "description": "List all AI agents and applications authorized to access the user's account via OAuth. Shows client name, scopes granted, and when access was granted.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "oauth-revoke-app",
+      "description": "Revoke OAuth access for a connected app. The app will no longer be able to act on behalf of the user. Requires confirm: true.",
+      "required": [
+        "appId",
+        "confirm"
+      ],
+      "properties": {
+        "appId": {
+          "type": "string",
+          "description": "The ID of the authorized app grant to revoke (from oauth-authorized-apps)."
+        },
+        "confirm": {
+          "type": "boolean",
+          "description": "Must be true to confirm revocation."
+        }
+      },
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "payments-plans",
+      "description": "List available subscription plans with pricing. No auth required.",
+      "required": [],
+      "properties": {
+        "currency": {
+          "default": "USD",
+          "description": "Currency for prices.",
+          "type": "string",
+          "enum": [
+            "USD",
+            "BRL"
+          ]
+        }
+      },
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "payments-subscription-status",
+      "description": "Get the current user subscription tier, credit balance, usage, and whether they can generate. Use this to check before suggesting paid operations.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "payments-usage",
+      "description": "Get detailed credit usage: free generations used, subscription credits remaining, reset date. More granular than account-usage.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "pdf-compress",
+      "description": "Compress a PDF using Ghostscript. Reduces file size by recompressing images. Presets: screen (72dpi, smallest), ebook (150dpi, balanced), printer (300dpi), prepress (300dpi, color-preserving). Returns compressed PDF as base64 with size comparison.",
+      "required": [
+        "pdf_base64"
+      ],
+      "properties": {
+        "pdf_base64": {
+          "type": "string",
+          "description": "Base64-encoded PDF content"
+        },
+        "preset": {
+          "default": "ebook",
+          "description": "Compression preset",
+          "type": "string",
+          "enum": [
+            "screen",
+            "ebook",
+            "printer",
+            "prepress"
+          ]
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "pdf-to-images",
+      "description": "Rasterize PDF pages to images (PNG or JPEG) using Ghostscript. Returns an array of base64-encoded images, one per page. Useful for thumbnails, previews, or further processing.",
+      "required": [
+        "pdf_base64"
+      ],
+      "properties": {
+        "pdf_base64": {
+          "type": "string",
+          "description": "Base64-encoded PDF content"
+        },
+        "dpi": {
+          "default": 150,
+          "description": "Resolution in DPI",
+          "type": "number",
+          "minimum": 72,
+          "maximum": 600
+        },
+        "format": {
+          "default": "png",
+          "description": "Output image format",
+          "type": "string",
+          "enum": [
+            "png",
+            "jpeg"
+          ]
+        },
+        "pages": {
+          "description": "Page range, e.g. \"1-3\" or \"1\". Omit for all pages.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-describe",
+      "description": "Describe a mini-app spec as structured text so the agent can \"see\" the layout without a browser. Returns a visual tree + component summary.",
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "spec": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {},
+          "description": "The mini-app spec JSON (root + elements)."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-feed",
+      "description": "Browse the community mini-app gallery with filters.",
+      "required": [],
+      "properties": {
+        "category": {
+          "description": "Filter by category.",
+          "type": "string"
+        },
+        "search": {
+          "description": "Search by title.",
+          "type": "string"
+        },
+        "sort": {
+          "description": "Sort order (default: newest).",
+          "type": "string",
+          "enum": [
+            "newest",
+            "likes",
+            "popular"
+          ]
+        },
+        "take": {
+          "description": "Results per page (default: 20, max: 50).",
+          "type": "number",
+          "maximum": 50
+        },
+        "skip": {
+          "description": "Pagination offset.",
+          "type": "number"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-fork",
+      "description": "Fork a community mini-app into your library.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Mini-app ID to fork."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-generate",
+      "description": "Generate a mini-app from a natural-language prompt. Returns a JSON spec that renders inside the Playground. Costs 1 credit.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 3,
+          "description": "What the mini-app should do (e.g. \"brand color palette extractor with drag-drop upload\")."
+        },
+        "brandGuidelineId": {
+          "description": "Optional brand guideline ID to inject colors/fonts/logos into the generation.",
+          "type": "string"
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-get",
+      "description": "Get a mini-app by its slug (public).",
+      "required": [
+        "slug"
+      ],
+      "properties": {
+        "slug": {
+          "type": "string",
+          "description": "The mini-app slug (from URL or list)."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-iterate",
+      "description": "Refine an existing mini-app spec with a follow-up instruction. Returns updated spec. Costs 1 credit.",
+      "required": [
+        "prompt",
+        "currentSpec"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 3,
+          "description": "What to change (e.g. \"add a pie chart showing color distribution\")."
+        },
+        "currentSpec": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {},
+          "description": "The current spec JSON to iterate on."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-list",
+      "description": "List the authenticated user's saved mini-apps.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-publish",
+      "description": "Publish a mini-app to the community gallery.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Mini-app ID to publish."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-quickstart",
+      "description": "One-shot: generate a mini-app from prompt → save → share. Returns spec + URLs. Costs 1 credit.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 3,
+          "description": "What the mini-app should do."
+        },
+        "title": {
+          "description": "App title (auto-derived from prompt if omitted).",
+          "type": "string"
+        },
+        "description": {
+          "description": "Short description.",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Tags for discovery.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "utility",
+            "brand",
+            "design",
+            "marketing",
+            "data",
+            "fun"
+          ]
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID for brand-aware generation.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-save",
+      "description": "Save a mini-app spec to the user's library. Returns the saved mini-app with slug.",
+      "required": [
+        "title",
+        "spec"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Mini-app title."
+        },
+        "description": {
+          "description": "Short description.",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Tags for discovery.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "description": "Category (default: utility).",
+          "type": "string",
+          "enum": [
+            "utility",
+            "brand",
+            "design",
+            "marketing",
+            "data",
+            "fun"
+          ]
+        },
+        "spec": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {},
+          "description": "The mini-app spec JSON (root + elements)."
+        },
+        "actionsUsed": {
+          "description": "List of action names used.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "playground-share",
+      "description": "Generate a public share URL for a mini-app you own.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Mini-app ID to share."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "psd-mockup-produce",
+      "description": "End-to-end PSD mockup production: optionally generate the artwork, then place it into a real PSD template and publish the final image. The single tool an agent needs to deliver a finished mockup.\n\nPipeline:\n1. Provide artPrompt (to generate art) OR artUrl (existing artwork). With brandGuidelineId, the brand logo/colors/typography are auto-injected into generation.\n2. The art is placed into the template's smart object (cover mode) via the scene fast path (falls back to opening the PSD automatically).\n3. Returns the published imageUrl.\n\nCosts: generating art with artPrompt costs credits (same as mockup-generate); the render itself is free. If render fails after generation, the generation credits are refunded. Passing artUrl costs nothing.\n\nPick the template with psd-scene-list first and match the art aspect ratio to the face's suggestedAspectRatio.",
+      "required": [
+        "psdFileName"
+      ],
+      "properties": {
+        "psdFileName": {
+          "type": "string",
+          "description": "Bare PSD file name from psd-scene-list (e.g. \"HM_BANNER_002.psd\"). No paths."
+        },
+        "artPrompt": {
+          "description": "Prompt to GENERATE the artwork that goes into the smart object. Describe the DESIGN to place (poster/label/screen content). Mutually exclusive with artUrl. Costs credits.",
+          "type": "string"
+        },
+        "artUrl": {
+          "description": "URL of existing artwork to place. Skips generation (free). Use artPrompt OR artUrl.",
+          "type": "string"
+        },
+        "brandGuidelineId": {
+          "description": "Brand guideline ID — injects logo/colors/typography when generating art (artPrompt path).",
+          "type": "string"
+        },
+        "face": {
+          "description": "Target smart object name/key from psd-scene-list. Omit to apply to all editable faces.",
+          "type": "string"
+        },
+        "model": {
+          "default": "gemini-3.1-flash-image-preview",
+          "description": "Image model for the artPrompt path. Default is recommended.",
+          "type": "string",
+          "enum": [
+            "gpt-image-1",
+            "gpt-image-2",
+            "gemini-3.1-flash-image-preview",
+            "gemini-3-pro-image-preview",
+            "imagen-4.0-fast-generate-001",
+            "imagen-4.0-generate-001",
+            "imagen-4.0-ultra-generate-001",
+            "seedream-5-0-260128",
+            "seedream-4-5-250601",
+            "seedream-4-0-250828",
+            "seedream-3-0-t2i-250415",
+            "seededit-3-0-i2i-250415",
+            "ideogram-v4",
+            "ideogram-v3",
+            "reve-image-1.0"
+          ]
+        },
+        "preview": {
+          "default": false,
+          "description": "true = fast low-res JPEG preview; false = full-res PNG.",
+          "type": "boolean"
+        }
+      },
+      "cost": "credits",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "psd-scene-list",
+      "description": "List the PSD mockup Scene Package catalog (pre-processed templates ready for instant rendering).\n\nEach scene has FACES (smart objects where art is placed). For each face you get innerW/innerH — the pixel size of the editable area. The ideal art aspect ratio = innerW/innerH, and art is applied in COVER mode (it fills the face and the overflow is cropped), so keep the important content centered.\n\nWorkflow: pick a scene + face by brand/brief, then call psd-mockup-produce with that psdFileName (and face if the scene has multiple). If a PSD from the Drive catalog has no scene yet, run psd-scene-prepare first.",
+      "required": [],
+      "properties": {
+        "search": {
+          "description": "Case-insensitive filter on the PSD file name (client-side).",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "psd-scene-prepare",
+      "description": "Pre-process a PSD from the Drive catalog into a Scene Package so it can be rendered instantly. Use this ONCE when a template you want is not yet in psd-scene-list. Heavy operation (opens the PSD), but cached forever after. Returns the extracted faces.",
+      "required": [
+        "psdFileName"
+      ],
+      "properties": {
+        "psdFileName": {
+          "type": "string",
+          "description": "Bare PSD file name from the Drive catalog (e.g. \"HM_BANNER_002.psd\"). No paths."
+        }
+      },
+      "cost": "credits",
+      "category": "mockups",
+      "auth": true
+    },
+    {
+      "name": "reference-ingest",
+      "description": "Ingest a curated mockup reference image into the library. AI auto-extracts dimensions (niche, aesthetic, vibe, lighting, texture, material, angle). Admin only.",
+      "required": [
+        "imageUrl"
+      ],
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Public URL of the reference image."
+        },
+        "name": {
+          "description": "Name for the reference.",
+          "type": "string"
+        },
+        "studio": {
+          "description": "Studio or creator name (e.g. \"Hazard Mockups\", \"Visant Labs\").",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Manual tags to add.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prompt": {
+          "description": "The prompt that generated this mockup (if known).",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country where the design was made (e.g. \"Japan\", \"Switzerland\", \"Russia\").",
+          "type": "string"
+        },
+        "region": {
+          "description": "Region slug override (e.g. \"east-asia\"). Auto-derived from country if omitted.",
+          "type": "string"
+        },
+        "designer": {
+          "description": "Designer or agency credited for the work.",
+          "type": "string"
+        },
+        "sourceUrl": {
+          "description": "Original source URL for attribution.",
+          "type": "string",
+          "format": "uri"
+        },
+        "awardSource": {
+          "description": "Award or archive the reference came from (e.g. \"D&AD 2024\", \"Pentawards\").",
+          "type": "string"
+        },
+        "year": {
+          "description": "Year the work was produced/awarded.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "cost": "free",
+      "category": "references",
+      "auth": true
+    },
+    {
+      "name": "reference-search",
+      "description": "Search the curated design reference library by dimensions or free text. Covers BOTH mockups (niche, aesthetic, vibe, lighting, texture, material, angle, color_mood, mockup_type) AND logo/branding refs (brand_artifact, logo_construction, type_style). Returns world-class references with AI-extracted dimensions.",
+      "required": [],
+      "properties": {
+        "search": {
+          "description": "Free text search across name and description.",
+          "type": "string"
+        },
+        "niche": {
+          "description": "Filter by niche (e.g. \"luxury\", \"tech\", \"food\").",
+          "type": "string"
+        },
+        "aesthetic": {
+          "description": "Filter by aesthetic (e.g. \"minimalist\", \"brutalist\").",
+          "type": "string"
+        },
+        "vibe": {
+          "description": "Filter by vibe (e.g. \"premium\", \"playful\").",
+          "type": "string"
+        },
+        "lighting": {
+          "description": "Filter by lighting (e.g. \"soft studio\", \"golden hour\").",
+          "type": "string"
+        },
+        "texture": {
+          "description": "Filter by texture (e.g. \"marble\", \"concrete\").",
+          "type": "string"
+        },
+        "mockup_type": {
+          "description": "Filter by mockup type (e.g. \"packaging\", \"stationery\").",
+          "type": "string"
+        },
+        "brand_artifact": {
+          "description": "Branding refs — filter by artifact (e.g. \"logo\", \"brand-system\", \"guideline\").",
+          "type": "string"
+        },
+        "logo_construction": {
+          "description": "Logo refs — filter by mark structure (e.g. \"wordmark\", \"monogram\", \"emblem\").",
+          "type": "string"
+        },
+        "type_style": {
+          "description": "Logo/branding refs — filter by typography (e.g. \"grotesque-sans\", \"serif\").",
+          "type": "string"
+        },
+        "country": {
+          "description": "Filter by country of origin (e.g. \"Japan\", \"Switzerland\", \"Russia\").",
+          "type": "string"
+        },
+        "region": {
+          "description": "Filter by region slug (e.g. \"east-asia\", \"nordic\", \"eastern-europe\").",
+          "type": "string"
+        },
+        "limit": {
+          "default": 20,
+          "description": "Max results.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "cost": "free",
+      "category": "references",
+      "auth": true
+    },
+    {
+      "name": "settings-byok-status",
+      "description": "Check which API keys the user has configured (Gemini, OpenAI, Seedream) and storage tier. Use to know which models are available.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "account",
+      "auth": true
+    },
+    {
+      "name": "smart-analyze",
+      "description": "AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Costs 1 credit.",
+      "required": [
+        "base64"
+      ],
+      "properties": {
+        "base64": {
+          "type": "string",
+          "description": "Base64-encoded image to analyze."
+        },
+        "mimeType": {
+          "default": "image/png",
+          "description": "Image MIME type.",
+          "type": "string"
+        },
+        "brandGuideline": {
+          "description": "Brand guideline ID for brand-aware analysis.",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "studio3d-create-scene",
+      "description": "Create and save a 3D Studio scene configuration. Returns a deep-link URL that opens the scene directly in the app. The config controls material, color, lighting, animation, camera, and more. Costs 0 credits.",
+      "required": [
+        "name",
+        "config"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Scene name."
+        },
+        "description": {
+          "description": "Scene description.",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "material": {
+              "description": "Material preset.",
+              "type": "string",
+              "enum": [
+                "default",
+                "plastic",
+                "metal",
+                "glass",
+                "rubber",
+                "chrome",
+                "gold",
+                "clay",
+                "emissive",
+                "holographic",
+                "brushedSteel",
+                "aluminum",
+                "copper",
+                "roseGold",
+                "platinum",
+                "ceramic",
+                "marble",
+                "concrete",
+                "wood",
+                "velvet",
+                "leather",
+                "frostedGlass",
+                "diamond",
+                "pearl",
+                "carbonFiber",
+                "carPaint",
+                "ice",
+                "obsidian",
+                "wax",
+                "mattePaint"
+              ]
+            },
+            "color": {
+              "description": "Object color (hex).",
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{3,8}$"
+            },
+            "depth": {
+              "description": "Extrusion depth.",
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 20
+            },
+            "roughness": {
+              "description": "Surface roughness.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "metalness": {
+              "description": "Metalness.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "opacity": {
+              "description": "Opacity.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "animate": {
+              "description": "Animation type.",
+              "type": "string",
+              "enum": [
+                "none",
+                "spin",
+                "float",
+                "pulse",
+                "wobble",
+                "spinFloat",
+                "swing",
+                "physicsFall"
+              ]
+            },
+            "animateSpeed": {
+              "description": "Animation speed.",
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 5
+            },
+            "animateEasing": {
+              "description": "Animation easing.",
+              "type": "string",
+              "enum": [
+                "linear",
+                "easeIn",
+                "easeOut",
+                "easeInOut"
+              ]
+            },
+            "background": {
+              "description": "Background color (hex).",
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{3,8}$"
+            },
+            "bgType": {
+              "description": "Background type.",
+              "type": "string",
+              "enum": [
+                "solid",
+                "linear",
+                "radial"
+              ]
+            },
+            "environment": {
+              "description": "HDRI environment.",
+              "type": "string",
+              "enum": [
+                "studio",
+                "city",
+                "sunset",
+                "dawn",
+                "night",
+                "forest",
+                "apartment",
+                "warehouse",
+                "park",
+                "lobby"
+              ]
+            },
+            "lightIntensity": {
+              "description": "Key light intensity.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "ambientIntensity": {
+              "description": "Ambient light intensity.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "shadow": {
+              "description": "Enable shadows.",
+              "type": "boolean"
+            },
+            "showGrid": {
+              "description": "Show floor grid.",
+              "type": "boolean"
+            },
+            "shapeType": {
+              "description": "Geometry shape.",
+              "type": "string",
+              "enum": [
+                "standard",
+                "coin",
+                "badge",
+                "stamp",
+                "shield",
+                "hexagon"
+              ]
+            },
+            "showChain": {
+              "description": "Enable chain + bail on any shape.",
+              "type": "boolean"
+            },
+            "smoothness": {
+              "description": "Curve smoothness.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "bevelEnabled": {
+              "description": "Enable edge bevel.",
+              "type": "boolean"
+            },
+            "bevelThickness": {
+              "description": "Bevel thickness.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "bevelSize": {
+              "description": "Bevel size.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "wireframe": {
+              "description": "Wireframe mode.",
+              "type": "boolean"
+            },
+            "physicsCount": {
+              "description": "Physics sim instance count.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "physicsGravity": {
+              "description": "Gravity strength.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 50
+            },
+            "physicsBounciness": {
+              "description": "Bounce factor.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "description": "Scene configuration object — all fields optional, unset fields use defaults."
+        },
+        "svgData": {
+          "description": "SVG markup to extrude into 3D.",
+          "type": "string"
+        },
+        "inputMode": {
+          "description": "Input mode.",
+          "type": "string",
+          "enum": [
+            "svg",
+            "text"
+          ]
+        },
+        "text": {
+          "description": "Text to render in 3D (when inputMode=\"text\").",
+          "type": "string"
+        },
+        "font": {
+          "description": "Font family for text mode.",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Scene tags.",
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isPublic": {
+          "description": "Make scene publicly accessible.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "studio3d-get-scene",
+      "description": "Get a saved 3D Studio scene by ID. Returns full config that can be applied. Free.",
+      "required": [
+        "sceneId"
+      ],
+      "properties": {
+        "sceneId": {
+          "type": "string",
+          "description": "Scene ID to retrieve."
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "studio3d-list-presets",
+      "description": "List all built-in 3D Studio scene presets (Product Shot, Hero Banner, Neon, etc.) with their full configurations. Free.",
+      "required": [],
+      "properties": {},
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "studio3d-list-scenes",
+      "description": "List saved 3D Studio scenes for the current user. Free.",
+      "required": [],
+      "properties": {
+        "limit": {
+          "description": "Max results (default 60).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "update-studio3d-scene",
+      "description": "Update an existing 3D Studio scene. Partial updates supported — only pass fields to change.",
+      "required": [
+        "sceneId"
+      ],
+      "properties": {
+        "sceneId": {
+          "type": "string",
+          "description": "Scene ID to update."
+        },
+        "name": {
+          "description": "New scene name.",
+          "type": "string",
+          "maxLength": 200
+        },
+        "description": {
+          "description": "New description.",
+          "type": "string",
+          "maxLength": 1000
+        },
+        "config": {
+          "description": "Partial config to merge (same schema as studio3d-create-scene).",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "tags": {
+          "description": "New tags.",
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isPublic": {
+          "description": "Update public visibility.",
+          "type": "boolean"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "upload-image",
+      "description": "Upload a base64 image and get a permanent public URL. Required before mockup-generate/ai-generate-image when you have a local file. Free, no credits, max 20MB.",
+      "required": [
+        "data"
+      ],
+      "properties": {
+        "data": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base64-encoded image data. With or without data URI prefix — both work."
+        },
+        "contentType": {
+          "default": "image/png",
+          "description": "MIME type. Default: image/png.",
+          "type": "string",
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/svg+xml"
+          ]
+        },
+        "label": {
+          "description": "Optional label for organization (e.g. \"sticker-v1\").",
+          "type": "string"
+        }
+      },
+      "cost": "free",
+      "category": "ai",
+      "auth": true
+    },
+    {
+      "name": "video-generate",
+      "description": "Generate a video using AI (Google Veo or Kling). Supports text-to-video, image-to-video, frames-to-video, extend-video, and references modes. Costs credits based on model.",
+      "required": [
+        "prompt"
+      ],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Video scene description."
+        },
+        "model": {
+          "default": "veo-3.1-generate-preview",
+          "description": "Video model. veo-3.1=high quality, veo-3.1-fast=faster, kling-v3-omni=latest Kling.",
+          "type": "string",
+          "enum": [
+            "veo-3.1-generate-preview",
+            "veo-3.1-fast-generate-preview",
+            "kling-v3-omni",
+            "kling-v3",
+            "kling-v2.6",
+            "kling-v2.5-turbo",
+            "kling-v2.1",
+            "kling-v1.6",
+            "kling-v1.5",
+            "kling-v1"
+          ]
+        },
+        "mode": {
+          "default": "text_to_video",
+          "description": "Generation mode.",
+          "type": "string",
+          "enum": [
+            "text_to_video",
+            "image_to_video",
+            "frames_to_video",
+            "extend_video",
+            "references"
+          ]
+        },
+        "aspectRatio": {
+          "default": "16:9",
+          "description": "Output aspect ratio.",
+          "type": "string",
+          "enum": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4"
+          ]
+        },
+        "duration": {
+          "default": "5s",
+          "description": "Video duration.",
+          "type": "string",
+          "enum": [
+            "5s",
+            "10s"
+          ]
+        },
+        "negativePrompt": {
+          "description": "What to avoid (Kling models only).",
+          "type": "string"
+        },
+        "isLooping": {
+          "description": "Loop the video (Veo models only).",
+          "type": "boolean"
+        },
+        "seed": {
+          "description": "Random seed for reproducible generation.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "startFrame": {
+          "description": "Start frame image URL (for frames_to_video or image_to_video mode).",
+          "type": "string"
+        },
+        "endFrame": {
+          "description": "End frame image URL (for frames_to_video mode).",
+          "type": "string"
+        },
+        "referenceImages": {
+          "description": "Reference image URLs (up to 4, for references mode).",
+          "maxItems": 4,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inputVideo": {
+          "description": "Input video URL (for extend_video mode).",
+          "type": "string"
+        },
+        "klingMode": {
+          "description": "Kling quality mode (Kling models only).",
+          "type": "string",
+          "enum": [
+            "std",
+            "pro",
+            "4k"
+          ]
+        },
+        "sound": {
+          "description": "Generate audio (Kling v2.6+ and Veo 3.1).",
+          "type": "string",
+          "enum": [
+            "on",
+            "off"
+          ]
+        },
+        "cfgScale": {
+          "description": "CFG scale 0-1 (Kling v1.x only). 0=free, 1=strict prompt adherence.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "cost": "credits",
+      "category": "ai",
+      "auth": true
+    }
+  ]
+}

@@ -165,7 +165,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             bg-neutral-900 border border-neutral-800 rounded-xl
             text-neutral-200 hover:text-brand-cyan
             hover:bg-neutral-900/90 hover:border-neutral-600/50
-            transition-all duration-300
+            transition-[color,background-color,border-color,box-shadow] duration-300
             shadow-lg
             ${isOpen ? 'hidden' : ''}
             ${buttonClassName}
@@ -241,7 +241,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     variant="ghost"
                     type="button"
                     onClick={() => handleContentWidthChange(595)}
-                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${
                       data.contentWidth === 595
                         ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
@@ -254,7 +254,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     variant="ghost"
                     type="button"
                     onClick={() => handleContentWidthChange(842)}
-                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${
                       data.contentWidth === 842
                         ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
@@ -267,7 +267,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     variant="ghost"
                     type="button"
                     onClick={() => handleContentWidthChange(612)}
-                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${
                       data.contentWidth === 612
                         ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
@@ -280,7 +280,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     variant="ghost"
                     type="button"
                     onClick={() => handleContentWidthChange(800)}
-                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${
                       data.contentWidth === 800 || !data.contentWidth
                         ? 'bg-brand-cyan/20 border-neutral-600 text-brand-cyan'
                         : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
@@ -327,7 +327,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                         }
                       }}
                       placeholder="Auto"
-                      className="w-20 px-2 py-1 bg-neutral-950/70 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-neutral-600/70 transition-all duration-300"
+                      className="w-20 px-2 py-1 bg-neutral-950/70 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-neutral-600/70 transition-colors duration-300"
                     />
                     <span className="text-xs text-neutral-500">px</span>
                     {data.contentHeight && (
@@ -377,7 +377,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 <Button
                   variant="ghost"
                   onClick={() => setShowSaveModal(true)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-600/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-600/30 rounded-md text-brand-cyan text-sm font-mono transition-colors"
                 >
                   <Save size={16} />
                   Salvar como Template
@@ -385,7 +385,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 <Button
                   variant="ghost"
                   onClick={() => setShowLoadModal(true)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm font-mono transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm font-mono transition-colors"
                   disabled={templates.length === 0}
                 >
                   <FolderOpen size={16} />
@@ -424,7 +424,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               <Button
                 variant="brand"
                 onClick={saveTemplate}
-                className="flex-1 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-md text-sm font-mono transition-all"
+                className="flex-1 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-md text-sm font-mono transition-colors"
               >
                 Salvar
               </Button>
@@ -434,7 +434,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   setShowSaveModal(false);
                   setTemplateName('');
                 }}
-                className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-all"
+                className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-colors"
               >
                 Cancelar
               </Button>
@@ -460,7 +460,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   <div
                     key={template.id}
                     onClick={() => loadTemplate(template)}
-                    className="p-4 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md cursor-pointer transition-all group relative"
+                    className="p-4 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md cursor-pointer transition-colors group relative"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -494,7 +494,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             <Button
               variant="ghost"
               onClick={() => setShowLoadModal(false)}
-              className="w-full px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-all"
+              className="w-full px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-colors"
             >
               Fechar
             </Button>

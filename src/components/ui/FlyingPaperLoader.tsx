@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/paper-shuttle` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 'use client';
 
 import { useEffect, useState } from 'react';

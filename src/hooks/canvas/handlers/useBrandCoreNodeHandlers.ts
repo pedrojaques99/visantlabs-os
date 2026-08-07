@@ -6,6 +6,7 @@ import { extractBrandIdentity } from '@/services/brandIdentityService';
 import { canvasApi } from '@/services/canvasApi';
 import { detectMimeType } from '@/services/reactFlowService';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import {
   consolidateStrategies,
   consolidateStrategiesToText,
@@ -67,11 +68,13 @@ export const useBrandCoreNodeHandlers = ({
         updateNodeData<BrandCoreData>(nodeId, { brandIdentity, isAnalyzing: false }, 'brandCore');
         if (saveImmediately) setTimeout(() => saveImmediately(), 100);
         trackCanvasEvent('generation_completed', 'brandCore');
-        toast.success('Brand identity analyzed successfully', { duration: 2000 });
+        toast.success(translate('canvas.brandIdentityAnalyzed'), { duration: 2000 });
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'brandCore', undefined, { error: error?.message });
         console.error('Error analyzing brand identity:', error);
-        toast.error(error?.message || 'Failed to analyze brand identity', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.brandIdentityAnalyzeFailed'), {
+          duration: 5000,
+        });
         updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
       }
     },
@@ -81,7 +84,7 @@ export const useBrandCoreNodeHandlers = ({
   const handleBrandCoreCancelAnalyze = useCallback(
     (nodeId: string) => {
       updateNodeData<BrandCoreData>(nodeId, { isAnalyzing: false }, 'brandCore');
-      toast.info('Analysis cancelled', { duration: 2000 });
+      toast.info(translate('canvas.analysisCancelled'), { duration: 2000 });
     },
     [updateNodeData]
   );
@@ -93,7 +96,7 @@ export const useBrandCoreNodeHandlers = ({
 
       const brandCoreData = node.data as any;
       if (!brandCoreData.brandIdentity) {
-        toast.error('Brand identity required. Connect logo and identity first.', {
+        toast.error(translate('canvas.brandIdentityRequired'), {
           duration: 3000,
         });
         return;
@@ -120,7 +123,7 @@ export const useBrandCoreNodeHandlers = ({
         if (saveImmediately) setTimeout(() => saveImmediately(), 100);
       } catch (error: any) {
         console.error('Error generating visual prompts:', error);
-        toast.error(error?.message || 'Failed to generate visual prompts', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.visualPromptsFailed'), { duration: 5000 });
         updateNodeData<BrandCoreData>(nodeId, { isGeneratingPrompts: false }, 'brandCore');
       }
     },
@@ -142,7 +145,9 @@ export const useBrandCoreNodeHandlers = ({
         if (saveImmediately) setTimeout(() => saveImmediately(), 100);
       } catch (error: any) {
         console.error('Error consolidating strategies:', error);
-        toast.error(error?.message || 'Failed to consolidate strategies', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.consolidateStrategiesFailed'), {
+          duration: 5000,
+        });
       }
     },
     [nodesRef, updateNodeData, saveImmediately]

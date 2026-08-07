@@ -13,6 +13,7 @@ import { getAnglePreset } from '@/services/anglePresetsService';
 import { generateImageWithPreset } from '@/hooks/canvas/utils/presetGenerationUtils';
 import { useNodeDataUpdateHandler } from '@/hooks/canvas/utils/nodeDataUpdateUtils';
 import { buildPromptWithBrandContext } from '@/hooks/canvas/useBrandContext';
+import { translate } from '@/utils/localeUtils';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface UseAngleNodeHandlersParams {
@@ -61,7 +62,7 @@ export const useAngleNodeHandlers = ({
     async (nodeId: string, imageInput: string, angleId: string) => {
       const angle = getAnglePreset(angleId as any);
       if (!angle) {
-        toast.error(`Angle ${angleId} not found`);
+        toast.error(translate('canvas.presetNotFound', undefined, { presetId: angleId }));
         return;
       }
 
@@ -93,8 +94,8 @@ export const useAngleNodeHandlers = ({
         addToHistory,
         refreshSubscriptionStatus,
         canvasId,
-        errorMessage: 'Connect an image to generate angle',
-        successMessage: 'Image angle generated successfully!',
+        errorMessage: translate('canvas.angleConnectImage'),
+        successMessage: translate('canvas.angleApplied'),
         promptOverride,
       });
     },

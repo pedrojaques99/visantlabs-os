@@ -221,7 +221,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                   variant="ghost"
                   onClick={() => setIsPublic(false)}
                   className={cn(
-                    'flex flex-col items-start p-3 rounded-md border-node transition-all text-left',
+                    'flex flex-col items-start p-3 rounded-md border-node transition-colors text-left',
                     !isPublic
                       ? 'bg-neutral-800/60 border-neutral-600 text-neutral-200'
                       : 'bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30'
@@ -242,7 +242,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                   variant="ghost"
                   onClick={() => setIsPublic(true)}
                   className={cn(
-                    'flex flex-col items-start p-3 rounded-md border-node transition-all text-left',
+                    'flex flex-col items-start p-3 rounded-md border-node transition-[color,background-color,border-color,opacity] text-left',
                     isPublic
                       ? 'bg-brand-cyan/10 border-neutral-800 text-brand-cyan'
                       : 'bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30'

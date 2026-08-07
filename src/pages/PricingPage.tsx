@@ -155,10 +155,12 @@ export const PricingPage: React.FC = () => {
             <div className={cn('relative inline-flex p-1 rounded-full', glassSurface.control)}>
               <div
                 className={cn(
-                  'absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out',
-                  billingCycle === 'monthly'
-                    ? 'left-1 w-[calc(50%-4px)]'
-                    : 'left-1/2 w-[calc(50%-4px)]'
+                  // GPU-only: fixed width + translateX. Displacement is exactly the
+                  // indicator's own width (container/2 - 4px), so translate-x-full
+                  // lands on the same pixels the old `left-1/2` did.
+                  'absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-brand-cyan',
+                  'transition-transform duration-[var(--dur-slow)] ease-in-out',
+                  billingCycle === 'monthly' ? 'translate-x-0' : 'translate-x-full'
                 )}
               />
               <Button
@@ -251,12 +253,7 @@ export const PricingPage: React.FC = () => {
 
                   {/* Preço grande */}
                   <div className="flex items-baseline gap-1.5 mb-1">
-                    <span
-                      className={cn(
-                        'text-4xl font-bold font-mono tracking-tight',
-                        tier.recommended ? 'text-brand-cyan' : 'text-foreground'
-                      )}
-                    >
+                    <span className="text-4xl font-bold font-mono tracking-tight text-foreground">
                       {priceStr}
                     </span>
                     {cycleSuffix && (
@@ -272,9 +269,7 @@ export const PricingPage: React.FC = () => {
                         {cycleSuffix}
                       </span>
                       {' · '}
-                      <span className={tier.recommended ? 'text-brand-cyan' : 'text-muted-foreground'}>
-                        {copy.launchLabel}
-                      </span>
+                      <span className="text-foreground">{copy.launchLabel}</span>
                       <span className="text-muted-foreground"> · {copy.launchNote}</span>
                     </p>
                   )}
@@ -284,7 +279,7 @@ export const PricingPage: React.FC = () => {
                   <p
                     className={cn(
                       'mt-1 text-xs font-mono',
-                      tier.recommended ? 'text-brand-cyan' : 'text-muted-foreground'
+                      tier.recommended ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
                     {tc.creditsOutcome}
@@ -304,13 +299,7 @@ export const PricingPage: React.FC = () => {
                         key={feature}
                         className="flex items-start gap-2.5 text-sm text-muted-foreground"
                       >
-                        <Check
-                          size={15}
-                          className={cn(
-                            'mt-0.5 shrink-0',
-                            tier.recommended ? 'text-brand-cyan' : 'text-muted-foreground'
-                          )}
-                        />
+                        <Check size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
                         <span>{feature}</span>
                       </li>
                     ))}

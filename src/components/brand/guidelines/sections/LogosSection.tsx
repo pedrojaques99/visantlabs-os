@@ -161,7 +161,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                     title={isPrimary ? 'Brand logo (avatars & mockups)' : 'Set as brand logo'}
                     aria-label={isPrimary ? 'Current brand logo' : 'Set as brand logo'}
                     className={cn(
-                      'absolute top-1 left-1 z-10 h-5 w-5 flex items-center justify-center rounded transition-all',
+                      'absolute top-1 left-1 z-10 h-5 w-5 flex items-center justify-center rounded transition-[color,background-color,border-color,opacity]',
                       isPrimary
                         ? 'text-brand-cyan cursor-default'
                         : 'text-neutral-600 hover:text-brand-cyan opacity-0 group-hover/logo:opacity-100'
@@ -174,7 +174,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-1 right-1 z-10 h-5 w-5 text-neutral-700 hover:text-destructive opacity-0 group-hover/logo:opacity-100 transition-all"
+                    className="absolute top-1 right-1 z-10 h-5 w-5 text-neutral-700 hover:text-destructive opacity-0 group-hover/logo:opacity-100 transition-[color,background-color,border-color,opacity]"
                     onClick={() => handleDelete(i)}
                     aria-label="Remove logo"
                   >

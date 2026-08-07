@@ -698,7 +698,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
+                    className="absolute top-0.5 right-0.5 p-1 bg-black/60 rounded-full text-white/40 hover:text-white opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity]"
                   >
                     <X size={10} />
                   </button>
@@ -741,7 +741,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
     'px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50';
   const brandBtn = (enabled: boolean) =>
     cn(
-      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-mono text-sm font-bold transition-all',
+      'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-mono text-sm font-bold transition-[color,background-color,border-color,opacity]',
       enabled
         ? 'bg-brand-cyan text-black hover:bg-brand-cyan/80'
         : 'bg-neutral-800/60 text-neutral-600 cursor-not-allowed'
@@ -750,7 +750,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
   let footer: React.ReactNode;
   if (isProcessing) {
     footer = (
-      <div className="flex items-center justify-center gap-2 w-full text-sm font-mono text-brand-cyan/80">
+      <div className="flex items-center justify-center gap-2 w-full text-sm text-muted-foreground">
         <GlitchLoader size={14} color="var(--brand-cyan)" />
         <span>{ingestPhase || t('mockup.brandWizardExtracting')}</span>
       </div>

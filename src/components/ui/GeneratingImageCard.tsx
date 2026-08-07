@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/generating-tile` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';

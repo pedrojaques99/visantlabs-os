@@ -13,6 +13,9 @@ import {
   Check,
   RotateCcw,
 } from '@/lib/ui/icons';
+import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { Thumb } from '@/components/ui/Thumb';
 import { CroppedImage, AnimationPreset } from '../../types/moodboard';
 import { ModelSelector } from '@/components/shared/ModelSelector';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
@@ -84,7 +87,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.04 }}
-        className={`group relative overflow-hidden bg-neutral-900/40 backdrop-blur-sm transition-all duration-500 rounded-2xl border ${
+        className={`group relative overflow-hidden bg-neutral-900/40 backdrop-blur-sm transition-[color,background-color,border-color,filter] duration-500 rounded-2xl border ${
           isSelected ? 'border-white ring-1 ring-white/20' : 'border-border hover:border-border/70'
         }`}
       >
@@ -93,7 +96,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
           <div className="relative w-full sm:w-[42%] overflow-hidden cursor-zoom-in border-r border-border bg-neutral-950">
             {crop.url ? (
               <>
-                <img
+                <Thumb
                   src={crop.regeneratedUrl || crop.thumbnailUrl || crop.url}
                   alt={`Item ${index + 1}`}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -112,7 +115,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                           e.stopPropagation();
                           onDiscardRegenerated?.(crop.id);
                         }}
-                        className="p-1.5 rounded-lg bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-all"
+                        className="p-1.5 rounded-lg bg-neutral-800 border border-border/70 text-neutral-400 hover:text-destructive hover:border-destructive/40 transition-[color,background-color,border-color,opacity]"
                         title="Discard"
                       >
                         <RotateCcw size={11} />
@@ -122,7 +125,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                           e.stopPropagation();
                           onAcceptRegenerated?.(crop.id);
                         }}
-                        className="p-1.5 rounded-lg bg-white text-black hover:opacity-90 transition-all"
+                        className="p-1.5 rounded-lg bg-white text-black hover:opacity-90 transition-[color,background-color,border-color,opacity]"
                         title="Accept"
                       >
                         <Check size={11} />
@@ -135,11 +138,12 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                     e.stopPropagation();
                     onToggleSelect(crop.id);
                   }}
-                  className={`absolute top-3 left-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 border shadow-lg ${
+                  className={cn(
+                    'absolute top-3 left-3 p-2 rounded-xl backdrop-blur-md transition-all z-20 border shadow-lg',
                     isSelected
                       ? 'bg-white text-black border-white scale-110'
-                      : 'bg-black/40 text-white border-white/20 opacity-0 group-hover:opacity-100'
-                  }`}
+                      : cn('bg-black/40 text-white border-white/20', hoverReveal)
+                  )}
                 >
                   {isSelected ? (
                     <CheckSquare size={16} strokeWidth={2} />
@@ -175,7 +179,10 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                 e.stopPropagation();
                 onRemove(crop.id);
               }}
-              className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/40 backdrop-blur-md text-neutral-400 border border-white/10 opacity-0 group-hover:opacity-100 hover:bg-destructive/80 hover:text-white transition-all z-10"
+              className={cn(
+                'absolute top-3 right-3 p-1.5 rounded-lg bg-black/40 backdrop-blur-md text-neutral-400 border border-white/10 hover:bg-destructive/80 hover:text-white transition-[color,background-color,border-color,filter] z-10',
+                hoverReveal
+              )}
             >
               <X size={14} strokeWidth={1.5} />
             </button>
@@ -221,7 +228,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
           <div className="flex-1 p-5 flex flex-col justify-between gap-4">
             <div className="space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-[0.2em]">
+                <span className="text-[10px] text-neutral-600 uppercase tracking-[0.2em]">
                   ITEM #{index + 1}
                 </span>
                 <div className="flex gap-1.5">
@@ -229,7 +236,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                     <button
                       onClick={() => onUpscale(crop.id)}
                       title="Upscale to 4K"
-                      className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
+                      className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
                     >
                       <Maximize2 size={13} strokeWidth={1.5} /> 4K
                     </button>
@@ -242,7 +249,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                       )
                     }
                     disabled={!crop.url}
-                    className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-all disabled:opacity-30"
+                    className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-[color,background-color,border-color,opacity] disabled:opacity-30"
                   >
                     <Download size={13} strokeWidth={1.5} />
                   </button>
@@ -265,7 +272,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                         <button
                           key={p}
                           onClick={() => onRemotionAnimate(crop.upscaledUrl || crop.url, p)}
-                          className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-[10px] font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-all capitalize"
+                          className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-[10px] font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-colors capitalize"
                         >
                           {p.replace('-', ' ')}
                         </button>
@@ -286,13 +293,13 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="Animation prompt..."
-                        className="flex-1 bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-lg px-3 py-2 text-[10px] text-white placeholder:text-neutral-700 outline-none transition-all"
+                        className="flex-1 bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-lg px-3 py-2 text-[10px] text-white placeholder:text-neutral-700 outline-none transition-[color,background-color,border-color,opacity]"
                         onKeyDown={(e) => e.key === 'Enter' && handleAnimate()}
                       />
                       <button
                         onClick={handleAnimate}
                         disabled={!prompt.trim() || !crop.url || crop.isAnimating}
-                        className="px-3 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-30"
+                        className="px-3 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-[color,background-color,border-color,opacity] disabled:opacity-30"
                       >
                         <Video size={13} />
                       </button>
@@ -321,7 +328,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                         <button
                           onClick={() => onRegenerate(crop.id, regenModel, regenProvider)}
                           disabled={!crop.url || isRegenerating}
-                          className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-30 flex items-center gap-1.5 shrink-0"
+                          className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[10px] font-bold uppercase tracking-widest transition-[color,background-color,border-color,opacity] disabled:opacity-30 flex items-center gap-1.5 shrink-0"
                         >
                           {isRegenerating ? <GlitchLoader size={13} /> : <Zap size={13} />}
                         </button>

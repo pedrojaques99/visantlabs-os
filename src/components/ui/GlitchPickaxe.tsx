@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/working-glyph` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 import React, { useEffect, useState } from 'react';
 import { Pickaxe } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';

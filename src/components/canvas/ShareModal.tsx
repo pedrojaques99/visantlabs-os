@@ -198,7 +198,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               <span className="flex-1 text-xs text-neutral-400 truncate">{shareUrl}</span>
               <button
                 onClick={handleCopyLink}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   copied
                     ? 'bg-green-500/15 text-green-400 border border-green-500/20'
                     : 'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25'
@@ -212,7 +212,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <button
               onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/25 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/25 rounded-xl text-sm font-medium transition-[color,background-color,border-color,opacity] disabled:opacity-50"
             >
               {isGenerating ? (
                 <>
@@ -278,7 +278,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               <button
                 onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25 rounded-lg transition-all disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25 rounded-lg transition-[color,background-color,border-color,opacity] disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -351,7 +351,7 @@ const UserSection: React.FC<UserSectionProps> = ({
             </span>
             <button
               onClick={() => onRemove(userId)}
-              className="w-5 h-5 flex items-center justify-center text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded"
+              className="w-5 h-5 flex items-center justify-center text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] rounded"
             >
               <X size={12} />
             </button>

@@ -375,7 +375,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
   };
 
   return (
-    <Card className="w-full bg-card border border-border animate-fade-in transition-all duration-300">
+    <Card className="w-full bg-card border border-border animate-fade-in transition-colors duration-300">
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">

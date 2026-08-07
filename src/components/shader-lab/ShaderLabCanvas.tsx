@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { loadImage } from '@/utils/imageUtils';
 import { useShaderLabStore } from '@/stores/shaderLabStore';
@@ -61,11 +62,20 @@ export const ShaderLabCanvas = forwardRef<ShaderLabCanvasHandle, Props>(
         return;
       }
       let cancelled = false;
-      loadImage(imageUrl, null).then((img) => {
-        if (cancelled) return;
-        sourceImgRef.current = img;
-        renderFrame();
-      });
+      loadImage(imageUrl, null)
+        .then((img) => {
+          if (cancelled) return;
+          sourceImgRef.current = img;
+          renderFrame();
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          // Surface decode/CORS/404 failures instead of leaving a silently blank
+          // canvas that looks like "no image yet" (hasImage is already true).
+          sourceImgRef.current = null;
+          console.error('ShaderLabCanvas: failed to load image', err);
+          toast.error("Couldn't load image");
+        });
       return () => {
         cancelled = true;
       };

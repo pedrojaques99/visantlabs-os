@@ -62,7 +62,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         {/* Download */}
         <button
           onClick={onDownloadAll}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/20 text-[11px] font-mono uppercase tracking-wider transition-all duration-200"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/20 text-[11px] font-mono uppercase tracking-wider transition-colors duration-200"
         >
           <Download size={12} />
           Download
@@ -72,7 +72,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         {onCopy && (
           <button
             onClick={onCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 text-[11px] font-mono uppercase tracking-wider transition-all duration-200"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-800/60 hover:bg-neutral-700/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 text-[11px] font-mono uppercase tracking-wider transition-colors duration-200"
           >
             <Copy size={12} />
             Copy

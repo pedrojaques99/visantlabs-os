@@ -156,7 +156,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   const [guideline, setGuideline] = useState<BrandGuideline | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // `notfound` = expected (private OR missing — the api layer collapses 403/404
+  // into one message, so we can't split them here); `network` = transient/unexpected
+  // (fetch rejected before an HTTP response). We title only the latter as retryable.
+  const [error, setError] = useState<{ kind: 'notfound' | 'network'; message: string } | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState('');
   // Tab is URL-driven: public uses the path segment (/brand/:slug/<seg>), admin
   // uses a ?tab=<seg> query param (consistent with admin's existing ?id=).
@@ -206,11 +211,25 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         return;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load brand guidelines');
+      // fetch() rejects with a TypeError on network/CORS/offline failure (no HTTP
+      // response). An HTTP error (403 private / 404 missing / 5xx) surfaces as a
+      // plain Error thrown by the api layer, which has already discarded the status
+      // code — so the best honest split is transient-network vs expected-not-found.
+      const isNetwork = err instanceof TypeError;
+      setError({
+        kind: isNetwork ? 'network' : 'notfound',
+        message: err instanceof Error ? err.message : 'Failed to load brand guidelines',
+      });
     } finally {
       setIsLoading(false);
     }
   }, [slug, idOverride]);
+
+  const retryFetch = useCallback(() => {
+    setError(null);
+    setIsLoading(true);
+    fetchGuideline();
+  }, [fetchGuideline]);
 
   useEffect(() => {
     fetchGuideline();
@@ -389,6 +408,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
   }
 
   if (error || !guideline) {
+    // A transient network/5xx failure is not the visitor's fault and is retryable —
+    // don't shame it with "Access Denied". Expected private/missing keeps that copy.
+    const isNetwork = error?.kind === 'network';
+    const accentStyle = {
+      '--accent': guideline?.colors?.[0]?.hex || '#888888',
+    } as React.CSSProperties;
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
         <GlassPanel
@@ -397,23 +422,33 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         >
           <AlertCircle size={48} className="mx-auto text-destructive/40 mb-4" />
           <h1 className="text-xl font-bold text-neutral-200 mb-2 font-manrope">
-            {t('public.brand.guideline.access_denied')}
+            {isNetwork ? "Couldn't load this brand" : t('public.brand.guideline.access_denied')}
           </h1>
           <p className="text-neutral-500 text-sm mb-6 leading-relaxed">
-            {error ||
-              'This brand guideline is either private or does not exist in our secure vault.'}
+            {isNetwork
+              ? 'Something went wrong reaching our servers. Check your connection and try again.'
+              : 'This brand guideline is either private or does not exist in our secure vault.'}
           </p>
-          <Link to="/">
+          {isNetwork ? (
             <Button
+              onClick={retryFetch}
               variant="outline"
               className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
-              style={
-                { '--accent': guideline?.colors?.[0]?.hex || '#888888' } as React.CSSProperties
-              }
+              style={accentStyle}
             >
-              Return to Surface
+              Try again
             </Button>
-          </Link>
+          ) : (
+            <Link to="/">
+              <Button
+                variant="outline"
+                className="text-[var(--accent)] border-[var(--accent)]/20 hover:bg-[var(--accent)]/5"
+                style={accentStyle}
+              >
+                Return to Surface
+              </Button>
+            </Link>
+          )}
         </GlassPanel>
       </div>
     );
@@ -426,7 +461,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
   // Unified top-right control pill — same design system as HOME/VOLTAR (contrast-safe hover).
   const ctrlBtnClass = cn(
-    'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-all',
+    'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
     navBtnClass
   );
   // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
@@ -473,7 +508,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => navigate('/')}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
@@ -483,7 +518,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-all',
+            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
@@ -589,7 +624,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {/* Import / Create — edit mode only */}
             {canEdit && editMode && (
               <>
-                <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
                   Import / Create
                 </DropdownMenuLabel>
                 {guideline.id && (
@@ -605,7 +640,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             )}
 
             {/* Export / Connect — always available */}
-            <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
               Export / Connect
             </DropdownMenuLabel>
             <Button variant="menuItem" onClick={handleDownloadJSON}>
@@ -638,7 +673,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {canEdit && editMode && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
                   Quality
                 </DropdownMenuLabel>
                 <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
@@ -649,7 +684,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
             {/* Display — theme (always) + advanced editor (edit mode) */}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
               Display
             </DropdownMenuLabel>
             {canEdit && editMode && (
@@ -874,8 +909,9 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         {!!(guideline.isPublic || guideline.publicSlug) && activeTab === 'all' && guideline.id && (
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 my-8 flex justify-center">
             <Button
+              variant="outline"
               onClick={() => setCreateOpen(true)}
-              className="h-11 px-6 gap-2 bg-[var(--accent)] text-[var(--accent-text)] hover:opacity-90 font-semibold"
+              className="h-11 px-6 gap-2 font-medium border-[var(--brand-text)]/15 bg-transparent text-[var(--brand-text)]/70 hover:bg-[var(--brand-text)]/[0.04] hover:text-[var(--brand-text)] hover:border-[var(--brand-text)]/30"
             >
               Criar com esta marca
             </Button>
@@ -992,7 +1028,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         >
           <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400">
+              <SheetTitle className="text-base font-semibold text-neutral-200">
                 {t('public.brand.guideline.editing_section')}
                 {activeEditSection && (
                   <span className="text-white ml-2">— {SECTION_LABELS[activeEditSection]}</span>
@@ -1025,7 +1061,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto z-[1100]"
           >
             <SheetHeader className="mb-6">
-              <SheetTitle className="text-sm font-mono uppercase tracking-widest text-neutral-400 flex items-center gap-2">
+              <SheetTitle className="text-base font-semibold text-neutral-200 flex items-center gap-2">
                 <SlidersHorizontal size={14} /> Advanced editor
               </SheetTitle>
             </SheetHeader>

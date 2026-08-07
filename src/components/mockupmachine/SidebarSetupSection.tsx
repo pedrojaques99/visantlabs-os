@@ -56,7 +56,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             onStartOver();
             if (onClose) onClose();
           }}
-          className="h-8 w-8 rounded-full text-neutral-500 hover:text-white hover:bg-neutral-800/50 transition-all border border-transparent hover:border-white/10"
+          className="h-8 w-8 rounded-full text-neutral-500 hover:text-white hover:bg-neutral-800/50 transition-[color,background-color,border-color,filter] border border-transparent hover:border-white/10"
           title="Clear Session"
         >
           <X size={16} />
@@ -116,7 +116,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
           </div>
 
           {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
-            <p className="text-center text-neutral-600 text-[10px] font-mono uppercase tracking-widest animate-pulse mt-1">
+            <p className="text-center text-neutral-600 text-[10px] uppercase tracking-widest animate-pulse mt-1">
               {t('mockup.uploadRequired') || 'Waiting for design input...'}
             </p>
           )}

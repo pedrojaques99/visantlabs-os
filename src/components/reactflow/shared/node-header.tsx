@@ -39,7 +39,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
               selected ? 'text-brand-cyan' : 'text-neutral-500'
             )}
           />
-          <h3 className="text-sm font-semibold node-text-primary font-mono uppercase">{title}</h3>
+          <h3 className="text-sm font-semibold node-text-primary tracking-tight">{title}</h3>
         </div>
 
         <div className="flex items-center gap-1.5 no-drag nopan">
@@ -76,7 +76,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 className={cn(
-                  'flex items-center justify-center w-8 h-8 rounded-md border-node transition-all duration-300',
+                  'flex items-center justify-center w-8 h-8 rounded-md border-node transition-[color,background-color,border-color,opacity] duration-300',
                   isBrandActive
                     ? 'bg-foreground/20 border-neutral-600 text-foreground'
                     : 'bg-neutral-900/50 border-neutral-800 text-neutral-600 grayscale opacity-60 hover:opacity-100'

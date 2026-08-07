@@ -258,7 +258,7 @@ export const VisualSearchPage: React.FC = () => {
               setUserPickedTab(true);
             }}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-all',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-colors',
               isActive
                 ? 'bg-white/5 border-white/10 text-neutral-200'
                 : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
@@ -449,7 +449,7 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
       href={crop.cropUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 transition-all"
+      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 transition-colors"
     >
       <div
         className={cn(
@@ -466,7 +466,7 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
       </div>
       {crop.style && (
         <div className="absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-[10px] font-mono text-neutral-400 uppercase">{crop.style}</span>
+          <span className="text-[11px] text-neutral-300">{crop.style}</span>
         </div>
       )}
     </a>
@@ -484,7 +484,7 @@ const ResultCard: React.FC<{
 
   return (
     <div
-      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 cursor-pointer transition-all"
+      className="group relative overflow-hidden rounded-lg border border-neutral-800 hover:border-white/10 cursor-pointer transition-colors"
       onClick={onClick}
     >
       <div

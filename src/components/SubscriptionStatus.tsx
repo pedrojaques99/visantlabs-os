@@ -69,7 +69,7 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-neutral-800 rounded-md h-1.5 overflow-hidden">
             <div
-              className="h-full bg-brand-cyan transition-all duration-300 progress-fill"
+              className="h-full bg-brand-cyan transition-colors duration-300 progress-fill"
               style={subscriptionProgressStyle}
             />
           </div>

@@ -201,7 +201,7 @@ const BrandCard = ({
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
       className={cn(
-        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-ring hover:shadow-lg hover:shadow-black/20 transition-all duration-200 overflow-hidden text-left',
+        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-ring hover:shadow-lg hover:shadow-black/20 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-200 overflow-hidden text-left',
         archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
       )}
     >
@@ -255,7 +255,7 @@ const BrandCard = ({
                 <button
                   type="button"
                   aria-label={t('brandQuota.brandActions')}
-                  className="p-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="p-1 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical size={11} className="text-white/90" />
@@ -349,7 +349,7 @@ const BrandCard = ({
             <div className="relative z-[2] flex items-center gap-1.5">
               <div className="w-16 h-1 rounded-full bg-muted overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', SCORE_COLORS[status])}
+                  className={cn('h-full rounded-full transition-colors', SCORE_COLORS[status])}
                   style={{ width: `${report.score}%` }}
                 />
               </div>
@@ -391,7 +391,7 @@ const BrandQuotaMeter = ({
         <div className="hidden sm:block w-16 h-1 rounded-full bg-muted overflow-hidden">
           <div
             className={cn(
-              'h-full rounded-full transition-all',
+              'h-full rounded-full transition-colors',
               full ? 'bg-warning' : 'bg-muted-foreground'
             )}
             style={{ width: `${pct}%` }}
@@ -420,9 +420,12 @@ const BrandQuotaMeter = ({
  */
 const BrandGraceBanner = ({
   graceUntil,
+  atRisk,
   onUpgrade,
 }: {
   graceUntil: string;
+  /** Marcas que o cron vai arquivar, na ordem dele. Mesma lista do e-mail. */
+  atRisk?: { id: string; name: string }[];
   onUpgrade: () => void;
 }) => {
   const { t } = useTranslation();
@@ -431,19 +434,30 @@ const BrandGraceBanner = ({
   const days = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 86_400_000));
 
   return (
-    <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
-      <AlertTriangle size={16} className="text-warning shrink-0" />
-      <p className="text-sm text-foreground flex-1">
-        {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
-      </p>
-      <Button
-        variant="subtle"
-        size="sm"
-        className="h-7 px-3 text-xs shrink-0 self-start sm:self-auto"
-        onClick={onUpgrade}
-      >
-        {t('brandQuota.graceCta')}
-      </Button>
+    <div className="mb-4 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <AlertTriangle size={16} className="text-warning shrink-0" />
+        <p className="text-sm text-foreground flex-1">
+          {t('brandQuota.graceMessage', { days, plural: days > 1 ? 's' : '' })}
+        </p>
+        <Button
+          variant="subtle"
+          size="sm"
+          className="h-7 px-3 text-xs shrink-0 self-start sm:self-auto"
+          onClick={onUpgrade}
+        >
+          {t('brandQuota.graceCta')}
+        </Button>
+      </div>
+      {/* O e-mail de downgrade nomeia as marcas em risco; a tela precisa nomear
+          as MESMAS, senão o usuário chega pelo CTA "escolher quais manter" e vê
+          todas iguais, sem saber no que agir. */}
+      {atRisk && atRisk.length > 0 && (
+        <p className="mt-2 pl-0 sm:pl-7 text-xs text-muted-foreground">
+          {t('brandQuota.graceAtRisk')}{' '}
+          <span className="text-foreground">{atRisk.map((b) => b.name).join(', ')}</span>
+        </p>
+      )}
     </div>
   );
 };
@@ -505,6 +519,13 @@ const BrandGrid = ({
     } else if (sort === 'completeness') {
       list = [...list].sort(
         (a, b) => computeBrandCompleteness(b).score - computeBrandCompleteness(a).score
+      );
+    } else {
+      // 'recent' is the default the UI advertises — sort explicitly rather than
+      // trusting the API's array order, so the "Recent" label never lies.
+      list = [...list].sort(
+        (a, b) =>
+          new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
       );
     }
     return list;
@@ -692,7 +713,12 @@ export const BrandGuidelinesPage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Server state via react-query — dashboard only needs the list.
-  const { data: guidelines = [], isLoading } = useBrandGuidelines(isAuthenticated === true);
+  const {
+    data: guidelines = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useBrandGuidelines(isAuthenticated === true);
 
   // Billing por marca ativa (flag FEATURE_BRAND_BILLING)
   const { data: brandQuota } = useBrandQuota(FEATURE_BRAND_BILLING && isAuthenticated === true);
@@ -838,17 +864,32 @@ export const BrandGuidelinesPage: React.FC = () => {
                   </h1>
                 </div>
               </div>
-              {FEATURE_BRAND_BILLING && brandQuota && (
-                <BrandQuotaMeter
-                  used={brandQuota.used}
-                  max={brandQuota.max}
-                  onUpgrade={handleQuotaUpgrade}
-                />
-              )}
+              <div className="flex items-center gap-3 shrink-0">
+                {FEATURE_BRAND_BILLING && brandQuota && (
+                  <BrandQuotaMeter
+                    used={brandQuota.used}
+                    max={brandQuota.max}
+                    onUpgrade={handleQuotaUpgrade}
+                  />
+                )}
+                {/* Primary action must live ON the surface, not only in the
+                    empty state — once the user has ≥1 brand the create path
+                    would otherwise be unreachable from the list header. */}
+                {guidelines.length > 0 && (
+                  <Button size="sm" onClick={() => handleOpenWizard()} className="gap-1.5">
+                    <Plus size={15} />
+                    {t('brandGuidelines.newBrand') || 'New brand'}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {FEATURE_BRAND_BILLING && brandQuota?.graceUntil && (
-              <BrandGraceBanner graceUntil={brandQuota.graceUntil} onUpgrade={handleQuotaUpgrade} />
+              <BrandGraceBanner
+                graceUntil={brandQuota.graceUntil}
+                atRisk={brandQuota.atRisk}
+                onUpgrade={handleQuotaUpgrade}
+              />
             )}
 
             {/* Content — dashboard/list. The per-brand editor lives in the unified
@@ -864,6 +905,25 @@ export const BrandGuidelinesPage: React.FC = () => {
                 >
                   <GlitchLoader size={40} />
                   <p className="text-muted-foreground text-xs animate-pulse">{t('common.loading')}</p>
+                </motion.div>
+              ) : isError ? (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center py-40 gap-4 text-center"
+                >
+                  <p className="text-sm font-medium text-foreground">
+                    {t('brandGuidelines.loadFailedTitle') || 'Could not load your brands'}
+                  </p>
+                  <p className="text-xs text-muted-foreground max-w-sm">
+                    {t('brandGuidelines.loadFailedBody') ||
+                      'Something went wrong. Your brands are safe — try again.'}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={() => refetch()}>
+                    {t('common.retry') || 'Try again'}
+                  </Button>
                 </motion.div>
               ) : guidelines.length === 0 ? (
                 <EmptyState key="empty" onCreate={() => handleOpenWizard()} />

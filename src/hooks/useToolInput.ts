@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { pipelineApi, type PipelineAsset } from '@/services/pipelineApi';
 import { toast } from 'sonner';
-import { getToolById } from '@/lib/toolRegistry';
+import { getToolById, toolLabel } from '@/lib/toolRegistry';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface UseToolInputReturn {
   pendingAsset: PipelineAsset | null;
@@ -31,6 +32,7 @@ interface UseToolInputReturn {
 export function useToolInput(toolId: string): UseToolInputReturn {
   const [pendingAsset, setPendingAsset] = useState<PipelineAsset | null>(null);
   const fetched = useRef(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (fetched.current) return;
@@ -42,14 +44,15 @@ export function useToolInput(toolId: string): UseToolInputReturn {
       setPendingAsset(asset);
 
       const sourceTool = getToolById(asset.source);
-      const sourceName = sourceTool?.name ?? asset.source;
+      const sourceName = sourceTool ? toolLabel(sourceTool, t) : asset.source;
 
       toast.info(`Asset from ${sourceName}`, {
         description: asset.label || 'Ready to use in this tool',
         duration: 8000,
       });
     });
-  }, [toolId]);
+    // `fetched` guards against re-fetching when `t` changes identity on locale switch.
+  }, [toolId, t]);
 
   const acceptAsset = useCallback(() => {
     if (!pendingAsset) return null;

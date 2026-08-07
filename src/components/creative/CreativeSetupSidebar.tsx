@@ -212,7 +212,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               onChange={handleVaultUpload}
               disabled={isUploading}
             />
-            <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-neutral-700 transition-all">
+            <div className="w-full h-32 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 bg-neutral-900/20 group-hover:bg-neutral-900/40 group-hover:border-neutral-700 transition-colors">
               {isUploading ? (
                 <GlitchLoader size={24} />
               ) : (
@@ -359,7 +359,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             onClick={() => setWizardOpen(true)}
             disabled={status !== 'setup'}
             className={cn(
-              'w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-all hover:bg-neutral-900/60 disabled:opacity-50',
+              'w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-neutral-500 hover:text-brand-cyan hover:border-neutral-700 transition-[color,background-color,border-color,opacity] hover:bg-neutral-900/60 disabled:opacity-50',
               glassSurface.tile
             )}
             title="Nova marca"
@@ -384,7 +384,7 @@ export const CreativeSetupSidebar: React.FC = () => {
             aria-label="Ideia do criativo"
             rows={4}
             className={cn(
-              'w-full rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-all resize-none disabled:opacity-50',
+              'w-full rounded-2xl px-4 py-4 text-sm leading-relaxed text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 focus:bg-neutral-900/60 transition-[color,background-color,border-color,opacity] resize-none disabled:opacity-50',
               glassSurface.panel
             )}
             data-vsn-input="prompt"
@@ -402,7 +402,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   promptRef.current?.focus();
                 }}
                 className={cn(
-                  'px-3 py-1.5 rounded-full text-[11px] font-medium text-neutral-400 hover:text-brand-cyan hover:border-neutral-700 transition-all',
+                  'px-3 py-1.5 rounded-full text-[11px] font-medium text-neutral-400 hover:text-brand-cyan hover:border-neutral-700 transition-colors',
                   glassSurface.control
                 )}
               >
@@ -454,7 +454,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                 <button
                   onClick={() => setBackgroundMode('ai')}
                   disabled={status !== 'setup'}
-                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                     backgroundMode === 'ai'
                       ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -472,7 +472,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                     setShowVault(true);
                   }}
                   disabled={status !== 'setup'}
-                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                     backgroundMode === 'brand'
                       ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -483,7 +483,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                 <button
                   onClick={() => setBackgroundMode('upload')}
                   disabled={status !== 'setup'}
-                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                     backgroundMode === 'upload'
                       ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -502,7 +502,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       onChange={handleLocalUpload}
                     />
                     {!uploadedBackgroundUrl ? (
-                      <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
+                      <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,opacity] flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
                         <Upload
                           size={16}
                           className="opacity-40 group-hover:text-brand-cyan transition-colors"
@@ -543,7 +543,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   {!uploadedBackgroundUrl ? (
                     <button
                       onClick={() => setShowVault(true)}
-                      className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-all flex flex-col items-center gap-2 hover:bg-neutral-900/60"
+                      className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-[color,background-color,border-color,opacity] flex flex-col items-center gap-2 hover:bg-neutral-900/60"
                     >
                       <div className="flex flex-col items-center gap-2">
                         <Briefcase

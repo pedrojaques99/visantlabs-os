@@ -486,6 +486,22 @@ export const ApiKeysPage: React.FC = () => {
                 <div className="p-8 flex items-center justify-center">
                   <GlitchLoader size={24} />
                 </div>
+              ) : error && keys.length === 0 ? (
+                // Fetch failed: the error banner above already explains. Never show the
+                // "create your first key" empty state — keys may exist server-side.
+                <div className="p-12 text-center">
+                  <AlertTriangle className="h-10 w-10 text-destructive/70 mx-auto mb-4" />
+                  <p className="text-foreground font-medium mb-1">
+                    {t('api.keys.load_failed') || 'Could not load API keys'}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    onClick={fetchKeys}
+                    className="mt-2 px-4 py-2 bg-muted text-muted-foreground rounded-md text-sm hover:bg-muted/70 transition-colors"
+                  >
+                    {t('api.keys.try_again') || 'Try again'}
+                  </Button>
+                </div>
               ) : keys.length === 0 ? (
                 <div className="p-12 text-center">
                   <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

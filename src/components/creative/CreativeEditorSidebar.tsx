@@ -285,7 +285,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'text');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-all flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
           >
             <Type size={12} /> Texto
           </button>
@@ -296,7 +296,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'shape');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-all flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
           >
             <Square size={12} /> Shape
           </button>
@@ -305,7 +305,9 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
 
       {/* Layers list */}
       <div className="flex flex-col gap-1.5 overflow-hidden">
-        <label className="text-xs font-medium text-neutral-500">Layers ({layers.length})</label>
+        <label className="text-xs font-medium text-neutral-500">
+          Layers{layers.length ? ` (${layers.length})` : ''}
+        </label>
         <div className="flex flex-col gap-1 overflow-y-auto pr-1 max-h-[300px]">
           {layers.length === 0 && (
             <p className="text-[11px] text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
@@ -357,7 +359,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     updateLayerMeta(layer.id, { locked: !layer.locked });
                   }}
                   className={`hover:text-white ${
-                    layer.locked ? 'text-brand-cyan' : 'text-neutral-600'
+                    layer.locked ? 'text-foreground' : 'text-neutral-600'
                   }`}
                   title={layer.locked ? 'Destravar' : 'Travar'}
                   aria-label={layer.locked ? 'Destravar camada' : 'Travar camada'}
@@ -429,8 +431,10 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
           />
         </div>
 
-        {/* Auto-save indicator */}
-        {isPersistedId(creativeId) && (
+        {/* Auto-save indicator — also show while the FIRST save of a brand-new
+            creative is in flight (creativeId not yet persisted), so a failure on
+            the most consequential save isn't invisible. */}
+        {(isPersistedId(creativeId) || autoSaveStatus !== 'idle') && (
           <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-500">
             {autoSaveStatus === 'saving' && <GlitchLoader size={10} />}
             {autoSaveStatus === 'saved' && <Check size={10} className="text-success" />}

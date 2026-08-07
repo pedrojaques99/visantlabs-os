@@ -412,7 +412,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+          <span className="text-[11px] uppercase tracking-widest text-neutral-300">
             Export Settings
           </span>
           <button
@@ -445,7 +445,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <div
                   className={cn(
                     'w-8 h-8 rounded-full bg-black/60 flex items-center justify-center transition-opacity',
-                    videoPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
+                    videoPlaying
+                      ? 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
+                      : 'opacity-100'
                   )}
                 >
                   {videoPlaying ? (
@@ -471,7 +473,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format */}
           <div className="space-y-2">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500">
               Format
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -480,7 +482,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   key={f.id}
                   onClick={() => setFormat(f.id)}
                   className={cn(
-                    'flex-1 min-w-[52px] py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border',
+                    'flex-1 min-w-[52px] py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-200 border',
                     format === f.id
                       ? 'bg-white/10 text-white border-white/20'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -532,7 +534,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scale (raster image only) */}
           {!isVideoFormat && format !== 'svg' && (
             <div className="space-y-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+              <span className="text-[10px] uppercase tracking-widest text-neutral-500">
                 Scale
               </span>
               <div className="flex gap-1.5">
@@ -541,7 +543,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     key={s.id}
                     onClick={() => setScale(s.id)}
                     className={cn(
-                      'flex-1 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border',
+                      'flex-1 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-200 border',
                       scale === s.id
                         ? 'bg-white/10 text-white border-white/20'
                         : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -578,7 +580,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                         key={f.id}
                         onClick={() => onVideoFpsChange?.(f.id)}
                         className={cn(
-                          'flex-1 py-1.5 rounded text-[10px] font-mono transition-all border',
+                          'flex-1 py-1.5 rounded text-[10px] font-mono transition-colors border',
                           videoFps === f.id
                             ? 'bg-white/10 text-white border-white/20'
                             : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'

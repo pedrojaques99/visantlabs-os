@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/status-ticker` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';

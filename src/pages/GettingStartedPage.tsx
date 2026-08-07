@@ -341,7 +341,7 @@ export const GettingStartedPage: React.FC = () => {
                 </BreadcrumbWithBack>
               </div>
               <div className="flex items-start gap-3">
-                <BookOpen className="h-7 w-7 text-brand-cyan mt-1 shrink-0" />
+                <BookOpen className="h-7 w-7 text-muted-foreground mt-1 shrink-0" />
                 <div>
                   <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-foreground mb-1">
                     Getting Started
@@ -384,8 +384,8 @@ export const GettingStartedPage: React.FC = () => {
                 <Card className="bg-card border border-border rounded-xl">
                   <CardContent className="p-6 space-y-5">
                     <div className="flex items-center gap-3 mb-1">
-                      <div className="p-2 bg-brand-cyan/10 rounded-lg">
-                        <Key size={18} className="text-brand-cyan" />
+                      <div className="p-2 bg-muted rounded-lg">
+                        <Key size={18} className="text-muted-foreground" />
                       </div>
                       <h2 className="text-xl font-semibold font-manrope text-foreground">
                         Authentication
@@ -393,7 +393,7 @@ export const GettingStartedPage: React.FC = () => {
                     </div>
                     <p className="text-muted-foreground text-sm leading-relaxed">
                       All API requests require a{' '}
-                      <code className="text-brand-cyan bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
+                      <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
                         visant_sk_
                       </code>{' '}
                       API key passed as a{' '}
@@ -421,7 +421,7 @@ export const GettingStartedPage: React.FC = () => {
                       </p>
                       <p className="text-muted-foreground text-sm leading-relaxed">
                         Agents and apps can authenticate via{' '}
-                        <code className="text-brand-cyan bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
+                        <code className="text-foreground bg-muted px-1.5 py-0.5 rounded text-xs font-mono">
                           OAuth 2.1 + PKCE
                         </code>{' '}
                         with dynamic client registration. See{' '}
@@ -630,10 +630,10 @@ export const GettingStartedPage: React.FC = () => {
                     <div className="grid sm:grid-cols-3 gap-4">
                       <Link
                         to="/api/docs"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
-                          <BookOpen size={16} className="text-brand-cyan" />
+                          <BookOpen size={16} className="text-muted-foreground" />
                           <ChevronRight
                             size={14}
                             className="text-muted-foreground group-hover:text-brand-cyan transition-colors"
@@ -646,10 +646,10 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/settings/api-keys"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
-                          <Key size={16} className="text-brand-cyan" />
+                          <Key size={16} className="text-muted-foreground" />
                           <ChevronRight
                             size={14}
                             className="text-muted-foreground group-hover:text-brand-cyan transition-colors"
@@ -662,10 +662,10 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/profile?tab=overview"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-all"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
-                          <Zap size={16} className="text-brand-cyan" />
+                          <Zap size={16} className="text-muted-foreground" />
                           <ChevronRight
                             size={14}
                             className="text-muted-foreground group-hover:text-brand-cyan transition-colors"

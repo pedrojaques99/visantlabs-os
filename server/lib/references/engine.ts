@@ -69,6 +69,9 @@ export const PUBLIC_PROJECTION = {
   _id: 0,
   id: 1,
   name: 1,
+  // Bilingual short title + friendly handle (see src/lib/references/naming.ts).
+  nameI18n: 1,
+  slug: 1,
   studio: 1,
   description: 1,
   referenceImageUrl: 1,
@@ -94,6 +97,9 @@ export const AGENT_PROJECTION = {
   _id: 0,
   id: 1,
   name: 1,
+  // Bilingual short title + friendly handle (see src/lib/references/naming.ts).
+  nameI18n: 1,
+  slug: 1,
   studio: 1,
   description: 1,
   referenceImageUrl: 1,
@@ -105,6 +111,36 @@ export const AGENT_PROJECTION = {
   tags: 1,
   prompt: 1,
 } as const;
+
+/** `#RRGGBB` → [r,g,b], or undefined when the input isn't a usable hex. */
+export function normalizeHex(raw?: string): [number, number, number] | undefined {
+  const m = /^#?([0-9a-f]{6})$/i.exec((raw || '').trim());
+  if (!m) return undefined;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * Regexes matching any hex whose channels fall in the same coarse bucket as
+ * `rgb` (±1 bucket per channel, 32 levels each). Returned as a $in list so the
+ * query stays index-friendly instead of scanning every palette in memory.
+ */
+export function paletteBucketRegexes(rgb: [number, number, number]): RegExp[] {
+  const nibble = (v: number) => Math.min(15, Math.max(0, v >> 4));
+  const around = (v: number) => {
+    const c = nibble(v);
+    return [...new Set([Math.max(0, c - 1), c, Math.min(15, c + 1)])];
+  };
+  const out: RegExp[] = [];
+  for (const r of around(rgb[0])) {
+    for (const g of around(rgb[1])) {
+      for (const b of around(rgb[2])) {
+        out.push(new RegExp(`^#${r.toString(16)}.${g.toString(16)}.${b.toString(16)}.$`, 'i'));
+      }
+    }
+  }
+  return out;
+}
 
 /** Escape regex metacharacters so user input can't alter the query's shape. */
 export function escapeRegex(input: string): string {
@@ -132,6 +168,24 @@ export interface ReferenceFilterParams {
    * Orthogonal to `brandTerms`, which only ever RANKS.
    */
   brandGuidelineId?: string;
+  /**
+   * TEMPORARIO — inspecao de procedencia. Restringe a linhas cujo `sourcePath`
+   * comeca com este prefixo, pra conseguir OLHAR uma leva de ingest antes de
+   * decidir o que fazer com ela (ex.: `Z:/Jobs 2.0`, ~1100 artefatos de build
+   * varridos de uma pasta de trabalho). Remover junto com a decisao.
+   */
+  sourcePrefix?: string;
+  /**
+   * Hex (#rrggbb). Restringe a referências cuja paleta dominante contém uma cor
+   * PRÓXIMA desta. `palette` é gravada no ingest e, até aqui, nunca era lida —
+   * navegar por cor é o gesto nativo de quem procura referência visual.
+   *
+   * O casamento é por bucket, não por distância: cada canal é quantizado em 3
+   * bits e comparado por prefixo de regex, o que o Mongo resolve no índice em
+   * vez de trazer a biblioteca inteira pra memória. Grosso de propósito — cor
+   * "parecida" é uma faixa, não um ponto.
+   */
+  color?: string;
 }
 
 function toList(value: string | string[] | undefined, lowercase = false): string[] | undefined {
@@ -143,10 +197,39 @@ function toList(value: string | string[] | undefined, lowercase = false): string
   return parts.length ? parts : undefined;
 }
 
+/**
+ * A reference with no image is not a reference — it renders as a hole in the
+ * grid. ~900 rows in `community_presets` are a PSD CATALOGUE (`local-*-psd-*`,
+ * `source: 'local-ingest'`, a `psdPath` and no preview): an index of the
+ * Mockups Soviéticos library. Those belong to the mockup-store, not to the
+ * image library, and are deliberately left in place — this filter hides them
+ * from the visual feed instead of deleting a catalogue.
+ *
+ * Written as "has an image", not "is not a PSD", so any future failed ingest is
+ * covered by the same rule without anyone remembering to extend a blocklist.
+ */
+export const HAS_IMAGE = { referenceImageUrl: { $exists: true, $nin: [null, ''] } };
+
+/**
+ * PSD mockup scenes are NOT reference images. They are the mockup-store's
+ * catalogue (Mockups Soviéticos, `psdPath` pointing at the .psd), and they are
+ * browsed there — not in this grid. The rows stay in the collection untouched;
+ * only the visual feed excludes them, so nothing the mockup pipeline reads
+ * changes.
+ *
+ * Matched on `psdPath` being a real string: ~1100 rows carry `psdPath: null`
+ * from the same local ingest without being PSDs, so `$exists` would over-match.
+ */
+export const NOT_PSD_SCENE = { psdPath: { $not: { $type: 'string' } } };
+
+/** Rows that belong in the visual grid: has an image, and is not a PSD scene. */
+export const BROWSABLE = { ...HAS_IMAGE, ...NOT_PSD_SCENE };
+
 /** Build the Mongo filter for a reference query. The only place that shape exists. */
 export function buildReferenceFilter(params: ReferenceFilterParams = {}): Record<string, any> {
   const filter: Record<string, any> = {
     category: REFERENCE_CATEGORY,
+    ...BROWSABLE,
     ...visibilityFilter(params.visibility ?? 'public'),
   };
 
@@ -166,6 +249,12 @@ export function buildReferenceFilter(params: ReferenceFilterParams = {}): Record
 
   const region = params.region?.trim();
   if (region) filter.region = region;
+
+  const color = normalizeHex(params.color);
+  if (color) and.push({ palette: { $in: paletteBucketRegexes(color) } });
+
+  const sourcePrefix = params.sourcePrefix?.trim();
+  if (sourcePrefix) filter.sourcePath = { $regex: '^' + escapeRegex(sourcePrefix), $options: 'i' };
 
   const tags = toList(params.tag, true);
   if (tags) filter.tags = { $in: tags };

@@ -118,7 +118,7 @@ export const PresetsControl: React.FC = () => {
             setIsSaving(false);
           }}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-all flex-1 justify-center border',
+            'flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-colors flex-1 justify-center border',
             isOpen
               ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
               : theme === 'dark'
@@ -136,7 +136,7 @@ export const PresetsControl: React.FC = () => {
             setIsOpen(false);
           }}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-all flex-1 justify-center border',
+            'flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-colors flex-1 justify-center border',
             isSaving
               ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
               : theme === 'dark'

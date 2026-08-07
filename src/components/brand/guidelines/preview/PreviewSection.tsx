@@ -129,7 +129,7 @@ const BentoCard = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        'group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-all overflow-hidden',
+        'group relative flex flex-col gap-4 p-4 rounded-lg bg-white/[0.01] border border-white/[0.05] hover:border-white/[0.1] transition-colors overflow-hidden',
         viewMode === 'bento' ? SPANS[format.id] : 'col-span-full'
       )}
     >
@@ -138,7 +138,7 @@ const BentoCard = ({
           <div className="p-1.5 rounded-md bg-white/[0.01] text-neutral-700 group-hover:text-neutral-500 transition-colors">
             <Icon size={12} strokeWidth={1.5} />
           </div>
-          <span className="text-[8px] font-mono uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
+          <span className="text-[8px] uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
             {format.label}
           </span>
         </div>
@@ -150,7 +150,7 @@ const BentoCard = ({
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowExport(!showExport)}
-              className="p-1.5 rounded-md hover:bg-white/[0.04] text-neutral-800 hover:text-neutral-400 transition-all"
+              className="p-1.5 rounded-md hover:bg-white/[0.04] text-neutral-800 hover:text-neutral-400 transition-[color,background-color,border-color,box-shadow]"
             >
               {isExporting ? <GlitchLoader size={11} /> : <Download size={11} strokeWidth={1.5} />}
             </button>

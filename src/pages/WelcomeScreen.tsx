@@ -437,7 +437,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           >
             {t('welcome.title') || 'MOCKUP MACHINE®'}
           </h1>
-          <MicroTitle className="text-brand-cyan">
+          <MicroTitle className="text-muted-foreground">
             {t('welcome.magicHappens') || 'Seu logo em mockups fotorrealistas, em segundos'}
           </MicroTitle>
         </div>
@@ -515,7 +515,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             <Button
               variant="ghost"
               onClick={() => setShowTutorialModal(true)}
-              className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${
+              className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-[color,background-color,border-color,box-shadow] duration-300 cursor-pointer shadow-md hover:shadow-lg ${
                 theme === 'dark'
                   ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-neutral-700'
                   : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-neutral-700'
@@ -595,7 +595,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                   theme === 'dark' ? 'text-neutral-200' : 'text-white'
                 }`}
               >
-                <BookOpen size={12} className="text-brand-cyan/90" />
+                <BookOpen size={12} className="text-neutral-300" />
                 <span className="font-mono text-sm font-medium opacity-90">
                   {t('tutorial.title')}
                 </span>

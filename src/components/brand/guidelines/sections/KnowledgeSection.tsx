@@ -206,7 +206,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
       />
 
       <div
-        className={`min-h-[100px] rounded-xl transition-all ${
+        className={`min-h-[100px] rounded-xl transition-colors ${
           dragging ? 'ring-2 ring-blue-500/40 bg-blue-500/5 border-blue-500/30' : ''
         }`}
         onDragEnter={onDragEnter}
@@ -252,7 +252,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
               return (
                 <div
                   key={file.id}
-                  className="group relative flex flex-col gap-2 p-3 rounded-xl border border-neutral-800 bg-neutral-950/50 hover:border-white/10 transition-all"
+                  className="group relative flex flex-col gap-2 p-3 rounded-xl border border-neutral-800 bg-neutral-950/50 hover:border-white/10 transition-colors"
                 >
                   {/* Header: icon + source badge */}
                   <div className="flex items-center justify-between gap-2">
@@ -274,7 +274,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                       type="button"
                       onClick={() => handleDelete(file)}
                       disabled={deletingId === file.id}
-                      className="p-1 opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-destructive hover:bg-destructive/10 rounded-md transition-all h-auto"
+                      className="p-1 opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-destructive hover:bg-destructive/10 rounded-md transition-[color,background-color,border-color,opacity] h-auto"
                       aria-label={`Remover ${file.fileName}`}
                     >
                       <Trash2 size={12} />

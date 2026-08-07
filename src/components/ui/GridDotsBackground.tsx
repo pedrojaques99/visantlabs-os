@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/grid-dots` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 import React from 'react';
 import { useTheme } from '@/hooks/useTheme';
 

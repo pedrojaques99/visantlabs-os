@@ -20,10 +20,12 @@ import {
   Figma,
   Github,
   Workflow,
+  Heart,
 } from '@/lib/ui/icons';
 import { PageShell } from '../components/ui/PageShell';
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/hooks/useTheme';
 import {
   getAllCommunityPresets,
   getCommunityStats,
@@ -33,6 +35,7 @@ import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
 import { getGithubUrl } from '../config/branding';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import ClubLogo3D from '../components/3d/club-logo3d';
@@ -46,7 +49,7 @@ import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { Button } from '@/components/ui/button';
-import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useSpring, useTransform } from 'framer-motion';
 import { glassSurface } from '@/lib/ui/glass';
 
 // --- Components ---
@@ -61,13 +64,6 @@ const CountUp: React.FC<{ value: number }> = ({ value }) => {
 
   return <motion.span>{displayValue}</motion.span>;
 };
-
-const BackgroundGlow = () => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-    <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-brand-cyan/10 blur-[120px] rounded-full" />
-    <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-indigo-500/5 blur-[120px] rounded-full" />
-  </div>
-);
 
 type PresetType =
   | 'mockup'
@@ -154,18 +150,23 @@ export const CommunityPage: React.FC = () => {
     totalBlankMockups: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [activeUsersCount, setActiveUsersCount] = useState<number>(0);
+  const [statsError, setStatsError] = useState(false);
   const [communityMockups, setCommunityMockups] = useState<any[]>([]);
   const [allPublicMockups, setAllPublicMockups] = useState<any[]>([]);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [workflows, setWorkflows] = useState<CanvasWorkflow[]>([]);
   const [workflowsLoading, setWorkflowsLoading] = useState(true);
+  const [workflowsError, setWorkflowsError] = useState(false);
   const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
 
-  // Check if user is admin (you might need to fetch user details or get from context if available)
-  const [isAdmin, setIsAdmin] = useState(false); // Placeholder, ideally get from authService/context
-  const isMobile = useMediaQuery('(max-width: 7610px)');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const { theme } = useTheme();
+
+  // ClubLogo3D é WebGL: recebe hex, não classe utilitária. Resolvido pelo tema
+  // pra não ficar uma peça quase preta sobre um card claro no light mode.
+  const logo3dColor = theme === 'dark' ? '#0f0f0f' : '#d4d4d4';
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -189,14 +190,21 @@ export const CommunityPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const loadStats = async () => {
+  const loadStats = useCallback(async () => {
       setIsLoading(true);
+      setStatsError(false);
       try {
         const [allPresets, publicMockups, globalStats] = await Promise.all([
-          getAllCommunityPresets(),
+          // Presets são o conteúdo da página: falhar aqui é um estado de erro.
+          getAllCommunityPresets({ throwOnError: true }),
           mockupApi.getAllPublic().catch(() => []),
-          getCommunityStats(),
+          // Os contadores do hero são acessórios e já se escondem em zero —
+          // derrubar a página inteira por causa deles seria desproporcional.
+          getCommunityStats().catch(() => ({
+            totalUsers: 0,
+            totalPresets: 0,
+            totalBlankMockups: 0,
+          })),
         ]);
 
         // Store all presets for each category (remove duplicates by id)
@@ -255,51 +263,58 @@ export const CommunityPage: React.FC = () => {
           });
         setAllPublicMockups(sortedMockups);
         setCommunityMockups(sortedMockups.slice(0, 10));
-
-        // Count unique users from all presets
-        const allPresetsArray = [
-          ...(allPresets.mockup || []),
-          ...(allPresets.angle || []),
-          ...(allPresets.texture || []),
-          ...(allPresets.ambience || []),
-          ...(allPresets.luminance || []),
-          ...(allPresets['3d'] || []),
-          ...(allPresets.presets || []),
-          ...(allPresets.aesthetics || []),
-          ...(allPresets.themes || []),
-        ];
-        const uniqueUserIds = new Set(
-          allPresetsArray
-            .map((preset: any) => preset.userId?.toString())
-            .filter((id: string | undefined) => id)
-        );
-        setActiveUsersCount(uniqueUserIds.size);
       } catch (error) {
         console.error('Failed to load community stats:', error);
+        setStatsError(true);
       } finally {
         setIsLoading(false);
       }
-    };
-
-    loadStats();
   }, []);
 
-  // Load workflows
   useEffect(() => {
-    const loadWorkflows = async () => {
-      setWorkflowsLoading(true);
-      try {
-        const publicWorkflows = await workflowApi.getPublic();
-        setWorkflows(publicWorkflows);
-      } catch (error) {
-        console.error('Failed to load workflows:', error);
-      } finally {
-        setWorkflowsLoading(false);
-      }
-    };
+    loadStats();
+  }, [loadStats]);
 
-    loadWorkflows();
+  const loadWorkflows = useCallback(async () => {
+    setWorkflowsLoading(true);
+    setWorkflowsError(false);
+    try {
+      const publicWorkflows = await workflowApi.getPublic();
+      setWorkflows(publicWorkflows);
+    } catch (error) {
+      console.error('Failed to load workflows:', error);
+      // Sem isto, uma falha de rede renderiza o empty state e mente:
+      // "nenhum workflow público" é um estado diferente de "não deu pra ler".
+      setWorkflowsError(true);
+    } finally {
+      setWorkflowsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadWorkflows();
+  }, [loadWorkflows]);
+
+  // A modal de biblioteca reserva ações a admin; sem resolver a flag ela ficava
+  // presa em `false` e o admin nunca as via.
+  useEffect(() => {
+    if (isUserAuthenticated !== true) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    authService
+      .verifyToken()
+      .then((user) => {
+        if (!cancelled) setIsAdmin(!!user?.isAdmin);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isUserAuthenticated]);
 
   const presetTypes: Array<{
     type: PresetType;
@@ -375,14 +390,14 @@ export const CommunityPage: React.FC = () => {
     {
       type: 'ui-prompts',
       icon: Diamond,
-      label: 'UI Prompts',
+      label: t('nav.community.uiPrompts'),
       count: stats['ui-prompts'],
       presets: categoryPresets['ui-prompts'],
     },
     {
       type: 'figma-prompts',
       icon: Figma,
-      label: 'Figma Prompts',
+      label: t('nav.community.figmaPrompts'),
       count: stats['figma-prompts'],
       presets: categoryPresets['figma-prompts'],
     },
@@ -432,38 +447,13 @@ export const CommunityPage: React.FC = () => {
         clearCommunityPresetsCache();
         toast.success(t('communityPresets.messages.presetCreated'));
 
-        // Reload stats after creating preset
-        const [allPresets, globalStats] = await Promise.all([
-          getAllCommunityPresets(),
-          getCommunityStats(),
-        ]);
-
-        const newStats: PresetStats = {
-          mockup: allPresets.mockup?.length || 0,
-          angle: allPresets.angle?.length || 0,
-          texture: allPresets.texture?.length || 0,
-          ambience: allPresets.ambience?.length || 0,
-          luminance: allPresets.luminance?.length || 0,
-          '3d': allPresets['3d']?.length || 0,
-          presets: allPresets.presets?.length || 0,
-          aesthetics: allPresets.aesthetics?.length || 0,
-          themes: allPresets.themes?.length || 0,
-          'ui-prompts': allPresets['ui-prompts']?.length || 0,
-          'figma-prompts': allPresets['figma-prompts']?.length || 0,
-          total: 0,
-        };
-        newStats.total = Object.values(newStats).reduce(
-          (sum, val) => sum + (typeof val === 'number' ? val : 0),
-          0
-        );
-        setStats(newStats);
-        setGlobalCommunityStats(globalStats);
+        await loadStats();
       } catch (saveError: any) {
         console.error('Save error:', saveError);
         throw saveError;
       }
     },
-    [t]
+    [t, loadStats]
   );
 
   return (
@@ -471,19 +461,20 @@ export const CommunityPage: React.FC = () => {
       pageId="community"
       seoTitle={t('communityPresets.title')}
       seoDescription={t('communityPresets.subtitle')}
+      // `title` alimenta o aria-label do <main> e o h1 sr-only; `breadcrumb`
+      // renderiza fora do AppShell. `microTitle`/`description` só existem no
+      // header que `hideHeader` remove — o hero abaixo faz esse trabalho.
       title={t('communityPresets.title')}
-      microTitle="Systems // Community"
-      description={t('communityPresets.subtitle')}
       breadcrumb={[{ label: t('apps.home'), to: '/' }, { label: t('communityPresets.title') }]}
-      hideHeader // We're using a custom hero section instead of the default header
+      hideHeader
     >
       <div className="relative z-10">
         {/* Hero Section */}
-        <div className="relative mb-16 min-h-[380px] flex items-center overflow-hidden rounded-3xl border border-border bg-card">
+        <div className="relative mb-16 min-h-[380px] flex items-center overflow-hidden rounded-2xl border border-border bg-card">
           {/* 3D Object - Repositioned for better balance */}
           <div className="absolute right-0 top-0 w-full md:w-1/2 h-full pointer-events-none z-0">
             <Suspense fallback={null}>
-              <ClubLogo3D isMobile={isMobile} color="#0f0f0f" starColor="#52ddeb" />
+              <ClubLogo3D isMobile={isMobile} color={logo3dColor} starColor="#52ddeb" />
             </Suspense>
           </div>
 
@@ -497,8 +488,10 @@ export const CommunityPage: React.FC = () => {
                 className="mb-6"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border backdrop-blur-md">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
-                  <span className="text-[11px] text-muted-foreground">Comunidade ativa</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <span className="text-[11px] text-muted-foreground">
+                    {t('community.activeBadge')}
+                  </span>
                 </div>
               </motion.div>
 
@@ -541,7 +534,7 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => navigate('/community/presets')}
-                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-all flex items-center gap-2"
+                    className="h-11 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border backdrop-blur-md transition-[color,background-color,border-color,filter] flex items-center gap-2"
                   >
                     <Globe size={18} className="text-muted-foreground" />
                     <span className="font-manrope font-semibold">
@@ -552,7 +545,9 @@ export const CommunityPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => setShowWorkflowLibrary(true)}
-                    className="h-12 px-5 bg-muted hover:bg-muted/80 text-foreground rounded-xl border border-border backdrop-blur-md transition-all flex items-center gap-2"
+                    aria-label={t('community.workflowLibrary')}
+                    title={t('community.workflowLibrary')}
+                    className="h-11 px-4 bg-muted hover:bg-muted/80 text-foreground rounded-lg border border-border backdrop-blur-md transition-[color,background-color,border-color,filter] flex items-center gap-2"
                   >
                     <FolderOpen size={18} className="text-muted-foreground" />
                   </Button>
@@ -566,71 +561,59 @@ export const CommunityPage: React.FC = () => {
                 transition={{ delay: 0.4 }}
                 className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-10 max-w-lg"
               >
-                <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
-                      {t('community.membros')}
-                    </span>
-                    <TrendingUp
-                      size={14}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                  </div>
-                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                    {isLoading ? (
-                      '...'
-                    ) : globalCommunityStats.totalUsers === 0 ? (
-                      '1'
-                    ) : (
-                      <CountUp value={globalCommunityStats.totalUsers} />
-                    )}
-                  </p>
-                </GlassPanel>
+                {(isLoading || globalCommunityStats.totalUsers > 0) && (
+                  <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                        {t('community.membros')}
+                      </span>
+                      <TrendingUp
+                        size={14}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                    </div>
+                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalUsers} />}
+                    </p>
+                  </GlassPanel>
+                )}
 
-                <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
-                      {t('community.criaes')}
-                    </span>
-                    <Diamond
-                      size={14}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                  </div>
-                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                    {isLoading ? (
-                      '...'
-                    ) : globalCommunityStats.totalPresets === 0 ? (
-                      '!'
-                    ) : (
-                      <CountUp value={globalCommunityStats.totalPresets} />
-                    )}
-                  </p>
-                </GlassPanel>
+                {(isLoading || globalCommunityStats.totalPresets > 0) && (
+                  <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                        {t('community.criaes')}
+                      </span>
+                      <Diamond
+                        size={14}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                    </div>
+                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalPresets} />}
+                    </p>
+                  </GlassPanel>
+                )}
 
-                <GlassPanel
-                  padding="sm"
-                  className={cn('hidden sm:flex group', glassSurface.control)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-medium text-muted-foreground font-manrope">
-                      {t('community.publicado')}
-                    </span>
-                    <ImageIcon
-                      size={14}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                  </div>
-                  <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                    {isLoading ? (
-                      '...'
-                    ) : globalCommunityStats.totalBlankMockups === 0 ? (
-                      '+'
-                    ) : (
-                      <CountUp value={globalCommunityStats.totalBlankMockups} />
-                    )}
-                  </p>
-                </GlassPanel>
+                {(isLoading || globalCommunityStats.totalBlankMockups > 0) && (
+                  <GlassPanel
+                    padding="sm"
+                    className={cn('hidden sm:flex group', glassSurface.control)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                        {t('community.publicado')}
+                      </span>
+                      <ImageIcon
+                        size={14}
+                        className="text-muted-foreground group-hover:text-foreground transition-colors"
+                      />
+                    </div>
+                    <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
+                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalBlankMockups} />}
+                    </p>
+                  </GlassPanel>
+                )}
               </motion.div>
             </div>
           </div>
@@ -657,18 +640,28 @@ export const CommunityPage: React.FC = () => {
                   to="/community/presets"
                   className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-sm transition-all hover:translate-x-1"
                 >
-                  Todas as categorias
+                  {t('community.allCategories')}
                   <ArrowRight size={16} />
                 </Link>
               </div>
 
+              {statsError ? (
+                <ErrorState
+                  className="min-h-[240px]"
+                  title={t('community.loadErrorTitle')}
+                  description={t('community.loadErrorDescription')}
+                  retryLabel={t('common.retry')}
+                  onRetry={loadStats}
+                />
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {presetTypes.map((category) => (
                   <GlassPanel
+                    asChild
                     key={category.type}
-                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden cursor-pointer bg-muted/40"
-                    onClick={() => navigate(`/community/presets?type=${category.type}`)}
+                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden bg-muted/40"
                   >
+                    <Link to={`/community/presets?type=${category.type}`}>
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
                       <category.icon size={120} className="text-muted-foreground" />
                     </div>
@@ -684,8 +677,8 @@ export const CommunityPage: React.FC = () => {
                         <span className="text-2xl font-bold font-mono text-foreground whitespace-nowrap group-hover:text-foreground transition-colors">
                           <CountUp value={category.count} />
                         </span>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-manrope">
-                          Presets
+                        <span className="text-[10px] text-muted-foreground">
+                          {t('common.presets')}
                         </span>
                       </div>
                     </div>
@@ -694,33 +687,47 @@ export const CommunityPage: React.FC = () => {
                       <h3 className="text-lg font-semibold text-foreground font-manrope mb-1 capitalize group-hover:text-foreground transition-colors text-left">
                         {category.label}
                       </h3>
-                      <p className="text-xs text-muted-foreground font-mono line-clamp-2 leading-relaxed text-left">
-                        Explorar {category.label.toLowerCase()} criados pela nossa comunidade.
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed text-left">
+                        {t('community.categoryCardDescription', {
+                          category: category.label.toLowerCase(),
+                        })}
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-4 border-t border-border max-h-48 overflow-y-auto w-full">
+                    {/* Prévia: 5 nomes, sem scroll aninhado. O card inteiro é o link —
+                        uma lista rolável aqui dentro competia com ele e cada linha
+                        tinha hover state sem ser clicável. */}
+                    <div className="space-y-2 pt-4 border-t border-border w-full">
                       {category.presets.length > 0 ? (
-                        category.presets.map((preset: any, index: number) => (
-                          <div
-                            key={`${category.type}-${preset.id || preset._id || index}`}
-                            className="flex items-center gap-3 py-1 group/item"
-                          >
-                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground group-hover/item:bg-brand-cyan transition-colors" />
-                            <p className="text-xs font-mono text-muted-foreground group-hover/item:text-foreground truncate transition-colors text-left">
-                              {preset.name}
+                        <>
+                          {category.presets.slice(0, 5).map((preset: any, index: number) => (
+                            <div
+                              key={`${category.type}-${preset.id || preset._id || index}`}
+                              className="flex items-center gap-3 py-1"
+                            >
+                              <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground shrink-0" />
+                              <p className="text-xs text-muted-foreground truncate text-left">
+                                {preset.name}
+                              </p>
+                            </div>
+                          ))}
+                          {category.presets.length > 5 && (
+                            <p className="text-xs text-muted-foreground/70 pt-1 text-left">
+                              +{category.presets.length - 5}
                             </p>
-                          </div>
-                        ))
+                          )}
+                        </>
                       ) : (
-                        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest text-left">
+                        <p className="text-xs text-muted-foreground text-left">
                           {t('community.vazio')}
                         </p>
                       )}
                     </div>
+                    </Link>
                   </GlassPanel>
                 ))}
               </div>
+              )}
             </section>
 
             {/* Workflows Section */}
@@ -731,15 +738,14 @@ export const CommunityPage: React.FC = () => {
                     {t('community.workflows_da_comunidade')}
                   </h2>
                   <p className="text-muted-foreground text-sm max-w-lg mt-2">
-                    Workflows completos criados pela comunidade. Salve, compartilhe e reutilize
-                    estruturas de canvas inteiras.
+                    {t('community.workflowsDescription')}
                   </p>
                 </div>
                 <Link
                   to="/canvas"
                   className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-sm transition-all hover:translate-x-1"
                 >
-                  Abrir Canvas
+                  {t('community.openCanvas')}
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -766,10 +772,13 @@ export const CommunityPage: React.FC = () => {
 
                     return (
                       <GlassPanel
+                        asChild
                         key={workflow._id}
-                        className="group relative rounded-md p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 text-left cursor-pointer"
-                        onClick={() => navigate('/canvas')}
+                        className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 text-left"
                       >
+                        {/* Abre ESTE workflow. Antes ia pra `/canvas` cru: o usuário
+                            clicava num workflow específico e caía num canvas vazio. */}
+                        <Link to={`/canvas/${workflow._id}`}>
                         {workflow.thumbnailUrl ? (
                           <div className="aspect-video rounded-md overflow-hidden border border-border bg-muted/40 mb-4">
                             <img
@@ -797,40 +806,46 @@ export const CommunityPage: React.FC = () => {
                           <span
                             className={cn(
                               'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
-                              categoryConfig.color
-                                .replace('text-', 'bg-')
-                                .replace('-400', '-500/20'),
-                              categoryConfig.color
-                                .replace('text-', 'border-')
-                                .replace('-400', '-500/30'),
-                              categoryConfig.color
+                              categoryConfig.badgeClass
                             )}
                           >
                             {categoryConfig.label}
                           </span>
                           <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
-                            {Array.isArray(workflow.nodes) ? workflow.nodes.length : 0} nodes
+                            {t('community.nodesCount', {
+                              count: Array.isArray(workflow.nodes) ? workflow.nodes.length : 0,
+                            })}
                           </span>
                           {workflow.likesCount > 0 && (
-                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
-                              ❤️ {workflow.likesCount}
+                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0 inline-flex items-center gap-1">
+                              <Heart size={10} className="fill-current" />
+                              {workflow.likesCount}
                             </span>
                           )}
                         </div>
+                        </Link>
                       </GlassPanel>
                     );
                   })
+                ) : workflowsError ? (
+                  <ErrorState
+                    className="col-span-full min-h-[240px]"
+                    title={t('community.workflowsLoadError')}
+                    description={t('community.loadErrorDescription')}
+                    retryLabel={t('common.retry')}
+                    onRetry={loadWorkflows}
+                  />
                 ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-border rounded-3xl bg-card backdrop-blur-sm"
+                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-border rounded-2xl bg-card backdrop-blur-sm"
                   >
                     <div className={cn('p-6 rounded-full', glassSurface.control)}>
                       <Workflow size={32} strokeWidth={1} className="text-muted-foreground" />
                     </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      Nenhum workflow público ainda
+                    <p className="text-sm text-muted-foreground">
+                      {t('community.noPublicWorkflows')}
                     </p>
                   </motion.div>
                 )}
@@ -843,7 +858,7 @@ export const CommunityPage: React.FC = () => {
                     onClick={() => setShowWorkflowLibrary(true)}
                     className="flex items-center gap-2 px-6 py-2 bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border rounded-full transition-all text-sm font-mono group"
                   >
-                    Ver todos os workflows
+                    {t('community.viewAllWorkflows')}
                     <ArrowRight
                       size={16}
                       className="group-hover:translate-x-0.5 transition-transform"
@@ -861,14 +876,14 @@ export const CommunityPage: React.FC = () => {
                     {t('community.galeria_da_comunidade')}
                   </h2>
                   <p className="text-muted-foreground text-sm max-w-lg">
-                    Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
+                    {t('community.galleryDescription')}
                   </p>
                 </div>
                 <Link
                   to="/mockups"
                   className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-mono text-sm transition-all hover:translate-x-1"
                 >
-                  Ver galeria completa
+                  {t('community.viewFullGallery')}
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -878,38 +893,50 @@ export const CommunityPage: React.FC = () => {
                   Array.from({ length: 10 }).map((_, i) => (
                     <div
                       key={i}
-                      className="aspect-square bg-muted rounded-md border border-border"
+                      className="aspect-square bg-muted rounded-2xl border border-border"
                     />
                   ))
+                ) : statsError ? (
+                  <ErrorState
+                    className="col-span-full min-h-[240px]"
+                    title={t('community.loadErrorTitle')}
+                    description={t('community.loadErrorDescription')}
+                    retryLabel={t('common.retry')}
+                    onRetry={loadStats}
+                  />
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
                     <GlassPanel
+                      asChild
                       key={mockup._id}
-                      className="group relative aspect-square rounded-md overflow-hidden hover:border-ring transition-all hover:shadow-2xl cursor-pointer"
+                      className="group relative aspect-square rounded-2xl overflow-hidden hover:border-ring transition-all hover:shadow-2xl"
                     >
                       <Link to="/mockups" className="block w-full h-full">
                         {mockup.imageUrl || mockup.imageBase64 ? (
                           <img
                             src={mockup.imageUrl || mockup.imageBase64}
-                            alt={mockup.prompt || 'Community Mockup'}
+                            alt={mockup.prompt || t('community.mockupAlt')}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                             <ImageIcon size={48} />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
-                          <MicroTitle as="p" className="text-neutral-500 mb-1">
-                            Prompt
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
+                          <MicroTitle as="p" className="text-neutral-400 mb-1">
+                            {t('community.promptLabel')}
                           </MicroTitle>
                           <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                             {mockup.prompt}
                           </p>
+                          {/* O tile leva pra galeria — é o que o destino faz. Antes
+                              prometia "usar como referência", que ele nunca fez. */}
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                            <Plus size={10} className="text-neutral-500" />
-                            <span className="text-[10px] text-neutral-400 font-mono uppercase">
-                              {t('community.usar_como_referncia')}
+                            <ArrowRight size={10} className="text-neutral-400" />
+                            <span className="text-[11px] text-neutral-300">
+                              {t('community.viewFullGallery')}
                             </span>
                           </div>
                         </div>
@@ -920,14 +947,12 @@ export const CommunityPage: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-border rounded-3xl bg-card backdrop-blur-sm"
+                    className="col-span-full min-h-[240px] flex flex-col items-center justify-center gap-6 border border-border rounded-2xl bg-card backdrop-blur-sm"
                   >
                     <div className={cn('p-6 rounded-full', glassSurface.control)}>
                       <ImageIcon size={32} strokeWidth={1} className="text-muted-foreground" />
                     </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      Galeria pública vazia
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('community.emptyGallery')}</p>
                   </motion.div>
                 )}
               </div>
@@ -941,7 +966,7 @@ export const CommunityPage: React.FC = () => {
                   >
                     {isGalleryExpanded ? (
                       <>
-                        Ver menos{' '}
+                        {t('community.seeLess')}{' '}
                         <ChevronUp
                           size={16}
                           className="group-hover:-translate-y-0.5 transition-transform"
@@ -949,7 +974,7 @@ export const CommunityPage: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        Ver mais{' '}
+                        {t('community.seeMore')}{' '}
                         <ChevronDown
                           size={16}
                           className="group-hover:translate-y-0.5 transition-transform"
@@ -963,22 +988,20 @@ export const CommunityPage: React.FC = () => {
 
             {/* GitHub Ecosystem CTA */}
             <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/[0.03] to-transparent rounded-md" />
               <GlassPanel padding="none" className="relative z-10 overflow-hidden">
                 <div className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="max-w-xl space-y-4 text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-3 text-muted-foreground">
                       <Github size={24} />
                       <MicroTitle as="span" className="font-semibold text-muted-foreground">
-                        Open Source
+                        {t('community.openSource')}
                       </MicroTitle>
                     </div>
                     <h2 className="text-3xl md:text-4xl font-bold text-foreground font-manrope leading-tight">
-                      Vamos crescer junto
+                      {t('community.growTogetherTitle')}
                     </h2>
-                    <p className="text-muted-foreground font-mono text-sm md:text-base leading-relaxed">
-                      Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no
-                      GitHub para contribuir, relatar bugs ou dar uma estrela.
+                    <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+                      {t('community.growTogetherBody')}
                     </p>
                   </div>
                   <div className="flex flex-col items-center gap-4">
@@ -986,18 +1009,16 @@ export const CommunityPage: React.FC = () => {
                       href={getGithubUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-md transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
+                      className="group flex items-center gap-3 px-8 py-4 bg-foreground text-background font-bold rounded-lg transition-all hover:opacity-90 active:scale-95 shadow-xl"
                     >
                       <Github size={22} className="group-hover:rotate-12 transition-transform" />
-                      <span className="font-mono uppercase tracking-widest">
-                        {t('community.ver_repositrio')}
-                      </span>
+                      <span>{t('community.ver_repositrio')}</span>
                       <ArrowRight
                         size={18}
                         className="group-hover:translate-x-1 transition-transform"
                       />
                     </a>
-                    <MicroTitle as="p">v1.0.0-alpha • MIT License</MicroTitle>
+                    <MicroTitle as="p">{t('community.license')}</MicroTitle>
                   </div>
                 </div>
               </GlassPanel>

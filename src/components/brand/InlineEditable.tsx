@@ -69,7 +69,7 @@ export const InlineEditable: React.FC<InlineEditableProps> = ({
       }}
       data-placeholder={placeholder}
       className={cn(
-        'outline-none cursor-text rounded-md transition-all -mx-1 px-1',
+        'outline-none cursor-text rounded-md transition-[color,background-color,border-color,opacity] -mx-1 px-1',
         'hover:bg-[var(--brand-text)]/[0.04]',
         'focus:bg-[var(--brand-text)]/[0.05] focus:ring-2 focus:ring-[var(--accent)]/40',
         'empty:before:content-[attr(data-placeholder)] empty:before:opacity-30',

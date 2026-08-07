@@ -8,10 +8,15 @@ const FIRST_RUN_KEY = 'vsn_firstrun_routed';
 
 /**
  * First-run do shell: usuário autenticado SEM nenhuma marca, na primeira visita à
- * landing neutra (`/`), é levado ao `/cockpit` — onde o empty state guiado já
- * existe (criar a 1ª marca → produzir). Roda UMA vez (flag em localStorage) e só
- * intercepta `/`: não sequestra tools grátis, criação (`/welcome`), nem marketing.
- * Sem marca → cockpit onboarding; com marca (ou já roteado) → nunca mais mexe.
+ * landing neutra (`/`), é levado ao `/cockpit`. Sem marca, o `/cockpit`
+ * (`HomeRoute` em App.tsx) NÃO renderiza o cockpit nem faz bounce pra lista de
+ * marcas: renderiza o estado de ativação guiado — checklist de primeiros passos
+ * + wizard de criação da 1ª marca inline. Criada a marca, o mesmo HomeRoute
+ * passa a renderizar o cockpit, sem nova navegação.
+ *
+ * Roda UMA vez (flag em localStorage) e só intercepta `/`: não sequestra tools
+ * grátis, criação (`/welcome`), nem marketing. Com marca (ou já roteado) → nunca
+ * mais mexe.
  */
 export const FirstRunGuard: React.FC = () => {
   const { isAuthenticated, isCheckingAuth } = useLayout();

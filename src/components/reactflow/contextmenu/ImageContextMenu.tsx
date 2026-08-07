@@ -106,7 +106,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           data-context-menu
-          className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border-node border-neutral-800/50 rounded-md shadow-2xl min-w-[200px] flex flex-col overflow-hidden transition-all duration-200 ease-out"
+          className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border-node border-neutral-800/50 rounded-md shadow-2xl min-w-[200px] flex flex-col overflow-hidden transition-[color,background-color,border-color,box-shadow,filter] duration-200 ease-out"
           sideOffset={0}
           onInteractOutside={() => onClose()}
           onClick={(e) => e.stopPropagation()}

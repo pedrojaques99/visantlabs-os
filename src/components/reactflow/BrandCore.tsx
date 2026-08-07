@@ -340,7 +340,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Logo Input */}
           <div
             className={cn(
-              'p-3 rounded-md border-node transition-all duration-300 backdrop-blur-sm',
+              'p-3 rounded-md border-node transition-[color,background-color,border-color,box-shadow,filter] duration-300 backdrop-blur-sm',
               hasLogo
                 ? 'bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]'
                 : 'bg-neutral-900/40 border-neutral-700/30'
@@ -418,7 +418,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Identity Input (PDF or Image) */}
           <div
             className={cn(
-              'p-3 rounded-md border-node transition-all duration-300 backdrop-blur-sm',
+              'p-3 rounded-md border-node transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300 backdrop-blur-sm',
               hasIdentity
                 ? 'bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]'
                 : 'bg-neutral-900/40 border-neutral-700/30'
@@ -496,7 +496,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Strategy Input */}
           <div
             className={cn(
-              'p-3 rounded-md border-node transition-all duration-300 backdrop-blur-sm',
+              'p-3 rounded-md border-node transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-300 backdrop-blur-sm',
               hasStrategies
                 ? 'bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]'
                 : 'bg-neutral-900/40 border-neutral-700/30'
@@ -511,7 +511,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     : 'text-neutral-500 bg-neutral-600'
                 )}
               />
-              <span className="text-[10px] font-mono text-neutral-400 uppercase">Strategy</span>
+              <span className="text-[10px] font-medium text-neutral-400">{t('canvasNodes.brandCore.strategy') || 'Strategy'}</span>
             </div>
             <div className="text-[11px] text-neutral-500 font-mono pl-3.5">
               {hasStrategies
@@ -546,12 +546,12 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Analysis Status */}
         {isAnalyzing && (
-          <div className="px-3 py-2.5 bg-brand-cyan/10 border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="px-3 py-2.5 bg-muted border-node border-neutral-800 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-full bg-brand-cyan/20">
+              <div className="p-1.5 rounded-full bg-muted-foreground/15">
                 <GlitchLoader size={12} color="brand-cyan" />
               </div>
-              <span className="text-[10px] text-brand-cyan font-bold">Analysis in progress...</span>
+              <span className="text-[10px] text-foreground font-bold">Analysis in progress...</span>
             </div>
             {nodeData.onCancelAnalyze && (
               <NodeButton
@@ -865,9 +865,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Generating Prompts Status */}
         {isGeneratingPrompts && (
-          <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border-node border-neutral-800 rounded flex items-center gap-3">
+          <div className="mt-4 px-3 py-2 bg-muted border-node border-neutral-800 rounded flex items-center gap-3">
             <GlitchLoader size={14} color="brand-cyan" />
-            <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
+            <span className="text-xs text-foreground">Generating prompts...</span>
           </div>
         )}
       </div>

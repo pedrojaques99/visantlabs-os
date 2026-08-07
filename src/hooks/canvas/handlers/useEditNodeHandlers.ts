@@ -13,6 +13,7 @@ import { authService } from '@/services/authService';
 import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { resolveProvider } from '@/utils/canvas/generationContext';
 import { trackCanvasEvent } from '@/utils/canvasAnalytics';
+import { translate } from '@/utils/localeUtils';
 import { toast } from 'sonner';
 
 interface UseEditNodeHandlersParams {
@@ -106,7 +107,7 @@ export const useEditNodeHandlers = ({
           nodeId,
           edgesCount: edgesRef.current.length,
         });
-        toast.error('Connect an image to edit');
+        toast.error(translate('canvas.editConnectImage'));
         return;
       }
 
@@ -115,7 +116,7 @@ export const useEditNodeHandlers = ({
         console.warn('handleEditApply: No input image found', {
           sourceNodeId: connectedEdge.source,
         });
-        toast.error('No image connected');
+        toast.error(translate('canvas.editNoImageConnected'));
         return;
       }
 
@@ -166,12 +167,12 @@ export const useEditNodeHandlers = ({
 
         await refreshSubscriptionStatus();
         trackCanvasEvent('generation_completed', 'edit', undefined, { model });
-        toast.success('Image edited successfully! New node created.', { duration: 3000 });
+        toast.success(translate('canvas.imageEditedNewNode'), { duration: 3000 });
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'edit', undefined, { model, error: error?.message });
         cleanupFailedNode(newOutputNodeId);
         updateNodeData<EditNodeData>(nodeId, { ...config, isLoading: false }, 'edit');
-        toast.error(error?.message || 'Failed to edit image', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.editImageFailed'), { duration: 5000 });
       }
     },
     [
@@ -228,7 +229,7 @@ export const useEditNodeHandlers = ({
       }
 
       if (!inputImage) {
-        toast.error('Connect an image to upscale');
+        toast.error(translate('canvas.upscaleConnectImage'));
         return;
       }
 
@@ -297,7 +298,9 @@ export const useEditNodeHandlers = ({
 
         await refreshSubscriptionStatus();
         trackCanvasEvent('generation_completed', 'upscale', undefined, { model, resolution });
-        toast.success(`Image upscaled to ${resolution}!`, { duration: 3000 });
+        toast.success(translate('canvas.imageUpscaledTo', undefined, { resolution }), {
+          duration: 3000,
+        });
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'upscale', undefined, {
           model,
@@ -306,7 +309,7 @@ export const useEditNodeHandlers = ({
         });
         cleanupFailedNode(newOutputNodeId);
         updateNodeLoadingState<UpscaleNodeData>(nodeId, false, 'upscale');
-        toast.error(error?.message || 'Failed to upscale image', { duration: 5000 });
+        toast.error(error?.message || translate('canvas.upscaleImageFailed'), { duration: 5000 });
       }
     },
     [
@@ -380,7 +383,10 @@ export const useEditNodeHandlers = ({
         }
       }
 
-      toast.success('Image uploaded!', { id: `upload-image-${nodeId}`, duration: 2000 });
+      toast.success(translate('canvas.imageUploaded'), {
+        id: `upload-image-${nodeId}`,
+        duration: 2000,
+      });
     },
     [setNodes, canvasId]
   );
@@ -397,7 +403,7 @@ export const useEditNodeHandlers = ({
         !editData.tags ||
         editData.tags.length === 0
       ) {
-        toast.error('Please complete all steps before generating prompt', { duration: 3000 });
+        toast.error(translate('canvas.completeStepsBeforePrompt'), { duration: 3000 });
         return;
       }
 
@@ -451,10 +457,10 @@ export const useEditNodeHandlers = ({
           isPromptReady: true,
         });
 
-        toast.success('Prompt generated successfully!', { duration: 3000 });
+        toast.success(translate('canvas.promptGenerated'), { duration: 3000 });
       } catch (error: any) {
         console.error('Error generating smart prompt:', error);
-        toast.error('Failed to generate prompt. Please try again.', { duration: 5000 });
+        toast.error(translate('canvas.promptGenerateFailed'), { duration: 5000 });
       }
     },
     [nodesRef, handleEditNodeDataUpdate]
@@ -467,7 +473,7 @@ export const useEditNodeHandlers = ({
 
       const editData = node.data as EditNodeData;
       if (!editData.promptPreview || !editData.promptPreview.trim()) {
-        toast.error('Please enter a prompt first', { duration: 3000 });
+        toast.error(translate('canvas.enterPromptFirst'), { duration: 3000 });
         return;
       }
 
@@ -479,7 +485,7 @@ export const useEditNodeHandlers = ({
         });
       } catch (error: any) {
         console.error('Error suggesting prompts:', error);
-        toast.error('Failed to generate suggestions. Please try again.', { duration: 5000 });
+        toast.error(translate('canvas.suggestionsFailed'), { duration: 5000 });
         handleEditNodeDataUpdate(nodeId, { isSuggestingPrompts: false });
       }
     },

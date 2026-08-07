@@ -556,7 +556,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border-node border-neutral-800 hover:border-neutral-700 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,opacity]">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
             <Input
@@ -678,7 +678,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
           {/* Action Icons - appears on hover or when selected */}
           <div
             className={cn(
-              'absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10',
+              'absolute top-3 right-3 flex gap-1.5 transition-[color,background-color,border-color,box-shadow,opacity,filter] backdrop-blur-sm z-10',
               selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
             )}
           >
@@ -1000,7 +1000,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
                 }
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border-node border-neutral-700/50 hover:border-neutral-600/70 transition-all"
+              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border-node border-neutral-700/50 hover:border-neutral-600/70 transition-colors"
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
@@ -1010,7 +1010,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({
               size="xs"
               onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border-node border-neutral-700/50 hover:border-neutral-600/70 transition-all"
+              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border-node border-neutral-700/50 hover:border-neutral-600/70 transition-colors"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />

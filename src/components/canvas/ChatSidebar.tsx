@@ -271,7 +271,7 @@ export const ChatSidebar = ({
         variant === 'embedded'
           ? 'border-none shadow-none bg-transparent'
           : 'z-50 backdrop-blur-xl border-l border-neutral-800/50 shadow-2xl bg-neutral-950/70',
-        'transition-all duration-300 ease-out',
+        'transition-[color,background-color,border-color,box-shadow,filter] duration-300 ease-out',
         'flex flex-col',
         'flex-shrink-0',
         'w-full'
@@ -312,7 +312,7 @@ export const ChatSidebar = ({
         {showSystemPromptEditor && (
           <div className="px-4 py-3 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-mono text-neutral-300 font-semibold uppercase ">
+              <label className="text-xs text-neutral-300 font-semibold uppercase ">
                 {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt (Agent Personality)'}
               </label>
               <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export const ChatSidebar = ({
                   <Button
                     variant="ghost"
                     onClick={handleResetSystemPrompt}
-                    className="text-xs px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-all"
+                    className="text-xs px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-[color,background-color,border-color,filter]"
                   >
                     {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
                   </Button>
@@ -328,7 +328,7 @@ export const ChatSidebar = ({
                 <Button
                   variant="brand"
                   onClick={handleSaveSystemPrompt}
-                  className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-all"
+                  className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-colors"
                 >
                   {t('common.save') || 'Save'}
                 </Button>
@@ -370,7 +370,7 @@ export const ChatSidebar = ({
           </div>
           <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner">
             <div
-              className="h-full bg-gradient-to-r from-neutral-500 to-neutral-500/80 transition-all duration-300 ease-out shadow-sm"
+              className="h-full bg-gradient-to-r from-neutral-500 to-neutral-500/80 transition-[color,background-color,border-color,box-shadow] duration-300 ease-out shadow-sm"
               style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }}
             />
           </div>

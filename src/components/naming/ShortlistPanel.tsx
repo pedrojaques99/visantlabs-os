@@ -10,6 +10,8 @@ import {
   Pencil,
   SearchCheck,
   BookmarkPlus,
+  Globe,
+  RotateCcw,
 } from '@/lib/ui/icons';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -23,15 +25,28 @@ const ease = [0.4, 0, 0.2, 1] as const;
 /** Slugs do backend (ex. "foreign-roots") viram labels legíveis. */
 const formatTag = (s: string) => s.replace(/[-_]/g, ' ').trim();
 
+/**
+ * Sentinela de FALHA para o cache de defesa dos superlikes. Quando o carregamento
+ * da defesa (`loadDefense`) falha, gravamos isto no `defenseCache` para a linha
+ * mostrar um retry em vez de um spinner eterno "Montando a defesa…".
+ */
+export type DefenseFailure = { failed: true };
+
+export const isDefenseFailure = (
+  d: NamingDefenseInsightResponse | DefenseFailure | undefined
+): d is DefenseFailure => !!d && 'failed' in d;
+
 export interface ShortlistPanelProps {
   superliked: NamingCard[];
   liked: NamingCard[];
-  defenseCache: Record<string, NamingDefenseInsightResponse | undefined>;
+  defenseCache: Record<string, NamingDefenseInsightResponse | DefenseFailure | undefined>;
   finalists?: string[];
   showNudge?: boolean;
   onShowFinalists?: () => void;
   onMoreLikeThis: (card: NamingCard) => void;
   onRemove: (card: NamingCard) => void;
+  /** Reprocessa a defesa de um superlike cujo carregamento falhou. */
+  onRetryDefense?: (card: NamingCard) => void;
   onTransformToBrand: (card: NamingCard) => void;
   /** Presente só quando a sessão foi iniciada a partir de uma marca existente. */
   brandGuidelineId?: string | null;
@@ -47,6 +62,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
   onShowFinalists,
   onMoreLikeThis,
   onRemove,
+  onRetryDefense,
   onTransformToBrand,
   brandGuidelineId,
   onSaveToBrand,
@@ -107,6 +123,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
               highlighted={finalists.includes(card.name)}
               onMoreLikeThis={onMoreLikeThis}
               onRemove={onRemove}
+              onRetryDefense={onRetryDefense}
             />
           ))}
           {liked.map((card) => (
@@ -175,13 +192,15 @@ function ShortlistRow({
   highlighted = false,
   onMoreLikeThis,
   onRemove,
+  onRetryDefense,
 }: {
   card: NamingCard;
   isSuper?: boolean;
-  defense?: NamingDefenseInsightResponse;
+  defense?: NamingDefenseInsightResponse | DefenseFailure;
   highlighted?: boolean;
   onMoreLikeThis: (card: NamingCard) => void;
   onRemove: (card: NamingCard) => void;
+  onRetryDefense?: (card: NamingCard) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -227,7 +246,22 @@ function ShortlistRow({
             <div className="space-y-3 border-t border-neutral-800/70 px-3 py-3">
               {/* Defesa */}
               {isSuper ? (
-                defense ? (
+                !defense ? (
+                  <p className="flex items-center gap-2 text-xs text-neutral-600">
+                    <Loader2 size={12} className="animate-spin" /> Montando a defesa…
+                  </p>
+                ) : isDefenseFailure(defense) ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRetryDefense?.(card);
+                    }}
+                    className="flex items-center gap-1.5 text-xs text-neutral-500 transition-colors hover:text-brand-cyan"
+                  >
+                    <RotateCcw size={12} /> defesa indisponível — tentar de novo
+                  </button>
+                ) : (
                   <div className="space-y-2 text-xs text-neutral-400">
                     <p className="text-neutral-300">{defense.concept}</p>
                     {defense.layers?.length > 0 && (
@@ -244,16 +278,12 @@ function ShortlistRow({
                       <p className="text-neutral-600">Riscos: {defense.risks.join('; ')}</p>
                     )}
                   </div>
-                ) : (
-                  <p className="flex items-center gap-2 text-xs text-neutral-600">
-                    <Loader2 size={12} className="animate-spin" /> Montando a defesa…
-                  </p>
                 )
               ) : (
                 <p className="text-xs leading-relaxed text-neutral-400">{card.rationale}</p>
               )}
 
-              <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+              <span className="block text-[10px] uppercase tracking-wider text-neutral-600">
                 {formatTag(card.territory)}
               </span>
 
@@ -264,6 +294,16 @@ function ShortlistRow({
                 >
                   <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-amber-400/70" />
                   {card.availability.registered.join(', ')} em uso
+                </span>
+              )}
+
+              {card.availability?.status === 'unknown' && (
+                <span
+                  title="RDAP indisponível — não foi possível verificar o domínio"
+                  className="inline-flex items-center gap-1 text-[10px] text-neutral-500"
+                >
+                  <Globe size={11} className="shrink-0" />
+                  domínio não verificado
                 </span>
               )}
 

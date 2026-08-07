@@ -19,23 +19,16 @@ import { useToolInput } from '@/hooks/useToolInput';
 import { QuickActions } from '@/components/shared/QuickActions';
 import JSZip from 'jszip';
 import { glassSurface } from '@/lib/ui/glass';
+import { fadeInUp, itemEnter, transitions } from '@/lib/ui/motion';
 
 const SCALE_OPTIONS = [2, 3, 4] as const;
 
-const ease = [0.4, 0, 0.2, 1] as const;
-
-const fadeUp = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.35, ease },
-};
-
+/** Local scale-fade — no scale preset in the module; tokens supply ease/duration. */
 const fadeScale = {
   initial: { opacity: 0, scale: 0.96 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.96 },
-  transition: { duration: 0.3, ease },
+  transition: transitions.base,
 };
 
 async function processItem(
@@ -189,7 +182,7 @@ export const UpscalePage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-xs font-medium cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -207,12 +200,10 @@ export const UpscalePage: React.FC = () => {
           <motion.div
             key={item.id}
             onClick={() => setPreviewId(item.id)}
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25, delay: i * 0.03 }}
+            {...itemEnter(i)}
             layout
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
+              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
               previewItem?.id === item.id
                 ? 'bg-neutral-800/60 ring-1 ring-neutral-600'
                 : 'hover:bg-neutral-900/60'
@@ -232,7 +223,7 @@ export const UpscalePage: React.FC = () => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all duration-200 flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
             >
               <X size={12} />
             </button>
@@ -254,13 +245,13 @@ export const UpscalePage: React.FC = () => {
                 onClick={() => setScaleFactor(s)}
                 disabled={isProcessing}
                 className={cn(
-                  'flex-1 px-2 py-1 rounded text-xs font-mono transition-all duration-200',
+                  'flex-1 px-2 py-1 rounded text-xs font-mono transition-colors duration-200',
                   scaleFactor === s
                     ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
                     : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
                 )}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05, transition: transitions.fast }}
+                whileTap={{ scale: 0.95, transition: transitions.press }}
               >
                 {s}x
               </motion.button>
@@ -302,7 +293,7 @@ export const UpscalePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-all duration-200"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -355,8 +346,9 @@ export const UpscalePage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Maximize2}
-      title="Bicubic Upscale"
-      documentTitle="Bicubic Upscale"
+      title={t('apps.bicubicUpscale.name')}
+      toolId="upscale"
+      documentTitle={t('apps.bicubicUpscale.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
       panelLabel="Queue & settings"
@@ -371,15 +363,15 @@ export const UpscalePage: React.FC = () => {
       <AnimatePresence mode="wait">
         {!hasItems ? (
           /* ─── Empty / Upload state — vertically centered ─── */
-          <motion.div key="upload" {...fadeUp} className="flex flex-col items-center gap-6 py-8">
+          <motion.div key="upload" {...fadeInUp} className="flex flex-col items-center gap-6 py-8">
             <motion.div
               className={cn(
                 'w-16 h-16 rounded-2xl flex items-center justify-center',
                 glassSurface.panel
               )}
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+              transition={{ ...transitions.base, delay: 0.08 }}
             >
               <Maximize2 size={28} className="text-neutral-500" />
             </motion.div>
@@ -388,7 +380,7 @@ export const UpscalePage: React.FC = () => {
               className="text-center space-y-2"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.35 }}
+              transition={{ ...transitions.base, delay: 0.12 }}
             >
               <p className="text-sm text-neutral-300 font-medium">
                 Upscale images with bicubic interpolation
@@ -407,9 +399,9 @@ export const UpscalePage: React.FC = () => {
               )}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              transition={{ ...transitions.base, delay: 0.16 }}
+              whileHover={{ scale: 1.01, transition: transitions.fast }}
+              whileTap={{ scale: 0.99, transition: transitions.press }}
             >
               <Upload size={24} className="text-neutral-500" />
               <span className="text-xs font-medium text-neutral-500">
@@ -445,7 +437,7 @@ export const UpscalePage: React.FC = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
+                      transition={transitions.base}
                     >
                       <ImageCompareSlider
                         before={previewItem.sourceUrl}
@@ -461,7 +453,7 @@ export const UpscalePage: React.FC = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.25 }}
+                      transition={transitions.base}
                     />
                   )}
                 </AnimatePresence>
@@ -473,7 +465,7 @@ export const UpscalePage: React.FC = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={transitions.base}
                     >
                       <FlyingPaperLoader
                         progress={convertProgress}

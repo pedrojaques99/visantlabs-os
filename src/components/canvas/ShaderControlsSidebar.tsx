@@ -255,7 +255,7 @@ export const ShaderControlsSidebar = ({
             'flex items-center justify-center',
             'text-neutral-500 hover:text-neutral-400',
             'hover:bg-neutral-800/60 hover:border-neutral-600/40',
-            'transition-all duration-200',
+            'transition-[color,background-color,border-color,box-shadow,filter] duration-200',
             'shadow-sm hover:shadow-md'
           )}
           style={{
@@ -418,7 +418,7 @@ export const ShaderControlsSidebar = ({
                     }}
                     className={cn(
                       'w-full flex items-center justify-center py-1.5 rounded',
-                      'border transition-all',
+                      'border transition-colors',
                       'hover:bg-neutral-800/30',
                       halftoneInvert > 0.5
                         ? 'border-neutral-600/40 bg-neutral-700/30 text-neutral-300'
@@ -450,8 +450,8 @@ export const ShaderControlsSidebar = ({
                       onClick={toggleAnimation}
                       className={cn(
                         'flex items-center gap-2 px-3 py-1.5 rounded',
-                        'border transition-all',
-                        'text-xs font-mono uppercase ',
+                        'border transition-colors',
+                        'text-xs uppercase ',
                         isAnimating
                           ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300 hover:bg-neutral-600/50'
                           : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50'
@@ -628,7 +628,7 @@ export const ShaderControlsSidebar = ({
                         }
                       }}
                       className={cn(
-                        'px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ',
+                        'px-3 py-1.5 rounded border transition-colors text-xs font-mono uppercase ',
                         asciiColored > 0.5
                           ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300'
                           : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400'
@@ -652,7 +652,7 @@ export const ShaderControlsSidebar = ({
                         }
                       }}
                       className={cn(
-                        'px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase ',
+                        'px-3 py-1.5 rounded border transition-colors text-xs font-mono uppercase ',
                         asciiInvert > 0.5
                           ? 'bg-neutral-700/50 border-neutral-600/50 text-neutral-300'
                           : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400'

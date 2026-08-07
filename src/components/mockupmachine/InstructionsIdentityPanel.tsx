@@ -49,7 +49,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
         variant="ghost"
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
         className={cn(
-          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
+          'w-full flex justify-between items-center text-left p-3 transition-colors duration-200',
           theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
         )}
       >

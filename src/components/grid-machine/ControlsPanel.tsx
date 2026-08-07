@@ -228,7 +228,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
               key={mode}
               onClick={() => updateSetting('bgMode', mode)}
               className={cn(
-                'flex-1 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all duration-200 border',
+                'flex-1 py-2 rounded-md text-[10px] uppercase tracking-wider transition-colors duration-200 border',
                 bgMode === mode
                   ? 'bg-white/10 text-white border-white/20'
                   : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -306,7 +306,7 @@ const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string)
   onChange,
 }) => (
   <div className="space-y-1">
-    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{label}</span>
+    <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
     <InlineColorPicker value={value} onChange={onChange} label={label} />
   </div>
 );

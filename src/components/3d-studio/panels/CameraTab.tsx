@@ -356,7 +356,7 @@ export const CameraTab: React.FC = React.memo(() => {
                 </button>
               </div>
             ) : (
-              <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-all">
+              <label className="flex flex-col items-center gap-1 p-3 border border-dashed border-white/10 hover:border-white/20 rounded-lg cursor-pointer transition-colors">
                 <span className="text-[10px] uppercase tracking-wider text-neutral-500">
                   Upload image
                 </span>

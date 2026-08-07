@@ -24,6 +24,14 @@ const HomePage = lazyWithRetry(() =>
 const BrandCockpit = lazyWithRetry(() =>
   import('./components/cockpit/BrandCockpit').then((m) => ({ default: m.BrandCockpit }))
 );
+// Estado de ativação da home: usuário autenticado SEM marca nenhuma. É a
+// checklist de primeiros passos (variant de página) — o cockpit não tem o que
+// mostrar sem marca e a lista de marcas é gestão de arquivo, não ativação.
+const GettingStartedChecklist = lazyWithRetry(() =>
+  import('./components/onboarding/GettingStartedChecklist').then((m) => ({
+    default: m.GettingStartedChecklist,
+  }))
+);
 const MockupMachinePage = lazyWithRetry(() =>
   import('./pages/MockupMachinePage').then((m) => ({ default: m.MockupMachinePage }))
 );
@@ -185,9 +193,6 @@ const AdminChatPage = lazyWithRetry(() =>
 const CopilotPage = lazyWithRetry(() =>
   import('./pages/CopilotPage').then((m) => ({ default: m.CopilotPage }))
 );
-const OnboardPage = lazyWithRetry(() =>
-  import('./pages/OnboardPage').then((m) => ({ default: m.OnboardPage }))
-);
 const MoodboardStudioPage = lazyWithRetry(() =>
   import('./pages/MoodboardStudioPage').then((m) => ({ default: m.MoodboardStudioPage }))
 );
@@ -287,6 +292,12 @@ const LoadingFallback = () => (
  * da marca; sem marca / "Todas as marcas" (isAllBrands) → grid de marcas. Colapsa
  * os antigos destinos Cockpit + Marcas num só. A flag FEATURE_COCKPIT decide
  * cockpit-vs-grid aqui dentro (a rota /cockpit existe sempre).
+ *
+ * Sem marca NENHUMA a rota NÃO faz mais bounce: renderiza o estado de ativação
+ * guiado (checklist de primeiros passos + wizard de criação inline). O bounce
+ * pra /brand-guidelines mandava o usuário novo — justamente quem o FirstRunGuard
+ * empurra pra cá — pra uma lista vazia de arquivos, com a checklist de ativação
+ * inalcançável atrás do redirect da HomePage.
  */
 const HomeRoute: React.FC = () => {
   const { isAuthenticated } = useLayout();
@@ -298,6 +309,15 @@ const HomeRoute: React.FC = () => {
   }
   // Espera as marcas carregarem antes de decidir (evita flash cockpit↔grid).
   if (isLoading) return null;
+
+  // Zero marcas: ativação, não gerenciamento. Independe de FEATURE_COCKPIT —
+  // com a flag desligada o destino era o mesmo bounce. Assim quem chega em '/'
+  // (via HomePage → /cockpit) e quem chega em '/cockpit' direto veem A MESMA
+  // tela. Criar a marca aqui liga a marca ativa e o próprio HomeRoute troca
+  // pro cockpit no render seguinte, sem navegação.
+  if (brands.length === 0) {
+    return <GettingStartedChecklist variant="page" />;
+  }
 
   // Marcas existem mas a ativa ainda não resolveu (o fallback do ActiveBrandContext
   // roda pós-commit) — espera um tick em vez de bounce pro grid. Sem isso, o usuário
@@ -370,6 +390,14 @@ const App: React.FC = () => {
                     />
                     <Route path="/visual-search" element={<VisualSearchPage />} />
                     <Route path="/references" element={<ReferencesPage />} />
+                    {/* Superfície embeddable: a MESMA página sem chrome do app,
+                        pra abrir direto no navegador ou dentro de um painel de
+                        plugin do Figma. Shell 'bare' vem do navConfig. */}
+                    <Route path="/refs" element={<ReferencesPage embedded />} />
+                    {/* Permalink por referência — o átomo compartilhável.
+                        Mesma página; o handle abre o lightbox naquela ref. */}
+                    <Route path="/references/:handle" element={<ReferencesPage />} />
+                    <Route path="/refs/:handle" element={<ReferencesPage embedded />} />
                     <Route path="/upscale" element={<UpscalePage />} />
                     <Route path="/favicon" element={<FaviconPage />} />
                     <Route path="/color-converter" element={<ColorConverterPage />} />
@@ -413,7 +441,6 @@ const App: React.FC = () => {
                     />
                     <Route path="/labs/benchmark" element={<BenchmarkArenaPage />} />
                     <Route path="/about" element={<AboutPage />} />
-                    <Route path="/onboard" element={<OnboardPage />} />
                     <Route path="/privacy" element={<PrivacyPolicyPage />} />
                     <Route path="/terms" element={<TermsOfServicePage />} />
                     <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />

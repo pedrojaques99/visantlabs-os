@@ -111,7 +111,7 @@ export const BrandPreviewGallery: React.FC<{
     >
       <div className="flex items-baseline justify-between px-1">
         <MicroTitle className="text-[var(--accent)] font-bold opacity-70">Brand Preview</MicroTitle>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/30">
+        <span className="text-[10px] uppercase tracking-widest text-[var(--brand-text)]/30">
           {items.length} designs · clique pra editar
         </span>
       </div>

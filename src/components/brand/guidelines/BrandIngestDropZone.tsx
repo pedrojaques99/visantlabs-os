@@ -115,7 +115,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
                 [0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
-                    className="absolute w-1.5 h-1.5 rounded-full bg-brand-cyan/40"
+                    className="absolute w-1.5 h-1.5 rounded-full bg-muted-foreground/40"
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{
                       opacity: [0.3, 0.8, 0.3],

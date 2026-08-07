@@ -11,7 +11,11 @@ import { useLayout } from '@/hooks/useLayout';
 import { copyToClipboard } from '@/utils/clipboard';
 import { BriefingFlow } from '@/components/naming/BriefingFlow';
 import { SwipeCard, type SwipeCardHandle } from '@/components/naming/SwipeCard';
-import { ShortlistPanel } from '@/components/naming/ShortlistPanel';
+import {
+  ShortlistPanel,
+  isDefenseFailure,
+  type DefenseFailure,
+} from '@/components/naming/ShortlistPanel';
 import { NamingSettingsPopover } from '@/components/naming/NamingSettingsPopover';
 import { NamingHistoryPopover } from '@/components/naming/NamingHistoryPopover';
 import {
@@ -46,6 +50,7 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { authService } from '@/services/authService';
 import { namingSessionApi, type NamingSessionScalars } from '@/services/namingSessionApi';
 import { getNamingSettings, updateNamingSettings } from '@/services/userSettingsService';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /** Backend valida cada lista (seen/liked/superliked/rejected) em ≤200 itens e
  *  dá 400 se passar — capa nos mais RECENTES antes de enviar. */
@@ -93,6 +98,7 @@ function deriveScalars(s: NamingSession): NamingSessionScalars {
 }
 
 export const NamingMachinePage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { requireAuth } = useAuthGuard();
   const { onCreditPackagesModalOpen } = useLayout();
@@ -108,7 +114,7 @@ export const NamingMachinePage: React.FC = () => {
   const [prefetching, setPrefetching] = useState(false);
   const [tasteReading, setTasteReading] = useState<string | undefined>();
   const [defenseCache, setDefenseCache] = useState<
-    Record<string, NamingDefenseInsightResponse | undefined>
+    Record<string, NamingDefenseInsightResponse | DefenseFailure | undefined>
   >({});
   const [finalists, setFinalists] = useState<string[]>([]);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
@@ -476,11 +482,25 @@ export const NamingMachinePage: React.FC = () => {
         });
         setDefenseCache((p) => ({ ...p, [card.name]: d }));
       } catch {
+        // Grava sentinela de falha (em vez de só limpar `defenseRequested`) para a
+        // linha mostrar retry em vez de spinner eterno. Como a sentinela é truthy,
+        // o effect abaixo NÃO re-dispara sozinho — só o retry manual reprocessa.
         defenseRequested.current.delete(card.name);
+        setDefenseCache((p) => ({ ...p, [card.name]: { failed: true } }));
       }
     },
     [brief]
   );
+
+  /** Retry manual: apaga a sentinela de falha → o effect abaixo re-dispara a defesa. */
+  const retryDefense = useCallback((card: NamingCard) => {
+    defenseRequested.current.delete(card.name);
+    setDefenseCache((p) => {
+      const next = { ...p };
+      delete next[card.name];
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     profile.superliked.forEach((c) => {
@@ -588,7 +608,8 @@ export const NamingMachinePage: React.FC = () => {
     if (all.length === 0) return;
     const lines = all.map((c) => {
       const defense = defenseCache[c.name];
-      const summary = defense?.concept || c.rationale;
+      const summary =
+        (defense && !isDefenseFailure(defense) ? defense.concept : undefined) || c.rationale;
       const tag = c.territory && c.technique ? ` (${c.territory} · ${c.technique})` : '';
       return `- ${c.name}${tag}: ${summary}`;
     });
@@ -695,6 +716,7 @@ export const NamingMachinePage: React.FC = () => {
       onShowFinalists={showFinalists}
       onMoreLikeThis={handleMoreLikeThis}
       onRemove={handleRemove}
+      onRetryDefense={retryDefense}
       onTransformToBrand={transformToBrand}
       brandGuidelineId={brandGuidelineId}
       onSaveToBrand={handleSaveToBrand}
@@ -703,11 +725,13 @@ export const NamingMachinePage: React.FC = () => {
 
   const statusBar = (
     <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
-      <span className="text-neutral-400">
-        {seenCount} vistos · {likedCount} curtidos
-      </span>
+      {seenCount > 0 && (
+        <span className="text-neutral-400">
+          {seenCount} vistos{likedCount > 0 && ` · ${likedCount} curtidos`}
+        </span>
+      )}
       {prefetching && (
-        <span className="flex items-center gap-1 text-brand-cyan/80">
+        <span className="flex items-center gap-1 text-neutral-400">
           <Zap size={10} className="animate-pulse" /> calibrando pelo seu gosto
         </span>
       )}
@@ -717,8 +741,9 @@ export const NamingMachinePage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Zap}
-      title="Naming Machine"
-      documentTitle="Naming Machine"
+      title={t('apps.namingMachine.name')}
+      toolId="naming-machine"
+      documentTitle={t('apps.namingMachine.name')}
       onReset={handleReset}
       panel={phase === 'deck' ? panel : undefined}
       panelLabel="Shortlist"
@@ -832,7 +857,7 @@ function DeckSkeleton({ generating }: { generating: boolean }) {
       <div className="h-4 w-24 animate-pulse rounded-full bg-neutral-800/40" />
       <div className="h-10 w-48 animate-pulse rounded-lg bg-neutral-800/50" />
       <div className="h-3 w-56 animate-pulse rounded-full bg-neutral-800/30" />
-      <p className="mt-4 text-[10px] font-mono uppercase tracking-widest text-neutral-600">
+      <p className="mt-4 text-xs text-neutral-500">
         {generating ? 'gerando nomes…' : 'preparando o deck…'}
       </p>
     </GlassPanel>

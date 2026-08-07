@@ -16,6 +16,7 @@ import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { resolveGenerationContext } from '@/utils/canvas/generationContext';
 import { getBrandContextForNode, buildEnhancement } from '@/hooks/canvas/useBrandContext';
 import type { BrandGuideline } from '@/lib/figma-types';
+import { translate } from '@/utils/localeUtils';
 
 interface UseDirectorNodeHandlerParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -74,7 +75,7 @@ export const useDirectorNodeHandler = ({
     async (nodeId: string) => {
       const node = nodesRef.current.find((n) => n.id === nodeId);
       if (!node || node.type !== 'director') {
-        toast.error('Director node not found');
+        toast.error(translate('canvas.directorNodeNotFound'));
         return;
       }
 
@@ -82,7 +83,7 @@ export const useDirectorNodeHandler = ({
       const connectedImage = directorData.connectedImage;
 
       if (!connectedImage) {
-        toast.error('No image connected to the Director node');
+        toast.error(translate('canvas.directorNoImageConnected'));
         return;
       }
 
@@ -164,7 +165,7 @@ export const useDirectorNodeHandler = ({
         );
 
         trackCanvasEvent('generation_completed', 'director');
-        toast.success('Image analyzed! Select tags to generate your prompt.');
+        toast.success(translate('canvas.imageAnalyzedSelectTags'));
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'director', undefined, { error: error?.message });
         if (isLocalDevelopment()) {
@@ -193,7 +194,7 @@ export const useDirectorNodeHandler = ({
     async (nodeId: string) => {
       const node = nodesRef.current.find((n) => n.id === nodeId);
       if (!node || node.type !== 'director') {
-        toast.error('Director node not found');
+        toast.error(translate('canvas.directorNodeNotFound'));
         return;
       }
 
@@ -224,8 +225,9 @@ export const useDirectorNodeHandler = ({
 
       if (!hasSelections) {
         toast.error(
-          'Please select at least one tag' +
-            (directorData.isSurpriseMeMode ? ' or add tags to the pool' : '')
+          directorData.isSurpriseMeMode
+            ? translate('canvas.selectAtLeastOneTagOrPool')
+            : translate('canvas.selectAtLeastOneTag')
         );
         return;
       }
@@ -427,7 +429,7 @@ export const useDirectorNodeHandler = ({
           }
         }, 100);
 
-        toast.success('Prompt generated and PromptNode created!');
+        toast.success(translate('canvas.promptGeneratedNodeCreated'));
       } catch (error: any) {
         if (isLocalDevelopment()) {
           console.error('[DirectorNode] Prompt generation error:', error);
@@ -464,7 +466,7 @@ export const useDirectorNodeHandler = ({
     async (nodeId: string) => {
       const node = nodesRef.current.find((n) => n.id === nodeId);
       if (!node || node.type !== 'director') {
-        toast.error('Director node not found');
+        toast.error(translate('canvas.directorNodeNotFound'));
         return;
       }
 
@@ -472,12 +474,12 @@ export const useDirectorNodeHandler = ({
       const connectedImage = directorData.connectedImage;
 
       if (!connectedImage) {
-        toast.error('No image connected to the Director node');
+        toast.error(translate('canvas.directorNoImageConnected'));
         return;
       }
 
       if (!createOutputNodeWithSkeleton || !updateOutputNodeWithResult) {
-        toast.error('Mockup generation is not available');
+        toast.error(translate('canvas.mockupNotAvailable'));
         return;
       }
 
@@ -599,7 +601,7 @@ export const useDirectorNodeHandler = ({
         );
 
         trackCanvasEvent('generation_completed', 'director_mockup');
-        toast.success('Mockup generated!');
+        toast.success(translate('canvas.mockupGenerated'));
       } catch (error: any) {
         trackCanvasEvent('generation_failed', 'director_mockup', undefined, {
           error: error?.message,
@@ -621,7 +623,7 @@ export const useDirectorNodeHandler = ({
           cleanupFailedNode(newOutputNodeId);
         }
 
-        toast.error(error?.message || 'Failed to generate mockup');
+        toast.error(error?.message || translate('canvas.mockupGenerateFailed'));
       }
     },
     [

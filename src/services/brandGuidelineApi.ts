@@ -1,5 +1,6 @@
 import { authService } from './authService';
 import { trackEvent } from '../utils/analytics';
+import { translate } from '../utils/localeUtils';
 import type { BrandGuideline } from '../lib/figma-types';
 import type { TemplateSchema } from '../lib/figma-template-schema';
 
@@ -51,6 +52,11 @@ export interface BrandQuota {
   tier: string;
   /** ISO date até quando marcas em excesso seguem ativas após downgrade; null = sem grace. */
   graceUntil?: string | null;
+  /**
+   * Marcas que serão arquivadas quando a janela expirar, na ordem do cron.
+   * Só vem durante um grace. É a mesma lista que o e-mail de downgrade nomeia.
+   */
+  atRisk?: { id: string; name: string }[];
 }
 
 export const brandGuidelineApi = {
@@ -672,7 +678,9 @@ export const brandGuidelineApi = {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || err.error || 'Failed to run brand health check');
+      throw new Error(
+        err.message || err.error || translate('errors.brandHealthCheckFailed')
+      );
     }
     const data = await response.json();
     return data.report as BrandHealthReport;

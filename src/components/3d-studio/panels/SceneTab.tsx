@@ -372,7 +372,7 @@ export const SceneTab: React.FC = React.memo(() => {
           <div
             onClick={() => modelInputRef.current?.click()}
             className={cn(
-              'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-all',
+              'flex flex-col items-center gap-2 p-4 border border-dashed rounded-lg cursor-pointer transition-colors',
               'border-white/10 hover:border-white/20'
             )}
           >
@@ -531,7 +531,7 @@ export const SceneTab: React.FC = React.memo(() => {
                       toast.success('Scene deleted');
                     }}
                     aria-label="Delete scene"
-                    className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-red-400 transition-all"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-red-400 transition-[color,background-color,border-color,opacity]"
                   >
                     <Trash2 size={10} />
                   </button>

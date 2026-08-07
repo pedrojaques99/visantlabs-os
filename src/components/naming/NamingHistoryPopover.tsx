@@ -4,6 +4,7 @@ import { History, Plus, Trash2, Loader2 } from '@/lib/ui/icons';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { cn } from '@/lib/utils';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
 import { relativeTime } from '@/utils/time';
 import { namingSessionApi, type NamingSessionSummary } from '@/services/namingSessionApi';
 
@@ -111,7 +112,7 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
               className="max-h-[70vh] gap-2 overflow-y-auto scrollbar-none bg-neutral-900/80 p-4 backdrop-blur-xl shadow-2xl shadow-black/40"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                <span className="text-[10px] uppercase tracking-widest text-neutral-500">
                   Sessões anteriores
                 </span>
                 <button
@@ -156,14 +157,18 @@ export const NamingHistoryPopover: React.FC<NamingHistoryPopoverProps> = ({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-neutral-200">{s.name}</p>
                         <p className="text-[10px] text-neutral-600">
-                          {s.likedCount} curtidos · {relativeTime(s.updatedAt)}
+                          {s.likedCount > 0 && `${s.likedCount} curtidos · `}
+                          {relativeTime(s.updatedAt)}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={(e) => handleDelete(e, s.id)}
                         aria-label="Remover sessão"
-                        className="shrink-0 rounded p-1 text-neutral-600 opacity-0 transition-all hover:text-destructive group-hover:opacity-100"
+                        className={cn(
+                          hoverReveal,
+                          'shrink-0 rounded p-1 text-neutral-600 hover:text-destructive'
+                        )}
                       >
                         <Trash2 size={12} />
                       </button>

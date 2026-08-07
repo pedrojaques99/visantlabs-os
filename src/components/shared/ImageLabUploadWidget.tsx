@@ -53,7 +53,7 @@ export const ImageLabUploadWidget: React.FC<ImageLabUploadWidgetProps> = React.m
         <button
           onClick={() => inputRef.current?.click()}
           title="Upload image"
-          className="relative flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-all overflow-hidden"
+          className="relative flex items-center justify-center w-9 h-9 rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 transition-[color,background-color,border-color,opacity] overflow-hidden"
         >
           {imageUrl ? (
             <img

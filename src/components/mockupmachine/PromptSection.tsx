@@ -74,7 +74,22 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     selectedLightingTags,
     selectedEffectTags,
     selectedMaterialTags,
+    generateText,
+    withHuman,
+    removeText,
   } = useMockup();
+
+  // Chips must reflect the rules the prompt builder ACTUALLY injects (see
+  // buildGeminiPromptInstructionsTemplate) — a badge for a rule that isn't
+  // injected is a lie. Text/human rules flip with the flags; "no humans" is
+  // never an injected rule (absence of the withHuman instruction), so it's dropped.
+  const injectedRules = useMemo(() => {
+    const rules: string[] = ['📸 Focus Original Design'];
+    if (generateText) rules.push('📝 Placeholder Text');
+    else if (removeText) rules.push('🚫 No External Text');
+    if (withHuman) rules.push('🧍 Human In Scene');
+    return rules;
+  }, [generateText, removeText, withHuman]);
 
   // Combine all tags for highlighting
   const allSelectedTags = useMemo(() => {
@@ -167,7 +182,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <span
           key={i}
           className={cn(
-            'underline decoration-brand-cyan/30 underline-offset-4 transition-all duration-300',
+            'underline decoration-brand-cyan/30 underline-offset-4 transition-colors duration-300',
             'hover:text-brand-cyan hover:decoration-brand-cyan hover:bg-brand-cyan/10 px-0.5 rounded-sm'
           )}
         >
@@ -242,7 +257,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     <section
       id="prompt-section"
       className={cn(
-        'p-3 rounded-xl border transition-all duration-300',
+        'p-3 rounded-xl border transition-colors duration-300',
         theme === 'dark'
           ? 'bg-neutral-900/10 border-neutral-800/40 hover:bg-neutral-900/20'
           : 'bg-neutral-50 border-neutral-200 focus-within:border-brand-cyan/30'
@@ -266,7 +281,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             {isPromptReady ? (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 border border-success/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
                 <div className="w-1 h-1 rounded-full bg-success" />
-                <span className="text-[10px] font-mono text-success uppercase tracking-wider">
+                <span className="text-[10px] text-success uppercase tracking-wider">
                   {t('mockup.promptSynced')}
                 </span>
               </div>
@@ -280,7 +295,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                     size={8}
                     className="text-warning group-hover/sync:rotate-180 transition-transform duration-500"
                   />
-                  <span className="text-[10px] font-mono text-warning uppercase tracking-wider">
+                  <span className="text-[10px] text-warning uppercase tracking-wider">
                     {t('mockup.promptOutOfSync')}
                   </span>
                 </button>
@@ -315,7 +330,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <div
           onClick={() => setIsCollapsed(false)}
           className={cn(
-            'flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-all mt-1',
+            'flex items-center gap-2 p-2.5 rounded-md border text-xs font-mono cursor-pointer transition-colors mt-1',
             theme === 'dark'
               ? 'bg-neutral-900/30 border-neutral-800/50 hover:border-neutral-700 text-neutral-400'
               : 'bg-white border-neutral-200 hover:border-neutral-700 text-neutral-600'
@@ -323,7 +338,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         >
           {isGeneratingPrompt ? (
             <>
-              <GlitchLoader size={10} className="text-brand-cyan shrink-0" />
+              <GlitchLoader size={10} className="text-muted-foreground shrink-0" />
               <span className="truncate flex-1">{statusMessages[messageIndex]}...</span>
             </>
           ) : promptPreview ? (
@@ -364,7 +379,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                   aria-label={statusMessages[messageIndex]}
                 >
                   <div className="flex items-center gap-1">
-                    <GlitchLoader size={10} className="text-brand-cyan" />
+                    <GlitchLoader size={10} className="text-muted-foreground" />
                   </div>
                 </div>
               )
@@ -395,35 +410,22 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         </div>
       )}
 
-      {/* System Directives Badge / Clarification */}
-      {!isCollapsed && promptPreview && (
+      {/* System Directives Badge — derived from the actual injected flags */}
+      {!isCollapsed && promptPreview && injectedRules.length > 0 && (
         <div className="mt-2 pl-1">
           <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
             <span className="text-[10px] mr-1 text-neutral-500">⚙️ Regras Injetadas:</span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-              )}
-            >
-              🚫 No External Text
-            </span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-              )}
-            >
-              📸 Focus Original Design
-            </span>
-            <span
-              className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
-              )}
-            >
-              💎�‍♂️ No Humans Interaction
-            </span>
+            {injectedRules.map((rule) => (
+              <span
+                key={rule}
+                className={cn(
+                  'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
+                )}
+              >
+                {rule}
+              </span>
+            ))}
           </div>
         </div>
       )}

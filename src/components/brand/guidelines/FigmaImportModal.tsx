@@ -171,7 +171,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                     key={comp.key}
                     onClick={() => toggleLogo(comp.key)}
                     className={`
-                      relative flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-all gap-2
+                      relative flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-[color,background-color,border-color,box-shadow] gap-2
                       ${
                         selectedLogos.includes(comp.key)
                           ? 'bg-brand-cyan/5 border-brand-cyan shadow-[0_0_10px_oklch(from var(--brand-cyan) l c h / 10%)]'

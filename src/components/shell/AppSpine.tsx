@@ -104,7 +104,7 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
 
   const outerClass = isFocus
     ? 'fixed top-0 left-0 right-0 z-50 h-10 md:h-14 flex items-center justify-between px-4 border-b border-border bg-background'
-    : 'h-12 shrink-0 flex items-center justify-between px-4 border-b border-border';
+    : 'h-12 shrink-0 flex items-center justify-between px-2 sm:px-4 border-b border-border';
 
   return (
     <header className={outerClass}>
@@ -130,11 +130,20 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
 
         {showBrand && brand && (
           <>
+            {/* O chip de marca carrega um piso de 160px (o `Select` interno do
+                BrandSwitcher) que, a 390px, sozinho consome TODO o espaço livre
+                da espinha — sem ele nenhuma ação de página caberia no mobile.
+                Aqui (e só aqui: os outros usos do componente seguem intactos) o
+                chip vira elástico abaixo de `sm` — largura natural de 172px que
+                encolhe até 104px quando a página injeta ações. O nome da marca
+                trunca; avatar e chevron continuam inteiros. De `sm` pra cima
+                nada muda. */}
             <BrandSwitcher
               brands={brand.brands}
               value={brand.activeBrandId}
               onChange={brand.setActiveBrand}
               showAllOption={showAllBrandsOption}
+              className="max-sm:w-[10.75rem] max-sm:min-w-[6.5rem] max-sm:overflow-hidden max-sm:[&_button]:min-w-0"
             />
             {(isFocus ? focusTitle : sectionLabel) && (
               <span className="text-muted-foreground/40">/</span>
@@ -147,6 +156,11 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
           : sectionLabel && <span className="text-muted-foreground truncate">{sectionLabel}</span>}
       </div>
 
+      {/* Sem `min-w-0` de propósito: o grupo direito nunca deve encolher abaixo
+          do próprio conteúdo — senão a página "para de estourar" só porque os
+          botões foram recortados por baixo da pílula de créditos, e a métrica
+          passa a mentir. Quem cede espaço no mobile é o grupo esquerdo, cujo
+          conteúdo (chip de marca + label da seção) é truncável. */}
       <div className="flex items-center gap-2">
         {/* Buscar / Cmd+K — descobribilidade do palette global */}
         <button
@@ -168,24 +182,28 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
             também no branch focus do Layout). */}
         <div
           ref={shellHeader?.setActionsSlot}
-          className={cn('flex items-center gap-2 empty:hidden')}
+          className={cn('flex max-sm:shrink-0 items-center gap-2 empty:hidden')}
         />
 
         {isFree && (
           <button
             onClick={() => onSubscriptionModalOpen()}
-            className="rounded-md px-3 py-1 text-xs font-medium bg-brand-cyan/90 text-black hover:bg-brand-cyan transition-colors"
+            className="max-sm:shrink-0 rounded-md px-3 py-1 text-xs font-medium bg-brand-cyan/90 text-black hover:bg-brand-cyan transition-colors"
           >
             {t('nav.upgrade')}
           </button>
         )}
 
-        {/* Conta + créditos (SSoT) — vivem no topo, ao lado do Buscar ⌘K. */}
-        <AuthButton
-          subscriptionStatus={subscriptionStatus}
-          onCreditsClick={() => onCreditPackagesModalOpen()}
-          menuPlacement="bottom"
-        />
+        {/* Conta + créditos (SSoT) — vivem no topo, ao lado do Buscar ⌘K.
+            `max-sm:shrink-0`: superfície de dinheiro não encolhe nem recorta no
+            mobile; quem cede espaço é o chip de marca. */}
+        <div className="max-sm:shrink-0">
+          <AuthButton
+            subscriptionStatus={subscriptionStatus}
+            onCreditsClick={() => onCreditPackagesModalOpen()}
+            menuPlacement="bottom"
+          />
+        </div>
       </div>
     </header>
   );

@@ -182,7 +182,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 shrink-0">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-300">
+          <span className="text-[11px] uppercase tracking-widest text-neutral-300">
             Community Presets
           </span>
           <button
@@ -201,7 +201,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  'px-2.5 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider transition-all border',
+                  'px-2.5 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors border',
                   filter === f
                     ? 'bg-white/10 text-white border-white/20'
                     : 'text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -242,7 +242,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
               <button
                 key={preset._id}
                 onClick={() => applyPreset(preset)}
-                className="w-full text-left px-3 py-3 rounded-md bg-neutral-900/30 border border-neutral-800/30 hover:bg-neutral-800/40 hover:border-neutral-700/50 transition-all group"
+                className="w-full text-left px-3 py-3 rounded-md bg-neutral-900/30 border border-neutral-800/30 hover:bg-neutral-800/40 hover:border-neutral-700/50 transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   {/* Visual preview swatch */}

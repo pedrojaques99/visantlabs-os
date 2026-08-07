@@ -87,7 +87,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md"
+            className="p-2 text-neutral-500 hover:text-white transition-[color,background-color,border-color,box-shadow] hover:bg-neutral-800/50 rounded-md"
           >
             <X size={20} />
           </Button>
@@ -137,7 +137,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                 variant="ghost"
                 onClick={() => setIsPublic(!isPublic)}
                 className={cn(
-                  'w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border text-[10px] font-mono uppercase  transition-all h-[40px]',
+                  'w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border text-[10px] font-mono uppercase  transition-colors h-[40px]',
                   isPublic
                     ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
                     : 'bg-neutral-900/50 border-neutral-800 text-neutral-500'

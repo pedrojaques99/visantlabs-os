@@ -121,7 +121,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
                   key={cat}
                   onClick={() => setCategory(cat)}
                   className={cn(
-                    'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all',
+                    'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider transition-colors',
                     category === cat
                       ? 'bg-white/10 text-neutral-200 border border-white/20'
                       : 'text-neutral-500 border border-transparent hover:text-neutral-300 hover:border-neutral-800'

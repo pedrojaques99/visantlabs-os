@@ -70,7 +70,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative p-4 rounded-md border-2 transition-all duration-200 flex flex-col items-center gap-2 min-h-[100px] w-full cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${getStatusStyles()}`}
+      className={`relative p-4 rounded-md border-2 transition-colors duration-200 flex flex-col items-center gap-2 min-h-[100px] w-full cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-neutral-600/50 ${getStatusStyles()}`}
       aria-label={`Variável ${label}${
         instanceCount > 0 ? `, ${instanceCount} instância${instanceCount > 1 ? 's' : ''}` : ''
       }`}

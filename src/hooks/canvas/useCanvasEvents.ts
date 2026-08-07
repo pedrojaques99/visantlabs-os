@@ -15,6 +15,7 @@ import { cleanEdges, getMediaFromNodeForCopy } from '@/utils/canvas/canvasNodeUt
 import { DEFAULT_MODEL, getMaxHandles } from '@/constants/geminiModels';
 import { toast } from 'sonner';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
+import { translate } from '@/utils/localeUtils';
 
 // Tipos de node que são considerados "flow nodes" (node que processam imagens)
 const FLOW_NODE_TYPES = ['mockup', 'merge', 'edit', 'upscale', 'prompt', 'angle'] as const;
@@ -159,7 +160,7 @@ export const useCanvasEvents = (
 
         // Explicitly prevent image handles from connecting to text handles
         if (effectiveSourceType === 'image' && effectiveTargetType === 'text') {
-          toast.error('Não é possível conectar um handle de imagem a um handle de texto', {
+          toast.error(translate('canvas.connectImageToText'), {
             duration: 3000,
           });
           return;
@@ -167,7 +168,7 @@ export const useCanvasEvents = (
 
         // Block text → image connections (for consistency)
         if (effectiveSourceType === 'text' && effectiveTargetType === 'image') {
-          toast.error('Não é possível conectar um handle de texto a um handle de imagem', {
+          toast.error(translate('canvas.connectTextToImage'), {
             duration: 3000,
           });
           return;
@@ -178,7 +179,7 @@ export const useCanvasEvents = (
           if (sourceHandleType !== 'generic' && targetHandleType !== 'generic') {
             if (sourceHandleType !== targetHandleType) {
               toast.error(
-                `Cannot connect ${sourceHandleType} handle to ${targetHandleType} handle. Types must match.`,
+                translate('canvas.connectHandleTypeMismatch', undefined, { source: sourceHandleType, target: targetHandleType }),
                 { duration: 3000 }
               );
               return;
@@ -198,7 +199,7 @@ export const useCanvasEvents = (
           sourceType === targetType &&
           (FLOW_NODE_TYPES as readonly string[]).includes(sourceType)
         ) {
-          toast.error('Não é possível conectar dois node de fluxo do mesmo tipo', {
+          toast.error(translate('canvas.connectSameFlowType'), {
             duration: 3000,
           });
           return;
@@ -212,7 +213,7 @@ export const useCanvasEvents = (
         // Validate logo-input handle
         if (targetHandle === 'logo-input') {
           if (sourceNode && !['image', 'logo', 'output'].includes(sourceNode.type || '')) {
-            toast.error('Logo input only accepts Image, Logo, or Output nodes', { duration: 3000 });
+            toast.error(translate('canvas.logoInputAccepts'), { duration: 3000 });
             return;
           }
         }
@@ -220,7 +221,7 @@ export const useCanvasEvents = (
         // Validate identity-input handle
         if (targetHandle === 'identity-input') {
           if (sourceNode && !['pdf', 'image', 'output'].includes(sourceNode.type || '')) {
-            toast.error('Identity input only accepts PDF, Image, or Output nodes', {
+            toast.error(translate('canvas.identityInputAccepts'), {
               duration: 3000,
             });
             return;
@@ -742,7 +743,7 @@ export const useCanvasEvents = (
         }, 0);
 
         setEdgeContextMenu(null);
-        toast.success('Connection removed', { duration: 2000 });
+        toast.success(translate('canvas.connectionRemoved'), { duration: 2000 });
         return;
       }
 
@@ -786,7 +787,7 @@ export const useCanvasEvents = (
       }, 0);
 
       setEdgeContextMenu(null);
-      toast.success('Connection removed', { duration: 2000 });
+      toast.success(translate('canvas.connectionRemoved'), { duration: 2000 });
     },
     [nodes, edges, setEdges, addToHistory, setEdgeContextMenu]
   );

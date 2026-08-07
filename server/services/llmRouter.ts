@@ -30,7 +30,7 @@ export async function chatWithLLM(
 
   if (provider === 'ollama') {
     try {
-      return await chatWithOllama(query, history, options);
+      return await chatWithOllama(query, context, history, options);
     } catch (err) {
       console.warn('[LLMRouter] Ollama failed, falling back to Gemini:', (err as Error).message);
       return chatWithAIContext(query, context, history, options);
@@ -42,6 +42,7 @@ export async function chatWithLLM(
 
 async function chatWithOllama(
   query: string,
+  context: string,
   history: any[],
   options: LLMOptions
 ): Promise<LLMResult> {
@@ -50,9 +51,18 @@ async function chatWithOllama(
 
   const model = options.ollamaModel || env.OLLAMA_MODEL || 'llama3.1';
 
+  // Same rule as the Gemini path: the caller's context is appended to the system
+  // message, never dropped in favour of systemInstruction. Dropping it here made
+  // the Ollama fallback answer from nothing while looking identical to a real answer.
   const messages: any[] = [];
-  if (options.systemInstruction) {
-    messages.push({ role: 'system', content: options.systemInstruction });
+  const systemContent = [
+    options.systemInstruction,
+    context?.trim() ? `UTILIZE O CONTEXTO ABAIXO:\n${context}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+  if (systemContent) {
+    messages.push({ role: 'system', content: systemContent });
   }
   for (const h of history.slice(-20)) {
     const role = h.role === 'model' ? 'assistant' : h.role;

@@ -43,10 +43,12 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
         <div className="bg-neutral-900/50 p-1 rounded-full border border-neutral-800 inline-flex relative">
           <div
             className={cn(
-              'absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out',
-              billingCycle === 'monthly'
-                ? 'left-1 w-[calc(50%-4px)]'
-                : 'left-[50%] w-[calc(50%-4px)]'
+              // GPU-only: fixed width + translateX. Displacement is exactly the
+              // indicator's own width (container/2 - 4px), so translate-x-full
+              // lands on the same pixels the old `left-[50%]` did.
+              'absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-brand-cyan',
+              'transition-transform duration-[var(--dur-slow)] ease-in-out',
+              billingCycle === 'monthly' ? 'translate-x-0' : 'translate-x-full'
             )}
           />
           <Button
@@ -102,7 +104,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
             {filteredPlans.map((plan) => (
               <Card
                 key={plan.id}
-                className="bg-neutral-900/40 border-neutral-800/50 hover:border-neutral-700 transition-all duration-300 flex flex-col group relative overflow-hidden"
+                className="bg-neutral-900/40 border-neutral-800/50 hover:border-neutral-700 transition-colors duration-300 flex flex-col group relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
@@ -137,7 +139,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                           : t('pricing.perMonth')}
                       </span>
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase ">
+                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 mt-2 uppercase ">
                       <Pickaxe size={12} className="text-neutral-500" />
                       <span>
                         {plan.credits} {t('pricing.creditsLabel')}

@@ -114,7 +114,7 @@ export function GenericPresetModal<T extends string>({
       <div
         key={`${isCommunity ? 'community-' : ''}${preset.id}`}
         className={cn(
-          'flex flex-col rounded-md border transition-all overflow-hidden group',
+          'flex flex-col rounded-md border transition-[color,background-color,border-color,opacity] overflow-hidden group',
           isSelected
             ? 'bg-brand-cyan/10 border-brand-cyan/50 hover:bg-brand-cyan/15'
             : 'bg-neutral-900/30 border-neutral-700/30 hover:bg-neutral-900/50 hover:border-neutral-600/50',
@@ -180,7 +180,7 @@ export function GenericPresetModal<T extends string>({
                 className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-300 transition-colors mb-1"
                 aria-expanded={isPromptExpanded}
               >
-                <span className="text-[10px] uppercase font-mono">Prompt</span>
+                <span className="text-[10px] uppercase tracking-wider">Prompt</span>
                 {isPromptExpanded ? (
                   <ChevronUp size={12} className="flex-shrink-0" />
                 ) : (
@@ -218,7 +218,7 @@ export function GenericPresetModal<T extends string>({
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
           <div className="flex items-center gap-2">
             <Icon size={20} className="text-neutral-400" />
-            <h2 id="preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase">
+            <h2 id="preset-modal-title" className="text-sm font-semibold text-neutral-200 tracking-tight">
               {title}
             </h2>
           </div>
@@ -238,7 +238,7 @@ export function GenericPresetModal<T extends string>({
             variant="ghost"
             onClick={() => setActiveTab('official')}
             className={cn(
-              'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
+              'px-4 py-2 text-xs font-medium transition-colors duration-200 border-b-2 relative',
               activeTab === 'official'
                 ? 'text-brand-cyan border-brand-cyan'
                 : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:border-neutral-600/50'
@@ -250,7 +250,7 @@ export function GenericPresetModal<T extends string>({
             variant="ghost"
             onClick={() => setActiveTab('community')}
             className={cn(
-              'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
+              'px-4 py-2 text-xs font-medium transition-colors duration-200 border-b-2 flex items-center gap-1.5 relative',
               activeTab === 'community'
                 ? 'text-brand-cyan border-brand-cyan'
                 : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:border-neutral-600/50'
@@ -292,7 +292,7 @@ export function GenericPresetModal<T extends string>({
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Users size={14} className="text-neutral-400" />
-                <h3 className="text-xs font-mono text-neutral-400 uppercase">Community Presets</h3>
+                <h3 className="text-xs font-semibold text-neutral-300 tracking-tight">Community Presets</h3>
               </div>
               {isLoadingCommunityPresets ? (
                 <div className="flex items-center justify-center py-12">

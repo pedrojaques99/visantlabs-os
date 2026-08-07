@@ -1358,8 +1358,17 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
 
     const { buildNamingPrompt } = await import('../lib/prompts/namingPrompt.js');
 
-    /** Provider que efetivamente serviu a última rodada — vai para a analytics. */
-    let servedBy: { provider: string; model: string } | null = null;
+    /**
+     * Provider que efetivamente serviu a última rodada — vai para a analytics.
+     *
+     * Guardado dentro de um objeto de propósito: a única escrita acontece em
+     * `runRound`, e o control-flow analysis do TS não rastreia atribuição feita
+     * dentro de closure. Numa variável solta ele estreitava o tipo para `null`
+     * pelo inicializador, e `if (servedBy)` virava `never` — os campos abaixo
+     * não compilavam. Escrita através de propriedade não sofre esse
+     * estreitamento.
+     */
+    const servedBy: { current: { provider: string; model: string } | null } = { current: null };
 
     /** Uma rodada de geração, excluindo nomes já vistos/queimados nesta request. */
     const runRound = async (exclude: string[], want: number) => {
@@ -1396,7 +1405,7 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
             }
           : {}),
       });
-      servedBy = r;
+      servedBy.current = r;
       const parsedRound = parseJsonLoose<{ names?: unknown }>(r.text);
       return {
         names: Array.isArray(parsedRound?.names) ? parsedRound!.names : [],
@@ -1510,7 +1519,8 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
     parsed.filteredOut = filteredOut;
     // Qual provider realmente serviu — deixa a UI mostrar quando houve fallback
     // em vez de o usuário achar que "o modelo que escolhi" respondeu.
-    if (servedBy) parsed.servedBy = { provider: servedBy.provider, model: servedBy.model };
+    if (servedBy.current)
+      parsed.servedBy = { provider: servedBy.current.provider, model: servedBy.current.model };
 
     res.json(parsed);
 
@@ -1526,8 +1536,8 @@ router.post('/generate-naming', apiRateLimiter, authenticate, async (req: AuthRe
           userId: req.userId!,
           // Modelo/provider REAIS que serviram — com a cascata, o pedido nem
           // sempre é o que responde, e a analytics precisa refletir isso.
-          model: servedBy?.model || resolvedModel,
-          provider: servedBy?.provider || null,
+          model: servedBy.current?.model || resolvedModel,
+          provider: servedBy.current?.provider || null,
           requested: typeof count === 'number' ? count : 10,
           returned: Array.isArray(parsed?.names) ? parsed.names.length : 0,
           tokens: totalTokens,

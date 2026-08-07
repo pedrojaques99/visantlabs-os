@@ -1,3 +1,5 @@
+// Colhido para o registry: `@visant/scrub-input` — a versão canônica vive lá.
+// Correção que valha para outros projetos deve ir no registry primeiro.
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 

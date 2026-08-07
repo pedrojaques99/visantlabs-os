@@ -372,7 +372,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
               variant="ghost"
               onClick={() => setViewMode('all')}
               className={cn(
-                'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color,border-color,box-shadow]',
                 viewMode === 'all'
                   ? 'bg-neutral-800 text-neutral-200 shadow-sm'
                   : 'text-neutral-500 hover:text-neutral-300'
@@ -384,7 +384,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
               variant="ghost"
               onClick={() => setViewMode('my')}
               className={cn(
-                'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-[color,background-color,border-color,box-shadow]',
                 viewMode === 'my'
                   ? 'bg-neutral-800 text-neutral-200 shadow-sm'
                   : 'text-neutral-500 hover:text-neutral-300'
@@ -427,7 +427,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 key={category}
                 onClick={() => setActiveTab(category)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs whitespace-nowrap transition-all',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs whitespace-nowrap transition-colors',
                   isActive
                     ? 'bg-neutral-700 border-neutral-600 text-neutral-200'
                     : 'bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400'

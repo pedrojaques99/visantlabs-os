@@ -197,7 +197,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               key={fmt}
               onClick={() => fetchOutput(fmt)}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-mono transition-all',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-mono transition-[color,background-color,border-color,box-shadow]',
                 activeFormat === fmt
                   ? 'bg-white/10 text-neutral-200 shadow-sm'
                   : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'

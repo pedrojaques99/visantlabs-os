@@ -23,6 +23,7 @@ import { BrandToolSelect } from '@/components/shared/BrandToolSelect';
 import { useToolInput } from '@/hooks/useToolInput';
 import { useBrandDefaults } from '@/hooks/useBrandDefaults';
 import { glassSurface } from '@/lib/ui/glass';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /* ------------------------------------------------------------------ */
 /*  Animation presets                                                  */
@@ -185,6 +186,7 @@ async function applyWatermark(item: WatermarkItem, settings: WmSettings): Promis
 /* ------------------------------------------------------------------ */
 
 export const WatermarkPage: React.FC = () => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -396,7 +398,7 @@ export const WatermarkPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-all duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -419,7 +421,7 @@ export const WatermarkPage: React.FC = () => {
             transition={{ duration: 0.25, delay: i * 0.03 }}
             layout
             className={cn(
-              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200 group',
+              'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors duration-200 group',
               previewItem?.id === item.id
                 ? 'bg-neutral-800/60 ring-1 ring-brand-cyan/30'
                 : 'hover:bg-neutral-900/60'
@@ -439,7 +441,7 @@ export const WatermarkPage: React.FC = () => {
                 e.stopPropagation();
                 removeItem(item.id);
               }}
-              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-all duration-200 flex-shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-neutral-600 hover:text-neutral-300 transition-[color,background-color,border-color,opacity] duration-200 flex-shrink-0"
             >
               <X size={12} />
             </button>
@@ -457,22 +459,22 @@ export const WatermarkPage: React.FC = () => {
         <div className="space-y-1.5">
           <span className="text-xs font-medium text-neutral-500">Type</span>
           <div className="flex gap-1">
-            {(['text', 'logo'] as const).map((t) => (
+            {(['text', 'logo'] as const).map((wmType) => (
               <motion.button
-                key={t}
+                key={wmType}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setWatermarkType(t)}
+                onClick={() => setWatermarkType(wmType)}
                 disabled={isProcessing}
                 className={cn(
-                  'flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-mono transition-all duration-200',
-                  watermarkType === t
+                  'flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-mono transition-colors duration-200',
+                  watermarkType === wmType
                     ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
                     : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
                 )}
               >
-                {t === 'text' ? <Type size={10} /> : <Image size={10} />}
-                {t === 'text' ? 'Text' : 'Logo'}
+                {wmType === 'text' ? <Type size={10} /> : <Image size={10} />}
+                {wmType === 'text' ? 'Text' : 'Logo'}
               </motion.button>
             ))}
           </div>
@@ -513,7 +515,7 @@ export const WatermarkPage: React.FC = () => {
                 onClick={() => logoInputRef.current?.click()}
                 disabled={isProcessing}
                 className={cn(
-                  'flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                  'flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
                   logoUrl
                     ? 'bg-neutral-800 text-neutral-300 border border-neutral-700'
                     : 'bg-neutral-900 text-neutral-500 border border-dashed border-neutral-700 hover:border-neutral-500'
@@ -553,7 +555,7 @@ export const WatermarkPage: React.FC = () => {
                   onClick={() => setPosition(pos)}
                   disabled={isProcessing}
                   className={cn(
-                    'w-5 h-5 rounded-sm transition-all duration-200 flex items-center justify-center',
+                    'w-5 h-5 rounded-sm transition-colors duration-200 flex items-center justify-center',
                     position === pos
                       ? 'bg-brand-cyan border border-brand-cyan'
                       : 'bg-neutral-900 border border-neutral-800 hover:border-neutral-600'
@@ -575,7 +577,7 @@ export const WatermarkPage: React.FC = () => {
               }}
               disabled={isProcessing}
               className={cn(
-                'w-full px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-all duration-200',
+                'w-full px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
                 position === 'tile'
                   ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
                   : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
@@ -712,8 +714,9 @@ export const WatermarkPage: React.FC = () => {
   return (
     <MiniAppShell
       icon={Stamp}
-      title="Watermark"
-      documentTitle="Watermark"
+      title={t('apps.watermark.name')}
+      toolId="watermark"
+      documentTitle={t('apps.watermark.name')}
       onReset={hasItems ? reset : undefined}
       panel={panelContent}
       panelLabel="Queue & settings"
@@ -755,7 +758,7 @@ export const WatermarkPage: React.FC = () => {
 
             <motion.label
               className={cn(
-                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200',
+                'flex flex-col items-center justify-center gap-3 w-full max-w-md h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-colors duration-200',
                 isDragOver
                   ? 'border-brand-cyan bg-brand-cyan/5'
                   : 'border-neutral-800 hover:border-neutral-600 bg-neutral-950/40'

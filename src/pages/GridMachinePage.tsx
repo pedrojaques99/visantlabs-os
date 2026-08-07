@@ -4,6 +4,7 @@ import { Upload } from '@/lib/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { ToolEditorShell } from '@/components/shared/ToolEditorShell';
+import { BrandFunnelBanner } from '@/components/funnel/BrandFunnelBanner';
 import { GridCanvas, type GridCanvasHandle } from '@/components/grid-machine/GridCanvas';
 import { GridMachineControls } from '@/components/grid-machine/ControlsPanel';
 import { useGridMachineStore } from '@/stores/gridMachineStore';
@@ -187,6 +188,9 @@ export const GridMachinePage: React.FC = () => {
       }}
       dropMessage={t('grid.machine.drop_svg_here')}
     >
+      {/* Funil de marca (Fase 5). Fica dentro do ToolEditorShell de propósito:
+          o AppShell é zIndex 40 e o banner é z-30 — fora dele, sumiria por baixo. */}
+      <BrandFunnelBanner toolId="grid-machine" />
       <input
         ref={fileInputRef}
         type="file"

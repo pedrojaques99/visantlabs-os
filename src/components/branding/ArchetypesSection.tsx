@@ -172,7 +172,7 @@ const ArchetypeCard: React.FC<{
       <div className="space-y-4">
         <div>
           <span
-            className={`text-xs font-mono uppercase  ${
+            className={`text-xs uppercase  ${
               theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
             }`}
           >

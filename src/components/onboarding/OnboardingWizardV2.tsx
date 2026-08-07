@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { ArrowRight, Upload, PencilLine, Compass, Loader2 } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { PersonaGrid } from './PersonaGrid';
-import { SEGMENTS, DEFAULT_ROUTE, type Segment } from './onboardingSegments';
+import { SEGMENTS, DEFAULT_ROUTE, NO_BRAND_ROUTE, type Segment } from './onboardingSegments';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 // Wizard v2 (FEATURE_ONBOARDING_V2) — onboarding brand-first de verdade.
@@ -28,7 +28,7 @@ type BrandPath = 'real' | 'minimal' | 'demo';
 
 /** Persona → rota final, sempre com a marca na mão quando houver. */
 const routeFor = (seg: Segment | null, brandId: string | null): string => {
-  if (!seg) return brandId ? `${DEFAULT_ROUTE}?brand=${brandId}` : DEFAULT_ROUTE;
+  if (!seg) return brandId ? `${DEFAULT_ROUTE}?brand=${brandId}` : NO_BRAND_ROUTE;
   if (seg.id === 'agency') return brandId ? `/brand-guidelines?id=${brandId}` : seg.route;
   return brandId ? `${seg.route}?brand=${brandId}` : seg.route;
 };
@@ -59,16 +59,23 @@ export const OnboardingWizardV2: React.FC = () => {
   const selected = SEGMENTS.find((s) => s.id === selectedId) || null;
   const isBusy = isSubmitting || isCreatingDemo || isCreatingMinimal;
 
-  const finish = async (route: string, category?: string, finalBrandId?: string | null) => {
+  /** Retorna `true` só quando concluiu e navegou — o caller decide o que dizer depois. */
+  const finish = async (
+    route: string,
+    category?: string,
+    finalBrandId?: string | null
+  ): Promise<boolean> => {
     setIsSubmitting(true);
     try {
       await authService.completeOnboarding(category, finalBrandId ?? undefined);
       onboardingApi.trackStep('complete', category ?? null, !category);
       toast.success(t('onboarding.welcomeToast'));
       navigate(route);
+      return true;
     } catch {
       toast.error(t('onboarding.finishError'));
       setIsSubmitting(false);
+      return false;
     }
   };
 
@@ -146,9 +153,32 @@ export const OnboardingWizardV2: React.FC = () => {
     advanceWithBrand({ id } as BrandGuideline, 'real');
   };
 
+  // Recuperação do "pular" que ficou sem marca: roda fora do wizard (o toast vive
+  // no Toaster global), então navega e ativa a marca por conta própria. Reanexa a
+  // marca ao onboarding JÁ concluído — /auth/complete-onboarding é idempotente e
+  // só grava `onboardingBrandGuidelineId` quando o brandGuidelineId é do usuário.
+  const retryDemoBrand = async () => {
+    try {
+      const guideline = await onboardingApi.createDemoBrand();
+      const id = guideline.id ?? null;
+      if (!id) throw new Error('demo brand without id');
+      setActiveBrand(id);
+      await authService.completeOnboarding(selected?.id, id).catch(() => {});
+      onboardingApi.trackStep('skip_demo_recovered', selectedId, true);
+      toast.success(t('onboarding.skipDemoRetryDone'));
+      navigate(routeFor(selected, id));
+    } catch {
+      onboardingApi.trackStep('skip_demo_retry_failed', selectedId, true);
+      toast.error(t('onboarding.skipDemoRetryError'));
+    }
+  };
+
   // "Pular" total — passa pelo caminho demo (regra de ouro): a ferramenta de
-  // destino sempre recebe uma marca. Se até o demo falhar, segue sem marca
-  // (nunca bloquear o signup).
+  // destino sempre recebe uma marca. Se até o demo falhar, seguimos sem marca
+  // (nunca bloquear o signup), MAS sem mentir: o usuário é avisado do que falhou,
+  // ganha um retry e vai parar em NO_BRAND_ROUTE (a superfície onde ele traz a
+  // marca), não num gerador que sem marca entrega metade do valor. O silêncio era
+  // o defeito aqui, não a resiliência.
   const handleSkipAll = async () => {
     if (isBusy) return;
     setIsCreatingDemo(true);
@@ -157,12 +187,35 @@ export const OnboardingWizardV2: React.FC = () => {
       const guideline = await onboardingApi.createDemoBrand();
       demoId = guideline.id ?? null;
     } catch {
-      /* segue sem marca — nunca travar */
+      /* tratado abaixo — o erro NÃO é engolido */
     } finally {
       setIsCreatingDemo(false);
     }
+    // Resposta 2xx sem id conta como falha: o efeito pro usuário é o mesmo.
+    const demoFailed = !demoId;
+
     onboardingApi.trackStep('skip', selectedId, true);
-    await finish(routeFor(selected, demoId), selected?.id, demoId);
+    if (demoFailed) onboardingApi.trackStep('skip_demo_failed', selectedId, true);
+
+    // Mesma razão do advanceWithBrand: sem isso o HomeRoute lê activeBrand=null.
+    if (demoId) setActiveBrand(demoId);
+
+    const done = await finish(
+      demoFailed ? NO_BRAND_ROUTE : routeFor(selected, demoId),
+      selected?.id,
+      demoId
+    );
+    // Só avisa depois de realmente ter saído do wizard — se o finish falhou, o
+    // usuário continua aqui e o toast de erro dele já é a mensagem certa.
+    if (done && demoFailed) {
+      toast.warning(t('onboarding.skipDemoError'), {
+        duration: 10000,
+        action: {
+          label: t('onboarding.skipDemoRetry'),
+          onClick: () => void retryDemoBrand(),
+        },
+      });
+    }
   };
 
   const handleContinueFromPersona = () => {
@@ -175,7 +228,7 @@ export const OnboardingWizardV2: React.FC = () => {
   };
 
   const pathCard =
-    'w-full flex items-start gap-3 p-4 rounded-lg border text-left transition-all border-neutral-700/50 bg-neutral-800/30 hover:border-neutral-600 disabled:opacity-50';
+    'w-full flex items-start gap-3 p-4 rounded-lg border text-left transition-[color,background-color,border-color,opacity] border-neutral-700/50 bg-neutral-800/30 hover:border-neutral-600 disabled:opacity-50';
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">

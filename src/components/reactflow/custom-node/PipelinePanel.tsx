@@ -18,7 +18,7 @@ export function PipelinePanel({ config, log, isLoading }: Props) {
         </p>
       ) : (
         <>
-          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Steps</p>
+          <p className="text-[10px] text-neutral-500 uppercase tracking-wider">Steps</p>
           <div className="flex items-center gap-1 flex-wrap">
             {config.steps.map((step, i) => (
               <React.Fragment key={step.id}>

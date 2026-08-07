@@ -150,7 +150,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                 variant="brand"
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-colors duration-200 text-sm font-mono"
               >
                 {isLoading ? (
                   <>

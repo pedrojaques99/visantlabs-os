@@ -43,6 +43,7 @@ import type { BrandGuideline } from '@/lib/figma-types';
 import { isLocalDevelopment } from '@/utils/env';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { translate } from '@/utils/localeUtils';
 
 export const useCanvasNodeCreation = (
   reactFlowInstance: ReactFlowInstance | null,
@@ -180,7 +181,7 @@ export const useCanvasNodeCreation = (
   const addMergeNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -243,7 +244,7 @@ export const useCanvasNodeCreation = (
       initialData?: Partial<PromptNodeData>
     ): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -304,7 +305,7 @@ export const useCanvasNodeCreation = (
   const addVideoNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -361,7 +362,7 @@ export const useCanvasNodeCreation = (
   const addBrandNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1063,7 +1064,7 @@ export const useCanvasNodeCreation = (
         }, 0);
         return newNodes;
       });
-      toast.success('Image node added! Upload an image to fill it.', { duration: 3000 });
+      toast.success(translate('canvas.imageNodeAdded'), { duration: 3000 });
       trackCanvasEvent('node_created', newNode.type, canvasId);
       return newNode.id;
     },
@@ -1084,7 +1085,7 @@ export const useCanvasNodeCreation = (
   const handlePasteImage = useCallback(
     async (image: UploadedImage) => {
       if (!reactFlowInstance) {
-        toast.error('Canvas não está pronto. Por favor, aguarde um momento e tente novamente.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1098,7 +1099,7 @@ export const useCanvasNodeCreation = (
 
       // Validate image data
       if (!image.file && !image.base64) {
-        toast.error('Nenhuma imagem encontrada. Por favor, tente colar novamente.');
+        toast.error(translate('canvas.noImageFoundPaste'));
         return;
       }
 
@@ -1110,16 +1111,17 @@ export const useCanvasNodeCreation = (
           // Show loading toast for large images
           const fileSizeMB = image.file.size / 1024 / 1024;
           const loadingToast =
-            fileSizeMB > 2 ? toast.loading('Fazendo upload...', { duration: Infinity }) : null;
+            fileSizeMB > 2 ? toast.loading(translate('canvas.uploadingImage'), { duration: Infinity }) : null;
 
           // Validate file size before processing (very large files may cause issues)
           const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB absolute limit
           if (image.file.size > MAX_FILE_SIZE) {
             if (loadingToast) toast.dismiss(loadingToast);
             toast.error(
-              `Imagem muito grande (${(image.file.size / 1024 / 1024).toFixed(
-                2
-              )}MB). O tamanho máximo é ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB.`,
+              translate('canvas.imageTooLargeMax', undefined, {
+                size: (image.file.size / 1024 / 1024).toFixed(2),
+                max: (MAX_FILE_SIZE / 1024 / 1024).toFixed(0),
+              }),
               { duration: 5000 }
             );
             return;
@@ -1221,17 +1223,17 @@ export const useCanvasNodeCreation = (
 
             if (errorCount > 0 && successCount === 0) {
               toast.error(
-                `Falha ao fazer upload da imagem para ${errorCount} node(s). Usando método alternativo.`,
+                translate('canvas.pasteUploadFailedNodes', undefined, { count: errorCount }),
                 { duration: 4000 }
               );
             } else if (errorCount > 0) {
               toast.warning(
-                `Imagem colada em ${successCount} node(s), mas falhou em ${errorCount} node(s).`,
+                translate('canvas.pastePartialNodes', undefined, { success: successCount, failed: errorCount }),
                 { duration: 4000 }
               );
             } else {
               toast.success(
-                `Imagem colada em ${successCount} node${successCount > 1 ? 's' : ''}!`,
+                translate('canvas.pastedIntoNodes', undefined, { count: successCount }),
                 { duration: 2000 }
               );
             }
@@ -1323,17 +1325,17 @@ export const useCanvasNodeCreation = (
             });
 
             if (loadingToast) toast.dismiss(loadingToast);
-            toast.success('Imagem colada!', { duration: 2000 });
+            toast.success(translate('canvas.imagePasted'), { duration: 2000 });
           } catch (error: any) {
             console.error('Failed to upload pasted image to R2:', error);
             if (loadingToast) toast.dismiss(loadingToast);
 
             // Show user-friendly error message
             const errorMessage = error?.message?.includes('Failed to get upload URL')
-              ? 'Falha ao conectar com o servidor. Usando método alternativo.'
+              ? translate('canvas.uploadServerFailedFallback')
               : error?.message?.includes('Failed to upload to R2')
-                ? 'Falha ao fazer upload. Usando método alternativo.'
-                : 'Falha ao fazer upload. Usando método alternativo.';
+                ? translate('canvas.uploadFailedFallback')
+                : translate('canvas.uploadFailedFallback');
 
             toast.warning(errorMessage, { duration: 3000 });
 
@@ -1365,18 +1367,18 @@ export const useCanvasNodeCreation = (
                       return n;
                     });
                   });
-                  toast.success('Imagem colada (método alternativo)!', { duration: 2000 });
+                  toast.success(translate('canvas.imagePastedFallback'), { duration: 2000 });
                 }
               };
               reader.onerror = () => {
-                toast.error('Falha ao processar imagem. Por favor, tente novamente.', {
+                toast.error(translate('canvas.processImageFailed'), {
                   duration: 4000,
                 });
               };
               reader.readAsDataURL(image.file);
             } catch (fallbackError) {
               console.error('Fallback to base64 also failed:', fallbackError);
-              toast.error('Falha ao processar imagem. Por favor, tente novamente.', {
+              toast.error(translate('canvas.processImageFailed'), {
                 duration: 4000,
               });
             }
@@ -1384,8 +1386,8 @@ export const useCanvasNodeCreation = (
           return;
         } catch (error: any) {
           console.error('Error processing pasted image with direct upload:', error);
-          const errorMessage = error?.message || 'Erro desconhecido ao processar imagem';
-          toast.error(`Erro: ${errorMessage}. Tentando método alternativo...`, { duration: 3000 });
+          const errorMessage = error?.message || translate('canvas.imageProcessUnknownError');
+          toast.error(translate('canvas.pasteRetryingFallback', undefined, { error: errorMessage }), { duration: 3000 });
           // Fall through to base64 method below
         }
       }
@@ -1394,14 +1396,14 @@ export const useCanvasNodeCreation = (
       // This happens when: File is not available, canvasId is missing, or direct upload failed
       if (!canvasId) {
         toast.warning(
-          'Projeto não salvo. Salve o projeto para fazer upload direto de imagens grandes.',
+          translate('canvas.projectUnsavedUpload'),
           { duration: 4000 }
         );
       }
 
       let processedBase64 = image.base64;
       if (!processedBase64) {
-        toast.error('Falha ao processar imagem colada. Por favor, tente novamente.');
+        toast.error(translate('canvas.processPastedImageFailed'));
         return;
       }
 
@@ -1410,9 +1412,7 @@ export const useCanvasNodeCreation = (
           handlersRef.current.handleUploadImage(node.id, processedBase64);
         });
         toast.success(
-          `Image pasted into ${selectedImageNodes.length} node${
-            selectedImageNodes.length > 1 ? 's' : ''
-          }!`,
+          translate('canvas.pastedIntoNodes', undefined, { count: selectedImageNodes.length }),
           { duration: 2000 }
         );
         return;
@@ -1478,7 +1478,7 @@ export const useCanvasNodeCreation = (
         }
       }, 100);
 
-      toast.success('Image pasted!', { duration: 2000 });
+      toast.success(translate('canvas.imagePasted'), { duration: 2000 });
     },
     [
       reactFlowInstance,
@@ -1609,7 +1609,7 @@ export const useCanvasNodeCreation = (
         return updatedNodes;
       });
 
-      toast.success('Brand Kit created with 5 mockup presets', { duration: 2000 });
+      toast.success(translate('canvas.brandKitCreated'), { duration: 2000 });
 
       return newNodeIds;
     },
@@ -1619,7 +1619,7 @@ export const useCanvasNodeCreation = (
   const addLogoNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1674,7 +1674,7 @@ export const useCanvasNodeCreation = (
   const addColorExtractorNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1731,7 +1731,7 @@ export const useCanvasNodeCreation = (
   const addPDFNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1786,7 +1786,7 @@ export const useCanvasNodeCreation = (
   const addStrategyNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1851,7 +1851,7 @@ export const useCanvasNodeCreation = (
   const addBrandCoreNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1914,7 +1914,7 @@ export const useCanvasNodeCreation = (
   const addVideoInputNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -1974,7 +1974,7 @@ export const useCanvasNodeCreation = (
       isFlowPosition?: boolean
     ): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2046,7 +2046,7 @@ export const useCanvasNodeCreation = (
   const addVariablesNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2096,7 +2096,7 @@ export const useCanvasNodeCreation = (
   const addDataNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2144,7 +2144,7 @@ export const useCanvasNodeCreation = (
   const addBatchRunnerNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2195,7 +2195,7 @@ export const useCanvasNodeCreation = (
   const addBrandBatchNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2248,7 +2248,7 @@ export const useCanvasNodeCreation = (
   const addChatNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2314,7 +2314,7 @@ export const useCanvasNodeCreation = (
   const addDirectorNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 
@@ -2383,7 +2383,7 @@ export const useCanvasNodeCreation = (
   const addNodeBuilderNode = useCallback(
     (customPosition?: { x: number; y: number }): string | undefined => {
       if (!reactFlowInstance) {
-        toast.error('Canvas not ready. Please wait a moment and try again.');
+        toast.error(translate('canvas.canvasNotReady'));
         return;
       }
 

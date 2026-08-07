@@ -328,7 +328,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
                 className={cn(
                   'flex items-center gap-0.5 p-1 rounded-lg pointer-events-auto',
                   'bg-neutral-950/80 backdrop-blur-xl border border-white/10 shadow-2xl',
-                  'opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300'
+                  'opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300'
                 )}
               >
                 <Tooltip content={isSaved ? 'Salvo' : t('common.save') || 'Salvar'} position="top">

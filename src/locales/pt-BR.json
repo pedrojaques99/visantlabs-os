@@ -57,7 +57,7 @@
       "noMessages": "Nenhuma mensagem ainda. Comece descrevendo o que deseja criar.",
       "undoingLast": "Desfazendo a última operação…",
       "retrying": "Tentando novamente…",
-      "noBrandPick": "Sem marca — escolher"
+      "noBrandPick": "Sem marca, escolher uma"
     },
     "message": {
       "mockupLoadFailed": "Falha ao carregar a imagem do mockup",
@@ -178,10 +178,10 @@
         "roleSrf": "Srf",
         "roleTxt": "Txt",
         "fileVariables": "Variáveis do arquivo",
-        "selected": "{name} selecionada — toque em um espaço abaixo",
+        "selected": "{name} selecionada, toque em um espaço abaixo",
         "tapHint": "Toque em uma cor e depois em um espaço para atribuir",
         "assign": "Atribuir {hex} a {label}",
-        "clickHint": "Clique: escolher da seleção · Duplo clique: cor personalizada"
+        "clickHint": "Clique para escolher da seleção, duplo clique para cor personalizada"
       },
       "guideline": {
         "noTemplateOnPage": "Nenhum [Template] nesta página",
@@ -196,7 +196,7 @@
         "syncAria": "Sincronizar frames [Template] com o preview",
         "syncTitle": "Sincronizar os [Template] desta página com o preview",
         "sync": "Sincronizar",
-        "empty": "Nenhuma diretriz ainda. Crie uma para começar.",
+        "empty": "Nenhuma guideline ainda. Crie a primeira.",
         "namingGuide": "Guia de nomenclatura"
       },
       "intelligence": {
@@ -350,13 +350,13 @@
       },
       "automation": {
         "scanningColors": "Escaneando cores…",
-        "aiNaming": "Nomeando com IA…",
+        "aiNaming": "Nomeando as cores…",
         "applying": "Aplicando…",
-        "smartColorRename": "Renomear Cores (IA)",
-        "smartColorRenameTitle": "Renomear cores selecionadas com IA usando a estratégia da marca + popular biblioteca",
+        "smartColorRename": "Renomear cores pela estratégia",
+        "smartColorRenameTitle": "Renomeia as cores selecionadas usando a estratégia da marca e popula a biblioteca",
         "varyingColors": "Variando cores…",
         "smartColorVariationsTitle": "Gerar variações de cor da seleção usando a paleta da marca",
-        "smartColorVariations": "Variações de Cor (IA)",
+        "smartColorVariations": "Gerar variações de cor",
         "generatingVariants": "Gerando variantes…",
         "generateVariantsTitle": "Clonar a seleção nas variantes de cor Lava, Off-White e Terra",
         "generateVariants": "Gerar Variantes",
@@ -486,7 +486,7 @@
         "copyPhotosOff": "Copiar fotos do Figma: OFF",
         "generateCards": "Gerar {count} cards",
         "influencersStatus": "{count} influencers",
-        "timedOut": "Ainda processando — confira o canvas."
+        "timedOut": "Ainda processando. Confira o canvas."
       },
       "connectors": {
         "templatesStatus": "{count} templates",
@@ -543,7 +543,7 @@
         "empty": "Nenhuma referência ainda",
         "savingAnalyzing": "Analisando e salvando…",
         "savingProgress": "Salvando {done} de {total}…",
-        "saveTimedOut": "Demorou demais para responder. O envio pode ainda estar terminando — confira a biblioteca antes de tentar de novo."
+        "saveTimedOut": "Demorou demais para responder. O envio pode ainda estar terminando, confira a biblioteca antes de tentar de novo."
       }
     },
     "nav": {
@@ -556,13 +556,13 @@
   },
   "brandMockupDialog": {
     "title": "Criar Mockup",
-    "description": "{brandName} · logos, cores e tipografia injetados automaticamente.",
+    "description": "{brandName}: logos, cores e tipografia injetados automaticamente.",
     "brandFallback": "Marca",
-    "mediaLabel": "Mockup — {label}",
+    "mediaLabel": "Mockup: {label}",
     "back": "Voltar",
     "tryAgain": "Tentar de novo",
     "form": {
-      "brandPreviewTitle": "Prévia da marca — {aspectRatio} · {resolution}",
+      "brandPreviewTitle": "Prévia da marca: {aspectRatio}, {resolution}",
       "injectedFromBrand": "Injetado da marca · {aspectRatio}",
       "scene": "Cena",
       "surpriseMe": "Surpreenda-me",
@@ -621,7 +621,7 @@
     },
     "result": {
       "alt": "Mockup gerado",
-      "fellBack": "Gerado com {provider} — o modelo escolhido estava indisponível.",
+      "fellBack": "Gerado com {provider}, o modelo escolhido estava indisponível.",
       "generateAnother": "Gerar outro",
       "download": "Download",
       "saved": "Salvo",
@@ -637,7 +637,7 @@
       "describeScene": "Descreva a cena do mockup",
       "generated": "Mockup gerado ({count} crédito{plural})",
       "suggestError": "Erro ao sugerir mockups",
-      "cancelled": "Cancelado — {count} mockup{plural} gerado{plural}",
+      "cancelled": "Cancelado. {count} mockup{plural} gerado{plural}",
       "batchDone": "{count}/{total} mockups gerados",
       "noneGenerated": "Nenhum mockup gerado",
       "savedToMediaKit": "Salvo no Media Kit",
@@ -878,9 +878,9 @@
       "produtos": "Produtos",
       "admin_produtos": "Admin | Produtos",
       "produto_removido": "Produto removido",
-      "tem_certeza_que_deseja_deletar_este": "Tem certeza que deseja deletar este produto?",
+      "tem_certeza_que_deseja_deletar_este": "Excluir este produto? Não dá pra desfazer.",
       "preencha_os_campos_obrigatrios_id_d": "Preencha os campos obrigatórios (ID do Produto e Nome)",
-      "produtos_semeados_com_sucesso": "Produtos semeados com sucesso!",
+      "produtos_semeados_com_sucesso": "Produtos semeados",
       "deseja_popular_a_base_com_os_pacote": "Deseja popular a base com os pacotes de créditos e planos padrão?",
       "seed_error": "Erro ao semear: {error}",
       "title": "Produtos"
@@ -938,13 +938,13 @@
     "modelo": "Modelo",
     "data": "Data",
     "nenhum_registro_encontrado_para_este_usu": "Nenhum registro encontrado para este usuário.",
-    "carregando_registros": "Carregando registros...",
-    "click_refresh_to_load_feedback_analytics": "Click refresh to load feedback analytics",
-    "no_downvotes_in_this_window": "No downvotes in this window",
+    "carregando_registros": "Carregando registros…",
+    "click_refresh_to_load_feedback_analytics": "Clique em atualizar pra carregar o analytics de feedback",
+    "no_downvotes_in_this_window": "Nenhum voto negativo nesta janela",
     "no_data_yet_min_3_ratings_required": "No data yet (min 3 ratings required)",
     "top_20_by_approval_rate_min_3_ratings": "Top 20 by approval rate (min 3 ratings)",
     "tags_mais_votadas": "Tags mais votadas",
-    "no_tag_data_yet": "No tag data yet",
+    "no_tag_data_yet": "Ainda sem dados de tag",
     "top_20_by_usage_count": "Top 20 by usage count",
     "tags_mais_utilizadas": "Tags mais utilizadas",
     "down_5": "Down",
@@ -974,7 +974,7 @@
     "sem_dados_de_canvas_events_ainda": "Sem dados de canvas events ainda",
     "eventos_por_dia": "Eventos por Dia",
     "ranking_de_nodes": "Ranking de Nodes",
-    "carregando_analytics": "Carregando analytics...",
+    "carregando_analytics": "Carregando analytics…",
     "resolues": "Resoluções:",
     "input_output": "Input + Output",
     "total_tokens": "Total Tokens",
@@ -984,7 +984,7 @@
     "total_gerado": "Total gerado",
     "ltimos_30_dias": "Últimos 30 dias",
     "novos_usurios": "Novos Usuários",
-    "failed_to_load_feedback_stats": "Failed to load feedback stats",
+    "failed_to_load_feedback_stats": "Não foi possível carregar as estatísticas de feedback. Tente de novo.",
     "presets": {
       "digite_uma_tag_e_pressione_enter": "Digite uma tag e pressione Enter",
       "nenhuma": "Nenhuma",
@@ -997,7 +997,7 @@
       "erros": "Erros:",
       "resultado_da_importao": "Resultado da importação:",
       "falha_failed_itens_no_puderam_ser_cr": "Falha: ${failed} itens não puderam ser criados (podem já existir).",
-      "tem_certeza_que_deseja_deletar_este_": "Tem certeza que deseja deletar este preset?",
+      "tem_certeza_que_deseja_deletar_este_": "Excluir este preset? Não dá pra desfazer.",
       "editar_preset": "Editar preset"
     },
     "chat": {
@@ -1058,7 +1058,7 @@
     "viewTable": "Tabela",
     "select": "Select",
     "clickToEdit": "Click To Edit",
-    "failedToCreatePreset": "Failed To Create Preset",
+    "failedToCreatePreset": "Não foi possível criar o preset. Tente de novo.",
     "reference": "Reference",
     "removeImage": "Remove Image"
   },
@@ -1150,7 +1150,7 @@
     "searchPlaceholder": "Buscar apps...",
     "seoTitle": "Aplicativos Criativos",
     "subscribeNow": "ASSINAR AGORA",
-    "subtitle": "Escolha um aplicativo para começar",
+    "subtitle": "Escolha um app pra começar",
     "title": "Aplicativos",
     "vsnLabs": {
       "description": "Laboratório de efeitos interativos experimentais",
@@ -1161,7 +1161,7 @@
       "name": "YouTube Mixer"
     },
     "edit_app": "Editar App",
-    "failed_to_load_apps_from_database_using": "Failed to load apps from database, using offline mode",
+    "failed_to_load_apps_from_database_using": "Não foi possível carregar os apps. Mostrando a lista offline.",
     "microTitle": "Plataforma // Ferramentas",
     "headerDescription": "Seu kit criativo de ferramentas pro de design e experimentos gratuitos.",
     "addApp": "Adicionar App",
@@ -1173,7 +1173,7 @@
     "hidden": "Oculto",
     "featuredLabel": "Destaque",
     "quickTools": "Ferramentas rápidas",
-    "quickToolsDesc": "Conversores, geradores, imagem e experimentos — a um clique.",
+    "quickToolsDesc": "Conversores, geradores, imagem e experimentos, a um clique.",
     "access": {
       "all": "Todos",
       "free": "Gratuitos",
@@ -1250,7 +1250,7 @@
     },
     "backgroundRemover": {
       "name": "Removedor de Fundo",
-      "description": "Remova fundos com IA ou modo simples. Suporta lote."
+      "description": "Tira o fundo automático ou por limiar. Aceita lote."
     },
     "watermark": {
       "name": "Marca d’água",
@@ -1281,8 +1281,12 @@
       "description": "Gere todos os tamanhos de favicon, apple-touch-icon e web manifest de uma imagem."
     },
     "ogImage": {
-      "name": "Gerador de Imagem OG",
+      "name": "Gerador de OG Image",
       "description": "Crie imagens Open Graph com templates, texto e cores personalizados."
+    },
+    "pdfCompress": {
+      "name": "Compressor de PDF",
+      "description": "Reduza o peso de PDFs escolhendo o nível de compressão. Suporta lote."
     },
     "labs": {
       "name": "Labs",
@@ -1290,7 +1294,7 @@
     },
     "smartAnalyzer": {
       "name": "Smart Analyzer",
-      "description": "Análise de imagem com IA. Detecta o tipo da imagem e gera prompts otimizados para o plugin do Figma ou geração de imagem."
+      "description": "Lê a imagem, detecta o tipo e gera prompts prontos pro plugin do Figma ou pra geração de imagem."
     }
   },
   "auth": {
@@ -1305,7 +1309,7 @@
     "availableCredits": "Créditos disponíveis: {count}. Clique para ver detalhes.",
     "backToHome": "Voltar para Início",
     "backToLogin": "Voltar para Login",
-    "backendNotRunning": "Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all",
+    "backendNotRunning": "O servidor não está rodando. Suba com npm run dev:server ou npm run dev:all.",
     "bySigningUp": "Ao criar uma conta, você concorda com nossos",
     "checkEmailInstructions": "Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.",
     "completeCaptcha": "Por favor, complete a verificação CAPTCHA.",
@@ -1367,11 +1371,12 @@
   },
   "brandQuota": {
     "meter": "{used} de {max} marcas ativas",
-    "meterUnlimited": "{used} marcas ativas · ilimitado",
+    "meterUnlimited": "{used} marcas ativas, ilimitado",
     "upgrade": "Upgrade",
     "limitMessage": "Limite de marcas ativas atingido, {used}/{max}. Faça upgrade do plano para ativar mais marcas.",
     "graceMessage": "Você passou do limite de marcas do novo plano. Em {days} dia{plural} as marcas em excesso são arquivadas. Faça upgrade para manter todas ativas.",
     "graceCta": "Manter minhas marcas",
+    "graceAtRisk": "Na fila para arquivar:",
     "archive": "Arquivar",
     "unarchive": "Reativar",
     "archivedBadge": "Arquivada",
@@ -1379,14 +1384,14 @@
     "archiveConfirmTitle": "Arquivar esta marca?",
     "archiveConfirmMessage": "A marca fica em modo leitura e deixa de contar no seu limite de marcas ativas. Nada é apagado, você pode reativar quando quiser.",
     "archiveSuccess": "Marca arquivada",
-    "archiveError": "Falha ao arquivar a marca",
+    "archiveError": "Não foi possível arquivar a marca. Tente de novo.",
     "unarchiveSuccess": "Marca reativada",
-    "unarchiveError": "Falha ao reativar a marca",
+    "unarchiveError": "Não foi possível reativar a marca. Tente de novo.",
     "brandActions": "Ações da marca",
     "quickEdit": "Edição rápida",
     "byok": {
       "activeTitle": "Modo BYOK ativo",
-      "activeDesc": "Sua key cobre a geração; o plano cobre a plataforma, contexto de marca, storage e orquestração.",
+      "activeDesc": "Sua key cobre a geração. O plano cobre a plataforma, contexto de marca, storage e orquestração.",
       "inactiveTitle": "Usando créditos da plataforma",
       "inactiveDesc": "Cada geração desconta créditos do fair-use do seu plano. Adicione sua própria API key em Configurações para cobrir o custo de geração você mesmo."
     }
@@ -1412,7 +1417,7 @@
     "dontPlaceholder": "ex: Não usar jargão",
     "donts": "Evitar",
     "dos": "Fazer",
-    "emptyState": "Nenhuma brand guideline ainda. Crie uma para começar.",
+    "emptyState": "Nenhuma brand guideline ainda. Crie a primeira.",
     "emptyStateDesc": "Crie e organize suas diretrizes de marca em um único lugar.",
     "fontFamily": "Família da fonte",
     "fontRole": "Função (heading...)",
@@ -1456,17 +1461,20 @@
     "allFolders": "Todas",
     "sortRecent": "Recentes",
     "sortName": "Nome",
-    "sortCompleteness": "Completude",
+    "sortCompleteness": "Prontidão",
     "countBrands": "{filtered} de {total} marcas",
     "noMatch": "Nenhuma marca corresponde a “{term}”",
-    "completenessFull": "{score}% completo · tudo preenchido",
-    "completenessMissing": "{score}% completo · falta: {items}",
+    "completenessFull": "{score}% pronta, tudo preenchido",
+    "completenessMissing": "{score}% pronta, falta: {items}",
     "completenessMore": "+{count}",
-    "completenessAllSet": "Tudo preenchido."
+    "completenessAllSet": "Tudo preenchido.",
+    "loadFailedTitle": "Não foi possível carregar suas marcas",
+    "loadFailedBody": "Suas marcas estão salvas. Tente carregar de novo.",
+    "newBrand": "Nova marca"
   },
   "branding": {
     "allSectionsGenerated": "Todas as seções já foram geradas",
-    "allSectionsGeneratedSuccess": "Todas as seções geradas com sucesso!",
+    "allSectionsGeneratedSuccess": "Todas as seções geradas",
     "approveContinue": "Aprovar e Continuar",
     "backToPreviousStep": "Voltar à Etapa Anterior",
     "cancelEdit": "Cancelar Edição",
@@ -1526,7 +1534,7 @@
       "errors": {
         "failedToDelete": "Falha ao excluir projeto",
         "failedToLoad": "Falha ao carregar projetos de branding",
-        "invalidProjectId": "Invalid Project Id"
+        "invalidProjectId": "ID de projeto inválido"
       },
       "noProjects": "Nenhum projeto ainda",
       "seoDescription": "Gerencie seus projetos de branding.",
@@ -1636,14 +1644,18 @@
     "feedbackGiven": "Feedback Given",
     "thumbsUp": "Thumbs Up",
     "machine": {
-      "falar_com_especialista": "Falar com Especialista",
+      "falar_com_especialista": "Falar com especialista",
       "crie_estratgias_completas_de_bran": "Construa sua identidade de marca do zero ao conceito em etapas guiadas. Do brief ao manual completo.",
       "branding_machine_com_ia": "Branding Machine"
     },
     "expert": {
-      "converse_com_nosso_assistente_espe": "Refine sua estratégia. Questione cada decisão. Chegue numa marca que realmente funciona.",
+      "converse_com_nosso_assistente_espe": "Refine sua estratégia. Questione cada decisão. Chegue numa marca que se sustenta.",
       "especialista_em_branding_visant_la": "Especialista em Branding | Visant Labs"
-    }
+    },
+    "partialGenerationWarning": "Geramos {succeeded} de {total} seções, {failed} falharam. Tente de novo as marcadas em vermelho.",
+    "allSectionsFailed": "Nenhuma seção gerou ({failed} falharam). Tente de novo em instantes.",
+    "generateAllSkipped": "{skipped} já estavam sendo geradas e não entraram na conta.",
+    "generateAllAllSkipped": "As {total} seções já estavam sendo geradas. Espere terminar para gerar de novo."
   },
   "budget": {
     "addDeliverable": "Adicionar Entregável",
@@ -1695,7 +1707,8 @@
       "failedToSave": "Falha ao salvar orçamento",
       "failedToShare": "Falha ao gerar link de compartilhamento",
       "invalidDates": "Data de término deve ser posterior à data de início",
-      "requiredFields": "Por favor, preencha todos os campos obrigatórios"
+      "requiredFields": "Por favor, preencha todos os campos obrigatórios",
+      "loadRetry": "Seus presets estão salvos. Tente carregar de novo."
     },
     "faq": "Dúvidas Frequentes",
     "finalCTAText": "Texto Final (CTA)",
@@ -1817,12 +1830,12 @@
     "machine": {
       "copiar": "Copiar",
       "share_link": "Share Link:",
-      "duplicate_budget": "Duplicate budget",
-      "loading_budget": "Loading budget...",
-      "please_sign_in_to_duplicate_budgets": "Please sign in to duplicate budgets",
-      "please_save_the_budget_first_2": "Please save the budget first",
-      "please_save_the_budget_first": "Please save the budget first",
-      "please_sign_in_to_save_budgets": "Please sign in to save budgets"
+      "duplicate_budget": "Duplicar orçamento",
+      "loading_budget": "Carregando orçamento…",
+      "please_sign_in_to_duplicate_budgets": "Entre na sua conta pra duplicar orçamentos.",
+      "please_save_the_budget_first_2": "Salve o orçamento antes.",
+      "please_save_the_budget_first": "Salve o orçamento antes.",
+      "please_sign_in_to_save_budgets": "Entre na sua conta pra salvar orçamentos."
     }
   },
   "canvas": {
@@ -1922,9 +1935,9 @@
     "projectTooLargeNoR2": "Seu projeto está muito grande ({size}MB) para salvar. Configure o armazenamento R2 para projetos grandes.",
     "projectTooLargeOnce": "Seu projeto ainda está muito grande ({size}MB) mesmo após otimização. Reduza o número de imagens ou elementos no canvas.",
     "projects": {
-      "manage_your_visual_canvas_projects": "Manage your visual canvas projects.",
-      "invalid_file_not_a_visant_canvas_j": "Invalid file, not a Visant canvas JSON.",
-      "imported_opening": "Imported \"{name}\", opening canvas...",
+      "manage_your_visual_canvas_projects": "Gerencie seus projetos de canvas.",
+      "invalid_file_not_a_visant_canvas_j": "Arquivo inválido, não é um canvas JSON da Visant.",
+      "imported_opening": "Importado \"{name}\", abrindo o canvas…",
       "title": "Projetos"
     },
     "projectsCount": "{count} {count, plural, =1 {projeto} other {projetos}}",
@@ -1959,31 +1972,203 @@
     "storageQuotaExceeded": "Cota de armazenamento excedida. Por favor, limpe alguns dados e tente novamente.",
     "title": "Canvas",
     "unsavedCanvasProject": "Você tem um projeto não salvo. Deseja salvá-lo como um novo projeto?",
-    "untitled": "Sem título",
+    "untitled": "Projeto sem nome",
     "assetAdded": "Asset Added",
     "download": "Download",
     "hideGrid": "Hide Grid",
-    "noImagesToExport": "No Images To Export",
-    "exportingImages": "Exporting Images",
-    "exportComplete": "Export Complete",
+    "noImagesToExport": "Nenhuma imagem pra exportar",
+    "exportingImages": "Exportando imagens…",
+    "exportComplete": "Exportação concluída",
     "exportFailed": "Export Failed",
     "textPasted": "Text Pasted",
     "pasteFailed": "Paste Failed",
-    "deleteChatNode": "Delete Chat Node",
-    "deleteChatNodeMessage": "Delete Chat Node Message",
+    "deleteChatNode": "Excluir nó de chat",
+    "deleteChatNodeMessage": "Excluir este nó de chat? A conversa dele se perde.",
     "cancel": "Cancel",
-    "searchProjects": "Search Projects",
-    "noProjectsFound": "No Projects Found",
-    "noProjectsMatchSearch": "No Projects Match Search",
+    "searchProjects": "Buscar projetos",
+    "noProjectsFound": "Nenhum projeto encontrado",
+    "noProjectsMatchSearch": "Nenhum projeto bate com a busca",
     "clearSearch": "Clear Search",
     "shared": {
-      "project_not_found": "Project Not Found",
+      "project_not_found": "Projeto não encontrado",
       "shared_canvas": "Shared Canvas",
-      "failed_to_load_shared_project": "Failed to load shared project"
+      "failed_to_load_shared_project": "Não foi possível carregar o projeto compartilhado."
     },
-    "brand_asset_added_to_canvas": "Brand asset added to canvas",
+    "brand_asset_added_to_canvas": "Asset da marca adicionado ao canvas",
     "import_failed": "Falha ao importar: {error}",
-    "unknown_error": "erro desconhecido"
+    "unknown_error": "erro desconhecido",
+    "loadFailedTitle": "Não foi possível carregar os projetos",
+    "loadFailedBody": "Seu trabalho está salvo. Tente carregar de novo.",
+    "noProjectsForBrand": "Nenhum projeto de canvas está ligado à marca ativa.",
+    "mockupConnectImage": "Conecte uma imagem para gerar o mockup.",
+    "mockupConnectLogoOrImage": "Conecte um logo ou uma imagem para gerar o mockup.",
+    "presetNotFound": "Preset {presetId} não encontrado. Escolha outro na lista.",
+    "logoProcessFallback": "Não deu para processar o logo. Seguimos com a imagem conectada.",
+    "imageReadFailed": "Não conseguimos ler essa imagem. Tente outra ou envie o arquivo de novo.",
+    "imageNotAccessible": "Não conseguimos abrir a imagem. Confira se o link ainda está no ar e tente de novo.",
+    "baseImageEmpty": "A imagem de base chegou vazia. Reconecte o node de origem e tente de novo.",
+    "mockupGenerated": "Mockup gerado.",
+    "mockupGenerateFailed": "Não conseguimos gerar o mockup. Tente de novo em instantes.",
+    "presetConnectImage": "Conecte uma imagem para gerar.",
+    "presetApplied": "Efeito aplicado.",
+    "presetGenerateFailed": "Não conseguimos gerar a imagem. Tente de novo em instantes.",
+    "angleConnectImage": "Conecte uma imagem para gerar o ângulo.",
+    "angleApplied": "Ângulo gerado.",
+    "textureConnectImage": "Conecte uma imagem para gerar a textura.",
+    "textureApplied": "Textura aplicada.",
+    "ambienceConnectImage": "Conecte uma imagem para gerar a ambiência.",
+    "ambienceApplied": "Ambiência aplicada.",
+    "luminanceConnectImage": "Conecte uma imagem para gerar a iluminação.",
+    "luminanceApplied": "Iluminação aplicada.",
+    "editConnectImage": "Conecte uma imagem para editar.",
+    "editNoImageConnected": "O node conectado não tem imagem. Gere ou envie uma antes de editar.",
+    "imageEditedNewNode": "Imagem editada. Criamos um node novo com o resultado.",
+    "editImageFailed": "Não conseguimos editar a imagem. Tente de novo em instantes.",
+    "upscaleConnectImage": "Conecte uma imagem para fazer upscale.",
+    "imageUpscaledTo": "Upscale para {resolution} concluído.",
+    "upscaleImageFailed": "Não conseguimos fazer o upscale. Tente de novo em instantes.",
+    "imageUploaded": "Imagem enviada.",
+    "completeStepsBeforePrompt": "Complete os passos anteriores antes de gerar o prompt.",
+    "promptGenerated": "Prompt gerado.",
+    "promptGenerateFailed": "Não conseguimos gerar o prompt. Tente de novo.",
+    "enterPromptFirst": "Escreva um prompt antes de continuar.",
+    "suggestionsFailed": "Não conseguimos gerar sugestões. Tente de novo.",
+    "maxImagesForModel": "O modelo {model} aceita no máximo {max} imagens. Você conectou {count}. Desconecte as que sobram.",
+    "imageGenerated": "Imagem gerada.",
+    "aiNeedsMoreInfo": "A IA precisa de mais detalhes para gerar a imagem.",
+    "imageGenerateFailed": "Não conseguimos gerar a imagem. Tente de novo em instantes.",
+    "brandIdentityAnalyzed": "Identidade da marca analisada.",
+    "brandIdentityAnalyzeFailed": "Não conseguimos analisar a identidade. Confira o logo e o material enviado e tente de novo.",
+    "analysisCancelled": "Análise cancelada.",
+    "brandIdentityRequired": "Conecte o logo e o material de identidade antes de gerar os prompts.",
+    "visualPromptsFailed": "Não conseguimos gerar os prompts visuais. Tente de novo em instantes.",
+    "consolidateStrategiesFailed": "Não conseguimos consolidar as estratégias. Tente de novo.",
+    "batchConnectDataNode": "Conecte um node de Data no Batch Runner para começar.",
+    "batchConnectPromptNode": "Conecte um node de Prompt no Batch Runner para começar.",
+    "batchNoRows": "O node de Data está vazio. Envie um CSV ou JSON antes de rodar.",
+    "batchRowCancelled": "Cancelado",
+    "batchRowFailed": "Falhou na geração",
+    "batchComplete": "Batch concluído. {done} geradas, {failed} falharam.",
+    "batchCancelled": "Batch cancelado. {done} geradas antes de parar.",
+    "batchCancelling": "Cancelando o batch depois da linha atual.",
+    "brandBatchConnectImage": "Conecte pelo menos uma imagem no node de Brand Batch.",
+    "brandBatchComplete": "Brand Batch concluído. {done} geradas, {failed} falharam.",
+    "brandBatchCancelled": "Brand Batch cancelado. {done} geradas antes de parar.",
+    "brandBatchCancelling": "Cancelando o batch depois do item atual.",
+    "videoUploaded": "Vídeo enviado.",
+    "videoGenerated": "Vídeo gerado.",
+    "videoAlreadyGenerating": "Já tem um vídeo sendo gerado. Espere terminar para começar outro.",
+    "videoGenerateFailed": "Não conseguimos gerar o vídeo. Tente de novo em instantes.",
+    "shaderConnectMedia": "Conecte uma imagem ou vídeo para aplicar o efeito.",
+    "shaderVideoApplied": "Efeito aplicado no vídeo.",
+    "processingVideoFrames": "Processando os frames do vídeo.",
+    "shaderProcessFailed": "Não conseguimos aplicar o efeito. Tente de novo em instantes.",
+    "upscaleConnectMedia": "Conecte uma imagem ou vídeo para fazer upscale.",
+    "videoUpscaled": "Upscale do vídeo concluído.",
+    "saveProjectFailed": "Não conseguimos salvar o projeto. Tente de novo.",
+    "loadProjectTimeout": "O projeto demorou demais para carregar. Tente de novo.",
+    "projectNotFound": "Projeto não encontrado.",
+    "optimizingImagesForSize": "Otimizando imagens para caber no limite de tamanho...",
+    "optimizingImagesToSave": "Otimizando imagens para salvar...",
+    "optimizingImagesProgress": "Otimizando imagens... {current} de {total}",
+    "imagesOptimized": "{count} imagem(ns) otimizada(s)",
+    "imagesOptimizeFailed": "{count} imagem(ns) não puderam ser otimizadas.",
+    "imagesOptimizeFailedSaving": "{count} imagem(ns) não puderam ser otimizadas. Salvando mesmo assim...",
+    "imagesOptimizedPartial": "{ok} otimizada(s), {failed} falharam. Salvando mesmo assim...",
+    "imagesOptimizeError": "Não conseguimos otimizar algumas imagens.",
+    "imagesOptimizeErrorSaving": "Não conseguimos otimizar algumas imagens. Salvando mesmo assim...",
+    "projectTooLargeDb": "Seu projeto está muito grande ({size}MB) para salvar no banco. Reduza o número de imagens no canvas.",
+    "saveProjectTooLarge": "Projeto grande demais para salvar. O limite é 50MB. Reduza o número de imagens ou configure o R2 nas configurações do sistema.",
+    "saveProjectCheckSize": "Não conseguimos salvar. Veja se o projeto não ficou grande demais.",
+    "sessionExpired": "Sua sessão expirou. Faça login de novo.",
+    "serverError": "Erro no servidor. Tente de novo em instantes.",
+    "canvasNotReady": "O canvas ainda não está pronto. Espere um momento e tente de novo.",
+    "imageNodeAdded": "Node de imagem criado. Suba uma imagem para preencher.",
+    "noImageFoundPaste": "Nenhuma imagem encontrada. Tente colar de novo.",
+    "uploadingImage": "Fazendo upload...",
+    "imageTooLargeMax": "Imagem grande demais ({size}MB). O máximo é {max}MB.",
+    "pasteUploadFailedNodes": "Não conseguimos subir a imagem para {count} node(s). Usando o método alternativo.",
+    "pastePartialNodes": "Imagem colada em {success} node(s), mas falhou em {failed} node(s).",
+    "pastedIntoNodes": "Imagem colada em {count} node(s).",
+    "imagePasted": "Imagem colada.",
+    "imagePastedFallback": "Imagem colada (método alternativo).",
+    "processImageFailed": "Não conseguimos processar a imagem. Tente de novo.",
+    "uploadServerFailedFallback": "Não conseguimos falar com o servidor. Usando o método alternativo.",
+    "uploadFailedFallback": "O upload falhou. Usando o método alternativo.",
+    "pasteRetryingFallback": "{error}. Tentando o método alternativo...",
+    "projectUnsavedUpload": "Projeto não salvo. Salve o projeto para subir imagens grandes direto.",
+    "processPastedImageFailed": "Não conseguimos processar a imagem colada. Tente de novo.",
+    "brandKitCreated": "Brand Kit criado com 5 presets de mockup.",
+    "enterBrandDescription": "Escreva uma descrição da marca primeiro.",
+    "strategyGenerateFailed": "Não conseguimos gerar a estratégia. Tente de novo.",
+    "strategyNodeNotFound": "Node de estratégia não encontrado.",
+    "initialAnalysisDone": "Análise inicial pronta. Já dá para gerar as seções.",
+    "initialAnalysisFailed": "Não conseguimos rodar a análise inicial. Tente de novo.",
+    "waitCurrentSection": "Espere a seção atual terminar de gerar.",
+    "generationCancelled": "Geração cancelada.",
+    "sectionGenerateFailed": "Não conseguimos gerar {section}. Tente de novo.",
+    "allSectionsAlreadyGenerated": "Todas as seções já foram geradas.",
+    "allSectionsGenerated": "Todas as seções foram geradas.",
+    "allSectionsGenerateFailed": "Não conseguimos gerar todas as seções. Tente de novo.",
+    "noStrategyToExport": "Ainda não há dados de estratégia para exportar.",
+    "pdfGenerated": "PDF gerado.",
+    "pdfGenerateFailed": "Não conseguimos gerar o PDF. Tente de novo.",
+    "strategySaved": "Estratégia salva no projeto de branding.",
+    "strategySaveFailed": "Não conseguimos salvar a estratégia. Tente de novo.",
+    "canvasStateUnavailable": "O estado do canvas não está disponível. Recarregue a página.",
+    "chatNodeNotFound": "Node de chat não encontrado.",
+    "nodeTypeNotSupported": "O tipo de node \"{type}\" não é suportado.",
+    "nodeCreated": "Node {label} criado.",
+    "nodeCreateFailed": "Não conseguimos criar o node {type}. O recurso pode não estar disponível.",
+    "messageEmpty": "Escreva uma mensagem primeiro.",
+    "chatCleared": "Chat limpo.",
+    "campaignDone": "Campanha pronta. {count} anúncios gerados.",
+    "sendMessageFailed": "Não conseguimos enviar a mensagem. Tente de novo.",
+    "chatHistoryCleared": "Histórico do chat limpo.",
+    "promptNodeCreateFailed": "Não conseguimos criar o node de prompt.",
+    "promptNodeCreated": "Node de prompt criado.",
+    "targetNodeNotFound": "Node de destino não encontrado.",
+    "unknownNodeType": "Tipo de node desconhecido.",
+    "nodeUpdated": "Node atualizado.",
+    "nodeUpdateFailed": "Não conseguimos atualizar o node. Tente de novo.",
+    "imageNodeCreateFailed": "Não conseguimos criar o node de imagem. O recurso pode não estar disponível.",
+    "directorNodeNotFound": "Node do Director não encontrado.",
+    "directorNoImageConnected": "Nenhuma imagem conectada ao node do Director.",
+    "imageAnalyzedSelectTags": "Imagem analisada. Escolha as tags para gerar seu prompt.",
+    "selectAtLeastOneTag": "Escolha pelo menos uma tag.",
+    "selectAtLeastOneTagOrPool": "Escolha pelo menos uma tag ou adicione tags ao pool.",
+    "promptGeneratedNodeCreated": "Prompt gerado e PromptNode criado.",
+    "mockupNotAvailable": "A geração de mockup não está disponível agora.",
+    "connectImageToText": "Não dá para conectar um handle de imagem a um handle de texto.",
+    "connectTextToImage": "Não dá para conectar um handle de texto a um handle de imagem.",
+    "connectHandleTypeMismatch": "Não dá para conectar um handle {source} a um handle {target}. Os tipos precisam bater.",
+    "connectSameFlowType": "Não dá para conectar dois nodes de fluxo do mesmo tipo.",
+    "logoInputAccepts": "A entrada de logo só aceita nodes Image, Logo ou Output.",
+    "identityInputAccepts": "A entrada de identidade só aceita nodes PDF, Image ou Output.",
+    "connectionRemoved": "Conexão removida.",
+    "colorsExtracted": "{count} cores extraídas.",
+    "colorsExtractFailed": "Não conseguimos extrair as cores. Tente de novo.",
+    "brandIdentitySaved": "Identidade da marca extraída e salva.",
+    "brandIdentitySaveWarning": "Análise salva localmente, mas não no banco. Ela pode se perder ao recarregar.",
+    "brandIdentityExtracted": "Identidade da marca extraída.",
+    "brandIdentityExtractFailed": "Não conseguimos extrair a identidade da marca. Tente de novo.",
+    "nodeExecutionFailed": "O node falhou ao rodar. Tente de novo.",
+    "nothingToUndo": "Nada para desfazer.",
+    "undone": "Desfeito.",
+    "nothingToRedo": "Nada para refazer.",
+    "redone": "Refeito.",
+    "uploadImageFailed": "Não conseguimos subir a imagem. Tente de novo.",
+    "nodesRemovedR2Warning": "{count} node(s) removido(s). As imagens somem de vez quando você salvar. Aperte Ctrl+Z para recuperar.",
+    "nodesRemoved": "{count} node(s) removido(s).",
+    "canvasSaved": "Canvas salvo.",
+    "videoCopied": "Vídeo copiado para a área de transferência.",
+    "imageCopied": "Imagem copiada para a área de transferência.",
+    "copyMediaFailed": "Não conseguimos copiar a mídia. Tente de novo.",
+    "imageCopiedPng": "Imagem copiada como PNG.",
+    "copyPngFailed": "Não conseguimos copiar a imagem como PNG. Tente de novo.",
+    "noMediaInNode": "Nenhuma mídia neste node.",
+    "imageFetchHttpError": "Não conseguimos baixar a imagem (erro {status}). Tente de novo.",
+    "imageProcessUnknownError": "Algo travou ao processar a imagem."
   },
   "canvasBottomToolbar": {
     "color": "Cor",
@@ -2079,8 +2264,8 @@
       "noProjectsFoundMatchingSearch": "Nenhum projeto encontrado para sua busca",
       "searchProjects": "Buscar projetos...",
       "selectBrandingProject": "Selecionar Projeto de Marca",
-      "untitled": "Sem título",
-      "searchProjectsPlaceholder": "Search Projects Placeholder"
+      "untitled": "Projeto sem nome",
+      "searchProjectsPlaceholder": "Buscar projetos…"
     },
     "chatNode": {
       "and": "e",
@@ -2170,7 +2355,7 @@
       "defaultPrompt": "Aplique as alterações solicitadas nesta imagem mantendo sua composição geral e qualidade.",
       "editedResult": "Resultado editado",
       "title": "Mockup Machine",
-      "comingSoon": "Coming Soon"
+      "comingSoon": "Em breve"
     },
     "editNodeControls": {
       "editHandlerNotAvailable": "Handler de edição não disponível. Por favor, tente atualizar a página."
@@ -2184,7 +2369,7 @@
       "copyDescription": "Copiar descrição",
       "deleteMockup": "Excluir Mockup",
       "deleteMockupMessage": "Tem certeza que deseja excluir este mockup? Esta ação não pode ser desfeita.",
-      "describeImageWithAI": "Descrever imagem com IA",
+      "describeImageWithAI": "Descrever a imagem",
       "description": "Descrição",
       "descriptionCleared": "Descrição limpa",
       "descriptionCopied": "Descrição copiada para a área de transferência!",
@@ -2200,14 +2385,14 @@
       "uploadImage": "Enviar uma imagem",
       "uploadImageTitle": "Enviar Imagem",
       "viewFullScreen": "Ver em Tela Cheia",
-      "pleaseSelectImageFile": "Please Select Image File",
+      "pleaseSelectImageFile": "Selecione um arquivo de imagem",
       "imageInput": "Image Input",
       "removeImage": "Remove Image",
       "canvasImage": "Canvas Image",
-      "failedToSaveImage": "Failed To Save Image",
-      "failedToFindCurrentNode": "Failed To Find Current Node",
-      "invalidNodePosition": "Invalid Node Position",
-      "failedToCreateTextNode": "Failed To Create Text Node"
+      "failedToSaveImage": "Não foi possível salvar a imagem. Tente de novo.",
+      "failedToFindCurrentNode": "O nó atual não foi encontrado. Recarregue o canvas.",
+      "invalidNodePosition": "Posição de nó inválida",
+      "failedToCreateTextNode": "Não foi possível criar o nó de texto. Tente de novo."
     },
     "logoNode": {
       "failedToProcessLogo": "Falha ao processar imagem do logo",
@@ -2287,7 +2472,7 @@
     "outputNode": {
       "analyzingImage": "Analisando imagem...",
       "connectNodeToSeeResult": "Conecte um Node para ver o resultado",
-      "describeImageWithAI": "Descrever imagem com IA",
+      "describeImageWithAI": "Descrever a imagem",
       "downloadImage": "Baixar Imagem",
       "failedToUpdateLikeStatus": "Falha ao atualizar status de favorito",
       "imageDescriptionGenerated": "Descrição da imagem gerada!",
@@ -2357,21 +2542,21 @@
       "textDirectionFromBrandCore": "Direção de Texto",
       "textInput": "Texto",
       "title": "Prompt Node",
-      "creditsRequired": "Credits Required",
-      "brandConnected": "Brand Connected",
+      "creditsRequired": "Precisa de créditos",
+      "brandConnected": "Marca conectada",
       "selectModel": "Select Model"
     },
     "shaderNode": {
       "connectImage": "Conecte uma imagem ou vídeo",
       "inputImage": "Imagem de Entrada",
       "uploadImageOrVideo": "Enviar Imagem ou Vídeo",
-      "processingVideo": "Processing Video",
-      "applyingShader": "Applying Shader"
+      "processingVideo": "Processando vídeo…",
+      "applyingShader": "Aplicando shader…"
     },
     "shared": {
       "imageDownloaded": "Imagem baixada!",
       "downloading": "Downloading",
-      "downloadFailed": "Download Failed"
+      "downloadFailed": "Falha no download. Tente de novo."
     },
     "strategyNode": {
       "analyze": "Analisar",
@@ -2416,16 +2601,16 @@
       "selectExistingProject": "Selecionar Projeto Existente",
       "strategySavedSuccessfully": "Estratégia salva com sucesso",
       "title": "Strategy Node",
-      "generatingAllSections": "Generating All Sections"
+      "generatingAllSections": "Gerando todas as seções…"
     },
     "textNode": {
-      "aiHint": "Clique no diamante para melhorar com IA",
+      "aiHint": "Clique no diamante pra reescrever o prompt",
       "characters": "caracteres",
       "copied": "Texto copiado!",
       "copy": "Copiar texto",
       "copyFailed": "Falha ao copiar texto",
       "errorImprovingPrompt": "Falha ao melhorar prompt",
-      "improvePrompt": "Melhorar com IA",
+      "improvePrompt": "Melhorar prompt",
       "improvingPrompt": "Melhorando prompt...",
       "placeholder": "Digite o texto aqui...",
       "promptImproved": "Prompt melhorado!",
@@ -2662,7 +2847,8 @@
       "emptySubtitle": "Sua marca já está pronta pra trabalhar. Escolha por onde começar:",
       "emptyTitle": "Comece o primeiro trabalho da marca",
       "new": "Novo",
-      "title": "Em andamento"
+      "title": "Em andamento",
+      "loadError": "Não foi possível carregar seu trabalho em andamento. Tente de novo."
     }
   },
   "common": {
@@ -2765,12 +2951,15 @@
     "show": "Show",
     "yes": "Yes",
     "no": "No",
-    "presetSelected": "Preset Selected",
+    "presetSelected": "Preset selecionado",
     "dismiss": "Dispensar",
     "brand": "Marca",
     "recent": "Recentes",
     "dragToPosition": "Arraste para posicionar",
-    "applyBrand": "Da marca"
+    "applyBrand": "Da marca",
+    "retry": "Tentar de novo",
+    "unavailable": "indisponível",
+    "saving": "Salvando..."
   },
   "community": {
     "failedToDuplicateWorkflow": "Falha ao duplicar workflow",
@@ -2783,29 +2972,88 @@
     "workflowDuplicated": "Workflow duplicado na sua biblioteca",
     "youtube": "YouTube",
     "title": "Title",
-    "ver_repositrio": "Ver Repositório",
+    "ver_repositrio": "Ver repositório",
     "usar_como_referncia": "Usar como referência",
-    "galeria_da_comunidade": "Galeria da Comunidade",
-    "workflows_da_comunidade": "Workflows da Comunidade",
-    "vazio": "vazio",
-    "explorar_por_categoria": "Explorar por Categoria",
+    "galeria_da_comunidade": "Galeria da comunidade",
+    "workflows_da_comunidade": "Workflows da comunidade",
+    "vazio": "Vazio",
+    "explorar_por_categoria": "Explorar por categoria",
     "curadoria": "Curadoria",
     "publicado": "Publicado",
     "criaes": "Criações",
     "membros": "Membros",
-    "explorar_galeria": "Explorar Galeria",
+    "explorar_galeria": "Explorar galeria",
     "criar_um_novo_prompt": "Criar um novo prompt",
     "presets": {
-      "duplicate_this_preset_into_your_": "Duplicate this preset into your collection?",
-      "search_presets_2": "Search presets",
-      "search_presets": "Search presets… ( / )",
-      "copied": "Copied"
+      "duplicate_this_preset_into_your_": "Duplicar este preset pra sua coleção?",
+      "search_presets_2": "Buscar presets",
+      "search_presets": "Buscar presets… ( / )",
+      "copied": "Copiado"
     },
     "profile": {
-      "duplicate_to_my_library": "Duplicate to my library",
+      "duplicate_to_my_library": "Duplicar pra minha biblioteca",
       "workflows": "Workflows",
       "mockups": "Mockups",
-      "loading_profile": "Loading profile..."
+      "loading_profile": "Carregando perfil…",
+      "editProfile": "Editar perfil",
+      "presets": "Presets",
+      "run": "Rodar",
+      "notFound": "Não encontramos esse perfil",
+      "invalidIdentifier": "Esse link de perfil é inválido",
+      "loadFailed": "Não foi possível carregar esse perfil",
+      "noMockupsTitle": "Nenhum mockup ainda",
+      "noMockupsBody": "Esse membro ainda não publicou nenhum mockup.",
+      "noWorkflowsTitle": "Nenhum workflow ainda",
+      "noWorkflowsBody": "Esse membro ainda não publicou nenhum workflow.",
+      "noPresetsTitle": "Nenhum preset ainda",
+      "noPresetsBody": "Esse membro ainda não publicou nenhum preset.",
+      "ownerNoMockupsBody": "Publique um mockup e ele aparece aqui pra todo mundo.",
+      "ownerNoWorkflowsBody": "Salve um canvas como workflow e ele aparece aqui.",
+      "ownerNoPresetsBody": "Vire um prompt em preset e ele aparece aqui.",
+      "createMockup": "Criar um mockup",
+      "createWorkflow": "Abrir o canvas",
+      "createPreset": "Criar um preset"
+    },
+    "activeBadge": "Comunidade ativa",
+    "allCategories": "Todas as categorias",
+    "categoryCardDescription": "Explore {category} criados pela nossa comunidade.",
+    "workflowsDescription": "Workflows completos criados pela comunidade. Salve, compartilhe e reutilize estruturas de canvas inteiras.",
+    "openCanvas": "Abrir canvas",
+    "viewAllWorkflows": "Ver todos os workflows",
+    "noPublicWorkflows": "Nenhum workflow público ainda",
+    "galleryDescription": "Inspirado pelo que nossos usuários publicam, em tempo real.",
+    "viewFullGallery": "Ver galeria completa",
+    "emptyGallery": "A galeria pública está vazia",
+    "seeMore": "Ver mais",
+    "seeLess": "Ver menos",
+    "loadErrorTitle": "Não foi possível carregar a comunidade",
+    "loadErrorDescription": "Seus dados estão seguros. Tente carregar de novo.",
+    "workflowsLoadError": "Não foi possível carregar os workflows.",
+    "openSource": "Open Source",
+    "growTogetherTitle": "Vamos crescer junto",
+    "growTogetherBody": "Visant Labs é movido por paixão e colaboração. Acesse nosso repositório no GitHub pra contribuir, relatar bugs ou dar uma estrela.",
+    "license": "v1.0.0-alpha • MIT License",
+    "promptLabel": "Prompt",
+    "mockupAlt": "Mockup da comunidade",
+    "nodesCount": "{count} nodes",
+    "workflowLibrary": "Biblioteca de workflows",
+    "editProfileModal": {
+      "title": "Editar perfil da comunidade",
+      "coverImage": "Imagem de capa",
+      "noCover": "Sem imagem de capa",
+      "changeCover": "Trocar capa",
+      "coverAspect": "16:9",
+      "coverMaxSize": "Máx 2MB",
+      "username": "Nome de usuário",
+      "usernamePlaceholder": "Seu nome de usuário",
+      "usernameHint": "3–20 caracteres: letras, números, sublinhados e hifens.",
+      "bio": "Bio",
+      "bioPlaceholder": "Conta um pouco sobre você…",
+      "socialLinks": "Redes sociais",
+      "saveChanges": "Salvar alterações",
+      "coverTooLarge": "A capa precisa ter menos de 2MB",
+      "coverUploaded": "Imagem de capa atualizada",
+      "coverUploadError": "Não foi possível enviar a capa"
     }
   },
   "communityPresets": {
@@ -2886,7 +3134,7 @@
       "presetDuplicated": "Preset duplicado com sucesso",
       "presetUpdated": "Preset atualizado com sucesso!",
       "presetApplied": "Preset Applied",
-      "presetImported": "Preset Imported"
+      "presetImported": "Preset importado"
     },
     "modelOptional": "Modelo (opcional)",
     "myPresets": "Meus Presets",
@@ -2964,10 +3212,26 @@
     "useCasePlaceholder": "Descreva quando e como usar este prompt",
     "viewAll": "Todos",
     "viewMy": "Meus Presets",
-    "searchPlaceholder": "Search Placeholder",
+    "searchPlaceholder": "Buscar presets…",
     "buttons": {
       "create": "Create"
-    }
+    },
+    "sortNewest": "Mais recentes",
+    "sortLikes": "Mais curtidos",
+    "sortUsed": "Mais usados",
+    "countOne": "{count} preset",
+    "countOther": "{count} presets",
+    "noResultsFor": "Nenhum resultado para “{query}”",
+    "clearSearch": "Limpar busca",
+    "duplicateTitle": "Duplicar preset",
+    "duplicateConfirm": "Duplicar",
+    "copyPrompt": "Copiar",
+    "edit": "Editar",
+    "charsCount": "{count} caracteres",
+    "imageSizeHint": "A imagem precisa ter menos de 4 MB",
+    "namePlaceholder": "Nome do preset",
+    "removeTag": "Remover tag",
+    "removeImage2": "Remover imagem"
   },
   "configuration": {
     "apiKeyPlaceholder": "Insira sua chave da API Gemini",
@@ -2991,10 +3255,10 @@
     "title": "Configuração",
     "updateHint": "Para atualizar, basta colar sua nova chave acima.",
     "warning": "Sua chave é criptografada e armazenada com segurança. Apenas você pode acessá-la.",
-    "seedreamApiKey": "Seedream Api Key",
-    "seedreamPlaceholder": "Seedream Placeholder",
-    "deleteSeedream": "Delete Seedream",
-    "deleteSeedreamConfirm": "Delete Seedream Confirm"
+    "seedreamApiKey": "API key do Seedream",
+    "seedreamPlaceholder": "Cole a API key do Seedream",
+    "deleteSeedream": "Remover a key do Seedream",
+    "deleteSeedreamConfirm": "Remover a key do Seedream? A geração volta a consumir créditos da plataforma."
   },
   "confirmationModal": {
     "defaultConfirm": "Continuar",
@@ -3055,7 +3319,7 @@
     "planApprovedWithAnswers": "Aprovado. {answers}. Pode gerar os mockups propostos.",
     "planApproved": "Aprovado. Pode gerar os mockups propostos.",
     "approvePlanError": "Erro ao aprovar plano.",
-    "rejected": "Rejeitado — nada salvo",
+    "rejected": "Rejeitado, nada salvo",
     "rejectError": "Falha ao rejeitar"
   },
   "copilot": {
@@ -3090,8 +3354,8 @@
     "getStarted": "Começar a Criar",
     "previousCredits": "Créditos anteriores",
     "subtitle": "Seus créditos foram adicionados à sua conta",
-    "support": "Precisa de ajuda? Entre em contato conosco.",
-    "title": "Créditos Adicionados com Sucesso!",
+    "support": "Precisa de ajuda? Fale com a gente.",
+    "title": "Créditos adicionados",
     "totalCredits": "Total de créditos disponíveis",
     "verifying": "Verificando créditos..."
   },
@@ -3100,7 +3364,7 @@
     "available": "Disponíveis",
     "buyCredits": "Comprar",
     "freeGenerationsUsed": "Gerações Grátis Usadas",
-    "manualCredits": "Créditos",
+    "manualCredits": "Créditos manuais",
     "monthlyUsage": "Uso Mensal",
     "noneAvailable": "Sem créditos disponíveis",
     "upgradeCta": "Fazer upgrade pra continuar",
@@ -3112,14 +3376,14 @@
     "storage": "Armazenamento",
     "title": "CRÉDITOS",
     "used": "Gastos",
-    "noSubscription": "No Subscription"
+    "noSubscription": "Sem assinatura"
   },
   "creditsPackages": {
     "buy": "Comprar",
     "credits": "Créditos",
     "note": "Créditos nunca expiram e podem ser usados a qualquer momento",
-    "purchaseSuccess": "Créditos adicionados com sucesso!",
-    "subtitle": "Escolha um pacote de créditos que funciona para você",
+    "purchaseSuccess": "Créditos adicionados à sua conta",
+    "subtitle": "Escolha o pacote pelo volume que você gera",
     "title": "COMPRAR CRÉDITOS",
     "viewPlans": "Ver planos de assinatura"
   },
@@ -3285,7 +3549,7 @@
       "quickStart1": "Navegue pelos componentes e suas variantes",
       "quickStart2": "Copie variáveis CSS e nomes de classes",
       "quickStart3": "Entenda os padrões de espaçamento e layout",
-      "quickStartDescription": "Comece com nosso design system explorando a paleta de cores, tipografia e componentes.",
+      "quickStartDescription": "Comece pela paleta de cores, tipografia e componentes.",
       "spacingDescription": "Escala e sistema de espaçamento",
       "typographyDescription": "Fontes e estilos de texto",
       "usage": "Uso",
@@ -3423,43 +3687,51 @@
   "errorBoundary": {
     "chunkErrorDescription": "Não foi possível carregar os arquivos necessários",
     "chunkErrorHint": "Tente recarregar a página ou limpar o cache do navegador.",
-    "chunkErrorMessage": "Ocorreu um problema ao carregar os arquivos da página. Isso geralmente é causado por problemas de rede ou cache.",
-    "chunkErrorTitle": "Erro ao Carregar Página",
+    "chunkErrorMessage": "Os arquivos da página não baixaram, normalmente é rede ou cache velho.",
+    "chunkErrorTitle": "Erro ao carregar a página",
     "goHome": "Ir para Início",
-    "layoutError": "Este erro sugere que um componente está tentando usar o contexto de layout fora do componente Layout. Por favor, recarregue a página ou entre em contato com o suporte se o problema persistir.",
+    "layoutError": "Um componente tentou usar o contexto de layout fora do Layout. Recarregue a página, e se continuar, fale com o suporte.",
     "reloadPage": "Recarregar Página",
     "retrying": "Tentando carregar novamente...",
     "stackTrace": "Stack Trace",
     "tryAgain": "Tentar Novamente",
-    "unexpectedError": "Ocorreu um erro inesperado",
-    "unexpectedErrorDescription": "Algo deu errado",
-    "unexpectedErrorTitle": "Erro Inesperado"
+    "unexpectedError": "Esta tela não conseguiu carregar",
+    "unexpectedErrorDescription": "Recarregue a página. Se continuar, fale com o suporte.",
+    "unexpectedErrorTitle": "Erro inesperado"
   },
   "errors": {
-    "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
-    "authenticationError": "Erro de autenticação. Por favor, entre novamente.",
-    "authenticationRequired": "Por favor, entre para gerar mockups.",
-    "completeSteps": "Por favor, complete todos os passos antes de gerar.",
-    "couldNotBrainstorm": "A IA não conseguiu pensar em novas ideias. Por favor, tente novamente em um momento.",
-    "couldNotGenerateSuggestions": "A IA não conseguiu gerar sugestões agora. Por favor, escolha da lista abaixo.",
-    "failedToStartCheckout": "Falha ao iniciar checkout. Por favor, tente novamente.",
-    "generationError": "Ocorreu um erro durante a geração. Por favor, tente novamente ou ajuste seu prompt.",
-    "invalidImageFormat": "Formato de imagem inválido. Por favor, envie uma imagem PNG, JPG ou WEBP válida.",
+    "aiBusy": "O modelo está congestionado. Trocamos por um prompt mais simples, edite à mão ou tente gerar de novo.",
+    "authenticationError": "Sua sessão expirou. Entre de novo pra continuar.",
+    "authenticationRequired": "Entre na sua conta pra gerar mockups.",
+    "brandHealthCheckFailed": "Não foi possível rodar a análise da marca. Tente de novo em alguns segundos.",
+    "completeSteps": "Complete todos os passos antes de gerar.",
+    "couldNotBrainstorm": "O modelo não trouxe ideias novas. Tente de novo em instantes.",
+    "couldNotGenerateSuggestions": "O modelo não gerou sugestões agora. Escolha da lista abaixo.",
+    "couldNotLoadIdeas": "Não foi possível carregar as ideias. Tente de novo em instantes.",
+    "failedToStartCheckout": "Não foi possível abrir o checkout. Tente de novo em alguns segundos.",
+    "generationError": "A geração falhou. Tente de novo ou ajuste o prompt.",
+    "ideasNotEnabled": "As ideias por IA ainda não estão liberadas neste workspace. Fale com o suporte pra ativar.",
+    "ideasUnavailable": "As ideias por IA estão indisponíveis agora. Tente de novo em alguns minutos.",
+    "imageEditFailed": "Não foi possível editar a imagem. Tente de novo ou ajuste a área selecionada.",
+    "imageExpandFailed": "Não foi possível expandir a imagem. Tente de novo com uma expansão menor.",
+    "invalidImageFormat": "Formato inválido. Envie um PNG, JPG ou WEBP.",
     "needCredits": "Você precisa de {needed} crédito{plural} mas só tem {remaining} restantes. Os créditos serão renovados em {date}.",
-    "needGenerations": "Você precisa de {needed} geração{plural} mas só tem {remaining} restantes. Por favor, assine para continuar.",
+    "needGenerations": "Você precisa de {needed} geração{plural} e só tem {remaining}. Assine pra continuar.",
     "nextBillingCycle": "seu próximo ciclo de cobrança",
     "paymentLinkNotConfigured": "Link de pagamento não configurado para esta moeda",
-    "promptGenerationFailed": "Falha na geração de prompt. Por favor, tente novamente.",
-    "promptGenerationTimeout": "Geração de prompt expirou. Por favor, tente novamente.",
-    "rateLimit": "A IA está muito popular agora! Por favor, aguarde cerca de 10 minutos e tente novamente. Isso nos ajuda a garantir acesso justo para todos. 💎�",
+    "promptGenerationFailed": "A geração do prompt falhou. Tente de novo.",
+    "promptGenerationTimeout": "A geração do prompt demorou demais. Tente de novo.",
+    "rateLimit": "Muita gente gerando agora. Espere uns 10 minutos e tente de novo, é o que mantém o acesso justo pra todo mundo.",
+    "removeBackgroundFailed": "Não foi possível remover o fundo. Tente de novo em alguns segundos.",
+    "resumeEditFailed": "Não foi possível retomar a edição anterior. Rode de novo.",
     "storageLimitExceeded": "Limite de armazenamento excedido. Você está usando {used} de {limit}. Este arquivo ({fileSize}) excederia seu limite.",
-    "storageLimitExceededDescription": "Por favor, exclua alguns arquivos ou faça upgrade do seu plano para continuar fazendo upload.",
+    "storageLimitExceededDescription": "Apague alguns arquivos ou suba de plano pra continuar enviando.",
     "storageLimitExceededGB": "Limite de armazenamento excedido. Você está usando {used} MB de {limit} GB. Este arquivo ({fileSize} MB) excederia seu limite.",
     "storageLimitExceededMB": "Limite de armazenamento excedido. Você está usando {used} MB de {limit} MB. Este arquivo ({fileSize} MB) excederia seu limite.",
-    "subscriptionRequired": "Assinatura necessária. Por favor, faça upgrade para continuar gerando mockups.",
-    "unableToProcessImage": "Não foi possível processar a imagem enviada. Por favor, tente uma imagem diferente ou verifique se o arquivo está corrompido.",
-    "imageUploadFailed": "Image Upload Failed",
-    "uploadFailed": "Upload Failed"
+    "subscriptionRequired": "Precisa de assinatura. Faça upgrade pra continuar gerando mockups.",
+    "unableToProcessImage": "Não foi possível processar a imagem. Tente outra ou confira se o arquivo não está corrompido.",
+    "imageUploadFailed": "Falha ao enviar a imagem. Tente de novo.",
+    "uploadFailed": "Falha no upload. Tente de novo."
   },
   "footer": {
     "english": "Inglês",
@@ -3484,7 +3756,7 @@
     "heroSubtitle": "e experimente a Mockup Machine®",
     "heroTitle": "Crie com moderação",
     "sendImage": "Enviar imagem",
-    "seoDescription": "Laboratório de experimentos criativos e ferramentas para designers.",
+    "seoDescription": "Laboratório de ferramentas criativas para designers e times de marca.",
     "seoTitle": "Visant Labs®"
   },
   "messages": {
@@ -3513,13 +3785,13 @@
     "needCreditsSubscription": "Você precisa de {creditsNeeded} crédito{plural} mas só tem {remaining} restante{pluralRemaining}. Os créditos serão renovados em {resetDate}.",
     "networkError": "Ocorreu um erro de rede.",
     "networkErrorSuggestion": "Por favor, verifique sua conexão com a internet e tente novamente.",
-    "newAngleGenerated": "Novo ângulo gerado! 📷",
-    "newEnvironmentGenerated": "Novo ambiente gerado! 🌍",
+    "newAngleGenerated": "Novo ângulo gerado",
+    "newEnvironmentGenerated": "Novo ambiente gerado",
     "outputRemoved": "Resultado removido da exibição",
     "promptGeneratedSuccessfully": "Prompt gerado com sucesso!",
     "promptGenerationFailed": "A geração do prompt falhou. Por favor, tente novamente.",
     "promptGenerationTimeout": "A geração do prompt expirou. Por favor, tente novamente.",
-    "rateLimit": "A IA está muito popular agora! Por favor, aguarde cerca de 10 minutos e tente novamente. Isso nos ajuda a garantir acesso justo para todos. 💎�",
+    "rateLimit": "Muita gente gerando agora. Espere uns 10 minutos e tente de novo, é o que mantém o acesso justo pra todo mundo.",
     "requestTimeout": "A solicitação expirou.",
     "requestTimeoutSuggestion": "O serviço de IA está demorando mais que o esperado. Isso pode ser devido à alta carga. Seus créditos não foram deduzidos. Por favor, tente novamente.",
     "resetAnyway": "Descartar",
@@ -3531,7 +3803,7 @@
     "serviceUnavailable": "O serviço de IA está temporariamente indisponível.",
     "serviceUnavailableSuggestion": "O serviço está com alta carga. Seus créditos não foram deduzidos. Por favor, tente novamente em alguns minutos.",
     "subscriptionRequired": "Assinatura necessária. Por favor, faça upgrade para continuar gerando mockups.",
-    "surpriseSelectionGenerated": "Seleção surpresa gerada! 🎲",
+    "surpriseSelectionGenerated": "Seleção surpresa gerada",
     "switchedTo4K": "Mudado para Pro (4K). Controle de resolução habilitado.",
     "switchedToHD": "Mudado para Standard (HD). Controle de resolução desabilitado.",
     "tagsChanged": "As tags foram alteradas. Por favor, regenere o prompt para corresponder às suas seleções atuais.",
@@ -3542,8 +3814,8 @@
     "unsavedOutputsMessage": "Você tem {count} saída{plural} não salva{plural}. Se você descartar, perderá permanentemente. Tem certeza?",
     "unsavedOutputsTitle": "Saídas Não Salvas",
     "yourNextBillingCycle": "seu próximo ciclo de cobrança",
-    "selectDesignTypeFirst": "Select Design Type First",
-    "unsavedChangesMessage": "Unsaved Changes Message"
+    "selectDesignTypeFirst": "Escolha o tipo de design primeiro",
+    "unsavedChangesMessage": "Você tem alterações não salvas. Sair mesmo assim?"
   },
   "mockup": {
     "addCustomCategoryHint": "Personalize ainda mais seu mockup",
@@ -3766,16 +4038,16 @@
       "addMedia": "Add media",
       "dropHere": "Drag files here or click to upload",
       "noLogos": "No logos yet",
-      "noMedia": "No media assets yet",
-      "fileTooLarge": "File too large (max 10MB)",
-      "uploadSuccess": "Media uploaded successfully",
-      "uploadError": "Failed to upload media",
+      "noMedia": "Nenhum asset no media kit ainda",
+      "fileTooLarge": "Arquivo grande demais (máx. 10MB)",
+      "uploadSuccess": "Asset enviado",
+      "uploadError": "Não foi possível enviar o asset. Tente de novo.",
       "deleteSuccess": "Media removed",
-      "deleteError": "Failed to remove media",
+      "deleteError": "Não foi possível remover o asset. Tente de novo.",
       "more": "more",
       "vaultEmpty": "Vault is empty",
-      "bulkDeleteSuccess": "Bulk Delete Success",
-      "bulkDeleteError": "Bulk Delete Error",
+      "bulkDeleteSuccess": "Assets removidos",
+      "bulkDeleteError": "Não foi possível remover os assets. Tente de novo.",
       "duplicateSkipped": "{count} duplicada ignorada, já na sua biblioteca",
       "duplicatesSkipped": "{count} duplicadas ignoradas, já na sua biblioteca",
       "nearDuplicate": "Parecida com \"{label}\", adicionada mesmo assim",
@@ -3850,7 +4122,7 @@
     "regenerate": "REGENERAR",
     "regenerateTooltip": "Regenerar resultados usando o prompt atual",
     "regenerating": "Regenerando...",
-    "reimagineTooltip": "Re-imaginar com IA",
+    "reimagineTooltip": "Gerar outra versão",
     "removeFileTitle": "Remover arquivo",
     "removeImage": "Remover imagem",
     "removeText": "Remover texto",
@@ -3918,25 +4190,25 @@
     "uploadRequired": "Upload necessário",
     "uploadedDesignAlt": "Design enviado",
     "visualEffects": "EFEITOS_VISUAIS_",
-    "openMediaLibrary": "Open Media Library",
+    "openMediaLibrary": "Abrir biblioteca de mídia",
     "suggested": "Suggested",
     "angle": "Angle",
     "lighting": "Lighting",
     "effect": "Effect",
-    "generatedPrompt": "Generated Prompt",
+    "generatedPrompt": "Prompt gerado",
     "clearAllTags": "Clear All Tags",
-    "addInstructions": "Add Instructions",
+    "addInstructions": "Adicionar instruções",
     "collapse": "Collapse",
     "expand": "Expand",
     "tags": "Tags",
-    "presetSaveError": "Preset Save Error",
+    "presetSaveError": "Não foi possível salvar o preset. Tente de novo.",
     "presetLoaded": "Preset Loaded",
-    "removeInstructionHint": "Remove Instruction Hint",
-    "switchToEssential": "Switch To Essential",
-    "generatePromptFirst": "Generate Prompt First",
+    "removeInstructionHint": "Remover instrução",
+    "switchToEssential": "Mudar para o modo essencial",
+    "generatePromptFirst": "Gere o prompt antes",
     "generateAll": "Generate All",
     "vibeTitle": "Vibe Title",
-    "selectModelToGenerate": "Select Model To Generate",
+    "selectModelToGenerate": "Escolha um modelo pra gerar",
     "title": "Title",
     "machine": {
       "gere_mockups_profissionais_com_inte": "Seus designs em produtos reais em segundos. Ferramenta integrada de mockups e assets para times de marca."
@@ -3950,7 +4222,8 @@
     "noMockupsYet": "AINDA NÃO HÁ MOCKUPS",
     "retry": "Tentar novamente",
     "searchPlaceholder": "Buscar...",
-    "tryAdjustingSearch": "Tente ajustar sua busca ou filtro."
+    "tryAdjustingSearch": "Tente ajustar sua busca ou filtro.",
+    "loadFailed": "Não foi possível carregar os mockups. Tente de novo."
   },
   "myOutputs": {
     "seoDescription": "Visualize e gerencie seus outputs gerados.",
@@ -3958,7 +4231,7 @@
   },
   "notFound": {
     "brandingMachine": "Branding Machine",
-    "description": "Ops! A página que você está procurando não existe ou foi movida.",
+    "description": "Essa página não existe ou mudou de lugar.",
     "goBack": "Voltar",
     "goHome": "Ir para a página inicial",
     "helpfulLinks": "Links úteis:",
@@ -3981,9 +4254,9 @@
     "invalidTaxId": "CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos",
     "openCheckout": "Abrir checkout do Stripe",
     "openPaymentLink": "Abrir link de pagamento",
-    "paid": "✓ Pagamento confirmado!",
+    "paid": "Pagamento confirmado",
     "payWithPix": "Pagar com PIX",
-    "paymentError": "Não foi possível criar o pagamento PIX. Por favor, tente novamente mais tarde ou use outro método de pagamento.",
+    "paymentError": "Não foi possível criar o pagamento PIX. Tente de novo em alguns minutos ou pague com cartão.",
     "qrCode": "QR Code PIX",
     "showQrCode": "Mostrar QR Code",
     "step1": "Abra o app do seu banco",
@@ -3995,7 +4268,7 @@
     "taxIdRequired": "Necessário para processar o pagamento PIX",
     "title": "PIX",
     "waiting": "Aguardando pagamento...",
-    "paymentExpired": "Payment Expired"
+    "paymentExpired": "Pagamento expirado"
   },
   "pricing": {
     "allPlansInclude": "Todos os planos incluem acesso às nossas ferramentas de geração de mockup",
@@ -4025,7 +4298,7 @@
       "feature4": "Cancele a qualquer momento"
     },
     "subscribe": "ASSINAR",
-    "subtitle": "Escolha o plano que funciona para você",
+    "subtitle": "Escolha o plano pelo volume que seu time usa",
     "tabs": {
       "credits": "Créditos",
       "subscriptions": "Assinaturas",
@@ -4036,7 +4309,7 @@
       "googleApi": "API Google (Custo)",
       "visantInfra": "Infra Visant (Processamento/CDN)",
       "total": "Total por Geração",
-      "description": "Você paga o preço da infraestrutura do Google + uma pequena taxa de processamento Visant. Transparência total é nosso valor core."
+      "description": "Você paga o custo da infraestrutura do Google mais uma taxa de processamento da Visant. A conta fica aberta."
     },
     "community": {
       "buildInPublic": "Build in Public",
@@ -4053,12 +4326,12 @@
     "yearly": "Anual",
     "yearlyDiscount": "-16%",
     "storage": {
-      "byokTitle": "Byok Title",
-      "byokDescription": "Byok Description",
-      "subscriptionNote": "Subscription Note"
+      "byokTitle": "Sua própria API key (BYOK)",
+      "byokDescription": "Conecte a key do provedor e a geração passa a ser cobrada na sua conta. O plano segue cobrindo contexto de marca, storage e orquestração.",
+      "subscriptionNote": "O storage vem junto com o plano. Precisou de mais espaço, é só subir de plano."
     },
-    "included": "Included",
-    "selectPlan": "Select Plan",
+    "included": "Incluído",
+    "selectPlan": "Escolher plano",
     "visant_processingcdn": "Visant Processing/CDN",
     "google_api_gemini_31": "Google API (Gemini 3.1)",
     "planos_e_pacotes_de_crditos_para_gerar_m": "Planos e pacotes de créditos para seus mockups e assets. Escolha o volume certo para o seu time.",
@@ -4071,7 +4344,7 @@
       "cta": "Obter chave de API & docs"
     },
     "hero": {
-      "subtitle": "Sua marca como contexto, cobrada por marca ativa. Copilot, MCP e seats por tier; créditos são fair-use de geração.",
+      "subtitle": "Sua marca como contexto, cobrada por marca ativa. Copilot, MCP e seats por tier. Créditos são fair-use de geração.",
       "tier": "Plano",
       "brands": "Marcas ativas",
       "copilot": "Copilot",
@@ -4100,8 +4373,8 @@
     },
     "fairUse": {
       "title": "Fair-use de geração",
-      "desc": "Créditos cobrem a geração com IA (imagens, vídeo, mockups). Todo plano inclui um volume mensal de fair-use, recarregue quando quiser na aba Créditos.",
-      "byok": "BYOK: sua key cobre a geração; o plano cobre a plataforma."
+      "desc": "Créditos cobrem geração de imagem, vídeo e mockup. Todo plano inclui um volume mensal de fair-use, recarregue quando quiser na aba Créditos.",
+      "byok": "BYOK: sua key cobre a geração. O plano cobre a plataforma."
     }
   },
   "privacy": {
@@ -4255,7 +4528,7 @@
             "Pré-preencher suas informações de perfil (nome e foto de perfil)",
             "Prevenir contas duplicadas e atividades fraudulentas"
           ],
-          "note": "Não usamos seus dados do Google para publicidade, marketing ou qualquer outro propósito além do gerenciamento de conta e autenticação. Suas credenciais do Google nunca são armazenadas por nós; apenas armazenamos as informações de perfil fornecidas pelo serviço OAuth do Google.",
+          "note": "Não usamos seus dados do Google para publicidade, marketing ou qualquer outro propósito além do gerenciamento de conta e autenticação. Suas credenciais do Google nunca são armazenadas por nós. Guardamos apenas as informações de perfil fornecidas pelo serviço OAuth do Google.",
           "title": "2.1 Uso dos Dados de Autenticação do Google"
         },
         "intro": "Usamos seus dados para:",
@@ -4448,7 +4721,16 @@
       "success": "Conta excluída com sucesso.",
       "error": "Erro ao excluir conta.",
       "confirmWord": "EXCLUIR"
-    }
+    },
+    "invalidImageType": "Escolha um arquivo de imagem",
+    "imageTooLarge": "A imagem precisa ter menos de 5MB",
+    "pictureUploaded": "Foto de perfil atualizada",
+    "uploadPictureError": "Não foi possível enviar a foto",
+    "discardTitle": "Descartar alterações?",
+    "discardMessage": "Você tem alterações não salvas. Fechar agora descarta tudo.",
+    "discardConfirm": "Descartar",
+    "keepEditing": "Continuar editando",
+    "loadFailed": "Não foi possível carregar seu perfil"
   },
   "referral": {
     "copy": "Copiar",
@@ -4678,7 +4960,7 @@
     "allFreeGenerationsUsed": "Todas as gerações grátis usadas ({used} / 3)",
     "cancelAnytime": "Cancele a qualquer momento",
     "creditsPerInterval": "{credits} créditos por {interval}",
-    "failedToLoad": "Falha ao carregar informações de assinatura",
+    "failedToLoad": "Não foi possível carregar sua assinatura. Recarregue a página.",
     "freeGenerationsRemaining": "Gerações grátis restantes: {remaining} / 3",
     "loadingPlanInfo": "Carregando informações do plano...",
     "mockupGenerationsPerInterval": "{credits} gerações de mockup por {interval}",
@@ -4689,21 +4971,21 @@
     "subscribeForUnlimited": "Assine para gerações ilimitadas",
     "subscribeNow": "Assinar Agora",
     "subscribeToContinue": "Assine para continuar gerando mockups",
-    "subscriptionActivated": "Assinatura ativada! Bem-vindo ao Premium! 🎉",
+    "subscriptionActivated": "Assinatura ativada. Bem-vindo ao Premium.",
     "tierFeatures": "Recursos do nível {tier}",
     "upgrade": "Fazer Upgrade",
     "upgradeTo": "FAZER UPGRADE PARA {tier}",
     "upgradeToPremium": "FAZER UPGRADE PARA PREMIUM",
-    "portalError": "Portal Error"
+    "portalError": "Não foi possível abrir o portal de assinatura. Tente de novo."
   },
   "subscriptionStatus": {
     "active": "Ativo",
     "credits": "{remaining}/{total} créditos",
-    "failedToOpen": "Falha ao abrir gerenciamento de assinatura. Por favor, tente novamente.",
+    "failedToOpen": "Não foi possível abrir o gerenciamento da assinatura. Tente de novo.",
     "free": "Grátis",
     "manage": "Gerenciar",
     "manageSubscription": "Gerenciar assinatura",
-    "portalError": "Falha ao abrir portal de assinatura",
+    "portalError": "Não foi possível abrir o portal de assinatura. Tente de novo.",
     "premium": "Premium",
     "pro": "Pro",
     "renews": "Renova em {date}",
@@ -5073,7 +5355,7 @@
     "benefitPro": "Suporte Prioritário e 20GB de Armazenamento",
     "benefitVision": "Suporte Rápido e 100GB de Armazenamento",
     "creditsAvailable": "Créditos disponíveis",
-    "getStarted": "Começar a Criar",
+    "getStarted": "Começar a criar",
     "subscriptionActive": "Assinatura {plan} Ativa",
     "subtitle": "Sua assinatura foi ativada com sucesso",
     "support": "Precisa de ajuda? Entre em contato conosco.",
@@ -5161,12 +5443,12 @@
     },
     "subtitle": "Guia rápido para você começar a criar mockups",
     "surpriseMe": "Clique em 'Me Surpreenda!' para inspiração instantânea, ou personalize com categorias e tags",
-    "tip": "💡 Dica: Use 'Me Surpreenda!' para criar mockups instantâneos!",
+    "tip": "Dica: use o Me Surpreenda pra gerar um mockup na hora.",
     "title": "Como Usar o Mockup Machine®",
     "tutorialVideo": "Vídeo tutorial",
     "uploadImage": "Envie seu design ou logo isolado",
     "videoStep": {
-      "description": "Assista ao vídeo tutorial para começar a usar o Mockup Machine®"
+      "description": "Assista ao tutorial e comece a usar o Mockup Machine®"
     }
   },
   "upload": {
@@ -5392,16 +5674,19 @@
     "subtitle": "Visualize seu histórico de uso e consumo de créditos",
     "title": "Histórico de Uso",
     "totalCreditsUsed": "Créditos Gastos",
-    "totalRecords": "Total de Usos"
+    "totalRecords": "Total de Usos",
+    "loadErrorTitle": "Não foi possível carregar o histórico",
+    "retry": "Tentar de novo",
+    "showingStale": "os números na tela são do carregamento anterior"
   },
   "waitlist": {
     "addAnotherEmail": "Adicionar outro email",
-    "addedToWaitlist": "✓ Você foi adicionado à lista de espera!",
+    "addedToWaitlist": "Você entrou na lista de espera.",
     "emailLabel": "Endereço de Email",
     "emailPlaceholder": "seu.email@exemplo.com",
     "errors": {
-      "failedToJoin": "Falha ao entrar na lista de espera. Por favor, tente novamente.",
-      "invalidEmail": "Por favor, insira um endereço de email válido"
+      "failedToJoin": "Não foi possível entrar na lista. Tente de novo.",
+      "invalidEmail": "Digite um e-mail válido"
     },
     "joinWaitlist": "Entrar na Lista de Espera",
     "joinWhatsAppGroup": "Entrar no Grupo do WhatsApp",
@@ -5410,9 +5695,9 @@
     "seoDescription": "Junte-se à lista de espera para ter acesso antecipado às ferramentas premium da Visant Labs®.",
     "seoKeywords": "lista de espera, waitlist, acesso antecipado, premium access",
     "seoTitle": "Lista de Espera",
-    "subtitle": "Seja um dos primeiros a acessar nossas ferramentas premium. Seja notificado quando abrirmos o acesso.",
+    "subtitle": "Entre na fila do acesso antecipado. A gente avisa por e-mail quando abrir.",
     "success": {
-      "addedToWaitlist": "Obrigado! Você foi adicionado à lista de espera."
+      "addedToWaitlist": "Pronto, você entrou na lista de espera."
     },
     "title": "Closed Alpha // VSN Labs®",
     "tryMockupMachineNow": "Experimente o Mockup Machine Agora"
@@ -5533,18 +5818,18 @@
       "title": "Title"
     },
     "projects": {
-      "are_you_sure_you_want_to_delete_": "Are you sure you want to delete this creative? This action cannot be undone.",
-      "delete_creative": "Delete Creative",
+      "are_you_sure_you_want_to_delete_": "Excluir este criativo? Não dá pra desfazer.",
+      "delete_creative": "Excluir criativo",
       "my_creatives_2": "My Creatives",
-      "manage_your_aigenerated_creative": "Manage your AI-generated creatives.",
+      "manage_your_aigenerated_creative": "Gerencie seus criativos gerados.",
       "my_creatives": "My Creatives",
-      "search_project_name": "Search project name…"
+      "search_project_name": "Buscar pelo nome…"
     }
   },
   "mockups": {
     "title": "Title",
     "explore_designs_profissionais_e_inspires": "Explore designs profissionais e inspire-se.",
-    "galeria_da_comunidade": "Galeria da Comunidade"
+    "galeria_da_comunidade": "Galeria da comunidade"
   },
   "studio3d": {
     "title": "3D STUDIO",
@@ -5774,25 +6059,32 @@
   "imagelab": {
     "title": "IMAGE LAB",
     "documentTitle": "Image Lab, Visant",
-    "dropPrompt": "Solte ou cole uma imagem ou vídeo para começar"
+    "dropPrompt": "Solte ou cole uma imagem ou vídeo para começar",
+    "selectAreaFirst": "Selecione uma área na imagem antes de editar",
+    "enterPromptFirst": "Descreva o que você quer gerar nessa área",
+    "dragEdgeFirst": "Arraste uma das bordas pra definir o quanto expandir",
+    "imageEdited": "Imagem editada",
+    "imageExpanded": "Imagem expandida",
+    "backgroundRemoved": "Fundo removido com {engine}",
+    "resumingEdit": "Retomando a edição que ficou rodando"
   },
   "wind": {
     "tunnel": {
       "export_png": "Export PNG",
-      "restart_simulation_2": "Restart simulation",
+      "restart_simulation_2": "Reiniciar simulação",
       "wind_tunnel": "Wind Tunnel",
       "back_to_labs": "Back to Labs",
-      "drop_image_to_use_as_obstacle": "Drop image to use as obstacle",
-      "preset_deleted": "Preset deleted.",
+      "drop_image_to_use_as_obstacle": "Solte uma imagem pra usar como obstáculo",
+      "preset_deleted": "Preset excluído.",
       "export_failed": "Export failed.",
       "png_exported_at_multiplierx": "PNG exported at ${multiplier}x.",
-      "failed_to_load_image": "Failed to load image.",
-      "unsupported_format_use_png_svg_jpeg_or": "Unsupported format. Use PNG, SVG, JPEG, or WebP.",
+      "failed_to_load_image": "Não foi possível carregar a imagem.",
+      "unsupported_format_use_png_svg_jpeg_or": "Formato não aceito. Use PNG, SVG, JPEG ou WebP.",
       "reset_all": "Reset All",
-      "restart_simulation": "Restart Simulation",
+      "restart_simulation": "Reiniciar simulação",
       "toggle_grid": "Toggle grid",
       "grid_overlay": "Grid overlay",
-      "toggle_obstacle_visibility": "Toggle obstacle visibility",
+      "toggle_obstacle_visibility": "Mostrar ou esconder o obstáculo",
       "show_obstacles": "Show obstacles",
       "background": "Background",
       "appearance": "Appearance",
@@ -5811,9 +6103,9 @@
       "transform": "Transform",
       "toggle_bold": "Toggle bold",
       "obstacle_text": "Obstacle text",
-      "or_drag_drop_onto_canvas": "or drag & drop onto canvas",
+      "or_drag_drop_onto_canvas": "ou arraste e solte no canvas",
       "clear_image": "Clear image",
-      "upload_obstacle_image": "Upload obstacle image",
+      "upload_obstacle_image": "Enviar imagem de obstáculo",
       "obstacle": "Obstacle",
       "preset_saved": "Preset \"{name}\" saved.",
       "preset_loaded": "Loaded \"{name}\"."
@@ -5847,42 +6139,42 @@
       "png_exported": "PNG exported"
     },
     "machine": {
-      "this_will_remove_the_current_svg_and_": "This will remove the current SVG and reset all settings.",
-      "clear_workspace": "Clear workspace",
-      "or_click_ctrlv_to_paste": "or click / Ctrl+V to paste",
-      "drop_an_svg_file_here": "Drop an SVG file here",
+      "this_will_remove_the_current_svg_and_": "Isso remove o SVG atual e zera os ajustes.",
+      "clear_workspace": "Limpar workspace",
+      "or_click_ctrlv_to_paste": "ou clique / Ctrl+V pra colar",
+      "drop_an_svg_file_here": "Solte um arquivo SVG aqui",
       "drop_svg_here": "Drop SVG here",
       "cleared": "Cleared",
       "svg_exported": "SVG exported",
       "export_failed": "Export failed",
-      "png_exported_2x": "PNG exported (2x)",
-      "only_svg_files_are_supported": "Only SVG files are supported",
-      "please_upload_an_svg_file": "Please upload an SVG file",
+      "png_exported_2x": "PNG exportado (2x)",
+      "only_svg_files_are_supported": "Só arquivos SVG são aceitos",
+      "please_upload_an_svg_file": "Envie um arquivo SVG",
       "loaded_name_anchors_anchors_handles_h": "Loaded ${name}, ${anchors} anchors, ${handles} handles"
     }
   },
   "extractor": {
     "format": "Format",
     "content_type": "Content Type",
-    "encontre_qualquer_imagem": "Encontre qualquer imagem...",
-    "extrator_de_imagens_inteligente_de_mltip": "Extrator de imagens inteligente de múltiplas fontes.",
-    "erro_ao_processar_pdf": "Erro ao processar PDF",
+    "encontre_qualquer_imagem": "Encontre qualquer imagem…",
+    "extrator_de_imagens_inteligente_de_mltip": "Extrai imagens de várias fontes de uma vez.",
+    "erro_ao_processar_pdf": "Não foi possível processar o PDF. Tente outro arquivo.",
     "extrao_de_pdf_concluda": "Extração de PDF concluída",
-    "asset_copied_to_clipboard": "Asset copied to clipboard",
-    "processing_for_clipboard": "Processing for clipboard...",
-    "failed_to_upscale_image": "Failed to upscale image",
-    "asset_upscaled_and_delivered": "Asset upscaled and delivered",
-    "upscaling_asset_to_2x_ultra_hd": "Upscaling asset to 2x ULTRA HD...",
-    "erro_ao_gerar_zip": "Erro ao gerar ZIP",
-    "download_concludo": "Download concluído!",
-    "iniciando_download_de_imagestodownloadle": "Iniciando download de ${imagesToDownload.length} imagens...",
-    "falha_na_extrao": "Falha na extração",
+    "asset_copied_to_clipboard": "Asset copiado",
+    "processing_for_clipboard": "Preparando pra copiar…",
+    "failed_to_upscale_image": "Não foi possível fazer upscale da imagem. Tente de novo.",
+    "asset_upscaled_and_delivered": "Upscale concluído",
+    "upscaling_asset_to_2x_ultra_hd": "Fazendo upscale 2x…",
+    "erro_ao_gerar_zip": "Não foi possível gerar o ZIP. Tente de novo.",
+    "download_concludo": "Download concluído",
+    "iniciando_download_de_imagestodownloadle": "Baixando ${imagesToDownload.length} imagens…",
+    "falha_na_extrao": "Falha na extração. Tente de novo.",
     "mais_resultimageslength_imageslength_str": "Mais ${result.images.length - images.length} streams identificados",
     "view_original": "View Original",
-    "search_with_google_lens": "Search with Google Lens",
-    "upscale_to_ultra_hd": "Upscale to ULTRA HD",
+    "search_with_google_lens": "Buscar no Google Lens",
+    "upscale_to_ultra_hd": "Upscale para ULTRA HD",
     "copy_as_png": "Copy as PNG",
-    "download_original": "Download Original"
+    "download_original": "Baixar original"
   },
   "api": {
     "keys": {
@@ -5894,31 +6186,33 @@
       "last_used": "Last Used",
       "scopes_2": "Scopes",
       "key": "Key",
-      "no_api_keys_yet": "No API keys yet",
+      "no_api_keys_yet": "Nenhuma API key ainda",
       "scopes": "Scopes",
-      "copy_to_clipboard": "Copy to clipboard",
-      "this_key_will_not_be_shown_again_copy_it": "This key will not be shown again. Copy it and store it securely.",
-      "save_your_api_key_now": "Save your API key now",
-      "manage_your_api_keys_for_agent_and_progr": "Manage your API keys for agent and programmatic access",
-      "please_sign_in_to_manage_api_keys": "Please sign in to manage API keys",
-      "copied_to_clipboard": "Copied to clipboard",
-      "select_at_least_one_scope": "Select at least one scope",
-      "please_enter_a_name_for_the_key": "Please enter a name for the key"
+      "copy_to_clipboard": "Copiar",
+      "this_key_will_not_be_shown_again_copy_it": "Esta key não aparece de novo. Copie e guarde num lugar seguro.",
+      "save_your_api_key_now": "Salve sua API key agora",
+      "manage_your_api_keys_for_agent_and_progr": "Gerencie as API keys de agentes e acesso programático",
+      "please_sign_in_to_manage_api_keys": "Entre na sua conta pra gerenciar as API keys.",
+      "copied_to_clipboard": "Copiado",
+      "select_at_least_one_scope": "Escolha pelo menos um scope",
+      "please_enter_a_name_for_the_key": "Dê um nome pra key",
+      "load_failed": "Não foi possível carregar suas API keys",
+      "try_again": "Tentar de novo"
     }
   },
   "moodboard": {
     "studio": {
       "ai_analyzing": "AI Analyzing",
-      "single_image_for_ai_grid_detectio": "Single image for AI grid detection · Multiple for batch processing",
-      "upload_or_drop_moodboard": "Upload or Drop Moodboard",
-      "extract_upscale_and_animate_image": "Extract, upscale and animate images from moodboards",
-      "generating_full_moodboard_video_w": "Generating full moodboard video with Veo 3...",
-      "generating_frame_animation_with_v": "Generating frame animation with Veo 3...",
+      "single_image_for_ai_grid_detectio": "Uma imagem para detectar a grade, várias para processar em lote",
+      "upload_or_drop_moodboard": "Envie ou solte um moodboard",
+      "extract_upscale_and_animate_image": "Extraia, amplie e anime imagens de moodboards",
+      "generating_full_moodboard_video_w": "Gerando o vídeo do moodboard com Veo 3…",
+      "generating_frame_animation_with_v": "Animando o frame com Veo 3…",
       "ai_regeneration_ready": "AI Regeneration ready",
       "detected_newcropslength_images": "Detected ${newCrops.length} images",
-      "no_grid_detected_try_a_moodboard_": "No grid detected. Try a moodboard with clearly separated images.",
+      "no_grid_detected_try_a_moodboard_": "Nenhuma grade detectada. Tente um moodboard com as imagens bem separadas.",
       "regen_failed": "Item {id}: {error}",
-      "regeneration_failed": "Regeneration failed"
+      "regeneration_failed": "A regeneração falhou. Tente de novo."
     }
   },
   "public": {
@@ -5929,14 +6223,14 @@
         "connect_to_your_ai": "Conectar sua IA",
         "connecting": "Conectando…",
         "assets": "Assets",
-        "search_assets_colors_or_spe": "Search assets, colors, or specs...",
-        "download_brand_variables_as": "Download brand variables as CSS",
-        "download_brand_guidelines_a": "Download brand guidelines as JSON",
+        "search_assets_colors_or_spe": "Buscar assets, cores ou specs…",
+        "download_brand_variables_as": "Baixar as variáveis da marca em CSS",
+        "download_brand_guidelines_a": "Baixar a brand guideline em JSON",
         "brand_sections": "Brand sections",
         "access_denied": "Access Denied",
         "decrypting_brand_assets": "Decrypting Brand Assets",
-        "downloaded_as_css": "Downloaded as CSS",
-        "downloaded_as_json": "Downloaded as JSON",
+        "downloaded_as_css": "Baixado em CSS",
+        "downloaded_as_json": "Baixado em JSON",
         "edit_mode": "EDITAR",
         "viewing_mode": "VER",
         "edit_section": "Editar seção",
@@ -5953,14 +6247,16 @@
   "brand": {
     "guidelines": {
       "review": "Review →",
-      "design_system_review_pending": "Design System Review pending",
-      "toggle_sections": "Toggle sections",
+      "design_system_review_pending": "Design system aguardando revisão",
+      "toggle_sections": "Mostrar ou esconder seções",
       "menu": "Menu",
       "open_menu": "Open menu",
-      "brand_guideline_content": "Brand Guideline Content",
-      "brand_guidelines_selection": "Brand Guidelines Selection",
-      "awaiting_selection": "Awaiting Selection"
-    }
+      "brand_guideline_content": "Conteúdo da brand guideline",
+      "brand_guidelines_selection": "Seleção de brand guidelines",
+      "awaiting_selection": "Aguardando seleção"
+    },
+    "untitled": "Marca sem nome",
+    "noBrand": "Sem marca"
   },
   "home": {
     "community": "Comunidade",
@@ -5975,21 +6271,21 @@
   "my": {
     "outputs": {
       "delete_output": "Delete output",
-      "loading_your_outputs": "Loading your outputs...",
-      "failed_to_remove_canvas_image": "Failed to remove canvas image",
-      "canvas_image_removed": "Canvas image removed",
-      "failed_to_delete_output": "Failed to delete output",
-      "output_deleted_successfully": "Output deleted successfully"
+      "loading_your_outputs": "Carregando seus outputs…",
+      "failed_to_remove_canvas_image": "Não foi possível remover a imagem do canvas. Tente de novo.",
+      "canvas_image_removed": "Imagem removida do canvas",
+      "failed_to_delete_output": "Não foi possível excluir o output. Tente de novo.",
+      "output_deleted_successfully": "Output excluído"
     },
     "budgets": {
-      "carregando_presets": "Carregando presets...",
-      "invalid_budget_id": "Invalid budget ID"
+      "carregando_presets": "Carregando presets…",
+      "invalid_budget_id": "ID de orçamento inválido"
     }
   },
   "halftone": {
-    "all_halftone_settings_will_return_to_def": "All halftone settings will return to defaults. This cannot be undone.",
+    "all_halftone_settings_will_return_to_def": "Todos os ajustes voltam ao padrão. Não dá pra desfazer.",
     "reset_settings": "Reset settings",
-    "drop_image_here": "Drop image here",
+    "drop_image_here": "Solte a imagem aqui",
     "png_exported": "PNG exported",
     "loaded_file": "Loaded {name}",
     "pasted_image": "pasted image"
@@ -5997,10 +6293,10 @@
   "q": {
     "r": {
       "code": {
-        "enter_text_to_generate_qr_code": "Enter text to generate QR code",
-        "select_error_correction_level": "Select error correction level",
-        "enter_text_url_or_any_data": "Enter text, URL, or any data...",
-        "qr_code_generator": "QR Code Generator"
+        "enter_text_to_generate_qr_code": "Digite um texto pra gerar o QR Code",
+        "select_error_correction_level": "Escolha o nível de correção de erro",
+        "enter_text_url_or_any_data": "Digite texto, URL ou qualquer dado…",
+        "qr_code_generator": "Gerador de QR Code"
       }
     }
   },
@@ -6055,14 +6351,14 @@
       "titleLine1": "Pare de corrigir outputs",
       "titleLine2": "que ignoram sua marca.",
       "subtitle": "Suas brand guidelines viram contexto estruturado para qualquer modelo. O que sai sempre parece seu.",
-      "icp": "Para designers, agências e times de marketing que geram com IA.",
+      "icp": "Para designers, agências e times de marketing que produzem com modelos generativos.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver os apps"
     },
     "proof": {
-      "eyebrow": "Saída real",
+      "eyebrow": "Peças geradas",
       "title": "Uma marca. Todo formato. Sempre on-brand.",
-      "subtitle": "Cada peça abaixo foi gerada a partir de uma brand guideline viva — sem redesenhar nada. Do saco de café ao dashboard, tudo puxa a mesma identidade."
+      "subtitle": "Cada peça abaixo saiu de uma brand guideline viva, sem ninguém redesenhar nada. Do saco de café ao dashboard, tudo puxa a mesma identidade."
     },
     "howItWorks": {
       "eyebrow": "Como funciona",
@@ -6089,7 +6385,7 @@
       "mockupName": "Mockup Machine",
       "mockupDesc": "Mockups realistas do produto em segundos.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Sua identidade em cada geração. Não só em documentos.",
+      "brandDesc": "Sua identidade entra na geração antes do modelo desenhar.",
       "canvasName": "Canvas",
       "canvasDesc": "Desenhe, conecte, gere. Tudo num canvas.",
       "studioName": "3D Studio",
@@ -6100,10 +6396,10 @@
     "finalCta": {
       "title": "Sua marca. Consistente em tudo que você gera.",
       "button": "Começar grátis",
-      "anchor": "Grátis para começar · Sem cartão de crédito · Cancele quando quiser"
+      "anchor": "Grátis pra começar. Sem cartão de crédito, cancele quando quiser."
     },
     "footer": {
-      "tagline": "O único que realmente conhece sua marca."
+      "tagline": "Sua marca alimenta a geração."
     }
   },
   "funnel": {
@@ -6128,21 +6424,21 @@
         "label": "Designer",
         "desc": "UI/UX, branding, visual design",
         "actionTitle": "Crie seu primeiro mockup",
-        "actionDesc": "Veja o poder da plataforma em ação — um mockup profissional em segundos.",
+        "actionDesc": "Um mockup profissional em segundos, direto do seu logo.",
         "actionCta": "Criar mockup"
       },
       "agency": {
         "label": "Agência",
         "desc": "Clientes, campanhas, entregas",
         "actionTitle": "Centralize a marca dos seus clientes",
-        "actionDesc": "Uma fonte de verdade por cliente — compartilhe, gere e repita sem copiar hex na mão.",
+        "actionDesc": "Uma fonte de verdade por cliente. Compartilhe, gere e repita sem copiar hex na mão.",
         "actionCta": "Criar brand guideline"
       },
       "marketing": {
         "label": "Marketing",
         "desc": "Redes sociais, conteúdo, growth",
         "actionTitle": "Gere conteúdo para todas as redes",
-        "actionDesc": "Um brief, várias peças — copy e imagem consistentes com a marca, de uma vez.",
+        "actionDesc": "Um brief, várias peças. Copy e imagem consistentes com a marca, de uma vez.",
         "actionCta": "Abrir Content Studio"
       },
       "developer": {
@@ -6171,6 +6467,10 @@
     "manualError": "Não foi possível criar a marca. Tente de novo.",
     "demoCreating": "Preparando a marca demo…",
     "demoError": "Não foi possível criar a marca demo, crie uma rapidinha abaixo.",
+    "skipDemoError": "Não deu pra criar a marca demo. Você entrou sem marca nenhuma, traga a sua aqui.",
+    "skipDemoRetry": "Tentar de novo",
+    "skipDemoRetryDone": "Marca demo criada e já ativa.",
+    "skipDemoRetryError": "Ainda não deu. Crie sua marca aqui mesmo.",
     "ingestDone": "Marca importada, on-brand desde o primeiro output.",
     "step2Ready": "Sua marca está pronta",
     "step2Desc": "Sua marca está carregada como contexto. Próxima parada: sua primeira peça on-brand.",
@@ -6179,8 +6479,8 @@
     "back": "Voltar",
     "skip": "Pular",
     "continue": "Continuar",
-    "finishError": "Erro ao completar onboarding",
-    "welcomeToast": "Bem-vindo à Visant Labs!",
+    "finishError": "Não foi possível finalizar o onboarding. Tente de novo.",
+    "welcomeToast": "Bem-vindo à Visant Labs.",
     "demoBanner": {
       "label": "Você está na marca demo",
       "message": "traga a sua pra gerar de verdade on-brand.",
@@ -6212,5 +6512,11 @@
     "radius": "Radius tokens",
     "media": "Media kit ou knowledge",
     "public_or_figma": "Compartilhamento ou Figma vinculado"
+  },
+  "pipeline": {
+    "sendTo": "Enviar para",
+    "opening": "Abrindo {tool}...",
+    "nothingToSend": "Nada para enviar ainda. Gere ou selecione um asset primeiro.",
+    "sendFailed": "Não conseguimos enviar o asset. Tente de novo em instantes."
   }
 }

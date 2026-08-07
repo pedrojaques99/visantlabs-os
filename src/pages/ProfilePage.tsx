@@ -4,7 +4,7 @@ import { X, Trash2, UserCircle } from '@/lib/ui/icons';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { CreditPackagesModal } from '../components/CreditPackagesModal';
 import { TransactionsModal } from '../components/TransactionsModal';
-import { EditProfileModal } from '../components/EditProfilePage';
+import { EditProfileModal } from '../components/EditProfileModal';
 import { PageShell } from '../components/ui/PageShell';
 import { authService, type User as UserType } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
@@ -236,7 +236,7 @@ export const ProfilePage: React.FC = () => {
       >
         <div className="flex flex-col items-center justify-center gap-6 py-24 px-6 text-center animate-in fade-in duration-300">
           <div className="w-16 h-16 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center">
-            <UserCircle size={28} className="text-brand-cyan" />
+            <UserCircle size={28} className="text-muted-foreground" />
           </div>
           <div className="space-y-2 max-w-sm">
             <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">

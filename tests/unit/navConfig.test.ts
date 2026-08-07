@@ -53,7 +53,6 @@ describe('classifyRoute', () => {
       '/login',
       '/auth',
       '/welcome',
-      '/onboard',
       '/thank-you',
       '/thank-you-pro',
       '/connect/abc123',

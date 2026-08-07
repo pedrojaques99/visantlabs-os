@@ -71,7 +71,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
 
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
-        <Play size={12} className="text-brand-cyan shrink-0" />
+        <Play size={12} className="text-muted-foreground shrink-0" />
         <span className="text-[11px] font-semibold uppercase tracking-widest text-white/70">
           Batch Runner
         </span>
@@ -113,7 +113,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           </div>
           <div className="h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-brand-cyan transition-all duration-300 rounded-full"
+              className="h-full bg-brand-cyan transition-colors duration-300 rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>

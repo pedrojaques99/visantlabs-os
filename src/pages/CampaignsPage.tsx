@@ -16,6 +16,7 @@ import { PageShell } from '@/components/ui/PageShell';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
 import { useCampaigns, useCampaign } from '@/hooks/queries/useCampaigns';
 import type { CampaignSummary } from '@/services/campaignApi';
@@ -36,11 +37,31 @@ export const CampaignsPage: React.FC = () => {
   const [brandId, setBrandId] = useState<string>(searchParams.get('brandId') || '');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { data: campaigns = [], isLoading } = useCampaigns(brandId || undefined);
+  const { data: campaigns = [], isLoading, isError, refetch } = useCampaigns(brandId || undefined);
 
   if (selectedId) {
     return <CampaignDetail id={selectedId} onBack={() => setSelectedId(null)} />;
   }
+
+  // Filtro de marca. A espinha do app é estreita no mobile (chip de marca +
+  // créditos já ocupam quase tudo): abaixo de `md` este select sai do topo e
+  // vai pro corpo da página — nenhuma ação some, ela só muda de lugar.
+  const brandFilter =
+    brands.length > 0 ? (
+      <select
+        value={brandId}
+        onChange={(e) => setBrandId(e.target.value)}
+        aria-label="Filtrar por marca"
+        className="min-w-0 max-w-full px-3 py-1.5 rounded-md bg-neutral-900/80 border border-white/10 text-xs text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
+      >
+        <option value="">All brands</option>
+        {brands.map((g: any) => (
+          <option key={g.id} value={g.id}>
+            {g.identity?.name || g.name || g.id}
+          </option>
+        ))}
+      </select>
+    ) : null;
 
   return (
     <PageShell
@@ -50,42 +71,33 @@ export const CampaignsPage: React.FC = () => {
       width="7xl"
       actions={
         <div className="flex items-center gap-2">
-          {/* Brand switcher */}
-          {brands.length > 0 && (
-            <select
-              value={brandId}
-              onChange={(e) => setBrandId(e.target.value)}
-              className="px-3 py-1.5 rounded-md bg-neutral-900/80 border border-white/10 text-xs text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
-            >
-              <option value="">All brands</option>
-              {brands.map((g: any) => (
-                <option key={g.id} value={g.id}>
-                  {g.identity?.name || g.name || g.id}
-                </option>
-              ))}
-            </select>
-          )}
+          {/* Brand switcher — só de `md` pra cima; abaixo disso vive no corpo. */}
+          {brandFilter && <div className="hidden md:block">{brandFilter}</div>}
 
           {/* Create from brand */}
           <button
             onClick={() => navigate(brandId ? `/create?brandId=${brandId}` : '/create')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs text-neutral-400 border border-white/10 bg-neutral-900/50 hover:border-neutral-600 hover:text-neutral-200 transition-all"
+            title="Creative"
+            className="shrink-0 flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs text-neutral-400 border border-white/10 bg-neutral-900/50 hover:border-neutral-600 hover:text-neutral-200 transition-colors"
           >
             <Wand2 size={12} />
-            Creative
+            <span className="hidden md:inline">Creative</span>
           </button>
 
           {/* Generate campaign (lives in Canvas chat today) — primary CTA */}
           <button
             onClick={() => navigate('/canvas')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-all"
+            title="New campaign"
+            className="shrink-0 flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-colors"
           >
             <Plus size={12} />
-            New campaign
+            <span className="hidden md:inline">New campaign</span>
           </button>
         </div>
       }
     >
+      {brandFilter && <div className="md:hidden mb-4">{brandFilter}</div>}
+
       {!isLoggedIn ? (
         <EmptyState
           icon={Megaphone}
@@ -107,6 +119,12 @@ export const CampaignsPage: React.FC = () => {
             </div>
           ))}
         </div>
+      ) : isError ? (
+        <ErrorState
+          title="Couldn't load your campaigns"
+          description="Your campaigns are safe. Something went wrong fetching them — try again."
+          onRetry={() => refetch()}
+        />
       ) : campaigns.length === 0 ? (
         <EmptyState
           icon={Megaphone}
@@ -160,17 +178,21 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
         </div>
       </div>
       <div className="p-3 space-y-2 border-t border-white/10">
-        <p className="text-[12px] font-mono text-neutral-200 truncate">{c.name}</p>
+        <p className="text-[12px] text-neutral-200 truncate">{c.name}</p>
         <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500">
-          <span>
-            {c.completedCount}/{c.totalCount} ads
-          </span>
+          {c.totalCount ? (
+            <span>
+              {c.completedCount}/{c.totalCount} ads
+            </span>
+          ) : (
+            <span className="capitalize">{c.status}</span>
+          )}
           <span className="truncate ml-2">{c.formats.join(' · ')}</span>
         </div>
         <div className="h-1 rounded-full bg-neutral-800 overflow-hidden">
           <div
             className={cn(
-              'h-full transition-all',
+              'h-full transition-colors',
               c.status === 'error' ? 'bg-destructive/70' : 'bg-neutral-500'
             )}
             style={{ width: `${pct}%` }}
@@ -182,7 +204,7 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
 }
 
 function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
-  const { data: campaign, isLoading } = useCampaign(id);
+  const { data: campaign, isLoading, isError, refetch } = useCampaign(id);
   const results = campaign?.results ?? [];
 
   return (
@@ -192,11 +214,11 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
       width="7xl"
       actions={
         <div className="flex items-center gap-3">
-          {campaign && (
+          {campaign && campaign.totalCount ? (
             <span className="text-xs text-neutral-500">
               {campaign.completedCount}/{campaign.totalCount}
             </span>
-          )}
+          ) : null}
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
@@ -212,6 +234,12 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
         <div className="flex items-center justify-center py-24">
           <Loader2 size={20} className="animate-spin text-neutral-600" />
         </div>
+      ) : isError ? (
+        <ErrorState
+          title="Couldn't load this campaign"
+          description="Your campaign is safe. Something went wrong fetching it — try again."
+          onRetry={() => refetch()}
+        />
       ) : results.length === 0 ? (
         <div className="flex items-center justify-center py-24">
           <GlassPanel padding="lg" className="max-w-md text-center">
@@ -264,7 +292,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
                     download={`campaign-${r.index}.png`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-2 py-1 w-fit rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-all"
+                    className="flex items-center gap-1 px-2 py-1 w-fit rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
                   >
                     <Download size={10} />
                     Download

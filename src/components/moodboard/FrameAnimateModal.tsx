@@ -87,7 +87,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-neutral-800 rounded-full transition-all text-neutral-400 hover:text-white"
+              className="p-2 hover:bg-neutral-800 rounded-full transition-colors text-neutral-400 hover:text-white"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
@@ -171,7 +171,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                     <button
                       key={p.id}
                       onClick={() => setPrompt(p.prompt)}
-                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-all flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-1.5"
                     >
                       <Film size={9} />
                       {p.name}
@@ -183,7 +183,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Describe the cinematic transition between frames..."
-                className="w-full bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-2xl p-6 text-sm outline-none transition-all min-h-[140px] resize-none text-white placeholder:text-neutral-700"
+                className="w-full bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-2xl p-6 text-sm outline-none transition-colors min-h-[140px] resize-none text-white placeholder:text-neutral-700"
               />
             </div>
           </div>
@@ -194,7 +194,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
             </span>
             <button
               onClick={onSoundToggle}
-              className={`p-3 rounded-xl border transition-all ${
+              className={`p-3 rounded-xl border transition-colors ${
                 allowSound
                   ? 'bg-white text-black border-white'
                   : 'bg-neutral-900 text-neutral-500 border-border hover:border-neutral-600'

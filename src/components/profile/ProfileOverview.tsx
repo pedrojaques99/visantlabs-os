@@ -289,7 +289,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                     </div>
                     <div className="w-full bg-neutral-800 rounded-full h-1.5 mb-1.5">
                       <div
-                        className="bg-brand-cyan h-1.5 rounded-full transition-all"
+                        className="bg-brand-cyan h-1.5 rounded-full transition-colors"
                         style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                       />
                     </div>

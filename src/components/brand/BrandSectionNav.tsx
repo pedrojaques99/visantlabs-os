@@ -171,7 +171,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
                   : 'bg-current opacity-20 group-hover:opacity-60'
               )}
             />
-            <span className="text-[10px] uppercase font-bold tracking-wider font-mono opacity-80 group-hover:opacity-100 transition-opacity">
+            <span className="text-[10px] uppercase font-bold tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
               {tab.label}
             </span>
           </button>

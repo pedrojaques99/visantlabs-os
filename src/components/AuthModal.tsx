@@ -195,7 +195,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto">
       <div className="bg-card border border-border rounded-md p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-mono text-foreground uppercase">
+          <h2 className="text-lg font-semibold text-foreground tracking-tight">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
           </h2>
           <Button
@@ -333,7 +333,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             disabled={
               isAuthLoading || !email || !password || (isSignUp && captchaEnabled && !captchaToken)
             }
-            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-colors duration-200 text-sm font-mono"
           >
             {isAuthLoading ? (
               <>

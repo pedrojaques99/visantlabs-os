@@ -1547,19 +1547,19 @@ export const AdminPresetsPage: React.FC = () => {
                   <TabsList className="bg-neutral-900/50 border border-white/10 p-1 h-auto flex-wrap">
                     <TabsTrigger
                       value="overview"
-                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-colors py-1.5 px-3 text-xs md:text-sm"
                     >
                       {t('admin.dashboard')}
                     </TabsTrigger>
                     <TabsTrigger
                       value="generations"
-                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-colors py-1.5 px-3 text-xs md:text-sm"
                     >
                       {t('admin.generations')}
                     </TabsTrigger>
                     <TabsTrigger
                       value="users"
-                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm"
+                      className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-colors py-1.5 px-3 text-xs md:text-sm"
                     >
                       {t('admin.users')}
                     </TabsTrigger>
@@ -1632,7 +1632,7 @@ export const AdminPresetsPage: React.FC = () => {
                   variant="ghost"
                   onClick={() => setViewMode('grid')}
                   className={cn(
-                    'p-1.5 rounded-md transition-all duration-200',
+                    'p-1.5 rounded-md transition-[color,background-color,border-color,box-shadow] duration-200',
                     viewMode === 'grid'
                       ? 'bg-neutral-800 text-white shadow-sm'
                       : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
@@ -1645,7 +1645,7 @@ export const AdminPresetsPage: React.FC = () => {
                   variant="ghost"
                   onClick={() => setViewMode('table')}
                   className={cn(
-                    'p-1.5 rounded-md transition-all duration-200',
+                    'p-1.5 rounded-md transition-[color,background-color,border-color,box-shadow] duration-200',
                     viewMode === 'table'
                       ? 'bg-neutral-800 text-white shadow-sm'
                       : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
@@ -1676,7 +1676,7 @@ export const AdminPresetsPage: React.FC = () => {
                     setActiveTab(tab.id as PresetType);
                     if (isEditModalOpen) handleCancel();
                   }}
-                  className={`font-mono transition-all h-8 text-xs ${
+                  className={`font-mono transition-colors h-8 text-xs ${
                     activeTab === tab.id
                       ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                       : 'border-neutral-700/60 hover:border-neutral-600/30 text-neutral-400'

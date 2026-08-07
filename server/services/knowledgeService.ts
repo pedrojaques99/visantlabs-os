@@ -183,10 +183,11 @@ DIRETRIZES:
 4. JAMAIS utilize emojis.
 5. Responda no idioma do usuário.
 
-${brandContext || ''}
-UTILIZE O CONTEXTO ABAIXO:
-${context}`;
+${brandContext || ''}`;
 
+    // `context` goes through the context parameter, not inlined above:
+    // chatWithLLM appends it under "UTILIZE O CONTEXTO ABAIXO:" itself. Doing
+    // both would send the retrieved chunks twice.
     return await chatWithLLM(query, context, history, {
       apiKey: userApiKey,
       model,

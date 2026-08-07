@@ -82,7 +82,7 @@ export const InlineTags: React.FC<InlineTagsProps> = ({
                 e.stopPropagation();
                 onChange(values.filter((_, j) => j !== i));
               }}
-              className="text-neutral-700 hover:text-destructive opacity-0 group-hover/t:opacity-100 transition-all"
+              className="text-neutral-700 hover:text-destructive opacity-0 group-hover/t:opacity-100 transition-[color,background-color,border-color,opacity]"
               aria-label="Remove"
             >
               <X size={9} />

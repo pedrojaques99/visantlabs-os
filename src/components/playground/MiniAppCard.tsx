@@ -116,7 +116,7 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
         ) : (
           <div className="flex flex-col items-center gap-2 opacity-30">
             <Layers className="w-8 h-8 text-neutral-500" />
-            <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
+            <span className="text-[10px] text-neutral-600 uppercase tracking-widest">
               preview
             </span>
           </div>

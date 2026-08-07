@@ -70,7 +70,7 @@ const Thumb: React.FC<ThumbProps> = ({
         onDrop();
       }}
       onClick={() => !isActive && onActivate()}
-      className={`group/thumb shrink-0 relative cursor-pointer transition-all duration-200 ${
+      className={`group/thumb shrink-0 relative cursor-pointer transition-[color,background-color,border-color,opacity] duration-200 ${
         isActive
           ? 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-neutral-950'
           : 'opacity-60 hover:opacity-100'
@@ -85,8 +85,10 @@ const Thumb: React.FC<ThumbProps> = ({
         {page.format}
       </div>
 
-      {/* Hover controls */}
-      <div className="absolute -top-1 -right-1 z-10 flex items-center gap-0.5 opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+      {/* Hover controls — default visible where there's no hover (touch), reveal
+          on hover-capable pointers, and always on keyboard focus (Remove has no
+          other entry point, so it must not be hover-only). */}
+      <div className="absolute -top-1 -right-1 z-10 flex items-center gap-0.5 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/thumb:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
           type="button"
           onClick={(e) => {

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildReferenceFilter,
+  normalizeHex,
+  paletteBucketRegexes,
   escapeRegex,
   visibilityFilter,
   parseBrandTerms,
@@ -101,5 +103,59 @@ describe('references engine — brand terms (ranking only)', () => {
     expect(parseBrandTerms('')).toBeUndefined();
     expect(parseBrandTerms('  ')).toBeUndefined();
     expect(parseBrandTerms(null)).toBeUndefined();
+  });
+});
+
+describe('references engine — browsable guard', () => {
+  it('requires an image, so failed ingests never reach the grid', () => {
+    expect(buildReferenceFilter({}).referenceImageUrl).toEqual({
+      $exists: true,
+      $nin: [null, ''],
+    });
+  });
+
+  it('excludes PSD scenes by psdPath being a STRING, not by $exists', () => {
+    // ~1100 rows carry `psdPath: null` from the same local ingest without being
+    // PSDs — `$exists` would take them down with the catalogue.
+    expect(buildReferenceFilter({}).psdPath).toEqual({ $not: { $type: 'string' } });
+  });
+});
+
+describe('references engine — colour navigation', () => {
+  it('parses #rrggbb with or without the hash, rejects junk', () => {
+    expect(normalizeHex('#FF1493')).toEqual([255, 20, 147]);
+    expect(normalizeHex('ff1493')).toEqual([255, 20, 147]);
+    expect(normalizeHex('#fff')).toBeUndefined();
+    expect(normalizeHex('rgb(1,2,3)')).toBeUndefined();
+    expect(normalizeHex(undefined)).toBeUndefined();
+  });
+
+  it('buckets a colour into at most 27 neighbouring cells', () => {
+    const res = paletteBucketRegexes([128, 128, 128]);
+    expect(res).toHaveLength(27); // 3 levels per channel, mid-range
+    expect(res.every((r) => r instanceof RegExp)).toBe(true);
+  });
+
+  it('clamps at the channel edges instead of wrapping', () => {
+    // Black and white sit at the ends: 2 levels per channel, not 3.
+    expect(paletteBucketRegexes([0, 0, 0])).toHaveLength(8);
+    expect(paletteBucketRegexes([255, 255, 255])).toHaveLength(8);
+  });
+
+  it('matches a hex in the same bucket and not a distant one', () => {
+    const [re] = paletteBucketRegexes([255, 20, 147]).filter((r) => r.test('#ff1493'));
+    expect(re).toBeDefined();
+    expect(paletteBucketRegexes([255, 20, 147]).some((r) => r.test('#00ff00'))).toBe(false);
+  });
+
+  it('adds no colour clause when the hex is unusable', () => {
+    expect(buildReferenceFilter({ color: 'nope' }).$and).toBeUndefined();
+  });
+});
+
+describe('references engine — provenance inspection (temporary)', () => {
+  it('anchors sourcePrefix at the start and escapes it', () => {
+    const filter = buildReferenceFilter({ sourcePrefix: 'Z:/Jobs 2.0' });
+    expect(filter.sourcePath).toEqual({ $regex: '^Z:/Jobs 2\\.0', $options: 'i' });
   });
 });

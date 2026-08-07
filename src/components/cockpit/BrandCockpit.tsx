@@ -151,8 +151,19 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
   }, [heroBrand]);
 
   // ── Work in progress (existing lists, brand-scoped, limit 5) ──
-  const { data: campaigns = [] } = useCampaigns(activeBrand?.id, hasBrand);
-  const { data: projects = [] } = useCreativeProjects(activeBrand?.id, hasBrand);
+  const {
+    data: campaigns = [],
+    isError: campaignsError,
+    refetch: refetchCampaigns,
+  } = useCampaigns(activeBrand?.id, hasBrand);
+  const {
+    data: projects = [],
+    isError: projectsError,
+    refetch: refetchProjects,
+  } = useCreativeProjects(activeBrand?.id, hasBrand);
+  // A failed work-item fetch must not render the "make something" empty state —
+  // that lies to a user who already has work in flight (silent-empty).
+  const workError = campaignsError || projectsError;
   // Per-brand output gallery — every generated mockup persists against the brand.
   const { data: brandMockups = [] } = useBrandMockups(activeBrand?.id, hasBrand);
   const workItems = useMemo<WorkItem[]>(() => {
@@ -161,7 +172,9 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
         id: c.id,
         kind: 'campaign' as const,
         title: c.name,
-        meta: `${t('cockpit.work.campaign')} · ${c.completedCount}/${c.totalCount}`,
+        meta: c.totalCount
+          ? `${t('cockpit.work.campaign')} · ${c.completedCount}/${c.totalCount}`
+          : t('cockpit.work.campaign'),
         image: c.coverImageUrl,
         updatedAt: c.updatedAt,
       })),
@@ -355,7 +368,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     >
                       <div className="h-1 w-20 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-brand-cyan/70 transition-all"
+                          className="h-full rounded-full bg-brand-cyan/70 transition-colors"
                           style={{ width: `${depthReport.score}%` }}
                         />
                       </div>
@@ -399,7 +412,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     className="flex items-center justify-between gap-2 w-full text-left group/nba"
                   >
                     <MicroTitle className="text-muted-foreground">{t('cockpit.nba.title')}</MicroTitle>
-                    <span className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover/nba:text-foreground transition-colors">
+                    <span className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground group-hover/nba:text-foreground transition-colors">
                       {nbaCollapsed && <span className="tabular-nums">{nextActions.length}</span>}
                       <ChevronDown
                         size={14}
@@ -506,7 +519,24 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                       </Button>
                     </div>
 
-                    {workItems.length > 0 ? (
+                    {workError && workItems.length === 0 ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 py-10">
+                        <p className="text-xs text-muted-foreground max-w-sm">
+                          {t('cockpit.work.loadError') ||
+                            'Could not load your work in progress. Try again.'}
+                        </p>
+                        <Button
+                          variant="surface"
+                          size="xs"
+                          onClick={() => {
+                            void refetchCampaigns();
+                            void refetchProjects();
+                          }}
+                        >
+                          {t('common.retry') || 'Try again'}
+                        </Button>
+                      </div>
+                    ) : workItems.length > 0 ? (
                       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
                         {workItems.map((item) => (
                           <button
@@ -536,7 +566,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                               <p className="text-xs font-medium text-foreground truncate">
                                 {item.title}
                               </p>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">
+                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground truncate">
                                 {item.meta}
                               </p>
                             </div>

@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { PageShell } from '../components/ui/PageShell';
 import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { Thumb } from '@/components/ui/Thumb';
 import { useLayout } from '@/hooks/useLayout';
 import {
   useCreativeProjects,
@@ -34,7 +36,13 @@ export const CreativeProjectsPage: React.FC = () => {
   // Filtro opcional pela marca ativa (default global; server-side via hook).
   // Lista segue a marca ativa do BrandSwitcher (null = "Todas as marcas").
   const { activeBrandId: brandId } = useActiveBrand();
-  const { data: projects = [], isLoading, error } = useCreativeProjects(brandId ?? undefined);
+  const {
+    data: projects = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useCreativeProjects(brandId ?? undefined);
   const deleteMutation = useDeleteCreativeProject();
   const updateMutation = useUpdateCreativeProject();
 
@@ -224,7 +232,9 @@ export const CreativeProjectsPage: React.FC = () => {
     >
       <div className="relative z-10" data-vsn-component="creative-projects-grid">
         {/* Empty states */}
-        {filteredProjects.length === 0 && projects.length > 0 ? (
+        {isError && projects.length === 0 ? (
+          <ErrorState onRetry={() => refetch()} />
+        ) : filteredProjects.length === 0 && projects.length > 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
             <Diamond size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
             <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
@@ -275,21 +285,13 @@ export const CreativeProjectsPage: React.FC = () => {
                 >
                   {/* Thumbnail */}
                   <div className="relative w-full h-48 mb-6 rounded-lg overflow-hidden bg-neutral-900/50 border border-neutral-800/60">
-                    {thumbnail ? (
-                      <img
-                        src={thumbnail}
-                        alt={project.name || 'Creative preview'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Diamond className="h-10 w-10 text-neutral-800" strokeWidth={1} />
-                      </div>
-                    )}
-                    <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-brand-cyan uppercase tracking-wider">
+                    <Thumb
+                      src={thumbnail}
+                      alt={project.name || 'Creative preview'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      fallbackLabel={t('common.unavailable') || 'unavailable'}
+                    />
+                    <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                       {project.format}
                     </div>
                   </div>
@@ -342,7 +344,7 @@ export const CreativeProjectsPage: React.FC = () => {
                         e.stopPropagation();
                         handleOpen(project._id);
                       }}
-                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-all duration-300 flex items-center justify-center gap-2"
+                      className="flex-1 h-10 bg-white/5 border border-white/10 hover:border-neutral-700 hover:bg-brand-cyan/10 hover:text-brand-cyan rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 transition-[color,background-color,border-color,opacity] duration-300 flex items-center justify-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
                       Open
@@ -351,7 +353,7 @@ export const CreativeProjectsPage: React.FC = () => {
                       variant="ghost"
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deleteMutation.isPending}
-                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-10 h-10 bg-white/5 border border-white/10 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive rounded-lg text-neutral-500 transition-[color,background-color,border-color,opacity] duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

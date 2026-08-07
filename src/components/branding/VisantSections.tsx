@@ -19,7 +19,7 @@ import type {
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
       {children}
     </span>
   );
@@ -78,10 +78,10 @@ export const CentralMessageSection: React.FC<{ data: CentralMessage; pillars: Br
             ))}
           </div>
           <div
-            className={`p-4 rounded-lg border-l-4 ${
+            className={`p-4 rounded-lg border ${
               theme === 'dark'
-                ? 'bg-neutral-900/40 border-cyan-500/60'
-                : 'bg-cyan-50/50 border-cyan-500'
+                ? 'bg-white/[0.04] border-ring'
+                : 'bg-neutral-50 border-ring'
             }`}
           >
             <Label>{t('branding.visant.centralStatement')}</Label>
@@ -101,7 +101,7 @@ export const CentralMessageSection: React.FC<{ data: CentralMessage; pillars: Br
           <SectionCard key={i}>
             <div
               className={`text-xs font-mono uppercase mb-1 ${
-                theme === 'dark' ? 'text-cyan-400/70' : 'text-cyan-600'
+                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
               }`}
             >
               Pilar {String(i + 1).padStart(2, '0')}
@@ -161,7 +161,7 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
         {layers.map((layer, i) => (
           <div
             key={i}
-            className={`p-4 rounded-xl border-l-4 ${
+            className={`p-4 rounded-xl border ${
               colorMap[layer.color][theme === 'dark' ? 'dark' : 'light']
             }`}
           >
@@ -241,7 +241,7 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
         <div className="flex items-center gap-4">
           <div
             className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold font-manrope ${
-              theme === 'dark' ? 'bg-cyan-900/40 text-cyan-400' : 'bg-cyan-100 text-cyan-700'
+              theme === 'dark' ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-200 text-neutral-800'
             }`}
           >
             {data.name?.charAt(0) || '?'}
@@ -427,8 +427,8 @@ export const ArchetypesV2Section: React.FC<{
                 <p
                   className={`text-xs font-manrope mt-2 italic border-l-2 pl-2 ${
                     theme === 'dark'
-                      ? 'text-cyan-400/80 border-cyan-500/40'
-                      : 'text-cyan-700 border-cyan-500/40'
+                      ? 'text-neutral-300 border-ring'
+                      : 'text-neutral-700 border-ring'
                   }`}
                 >
                   "{tone.example}"
@@ -484,14 +484,14 @@ export const ManifestoSection: React.FC<{ data: Manifesto }> = ({ data }) => {
         <div
           className={`p-5 rounded-xl text-center ${
             theme === 'dark'
-              ? 'bg-cyan-950/30 border border-cyan-500/30'
-              : 'bg-cyan-50 border border-cyan-200'
+              ? 'bg-white/[0.04] border border-ring'
+              : 'bg-neutral-50 border border-ring'
           }`}
         >
           <Label>{t('branding.visant.sloganSuggestion')}</Label>
           <p
             className={`text-xl font-manrope font-semibold mt-2 ${
-              theme === 'dark' ? 'text-cyan-300' : 'text-cyan-800'
+              theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'
             }`}
           >
             "{data.sloganSuggestion}"
@@ -534,7 +534,7 @@ export const ColorPaletteV2Section: React.FC<{ colors: NamedColor[] }> = ({ colo
               </div>
               <p
                 className={`text-xs font-manrope mt-0.5 ${
-                  theme === 'dark' ? 'text-cyan-400/70' : 'text-cyan-700'
+                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}
               >
                 {color.role}
@@ -654,8 +654,8 @@ export const LogoConceptSection: React.FC<{ data: LogoConcept }> = ({ data }) =>
               key={i}
               className={`px-3 py-1 rounded-lg text-xs font-manrope ${
                 theme === 'dark'
-                  ? 'bg-cyan-900/30 text-cyan-300 border border-cyan-500/30'
-                  : 'bg-cyan-50 text-cyan-800 border border-cyan-200'
+                  ? 'bg-neutral-800/60 text-neutral-200 border border-ring'
+                  : 'bg-neutral-100 text-neutral-800 border border-ring'
               }`}
             >
               {item}
@@ -679,7 +679,7 @@ export const LogoConceptSection: React.FC<{ data: LogoConcept }> = ({ data }) =>
               <div key={j} className="flex items-start gap-2">
                 <span
                   className={`text-xs font-mono ${
-                    theme === 'dark' ? 'text-cyan-500/70' : 'text-cyan-600'
+                    theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
                   }`}
                 >
                   {j + 1}

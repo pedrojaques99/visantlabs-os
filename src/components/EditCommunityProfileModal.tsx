@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, X, Instagram, Youtube, Twitter, Globe, ImageIcon } from '@/lib/ui/icons';
+import { Camera, Instagram, Youtube, Twitter, Globe, ImageIcon, AlertTriangle } from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import {
   userProfileService,
@@ -13,6 +13,9 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { MicroTitle } from './ui/MicroTitle';
+import { Modal } from '@/components/ui/Modal';
+import { hoverReveal } from '@/lib/ui/hoverReveal';
+import { cn } from '../lib/utils';
 
 export interface EditCommunityProfileModalProps {
   isOpen: boolean;
@@ -54,23 +57,6 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
     }
   }, [isOpen, profile]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('keydown', handleEscape);
-      return () => {
-        document.body.style.overflow = '';
-        document.removeEventListener('keydown', handleEscape);
-      };
-    }
-  }, [isOpen, onClose]);
-
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
@@ -99,9 +85,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
       // Note: Cover image is handled separately via handleCoverUpload
 
+      // Nada mudou: fechar é o resultado certo, não um toast informando o óbvio.
       if (Object.keys(updateData).length === 0 && !isUploadingCover) {
-        toast.info('No changes to save');
         setIsSaving(false);
+        onClose();
         return;
       }
 
@@ -110,7 +97,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
       onClose();
     } catch (err: any) {
       console.error('Failed to update profile:', err);
-      const errorMessage = err.details || err.message || 'Failed to update profile';
+      const errorMessage = err.details || err.message || t('profile.updateError');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -128,13 +115,13 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+      setError(t('profile.invalidImageType'));
       return;
     }
 
     // Validate file size (max 2MB for cover)
     if (file.size > 2 * 1024 * 1024) {
-      setError('Cover image size must be less than 2MB');
+      setError(t('community.editProfileModal.coverTooLarge'));
       return;
     }
 
@@ -157,10 +144,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           const updatedProfile = await userProfileService.getUserProfile(profile.id);
           setCoverImageUrl(updatedProfile.coverImageUrl || '');
           onUpdate();
-          toast.success('Cover image uploaded successfully');
+          toast.success(t('community.editProfileModal.coverUploaded'));
         } catch (err: any) {
           console.error('Upload error:', err);
-          const errorMessage = err.details || err.message || 'Failed to upload cover image';
+          const errorMessage = err.details || err.message || t('community.editProfileModal.coverUploadError');
           setError(errorMessage);
           toast.error(errorMessage);
         } finally {
@@ -168,13 +155,13 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
         }
       };
       reader.onerror = () => {
-        setError('Failed to read file');
+        setError(t('profile.fileReadError'));
         setIsUploadingCover(false);
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
       console.error('File upload error:', err);
-      setError(err.message || 'Failed to upload cover image');
+      setError(err.message || t('community.editProfileModal.coverUploadError'));
       setIsUploadingCover(false);
     }
   };
@@ -182,192 +169,16 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl overflow-hidden animate-slide-up">
-        {/* Header */}
-        <div className="p-6 flex items-center justify-between border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
-          <h2 className="text-xl font-semibold text-neutral-200 font-manrope tracking-tight">
-            Edit Community Profile
-          </h2>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md"
-          >
-            <X size={20} />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-4 text-sm text-destructive font-mono flex items-center gap-2">
-              <span className="shrink-0">⚠</span>
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Cover Image */}
-          <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1">
-              Cover Image
-            </MicroTitle>
-            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/60 group">
-              {coverImageUrl ? (
-                <img
-                  src={coverImageUrl}
-                  alt="Cover"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                  <ImageIcon size={32} className="text-neutral-700" strokeWidth={1} />
-                  <MicroTitle className="text-[10px] text-neutral-600 tracking-tight">
-                    No cover image
-                  </MicroTitle>
-                </div>
-              )}
-              <Input
-                ref={coverFileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverUpload}
-                disabled={isUploadingCover}
-                className="hidden"
-              />
-              <Button
-                variant="ghost"
-                onClick={handleCoverClick}
-                disabled={isUploadingCover}
-                className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
-              >
-                {isUploadingCover ? (
-                  <GlitchLoader size={24} />
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <Camera size={24} className="text-neutral-300" />
-                    <MicroTitle className="text-[10px] text-neutral-300">Change Cover</MicroTitle>
-                  </div>
-                )}
-              </Button>
-            </div>
-            <div className="flex items-center gap-2 ml-1">
-              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">
-                16:9 Aspect
-              </Badge>
-              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter py-0">
-                Max 2MB
-              </Badge>
-            </div>
-          </div>
-
-          {/* Username */}
-          <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1">
-              Username
-            </MicroTitle>
-            <Input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your username"
-              className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
-            />
-            <p className="text-[10px] text-neutral-500 font-mono mt-1 ml-1">
-              3-20 characters: letters, numbers, underscores, and hyphens.
-            </p>
-          </div>
-
-          {/* Bio */}
-          <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1">
-              Bio
-            </MicroTitle>
-            <Textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell us about yourself..."
-              className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600 h-32 resize-none"
-            />
-          </div>
-
-          {/* Social Links */}
-          <div className="space-y-6">
-            <MicroTitle as="label" className="ml-1">
-              Social Media Links
-            </MicroTitle>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Instagram size={14} className="text-pink-500 uppercase" />
-                  Instagram
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                  placeholder="https://instagram.com/username"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Youtube size={14} className="text-destructive uppercase" />
-                  YouTube
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={youtube}
-                  onChange={(e) => setYoutube(e.target.value)}
-                  placeholder="https://youtube.com/@channel"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Twitter size={14} className="text-blue-400 uppercase" />X (Twitter)
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={x}
-                  onChange={(e) => setX(e.target.value)}
-                  placeholder="https://x.com/username"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Globe size={14} className="text-brand-cyan uppercase" />
-                  Website
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://yourwebsite.com"
-                  className="bg-neutral-900/50 border-neutral-800 focus:border-neutral-600"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm flex items-center justify-end gap-3">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            className="font-mono text-neutral-400 hover:text-neutral-200"
-          >
-            Cancel
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      id="edit-community-profile"
+      size="lg"
+      title={t('community.editProfileModal.title')}
+      footer={
+        <div className="flex items-center justify-end gap-3">
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
           </Button>
           <Button
             variant="brand"
@@ -378,14 +189,175 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
             {isSaving ? (
               <>
                 <GlitchLoader size={14} className="mr-2" />
-                Saving...
+                {t('common.saving')}
               </>
             ) : (
-              'Save Changes'
+              t('community.editProfileModal.saveChanges')
             )}
           </Button>
         </div>
+      }
+    >
+      <div className="space-y-6">
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-sm text-destructive flex items-center gap-2">
+              <AlertTriangle size={16} className="shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Cover Image */}
+          <div className="space-y-2">
+            <MicroTitle as="label" className="ml-1">
+              {t('community.editProfileModal.coverImage')}
+            </MicroTitle>
+            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-muted border border-border group">
+              {coverImageUrl ? (
+                <img
+                  src={coverImageUrl}
+                  alt={t('common.cover')}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                  <ImageIcon size={32} className="text-muted-foreground" strokeWidth={1} />
+                  <MicroTitle className="text-[10px] text-muted-foreground tracking-tight">
+                    {t('community.editProfileModal.noCover')}
+                  </MicroTitle>
+                </div>
+              )}
+              <input
+                ref={coverFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                disabled={isUploadingCover}
+                className="hidden"
+              />
+              {/* hoverReveal: no touch o botão de trocar capa era invisível E
+                  inalcançável — era o único caminho pra ação. */}
+              <Button
+                variant="ghost"
+                onClick={handleCoverClick}
+                disabled={isUploadingCover}
+                aria-label={t('community.editProfileModal.changeCover')}
+                className={cn(
+                  hoverReveal,
+                  'absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm disabled:opacity-50'
+                )}
+              >
+                {isUploadingCover ? (
+                  <GlitchLoader size={24} />
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Camera size={24} className="text-foreground" />
+                    <MicroTitle className="text-[10px] text-foreground">
+                      {t('community.editProfileModal.changeCover')}
+                    </MicroTitle>
+                  </div>
+                )}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 ml-1">
+              <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
+                {t('community.editProfileModal.coverAspect')}
+              </Badge>
+              <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
+                {t('community.editProfileModal.coverMaxSize')}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Username */}
+          <div className="space-y-2">
+            <MicroTitle as="label" className="ml-1">
+              {t('community.editProfileModal.username')}
+            </MicroTitle>
+            <Input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t('community.editProfileModal.usernamePlaceholder')}
+            />
+            <p className="text-xs text-muted-foreground mt-1 ml-1">
+              {t('community.editProfileModal.usernameHint')}
+            </p>
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-2">
+            <MicroTitle as="label" className="ml-1">
+              {t('community.editProfileModal.bio')}
+            </MicroTitle>
+            <Textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder={t('community.editProfileModal.bioPlaceholder')}
+              className="h-32 resize-none"
+            />
+          </div>
+
+          {/* Social Links */}
+          <div className="space-y-6">
+            <MicroTitle as="label" className="ml-1">
+              {t('community.editProfileModal.socialLinks')}
+            </MicroTitle>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Instagram size={14} className="text-muted-foreground" />
+                  {t('community.instagram')}
+                </MicroTitle>
+                <Input
+                  type="url"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                  placeholder="https://instagram.com/username"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Youtube size={14} className="text-muted-foreground" />
+                  {t('community.youtube')}
+                </MicroTitle>
+                <Input
+                  type="url"
+                  value={youtube}
+                  onChange={(e) => setYoutube(e.target.value)}
+                  placeholder="https://youtube.com/@channel"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Twitter size={14} className="text-muted-foreground" />
+                  {t('community.twitter')}
+                </MicroTitle>
+                <Input
+                  type="url"
+                  value={x}
+                  onChange={(e) => setX(e.target.value)}
+                  placeholder="https://x.com/username"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Globe size={14} className="text-muted-foreground" />
+                  {t('community.website')}
+                </MicroTitle>
+                <Input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                />
+              </div>
+            </div>
+          </div>
       </div>
-    </div>
+    </Modal>
   );
 };

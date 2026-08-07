@@ -203,7 +203,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
           <div className="flex justify-center mb-6">
             <div className="relative">
               <div className="absolute inset-0 bg-neutral-500/20 rounded-md blur-xl"></div>
-              <CheckCircle size={80} className="text-brand-cyan relative" />
+              <CheckCircle size={80} className="text-success relative" />
             </div>
           </div>
 
@@ -240,8 +240,8 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
             {creditsPurchased && creditsConfirmed && (
               <div className="mb-6">
-                <div className="text-center py-4 bg-brand-cyan/10 border border-neutral-600/30 rounded-md">
-                  <div className="text-5xl font-bold font-mono text-brand-cyan mb-2">
+                <div className="text-center py-4 bg-muted border border-neutral-600/30 rounded-md">
+                  <div className="text-5xl font-bold font-mono text-foreground mb-2">
                     +{animatedCreditsPurchased}
                   </div>
                   <div className="text-neutral-400 font-mono text-sm">
@@ -272,11 +272,11 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               )}
 
               {/* Total Credits */}
-              <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-neutral-600/20 rounded-md">
+              <div className="flex items-center justify-between p-3 bg-muted/50 border border-neutral-600/20 rounded-md">
                 <span className="text-neutral-300 font-mono text-sm font-semibold">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>
-                <span className="text-brand-cyan font-mono font-bold text-xl">
+                <span className="text-foreground font-mono font-bold text-xl tabular-nums">
                   {animatedTotalCredits} {t('creditsPackages.credits')}
                 </span>
               </div>

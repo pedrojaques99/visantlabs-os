@@ -197,7 +197,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
                 size="sm"
                 onClick={handleImportClick}
                 disabled={isPreviewing}
-                className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-all font-bold shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 10%)] hover:shadow-[0_0_20px_oklch(from var(--brand-cyan) l c h / 20%)]"
+                className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-[color,background-color,border-color,box-shadow] font-bold shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 10%)] hover:shadow-[0_0_20px_oklch(from var(--brand-cyan) l c h / 20%)]"
               >
                 {isPreviewing ? <GlitchLoader size={12} /> : <Figma size={12} />}
                 Importar do Figma

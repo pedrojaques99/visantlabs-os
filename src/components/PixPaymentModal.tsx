@@ -336,7 +336,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               </div>
               <MicroTitle className="text-neutral-500">{t('pix.credits') || 'CRÉDITOS'}</MicroTitle>
 
-              <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
+              <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
                 <span>REPASSE_TRANSPARENTE</span>
                 <span className="w-1 h-1 bg-neutral-800 rounded-full" />
                 <span className="text-neutral-500">$0.067 Google + $0.013 Visant</span>
@@ -376,7 +376,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       setError(null);
                     }}
                     placeholder={t('pix.taxIdPlaceholder') || 'Digite seu CPF ou CNPJ'}
-                    className="w-full bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 transition-all"
+                    className="w-full bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 transition-[color,background-color,border-color,filter]"
                     maxLength={18}
                     required
                   />

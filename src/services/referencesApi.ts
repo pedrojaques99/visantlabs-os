@@ -17,13 +17,25 @@ export interface ReferenceProvenance {
 
 export interface ReferenceItem {
   id: string;
+  /** Canonical title (EN) — matches the legacy library and seeds the slug. */
   name: string;
+  /** Short title per locale. Render via `localizedName`, never `name` directly. */
+  nameI18n?: { en?: string; pt?: string };
+  /** URL-safe handle. The `id` stays the key — see src/lib/references/naming.ts. */
+  slug?: string;
   studio?: string;
   description: string;
   referenceImageUrl: string;
   thumbnailUrl?: string;
   /** Base64 thumbhash for an instant LQIP placeholder. */
   thumbHash?: string;
+  /** Objective pixel facts (extractImageFacts). Drive space reservation + the
+   *  low-resolution notice — see src/lib/references/quality.ts. */
+  width?: number;
+  height?: number;
+  aspectRatio?: number;
+  /** Dominant colours, most-frequent first. Powers colour navigation. */
+  palette?: string[];
   dimensions: Record<string, string[]>;
   provenance?: ReferenceProvenance;
   country?: string;
@@ -79,6 +91,21 @@ export interface CollectionDetail {
   items: ReferenceItem[];
 }
 
+export interface LowResReport {
+  maxShortSide: number;
+  total: number;
+  /** Quantas estão salvas em alguma coleção — essas nunca são apagadas. */
+  protected: number;
+  samples: Array<{
+    id: string;
+    name?: string;
+    width?: number;
+    height?: number;
+    thumbnailUrl?: string;
+    isProtected: boolean;
+  }>;
+}
+
 export interface ReferenceUploadInput {
   data: string; // base64 (no data: prefix)
   name?: string;
@@ -112,6 +139,14 @@ export interface ReferenceListParams {
   brandTerms?: string;
   /** Rank a text query by meaning (vector search) instead of substring. */
   semantic?: boolean;
+  /**
+   * TEMPORÁRIO — inspeção de procedência. Só linhas cujo `sourcePath` começa
+   * com este prefixo. Existe pra conseguir OLHAR uma leva de ingest antes de
+   * decidir o que fazer com ela. Ver ReferencesPage (`?src=`).
+   */
+  sourcePrefix?: string;
+  /** Hex colour — ranks/filters by proximity to a reference's dominant palette. */
+  color?: string;
 }
 
 const BASE = '/api/references';
@@ -139,6 +174,8 @@ export const referencesApi = {
         if (v) qs.set(k, v);
       }
     }
+    if (params.sourcePrefix) qs.set('sourcePrefix', params.sourcePrefix);
+    if (params.color) qs.set('color', params.color);
     if (params.seed) qs.set('seed', params.seed);
     if (params.brandId) qs.set('brandId', params.brandId);
     if (params.brandTerms) qs.set('brandTerms', params.brandTerms);
@@ -191,6 +228,15 @@ export const referencesApi = {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error || 'Visual search failed');
     }
+    return resp.json();
+  },
+
+  /** Permalink lookup — accepts a slug or a legacy id. */
+  async item(handle: string): Promise<{ reference: ReferenceItem }> {
+    const resp = await fetch(`${BASE}/item/${encodeURIComponent(handle)}`, {
+      headers: authHeaders(),
+    });
+    if (!resp.ok) throw new Error('Reference not found');
     return resp.json();
   },
 
@@ -376,6 +422,37 @@ export const adminReferencesApi = {
       body: JSON.stringify({ dryRun }),
     });
     if (!resp.ok) throw new Error('Failed to dedupe');
+    return resp.json();
+  },
+
+  /** Referências pequenas demais. Admin-only; read-only. */
+  async lowRes(maxShortSide = 300): Promise<LowResReport> {
+    const resp = await fetch(
+      `${API_BASE}/admin/references/low-res?maxShortSide=${maxShortSide}`,
+      { headers: authHeaders() }
+    );
+    if (!resp.ok) throw new Error('Failed to load low-resolution references');
+    return resp.json();
+  },
+
+  /** Apaga as abaixo da barra. Dry run salvo instrução contrária. */
+  async purgeLowRes(
+    maxShortSide = 300,
+    dryRun = true
+  ): Promise<{
+    dryRun: boolean;
+    maxShortSide: number;
+    matched: number;
+    protected?: number;
+    wouldDelete?: number;
+    deleted?: number;
+  }> {
+    const resp = await fetch(`${API_BASE}/admin/references/low-res/purge`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maxShortSide, dryRun }),
+    });
+    if (!resp.ok) throw new Error('Failed to purge low-resolution references');
     return resp.json();
   },
 

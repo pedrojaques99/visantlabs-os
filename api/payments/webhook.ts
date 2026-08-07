@@ -1135,8 +1135,17 @@ export default async (req: any, res: any) => {
   // Handle the event
   if (isDev) console.log('✅ Received Stripe event:', event.type);
 
-  // Process the event asynchronously and return 200 immediately
-  processWebhookEvent(event);
+  // IMPORTANTE: esperar o processamento ANTES de responder.
+  //
+  // Em serverless a função pode ser congelada assim que a resposta sai. Se
+  // disparássemos `processWebhookEvent(event)` sem await, o Stripe receberia
+  // 200 e o `grantProduct` poderia nunca rodar — o cliente paga e o reader
+  // não abre. Bug intermitente, só aparece em produção.
+  //
+  // Esperar é seguro: o handler engole os próprios erros (nunca lança) e o
+  // grant é idempotente por sessionId, então um eventual retry do Stripe não
+  // concede nada em dobro.
+  await processWebhookEvent(event);
 
   // Return 200 OK to Stripe
   res.json({ received: true });

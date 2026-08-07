@@ -91,7 +91,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
               handleActionClick(action);
             }}
             className={cn(
-              'flex items-center gap-1.5 border rounded-md transition-all text-[10px] h-7 px-2',
+              'flex items-center gap-1.5 border rounded-md transition-[color,background-color,border-color,opacity] text-[10px] h-7 px-2',
               getActionColor(action.type)
             )}
             title={action.description}

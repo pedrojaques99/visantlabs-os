@@ -269,7 +269,7 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
         onFocus(app.appId);
       }}
       disabled={locked}
-      className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-all duration-100 disabled:cursor-not-allowed focus:outline-none overflow-hidden"
+      className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-colors duration-100 disabled:cursor-not-allowed focus:outline-none overflow-hidden"
     >
       {/* Main row — single line, clips when narrower than 1/3 viewport */}
       <div className="flex items-center font-mono text-[11px] tracking-wider whitespace-nowrap overflow-hidden">
@@ -394,7 +394,7 @@ const AppList: React.FC<AppListProps> = ({
       >
         <button
           onClick={() => navigate('/apps')}
-          className="px-4 py-1.5 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-all"
+          className="px-4 py-1.5 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-colors"
           aria-label={t('home.ver_todos_os_apps')}
         >
           More Apps
@@ -593,7 +593,7 @@ export const HomePage: React.FC = () => {
                     </p>
                     <button
                       onClick={() => setShowAuthModal(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-all duration-200"
+                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200"
                     >
                       <LogIn size={12} />
                       <span>{t('home.sign_in')}</span>
@@ -643,7 +643,7 @@ export const HomePage: React.FC = () => {
                       </p>
                       <button
                         onClick={() => setShowAuthModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-all duration-200 w-fit"
+                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
                       >
                         <LogIn size={12} />
                         <span>{t('home.sign_in_2')}</span>
