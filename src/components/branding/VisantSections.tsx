@@ -19,9 +19,7 @@ import type {
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-      {children}
-    </span>
+    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{children}</span>
   );
 };
 
@@ -79,9 +77,7 @@ export const CentralMessageSection: React.FC<{ data: CentralMessage; pillars: Br
           </div>
           <div
             className={`p-4 rounded-lg border ${
-              theme === 'dark'
-                ? 'bg-white/[0.04] border-ring'
-                : 'bg-neutral-50 border-ring'
+              theme === 'dark' ? 'bg-white/[0.04] border-ring' : 'bg-neutral-50 border-ring'
             }`}
           >
             <Label>{t('branding.visant.centralStatement')}</Label>
@@ -241,7 +237,9 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
         <div className="flex items-center gap-4">
           <div
             className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold font-manrope ${
-              theme === 'dark' ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-200 text-neutral-800'
+              theme === 'dark'
+                ? 'bg-neutral-800 text-neutral-200'
+                : 'bg-neutral-200 text-neutral-800'
             }`}
           >
             {data.name?.charAt(0) || '?'}

@@ -106,7 +106,10 @@ export function BrandMatrixSection() {
       }
       // Only our own scan — Tools › Extract fires this same round-trip for its result modal,
       // and without the check its scan would silently rewrite the assets picked here.
-      if (msg.type === 'SMART_SCAN_RESULT' && isSmartScanFor(msg, SMART_SCAN_REQUESTER.brandMatrix)) {
+      if (
+        msg.type === 'SMART_SCAN_RESULT' &&
+        isSmartScanFor(msg, SMART_SCAN_REQUESTER.brandMatrix)
+      ) {
         const items = (msg.items || []).filter(
           (i: any) => i.category === 'logo' || i.category === 'component'
         );
@@ -188,7 +191,9 @@ export function BrandMatrixSection() {
 
         {selected.length > 0 && (
           <p className="text-[9px] text-muted-foreground">
-            {selected.length === 1 ? t('plugin.brand.matrix.colorCountOne', { count: selected.length }) : t('plugin.brand.matrix.colorCountOther', { count: selected.length })}
+            {selected.length === 1
+              ? t('plugin.brand.matrix.colorCountOne', { count: selected.length })
+              : t('plugin.brand.matrix.colorCountOther', { count: selected.length })}
           </p>
         )}
       </div>
@@ -201,7 +206,9 @@ export function BrandMatrixSection() {
           onChange={(e) => setCreateSections(e.target.checked)}
           className="w-3 h-3 rounded border-border/60 accent-brand-cyan"
         />
-        <span className="text-[9px] text-muted-foreground">{t('plugin.brand.matrix.createSections')}</span>
+        <span className="text-[9px] text-muted-foreground">
+          {t('plugin.brand.matrix.createSections')}
+        </span>
       </label>
 
       {/* Actions */}

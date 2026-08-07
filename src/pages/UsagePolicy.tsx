@@ -77,7 +77,9 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             <h2 className="text-xl font-semibold text-foreground mb-4">
               {t('usage.sections.serviceProvider.title')}
             </h2>
-            <p className="text-muted-foreground mb-3">{t('usage.sections.serviceProvider.intro')}</p>
+            <p className="text-muted-foreground mb-3">
+              {t('usage.sections.serviceProvider.intro')}
+            </p>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
               {getArray('usage.sections.serviceProvider.items').map((item, idx) => (
                 <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
@@ -203,13 +205,17 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             <h2 className="text-xl font-semibold text-foreground mb-4">
               {t('usage.sections.serviceAvailability.title')}
             </h2>
-            <p className="text-muted-foreground mb-3">{t('usage.sections.serviceAvailability.intro')}</p>
+            <p className="text-muted-foreground mb-3">
+              {t('usage.sections.serviceAvailability.intro')}
+            </p>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
               {getArray('usage.sections.serviceAvailability.items').map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
             </ul>
-            <p className="text-muted-foreground mt-3">{t('usage.sections.serviceAvailability.note')}</p>
+            <p className="text-muted-foreground mt-3">
+              {t('usage.sections.serviceAvailability.note')}
+            </p>
           </section>
 
           <section className="pt-8">
@@ -228,7 +234,9 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             <h2 className="text-xl font-semibold text-foreground mb-4">
               {t('usage.sections.contentPolicies.title')}
             </h2>
-            <p className="text-muted-foreground mb-3">{t('usage.sections.contentPolicies.intro')}</p>
+            <p className="text-muted-foreground mb-3">
+              {t('usage.sections.contentPolicies.intro')}
+            </p>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
               {getArray('usage.sections.contentPolicies.items').map((item, idx) => (
                 <li key={idx}>{item}</li>

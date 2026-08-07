@@ -475,9 +475,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Diamond size={12} className="text-brand-cyan" />
-                <span className="text-[10px] text-neutral-400 uppercase ">
-                  Sharpening
-                </span>
+                <span className="text-[10px] text-neutral-400 uppercase ">Sharpening</span>
               </div>
               <span className="text-[10px] font-mono text-neutral-500">
                 {Math.round(localSharpening * 100)}%

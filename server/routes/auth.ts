@@ -728,9 +728,7 @@ const checkoutExchangeRateLimiter = rateLimit({
 });
 
 // Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 24h.
-const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(
-  process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 24
-);
+const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 24);
 
 router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, res) => {
   try {

@@ -573,8 +573,14 @@ class AuthService {
   /**
    * Upload da foto de perfil. Mora aqui, e não na tela, porque o endpoint precisa
    * do mesmo `API_BASE_URL` e do mesmo token que o resto do serviço — a versão
-   * inline no modal montava `fetch('/api/...')` com o token lido do localStorage
-   * na mão.
+   * inline no modal montava a chamada com `/api/` hardcoded e o token lido do
+   * localStorage na mão.
+   *
+   * O exemplo está em prosa de propósito: escrito como código, ele casava com o
+   * portão `lint-api-urls` do CI, que faz grep de texto e não distingue
+   * comentário de chamada. Esse falso positivo deixou o Test Suite vermelho em
+   * `main` e, como o deploy depende dele, segurou toda subida para a VPS por
+   * semanas. O portão continua estrito — quem estava errado era o exemplo.
    */
   async updateProfilePicture(imageBase64: string): Promise<User> {
     if (!this.token) {
@@ -592,9 +598,7 @@ class AuthService {
     });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ error: 'Failed to upload picture' }));
+      const errorData = await response.json().catch(() => ({ error: 'Failed to upload picture' }));
       throw new Error(errorData.error || 'Failed to upload picture');
     }
 

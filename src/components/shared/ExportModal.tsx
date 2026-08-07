@@ -473,9 +473,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format */}
           <div className="space-y-2">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-              Format
-            </span>
+            <span className="text-[10px] uppercase tracking-widest text-neutral-500">Format</span>
             <div className="flex flex-wrap gap-1.5">
               {FORMAT_OPTIONS.map((f) => (
                 <button
@@ -534,9 +532,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scale (raster image only) */}
           {!isVideoFormat && format !== 'svg' && (
             <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-                Scale
-              </span>
+              <span className="text-[10px] uppercase tracking-widest text-neutral-500">Scale</span>
               <div className="flex gap-1.5">
                 {SCALE_OPTIONS.map((s) => (
                   <button

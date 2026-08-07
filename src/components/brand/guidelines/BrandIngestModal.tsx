@@ -125,9 +125,7 @@ const SectionShell: React.FC<{
           <div className="w-2 h-0.5 bg-neutral-400 rounded" />
         ) : null}
       </div>
-      <span className="text-[10px] uppercase tracking-widest text-neutral-500 flex-1">
-        {label}
-      </span>
+      <span className="text-[10px] uppercase tracking-widest text-neutral-500 flex-1">{label}</span>
       {loading && <GlitchLoader size={11} className="flex-shrink-0" />}
     </div>
     {children && <div className="px-2 pb-2.5">{children}</div>}

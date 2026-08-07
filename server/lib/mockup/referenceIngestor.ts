@@ -385,11 +385,13 @@ export async function enrichReference(id: string): Promise<IngestReferenceResult
             },
             // As regras de titulo seguem morando em titlePrompt.ts (o backfill
             // usa as mesmas), so viajam anexadas ao prompt de dimensoes.
-            { text: `${DIMENSION_PROMPT}
+            {
+              text: `${DIMENSION_PROMPT}
 
 ---
 
-${SHORT_TITLE_PROMPT}` },
+${SHORT_TITLE_PROMPT}`,
+            },
           ],
         },
       ],

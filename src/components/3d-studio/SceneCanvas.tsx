@@ -717,77 +717,79 @@ export const SceneCanvas: React.FC<SceneCanvasProps> = React.memo(
     return (
       <SceneRefContext.Provider value={sceneHandle}>
         <div className="relative w-full h-full">
-        <Canvas
-          key={`${s.resetKey}-${s.orthographic}`}
-          orthographic={s.orthographic}
-          camera={
-            s.orthographic
-              ? { position: [0, 0, s.zoom], zoom: 80 }
-              : { position: [0, 0, s.zoom], fov: s.fov }
-          }
-          dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
-          // touchAction: 'none' lets the canvas own all touch gestures (1-finger
-          // orbit, 2-finger pinch/pan) instead of the browser hijacking them for
-          // page scroll/zoom. Without it, dragging on mobile scrolls the page.
-          style={{ ...bgStyle, width: '100%', height: '100%', touchAction: 'none' }}
-          gl={{
-            antialias: s.renderQuality !== 'performance',
-            alpha: true,
-            preserveDrawingBuffer: true,
-            powerPreference: 'default',
-            failIfMajorPerformanceCaveat: false,
-            toneMapping: TONE_MAP[s.toneMapping],
-            toneMappingExposure: s.toneMappingExposure,
-          }}
-          onCreated={({ gl, scene, camera }) => {
-            onCanvasReady(gl.domElement);
-            const handle: SceneHandle = { scene, gl, camera };
-            setSceneHandle(handle);
-            onSceneReady?.(handle);
+          <Canvas
+            key={`${s.resetKey}-${s.orthographic}`}
+            orthographic={s.orthographic}
+            camera={
+              s.orthographic
+                ? { position: [0, 0, s.zoom], zoom: 80 }
+                : { position: [0, 0, s.zoom], fov: s.fov }
+            }
+            dpr={RENDER_QUALITY_CONFIG[s.renderQuality].dpr}
+            // touchAction: 'none' lets the canvas own all touch gestures (1-finger
+            // orbit, 2-finger pinch/pan) instead of the browser hijacking them for
+            // page scroll/zoom. Without it, dragging on mobile scrolls the page.
+            style={{ ...bgStyle, width: '100%', height: '100%', touchAction: 'none' }}
+            gl={{
+              antialias: s.renderQuality !== 'performance',
+              alpha: true,
+              preserveDrawingBuffer: true,
+              powerPreference: 'default',
+              failIfMajorPerformanceCaveat: false,
+              toneMapping: TONE_MAP[s.toneMapping],
+              toneMappingExposure: s.toneMappingExposure,
+            }}
+            onCreated={({ gl, scene, camera }) => {
+              onCanvasReady(gl.domElement);
+              const handle: SceneHandle = { scene, gl, camera };
+              setSceneHandle(handle);
+              onSceneReady?.(handle);
 
-            gl.domElement.addEventListener('webglcontextlost', (e) => {
-              e.preventDefault();
-              import('sonner').then(({ toast }) =>
-                toast.error('WebGL context lost — attempting recovery...', { id: 'webgl-context' })
-              );
-              // If nothing restores the context shortly, surface a persistent
-              // overlay so the blank canvas isn't left without a signal.
-              if (contextLostTimer.current) clearTimeout(contextLostTimer.current);
-              contextLostTimer.current = setTimeout(() => setContextLost(true), 4000);
-            });
-            gl.domElement.addEventListener('webglcontextrestored', () => {
-              if (contextLostTimer.current) {
-                clearTimeout(contextLostTimer.current);
-                contextLostTimer.current = null;
-              }
-              setContextLost(false);
-              import('sonner').then(({ toast }) =>
-                toast.success('WebGL context restored', { id: 'webgl-context' })
-              );
-              useStudio3DStore.setState({ resetKey: Date.now() });
-            });
-          }}
-        >
-          <AdaptiveDpr pixelated />
-          <AdaptiveEvents />
-          <PerformanceMonitor />
-          <SceneContent />
-          {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
-        </Canvas>
-        {contextLost && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/85 text-center backdrop-blur-sm">
-            <p className="text-sm font-medium text-foreground">Rendering lost</p>
-            <p className="max-w-xs text-xs text-muted-foreground">
-              The 3D context could not be recovered. Reload the page to restore the scene.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="rounded-md border border-ring px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Reload
-            </button>
-          </div>
-        )}
+              gl.domElement.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                import('sonner').then(({ toast }) =>
+                  toast.error('WebGL context lost — attempting recovery...', {
+                    id: 'webgl-context',
+                  })
+                );
+                // If nothing restores the context shortly, surface a persistent
+                // overlay so the blank canvas isn't left without a signal.
+                if (contextLostTimer.current) clearTimeout(contextLostTimer.current);
+                contextLostTimer.current = setTimeout(() => setContextLost(true), 4000);
+              });
+              gl.domElement.addEventListener('webglcontextrestored', () => {
+                if (contextLostTimer.current) {
+                  clearTimeout(contextLostTimer.current);
+                  contextLostTimer.current = null;
+                }
+                setContextLost(false);
+                import('sonner').then(({ toast }) =>
+                  toast.success('WebGL context restored', { id: 'webgl-context' })
+                );
+                useStudio3DStore.setState({ resetKey: Date.now() });
+              });
+            }}
+          >
+            <AdaptiveDpr pixelated />
+            <AdaptiveEvents />
+            <PerformanceMonitor />
+            <SceneContent />
+            {s.showStats && <Stats className="!absolute !left-2 !top-2" />}
+          </Canvas>
+          {contextLost && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/85 text-center backdrop-blur-sm">
+              <p className="text-sm font-medium text-foreground">Rendering lost</p>
+              <p className="max-w-xs text-xs text-muted-foreground">
+                The 3D context could not be recovered. Reload the page to restore the scene.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="rounded-md border border-ring px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                Reload
+              </button>
+            </div>
+          )}
         </div>
       </SceneRefContext.Provider>
     );

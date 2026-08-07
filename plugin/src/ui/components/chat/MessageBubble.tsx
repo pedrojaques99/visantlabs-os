@@ -280,7 +280,9 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         {message.thinking && (
           <div className="text-xs text-muted-foreground mb-2">
             <details>
-              <summary className="cursor-pointer select-none">{t('plugin.message.thinking')}</summary>
+              <summary className="cursor-pointer select-none">
+                {t('plugin.message.thinking')}
+              </summary>
               <pre className="text-[10px] mt-1 overflow-auto max-h-24">{message.thinking}</pre>
             </details>
           </div>
@@ -290,7 +292,12 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
         <div className="space-y-1">
           {useMemo(
             () =>
-              renderContentWithLinks(message.content, buildNodeMap(message.summaryItems), !isUser, t),
+              renderContentWithLinks(
+                message.content,
+                buildNodeMap(message.summaryItems),
+                !isUser,
+                t
+              ),
             [message.content, message.summaryItems, isUser, t]
           )}
         </div>
@@ -308,14 +315,19 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
               chips.push({
                 icon: <Layers size={8} />,
                 label: t(
-                  frames.length === 1 ? 'plugin.common.frameCountOne' : 'plugin.common.frameCountOther',
+                  frames.length === 1
+                    ? 'plugin.common.frameCountOne'
+                    : 'plugin.common.frameCountOther',
                   { count: frames.length }
                 ),
               });
             }
-            if (meta.scanPage) chips.push({ icon: <Scan size={8} />, label: t('plugin.message.pageScan') });
-            if (meta.useBrand) chips.push({ icon: <Palette size={8} />, label: t('plugin.common.brand') });
-            if (meta.generateImage) chips.push({ icon: <Image size={8} />, label: t('plugin.message.image') });
+            if (meta.scanPage)
+              chips.push({ icon: <Scan size={8} />, label: t('plugin.message.pageScan') });
+            if (meta.useBrand)
+              chips.push({ icon: <Palette size={8} />, label: t('plugin.common.brand') });
+            if (meta.generateImage)
+              chips.push({ icon: <Image size={8} />, label: t('plugin.message.image') });
             if (meta.model) chips.push({ icon: null, label: String(meta.model) });
             if (chips.length === 0) return null;
             return (
@@ -378,7 +390,9 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-border/40">
               <CircleCheck size={11} className="text-green-500 shrink-0" />
               <span className="text-[10px] font-semibold text-foreground/80">
-                {ops.length === 1 ? t('plugin.message.operationsAppliedOne', { count: ops.length }) : t('plugin.message.operationsAppliedOther', { count: ops.length })}
+                {ops.length === 1
+                  ? t('plugin.message.operationsAppliedOne', { count: ops.length })
+                  : t('plugin.message.operationsAppliedOther', { count: ops.length })}
               </span>
             </div>
             <ul className="px-2.5 py-1.5 space-y-0.5">
@@ -410,7 +424,9 @@ export function MessageBubble({ message, isLast, onUndo, onRetry }: MessageBubbl
                 className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 hover:text-muted-foreground py-1 border-t border-border/40 hover:bg-muted/30 transition-colors"
               >
                 {showAllOps ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                {showAllOps ? t('plugin.message.showLess') : t('plugin.message.showMore', { count: hiddenItemCount })}
+                {showAllOps
+                  ? t('plugin.message.showLess')
+                  : t('plugin.message.showMore', { count: hiddenItemCount })}
               </button>
             )}
             <div className="px-2.5 pb-2 pt-1 border-t border-border/40 flex items-center justify-between">

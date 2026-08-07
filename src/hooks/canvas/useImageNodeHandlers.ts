@@ -212,8 +212,7 @@ export const useImageNodeHandlers = ({
       toast.success(t('canvas.imageDownloaded'), { duration: 2000 });
     } catch (error: any) {
       console.error('Download error:', error);
-      const errorMessage =
-        error?.message || t('canvas.failedToDownloadImage');
+      const errorMessage = error?.message || t('canvas.failedToDownloadImage');
       toast.error(errorMessage, { duration: 3000 });
     }
   }, [imageContextMenu, nodes, getImageUrlFromNode, t]);

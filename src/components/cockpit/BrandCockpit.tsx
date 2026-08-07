@@ -411,7 +411,9 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     aria-expanded={!nbaCollapsed}
                     className="flex items-center justify-between gap-2 w-full text-left group/nba"
                   >
-                    <MicroTitle className="text-muted-foreground">{t('cockpit.nba.title')}</MicroTitle>
+                    <MicroTitle className="text-muted-foreground">
+                      {t('cockpit.nba.title')}
+                    </MicroTitle>
                     <span className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground group-hover/nba:text-foreground transition-colors">
                       {nbaCollapsed && <span className="tabular-nums">{nextActions.length}</span>}
                       <ChevronDown
@@ -559,7 +561,11 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                                   strokeWidth={1.2}
                                 />
                               ) : (
-                                <Palette size={20} className="text-muted-foreground" strokeWidth={1.2} />
+                                <Palette
+                                  size={20}
+                                  className="text-muted-foreground"
+                                  strokeWidth={1.2}
+                                />
                               )}
                             </div>
                             <div className="p-3 space-y-0.5 min-w-0">

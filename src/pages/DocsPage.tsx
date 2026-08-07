@@ -303,7 +303,9 @@ export const DocsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-muted-foreground mb-4">{ep.summary}</p>
-              {ep.description && <p className="text-muted-foreground mb-6 text-sm">{ep.description}</p>}
+              {ep.description && (
+                <p className="text-muted-foreground mb-6 text-sm">{ep.description}</p>
+              )}
 
               {ep.parameters && ep.parameters.length > 0 && (
                 <div className="mt-4">

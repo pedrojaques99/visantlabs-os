@@ -707,8 +707,7 @@ const ARCHIVE_BATCH = 200;
 export async function archiveExcessBrands(
   now: Date = new Date()
 ): Promise<{ usersProcessed: number; brandsArchived: number; usersRemaining: number }> {
-  if (!brandBillingEnabled())
-    return { usersProcessed: 0, brandsArchived: 0, usersRemaining: 0 };
+  if (!brandBillingEnabled()) return { usersProcessed: 0, brandsArchived: 0, usersRemaining: 0 };
 
   await connectToMongoDB();
   const db = getDb();

@@ -32,16 +32,11 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <div
-      className={cn(
-        'flex flex-col items-center justify-center py-16 px-4 text-center',
-        className
-      )}
+      className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}
     >
       <Icon className="w-10 h-10 text-destructive/70 mb-4" strokeWidth={1.5} />
       <MicroTitle className="mb-2 text-foreground">{title}</MicroTitle>
-      {description && (
-        <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
-      )}
+      {description && <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>}
       {onRetry && (
         <Button onClick={onRetry} variant="outline" size="sm" className="gap-1.5">
           <RefreshCw className="w-3.5 h-3.5" />

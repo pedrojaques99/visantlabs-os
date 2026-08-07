@@ -171,7 +171,9 @@ export function BulkCardsSection() {
         disabled={busy}
       >
         <Upload size={12} className="mr-2" />
-        {influencers.length > 0 ? t('plugin.tools.bulkCards.influencersCount', { count: influencers.length }) : t('plugin.tools.bulkCards.loadJson')}
+        {influencers.length > 0
+          ? t('plugin.tools.bulkCards.influencersCount', { count: influencers.length })
+          : t('plugin.tools.bulkCards.loadJson')}
       </Button>
 
       {hasImages && (
@@ -184,7 +186,9 @@ export function BulkCardsSection() {
           }`}
         >
           <ImageIcon size={11} />
-          {useImages ? t('plugin.tools.bulkCards.copyPhotosOn') : t('plugin.tools.bulkCards.copyPhotosOff')}
+          {useImages
+            ? t('plugin.tools.bulkCards.copyPhotosOn')
+            : t('plugin.tools.bulkCards.copyPhotosOff')}
         </button>
       )}
 
@@ -207,7 +211,9 @@ export function BulkCardsSection() {
         ) : (
           <LayoutGrid size={12} className="mr-2" />
         )}
-        {busy ? status : t('plugin.tools.bulkCards.generateCards', { count: influencers.length || '…' })}
+        {busy
+          ? status
+          : t('plugin.tools.bulkCards.generateCards', { count: influencers.length || '…' })}
       </Button>
 
       {status && !busy && <p className="text-[9px] text-muted-foreground text-center">{status}</p>}

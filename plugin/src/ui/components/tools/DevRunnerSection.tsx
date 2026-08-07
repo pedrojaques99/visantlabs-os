@@ -27,7 +27,10 @@ export function DevRunnerSection() {
       });
     } catch (err) {
       // A native alert blocks every subsequent plugin message until dismissed.
-      showToast(t('plugin.tools.devRunner.invalidJson', { message: (err as Error).message }), 'error');
+      showToast(
+        t('plugin.tools.devRunner.invalidJson', { message: (err as Error).message }),
+        'error'
+      );
     }
   };
 

@@ -3,12 +3,12 @@
 // brand id"; without it every consumer hand-copies a fixture and the tokens
 // drift from the vault the moment someone edits the brand.
 
-const DEFAULT_BASE = "https://api.visantlabs.com";
+const DEFAULT_BASE = 'https://api.visantlabs.com';
 
 export class BrandFetchError extends Error {
   constructor(message, detail) {
     super(`@visant/brand-tokens: ${message}`);
-    this.name = "BrandFetchError";
+    this.name = 'BrandFetchError';
     this.detail = detail;
   }
 }
@@ -24,14 +24,13 @@ export class BrandFetchError extends Error {
  * @param {{ token?: string, baseUrl?: string, fetchImpl?: typeof fetch }} [opts]
  */
 export async function fetchBrand(brandId, opts = {}) {
-  if (!brandId) throw new BrandFetchError("brandId is required");
+  if (!brandId) throw new BrandFetchError('brandId is required');
 
   const token = opts.token ?? process.env.VISANT_API_TOKEN;
   if (!token) {
-    throw new BrandFetchError(
-      "missing API token — set VISANT_API_TOKEN or pass { token }",
-      { brandId },
-    );
+    throw new BrandFetchError('missing API token — set VISANT_API_TOKEN or pass { token }', {
+      brandId,
+    });
   }
 
   const base = opts.baseUrl ?? process.env.VISANT_API_URL ?? DEFAULT_BASE;
@@ -39,7 +38,7 @@ export async function fetchBrand(brandId, opts = {}) {
   const url = `${base}/v1/brand-guidelines/${encodeURIComponent(brandId)}?sections=colors,typography`;
 
   const res = await doFetch(url, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
   });
 
   if (!res.ok) {
@@ -64,7 +63,7 @@ export function normalizeBrand(raw, brandId = null) {
   const body = raw?.guideline ?? raw?.data ?? raw;
 
   const colors = (body?.colors ?? [])
-    .filter((c) => typeof c?.hex === "string")
+    .filter((c) => typeof c?.hex === 'string')
     .map((c) => ({
       hex: c.hex,
       name: c.name ?? null,
@@ -74,7 +73,7 @@ export function normalizeBrand(raw, brandId = null) {
     }));
 
   const typography = (body?.typography ?? [])
-    .filter((t) => typeof t?.family === "string")
+    .filter((t) => typeof t?.family === 'string')
     .map((t) => ({
       family: t.family,
       role: t.role ?? null,
@@ -83,7 +82,7 @@ export function normalizeBrand(raw, brandId = null) {
     }));
 
   if (!colors.length) {
-    throw new BrandFetchError("brand publishes no colours", { brandId });
+    throw new BrandFetchError('brand publishes no colours', { brandId });
   }
 
   return {
@@ -99,11 +98,11 @@ export function normalizeBrand(raw, brandId = null) {
 
 /** `Campo Neon` → `campo-neon`, for filenames and registry item names. */
 export function brandSlug(brand) {
-  const name = brand?.name ?? brand?.identity?.name ?? brand?.id ?? "brand";
+  const name = brand?.name ?? brand?.identity?.name ?? brand?.id ?? 'brand';
   return String(name)
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
     .toLowerCase();
 }

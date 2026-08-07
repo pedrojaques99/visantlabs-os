@@ -381,8 +381,7 @@ export const usePromptNodeHandlers = ({
         updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
 
         if (error?.errorData?.isModelQuestion) {
-          const modelMessage =
-            error.errorData.message || translate('canvas.aiNeedsMoreInfo');
+          const modelMessage = error.errorData.message || translate('canvas.aiNeedsMoreInfo');
           toast(modelMessage, {
             duration: 8000,
             icon: '💬',

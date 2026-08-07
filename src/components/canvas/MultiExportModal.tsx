@@ -336,9 +336,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                       >
                         {img.name}
                       </p>
-                      <p className="text-[10px] text-neutral-400 uppercase mt-0.5">
-                        {img.type}
-                      </p>
+                      <p className="text-[10px] text-neutral-400 uppercase mt-0.5">{img.type}</p>
                     </div>
                   </div>
                 </div>

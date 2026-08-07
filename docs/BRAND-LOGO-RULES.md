@@ -23,17 +23,17 @@ já tem: **o raster do logo** e **a paleta**.
 ## A tese: onde a IA entra e onde ela atrapalha
 
 Este arquivo é irmão de `server/lib/references/imageFacts.ts`, que já formaliza a
-regra da casa: *"um LLM nunca deve ser perguntado por um número que ele não pode
-medir"*.
+regra da casa: _"um LLM nunca deve ser perguntado por um número que ele não pode
+medir"_.
 
-| Camada | Quem faz | Por quê |
-|---|---|---|
-| Medir o traço, a caixa-alta, a proporção | **determinístico** (sharp) | modelo de visão erra medida com confiança; pixel não erra |
-| Contraste contra a paleta | **determinístico** (colord + WCAG) | é fórmula fechada |
-| Redução mínima | **determinístico**, dado um limiar de norma | o limiar é da indústria, não da marca |
-| Área de respiro | **determinístico**, dada 1 escolha de módulo | 1-de-3, e a escolha fica registrada na saída |
-| Usos proibidos genéricos | **gerado** de template | idêntico em toda marca do planeta — digitar isso é desperdício |
-| Usos proibidos **específicos da marca** | **modelo**, lendo os números acima | exige entender o sistema gráfico; é o único lugar onde o modelo ganha do cálculo |
+| Camada                                   | Quem faz                                     | Por quê                                                                          |
+| ---------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------- |
+| Medir o traço, a caixa-alta, a proporção | **determinístico** (sharp)                   | modelo de visão erra medida com confiança; pixel não erra                        |
+| Contraste contra a paleta                | **determinístico** (colord + WCAG)           | é fórmula fechada                                                                |
+| Redução mínima                           | **determinístico**, dado um limiar de norma  | o limiar é da indústria, não da marca                                            |
+| Área de respiro                          | **determinístico**, dada 1 escolha de módulo | 1-de-3, e a escolha fica registrada na saída                                     |
+| Usos proibidos genéricos                 | **gerado** de template                       | idêntico em toda marca do planeta — digitar isso é desperdício                   |
+| Usos proibidos **específicos da marca**  | **modelo**, lendo os números acima           | exige entender o sistema gráfico; é o único lugar onde o modelo ganha do cálculo |
 
 O resultado prático: das quatro páginas do manual de logo, três saem sem nenhum
 julgamento humano além de dois parâmetros, e a quarta usa IA em cima de fatos
@@ -80,12 +80,12 @@ porque a regra só é útil se um renderer aplicar sozinho em qualquer tamanho.
 
 Duas restrições físicas, por meio (tela e impressão), e vence a que morde primeiro:
 
-| meio | restrição | piso |
-|---|---|---|
-| tela | traço ≥ 1 px de dispositivo | traço abaixo disso some ou cintila |
-| tela | caixa-alta ≥ 8 px | abaixo disso a letra para de ser lida |
-| impressão | traço ≥ 0,088 mm | 0,25 pt, piso clássico de cobertura de tinta em offset |
-| impressão | caixa-alta ≥ 2 mm | abaixo disso o detalhe fecha em papel não revestido |
+| meio      | restrição                   | piso                                                   |
+| --------- | --------------------------- | ------------------------------------------------------ |
+| tela      | traço ≥ 1 px de dispositivo | traço abaixo disso some ou cintila                     |
+| tela      | caixa-alta ≥ 8 px           | abaixo disso a letra para de ser lida                  |
+| impressão | traço ≥ 0,088 mm            | 0,25 pt, piso clássico de cobertura de tinta em offset |
+| impressão | caixa-alta ≥ 2 mm           | abaixo disso o detalhe fecha em papel não revestido    |
 
 A saída informa **qual das duas governou** (`governedBy`) — é a diferença entre
 "o logo é delicado demais" e "o logo é baixo demais", que pedem correções opostas.
@@ -111,7 +111,7 @@ passo".
 
 Em `logos[].rules`, dentro do objeto do próprio logo. Duas razões:
 
-1. **Semântica:** respiro e redução mínima descrevem *aquele arquivo*. Um wordmark
+1. **Semântica:** respiro e redução mínima descrevem _aquele arquivo_. Um wordmark
    horizontal e um símbolo têm regras diferentes; guardar no nível da marca obrigaria
    a escolher uma e mentir sobre a outra.
 2. **Zero migração:** `logos` já é `Json?` no Prisma. Nenhum campo novo, nenhum
@@ -125,14 +125,14 @@ subir o arquivo de novo.
 
 Wordmark `Union.png`, 1380 × 278, alfa real, sem folga embutida.
 
-| medida | valor |
-|---|---|
-| proporção | **4,964 : 1** |
-| caixa-alta | 278 px |
-| haste / barra | 47 / 41 px |
-| traço fino (p5) | 39 px = 2,83% da largura |
-| cor da tinta | `#eeeeee` |
-| densidade de tinta | 0,452 |
+| medida             | valor                    |
+| ------------------ | ------------------------ |
+| proporção          | **4,964 : 1**            |
+| caixa-alta         | 278 px                   |
+| haste / barra      | 47 / 41 px               |
+| traço fino (p5)    | 39 px = 2,83% da largura |
+| cor da tinta       | `#eeeeee`                |
+| densidade de tinta | 0,452                    |
 
 **Área de respiro** (módulo = caixa-alta): 278 px, ou **20,1% da largura aplicada**.
 `padding: calc(var(--logo-width) * 0.2014)`
@@ -142,16 +142,16 @@ pela caixa-alta nos dois meios — o piso nu seria 40 px / 10 mm.
 
 **Matriz de fundos:**
 
-| fundo | contraste | veredito |
-|---|---|---|
-| Grafite `#1A1B1F` | 14,83:1 | ok |
-| Verde Industrial `#2C352F` | 10,92:1 | ok |
-| Verde Profundo `#545C55` | 5,95:1 | ok |
-| Verde Médio `#7C847B` | 3,32:1 | ok |
-| Verde Neutro `#90988E` | 2,56:1 | atenção |
-| Sage `#CDD4C7` | 1,3:1 | reprovado |
-| Branco `#FFFFFF` | 1,16:1 | reprovado |
-| Concreto `#EEEEEE` | 1,0:1 | reprovado |
+| fundo                      | contraste | veredito  |
+| -------------------------- | --------- | --------- |
+| Grafite `#1A1B1F`          | 14,83:1   | ok        |
+| Verde Industrial `#2C352F` | 10,92:1   | ok        |
+| Verde Profundo `#545C55`   | 5,95:1    | ok        |
+| Verde Médio `#7C847B`      | 3,32:1    | ok        |
+| Verde Neutro `#90988E`     | 2,56:1    | atenção   |
+| Sage `#CDD4C7`             | 1,3:1     | reprovado |
+| Branco `#FFFFFF`           | 1,16:1    | reprovado |
+| Concreto `#EEEEEE`         | 1,0:1     | reprovado |
 
 **O achado que justifica a engine inteira:** 3 das 8 cores da paleta da Arbolt não
 têm logo aplicável hoje. A marca tem só a variante clara — e Concreto `#EEEEEE` é
@@ -183,8 +183,8 @@ O que o cálculo não alcança e o modelo alcança, lendo os números acima como
 - **SVG e PDF não têm pixel.** A rota prefere `thumbnailUrl` justamente por isso.
   Logo vetorial sem thumbnail rasterizado retorna 422 em vez de chutar.
 - **Logo multicor** vira uma cor média na matriz de contraste. Para um logo de duas
-  cores, o veredito é otimista demais. O certo seria medir o contraste do *elemento
-  de menor contraste*, não da média — vale quando aparecer o primeiro caso real.
+  cores, o veredito é otimista demais. O certo seria medir o contraste do _elemento
+  de menor contraste_, não da média — vale quando aparecer o primeiro caso real.
 - **Lockup (símbolo + texto) é medido como uma peça só.** A relação entre símbolo e
   wordmark, e a regra de quando separar, continua sendo trabalho humano.
 - **`inkDensity`** está medido e gravado mas ainda não é usado por nenhuma regra.

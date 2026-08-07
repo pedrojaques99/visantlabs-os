@@ -1107,9 +1107,7 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
                 className="p-6 rounded-[24px] border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5"
               >
                 {c.type && (
-                  <span className="text-[10px] uppercase tracking-wider opacity-30">
-                    {c.type}
-                  </span>
+                  <span className="text-[10px] uppercase tracking-wider opacity-30">{c.type}</span>
                 )}
                 <p className="text-lg font-medium leading-snug opacity-80 mt-1">"{c.text}"</p>
               </div>

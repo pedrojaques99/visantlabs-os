@@ -218,7 +218,10 @@ export function GenericPresetModal<T extends string>({
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
           <div className="flex items-center gap-2">
             <Icon size={20} className="text-neutral-400" />
-            <h2 id="preset-modal-title" className="text-sm font-semibold text-neutral-200 tracking-tight">
+            <h2
+              id="preset-modal-title"
+              className="text-sm font-semibold text-neutral-200 tracking-tight"
+            >
               {title}
             </h2>
           </div>
@@ -292,7 +295,9 @@ export function GenericPresetModal<T extends string>({
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Users size={14} className="text-neutral-400" />
-                <h3 className="text-xs font-semibold text-neutral-300 tracking-tight">Community Presets</h3>
+                <h3 className="text-xs font-semibold text-neutral-300 tracking-tight">
+                  Community Presets
+                </h3>
               </div>
               {isLoadingCommunityPresets ? (
                 <div className="flex items-center justify-center py-12">

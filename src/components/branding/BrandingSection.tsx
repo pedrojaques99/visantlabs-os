@@ -143,7 +143,9 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
       )}
       <div>
         <div
-          className={cn('flex flex-wrap gap-2 cursor-pointer transition-colors duration-300 relative')}
+          className={cn(
+            'flex flex-wrap gap-2 cursor-pointer transition-colors duration-300 relative'
+          )}
         >
           {tagsToDisplay.map((tag) => {
             const isSelected = selectedTags.includes(tag);

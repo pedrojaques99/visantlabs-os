@@ -976,9 +976,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                               </span>
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-foreground">
-                                {pending.title}
-                              </p>
+                              <p className="text-sm font-medium text-foreground">{pending.title}</p>
                               {pending.reason && (
                                 <p className="text-xs text-muted-foreground mt-1 italic">
                                   {pending.reason}
@@ -1043,9 +1041,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                     {i + 1}.
                                   </span>
                                   <div className="min-w-0">
-                                    <p className="text-xs font-medium text-foreground">
-                                      {p.title}
-                                    </p>
+                                    <p className="text-xs font-medium text-foreground">{p.title}</p>
                                     {p.aspectRatio && (
                                       <p className="text-[11px] text-muted-foreground mt-0.5">
                                         {p.aspectRatio}

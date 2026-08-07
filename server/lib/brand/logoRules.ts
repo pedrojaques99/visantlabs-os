@@ -379,8 +379,7 @@ export function deriveBackgrounds(
         name: c.name,
         role: c.role,
         contrast,
-        verdict:
-          contrast >= CONTRAST.ok ? 'ok' : contrast >= CONTRAST.caution ? 'caution' : 'fail',
+        verdict: contrast >= CONTRAST.ok ? 'ok' : contrast >= CONTRAST.caution ? 'caution' : 'fail',
       } as BackgroundVerdict;
     })
     .sort((a, b) => b.contrast - a.contrast);

@@ -511,7 +511,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     : 'text-neutral-500 bg-neutral-600'
                 )}
               />
-              <span className="text-[10px] font-medium text-neutral-400">{t('canvasNodes.brandCore.strategy') || 'Strategy'}</span>
+              <span className="text-[10px] font-medium text-neutral-400">
+                {t('canvasNodes.brandCore.strategy') || 'Strategy'}
+              </span>
             </div>
             <div className="text-[11px] text-neutral-500 font-mono pl-3.5">
               {hasStrategies

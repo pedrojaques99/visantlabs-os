@@ -441,7 +441,9 @@ export const GettingStartedPage: React.FC = () => {
                       <CodeBlock code={AUTH_CURL} language="bash" />
                     </div>
                     <div className="bg-muted/40 border border-border rounded-lg p-4">
-                      <p className="text-xs font-mono text-muted-foreground mb-2">Available scopes</p>
+                      <p className="text-xs font-mono text-muted-foreground mb-2">
+                        Available scopes
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {[
                           {
@@ -513,8 +515,8 @@ export const GettingStartedPage: React.FC = () => {
                         <span className="text-foreground">industry</span> — string, required
                       </p>
                       <p>
-                        <span className="text-foreground">tone</span> — "professional" | "playful"
-                        | "bold" | "minimal"
+                        <span className="text-foreground">tone</span> — "professional" | "playful" |
+                        "bold" | "minimal"
                       </p>
                     </div>
                   </CardContent>

@@ -19,11 +19,17 @@ function fileToAttachment(
 ): Promise<Attachment | null> {
   return new Promise((resolve) => {
     if (file.size > MAX_FILE_SIZE) {
-      usePluginStore.getState().showToast(t('plugin.input.fileTooLarge', { name: file.name }), 'error');
+      usePluginStore
+        .getState()
+        .showToast(t('plugin.input.fileTooLarge', { name: file.name }), 'error');
       return resolve(null);
     }
-    if (!ACCEPTED_TYPES.some((mime) => file.type.startsWith(mime.split('/')[0]) || file.type === mime)) {
-      usePluginStore.getState().showToast(t('plugin.input.unsupportedFormat', { name: file.name }), 'error');
+    if (
+      !ACCEPTED_TYPES.some((mime) => file.type.startsWith(mime.split('/')[0]) || file.type === mime)
+    ) {
+      usePluginStore
+        .getState()
+        .showToast(t('plugin.input.unsupportedFormat', { name: file.name }), 'error');
       return resolve(null);
     }
     const reader = new FileReader();
@@ -135,12 +141,15 @@ export function ChatInput({ onSend }: ChatInputProps) {
     e.target.value = '';
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length) addFiles(files, t);
-  }, [t]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length) addFiles(files, t);
+    },
+    [t]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

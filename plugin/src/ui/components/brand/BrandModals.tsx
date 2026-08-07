@@ -56,7 +56,9 @@ export function SmartScanModal({ isOpen, items, onApply, onClose }: SmartScanMod
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-96 overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">{t('plugin.brand.modals.smartScanTitle')}</DialogTitle>
+          <DialogTitle className="text-sm font-semibold">
+            {t('plugin.brand.modals.smartScanTitle')}
+          </DialogTitle>
           <DialogDescription className="text-xs mt-1">
             {t('plugin.brand.modals.smartScanDescription')}
           </DialogDescription>
@@ -143,7 +145,9 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">{t('plugin.brand.modals.pushTitle')}</DialogTitle>
+          <DialogTitle className="text-sm font-semibold">
+            {t('plugin.brand.modals.pushTitle')}
+          </DialogTitle>
           <DialogDescription className="text-xs mt-1">
             {t('plugin.brand.modals.pushDescription')}
           </DialogDescription>
@@ -157,7 +161,10 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
                 onCheckedChange={() => handleToggle('colors')}
               />
               <span className="text-xs">
-                {t('plugin.brand.modals.colorsNew')} <span className="text-muted-foreground">({t('plugin.brand.modals.countNew', { count: changes.colors.length })})</span>
+                {t('plugin.brand.modals.colorsNew')}{' '}
+                <span className="text-muted-foreground">
+                  ({t('plugin.brand.modals.countNew', { count: changes.colors.length })})
+                </span>
               </span>
             </label>
           )}
@@ -182,7 +189,10 @@ export function PushPreviewModal({ isOpen, changes, onPush, onClose }: PushPrevi
                 onCheckedChange={() => handleToggle('logos')}
               />
               <span className="text-xs">
-                {t('plugin.brand.modals.logosNew')} <span className="text-muted-foreground">({t('plugin.brand.modals.countNew', { count: changes.logos.length })})</span>
+                {t('plugin.brand.modals.logosNew')}{' '}
+                <span className="text-muted-foreground">
+                  ({t('plugin.brand.modals.countNew', { count: changes.logos.length })})
+                </span>
               </span>
             </label>
           )}
@@ -373,9 +383,7 @@ export function NamingGuideModal({ isOpen, onClose }: { isOpen: boolean; onClose
 
           <div className="bg-brand-cyan/5 border border-brand-cyan/10 p-3 rounded-lg flex items-start gap-2">
             <Info size={14} className="text-brand-cyan mt-0.5 shrink-0" />
-            <p className="text-[9px] text-brand-cyan/80">
-              {t('plugin.brand.modals.proTip')}
-            </p>
+            <p className="text-[9px] text-brand-cyan/80">{t('plugin.brand.modals.proTip')}</p>
           </div>
         </div>
 

@@ -22,13 +22,23 @@ function BrandLintReport({ report }: { report: any }) {
   return (
     <div className="border border-border/50 rounded-lg p-3 space-y-2 mt-3 bg-muted/30">
       <div className="flex items-center justify-between text-[10px]">
-        <span className="font-bold uppercase tracking-wider text-muted-foreground">{t('plugin.tools.linting.report')}</span>
-        {score !== null && <span className={`font-bold ${scoreColor}`}>{t('plugin.tools.linting.score', { score })}</span>}
+        <span className="font-bold uppercase tracking-wider text-muted-foreground">
+          {t('plugin.tools.linting.report')}
+        </span>
+        {score !== null && (
+          <span className={`font-bold ${scoreColor}`}>
+            {t('plugin.tools.linting.score', { score })}
+          </span>
+        )}
       </div>
       <div className="flex gap-3 text-[9px] font-mono text-muted-foreground">
         <span>{t('plugin.tools.linting.nodes', { count: totals.nodesScanned ?? 0 })}</span>
-        <span className="text-red-500/80">{t('plugin.tools.linting.errors', { count: totals.errors ?? 0 })}</span>
-        <span className="text-yellow-500/80">{t('plugin.tools.linting.warnings', { count: totals.warnings ?? 0 })}</span>
+        <span className="text-red-500/80">
+          {t('plugin.tools.linting.errors', { count: totals.errors ?? 0 })}
+        </span>
+        <span className="text-yellow-500/80">
+          {t('plugin.tools.linting.warnings', { count: totals.warnings ?? 0 })}
+        </span>
       </div>
       {issues.length > 0 && (
         <div className="max-h-32 overflow-y-auto space-y-1 pr-1 custom-scrollbar">

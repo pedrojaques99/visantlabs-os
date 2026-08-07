@@ -12,10 +12,7 @@ import path from 'path';
 const router = express.Router();
 
 const BARREL = path.resolve(process.cwd(), 'src/lib/ui/icons.ts');
-const PHOSPHOR_CSR = path.resolve(
-  process.cwd(),
-  'node_modules/@phosphor-icons/react/dist/csr',
-);
+const PHOSPHOR_CSR = path.resolve(process.cwd(), 'node_modules/@phosphor-icons/react/dist/csr');
 const IDENT = /^[A-Z][A-Za-z0-9]*$/; // aceita nomes de 1 char (ex: "X")
 
 const isDev = () => process.env.NODE_ENV !== 'production';

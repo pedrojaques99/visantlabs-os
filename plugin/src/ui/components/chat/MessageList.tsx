@@ -43,9 +43,7 @@ export function MessageList({ messages }: MessageListProps) {
     return (
       <div className="flex items-center justify-center h-full text-center">
         <div className="max-w-xs">
-          <p className="text-muted-foreground text-sm">
-            {t('plugin.chat.noMessages')}
-          </p>
+          <p className="text-muted-foreground text-sm">{t('plugin.chat.noMessages')}</p>
         </div>
       </div>
     );

@@ -56,7 +56,9 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
               className="text-muted-foreground mb-3"
               dangerouslySetInnerHTML={{ __html: t('refund.sections.rightOfWithdrawal.content') }}
             />
-            <p className="text-muted-foreground">{t('refund.sections.rightOfWithdrawal.applicable')}</p>
+            <p className="text-muted-foreground">
+              {t('refund.sections.rightOfWithdrawal.applicable')}
+            </p>
           </section>
 
           <section className="pt-8">
@@ -150,7 +152,9 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
             <h2 className="text-xl font-semibold text-foreground mb-4">
               {t('refund.sections.processingTimes.title')}
             </h2>
-            <p className="text-muted-foreground mb-3">{t('refund.sections.processingTimes.intro')}</p>
+            <p className="text-muted-foreground mb-3">
+              {t('refund.sections.processingTimes.intro')}
+            </p>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4 mb-4">
               {getArray('refund.sections.processingTimes.items').map((item, idx) => (
                 <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
@@ -196,7 +200,9 @@ export const RefundPolicy: React.FC<RefundPolicyProps> = ({ isOpen, onClose }) =
             <h2 className="text-xl font-semibold text-foreground mb-4">
               {t('refund.sections.cancellation.title')}
             </h2>
-            <p className="text-muted-foreground mb-3">{t('refund.sections.cancellation.content')}</p>
+            <p className="text-muted-foreground mb-3">
+              {t('refund.sections.cancellation.content')}
+            </p>
             <p className="text-muted-foreground">{t('refund.sections.cancellation.refundNote')}</p>
           </section>
 

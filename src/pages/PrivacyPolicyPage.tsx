@@ -166,7 +166,9 @@ export const PrivacyPolicyPage: React.FC = () => {
               <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.howWeUseData.title')}
               </h2>
-              <p className="text-muted-foreground mb-3">{t('privacy.sections.howWeUseData.intro')}</p>
+              <p className="text-muted-foreground mb-3">
+                {t('privacy.sections.howWeUseData.intro')}
+              </p>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 {getArray('privacy.sections.howWeUseData.items').map((item, idx) => (
                   <li key={idx}>{item}</li>
@@ -223,7 +225,9 @@ export const PrivacyPolicyPage: React.FC = () => {
               <h2 className="text-lg font-semibold font-mono text-foreground mb-4  uppercase">
                 {t('privacy.sections.dataSharing.title')}
               </h2>
-              <p className="text-muted-foreground mb-3">{t('privacy.sections.dataSharing.intro')}</p>
+              <p className="text-muted-foreground mb-3">
+                {t('privacy.sections.dataSharing.intro')}
+              </p>
 
               <h3 className="text-base font-semibold text-muted-foreground mt-4 mb-2">
                 {t('privacy.sections.dataSharing.serviceProviders.title')}
@@ -340,7 +344,9 @@ export const PrivacyPolicyPage: React.FC = () => {
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
-              <p className="text-muted-foreground mt-3">{t('privacy.sections.yourRights.contact')}</p>
+              <p className="text-muted-foreground mt-3">
+                {t('privacy.sections.yourRights.contact')}
+              </p>
             </div>
 
             <div className="border-t border-border pt-6">

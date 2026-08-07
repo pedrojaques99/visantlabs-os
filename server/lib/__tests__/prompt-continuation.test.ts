@@ -12,7 +12,7 @@ import { classifyIntent } from '../prompt/classifier.js';
 // user answers "Visant", assistant greets them like a stranger.
 const MOCKUP_REQUEST = 'Mockup de cartão de visita';
 const BRAND_QUESTION =
-  'Para criar o mockup do cartão de visita, qual marca você gostaria de utilizar? As opções disponíveis são: Lola®, Urban Stay®, Soccer 248, Comunicart®, Feira 2026, Days n\' Days, Movitera, Padoo®, YSA ou Clube Influência®.';
+  "Para criar o mockup do cartão de visita, qual marca você gostaria de utilizar? As opções disponíveis são: Lola®, Urban Stay®, Soccer 248, Comunicart®, Feira 2026, Days n' Days, Movitera, Padoo®, YSA ou Clube Influência®.";
 
 const BUG_HISTORY: ConversationTurn[] = [
   { role: 'user', content: MOCKUP_REQUEST },

@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  useContext,
-  useDeferredValue,
-  useCallback,
-} from 'react';
+import React, { useState, useMemo, useContext, useDeferredValue, useCallback } from 'react';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupContext } from '@/components/mockupmachine/MockupContext';

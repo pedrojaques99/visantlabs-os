@@ -96,8 +96,7 @@ export const CreativeActivationCanvas: React.FC = () => {
             </p>
             <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-5">
               {recent.map((p) => {
-                const thumb =
-                  failedThumbs.has(p._id) ? null : p.thumbnailUrl || p.backgroundUrl;
+                const thumb = failedThumbs.has(p._id) ? null : p.thumbnailUrl || p.backgroundUrl;
                 return (
                   <button
                     key={p._id}
@@ -114,9 +113,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                           src={thumb}
                           alt={p.name || 'Criativo'}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={() =>
-                            setFailedThumbs((prev) => new Set(prev).add(p._id))
-                          }
+                          onError={() => setFailedThumbs((prev) => new Set(prev).add(p._id))}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

@@ -101,9 +101,7 @@ export function ChatView() {
               <div className="mx-auto w-10 h-10 rounded-xl bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center">
                 <MessageSquare size={20} className="text-brand-cyan" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                {t('plugin.chat.emptyDescription')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('plugin.chat.emptyDescription')}</p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {[
                   t('plugin.chat.promptBusinessCard'),
@@ -150,9 +148,13 @@ export function ChatView() {
                 />
               </div>
               <span className="text-[9px] font-mono tabular-nums text-destructive">
-                {sessionContext.messageCount === 1 ? t('plugin.chat.contextUsageOne', { pct, count: sessionContext.messageCount }) : t('plugin.chat.contextUsageOther', { pct, count: sessionContext.messageCount })}
+                {sessionContext.messageCount === 1
+                  ? t('plugin.chat.contextUsageOne', { pct, count: sessionContext.messageCount })
+                  : t('plugin.chat.contextUsageOther', { pct, count: sessionContext.messageCount })}
               </span>
-              <span className="text-[9px] font-mono text-destructive">{t('plugin.chat.clearRecommended')}</span>
+              <span className="text-[9px] font-mono text-destructive">
+                {t('plugin.chat.clearRecommended')}
+              </span>
             </div>
           );
         })()}
@@ -162,7 +164,9 @@ export function ChatView() {
           <div className="flex items-center gap-1.5 px-3 pt-1.5 pb-1">
             <Layers size={10} className="text-muted-foreground shrink-0" />
             <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-              {selectionDetails.length === 1 ? t('plugin.common.frameCountOne', { count: selectionDetails.length }) : t('plugin.common.frameCountOther', { count: selectionDetails.length })}
+              {selectionDetails.length === 1
+                ? t('plugin.common.frameCountOne', { count: selectionDetails.length })
+                : t('plugin.common.frameCountOther', { count: selectionDetails.length })}
             </span>
             {framesOverflow && (
               <button

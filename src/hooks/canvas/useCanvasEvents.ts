@@ -179,7 +179,10 @@ export const useCanvasEvents = (
           if (sourceHandleType !== 'generic' && targetHandleType !== 'generic') {
             if (sourceHandleType !== targetHandleType) {
               toast.error(
-                translate('canvas.connectHandleTypeMismatch', undefined, { source: sourceHandleType, target: targetHandleType }),
+                translate('canvas.connectHandleTypeMismatch', undefined, {
+                  source: sourceHandleType,
+                  target: targetHandleType,
+                }),
                 { duration: 3000 }
               );
               return;

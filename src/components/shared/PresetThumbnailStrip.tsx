@@ -25,9 +25,7 @@ export const PresetThumbnailStrip: React.FC<PresetThumbnailStripProps> = React.m
           onClick={() => setOpen(!open)}
           className="w-full flex items-center justify-between px-3 py-2 hover:bg-neutral-800/10 transition-colors"
         >
-          <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-            Presets
-          </span>
+          <span className="text-[10px] uppercase tracking-widest text-neutral-500">Presets</span>
           <ChevronDown
             size={12}
             className={cn(

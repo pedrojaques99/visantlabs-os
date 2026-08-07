@@ -168,7 +168,11 @@ export const GradientEditor: React.FC<GradientEditorProps> = ({
                 type="button"
                 onClick={() => {
                   if (stops.length >= MAX_GRADIENT_STOPS) return;
-                  const res = addStop(stops, Math.min(1, (activeStop.position ?? 0) + 0.1), activeStop);
+                  const res = addStop(
+                    stops,
+                    Math.min(1, (activeStop.position ?? 0) + 0.1),
+                    activeStop
+                  );
                   patch({ stops: res.stops });
                   setActive(res.index);
                 }}
