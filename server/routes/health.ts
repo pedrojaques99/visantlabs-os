@@ -10,6 +10,39 @@ const __dirname = path.dirname(__filename);
 const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf8'));
 const startTime = Date.now();
 
+/**
+ * Commit que está REALMENTE rodando, para dar pra comparar com o HEAD do `main`.
+ *
+ * Sem isto não existe forma de saber se um deploy aconteceu. Em 2026-08-07 o
+ * servidor estava com 8,8 dias de uptime rodando código de julho enquanto vários
+ * merges se acumulavam em `main`, e ninguém tinha como perceber: o `deploy.yml`
+ * falhava por falta dos secrets VPS_*, o job aparecia como `skipped`, e o health
+ * só respondia `version: "0.0.0"` do package.json — que nunca muda.
+ *
+ * Lê da env (injetada no build/deploy) e cai pro .git local quando existe.
+ */
+function commitEmExecucao(): string | null {
+  const daEnv =
+    process.env.GIT_COMMIT_SHA ||
+    process.env.SOURCE_COMMIT || // Coolify
+    process.env.RAILWAY_GIT_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA;
+  if (daEnv) return daEnv.trim().slice(0, 40);
+
+  // Fallback: lê .git/HEAD no servidor (deploy por `git pull` mantém o .git).
+  try {
+    const gitDir = path.resolve(__dirname, '../../.git');
+    const head = fs.readFileSync(path.join(gitDir, 'HEAD'), 'utf8').trim();
+    const ref = head.startsWith('ref: ') ? head.slice(5) : null;
+    if (!ref) return head.slice(0, 40); // detached: o próprio SHA
+    return fs.readFileSync(path.join(gitDir, ref), 'utf8').trim().slice(0, 40);
+  } catch {
+    return null;
+  }
+}
+
+const COMMIT = commitEmExecucao();
+
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
 const apiRateLimiter = rateLimit({
@@ -28,7 +61,11 @@ router.get('/', apiRateLimiter, (_req, res) => {
     status: 'ok',
     message: 'Server is running',
     version: pkg.version,
+    // `commit` é o que permite detectar deploy que não aconteceu; `version` vem
+    // do package.json e fica em 0.0.0 desde sempre, então não serve pra isso.
+    commit: COMMIT,
     uptime: Math.floor((Date.now() - startTime) / 1000),
+    startedAt: new Date(startTime).toISOString(),
     env: process.env.NODE_ENV || 'development',
   });
 });

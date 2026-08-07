@@ -113,7 +113,8 @@
     "check:glass-surfaces": "node scripts/scan-glass-surfaces.mjs",
     "check:glass-surfaces:summary": "node scripts/scan-glass-surfaces.mjs --summary --no-fail",
     "mcp:sync": "tsx server/lib/tools/sync-mcp-registry.ts",
-    "check:mcp-sync": "tsx server/lib/tools/sync-mcp-registry.ts --check"
+    "check:mcp-sync": "tsx server/lib/tools/sync-mcp-registry.ts --check",
+    "check:deploy": "node server/scripts/check-deploy-drift.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
