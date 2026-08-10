@@ -100,13 +100,81 @@ export function renderScene(
     ctx.drawImage(faceCanvas, dx, dy);
   }
 
-  // 3. Over layers (lights / shadows), with their blend mode + opacity.
+  // 3. Camadas acima das faces, EM ORDEM DE DOCUMENTO.
+  //
+  // `over` e `adjust` são processados no mesmo laço de propósito: um adjustment
+  // age sobre tudo que já foi desenhado abaixo dele, então separar por papel
+  // (todos os overs, depois todos os ajustes) trocaria a ordem do Photoshop e
+  // daria outra imagem.
   for (const layer of doc.layers) {
-    if (layer.role !== 'over') continue;
-    drawLayer(ctx, assets[layer.src], layer.blendMode, layer.opacity, layer.left, layer.top);
+    if (layer.role === 'over') {
+      drawLayer(ctx, assets[layer.src], layer.blendMode, layer.opacity, layer.left, layer.top);
+    } else if (layer.role === 'adjust' && layer.lut) {
+      aplicarLut(
+        ctx,
+        layer.lut,
+        layer.opacity,
+        doc.width,
+        doc.height,
+        layer.maskRef ? assets[layer.maskRef] : null,
+        cc
+      );
+    }
   }
 
   return canvas;
+}
+
+/**
+ * Aplica um LUT de adjustment sobre os pixels já compostos — o mesmo que
+ * `applyAdjustment` faz em compose.ts, aqui sobre o canvas da cena.
+ *
+ * Sem isto o Scene Package saía lavado em relação ao PSD: o contraste do
+ * Photoshop mora nos adjustment layers, e o Canvas 2D não tem equivalente.
+ */
+function aplicarLut(
+  ctx: any,
+  lut: { r: number[]; g: number[]; b: number[] },
+  opacity: number,
+  W: number,
+  H: number,
+  mask: any,
+  cc: CreateCanvas
+) {
+  const alpha = Math.max(0, Math.min(1, opacity));
+  if (alpha <= 0) return;
+
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+
+  // Máscara opcional: luminância vira peso por pixel.
+  let maskA: Uint8ClampedArray | null = null;
+  if (mask) {
+    const mc = cc(W, H);
+    const mctx = mc.getContext('2d');
+    mctx.drawImage(mask, 0, 0);
+    maskA = mctx.getImageData(0, 0, W, H).data;
+  }
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    if (d[i + 3] === 0) continue; // transparente: nada abaixo pra ajustar
+    let a = alpha;
+    if (maskA) a *= maskA[i] / 255; // luminância do canal R da máscara
+    if (a <= 0) continue;
+    const nr = lut.r[d[i]];
+    const ng = lut.g[d[i + 1]];
+    const nb = lut.b[d[i + 2]];
+    if (a >= 1) {
+      d[i] = nr;
+      d[i + 1] = ng;
+      d[i + 2] = nb;
+    } else {
+      d[i] += (nr - d[i]) * a;
+      d[i + 1] += (ng - d[i + 1]) * a;
+      d[i + 2] += (nb - d[i + 2]) * a;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
 function drawLayer(

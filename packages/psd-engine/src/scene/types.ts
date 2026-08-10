@@ -35,11 +35,34 @@ export interface SceneFace {
   dispScale?: number;
 }
 
+/**
+ * LUT de 256 entradas por canal, serializável em JSON (o `Uint8Array` de
+ * `RgbLut` não sobrevive ao `JSON.stringify` do SceneDoc).
+ */
+export interface SceneLut {
+  r: number[];
+  g: number[];
+  b: number[];
+}
+
 export interface SceneLayer {
-  /** Below the faces (drawn first) or above them (lights/shadows). */
-  role: 'base' | 'over';
-  /** Reference into the asset map ({ ref: canvas|url }). */
+  /**
+   * `base` = abaixo das faces (desenhado primeiro); `over` = acima
+   * (luz/sombra); `adjust` = adjustment layer (Levels/Curves/Brightness).
+   *
+   * `adjust` não tem pixels próprios: aplica um LUT sobre tudo que já foi
+   * composto abaixo — inclusive a arte da face. Antes ele virava um `over`
+   * achatado sozinho, e achatar um adjustment sem nada embaixo produz canvas
+   * vazio: o ajuste sumia em silêncio e a cena saía lavada (preto virando
+   * cinza, contraste e saturação indo embora).
+   */
+  role: 'base' | 'over' | 'adjust';
+  /** Reference into the asset map ({ ref: canvas|url }). Vazio quando role='adjust'. */
   src: string;
+  /** Só para `role: 'adjust'`: a tabela a aplicar. */
+  lut?: SceneLut;
+  /** Só para `role: 'adjust'`: máscara raster que limita onde o ajuste age. */
+  maskRef?: string;
   /** Canvas-2D globalCompositeOperation already resolved from the PSD blend mode. */
   blendMode: string;
   /** 0..1 combined opacity * fillOpacity. */

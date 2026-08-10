@@ -21,10 +21,11 @@
 //     base/over partition (by the first such container) is produced.
 
 import { flattenLayers, composePsd, BLEND_MAP } from '../compose.js';
+import { buildAdjustmentLut } from '../adjustments.js';
 import { computeFaces } from '../faces.js';
 import { BRAND_HIDE } from '../constants.js';
 import type { CreateCanvas, FaceSo } from '../types.js';
-import type { SceneDoc, SceneFace, SceneLayer, AssetMap, Quad } from './types.js';
+import type { SceneDoc, SceneFace, SceneLayer, AssetMap, Quad, SceneLut } from './types.js';
 
 export interface ExtractResult {
   doc: SceneDoc;
@@ -70,6 +71,43 @@ function nextRef(prefix: string): string {
   return `${prefix}-${_refCounter++}`;
 }
 
+function hasUsableMask(layer: any): boolean {
+  const m = layer.mask;
+  return !!(m && !m.disabled && m.canvas && m.canvas.width > 0 && m.canvas.height > 0);
+}
+
+/**
+ * Um grupo "pass through" sem isolamento não existe como camada: seus filhos
+ * compõem DIRETO no pai. É literalmente o que `drawOne` faz em compose.ts
+ * (o atalho `passthrough`), e a condição aqui é a mesma — alpha cheio, sem
+ * máscara, sem clipping.
+ *
+ * Isto importa porque o grupo `FX` da BOXY é pass-through e guarda os
+ * adjustment layers globais. Tratado como um `over` achatado, ele perdia o
+ * ajuste inteiro. Expandido, cada filho vira uma camada de topo e o adjustment
+ * é emitido como `role: 'adjust'`, que é o que ele é.
+ */
+function expandirPassthrough(children: any[]): any[] {
+  const out: any[] = [];
+  for (const c of children) {
+    const alpha = layerAlpha(c);
+    const ehPassthrough = !c.blendMode || c.blendMode === 'pass through';
+    if (c.children && ehPassthrough && alpha >= 1 && !hasUsableMask(c)) {
+      out.push(...expandirPassthrough(c.children));
+    } else {
+      out.push(c);
+    }
+  }
+  return out;
+}
+
+/** `Uint8Array` não sobrevive ao JSON do SceneDoc — vira array comum. */
+function lutSerializavel(adjustment: any): SceneLut | null {
+  const lut = buildAdjustmentLut(adjustment);
+  if (!lut) return null;
+  return { r: Array.from(lut.r), g: Array.from(lut.g), b: Array.from(lut.b) };
+}
+
 /**
  * Extract a SceneDoc + layer canvases from a read PSD tree.
  *
@@ -81,7 +119,10 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
   _refCounter = 0;
   const width = psd.width;
   const height = psd.height;
-  const topChildren: any[] = psd.children || [];
+  // Grupos pass-through viram seus próprios filhos ANTES de particionar: eles
+  // não isolam nada, e mantê-los inteiros escondia adjustment layers globais
+  // dentro de um `over` que os descartava.
+  const topChildren: any[] = expandirPassthrough(psd.children || []);
 
   const allLayers = flattenLayers(topChildren);
   const smartObjects = allLayers.filter((l: any) => l.placedLayer);
@@ -207,6 +248,36 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
       const c = topChildren[i];
       if (isFaceContainer[i]) continue; // consumed by face geometry
       if (!visibleEligible(c)) continue;
+
+      // Adjustment layer: não tem pixels, tem tabela. Achatá-lo sozinho daria
+      // canvas vazio (a LUT não teria nada abaixo para ajustar) e o ajuste
+      // sumiria — era esta a causa da cena lavada.
+      if (c.adjustment && !c.canvas) {
+        const lut = lutSerializavel(c.adjustment);
+        if (!lut) {
+          // Tipo não suportado pelo buildAdjustmentLut (exposure, vibrance…).
+          // Vira aviso em vez de virar silêncio.
+          warnings.push(`adjustment não suportado na camada "${c.name || 'unnamed'}" — ignorado`);
+          continue;
+        }
+        const camada: SceneLayer = {
+          role: 'adjust',
+          src: '',
+          lut,
+          blendMode: 'source-over',
+          opacity: layerAlpha(c),
+          left: 0,
+          top: 0,
+        };
+        if (hasUsableMask(c)) {
+          const ref = nextRef('adjmask');
+          assets[ref] = c.mask.canvas;
+          camada.maskRef = ref;
+        }
+        layers.push(camada);
+        continue;
+      }
+
       const rawBlend = c.blendMode ?? 'normal';
       const mapped = BLEND_MAP[rawBlend];
       if (mapped === undefined) {
