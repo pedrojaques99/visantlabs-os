@@ -15,6 +15,9 @@ export {
 
 export { computeFaces } from './faces.js';
 
+export { computeColorSlots, applyColorOverrides, rgbParaHex, hexParaRgb } from './colors.js';
+export type { ColorSlot } from './colors.js';
+
 export { buildAdjustmentLut } from './adjustments.js';
 export type { RgbLut } from './adjustments.js';
 
