@@ -323,6 +323,32 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
         assets[ref] = mascaraComoAlpha(so.mask, width, height, cc);
         inst.maskRef = ref;
       }
+
+      // Smart Filter "Displace" — o amassado do papel, a curvatura da caneca.
+      // O `preloadDisplacementMaps` (que o CHAMADOR roda, porque só ele tem
+      // acesso a disco) pendura os mapas já compostos aqui. Sem isto a cena
+      // desenhava a arte lisa por cima de um papel amassado, e o pôster do
+      // `paper-ghetto` era o caso mais visível: a grade seguia a perspectiva e
+      // ignorava o vinco.
+      const mapas: any[] = pl.__displacementCanvases || [];
+      if (mapas.length) {
+        if (mapas.length > 1) {
+          warnings.push(
+            `face "${face.name}" tem ${mapas.length} filtros Displace; a cena aplica só o primeiro`
+          );
+        }
+        const df = mapas[0];
+        if (df?.canvas) {
+          const ref = nextRef('disp');
+          assets[ref] = df.canvas;
+          inst.dispRef = ref;
+          inst.dispScale = df.hScale;
+          inst.dispVScale = df.vScale;
+          inst.dispSpace = 'inner';
+          inst.dispMapMode = df.mapMode;
+          inst.dispEdgeMode = df.edgeMode;
+        }
+      }
       return inst;
     });
 

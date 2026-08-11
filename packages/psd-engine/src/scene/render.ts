@@ -69,7 +69,22 @@ export function renderScene(
         ];
 
     for (const inst of instancias) {
-      const artCanvas = coverArtCanvas(art, inst.innerW, inst.innerH, cc);
+      let artCanvas = coverArtCanvas(art, inst.innerW, inst.innerH, cc);
+
+      // Displace no espaço INTERNO — antes do warp, que é a ordem do
+      // `composePsd`. Depois do warp o mesmo mapa dá outra imagem: o
+      // deslocamento sai na escala do bbox e não acompanha a perspectiva.
+      if (inst.dispSpace === 'inner' && inst.dispRef && assets[inst.dispRef]) {
+        artCanvas = applyDisplacementFilter(
+          artCanvas,
+          assets[inst.dispRef],
+          inst.dispScale ?? 8,
+          inst.dispVScale ?? inst.dispScale ?? 8,
+          inst.dispMapMode ?? 'stretch to fit',
+          inst.dispEdgeMode ?? 'repeat edge pixels',
+          cc
+        );
+      }
 
       let faceCanvas: any;
       let dx: number;
@@ -101,8 +116,10 @@ export function renderScene(
         dy = inst.origin?.top ?? 0;
       }
 
-      // Displacement map (textura da superfície).
-      const dispRef = inst.dispRef ?? face.dispRef;
+      // Displacement map no espaço da FACE (depois do warp) — o caminho que o
+      // pipeline de foto monta à mão. Quem já aplicou no espaço interno não
+      // repete aqui.
+      const dispRef = inst.dispSpace === 'inner' ? undefined : (inst.dispRef ?? face.dispRef);
       if (dispRef && assets[dispRef]) {
         const scale = inst.dispScale ?? face.dispScale ?? 8;
         faceCanvas = applyDisplacementFilter(

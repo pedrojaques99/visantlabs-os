@@ -38,6 +38,19 @@ export interface SceneFaceInstance {
   opacity: number;
   dispRef?: string;
   dispScale?: number;
+  /** Escala vertical, quando o Displace do PSD usa H e V diferentes. */
+  dispVScale?: number;
+  /**
+   * `'inner'` = o mapa age no espaço INTERNO do smart object, ANTES do warp —
+   * que é onde o `composePsd` sempre o aplicou (`replaceOne` desloca o
+   * `artCanvas` e só depois deforma pro quad). Ausente = espaço da face, DEPOIS
+   * do warp: é o que o pipeline de foto monta à mão (`photo-warp.ts`) e o que o
+   * render WYSIWYG tem provado byte a byte. São ordens diferentes e dão imagens
+   * diferentes; unificar no default mudaria o render de foto em silêncio.
+   */
+  dispSpace?: 'inner';
+  dispMapMode?: 'stretch to fit' | 'tile';
+  dispEdgeMode?: 'wrap around' | 'repeat edge pixels';
 }
 
 export interface SceneFace {
