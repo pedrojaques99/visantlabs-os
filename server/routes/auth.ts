@@ -727,8 +727,25 @@ const checkoutExchangeRateLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again later' },
 });
 
-// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 24h.
-const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 24);
+// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 2h.
+//
+// Era 24h. O `session_id` viaja na QUERY STRING do success_url, ou seja, fica
+// na barra de endereços, no histórico do navegador, no autocomplete e em
+// qualquer print — e a troca não é one-time, por decisão consciente (um
+// refresh não pode quebrar o acesso de quem acabou de pagar). Somando as duas
+// coisas, o link era uma credencial de login válida por um dia inteiro pra
+// quem quer que o tivesse, inclusive colado num grupo.
+//
+// 2h preserva o caso de uso real (o pós-compra imediato, com refresh à
+// vontade) e corta a cauda longa, que é onde mora o vazamento. Quem voltar
+// depois disso entra por e-mail, que é o caminho normal.
+const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 2);
+
+// Validade do token nascido desta troca. Curta de propósito: 7 dias é a
+// validade de uma sessão que começou com SENHA, e esta começou com um link
+// que trafega em URL. Quem precisar de mais que isso faz login.
+const CHECKOUT_TOKEN_TTL = (process.env.CHECKOUT_TOKEN_TTL ||
+  '12h') as jwt.SignOptions['expiresIn'];
 
 router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, res) => {
   try {
@@ -794,15 +811,24 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
       stripeCustomerId,
     });
 
-    const token = jwt.sign({ userId: result.userId, email: result.email }, JWT_SECRET, {
-      expiresIn: '7d',
-    });
+    // `scope: 'checkout'` marca a origem do token. Hoje ele ainda é um token
+    // de conta (é o que o Club consome), mas com a marca no payload dá pra,
+    // adiante, recusar este token em rota sensível sem quebrar o fluxo de
+    // leitura do produto recém-comprado.
+    const token = jwt.sign(
+      { userId: result.userId, email: result.email, scope: 'checkout', sku },
+      JWT_SECRET,
+      { expiresIn: CHECKOUT_TOKEN_TTL }
+    );
 
     recordSession(result.userId, req).catch(() => {});
 
+    // Sem e-mail no log. Este console vai pro agregador de logs, que é retido
+    // e consultável, e o e-mail do comprador não precisa estar lá pra
+    // diagnosticar troca de sessão: o userId identifica igual e não é PII
+    // direta. O mesmo vale pro sku e pros flags, que são o que interessa.
     console.log('✅ Session minted from checkout:', {
       sku,
-      email: result.email,
       userId: result.userId,
       accountCreated: result.created,
       grantedNow: result.granted,
