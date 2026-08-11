@@ -14,9 +14,14 @@
 // LIMITATIONS:
 //   - Decorative layers that live INSIDE a face's own top-level group are not
 //     re-composited as overs (the group is consumed by the face geometry).
-//     The BOXY template pattern keeps lights/shadows as separate sibling
-//     top-level groups, so this is safe in practice; non-conforming PSDs add a
-//     warning and should use the server fallback.
+//     ⚠️ Isto NÃO é caso raro, ao contrário do que este comentário afirmou por
+//     muito tempo ("the BOXY template keeps lights/shadows as separate sibling
+//     top-level groups, so this is safe in practice"). Medido em 10/08/2026 com
+//     `scene-fidelity`: 5 de 5 PSDs da amostra guardam luz/sombra DENTRO do
+//     container, e a extração descartava tudo com ZERO avisos em 6 arquivos.
+//     Agora cada descarte vira `warning` nomeando as camadas. Recompor de
+//     verdade (blend + clipping + máscara de grupo) continua pendente, e é o que
+//     separa a cena de poder substituir o PSD.
 //   - Faces sharing a single top-level container are all extracted, but only one
 //     base/over partition (by the first such container) is produced.
 
@@ -55,6 +60,42 @@ function subtreeHasFace(
     }
   }
   return false;
+}
+
+/**
+ * Camadas de decoração que moram DENTRO do container da face — sombra, luz,
+ * overlay — e que a extração descarta junto com o container.
+ *
+ * O cabeçalho deste arquivo afirmava que o template BOXY guarda luz/sombra como
+ * grupos irmãos no topo, "safe in practice". Medido em 10/08/2026 sobre a
+ * amostra do `scene-fidelity`: **5 de 5** guardam dentro. `Double Cards Stack`
+ * tem `Shadow` (multiply .94) e `Light` (hard light .23) dentro de cada grupo de
+ * face; `Coffee Paper Cups`, `boxes_scene_3_bg` e `Capa CD` as têm como camadas
+ * CLIP logo abaixo; `paper-ghetto` tem um `Mockup Overlay`. É a maior parte da
+ * divergência que sobra, e saía **sem um aviso sequer**.
+ */
+function decoracaoDescartada(
+  container: any,
+  faceLinkIds: Set<string>,
+  facePaths: Set<string>,
+  path: string
+): string[] {
+  const achadas: string[] = [];
+  const anda = (layer: any, p: string) => {
+    for (const child of layer.children || []) {
+      const cp = `${p} > ${child.name || 'unnamed'}`;
+      if (subtreeHasFace(child, faceLinkIds, facePaths, cp)) {
+        if (child.children) anda(child, cp);
+        continue;
+      }
+      if (child.hidden || layerAlpha(child) <= 0) continue;
+      if (child.children) { anda(child, cp); continue; }
+      if (!child.canvas && !child.adjustment) continue;
+      achadas.push(child.name || 'unnamed');
+    }
+  };
+  anda(container, path);
+  return achadas;
 }
 
 /**
@@ -246,7 +287,20 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
     // composited individually so its blend mode / opacity is preserved.
     for (let i = firstFaceIdx; i < topChildren.length; i++) {
       const c = topChildren[i];
-      if (isFaceContainer[i]) continue; // consumed by face geometry
+      if (isFaceContainer[i]) {
+        // Consumido pela geometria da face — mas o que ele levava junto vira
+        // aviso. Silêncio aqui é a diferença entre "a cena não serve" e "a cena
+        // serve", e por muito tempo a extração respondeu a segunda coisa sem ter
+        // olhado.
+        const perdidas = decoracaoDescartada(c, faceLinkIds, facePaths, topPaths[i]);
+        if (perdidas.length) {
+          warnings.push(
+            `decoração dentro do container "${topPaths[i]}" descartada: ` +
+              `${perdidas.join(', ')} — a cena vai sair mais clara que o PSD`
+          );
+        }
+        continue;
+      }
       if (!visibleEligible(c)) continue;
 
       // Adjustment layer: não tem pixels, tem tabela. Achatá-lo sozinho daria
