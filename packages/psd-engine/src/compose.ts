@@ -283,7 +283,7 @@ export const BLEND_MAP: Record<string, string> = {
 
 // PS blend modes that Canvas 2D doesn't support accurately — compositor uses
 // getImageData/putImageData pixel-level blending for these instead.
-const PIXEL_BLEND_SET = new Set([
+export const PIXEL_BLEND_SET = new Set([
   'divide',
   'subtract',
   'linear burn',
@@ -330,7 +330,7 @@ function blendCh(mode: string, b: number, s: number): number {
  * Implements Porter-Duff "source-over" compositing with a custom blend function.
  * Called only for modes in PIXEL_BLEND_SET.
  */
-function pixelBlendMode(dstCtx: any, srcCanvas: any, mode: string, W: number, H: number): void {
+export function pixelBlendMode(dstCtx: any, srcCanvas: any, mode: string, W: number, H: number): void {
   const dstImg = dstCtx.getImageData(0, 0, W, H);
   const srcImg = (srcCanvas.getContext('2d') as any).getImageData(0, 0, W, H);
   const d = dstImg.data;

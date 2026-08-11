@@ -130,6 +130,42 @@ function totalmenteTransparente(canvas: any): boolean {
 }
 
 /**
+ * A máscara raster do PSD vira um canvas do tamanho do documento cujo ALPHA é a
+ * máscara — que é o que `destination-in` espera no render.
+ *
+ * Duas coisas que parecem detalhe e não são: a máscara do ag-psd é CINZA opaco
+ * (alpha 255 em todo lugar), então usá-la crua mantinha tudo visível; e ela é um
+ * recorte com offset (`left`/`top`), não uma imagem do tamanho do documento —
+ * desenhada em 0,0 e esticada, ela desloca o recorte inteiro. Fora do retângulo
+ * vale o `defaultColor` (0 = escondido).
+ */
+function mascaraComoAlpha(mask: any, width: number, height: number, cc: CreateCanvas): any {
+  const out = cc(width, height);
+  const octx = out.getContext('2d');
+  if ((mask.defaultColor ?? 0) > 0) {
+    octx.fillStyle = '#fff';
+    octx.fillRect(0, 0, width, height);
+  }
+  const mw = mask.canvas.width;
+  const mh = mask.canvas.height;
+  const tmp = cc(mw, mh);
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(mask.canvas, 0, 0);
+  const img = tctx.getImageData(0, 0, mw, mh);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const cinza = d[i];
+    d[i] = 255;
+    d[i + 1] = 255;
+    d[i + 2] = 255;
+    d[i + 3] = cinza;
+  }
+  tctx.putImageData(img, 0, 0);
+  octx.drawImage(tmp, mask.left ?? 0, mask.top ?? 0);
+  return out;
+}
+
+/**
  * Flatten a list of top-level children into one canvas using the real
  * compositor. compose.ts is the single source of truth — zero re-implementation:
  * we hand composePsd a synthetic psd of the same document size.
@@ -323,11 +359,55 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
         // aviso. Silêncio aqui é a diferença entre "a cena não serve" e "a cena
         // serve", e por muito tempo a extração respondeu a segunda coisa sem ter
         // olhado.
-        const perdidas = decoracaoDescartada(c, faceLinkIds, facePaths, topPaths[i]);
-        if (perdidas.length) {
+        // A geometria da face é consumida, mas a DECORAÇÃO que mora junto
+        // (Shadow/Light irmãos da arte dentro do grupo) é recomposta como
+        // `over`, com a máscara do próprio grupo — senão ela vaza pro cenário.
+        const decor = (c.children || []).filter(
+          (ch: any) =>
+            !subtreeHasFace(ch, faceLinkIds, facePaths, `${topPaths[i]} > ${ch.name || 'unnamed'}`) &&
+            !ch.hidden &&
+            layerAlpha(ch) > 0 &&
+            !BRAND_HIDE.test(ch.name || '')
+        );
+        let mascaraRef: string | undefined;
+        if (decor.length && hasUsableMask(c)) {
+          mascaraRef = nextRef('grupomask');
+          assets[mascaraRef] = mascaraComoAlpha(c.mask, width, height, cc);
+        }
+        const naoRecompostas: string[] = [];
+        for (const ch of decor) {
+          const bruto = ch.blendMode ?? 'normal';
+          const mapeado = BLEND_MAP[bruto];
+          if (mapeado === undefined) {
+            warnings.push(`blend mode não mapeado "${bruto}" na camada "${ch.name || 'unnamed'}"`);
+          }
+          const r = nextRef('over');
+          assets[r] = flattenSubset(
+            [{ ...ch, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
+            width,
+            height,
+            cc
+          );
+          if (totalmenteTransparente(assets[r])) {
+            naoRecompostas.push(ch.name || 'unnamed');
+            delete assets[r];
+            continue;
+          }
+          layers.push({
+            role: 'over',
+            src: r,
+            blendMode: mapeado ?? 'source-over',
+            psBlend: bruto,
+            opacity: layerAlpha(ch),
+            left: 0,
+            top: 0,
+            ...(mascaraRef ? { maskRef: mascaraRef } : {}),
+          });
+        }
+        if (naoRecompostas.length) {
           warnings.push(
-            `decoração dentro do container "${topPaths[i]}" descartada: ` +
-              `${perdidas.join(', ')} — a cena vai sair mais clara que o PSD`
+            `decoração dentro do container "${topPaths[i]}" achatou vazia: ` +
+              `${naoRecompostas.join(', ')} — a cena vai sair mais clara que o PSD`
           );
         }
         continue;
@@ -383,6 +463,7 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
         role: 'over',
         src: ref,
         blendMode: mapped ?? 'source-over',
+        psBlend: rawBlend,
         opacity: layerAlpha(c),
         left: 0,
         top: 0,

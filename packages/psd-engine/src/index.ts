@@ -9,6 +9,8 @@ export {
   coverArtCanvas,
   applyDisplacementFilter,
   BLEND_MAP,
+  PIXEL_BLEND_SET,
+  pixelBlendMode,
 } from './compose.js';
 
 export { computeFaces } from './faces.js';

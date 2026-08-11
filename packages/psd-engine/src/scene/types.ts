@@ -76,6 +76,14 @@ export interface SceneLayer {
    * **recorte** (clipping) — a camada só pinta onde a base tem alpha.
    */
   maskRef?: string;
+  /**
+   * O modo do Photoshop, cru. `blendMode` é o `globalCompositeOperation`, e para
+   * `linear burn`, `vivid light`, `divide`… o Canvas 2D **não tem equivalente** —
+   * o `BLEND_MAP` só devolve a aproximação de CSS. O compositor sempre resolveu
+   * esses no pixel; o `renderScene` usava a aproximação e por isso a caixa do
+   * `boxes_scene_3` saía clara demais (`linear burn` virava `color-burn`).
+   */
+  psBlend?: string;
   /** Canvas-2D globalCompositeOperation already resolved from the PSD blend mode. */
   blendMode: string;
   /** 0..1 combined opacity * fillOpacity. */

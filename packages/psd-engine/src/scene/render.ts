@@ -6,7 +6,7 @@
 // perspectiveWarp + BLEND_MAP) — zero re-implementation of the warp math.
 
 import { coverArtCanvas, perspectiveWarp } from '../warp.js';
-import { applyDisplacementFilter } from '../compose.js';
+import { applyDisplacementFilter, PIXEL_BLEND_SET, pixelBlendMode } from '../compose.js';
 import type { CreateCanvas } from '../types.js';
 import type { SceneDoc, AssetMap } from './types.js';
 
@@ -125,7 +125,18 @@ export function renderScene(
         applyMaskToFace(recortada, recorte, cc);
         img = recortada;
       }
-      drawLayer(ctx, img, layer.blendMode, layer.opacity, layer.left, layer.top);
+      if (layer.psBlend && PIXEL_BLEND_SET.has(layer.psBlend) && img) {
+        // Modo sem equivalente no Canvas: resolve no pixel, com a MESMA função
+        // do compositor. A opacidade entra antes, porque o `pixelBlendMode`
+        // trabalha sobre o alpha do source.
+        const fonte = cc(doc.width, doc.height);
+        const fctx = fonte.getContext('2d');
+        fctx.globalAlpha = layer.opacity;
+        fctx.drawImage(img, layer.left, layer.top);
+        pixelBlendMode(ctx, fonte, layer.psBlend, doc.width, doc.height);
+      } else {
+        drawLayer(ctx, img, layer.blendMode, layer.opacity, layer.left, layer.top);
+      }
     } else if (layer.role === 'adjust' && layer.lut) {
       aplicarLut(
         ctx,
