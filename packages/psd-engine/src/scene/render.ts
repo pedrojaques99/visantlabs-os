@@ -42,6 +42,8 @@ export function renderScene(
     drawLayer(ctx, assets[layer.src], layer.blendMode, layer.opacity, layer.left, layer.top);
   }
 
+  let silhueta: any = null;
+
   // 2. Faces — cover the art, then warp into the quad (or place axis-aligned).
   for (const face of doc.faces) {
     const art = arts[face.key] ?? opts.defaultArt;
@@ -98,6 +100,10 @@ export function renderScene(
     }
 
     ctx.drawImage(faceCanvas, dx, dy);
+    // Silhueta acumulada das faces — é contra ela que a camada de recorte
+    // (`clipToFaces`) vai ser mascarada mais abaixo.
+    if (!silhueta) silhueta = cc(doc.width, doc.height);
+    silhueta.getContext('2d').drawImage(faceCanvas, dx, dy);
   }
 
   // 3. Camadas acima das faces, EM ORDEM DE DOCUMENTO.
@@ -112,10 +118,11 @@ export function renderScene(
       // pinta onde a base tem alpha. Sem isto, a sombra do produto vaza pro
       // cenário inteiro — e com a extração antiga ela simplesmente não existia.
       let img = assets[layer.src];
-      if (layer.maskRef && assets[layer.maskRef] && img) {
+      const recorte = layer.clipToFaces ? silhueta : assets[layer.maskRef ?? ''];
+      if (recorte && img) {
         const recortada = cc(img.width, img.height);
         recortada.getContext('2d').drawImage(img, 0, 0);
-        applyMaskToFace(recortada, assets[layer.maskRef], cc);
+        applyMaskToFace(recortada, recorte, cc);
         img = recortada;
       }
       drawLayer(ctx, img, layer.blendMode, layer.opacity, layer.left, layer.top);

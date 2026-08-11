@@ -62,6 +62,16 @@ export interface SceneLayer {
   /** Só para `role: 'adjust'`: a tabela a aplicar. */
   lut?: SceneLut;
   /**
+   * A camada de recorte cuja base é o CONTAINER DA FACE não pode ter máscara
+   * assada: no arquivo, o alpha do container é o do PLACEHOLDER (um canvas
+   * pequeno, já aparado), e no render a face é preenchida pela arte no quad
+   * inteiro. Medido no `Coffee Paper Cups`: a máscara assada cobria 0,41% do
+   * quadro e apagava a sombra dos três copos. Este sinalizador manda o
+   * `renderScene` recortar contra a silhueta das faces que ele acabou de
+   * desenhar — a única que existe de verdade.
+   */
+  clipToFaces?: boolean;
+  /**
    * Máscara raster: no `adjust` limita onde o ajuste age; no `over` é o
    * **recorte** (clipping) — a camada só pinta onde a base tem alpha.
    */

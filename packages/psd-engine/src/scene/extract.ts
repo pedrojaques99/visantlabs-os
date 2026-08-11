@@ -112,11 +112,11 @@ function decoracaoDescartada(
  * A cura é a semântica do Photoshop: achatar SEM o recorte e guardar o alpha da
  * base como máscara.
  */
-function baseDoRecorte(irmaos: any[], i: number): any | null {
+function indiceBaseDoRecorte(irmaos: any[], i: number): number {
   for (let j = i - 1; j >= 0; j--) {
-    if (!irmaos[j].clipping) return irmaos[j];
+    if (!irmaos[j].clipping) return j;
   }
-  return null;
+  return -1;
 }
 
 /** Um canvas é totalmente transparente? (o sintoma que passou anos calado) */
@@ -390,8 +390,12 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
 
       // Recorte: o alpha da base vira máscara, que é o que o Photoshop faz.
       if (c.clipping) {
-        const base = baseDoRecorte(topChildren, i);
-        if (base) {
+        const j = indiceBaseDoRecorte(topChildren, i);
+        const base = j >= 0 ? topChildren[j] : null;
+        if (base && isFaceContainer[j]) {
+          // A base é o container da face: assar aqui congelaria o placeholder.
+          camadaOver.clipToFaces = true;
+        } else if (base) {
           const mref = nextRef('clipmask');
           assets[mref] = flattenSubset(
             [{ ...base, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
