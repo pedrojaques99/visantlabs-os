@@ -8,7 +8,7 @@
 import { coverArtCanvas, perspectiveWarp } from '../warp.js';
 import { applyDisplacementFilter, PIXEL_BLEND_SET, pixelBlendMode } from '../compose.js';
 import type { CreateCanvas } from '../types.js';
-import type { SceneDoc, AssetMap } from './types.js';
+import type { SceneDoc, SceneFaceInstance, AssetMap } from './types.js';
 
 /** Art image (or canvas) to place into a face, keyed by SceneFace.key. */
 export type ArtMap = Record<string, any>;
@@ -44,66 +44,93 @@ export function renderScene(
 
   let silhueta: any = null;
 
-  // 2. Faces — cover the art, then warp into the quad (or place axis-aligned).
+  // 2. Faces — uma passada por INSTÂNCIA (smart object vinculado), porque cada
+  // uma tem quad, máscara, blend e opacidade próprios. Documento antigo (e o
+  // pipeline de foto) não tem `instances`: os campos soltos da face descrevem
+  // exatamente uma, e é isso que o fallback monta.
   for (const face of doc.faces) {
     const art = arts[face.key] ?? opts.defaultArt;
     if (!art) continue;
-    const artCanvas = coverArtCanvas(art, face.innerW, face.innerH, cc);
 
-    let faceCanvas: any;
-    let dx: number;
-    let dy: number;
+    const instancias: SceneFaceInstance[] = face.instances?.length
+      ? face.instances
+      : [
+          {
+            quad: face.quad,
+            origin: face.origin,
+            innerW: face.innerW,
+            innerH: face.innerH,
+            maskRef: face.maskRef,
+            blendMode: 'source-over',
+            opacity: 1,
+            dispRef: face.dispRef,
+            dispScale: face.dispScale,
+          },
+        ];
 
-    if (face.quad) {
-      const q = face.quad;
-      const corners = [
-        { x: q[0], y: q[1] },
-        { x: q[2], y: q[3] },
-        { x: q[4], y: q[5] },
-        { x: q[6], y: q[7] },
-      ];
-      const minX = Math.min(...corners.map((c) => c.x));
-      const minY = Math.min(...corners.map((c) => c.y));
-      const maxX = Math.max(...corners.map((c) => c.x));
-      const maxY = Math.max(...corners.map((c) => c.y));
-      const outW = Math.max(1, Math.ceil(maxX - minX));
-      const outH = Math.max(1, Math.ceil(maxY - minY));
-      const warpCanvas = cc(outW, outH);
-      const local = corners.map((c) => ({ x: c.x - minX, y: c.y - minY }));
-      perspectiveWarp(warpCanvas.getContext('2d'), artCanvas, face.innerW, face.innerH, local);
-      faceCanvas = warpCanvas;
-      dx = Math.floor(minX);
-      dy = Math.floor(minY);
-    } else {
-      faceCanvas = artCanvas;
-      dx = face.origin?.left ?? 0;
-      dy = face.origin?.top ?? 0;
+    for (const inst of instancias) {
+      const artCanvas = coverArtCanvas(art, inst.innerW, inst.innerH, cc);
+
+      let faceCanvas: any;
+      let dx: number;
+      let dy: number;
+
+      if (inst.quad) {
+        const q = inst.quad;
+        const corners = [
+          { x: q[0], y: q[1] },
+          { x: q[2], y: q[3] },
+          { x: q[4], y: q[5] },
+          { x: q[6], y: q[7] },
+        ];
+        const minX = Math.min(...corners.map((c) => c.x));
+        const minY = Math.min(...corners.map((c) => c.y));
+        const maxX = Math.max(...corners.map((c) => c.x));
+        const maxY = Math.max(...corners.map((c) => c.y));
+        const outW = Math.max(1, Math.ceil(maxX - minX));
+        const outH = Math.max(1, Math.ceil(maxY - minY));
+        const warpCanvas = cc(outW, outH);
+        const local = corners.map((c) => ({ x: c.x - minX, y: c.y - minY }));
+        perspectiveWarp(warpCanvas.getContext('2d'), artCanvas, inst.innerW, inst.innerH, local);
+        faceCanvas = warpCanvas;
+        dx = Math.floor(minX);
+        dy = Math.floor(minY);
+      } else {
+        faceCanvas = artCanvas;
+        dx = inst.origin?.left ?? 0;
+        dy = inst.origin?.top ?? 0;
+      }
+
+      // Displacement map (textura da superfície).
+      const dispRef = inst.dispRef ?? face.dispRef;
+      if (dispRef && assets[dispRef]) {
+        const scale = inst.dispScale ?? face.dispScale ?? 8;
+        faceCanvas = applyDisplacementFilter(
+          faceCanvas,
+          assets[dispRef],
+          scale,
+          scale,
+          'stretch to fit',
+          'repeat edge pixels',
+          cc
+        );
+      }
+
+      // Máscara. `maskSpace: 'doc'` significa que ela já está no espaço do
+      // documento — aí o recorte é a JANELA dela em (dx,dy), não a imagem
+      // inteira esticada. Esticar uma máscara de documento dentro do quad
+      // deforma o recorte e ninguém vê pelo resultado, só pela borda errada.
+      if (inst.maskRef && assets[inst.maskRef]) {
+        aplicarMascara(faceCanvas, assets[inst.maskRef], cc, face.maskSpace === 'doc' ? dx : 0, face.maskSpace === 'doc' ? dy : 0, face.maskSpace === 'doc');
+      }
+
+      desenharFace(ctx, faceCanvas, inst, dx, dy, doc, cc);
+
+      // Silhueta acumulada das faces — é contra ela que a camada de recorte
+      // (`clipToFaces`) vai ser mascarada mais abaixo.
+      if (!silhueta) silhueta = cc(doc.width, doc.height);
+      silhueta.getContext('2d').drawImage(faceCanvas, dx, dy);
     }
-
-    // Apply displacement map if present (surface texture warp).
-    if (face.dispRef && assets[face.dispRef]) {
-      const scale = face.dispScale ?? 8;
-      faceCanvas = applyDisplacementFilter(
-        faceCanvas,
-        assets[face.dispRef],
-        scale,
-        scale,
-        'stretch to fit',
-        'repeat edge pixels',
-        cc
-      );
-    }
-
-    // Apply the face's raster mask if present (multiplies alpha).
-    if (face.maskRef && assets[face.maskRef]) {
-      applyMaskToFace(faceCanvas, assets[face.maskRef], cc);
-    }
-
-    ctx.drawImage(faceCanvas, dx, dy);
-    // Silhueta acumulada das faces — é contra ela que a camada de recorte
-    // (`clipToFaces`) vai ser mascarada mais abaixo.
-    if (!silhueta) silhueta = cc(doc.width, doc.height);
-    silhueta.getContext('2d').drawImage(faceCanvas, dx, dy);
   }
 
   // 3. Camadas acima das faces, EM ORDEM DE DOCUMENTO.
@@ -225,6 +252,56 @@ function drawLayer(
  * Multiply a face canvas alpha by a mask canvas (assumed same-size overlay at
  * the face origin). Simple destination-in composite of the mask luminance.
  */
+/**
+ * Desenha a instância da face com o blend e a opacidade DELA. Antes era
+ * `drawImage` puro: a face do `paper-ghetto` é `multiply` e saía normal.
+ */
+function desenharFace(
+  ctx: any,
+  faceCanvas: any,
+  inst: SceneFaceInstance,
+  dx: number,
+  dy: number,
+  doc: SceneDoc,
+  cc: CreateCanvas
+) {
+  if (inst.psBlend && PIXEL_BLEND_SET.has(inst.psBlend)) {
+    const fonte = cc(doc.width, doc.height);
+    const fctx = fonte.getContext('2d');
+    fctx.globalAlpha = inst.opacity;
+    fctx.drawImage(faceCanvas, dx, dy);
+    pixelBlendMode(ctx, fonte, inst.psBlend, doc.width, doc.height);
+    return;
+  }
+  ctx.save();
+  ctx.globalCompositeOperation = inst.blendMode || 'source-over';
+  ctx.globalAlpha = inst.opacity ?? 1;
+  ctx.drawImage(faceCanvas, dx, dy);
+  ctx.restore();
+}
+
+function aplicarMascara(
+  faceCanvas: any,
+  maskCanvas: any,
+  cc: CreateCanvas,
+  dx: number,
+  dy: number,
+  espacoDoc: boolean
+) {
+  const w = faceCanvas.width;
+  const h = faceCanvas.height;
+  if (w <= 0 || h <= 0) return;
+  const buf = cc(w, h);
+  const bctx = buf.getContext('2d');
+  if (espacoDoc) bctx.drawImage(maskCanvas, -dx, -dy);
+  else bctx.drawImage(maskCanvas, 0, 0, w, h);
+  const fctx = faceCanvas.getContext('2d');
+  fctx.save();
+  fctx.globalCompositeOperation = 'destination-in';
+  fctx.drawImage(buf, 0, 0);
+  fctx.restore();
+}
+
 function applyMaskToFace(faceCanvas: any, maskCanvas: any, cc: CreateCanvas) {
   const w = faceCanvas.width;
   const h = faceCanvas.height;

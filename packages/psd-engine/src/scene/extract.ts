@@ -30,7 +30,15 @@ import { buildAdjustmentLut } from '../adjustments.js';
 import { computeFaces } from '../faces.js';
 import { BRAND_HIDE } from '../constants.js';
 import type { CreateCanvas, FaceSo } from '../types.js';
-import type { SceneDoc, SceneFace, SceneLayer, AssetMap, Quad, SceneLut } from './types.js';
+import type {
+  SceneDoc,
+  SceneFace,
+  SceneFaceInstance,
+  SceneLayer,
+  AssetMap,
+  Quad,
+  SceneLut,
+} from './types.js';
 
 export interface ExtractResult {
   doc: SceneDoc;
@@ -259,46 +267,78 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
   const assets: AssetMap = {};
 
   for (const face of faces) {
-    const so =
+    const representante =
       allLayers.find((l: any) => l.path === face.smartObject) ||
       allLayers.find((l: any) => l.name === face.smartObject);
-    if (!so) {
+    if (!representante) {
       warnings.push(`face "${face.name}" (${face.smartObject}) não encontrada na árvore`);
       continue;
     }
-    if (so.placedLayer?.id) faceLinkIds.add(so.placedLayer.id);
-    facePaths.add(so.path);
 
-    const pl = so.placedLayer || {};
-    const innerW = Math.max(1, Math.round(pl.width || so.right - so.left || face.innerWidth || 1));
-    const innerH = Math.max(
-      1,
-      Math.round(pl.height || so.bottom - so.top || face.innerHeight || 1)
-    );
-    const rawQuad: number[] | null =
-      (pl.nonAffineTransform?.length === 8 && pl.nonAffineTransform) ||
-      (pl.transform?.length === 8 && pl.transform) ||
-      null;
+    // Todas as ocorrências do MESMO conteúdo vinculado — é o que o
+    // `replaceLinkedSmartObjects` preenche no compositor. Guardar só o
+    // representante perdia irmãos com blend próprio (o `Mockup Overlay`,
+    // multiply .5, do paper-ghetto).
+    const linkId = representante.placedLayer?.id;
+    const ocorrencias = linkId
+      ? allLayers.filter(
+          (l: any) =>
+            l.placedLayer?.id === linkId && !l.hidden && layerAlpha(l) > 0 && !BRAND_HIDE.test(l.name || '')
+        )
+      : [representante];
+    const usadas = ocorrencias.length ? ocorrencias : [representante];
 
+    for (const so of usadas) {
+      if (so.placedLayer?.id) faceLinkIds.add(so.placedLayer.id);
+      facePaths.add(so.path);
+    }
+
+    const instances: SceneFaceInstance[] = usadas.map((so: any) => {
+      const pl = so.placedLayer || {};
+      const innerW = Math.max(1, Math.round(pl.width || so.right - so.left || face.innerWidth || 1));
+      const innerH = Math.max(
+        1,
+        Math.round(pl.height || so.bottom - so.top || face.innerHeight || 1)
+      );
+      const rawQuad: number[] | null =
+        (pl.nonAffineTransform?.length === 8 && pl.nonAffineTransform) ||
+        (pl.transform?.length === 8 && pl.transform) ||
+        null;
+      const bruto = so.blendMode ?? 'normal';
+      const mapeado = BLEND_MAP[bruto];
+      if (mapeado === undefined) {
+        warnings.push(`blend mode não mapeado "${bruto}" na face "${face.name}"`);
+      }
+      const inst: SceneFaceInstance = {
+        quad: rawQuad ? ([...rawQuad] as Quad) : null,
+        innerW,
+        innerH,
+        blendMode: mapeado ?? 'source-over',
+        psBlend: bruto,
+        opacity: layerAlpha(so),
+      };
+      if (!rawQuad) inst.origin = { left: Math.floor(so.left ?? 0), top: Math.floor(so.top ?? 0) };
+      if (hasUsableMask(so)) {
+        const ref = nextRef('mask');
+        assets[ref] = mascaraComoAlpha(so.mask, width, height, cc);
+        inst.maskRef = ref;
+      }
+      return inst;
+    });
+
+    const primeira = instances[0];
     const sceneFace: SceneFace = {
       key: face.key,
       name: face.name,
-      quad: rawQuad ? ([...rawQuad] as Quad) : null,
-      innerW,
-      innerH,
+      // Campos soltos = primeira instância, para quem lê o formato antigo.
+      quad: primeira.quad,
+      innerW: primeira.innerW,
+      innerH: primeira.innerH,
+      instances,
+      maskSpace: 'doc',
     };
-    if (!rawQuad) {
-      sceneFace.origin = { left: Math.floor(so.left ?? 0), top: Math.floor(so.top ?? 0) };
-    }
-
-    // Capture the face's raster mask if it has one (warps with the art at render).
-    const m = so.mask;
-    if (m && !m.disabled && m.canvas && m.canvas.width > 0 && m.canvas.height > 0) {
-      const ref = nextRef('mask');
-      assets[ref] = m.canvas;
-      sceneFace.maskRef = ref;
-      // Mask geometry is preserved on the canvas itself (left/top encoded in render).
-    }
+    if (primeira.origin) sceneFace.origin = primeira.origin;
+    if (primeira.maskRef) sceneFace.maskRef = primeira.maskRef;
     sceneFaces.push(sceneFace);
   }
 

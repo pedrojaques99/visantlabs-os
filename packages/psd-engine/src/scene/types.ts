@@ -12,6 +12,34 @@
 /** A quad of 4 corners (TL, TR, BR, BL) in document coordinates. */
 export type Quad = [number, number, number, number, number, number, number, number];
 
+/**
+ * Uma ocorrência da face no documento — um smart object concreto.
+ *
+ * Uma face é um GRUPO de SOs que dividem o mesmo `linkId`: no Photoshop, editar
+ * o conteúdo vinculado atualiza todos de uma vez, e o `replaceLinkedSmartObjects`
+ * do compositor preenche todos. A cena guardava só o representante, então o
+ * `paper-ghetto` perdia o `Mockup Overlay` (multiply, 0,5) que é irmão vinculado
+ * da arte — e a arte saía sem a camada que a escurece.
+ *
+ * Cada instância tem geometria, máscara, blend e opacidade PRÓPRIOS. São
+ * diferentes de propósito: é assim que o mesmo conteúdo vira frente e verso, ou
+ * arte e overlay.
+ */
+export interface SceneFaceInstance {
+  quad: Quad | null;
+  origin?: { left: number; top: number };
+  innerW: number;
+  innerH: number;
+  maskRef?: string;
+  /** `globalCompositeOperation` já resolvido. */
+  blendMode: string;
+  /** Modo cru do Photoshop, para os que o Canvas 2D não tem. */
+  psBlend?: string;
+  opacity: number;
+  dispRef?: string;
+  dispScale?: number;
+}
+
 export interface SceneFace {
   /** Stable key (linkId or representative path) — matches Face.key. */
   key: string;
@@ -29,6 +57,23 @@ export interface SceneFace {
   innerH: number;
   /** Optional reference to a raster mask image in the asset map. */
   maskRef?: string;
+
+  /**
+   * Todas as ocorrências desta face. Ausente = documento antigo (ou o pipeline
+   * de foto, que monta o `SceneDoc` na mão): o render cai nos campos soltos
+   * acima, que descrevem exatamente uma instância. Quem escreve as duas formas
+   * mantém os campos soltos iguais à PRIMEIRA instância.
+   */
+  instances?: SceneFaceInstance[];
+
+  /**
+   * `'doc'` = a máscara já está no espaço do DOCUMENTO (é o que a extração de
+   * PSD produz, com o offset resolvido e a luminância virada alpha).
+   * Ausente = comportamento antigo, em que a máscara é esticada pro tamanho do
+   * canvas da face. O pipeline de foto depende do antigo — mudar o default
+   * mexeria no render WYSIWYG, que é provado byte a byte.
+   */
+  maskSpace?: 'doc';
   /** Optional reference to a displacement map image in the asset map (R=X, G=Y, 128=neutral). */
   dispRef?: string;
   /** Displacement scale in pixels (applied symmetrically to H and V). Default 8. */
