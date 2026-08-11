@@ -39,14 +39,21 @@ import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { toEntitlements } from '../lib/entitlements.js';
 import { grantProduct } from '../services/productGrantService.js';
+import {
+  POPUP_OAUTH_SOURCES,
+  isPopupOAuthSource,
+  renderPopupSuccessPage,
+  renderPopupErrorPage,
+} from '../lib/oauthPopupPage.js';
 
 const router = express.Router();
 const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
 
-// In-memory store for plugin OAuth sessions (sessionId → { token, createdAt })
+// In-memory store for popup OAuth sessions (sessionId → { token, source, createdAt })
+// `source` é o que a página de retorno usa pra saber pra onde mandar o usuário voltar.
 const pluginOAuthSessions = new Map<
   string,
-  { token?: string; error?: string; createdAt: number }
+  { token?: string; error?: string; source?: string; createdAt: number }
 >();
 const PLUGIN_SESSION_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -334,10 +341,25 @@ router.get('/google', oauthRateLimiter, (req, res) => {
     let state: string | undefined;
     let sessionId: string | undefined;
 
-    if (source === 'plugin') {
+    // `source` desconhecido é erro, não "sem source".
+    //
+    // Antes caía calado no fluxo de redirect: a resposta vinha sem sessionId, o
+    // cliente entrava no laço de poll com `undefined` e ficava girando até o
+    // timeout sem nunca dizer o porquê. Um typo em `?source=` custava um bug
+    // de login sem sintoma. Origem nova = registrar em POPUP_OAUTH_SOURCES.
+    if (source !== undefined && !isPopupOAuthSource(source)) {
+      return res.status(400).json({
+        error: 'Unknown OAuth source',
+        message: `Use uma destas ou omita o parâmetro: ${Object.keys(POPUP_OAUTH_SOURCES).join(', ')}`,
+      });
+    }
+
+    // Fluxo popup + poll: qualquer origem conhecida (plugin, club, cli…).
+    // O prefixo do state segue `plugin:` por compatibilidade com builds antigos.
+    if (isPopupOAuthSource(source)) {
       cleanExpiredSessions();
       sessionId = crypto.randomBytes(16).toString('hex');
-      pluginOAuthSessions.set(sessionId, { createdAt: Date.now() });
+      pluginOAuthSessions.set(sessionId, { createdAt: Date.now(), source });
       state = `plugin:${sessionId}`;
     } else if (referralCode) {
       state = `ref:${referralCode}`;
@@ -484,10 +506,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       if (session) {
         session.token = token;
       }
-      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Visant – Login OK</title>
-<style>body{background:#0a0a0a;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{text-align:center;padding:2rem}.check{font-size:3rem;margin-bottom:1rem}p{color:#999;font-size:.9rem}</style></head>
-<body><div class="card"><div class="check">&#10003;</div><h2>Login realizado!</h2><p>Volte para o Figma. Você pode fechar esta aba.</p></div></body></html>`);
+      return res.send(renderPopupSuccessPage(session?.source));
     }
 
     // Redirect to frontend with token
@@ -502,10 +521,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       const sessionId = (req.query.state as string).substring(7);
       const session = pluginOAuthSessions.get(sessionId);
       if (session) session.error = 'oauth_failed';
-      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Visant – Erro</title>
-<style>body{background:#0a0a0a;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{text-align:center;padding:2rem}p{color:#999;font-size:.9rem}</style></head>
-<body><div class="card"><h2>Erro no login</h2><p>Tente novamente pelo plugin.</p></div></body></html>`);
+      return res.send(renderPopupErrorPage(session?.source));
     }
 
     res.redirect(`${getFrontendUrl()}/auth?error=oauth_failed`);

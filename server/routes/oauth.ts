@@ -379,18 +379,15 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
     return res.status(400).send('Missing required parameters');
   }
 
-  if (action === 'deny') {
-    if (isOob) {
-      return res.send(buildOobPage({ code: null, error: 'access_denied' }));
-    }
-    const url = new URL(redirect_uri);
-    url.searchParams.set('error', 'access_denied');
-    if (state) url.searchParams.set('state', state);
-    return res.redirect(url.toString());
-  }
-
   try {
-    // Verify client exists and redirect_uri is valid
+    // Verify client exists and redirect_uri is valid — ANTES de qualquer
+    // redirect, inclusive o de negar.
+    //
+    // O ramo `deny` mandava o browser pro `redirect_uri` cru: o GET valida,
+    // mas o POST é um form comum e qualquer página podia postar aqui com um
+    // host arbitrário. Resultado: open redirect saindo de api.visantlabs.com,
+    // domínio confiável, logo depois de uma tela de consentimento legítima.
+    // RFC 6749 §3.1.2.4 é explícito: redirect_uri inválido NÃO redireciona.
     const oauthClient = await resolveOrRegisterClient(client_id);
     if (!oauthClient) {
       return res.status(400).send('Unknown client_id');
@@ -403,6 +400,16 @@ router.post('/oauth/authorize', express.urlencoded({ extended: false }), async (
       if (!uriMatch) {
         return res.status(400).send('redirect_uri not registered');
       }
+    }
+
+    if (action === 'deny') {
+      if (isOob) {
+        return res.send(buildOobPage({ code: null, error: 'access_denied' }));
+      }
+      const url = new URL(redirect_uri);
+      url.searchParams.set('error', 'access_denied');
+      if (state) url.searchParams.set('state', state);
+      return res.redirect(url.toString());
     }
 
     // Re-verify user session: accept token from form body or Authorization header
