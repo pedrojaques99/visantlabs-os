@@ -99,6 +99,37 @@ function decoracaoDescartada(
 }
 
 /**
+ * A camada de recorte ("clipping", o CLIP do debug-tree) pinta só onde a camada
+ * de BAIXO tem alpha — no template BOXY é assim que `Shadow`/`Light` marcam a
+ * sombra em cima do produto sem sujar o cenário.
+ *
+ * Achatada SOZINHA ela recorta contra o nada e sai 100% transparente. Medido no
+ * `Coffee Paper Cups`: `over-1` e `over-2` tinham 19 KB e **0,00% de pixel com
+ * alpha** — a cena emitia as duas camadas, o render desenhava as duas, e nenhum
+ * pixel mudava. Os copos saíam sem sombra e o cenário batia, o que fazia o diff
+ * parecer erro de geometria.
+ *
+ * A cura é a semântica do Photoshop: achatar SEM o recorte e guardar o alpha da
+ * base como máscara.
+ */
+function baseDoRecorte(irmaos: any[], i: number): any | null {
+  for (let j = i - 1; j >= 0; j--) {
+    if (!irmaos[j].clipping) return irmaos[j];
+  }
+  return null;
+}
+
+/** Um canvas é totalmente transparente? (o sintoma que passou anos calado) */
+function totalmenteTransparente(canvas: any): boolean {
+  const w = canvas?.width ?? 0;
+  const h = canvas?.height ?? 0;
+  if (!w || !h) return true;
+  const d = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  for (let i = 3; i < d.length; i += 4) if (d[i] !== 0) return false;
+  return true;
+}
+
+/**
  * Flatten a list of top-level children into one canvas using the real
  * compositor. compose.ts is the single source of truth — zero re-implementation:
  * we hand composePsd a synthetic psd of the same document size.
@@ -340,20 +371,49 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
       const ref = nextRef('over');
       // Flatten this single top-level child at full size (preserves its internal
       // composition); its own blend/opacity are applied at render time.
+      // `clipping: false` é obrigatório aqui: achatada sozinha, a camada de
+      // recorte não tem base contra a qual recortar e sai vazia.
       assets[ref] = flattenSubset(
-        [{ ...c, opacity: 1, fillOpacity: 1, blendMode: 'normal' }],
+        [{ ...c, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
         width,
         height,
         cc
       );
-      layers.push({
+      const camadaOver: SceneLayer = {
         role: 'over',
         src: ref,
         blendMode: mapped ?? 'source-over',
         opacity: layerAlpha(c),
         left: 0,
         top: 0,
-      });
+      };
+
+      // Recorte: o alpha da base vira máscara, que é o que o Photoshop faz.
+      if (c.clipping) {
+        const base = baseDoRecorte(topChildren, i);
+        if (base) {
+          const mref = nextRef('clipmask');
+          assets[mref] = flattenSubset(
+            [{ ...base, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
+            width,
+            height,
+            cc
+          );
+          camadaOver.maskRef = mref;
+        } else {
+          warnings.push(
+            `camada de recorte "${c.name || 'unnamed'}" sem base embaixo — vai pintar sem recorte`
+          );
+        }
+      }
+
+      // Guarda geral: camada que não tem um pixel opaco não muda nada no render.
+      // Vale para qualquer causa futura, não só o recorte.
+      if (totalmenteTransparente(assets[ref])) {
+        warnings.push(`camada "${c.name || 'unnamed'}" achatou vazia — não muda um pixel do render`);
+      }
+
+      layers.push(camadaOver);
     }
   }
 

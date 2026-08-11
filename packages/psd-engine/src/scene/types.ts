@@ -61,7 +61,10 @@ export interface SceneLayer {
   src: string;
   /** Só para `role: 'adjust'`: a tabela a aplicar. */
   lut?: SceneLut;
-  /** Só para `role: 'adjust'`: máscara raster que limita onde o ajuste age. */
+  /**
+   * Máscara raster: no `adjust` limita onde o ajuste age; no `over` é o
+   * **recorte** (clipping) — a camada só pinta onde a base tem alpha.
+   */
   maskRef?: string;
   /** Canvas-2D globalCompositeOperation already resolved from the PSD blend mode. */
   blendMode: string;

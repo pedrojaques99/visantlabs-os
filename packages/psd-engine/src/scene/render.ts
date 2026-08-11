@@ -108,7 +108,17 @@ export function renderScene(
   // daria outra imagem.
   for (const layer of doc.layers) {
     if (layer.role === 'over') {
-      drawLayer(ctx, assets[layer.src], layer.blendMode, layer.opacity, layer.left, layer.top);
+      // `maskRef` num `over` é o recorte (clipping) do Photoshop: a camada só
+      // pinta onde a base tem alpha. Sem isto, a sombra do produto vaza pro
+      // cenário inteiro — e com a extração antiga ela simplesmente não existia.
+      let img = assets[layer.src];
+      if (layer.maskRef && assets[layer.maskRef] && img) {
+        const recortada = cc(img.width, img.height);
+        recortada.getContext('2d').drawImage(img, 0, 0);
+        applyMaskToFace(recortada, assets[layer.maskRef], cc);
+        img = recortada;
+      }
+      drawLayer(ctx, img, layer.blendMode, layer.opacity, layer.left, layer.top);
     } else if (layer.role === 'adjust' && layer.lut) {
       aplicarLut(
         ctx,
