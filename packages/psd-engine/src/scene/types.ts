@@ -51,6 +51,12 @@ export interface SceneFaceInstance {
   dispSpace?: 'inner';
   dispMapMode?: 'stretch to fit' | 'tile';
   dispEdgeMode?: 'wrap around' | 'repeat edge pixels';
+  /**
+   * Warp de MALHA do Photoshop, quando a face tem um. É JSON puro (pontos de
+   * controle + tamanho da grade), então viaja no `scene.json` sem asset extra —
+   * ao contrário da máscara e do displacement, que são imagem.
+   */
+  mesh?: import('../mesh-warp.js').EnvelopeMesh;
 }
 
 export interface SceneFace {

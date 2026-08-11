@@ -5,7 +5,8 @@
 // EXACT same primitives as the full PSD compositor (coverArtCanvas +
 // perspectiveWarp + BLEND_MAP) — zero re-implementation of the warp math.
 
-import { coverArtCanvas, perspectiveWarp } from '../warp.js';
+import { coverArtCanvas, perspectiveWarp, quadMapper } from '../warp.js';
+import { evaluateMesh, meshWarp } from '../mesh-warp.js';
 import { applyDisplacementFilter, PIXEL_BLEND_SET, pixelBlendMode } from '../compose.js';
 import type { CreateCanvas } from '../types.js';
 import type { SceneDoc, SceneFaceInstance, AssetMap } from './types.js';
@@ -104,12 +105,48 @@ export function renderScene(
         const maxY = Math.max(...corners.map((c) => c.y));
         const outW = Math.max(1, Math.ceil(maxX - minX));
         const outH = Math.max(1, Math.ceil(maxY - minY));
-        const warpCanvas = cc(outW, outH);
         const local = corners.map((c) => ({ x: c.x - minX, y: c.y - minY }));
-        perspectiveWarp(warpCanvas.getContext('2d'), artCanvas, inst.innerW, inst.innerH, local);
-        faceCanvas = warpCanvas;
-        dx = Math.floor(minX);
-        dy = Math.floor(minY);
+
+        if (inst.mesh) {
+          // Com malha, a caixa é medida na MALHA projetada: o vinco levanta do
+          // papel e passa da borda do quad, e recortar ali comeria justamente o
+          // que a malha existe para mostrar. Mesma conta do `composePsd`.
+          const paraQuad = quadMapper(corners);
+          const projetar = (u: number, v: number) => {
+            const m = evaluateMesh(inst.mesh!, u, v);
+            return paraQuad(m.x / inst.mesh!.width, m.y / inst.mesh!.height);
+          };
+          let miX = Infinity;
+          let miY = Infinity;
+          let maX = -Infinity;
+          let maY = -Infinity;
+          const N = 32;
+          for (let j = 0; j <= N; j++) {
+            for (let i = 0; i <= N; i++) {
+              const p = projetar(i / N, j / N);
+              if (p.x < miX) miX = p.x;
+              if (p.y < miY) miY = p.y;
+              if (p.x > maX) maX = p.x;
+              if (p.y > maY) maY = p.y;
+            }
+          }
+          const mW = Math.max(1, Math.ceil(maX - miX));
+          const mH = Math.max(1, Math.ceil(maY - miY));
+          const meshCanvas = cc(mW, mH);
+          meshWarp(meshCanvas.getContext('2d'), artCanvas, inst.innerW, inst.innerH, inst.mesh, (nx, ny) => {
+            const p = paraQuad(nx, ny);
+            return { x: p.x - miX, y: p.y - miY };
+          });
+          faceCanvas = meshCanvas;
+          dx = Math.floor(miX);
+          dy = Math.floor(miY);
+        } else {
+          const warpCanvas = cc(outW, outH);
+          perspectiveWarp(warpCanvas.getContext('2d'), artCanvas, inst.innerW, inst.innerH, local);
+          faceCanvas = warpCanvas;
+          dx = Math.floor(minX);
+          dy = Math.floor(minY);
+        }
       } else {
         faceCanvas = artCanvas;
         dx = inst.origin?.left ?? 0;

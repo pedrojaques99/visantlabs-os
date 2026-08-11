@@ -15,6 +15,9 @@ export {
 
 export { computeFaces } from './faces.js';
 
+export { parseEnvelopeWarp, evaluateMesh, meshWarp, meshDeviation } from './mesh-warp.js';
+export type { EnvelopeMesh } from './mesh-warp.js';
+
 export { computeColorSlots, applyColorOverrides, rgbParaHex, hexParaRgb } from './colors.js';
 export type { ColorSlot } from './colors.js';
 

@@ -28,6 +28,7 @@
 import { flattenLayers, composePsd, BLEND_MAP } from '../compose.js';
 import { buildAdjustmentLut } from '../adjustments.js';
 import { computeFaces } from '../faces.js';
+import { parseEnvelopeWarp } from '../mesh-warp.js';
 import { BRAND_HIDE } from '../constants.js';
 import type { CreateCanvas, FaceSo } from '../types.js';
 import type {
@@ -323,6 +324,12 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
         assets[ref] = mascaraComoAlpha(so.mask, width, height, cc);
         inst.maskRef = ref;
       }
+
+      // Warp de malha (Photoshop Warp) — o vinco do papel. Vai como dado, não
+      // como imagem: são 169 pontos, e rasterizar aqui congelaria a deformação
+      // na resolução da extração.
+      const malha = parseEnvelopeWarp(pl);
+      if (malha) inst.mesh = malha;
 
       // Smart Filter "Displace" — o amassado do papel, a curvatura da caneca.
       // O `preloadDisplacementMaps` (que o CHAMADOR roda, porque só ele tem
