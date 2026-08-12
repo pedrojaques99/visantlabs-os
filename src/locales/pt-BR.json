@@ -3782,8 +3782,8 @@
     "heroSubtitle": "e experimente a Mockup Machine®",
     "heroTitle": "Crie com moderação",
     "sendImage": "Enviar imagem",
-    "seoDescription": "Laboratório de ferramentas criativas para designers e times de marca.",
-    "seoTitle": "Visant Labs®"
+    "seoDescription": "Sobe sua marca uma vez e todo output de IA sai on-brand. Mockup, campanha e deck lendo o mesmo guia.",
+    "seoTitle": "Brand guidelines para agentes de IA. Visant Labs®"
   },
   "messages": {
     "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
@@ -4084,14 +4084,22 @@
     "models": {
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
-        "features": ["Geração rápida", "1 crédito por imagem", "Proporção automática"],
+        "features": [
+          "Geração rápida",
+          "1 crédito por imagem",
+          "Proporção automática"
+        ],
         "name": "Standard (HD)",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-10 créditos",
         "emoji": "⛏️",
-        "features": ["Resolução 4K", "Ferramentas avançadas", "Qualidade superior"],
+        "features": [
+          "Resolução 4K",
+          "Ferramentas avançadas",
+          "Qualidade superior"
+        ],
         "name": "Pro (4K)",
         "version": "4K"
       }
@@ -4430,7 +4438,11 @@
           "title": "6.1 Google Analytics"
         },
         "intro": "Usamos cookies para:",
-        "items": ["Autenticação", "Preferências de interface", "Métricas internas"],
+        "items": [
+          "Autenticação",
+          "Preferências de interface",
+          "Métricas internas"
+        ],
         "noAdvertising": "Não usamos cookies de publicidade ou pixels de rastreamento para fins de marketing.",
         "title": "6. COOKIES E TECNOLOGIAS DE RASTREAMENTO"
       },
@@ -4601,7 +4613,12 @@
           "title": "1.2 Informações de Pagamento"
         },
         "technicalData": {
-          "items": ["Endereço IP", "Tipo de dispositivo", "Navegador", "Preferências de idioma"],
+          "items": [
+            "Endereço IP",
+            "Tipo de dispositivo",
+            "Navegador",
+            "Preferências de idioma"
+          ],
           "title": "1.4 Dados Técnicos"
         },
         "title": "1. INFORMAÇÕES QUE COLETAMOS",
@@ -6357,55 +6374,55 @@
   },
   "landing": {
     "hero": {
-      "titleLine1": "Pare de corrigir outputs",
-      "titleLine2": "que ignoram sua marca.",
-      "subtitle": "Suas brand guidelines viram contexto estruturado para qualquer modelo. O que sai sempre parece seu.",
-      "icp": "Para designers, agências e times de marketing que produzem com modelos generativos.",
+      "titleLine1": "Um guia de marca",
+      "titleLine2": "para o seu agente.",
+      "subtitle": "Sobe a marca uma vez. Todo output depois já sai na sua cor, na sua letra, no seu tom.",
+      "icp": "Pra designer que projeta com agente.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver os apps"
     },
     "proof": {
-      "eyebrow": "Peças geradas",
-      "title": "Uma marca. Todo formato. Sempre on-brand.",
-      "subtitle": "Cada peça abaixo saiu de uma brand guideline viva, sem ninguém redesenhar nada. Do saco de café ao dashboard, tudo puxa a mesma identidade."
+      "eyebrow": "Saiu do guia",
+      "title": "Todas leram o mesmo guia.",
+      "subtitle": "Do saco de café ao dashboard. Catorze marcas."
     },
     "howItWorks": {
       "eyebrow": "Como funciona",
-      "title": "Três passos. Zero retrabalho.",
+      "title": "Do PDF ao primeiro output.",
       "step1Num": "01",
-      "step1Title": "Suba suas guidelines",
-      "step1Desc": "PDF, URL ou texto. Visant extrai a essência da sua identidade, cores, tipografia, tom de voz, regras.",
+      "step1Title": "Sobe o material",
+      "step1Desc": "PDF, imagem, link ou texto colado.",
       "step2Num": "02",
-      "step2Title": "Viram contexto real",
-      "step2Desc": "Suas regras deixam de ser um documento e passam a ser contexto estruturado que qualquer modelo lê antes de gerar.",
+      "step2Title": "Vira contexto tipado",
+      "step2Desc": "Paleta, régua de logo, tom. Campo a campo.",
       "step3Num": "03",
-      "step3Title": "O output parece seu",
-      "step3Desc": "Mockups, copy, campanhas. Gerados dentro da sua identidade. Sem precisar corrigir o que saiu errado."
+      "step3Title": "O agente produz",
+      "step3Desc": "Mockup, campanha, deck. Mesma régua em tudo."
     },
     "trust": {
       "label1": "Open source",
       "label2": "API-first",
-      "label3": "MCP-ready",
-      "label4": "Figma Plugin"
+      "label3": "131 tools no MCP",
+      "label4": "Plugin do Figma"
     },
     "bento": {
-      "eyebrow": "A plataforma",
-      "title": "Tudo parece seu. Sempre.",
-      "mockupName": "Mockup Machine",
-      "mockupDesc": "Mockups realistas do produto em segundos.",
+      "eyebrow": "Onde o guia entra",
+      "title": "As ferramentas que leem o guia.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Sua identidade entra na geração antes do modelo desenhar.",
+      "brandDesc": "A fonte que o resto lê.",
       "canvasName": "Canvas",
-      "canvasDesc": "Desenhe, conecte, gere. Tudo num canvas.",
+      "canvasDesc": "Desenha, conecta, gera.",
       "studioName": "3D Studio",
-      "studioDesc": "Cenas e render 3D no navegador.",
-      "brandingName": "Branding",
-      "brandingDesc": "Identidades que parecem suas desde o primeiro rascunho."
+      "studioDesc": "Cena e render 3D no navegador.",
+      "imageLabName": "Image Lab",
+      "imageLabDesc": "Halftone, riso, upscale. No navegador.",
+      "playgroundName": "Playground",
+      "playgroundDesc": "Mini-app gerado e rodando na hora."
     },
     "finalCta": {
-      "title": "Sua marca. Consistente em tudo que você gera.",
+      "title": "Dá o guia pro seu agente.",
       "button": "Começar grátis",
-      "anchor": "Grátis pra começar. Sem cartão de crédito, cancele quando quiser."
+      "anchor": "Grátis pra começar. Sem cartão."
     },
     "footer": {
       "tagline": "Sua marca alimenta a geração."
