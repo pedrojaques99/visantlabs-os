@@ -191,84 +191,84 @@ export const CommunityPage: React.FC = () => {
   };
 
   const loadStats = useCallback(async () => {
-      setIsLoading(true);
-      setStatsError(false);
-      try {
-        const [allPresets, publicMockups, globalStats] = await Promise.all([
-          // Presets são o conteúdo da página: falhar aqui é um estado de erro.
-          getAllCommunityPresets({ throwOnError: true }),
-          mockupApi.getAllPublic().catch(() => []),
-          // Os contadores do hero são acessórios e já se escondem em zero —
-          // derrubar a página inteira por causa deles seria desproporcional.
-          getCommunityStats().catch(() => ({
-            totalUsers: 0,
-            totalPresets: 0,
-            totalBlankMockups: 0,
-          })),
-        ]);
+    setIsLoading(true);
+    setStatsError(false);
+    try {
+      const [allPresets, publicMockups, globalStats] = await Promise.all([
+        // Presets são o conteúdo da página: falhar aqui é um estado de erro.
+        getAllCommunityPresets({ throwOnError: true }),
+        mockupApi.getAllPublic().catch(() => []),
+        // Os contadores do hero são acessórios e já se escondem em zero —
+        // derrubar a página inteira por causa deles seria desproporcional.
+        getCommunityStats().catch(() => ({
+          totalUsers: 0,
+          totalPresets: 0,
+          totalBlankMockups: 0,
+        })),
+      ]);
 
-        // Store all presets for each category (remove duplicates by id)
-        const removeDuplicates = (presets: any[]) => {
-          const seen = new Set<string | number>();
-          return presets.filter((preset) => {
-            if (!preset?.id) return false;
-            if (seen.has(preset.id)) return false;
-            seen.add(preset.id);
-            return true;
-          });
-        };
-
-        const newStats: PresetStats = {
-          mockup: allPresets.mockup?.length || 0,
-          angle: allPresets.angle?.length || 0,
-          texture: allPresets.texture?.length || 0,
-          ambience: allPresets.ambience?.length || 0,
-          luminance: allPresets.luminance?.length || 0,
-          '3d': allPresets['3d']?.length || 0,
-          presets: allPresets.presets?.length || 0,
-          aesthetics: allPresets.aesthetics?.length || 0,
-          themes: allPresets.themes?.length || 0,
-          'ui-prompts': allPresets['ui-prompts']?.length || 0,
-          'figma-prompts': allPresets['figma-prompts']?.length || 0,
-          total: 0,
-        };
-        newStats.total = Object.values(newStats).reduce(
-          (sum, val) => sum + (typeof val === 'number' ? val : 0),
-          0
-        );
-        setStats(newStats);
-        setGlobalCommunityStats(globalStats);
-
-        setCategoryPresets({
-          mockup: removeDuplicates(allPresets.mockup || []),
-          angle: removeDuplicates(allPresets.angle || []),
-          texture: removeDuplicates(allPresets.texture || []),
-          ambience: removeDuplicates(allPresets.ambience || []),
-          luminance: removeDuplicates(allPresets.luminance || []),
-          '3d': removeDuplicates(allPresets['3d'] || []),
-          presets: removeDuplicates(allPresets.presets || []),
-          aesthetics: removeDuplicates(allPresets.aesthetics || []),
-          themes: removeDuplicates(allPresets.themes || []),
-          'ui-prompts': removeDuplicates(allPresets['ui-prompts'] || []),
-          'figma-prompts': removeDuplicates(allPresets['figma-prompts'] || []),
+      // Store all presets for each category (remove duplicates by id)
+      const removeDuplicates = (presets: any[]) => {
+        const seen = new Set<string | number>();
+        return presets.filter((preset) => {
+          if (!preset?.id) return false;
+          if (seen.has(preset.id)) return false;
+          seen.add(preset.id);
+          return true;
         });
+      };
 
-        // Store latest mockups
-        const sortedMockups = (publicMockups || [])
-          .filter((mockup: any) => mockup?._id && (mockup.imageUrl || mockup.imageBase64))
-          .sort((a: any, b: any) => {
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return dateB - dateA;
-          });
-        setAllPublicMockups(sortedMockups);
-        setCommunityMockups(sortedMockups.slice(0, 10));
-      } catch (error) {
-        console.error('Failed to load community stats:', error);
-        setStatsError(true);
-      } finally {
-        setIsLoading(false);
-      }
+      const newStats: PresetStats = {
+        mockup: allPresets.mockup?.length || 0,
+        angle: allPresets.angle?.length || 0,
+        texture: allPresets.texture?.length || 0,
+        ambience: allPresets.ambience?.length || 0,
+        luminance: allPresets.luminance?.length || 0,
+        '3d': allPresets['3d']?.length || 0,
+        presets: allPresets.presets?.length || 0,
+        aesthetics: allPresets.aesthetics?.length || 0,
+        themes: allPresets.themes?.length || 0,
+        'ui-prompts': allPresets['ui-prompts']?.length || 0,
+        'figma-prompts': allPresets['figma-prompts']?.length || 0,
+        total: 0,
+      };
+      newStats.total = Object.values(newStats).reduce(
+        (sum, val) => sum + (typeof val === 'number' ? val : 0),
+        0
+      );
+      setStats(newStats);
+      setGlobalCommunityStats(globalStats);
+
+      setCategoryPresets({
+        mockup: removeDuplicates(allPresets.mockup || []),
+        angle: removeDuplicates(allPresets.angle || []),
+        texture: removeDuplicates(allPresets.texture || []),
+        ambience: removeDuplicates(allPresets.ambience || []),
+        luminance: removeDuplicates(allPresets.luminance || []),
+        '3d': removeDuplicates(allPresets['3d'] || []),
+        presets: removeDuplicates(allPresets.presets || []),
+        aesthetics: removeDuplicates(allPresets.aesthetics || []),
+        themes: removeDuplicates(allPresets.themes || []),
+        'ui-prompts': removeDuplicates(allPresets['ui-prompts'] || []),
+        'figma-prompts': removeDuplicates(allPresets['figma-prompts'] || []),
+      });
+
+      // Store latest mockups
+      const sortedMockups = (publicMockups || [])
+        .filter((mockup: any) => mockup?._id && (mockup.imageUrl || mockup.imageBase64))
+        .sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+      setAllPublicMockups(sortedMockups);
+      setCommunityMockups(sortedMockups.slice(0, 10));
+    } catch (error) {
+      console.error('Failed to load community stats:', error);
+      setStatsError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -610,7 +610,11 @@ export const CommunityPage: React.FC = () => {
                       />
                     </div>
                     <p className="text-3xl font-bold text-foreground font-mono tracking-tighter">
-                      {isLoading ? '...' : <CountUp value={globalCommunityStats.totalBlankMockups} />}
+                      {isLoading ? (
+                        '...'
+                      ) : (
+                        <CountUp value={globalCommunityStats.totalBlankMockups} />
+                      )}
                     </p>
                   </GlassPanel>
                 )}
@@ -631,7 +635,9 @@ export const CommunityPage: React.FC = () => {
             <section className="space-y-10">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1">
-                  <MicroTitle className="text-muted-foreground">{t('community.curadoria')}</MicroTitle>
+                  <MicroTitle className="text-muted-foreground">
+                    {t('community.curadoria')}
+                  </MicroTitle>
                   <h2 className="text-3xl font-bold text-foreground font-manrope tracking-tight">
                     {t('community.explorar_por_categoria')}
                   </h2>
@@ -654,79 +660,79 @@ export const CommunityPage: React.FC = () => {
                   onRetry={loadStats}
                 />
               ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                {presetTypes.map((category) => (
-                  <GlassPanel
-                    asChild
-                    key={category.type}
-                    className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden bg-muted/40"
-                  >
-                    <Link to={`/community/presets?type=${category.type}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
-                      <category.icon size={120} className="text-muted-foreground" />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                  {presetTypes.map((category) => (
+                    <GlassPanel
+                      asChild
+                      key={category.type}
+                      className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden bg-muted/40"
+                    >
+                      <Link to={`/community/presets?type=${category.type}`}>
+                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
+                          <category.icon size={120} className="text-muted-foreground" />
+                        </div>
 
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-muted rounded-xl group-hover:bg-muted group-hover:scale-110 transition-all duration-300">
-                        <category.icon
-                          size={24}
-                          className="text-muted-foreground group-hover:text-foreground transition-colors"
-                        />
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-2xl font-bold font-mono text-foreground whitespace-nowrap group-hover:text-foreground transition-colors">
-                          <CountUp value={category.count} />
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {t('common.presets')}
-                        </span>
-                      </div>
-                    </div>
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="p-3 bg-muted rounded-xl group-hover:bg-muted group-hover:scale-110 transition-all duration-300">
+                            <category.icon
+                              size={24}
+                              className="text-muted-foreground group-hover:text-foreground transition-colors"
+                            />
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-2xl font-bold font-mono text-foreground whitespace-nowrap group-hover:text-foreground transition-colors">
+                              <CountUp value={category.count} />
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {t('common.presets')}
+                            </span>
+                          </div>
+                        </div>
 
-                    <div className="mb-6 flex-1">
-                      <h3 className="text-lg font-semibold text-foreground font-manrope mb-1 capitalize group-hover:text-foreground transition-colors text-left">
-                        {category.label}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed text-left">
-                        {t('community.categoryCardDescription', {
-                          category: category.label.toLowerCase(),
-                        })}
-                      </p>
-                    </div>
+                        <div className="mb-6 flex-1">
+                          <h3 className="text-lg font-semibold text-foreground font-manrope mb-1 capitalize group-hover:text-foreground transition-colors text-left">
+                            {category.label}
+                          </h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed text-left">
+                            {t('community.categoryCardDescription', {
+                              category: category.label.toLowerCase(),
+                            })}
+                          </p>
+                        </div>
 
-                    {/* Prévia: 5 nomes, sem scroll aninhado. O card inteiro é o link —
+                        {/* Prévia: 5 nomes, sem scroll aninhado. O card inteiro é o link —
                         uma lista rolável aqui dentro competia com ele e cada linha
                         tinha hover state sem ser clicável. */}
-                    <div className="space-y-2 pt-4 border-t border-border w-full">
-                      {category.presets.length > 0 ? (
-                        <>
-                          {category.presets.slice(0, 5).map((preset: any, index: number) => (
-                            <div
-                              key={`${category.type}-${preset.id || preset._id || index}`}
-                              className="flex items-center gap-3 py-1"
-                            >
-                              <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground shrink-0" />
-                              <p className="text-xs text-muted-foreground truncate text-left">
-                                {preset.name}
-                              </p>
-                            </div>
-                          ))}
-                          {category.presets.length > 5 && (
-                            <p className="text-xs text-muted-foreground/70 pt-1 text-left">
-                              +{category.presets.length - 5}
+                        <div className="space-y-2 pt-4 border-t border-border w-full">
+                          {category.presets.length > 0 ? (
+                            <>
+                              {category.presets.slice(0, 5).map((preset: any, index: number) => (
+                                <div
+                                  key={`${category.type}-${preset.id || preset._id || index}`}
+                                  className="flex items-center gap-3 py-1"
+                                >
+                                  <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground shrink-0" />
+                                  <p className="text-xs text-muted-foreground truncate text-left">
+                                    {preset.name}
+                                  </p>
+                                </div>
+                              ))}
+                              {category.presets.length > 5 && (
+                                <p className="text-xs text-muted-foreground/70 pt-1 text-left">
+                                  +{category.presets.length - 5}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-muted-foreground text-left">
+                              {t('community.vazio')}
                             </p>
                           )}
-                        </>
-                      ) : (
-                        <p className="text-xs text-muted-foreground text-left">
-                          {t('community.vazio')}
-                        </p>
-                      )}
-                    </div>
-                    </Link>
-                  </GlassPanel>
-                ))}
-              </div>
+                        </div>
+                      </Link>
+                    </GlassPanel>
+                  ))}
+                </div>
               )}
             </section>
 
@@ -753,10 +759,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="bg-card border border-border rounded-md p-6"
-                    >
+                    <div key={i} className="bg-card border border-border rounded-md p-6">
                       <div className="aspect-video bg-muted rounded-md mb-4" />
                       <div className="h-4 bg-muted rounded mb-2" />
                       <div className="h-3 bg-muted rounded w-2/3" />
@@ -779,50 +782,50 @@ export const CommunityPage: React.FC = () => {
                         {/* Abre ESTE workflow. Antes ia pra `/canvas` cru: o usuário
                             clicava num workflow específico e caía num canvas vazio. */}
                         <Link to={`/canvas/${workflow._id}`}>
-                        {workflow.thumbnailUrl ? (
-                          <div className="aspect-video rounded-md overflow-hidden border border-border bg-muted/40 mb-4">
-                            <img
-                              src={workflow.thumbnailUrl}
-                              alt={workflow.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                        ) : (
-                          <div className="aspect-video rounded-md border border-border bg-muted/40 flex items-center justify-center mb-4">
-                            <CategoryIcon size={32} className="text-muted-foreground" />
-                          </div>
-                        )}
-
-                        <div className="flex-1">
-                          <h3 className="text-base font-semibold text-foreground font-mono mb-1 line-clamp-1 group-hover:text-foreground transition-colors">
-                            {workflow.name}
-                          </h3>
-                          <p className="text-xs text-muted-foreground font-mono line-clamp-2 mb-3">
-                            {workflow.description}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-3 border-t border-border">
-                          <span
-                            className={cn(
-                              'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
-                              categoryConfig.badgeClass
-                            )}
-                          >
-                            {categoryConfig.label}
-                          </span>
-                          <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
-                            {t('community.nodesCount', {
-                              count: Array.isArray(workflow.nodes) ? workflow.nodes.length : 0,
-                            })}
-                          </span>
-                          {workflow.likesCount > 0 && (
-                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0 inline-flex items-center gap-1">
-                              <Heart size={10} className="fill-current" />
-                              {workflow.likesCount}
-                            </span>
+                          {workflow.thumbnailUrl ? (
+                            <div className="aspect-video rounded-md overflow-hidden border border-border bg-muted/40 mb-4">
+                              <img
+                                src={workflow.thumbnailUrl}
+                                alt={workflow.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                          ) : (
+                            <div className="aspect-video rounded-md border border-border bg-muted/40 flex items-center justify-center mb-4">
+                              <CategoryIcon size={32} className="text-muted-foreground" />
+                            </div>
                           )}
-                        </div>
+
+                          <div className="flex-1">
+                            <h3 className="text-base font-semibold text-foreground font-mono mb-1 line-clamp-1 group-hover:text-foreground transition-colors">
+                              {workflow.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground font-mono line-clamp-2 mb-3">
+                              {workflow.description}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 pt-3 border-t border-border">
+                            <span
+                              className={cn(
+                                'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
+                                categoryConfig.badgeClass
+                              )}
+                            >
+                              {categoryConfig.label}
+                            </span>
+                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
+                              {t('community.nodesCount', {
+                                count: Array.isArray(workflow.nodes) ? workflow.nodes.length : 0,
+                              })}
+                            </span>
+                            {workflow.likesCount > 0 && (
+                              <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0 inline-flex items-center gap-1">
+                                <Heart size={10} className="fill-current" />
+                                {workflow.likesCount}
+                              </span>
+                            )}
+                          </div>
                         </Link>
                       </GlassPanel>
                     );

@@ -678,9 +678,7 @@ export const brandGuidelineApi = {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(
-        err.message || err.error || translate('errors.brandHealthCheckFailed')
-      );
+      throw new Error(err.message || err.error || translate('errors.brandHealthCheckFailed'));
     }
     const data = await response.json();
     return data.report as BrandHealthReport;

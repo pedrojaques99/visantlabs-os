@@ -104,7 +104,9 @@ export const useCanvasStrategyHandler = ({
           error: error?.message,
         });
         console.error('Error generating strategy:', error);
-        toast.error(error?.message || translate('canvas.strategyGenerateFailed'), { duration: 5000 });
+        toast.error(error?.message || translate('canvas.strategyGenerateFailed'), {
+          duration: 5000,
+        });
         updateNodeData<StrategyNodeData>(
           nodeId,
           { isGenerating: false, generatingStep: undefined },
@@ -225,7 +227,9 @@ export const useCanvasStrategyHandler = ({
         toast.success(translate('canvas.initialAnalysisDone'));
       } catch (error: any) {
         console.error('Error in initial analysis:', error);
-        toast.error(error?.message || translate('canvas.initialAnalysisFailed'), { duration: 5000 });
+        toast.error(error?.message || translate('canvas.initialAnalysisFailed'), {
+          duration: 5000,
+        });
         updateNodeData<StrategyNodeData>(
           nodeId,
           { isGenerating: false, generatingStep: undefined },
@@ -439,7 +443,11 @@ export const useCanvasStrategyHandler = ({
         }
       } catch (error: any) {
         console.error(`Error generating ${sectionType}:`, error);
-        toast.error(error?.message || translate('canvas.sectionGenerateFailed', undefined, { section: sectionType }), { duration: 5000 });
+        toast.error(
+          error?.message ||
+            translate('canvas.sectionGenerateFailed', undefined, { section: sectionType }),
+          { duration: 5000 }
+        );
 
         // Remove this section from generating steps on error
         const node = nodesRef.current.find((n) => n.id === nodeId);
@@ -772,7 +780,9 @@ export const useCanvasStrategyHandler = ({
         }
       } catch (error: any) {
         console.error('Error generating all sections:', error);
-        toast.error(error?.message || translate('canvas.allSectionsGenerateFailed'), { duration: 5000 });
+        toast.error(error?.message || translate('canvas.allSectionsGenerateFailed'), {
+          duration: 5000,
+        });
         updateNodeData<StrategyNodeData>(
           nodeId,
           { isGenerating: false, generatingStep: undefined },

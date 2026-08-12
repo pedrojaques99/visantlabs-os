@@ -568,9 +568,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
       try {
         const { reference } = await referencesApi.item(permalinkHandle);
         if (cancelled) return;
-        setItems((prev) =>
-          prev.some((r) => r.id === reference.id) ? prev : [reference, ...prev]
-        );
+        setItems((prev) => (prev.some((r) => r.id === reference.id) ? prev : [reference, ...prev]));
         setLightboxIndex(0);
       } catch {
         if (!cancelled) toast.error('Referência não encontrada');
@@ -1009,7 +1007,8 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             {activeBrandName && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1">
                 <Sparkles className="h-3 w-3 text-brand-cyan" />
-                Ordenado por afinidade com <strong className="font-medium text-foreground">{activeBrandName}</strong>
+                Ordenado por afinidade com{' '}
+                <strong className="font-medium text-foreground">{activeBrandName}</strong>
               </span>
             )}
             {color && (
@@ -2400,7 +2399,9 @@ const MasonryCard: React.FC<{
             />
             {/* gradient + meta on hover */}
             <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-[11px] font-medium text-white truncate">{refTitle(item, locale)}</p>
+              <p className="text-[11px] font-medium text-white truncate">
+                {refTitle(item, locale)}
+              </p>
               {item.country && (
                 <p className="text-[10px] font-mono text-neutral-300 truncate">
                   {countryFlag(item.country)} {item.country}
@@ -2625,7 +2626,9 @@ const Lightbox: React.FC<{
                 // piso relativo escala a pequena pra um tamanho legível — a
                 // pixelação é honesta e o aviso de baixa resolução explica.
                 className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg"
-                style={isLowRes ? { minWidth: 'min(38vw, 420px)', imageRendering: 'auto' } : undefined}
+                style={
+                  isLowRes ? { minWidth: 'min(38vw, 420px)', imageRendering: 'auto' } : undefined
+                }
               />
             </div>
 
@@ -2748,18 +2751,14 @@ const Lightbox: React.FC<{
 
               {prov.designer && (
                 <div>
-                  <span className="text-[11px] text-muted-foreground">
-                    Designer
-                  </span>
+                  <span className="text-[11px] text-muted-foreground">Designer</span>
                   <p className="text-sm text-muted-foreground">{prov.designer}</p>
                 </div>
               )}
 
               {item.description && (
                 <div>
-                  <span className="text-[11px] text-muted-foreground">
-                    Descrição
-                  </span>
+                  <span className="text-[11px] text-muted-foreground">Descrição</span>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-6">
                     {item.description}
                   </p>
@@ -2769,9 +2768,7 @@ const Lightbox: React.FC<{
               {/* Tags — click to drop into the library filtered by it (shareable route) */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <span className="text-[11px] text-muted-foreground">
-                    Tags
-                  </span>
+                  <span className="text-[11px] text-muted-foreground">Tags</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((t) => (
                       <Badge
@@ -3066,15 +3063,14 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
                 : 'Clique para selecionar imagens (máx 10)'}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Grátis — as imagens entram na fila de revisão. Após aprovação, a IA extrai dimensões e infere a origem.
+              Grátis — as imagens entram na fila de revisão. Após aprovação, a IA extrai dimensões e
+              infere a origem.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">
-                País (opcional)
-              </label>
+              <label className="text-xs text-muted-foreground">País (opcional)</label>
               <Select
                 options={COUNTRY_OPTIONS}
                 value={country}
@@ -3083,9 +3079,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">
-                Designer / Estúdio
-              </label>
+              <label className="text-xs text-muted-foreground">Designer / Estúdio</label>
               <Input
                 value={designer}
                 onChange={(e) => setDesigner(e.target.value)}
@@ -3096,9 +3090,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">
-                Fonte (URL)
-              </label>
+              <label className="text-xs text-muted-foreground">Fonte (URL)</label>
               <Input
                 value={sourceUrl}
                 onChange={(e) => setSourceUrl(e.target.value)}
@@ -3107,9 +3099,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">
-                Award / Arquivo
-              </label>
+              <label className="text-xs text-muted-foreground">Award / Arquivo</label>
               <Input
                 value={awardSource}
                 onChange={(e) => setAwardSource(e.target.value)}

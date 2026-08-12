@@ -137,9 +137,7 @@ export const AboutPage: React.FC = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="text-neutral-800" />
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-neutral-400 text-xs">
-                  Info
-                </BreadcrumbPage>
+                <BreadcrumbPage className="text-neutral-400 text-xs">Info</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </BreadcrumbWithBack>
@@ -222,9 +220,7 @@ export const AboutPage: React.FC = () => {
                       <p className="text-sm font-semibold text-neutral-200 group-hover:text-white transition-colors truncate">
                         {member.name}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-0.5">
-                        {member.role}
-                      </p>
+                      <p className="text-xs text-neutral-500 mt-0.5">{member.role}</p>
                       <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
                         {member.bio}
                       </p>

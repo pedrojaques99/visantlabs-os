@@ -114,27 +114,21 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-lg border border-destructive/60 px-2.5 py-1 text-destructive"
                 >
                   <X size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    Nope
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Nope</span>
                 </motion.div>
                 <motion.div
                   style={{ opacity: likeOpacity }}
                   className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-lg border border-success/60 px-2.5 py-1 text-success"
                 >
                   <Heart size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    Curti
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Curti</span>
                 </motion.div>
                 <motion.div
                   style={{ opacity: superOpacity }}
                   className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-brand-cyan"
                 >
                   <Gem size={18} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    Superlike
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Superlike</span>
                 </motion.div>
               </>
             )}

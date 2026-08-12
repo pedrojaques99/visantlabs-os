@@ -339,9 +339,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
               variant="ghost"
               onClick={onCreditsClick}
               className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm ${
-                isLowCredits
-                  ? 'text-warning border-warning/30'
-                  : 'text-foreground border-ring'
+                isLowCredits ? 'text-warning border-warning/30' : 'text-foreground border-ring'
               }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
               title={

@@ -173,9 +173,7 @@ export function useShellCommands(): ShellCommand[] {
         label: t('command.toggleLanguage') || 'Trocar idioma',
         category: actionsLabel,
         icon: <Languages className="h-4 w-4" />,
-        trailing: (
-          <span className="text-[10px] uppercase text-neutral-500">{locale}</span>
-        ),
+        trailing: <span className="text-[10px] uppercase text-neutral-500">{locale}</span>,
         onClick: act('act:lang', () => setLocale(locale === 'pt-BR' ? 'en-US' : 'pt-BR')),
       },
     ];

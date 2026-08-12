@@ -52,17 +52,50 @@ Examples:
  */
 const TRAILING_STOPWORDS: Record<TitleLang, Set<string>> = {
   pt: new Set([
-    'de', 'da', 'do', 'das', 'dos', 'em', 'no', 'na', 'nos', 'nas',
-    'com', 'sem', 'para', 'por', 'e', 'a', 'o', 'as', 'os', 'um', 'uma', 'ao', 'à',
+    'de',
+    'da',
+    'do',
+    'das',
+    'dos',
+    'em',
+    'no',
+    'na',
+    'nos',
+    'nas',
+    'com',
+    'sem',
+    'para',
+    'por',
+    'e',
+    'a',
+    'o',
+    'as',
+    'os',
+    'um',
+    'uma',
+    'ao',
+    'à',
   ]),
-  en: new Set([
-    'of', 'in', 'on', 'at', 'for', 'with', 'and', 'the', 'a', 'an', 'to', 'by', 'from',
-  ]),
+  en: new Set(['of', 'in', 'on', 'at', 'for', 'with', 'and', 'the', 'a', 'an', 'to', 'by', 'from']),
 };
 
 /** Words English Title Case leaves lowercase when they are not the first word. */
 const EN_MINOR_WORDS = new Set([
-  'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'with',
+  'a',
+  'an',
+  'and',
+  'as',
+  'at',
+  'but',
+  'by',
+  'for',
+  'in',
+  'of',
+  'on',
+  'or',
+  'the',
+  'to',
+  'with',
 ]);
 
 function trimTrailingStopwords(words: string[], lang: TitleLang): string[] {

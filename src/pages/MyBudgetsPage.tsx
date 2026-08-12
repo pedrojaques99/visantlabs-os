@@ -230,7 +230,9 @@ export const MyBudgetsPage: React.FC = () => {
               ) : presetLoadError && presets.length === 0 ? (
                 <ErrorState
                   title={t('budget.errors.failedToLoadPresets') || 'Failed to load presets'}
-                  description={t('budget.errors.loadRetry') || 'Your presets are safe. Try loading again.'}
+                  description={
+                    t('budget.errors.loadRetry') || 'Your presets are safe. Try loading again.'
+                  }
                   onRetry={loadPresets}
                 />
               ) : presets.length === 0 ? (
@@ -295,7 +297,9 @@ export const MyBudgetsPage: React.FC = () => {
           {loadError && budgets.length === 0 ? (
             <ErrorState
               title={t('budget.errors.failedToLoad') || 'Failed to load budgets'}
-              description={t('budget.errors.loadRetry') || 'Your budgets are safe. Try loading again.'}
+              description={
+                t('budget.errors.loadRetry') || 'Your budgets are safe. Try loading again.'
+              }
               onRetry={loadBudgets}
             />
           ) : budgets.length === 0 ? (

@@ -161,12 +161,7 @@ const PresetDetailModal: React.FC<{
             </Button>
           )}
           {isOwner && onEdit && (
-            <Button
-              variant="surface"
-              size="sm"
-              onClick={onEdit}
-              className="text-[11px] font-mono"
-            >
+            <Button variant="surface" size="sm" onClick={onEdit} className="text-[11px] font-mono">
               {t('communityPresets.edit')}
             </Button>
           )}
@@ -184,100 +179,100 @@ const PresetDetailModal: React.FC<{
       }
     >
       <div className="flex flex-col md:flex-row gap-6">
-          {/* Image */}
-          <div className="md:w-2/5 shrink-0">
-            {hasImage ? (
-              <Thumb
-                src={migrated.referenceImageUrl}
-                alt={migrated.name}
-                loading="lazy"
-                className="w-full aspect-square object-cover rounded-xl border border-border"
-              />
-            ) : (
-              <div
-                className={cn(
-                  'w-full aspect-square rounded-xl flex items-center justify-center',
-                  glassSurface.tile
-                )}
-              >
-                <config.icon size={32} className={cn('opacity-20', config.color)} />
-              </div>
-            )}
-          </div>
+        {/* Image */}
+        <div className="md:w-2/5 shrink-0">
+          {hasImage ? (
+            <Thumb
+              src={migrated.referenceImageUrl}
+              alt={migrated.name}
+              loading="lazy"
+              className="w-full aspect-square object-cover rounded-xl border border-border"
+            />
+          ) : (
+            <div
+              className={cn(
+                'w-full aspect-square rounded-xl flex items-center justify-center',
+                glassSurface.tile
+              )}
+            >
+              <config.icon size={32} className={cn('opacity-20', config.color)} />
+            </div>
+          )}
+        </div>
 
-          {/* Info */}
-          <div className="flex-1 space-y-4 min-w-0">
-            {/* Meta chips */}
-            <div className="flex flex-wrap gap-1.5">
+        {/* Info */}
+        <div className="flex-1 space-y-4 min-w-0">
+          {/* Meta chips */}
+          <div className="flex flex-wrap gap-1.5">
+            <span
+              className={cn(
+                'text-[10px] font-mono px-2 py-1 rounded-lg border bg-muted/40 border-border',
+                config.color
+              )}
+            >
+              {config.label}
+            </span>
+            {migrated.aspectRatio && (
               <span
                 className={cn(
-                  'text-[10px] font-mono px-2 py-1 rounded-lg border bg-muted/40 border-border',
-                  config.color
+                  'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                  glassSurface.control
                 )}
               >
-                {config.label}
+                {migrated.aspectRatio}
               </span>
-              {migrated.aspectRatio && (
-                <span
-                  className={cn(
-                    'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
-                    glassSurface.control
-                  )}
-                >
-                  {migrated.aspectRatio}
-                </span>
-              )}
-              {migrated.difficulty && (
-                <span
-                  className={cn(
-                    'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
-                    glassSurface.control
-                  )}
-                >
-                  {migrated.difficulty}
-                </span>
-              )}
-            </div>
-
-            {/* Prompt */}
-            <div className="bg-muted/40 border border-border rounded-xl p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] text-muted-foreground">
-                  {t('community.promptLabel')}
-                </span>
-                <button
-                  onClick={copyPrompt}
-                  className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {copied ? (
-                    <span className="text-success">{t('community.presets.copied')}</span>
-                  ) : (
-                    t('communityPresets.copyPrompt')
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground font-mono leading-relaxed max-h-36 overflow-y-auto whitespace-pre-wrap">
-                {migrated.prompt}
-              </p>
-            </div>
-
-            {/* Tags */}
-            {migrated.tags && migrated.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {migrated.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className={cn(
-                      'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
-                      glassSurface.control
-                    )}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+            )}
+            {migrated.difficulty && (
+              <span
+                className={cn(
+                  'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                  glassSurface.control
+                )}
+              >
+                {migrated.difficulty}
+              </span>
             )}
           </div>
+
+          {/* Prompt */}
+          <div className="bg-muted/40 border border-border rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] text-muted-foreground">
+                {t('community.promptLabel')}
+              </span>
+              <button
+                onClick={copyPrompt}
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {copied ? (
+                  <span className="text-success">{t('community.presets.copied')}</span>
+                ) : (
+                  t('communityPresets.copyPrompt')
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground font-mono leading-relaxed max-h-36 overflow-y-auto whitespace-pre-wrap">
+              {migrated.prompt}
+            </p>
+          </div>
+
+          {/* Tags */}
+          {migrated.tags && migrated.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {migrated.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={cn(
+                    'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                    glassSurface.control
+                  )}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </Modal>
   );
@@ -702,8 +697,7 @@ export const CommunityPresetsPage: React.FC = () => {
       // TEXTAREA e contentEditable também são campos de digitação: sem isso o "/"
       // era sequestrado no meio de um prompt.
       const isTyping =
-        !!el &&
-        (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+        !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
 
       if (e.key === '/' && !e.ctrlKey && !e.metaKey && !isTyping) {
         e.preventDefault();

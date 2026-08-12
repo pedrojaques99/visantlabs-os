@@ -171,9 +171,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
         <div
           className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border',
-            !isAssistant
-              ? 'bg-muted border-border'
-              : 'bg-card border-border'
+            !isAssistant ? 'bg-muted border-border' : 'bg-card border-border'
           )}
         >
           {!isAssistant ? (
@@ -318,9 +316,13 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                                 <div key={i} className="flex items-start gap-2">
                                   <span className="text-muted-foreground shrink-0">{i + 1}.</span>
                                   <div>
-                                    <span className="text-muted-foreground font-medium">{p.title}</span>
+                                    <span className="text-muted-foreground font-medium">
+                                      {p.title}
+                                    </span>
                                     {p.aspectRatio && (
-                                      <span className="text-muted-foreground ml-2">{p.aspectRatio}</span>
+                                      <span className="text-muted-foreground ml-2">
+                                        {p.aspectRatio}
+                                      </span>
                                     )}
                                   </div>
                                 </div>
@@ -346,7 +348,9 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           {(['brands', 'clients', 'decisions', 'references'] as const).map((key) =>
                             call.args[key] ? (
                               <div key={key} className="flex gap-2">
-                                <span className="text-muted-foreground capitalize shrink-0">{key}:</span>
+                                <span className="text-muted-foreground capitalize shrink-0">
+                                  {key}:
+                                </span>
                                 <span className="text-muted-foreground">{call.args[key]}</span>
                               </div>
                             ) : null

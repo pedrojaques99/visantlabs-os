@@ -1561,12 +1561,10 @@ router.post(
       const files = Array.isArray(req.body?.files) ? req.body.files : [];
       if (!files.length) return res.status(400).json({ error: 'files[] is required' });
       if (files.length > MAX_MEDIA_BATCH) {
-        return res
-          .status(400)
-          .json({
-            error: `Too many files (max ${MAX_MEDIA_BATCH} per request)`,
-            max: MAX_MEDIA_BATCH,
-          });
+        return res.status(400).json({
+          error: `Too many files (max ${MAX_MEDIA_BATCH} per request)`,
+          max: MAX_MEDIA_BATCH,
+        });
       }
 
       const declaredTotal = files.reduce(

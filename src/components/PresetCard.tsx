@@ -116,7 +116,12 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         )}
 
         {/* Hover actions overlay */}
-        <div className={cn(hoverReveal, 'absolute inset-x-0 bottom-0 p-2 flex items-center justify-end gap-1')}>
+        <div
+          className={cn(
+            hoverReveal,
+            'absolute inset-x-0 bottom-0 p-2 flex items-center justify-end gap-1'
+          )}
+        >
           <button
             aria-label="Copy prompt"
             onClick={(e) => {

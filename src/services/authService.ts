@@ -592,9 +592,7 @@ class AuthService {
     });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ error: 'Failed to upload picture' }));
+      const errorData = await response.json().catch(() => ({ error: 'Failed to upload picture' }));
       throw new Error(errorData.error || 'Failed to upload picture');
     }
 

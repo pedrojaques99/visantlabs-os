@@ -38,8 +38,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
   const [reloadKey, setReloadKey] = useState(0);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const isDirty =
-    !!user && (name !== (user.name || '') || email !== (user.email || ''));
+  const isDirty = !!user && (name !== (user.name || '') || email !== (user.email || ''));
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -217,12 +216,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
       <Modal
         {...modalProps}
         footer={
-          <Button
-            variant="brand"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full gap-2"
-          >
+          <Button variant="brand" onClick={handleSave} disabled={isSaving} className="w-full gap-2">
             {isSaving ? (
               <>
                 <GlitchLoader size={16} />

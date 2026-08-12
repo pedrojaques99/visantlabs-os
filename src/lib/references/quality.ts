@@ -40,7 +40,7 @@ export function lowResolutionReason({ width, height }: Pixels): string | undefin
     return `menor lado ${Math.min(width, height)}px (mínimo ${MIN_SHORT_SIDE}px)`;
   }
   if (width * height < MIN_PIXELS) {
-    return `${width}×${height} = ${(width * height / 1000).toFixed(0)}k pixels (mínimo ${MIN_PIXELS / 1000}k)`;
+    return `${width}×${height} = ${((width * height) / 1000).toFixed(0)}k pixels (mínimo ${MIN_PIXELS / 1000}k)`;
   }
   return undefined;
 }

@@ -125,7 +125,9 @@ router.get('/members', validateAdmin, async (req: AuthRequest, res: Response) =>
     // scope=all sem busca listaria a base inteira do SaaS dentro do painel do
     // Club. Exigir o termo mantém o padrão "Club por padrão, resto sob demanda".
     if (scope === 'all' && q.length < 3) {
-      return res.status(400).json({ error: 'Busque por ao menos 3 caracteres para procurar fora do Club' });
+      return res
+        .status(400)
+        .json({ error: 'Busque por ao menos 3 caracteres para procurar fora do Club' });
     }
 
     const where: Record<string, unknown> = {};
@@ -220,18 +222,20 @@ router.put('/members/:id/role', validateAdmin, async (req: AuthRequest, res: Res
     // Coleção dedicada no Mongo — schemaless, sem migration.
     try {
       await connectToMongoDB();
-      await getDb().collection('club_role_audit').insertOne({
-        at: new Date(),
-        actorId: req.userId ?? null,
-        actorEmail: req.userEmail ?? null,
-        targetId: target.id,
-        targetEmail: target.email,
-        role,
-        before,
-        after: { tier: next.subscriptionTier, status: next.subscriptionStatus },
-        reason: reason || null,
-        forced: force,
-      });
+      await getDb()
+        .collection('club_role_audit')
+        .insertOne({
+          at: new Date(),
+          actorId: req.userId ?? null,
+          actorEmail: req.userEmail ?? null,
+          targetId: target.id,
+          targetEmail: target.email,
+          role,
+          before,
+          after: { tier: next.subscriptionTier, status: next.subscriptionStatus },
+          reason: reason || null,
+          forced: force,
+        });
     } catch (auditError) {
       // A escrita principal já passou; falhar a resposta faria o admin repetir a
       // ação e divergir do que está no banco. Loga alto e segue.

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, Instagram, Youtube, Twitter, Globe, ImageIcon, AlertTriangle } from '@/lib/ui/icons';
+import {
+  Camera,
+  Instagram,
+  Youtube,
+  Twitter,
+  Globe,
+  ImageIcon,
+  AlertTriangle,
+} from '@/lib/ui/icons';
 import { GlitchLoader } from './ui/GlitchLoader';
 import {
   userProfileService,
@@ -147,7 +155,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           toast.success(t('community.editProfileModal.coverUploaded'));
         } catch (err: any) {
           console.error('Upload error:', err);
-          const errorMessage = err.details || err.message || t('community.editProfileModal.coverUploadError');
+          const errorMessage =
+            err.details || err.message || t('community.editProfileModal.coverUploadError');
           setError(errorMessage);
           toast.error(errorMessage);
         } finally {
@@ -199,164 +208,164 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
       }
     >
       <div className="space-y-6">
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-sm text-destructive flex items-center gap-2">
-              <AlertTriangle size={16} className="shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-sm text-destructive flex items-center gap-2">
+            <AlertTriangle size={16} className="shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-          {/* Cover Image */}
-          <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1">
-              {t('community.editProfileModal.coverImage')}
-            </MicroTitle>
-            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-muted border border-border group">
-              {coverImageUrl ? (
-                <img
-                  src={coverImageUrl}
-                  alt={t('common.cover')}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+        {/* Cover Image */}
+        <div className="space-y-2">
+          <MicroTitle as="label" className="ml-1">
+            {t('community.editProfileModal.coverImage')}
+          </MicroTitle>
+          <div className="relative w-full h-40 rounded-xl overflow-hidden bg-muted border border-border group">
+            {coverImageUrl ? (
+              <img
+                src={coverImageUrl}
+                alt={t('common.cover')}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                <ImageIcon size={32} className="text-muted-foreground" strokeWidth={1} />
+                <MicroTitle className="text-[10px] text-muted-foreground tracking-tight">
+                  {t('community.editProfileModal.noCover')}
+                </MicroTitle>
+              </div>
+            )}
+            <input
+              ref={coverFileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+              disabled={isUploadingCover}
+              className="hidden"
+            />
+            {/* hoverReveal: no touch o botão de trocar capa era invisível E
+                  inalcançável — era o único caminho pra ação. */}
+            <Button
+              variant="ghost"
+              onClick={handleCoverClick}
+              disabled={isUploadingCover}
+              aria-label={t('community.editProfileModal.changeCover')}
+              className={cn(
+                hoverReveal,
+                'absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm disabled:opacity-50'
+              )}
+            >
+              {isUploadingCover ? (
+                <GlitchLoader size={24} />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                  <ImageIcon size={32} className="text-muted-foreground" strokeWidth={1} />
-                  <MicroTitle className="text-[10px] text-muted-foreground tracking-tight">
-                    {t('community.editProfileModal.noCover')}
+                <div className="flex flex-col items-center gap-2">
+                  <Camera size={24} className="text-foreground" />
+                  <MicroTitle className="text-[10px] text-foreground">
+                    {t('community.editProfileModal.changeCover')}
                   </MicroTitle>
                 </div>
               )}
-              <input
-                ref={coverFileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCoverUpload}
-                disabled={isUploadingCover}
-                className="hidden"
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 ml-1">
+            <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
+              {t('community.editProfileModal.coverAspect')}
+            </Badge>
+            <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
+              {t('community.editProfileModal.coverMaxSize')}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Username */}
+        <div className="space-y-2">
+          <MicroTitle as="label" className="ml-1">
+            {t('community.editProfileModal.username')}
+          </MicroTitle>
+          <Input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder={t('community.editProfileModal.usernamePlaceholder')}
+          />
+          <p className="text-xs text-muted-foreground mt-1 ml-1">
+            {t('community.editProfileModal.usernameHint')}
+          </p>
+        </div>
+
+        {/* Bio */}
+        <div className="space-y-2">
+          <MicroTitle as="label" className="ml-1">
+            {t('community.editProfileModal.bio')}
+          </MicroTitle>
+          <Textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder={t('community.editProfileModal.bioPlaceholder')}
+            className="h-32 resize-none"
+          />
+        </div>
+
+        {/* Social Links */}
+        <div className="space-y-6">
+          <MicroTitle as="label" className="ml-1">
+            {t('community.editProfileModal.socialLinks')}
+          </MicroTitle>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                <Instagram size={14} className="text-muted-foreground" />
+                {t('community.instagram')}
+              </MicroTitle>
+              <Input
+                type="url"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="https://instagram.com/username"
               />
-              {/* hoverReveal: no touch o botão de trocar capa era invisível E
-                  inalcançável — era o único caminho pra ação. */}
-              <Button
-                variant="ghost"
-                onClick={handleCoverClick}
-                disabled={isUploadingCover}
-                aria-label={t('community.editProfileModal.changeCover')}
-                className={cn(
-                  hoverReveal,
-                  'absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm disabled:opacity-50'
-                )}
-              >
-                {isUploadingCover ? (
-                  <GlitchLoader size={24} />
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <Camera size={24} className="text-foreground" />
-                    <MicroTitle className="text-[10px] text-foreground">
-                      {t('community.editProfileModal.changeCover')}
-                    </MicroTitle>
-                  </div>
-                )}
-              </Button>
             </div>
-            <div className="flex items-center gap-2 ml-1">
-              <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
-                {t('community.editProfileModal.coverAspect')}
-              </Badge>
-              <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
-                {t('community.editProfileModal.coverMaxSize')}
-              </Badge>
+
+            <div className="space-y-2">
+              <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                <Youtube size={14} className="text-muted-foreground" />
+                {t('community.youtube')}
+              </MicroTitle>
+              <Input
+                type="url"
+                value={youtube}
+                onChange={(e) => setYoutube(e.target.value)}
+                placeholder="https://youtube.com/@channel"
+              />
             </div>
-          </div>
 
-          {/* Username */}
-          <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1">
-              {t('community.editProfileModal.username')}
-            </MicroTitle>
-            <Input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={t('community.editProfileModal.usernamePlaceholder')}
-            />
-            <p className="text-xs text-muted-foreground mt-1 ml-1">
-              {t('community.editProfileModal.usernameHint')}
-            </p>
-          </div>
+            <div className="space-y-2">
+              <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                <Twitter size={14} className="text-muted-foreground" />
+                {t('community.twitter')}
+              </MicroTitle>
+              <Input
+                type="url"
+                value={x}
+                onChange={(e) => setX(e.target.value)}
+                placeholder="https://x.com/username"
+              />
+            </div>
 
-          {/* Bio */}
-          <div className="space-y-2">
-            <MicroTitle as="label" className="ml-1">
-              {t('community.editProfileModal.bio')}
-            </MicroTitle>
-            <Textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder={t('community.editProfileModal.bioPlaceholder')}
-              className="h-32 resize-none"
-            />
-          </div>
-
-          {/* Social Links */}
-          <div className="space-y-6">
-            <MicroTitle as="label" className="ml-1">
-              {t('community.editProfileModal.socialLinks')}
-            </MicroTitle>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Instagram size={14} className="text-muted-foreground" />
-                  {t('community.instagram')}
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                  placeholder="https://instagram.com/username"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Youtube size={14} className="text-muted-foreground" />
-                  {t('community.youtube')}
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={youtube}
-                  onChange={(e) => setYoutube(e.target.value)}
-                  placeholder="https://youtube.com/@channel"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Twitter size={14} className="text-muted-foreground" />
-                  {t('community.twitter')}
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={x}
-                  onChange={(e) => setX(e.target.value)}
-                  placeholder="https://x.com/username"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
-                  <Globe size={14} className="text-muted-foreground" />
-                  {t('community.website')}
-                </MicroTitle>
-                <Input
-                  type="url"
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  placeholder="https://yourwebsite.com"
-                />
-              </div>
+            <div className="space-y-2">
+              <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                <Globe size={14} className="text-muted-foreground" />
+                {t('community.website')}
+              </MicroTitle>
+              <Input
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://yourwebsite.com"
+              />
             </div>
           </div>
+        </div>
       </div>
     </Modal>
   );

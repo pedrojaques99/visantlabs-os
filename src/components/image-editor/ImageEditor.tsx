@@ -92,9 +92,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-widest text-neutral-400">
-            Image Editor
-          </span>
+          <span className="text-xs uppercase tracking-widest text-neutral-400">Image Editor</span>
           <span className="text-xs text-neutral-600">
             {imageWidth}×{imageHeight}
           </span>
