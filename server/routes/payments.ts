@@ -2159,6 +2159,53 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                   break;
                 }
 
+                // ── Numeração ATÔMICA da vaga vitalícia ────────────────────
+                // O lote é finito (30 vagas) e o preço sobe a cada venda, mas
+                // quem contava era a landing, lendo o Stripe ANTES do
+                // pagamento. Sessão criada e ainda não paga não era contada,
+                // então N pessoas no checkout ao mesmo tempo compravam todas
+                // "a mesma vaga": o lote de 30 podia virar 40 vitalícios.
+                //
+                // Aqui é o único lugar onde o dinheiro vira acesso E existe
+                // banco transacional. Um `$inc` com upsert é atômico no
+                // Mongo, então este número é o real, sem corrida possível.
+                //
+                // Overflow NÃO bloqueia o acesso: a pessoa pagou e tem
+                // direito. O que ele faz é deixar de acontecer em silêncio —
+                // marca o registro e grita no log, pra decidir entre honrar a
+                // vaga extra ou reembolsar. Falha silenciosa aqui é o que
+                // transforma um bug de contagem em passivo descoberto meses
+                // depois.
+                let numeroDaVaga: number | null = null;
+                let vagaAlemDoLote = false;
+                if (isLifetime) {
+                  try {
+                    const slots = parseInt(process.env.CLUB_FOUNDER_SLOTS || '30', 10);
+                    const contador = await db
+                      .collection('counters')
+                      .findOneAndUpdate(
+                        { _id: 'club_founder_seat' as any },
+                        { $inc: { seq: 1 } },
+                        { upsert: true, returnDocument: 'after' }
+                      );
+                    numeroDaVaga = (contador as any)?.seq ?? (contador as any)?.value?.seq ?? null;
+                    vagaAlemDoLote = typeof numeroDaVaga === 'number' && numeroDaVaga > slots;
+                    if (vagaAlemDoLote) {
+                      console.error(
+                        '🚨 Visant Club: vaga de Visionário ALÉM DO LOTE. Acesso concedido, ' +
+                          'decida entre honrar ou reembolsar:',
+                        { numeroDaVaga, slots, sessionId: session.id, userId: clubUser._id }
+                      );
+                    }
+                  } catch (contagemError: any) {
+                    // Não derruba o grant por causa do contador: quem pagou entra.
+                    console.error(
+                      '❌ Visant Club: falha ao numerar a vaga (grant segue):',
+                      contagemError?.message || contagemError
+                    );
+                  }
+                }
+
                 try {
                   await db.collection('users').updateOne(
                     { _id: clubUser._id },
@@ -2171,6 +2218,12 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                         creditsUsed: 0,
                         creditsResetDate: resetDate,
                         'metadata.clubFounder': isLifetime,
+                        ...(numeroDaVaga !== null
+                          ? {
+                              'metadata.clubFounderNumber': numeroDaVaga,
+                              'metadata.clubFounderOverflow': vagaAlemDoLote,
+                            }
+                          : {}),
                       },
                     }
                   );
@@ -2193,6 +2246,8 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                   userId: clubUser._id,
                   grantTier,
                   isLifetime,
+                  numeroDaVaga,
+                  vagaAlemDoLote,
                 });
               } else {
                 console.error('❌ Visant Club: usuário não encontrado para grant:', {

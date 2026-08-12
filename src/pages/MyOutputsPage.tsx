@@ -349,7 +349,9 @@ export const MyOutputsPage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-muted-foreground text-sm">{t('my.outputs.loading_your_outputs')}</p>
+              <p className="text-muted-foreground text-sm">
+                {t('my.outputs.loading_your_outputs')}
+              </p>
             </div>
           </div>
         </div>

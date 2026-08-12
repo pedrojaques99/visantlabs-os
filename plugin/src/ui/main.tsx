@@ -14,7 +14,14 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 16, color: 'var(--destructive)', fontFamily: 'monospace', fontSize: 12 }}>
+        <div
+          style={{
+            padding: 16,
+            color: 'var(--destructive)',
+            fontFamily: 'monospace',
+            fontSize: 12,
+          }}
+        >
           <p>
             <strong>Plugin UI Error</strong>
           </p>

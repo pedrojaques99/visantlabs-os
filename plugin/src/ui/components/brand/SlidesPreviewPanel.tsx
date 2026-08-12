@@ -27,23 +27,36 @@ function getIdentityItems(ext: any, t: TFn): Array<{ label: string; value: strin
   const id = ext?.identity || {};
   if (id.name) items.push({ label: t('plugin.brand.slidesPreview.name'), value: id.name });
   if (id.tagline) items.push({ label: t('plugin.brand.slidesPreview.tagline'), value: id.tagline });
-  if (id.description) items.push({ label: t('plugin.brand.slidesPreview.description'), value: id.description });
+  if (id.description)
+    items.push({ label: t('plugin.brand.slidesPreview.description'), value: id.description });
   return items;
 }
 
 function getStrategyItems(ext: any, t: TFn): Array<{ label: string; value: string }> {
   const items: Array<{ label: string; value: string }> = [];
   const s = ext?.strategy || {};
-  if (s.manifesto) items.push({ label: t('plugin.brand.slidesPreview.manifesto'), value: s.manifesto });
-  (s.positioning || []).forEach((p: string) => items.push({ label: t('plugin.brand.slidesPreview.positioning'), value: p }));
+  if (s.manifesto)
+    items.push({ label: t('plugin.brand.slidesPreview.manifesto'), value: s.manifesto });
+  (s.positioning || []).forEach((p: string) =>
+    items.push({ label: t('plugin.brand.slidesPreview.positioning'), value: p })
+  );
   (s.archetypes || []).forEach((a: any) =>
-    items.push({ label: t('plugin.brand.slidesPreview.archetype', { role: a.role || '' }), value: a.name || JSON.stringify(a) })
+    items.push({
+      label: t('plugin.brand.slidesPreview.archetype', { role: a.role || '' }),
+      value: a.name || JSON.stringify(a),
+    })
   );
   (s.personas || []).forEach((p: any) =>
-    items.push({ label: t('plugin.brand.slidesPreview.persona'), value: `${p.name}${p.occupation ? ` · ${p.occupation}` : ''}` })
+    items.push({
+      label: t('plugin.brand.slidesPreview.persona'),
+      value: `${p.name}${p.occupation ? ` · ${p.occupation}` : ''}`,
+    })
   );
   (s.voiceValues || []).forEach((v: any) =>
-    items.push({ label: t('plugin.brand.slidesPreview.voice'), value: v.title || JSON.stringify(v) })
+    items.push({
+      label: t('plugin.brand.slidesPreview.voice'),
+      value: v.title || JSON.stringify(v),
+    })
   );
   const g = ext?.guidelines || {};
   if (g.voice) items.push({ label: t('plugin.brand.slidesPreview.voice'), value: g.voice });
@@ -200,7 +213,10 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
             {t('plugin.brand.slidesPreview.extractionPreview')}
           </p>
           <p className="text-[9px] text-muted-foreground/70 font-mono">
-            {t('plugin.brand.slidesPreview.slidesPages', { slides: preview.totalFrames, pages: preview.pages })}
+            {t('plugin.brand.slidesPreview.slidesPages', {
+              slides: preview.totalFrames,
+              pages: preview.pages,
+            })}
           </p>
         </div>
         <button
@@ -288,7 +304,9 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
               <span className="text-[9px] font-mono text-muted-foreground/70 w-20 flex-shrink-0 truncate">
                 {item.label}
               </span>
-              <span className="text-[10px] text-muted-foreground truncate italic">"{item.value}"</span>
+              <span className="text-[10px] text-muted-foreground truncate italic">
+                "{item.value}"
+              </span>
             </ItemCheck>
           ))}
         </Section>
@@ -366,7 +384,9 @@ export function SlidesPreviewPanel({ preview, isApplying, onApply, onDismiss }: 
           ) : (
             <Check size={11} className="mr-1.5" />
           )}
-          {isApplying ? t('plugin.brand.slidesPreview.applying') : t('plugin.brand.slidesPreview.apply', { count: total })}
+          {isApplying
+            ? t('plugin.brand.slidesPreview.applying')
+            : t('plugin.brand.slidesPreview.apply', { count: total })}
         </Button>
       </div>
     </div>

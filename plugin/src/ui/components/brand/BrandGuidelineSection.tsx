@@ -49,7 +49,10 @@ export function BrandGuidelineSection() {
         method: 'POST',
         body: JSON.stringify({ templates }),
       });
-      showToast(t('plugin.brand.guideline.templatesSynced', { count: templates.length }), 'success');
+      showToast(
+        t('plugin.brand.guideline.templatesSynced', { count: templates.length }),
+        'success'
+      );
     } catch {
       showToast(t('plugin.brand.guideline.syncFailed'), 'error');
     } finally {

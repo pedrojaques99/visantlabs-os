@@ -121,6 +121,54 @@ export function perspectiveWarp(
     ]
   );
 
+  warpGrid(ctx, src, srcW, srcH, (u, v) => applyH(H, u * srcW, v * srcH), gridSize);
+}
+
+/**
+ * Rasteriza `src` deformada por um mapeamento QUALQUER `(u,v) ∈ [0,1]² → ponto
+ * no destino`, por células afins com recorte.
+ *
+ * Saiu de dentro do `perspectiveWarp` para o warp de MALHA poder usar a mesma
+ * rasterização: as duas deformações diferem só no mapeamento, e ter dois
+ * rasterizadores seria ter duas qualidades de borda, dois jeitos de vazar
+ * costura e dois lugares para consertar.
+ */
+/**
+ * Mapeamento exato do quadrado unitário para um quad de destino.
+ *
+ * Existe porque o warp de malha precisa POSICIONAR o resultado no mesmo quad que
+ * o `perspectiveWarp` usaria, e reimplementar a homografia lá seria ter duas
+ * definições de "onde o smart object fica".
+ */
+export function quadMapper(
+  corners: Array<{ x: number; y: number }>
+): (u: number, v: number) => { x: number; y: number } {
+  const [tl, tr, br, bl] = corners;
+  const H = computeHomography(
+    [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+    ],
+    [
+      [tl.x, tl.y],
+      [tr.x, tr.y],
+      [br.x, br.y],
+      [bl.x, bl.y],
+    ]
+  );
+  return (u, v) => applyH(H, u, v);
+}
+
+export function warpGrid(
+  ctx: any,
+  src: any,
+  srcW: number,
+  srcH: number,
+  map: (u: number, v: number) => { x: number; y: number },
+  gridSize = 64
+) {
   const E = 2.0; // clip expansion to seal inter-cell gaps (0.5 leaves sub-pixel seams on extreme perspective)
 
   for (let gy = 0; gy < gridSize; gy++) {
@@ -130,10 +178,10 @@ export function perspectiveWarp(
       const v0 = gy / gridSize,
         v1 = (gy + 1) / gridSize;
 
-      // Exact projective corners of this cell in destination space
-      const p00 = applyH(H, u0 * srcW, v0 * srcH); // TL of cell in dest
-      const p10 = applyH(H, u1 * srcW, v0 * srcH); // TR
-      const p01 = applyH(H, u0 * srcW, v1 * srcH); // BL
+      // Cantos desta célula no destino, pelo mapeamento exato
+      const p00 = map(u0, v0); // TL
+      const p10 = map(u1, v0); // TR
+      const p01 = map(u0, v1); // BL
 
       const sx = u0 * srcW,
         sy = v0 * srcH;

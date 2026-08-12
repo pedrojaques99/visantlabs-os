@@ -9,7 +9,8 @@
 
 import type { CreateCanvas, ReplacedLayer } from './types.js';
 import { buildAdjustmentLut } from './adjustments.js';
-import { coverArtCanvas, perspectiveWarp } from './warp.js';
+import { coverArtCanvas, perspectiveWarp, quadMapper } from './warp.js';
+import { parseEnvelopeWarp, meshWarp, evaluateMesh } from './mesh-warp.js';
 
 export type { CreateCanvas, ReplacedLayer } from './types.js';
 export { coverArtCanvas, perspectiveWarp } from './warp.js';
@@ -162,13 +163,56 @@ function replaceOne(orig: any, artImg: any, cc: CreateCanvas): ReplacedLayer {
       { x: quad[4], y: quad[5] },
       { x: quad[6], y: quad[7] },
     ];
+
+    // Warp de MALHA (Photoshop Warp). O quad de 4 cantos é o retângulo do smart
+    // object COLOCADO; a malha entorta o conteúdo dentro dele e pode passar da
+    // borda — por isso a caixa de saída é medida na malha já projetada, e não no
+    // quad. Recortar no quad comeria justamente o vinco que levanta do papel.
+    const mesh = parseEnvelopeWarp(pl);
+    if (mesh) {
+      const paraDoc = quadMapper(corners);
+      const projetar = (u: number, v: number) => {
+        const m = evaluateMesh(mesh, u, v);
+        return paraDoc(m.x / mesh.width, m.y / mesh.height);
+      };
+      let miX = Infinity;
+      let miY = Infinity;
+      let maX = -Infinity;
+      let maY = -Infinity;
+      const N = 32;
+      for (let j = 0; j <= N; j++) {
+        for (let i = 0; i <= N; i++) {
+          const p = projetar(i / N, j / N);
+          if (p.x < miX) miX = p.x;
+          if (p.y < miY) miY = p.y;
+          if (p.x > maX) maX = p.x;
+          if (p.y > maY) maY = p.y;
+        }
+      }
+      const mW = Math.ceil(maX - miX);
+      const mH = Math.ceil(maY - miY);
+      if (isFinite(mW) && isFinite(mH) && mW > 0 && mH > 0) {
+        const meshCanvas = cc(mW, mH);
+        meshWarp(meshCanvas.getContext('2d'), artCanvas, innerW, innerH, mesh, (nx, ny) => {
+          const p = paraDoc(nx, ny);
+          return { x: p.x - miX, y: p.y - miY };
+        });
+        orig.canvas = meshCanvas;
+        orig.left = Math.floor(miX);
+        orig.top = Math.floor(miY);
+        orig.right = orig.left + mW;
+        orig.bottom = orig.top + mH;
+        warped = true;
+      }
+    }
+
     const minX = Math.min(...corners.map((c) => c.x));
     const minY = Math.min(...corners.map((c) => c.y));
     const maxX = Math.max(...corners.map((c) => c.x));
     const maxY = Math.max(...corners.map((c) => c.y));
     const outW = Math.ceil(maxX - minX);
     const outH = Math.ceil(maxY - minY);
-    if (outW > 0 && outH > 0) {
+    if (!warped && outW > 0 && outH > 0) {
       const warpCanvas = cc(outW, outH);
       const local = corners.map((c) => ({ x: c.x - minX, y: c.y - minY }));
       if (hasPerspective) {
@@ -283,7 +327,7 @@ export const BLEND_MAP: Record<string, string> = {
 
 // PS blend modes that Canvas 2D doesn't support accurately — compositor uses
 // getImageData/putImageData pixel-level blending for these instead.
-const PIXEL_BLEND_SET = new Set([
+export const PIXEL_BLEND_SET = new Set([
   'divide',
   'subtract',
   'linear burn',
@@ -330,7 +374,7 @@ function blendCh(mode: string, b: number, s: number): number {
  * Implements Porter-Duff "source-over" compositing with a custom blend function.
  * Called only for modes in PIXEL_BLEND_SET.
  */
-function pixelBlendMode(dstCtx: any, srcCanvas: any, mode: string, W: number, H: number): void {
+export function pixelBlendMode(dstCtx: any, srcCanvas: any, mode: string, W: number, H: number): void {
   const dstImg = dstCtx.getImageData(0, 0, W, H);
   const srcImg = (srcCanvas.getContext('2d') as any).getImageData(0, 0, W, H);
   const d = dstImg.data;

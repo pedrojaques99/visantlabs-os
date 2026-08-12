@@ -2,6 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { request } from '../../helpers/app.js';
 import { createUser } from '../../factories/user.js';
 
+// O fluxo popup gasta várias chamadas /auth/google* por teste; o teto real
+// (20 por 5 min) derrubaria a suíte por motivo que não é o que se está testando.
+process.env.RATE_LIMIT_MAX_OAUTH = '1000';
+
 // Controllable mock — set to an Error instance to make getToken throw
 let getTokenOverride: Error | null = null;
 
@@ -99,6 +103,100 @@ describe('GET /api/auth/google', () => {
     const res = await agent.get('/api/auth/google');
     expect(res.status).toBe(200);
     expect(res.body.authUrl).toBeTypeOf('string');
+  });
+
+  it('does not open a popup session without source (redirect flow)', async () => {
+    const agent = await request();
+    const res = await agent.get('/api/auth/google');
+    expect(res.status).toBe(200);
+    expect(res.body.sessionId).toBeUndefined();
+  });
+
+  it.each(['plugin', 'club'])('opens a popup session for source=%s', async (source) => {
+    const agent = await request();
+    const res = await agent.get('/api/auth/google').query({ source });
+    expect(res.status).toBe(200);
+    expect(res.body.sessionId).toBeTypeOf('string');
+  });
+
+  it('rejects an unknown source instead of silently falling back', async () => {
+    const agent = await request();
+    const res = await agent.get('/api/auth/google').query({ source: 'clube' });
+    // Cair no fluxo de redirect calado fazia o cliente polar um sessionId que
+    // nunca existiu — o erro tem de aparecer aqui, não num timeout lá na frente.
+    expect(res.status).toBe(400);
+    expect(res.body.message).toContain('club');
+  });
+});
+
+describe('popup OAuth flow (source + poll)', () => {
+  async function startPopup(source: string) {
+    const agent = await request();
+    const res = await agent.get('/api/auth/google').query({ source });
+    expect(res.status).toBe(200);
+    return { agent, sessionId: res.body.sessionId as string };
+  }
+
+  it('renders the copy of the origin that started the login', async () => {
+    const { agent, sessionId } = await startPopup('club');
+
+    const cb = await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'mock-code', state: `plugin:${sessionId}` });
+
+    expect(cb.status).toBe(200);
+    expect(cb.text).toContain('Visant Club');
+    expect(cb.text).not.toContain('Figma');
+  });
+
+  it('still says Figma for the plugin', async () => {
+    const { agent, sessionId } = await startPopup('plugin');
+
+    const cb = await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'mock-code', state: `plugin:${sessionId}` });
+
+    expect(cb.text).toContain('Figma');
+  });
+
+  it('hands the token to the poll exactly once', async () => {
+    const { agent, sessionId } = await startPopup('club');
+
+    await agent.get('/api/auth/google/callback').query({ code: 'mock-code', state: `plugin:${sessionId}` });
+
+    const first = await agent.get(`/api/auth/google/poll/${sessionId}`);
+    expect(first.body.status).toBe('complete');
+    expect(first.body.token).toBeTypeOf('string');
+
+    // Sessão de uso único: replay do mesmo sessionId não devolve token de novo.
+    const second = await agent.get(`/api/auth/google/poll/${sessionId}`);
+    expect(second.body.status).toBe('expired');
+    expect(second.body.token).toBeUndefined();
+  });
+
+  it('shows the error page and flags the poll when Google fails', async () => {
+    const { agent, sessionId } = await startPopup('club');
+    getTokenOverride = new Error('boom');
+    try {
+      const cb = await agent
+        .get('/api/auth/google/callback')
+        .query({ code: 'bad-code', state: `plugin:${sessionId}` });
+
+      expect(cb.status).toBe(200);
+      expect(cb.text).toContain('Não deu pra entrar');
+      expect(cb.text).not.toContain('Figma');
+
+      const poll = await agent.get(`/api/auth/google/poll/${sessionId}`);
+      expect(poll.body.status).toBe('error');
+    } finally {
+      getTokenOverride = null;
+    }
+  });
+
+  it('reports an unknown session as expired', async () => {
+    const agent = await request();
+    const res = await agent.get('/api/auth/google/poll/does-not-exist');
+    expect(res.body.status).toBe('expired');
   });
 });
 

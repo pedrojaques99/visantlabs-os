@@ -100,7 +100,10 @@ export function SessionsView() {
                   >
                     <div className="text-[11px] text-foreground/90 truncate">{s.title}</div>
                     <div className="text-[9px] font-mono text-muted-foreground">
-                      {s.messageCount === 1 ? t('plugin.sessions.msgCountOne', { count: s.messageCount }) : t('plugin.sessions.msgCountOther', { count: s.messageCount })} · {timeAgo(s.updatedAt, t)}
+                      {s.messageCount === 1
+                        ? t('plugin.sessions.msgCountOne', { count: s.messageCount })
+                        : t('plugin.sessions.msgCountOther', { count: s.messageCount })}{' '}
+                      · {timeAgo(s.updatedAt, t)}
                       {isActive ? ` · ${t('plugin.sessions.active')}` : ''}
                     </div>
                   </button>

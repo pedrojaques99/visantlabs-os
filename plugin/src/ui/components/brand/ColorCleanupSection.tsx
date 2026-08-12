@@ -96,7 +96,10 @@ export function ColorCleanupSection() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground">
-              {t('plugin.brand.colorCleanup.matchesSelected', { selected: selected.length, total: (scanResults as ColorMatch[]).length })}
+              {t('plugin.brand.colorCleanup.matchesSelected', {
+                selected: selected.length,
+                total: (scanResults as ColorMatch[]).length,
+              })}
             </span>
             <button
               type="button"
@@ -118,9 +121,7 @@ export function ColorCleanupSection() {
                   type="button"
                   onClick={() => toggle(key)}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors ${
-                    isExcluded
-                      ? 'opacity-40 bg-muted/20'
-                      : 'bg-muted/40 hover:bg-muted/60'
+                    isExcluded ? 'opacity-40 bg-muted/20' : 'bg-muted/40 hover:bg-muted/60'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">

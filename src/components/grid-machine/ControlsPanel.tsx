@@ -246,7 +246,11 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
       icon: <PaletteIcon size={16} />,
       content: (
         <div className="space-y-3">
-          <ColorInput label="Lines" value={lineColor} onChange={(v) => updateSetting('lineColor', v)} />
+          <ColorInput
+            label="Lines"
+            value={lineColor}
+            onChange={(v) => updateSetting('lineColor', v)}
+          />
           <ColorInput
             label="Anchors"
             value={anchorColor}

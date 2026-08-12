@@ -570,37 +570,37 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
         icon: <Palette size={16} />,
         content: (
           <ToolPanelGrid>
-              {Object.entries(RISO_INK_PRESETS).map(([name, colors]) => (
-                <ToolPanelChip
-                  key={name}
-                  onClick={() => {
-                    const layers = colors.map((hex, i) => ({
-                      color: hexToRgb(hex),
-                      hex,
-                      visible: true,
-                      alpha: 0.85,
-                      angle: i * 22.5,
-                      offsetX: [1, -1, 1, -1][i],
-                      offsetY: [-1, 1, 1, -1][i],
-                    }));
-                    store.setLayers(layers);
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-0.5 shrink-0">
-                      {colors.map((c, ci) => (
-                        <div
-                          key={ci}
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: c }}
-                        />
-                      ))}
-                    </div>
-                    <span className="truncate">{name}</span>
+            {Object.entries(RISO_INK_PRESETS).map(([name, colors]) => (
+              <ToolPanelChip
+                key={name}
+                onClick={() => {
+                  const layers = colors.map((hex, i) => ({
+                    color: hexToRgb(hex),
+                    hex,
+                    visible: true,
+                    alpha: 0.85,
+                    angle: i * 22.5,
+                    offsetX: [1, -1, 1, -1][i],
+                    offsetY: [-1, 1, 1, -1][i],
+                  }));
+                  store.setLayers(layers);
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5 shrink-0">
+                    {colors.map((c, ci) => (
+                      <div
+                        key={ci}
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
                   </div>
-                </ToolPanelChip>
-              ))}
-            </ToolPanelGrid>
+                  <span className="truncate">{name}</span>
+                </div>
+              </ToolPanelChip>
+            ))}
+          </ToolPanelGrid>
         ),
       },
     ];

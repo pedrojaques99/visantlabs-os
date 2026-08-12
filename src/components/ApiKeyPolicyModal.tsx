@@ -78,8 +78,8 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
-                      <strong className="text-muted-foreground">Encryption Algorithm:</strong> We use
-                      AES-256-GCM encryption, a military-grade encryption standard
+                      <strong className="text-muted-foreground">Encryption Algorithm:</strong> We
+                      use AES-256-GCM encryption, a military-grade encryption standard
                     </li>
                     <li>
                       <strong className="text-muted-foreground">Storage:</strong> Your API keys are
@@ -91,8 +91,8 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                       version control)
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">Encryption Process:</strong> Your API key
-                      is encrypted immediately when you save it, using industry-standard
+                      <strong className="text-muted-foreground">Encryption Process:</strong> Your
+                      API key is encrypted immediately when you save it, using industry-standard
                       cryptographic libraries
                     </li>
                   </ul>
@@ -105,20 +105,21 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
-                      <strong className="text-muted-foreground">Authentication Required:</strong> Only
-                      authenticated users can save or access their own API keys
+                      <strong className="text-muted-foreground">Authentication Required:</strong>{' '}
+                      Only authenticated users can save or access their own API keys
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">User Isolation:</strong> Each user can
-                      only access their own encrypted API key
+                      <strong className="text-muted-foreground">User Isolation:</strong> Each user
+                      can only access their own encrypted API key
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">No Plaintext Storage:</strong> Your API
-                      key is never stored in plaintext in our database, logs, or anywhere else
+                      <strong className="text-muted-foreground">No Plaintext Storage:</strong> Your
+                      API key is never stored in plaintext in our database, logs, or anywhere else
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">No Exposure:</strong> We never return
-                      decrypted API keys in API responses - we only confirm successful operations
+                      <strong className="text-muted-foreground">No Exposure:</strong> We never
+                      return decrypted API keys in API responses - we only confirm successful
+                      operations
                     </li>
                   </ul>
                 </div>
@@ -127,17 +128,17 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                   <h3 className="text-base font-semibold text-foreground mb-2">Usage</h3>
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
-                      <strong className="text-muted-foreground">Priority:</strong> When you provide your
-                      own API key, it takes priority over the system's default API key for your
+                      <strong className="text-muted-foreground">Priority:</strong> When you provide
+                      your own API key, it takes priority over the system's default API key for your
                       requests
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">Quota:</strong> Your API key uses your
-                      own Google Cloud quota and credits
+                      <strong className="text-muted-foreground">Quota:</strong> Your API key uses
+                      your own Google Cloud quota and credits
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">Transparency:</strong> All API calls made
-                      with your key are billed to your Google Cloud account, not ours
+                      <strong className="text-muted-foreground">Transparency:</strong> All API calls
+                      made with your key are billed to your Google Cloud account, not ours
                     </li>
                   </ul>
                 </div>
@@ -165,8 +166,8 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                       Google Cloud Console for unexpected usage or charges
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">Key Restrictions:</strong> Configure API
-                      key restrictions in Google AI Studio to limit where it can be used
+                      <strong className="text-muted-foreground">Key Restrictions:</strong> Configure
+                      API key restrictions in Google AI Studio to limit where it can be used
                     </li>
                   </ol>
                 </div>
@@ -175,8 +176,8 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                   <h3 className="text-base font-semibold text-foreground mb-2">Best Practices</h3>
                   <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-6">
                     <li>
-                      <strong className="text-muted-foreground">Restrict Your Key:</strong> In Google AI
-                      Studio, set restrictions on your API key:
+                      <strong className="text-muted-foreground">Restrict Your Key:</strong> In
+                      Google AI Studio, set restrictions on your API key:
                       <ul className="list-disc list-inside ml-6 mt-1 space-y-1">
                         <li>
                           Application restrictions (e.g., IP address restrictions if possible)
@@ -190,12 +191,12 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                       charges
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">Monitor Billing:</strong> Regularly check
-                      your Google Cloud billing to ensure usage aligns with expectations
+                      <strong className="text-muted-foreground">Monitor Billing:</strong> Regularly
+                      check your Google Cloud billing to ensure usage aligns with expectations
                     </li>
                     <li>
-                      <strong className="text-muted-foreground">Delete When Not Needed:</strong> If you
-                      stop using the service, delete your API key from our system
+                      <strong className="text-muted-foreground">Delete When Not Needed:</strong> If
+                      you stop using the service, delete your API key from our system
                     </li>
                   </ol>
                 </div>
@@ -207,20 +208,20 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
               <h2 className="text-lg font-semibold text-foreground mb-4">How It Works</h2>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-6">
                 <li>
-                  <strong className="text-muted-foreground">Saving:</strong> When you save your API key,
-                  it's encrypted using AES-256-GCM before being stored
+                  <strong className="text-muted-foreground">Saving:</strong> When you save your API
+                  key, it's encrypted using AES-256-GCM before being stored
                 </li>
                 <li>
-                  <strong className="text-muted-foreground">Storage:</strong> Only the encrypted version
-                  is stored in our database
+                  <strong className="text-muted-foreground">Storage:</strong> Only the encrypted
+                  version is stored in our database
                 </li>
                 <li>
-                  <strong className="text-muted-foreground">Usage:</strong> When making API calls, we
-                  decrypt your key in memory, use it for the request, and immediately discard it
+                  <strong className="text-muted-foreground">Usage:</strong> When making API calls,
+                  we decrypt your key in memory, use it for the request, and immediately discard it
                 </li>
                 <li>
-                  <strong className="text-muted-foreground">Deletion:</strong> When you delete your key,
-                  it's permanently removed from our database
+                  <strong className="text-muted-foreground">Deletion:</strong> When you delete your
+                  key, it's permanently removed from our database
                 </li>
               </ol>
             </div>
@@ -247,8 +248,8 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                   industry standards (AES-256) for data encryption
                 </li>
                 <li>
-                  <strong className="text-muted-foreground">Access Controls:</strong> We implement proper
-                  authentication and authorization controls
+                  <strong className="text-muted-foreground">Access Controls:</strong> We implement
+                  proper authentication and authorization controls
                 </li>
                 <li>
                   <strong className="text-muted-foreground">Audit Trail:</strong> API key operations

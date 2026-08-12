@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import JSZip from 'jszip';
 import { redisClient } from '../lib/redis.js';
-import { uploadSharedAsset } from './r2Service.js';
+import { uploadSharedAsset, isR2Configured } from './r2Service.js';
 import {
   getCachedOrDownload,
   isDriveConfigured,
@@ -187,16 +187,44 @@ function runBunWorker(
   });
 }
 
-/** Upload do resultado: DO Spaces (BOXY, sem custo novo) com fallback pro R2. */
+/**
+ * Upload do resultado. Prefere R2 — o storage padrão da plataforma.
+ *
+ * A ordem era a inversa, e isso derrubou o render inteiro. `isSpacesConfigured()`
+ * só verifica se as env vars EXISTEM, não se o bucket existe. Quando o bucket do
+ * DO Spaces saiu do ar (a plataforma migrou para R2), as vars continuaram no
+ * Coolify: todo render entrava no caminho morto e devolvia
+ * `500 The specified bucket does not exist`, sem nunca alcançar o fallback que
+ * funcionava. Medido em 2026-08-07 — 9 de 9 produtos, com chave válida.
+ *
+ * Duas mudanças, e a segunda é a que importa: preferir R2, e cair para o outro
+ * lado por FALHA de upload, não por ausência de configuração. Config presente
+ * nunca foi prova de storage vivo.
+ */
 async function uploadRenderOutput(
   buffer: Buffer,
   key: string,
   contentType: string
 ): Promise<string> {
-  if (isSpacesConfigured()) {
-    return uploadPublicAsset(buffer, key, contentType);
+  // `isR2Configured()` não cobre R2_PUBLIC_URL, e `uploadSharedAsset` exige ela
+  // para montar a URL de retorno. Sem esta checagem o guard passaria, o upload
+  // estouraria por configuração e o fallback nos levaria de volta ao Spaces —
+  // reproduzindo o mesmo apagão por um caminho diferente.
+  const r2Pronto = isR2Configured() && !!process.env.R2_PUBLIC_URL;
+
+  if (r2Pronto) {
+    try {
+      return await uploadSharedAsset(buffer, key, contentType);
+    } catch (err) {
+      // Sem Spaces configurado não há para onde cair: propaga o erro real.
+      if (!isSpacesConfigured()) throw err;
+      console.error(
+        '[psdRender] upload no R2 falhou, tentando DO Spaces:',
+        err instanceof Error ? err.message : String(err)
+      );
+    }
   }
-  return uploadSharedAsset(buffer, key, contentType);
+  return uploadPublicAsset(buffer, key, contentType);
 }
 
 export async function renderPsdMockup(req: RenderRequest): Promise<RenderResult> {

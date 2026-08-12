@@ -223,9 +223,7 @@ export const PricingPage: React.FC = () => {
                   key={tier.id}
                   className={cn(
                     'relative flex flex-col rounded-2xl border bg-card p-6',
-                    tier.recommended
-                      ? 'border-brand-cyan/40 bg-brand-cyan/[0.03]'
-                      : 'border-border'
+                    tier.recommended ? 'border-brand-cyan/40 bg-brand-cyan/[0.03]' : 'border-border'
                   )}
                   data-vsn-region={`tier-${tier.id}`}
                 >
@@ -248,7 +246,9 @@ export const PricingPage: React.FC = () => {
                   {/* Nome + tagline */}
                   <div className="mb-5 mt-1">
                     <h2 className="text-xl font-bold text-foreground">{tc.name}</h2>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{tc.tagline}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {tc.tagline}
+                    </p>
                   </div>
 
                   {/* Preço grande */}

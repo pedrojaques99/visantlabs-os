@@ -56,7 +56,9 @@ export function BrandIntelligenceSection() {
           ) : (
             <Presentation size={12} className="mr-2" />
           )}
-          {isScanning ? (progress ?? t('plugin.brand.intelligence.analyzing')) : t('plugin.brand.intelligence.analyzeAll')}
+          {isScanning
+            ? (progress ?? t('plugin.brand.intelligence.analyzing'))
+            : t('plugin.brand.intelligence.analyzeAll')}
         </Button>
 
         <Button
@@ -72,7 +74,9 @@ export function BrandIntelligenceSection() {
           ) : (
             <RefreshCw size={12} className="mr-2" />
           )}
-          {isImporting ? t('plugin.brand.intelligence.syncing') : t('plugin.brand.intelligence.smartImport')}
+          {isImporting
+            ? t('plugin.brand.intelligence.syncing')
+            : t('plugin.brand.intelligence.smartImport')}
         </Button>
 
         <Button

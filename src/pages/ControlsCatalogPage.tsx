@@ -67,10 +67,7 @@ export function ControlsCatalogPage() {
       microTitle="Design System // Controls"
       title="Creative Controls"
       description="Pro tool controls built on the design system — adapted from Toolcraft (MIT), no runtime vendored."
-      breadcrumb={[
-        { label: 'Design System', to: '/design-system' },
-        { label: 'Controls' },
-      ]}
+      breadcrumb={[{ label: 'Design System', to: '/design-system' }, { label: 'Controls' }]}
       width="7xl"
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

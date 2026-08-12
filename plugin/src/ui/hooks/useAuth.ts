@@ -90,6 +90,9 @@ export function useAuth() {
 
   const loginWithGoogle = useCallback(async () => {
     try {
+      // `source=plugin` é o que faz a página de retorno no browser dizer "volte
+      // para o Figma" — e o que abre a sessão de poll. Fluxo inteiro (e as
+      // outras superfícies que o usam) em docs/AUTH_FLOWS.md.
       const response = await fetch(apiUrl('/auth/google?source=plugin'));
       if (!response.ok) {
         showToast('Erro ao iniciar Google OAuth', 'error');

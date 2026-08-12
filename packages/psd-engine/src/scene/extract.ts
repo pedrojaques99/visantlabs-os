@@ -14,17 +14,32 @@
 // LIMITATIONS:
 //   - Decorative layers that live INSIDE a face's own top-level group are not
 //     re-composited as overs (the group is consumed by the face geometry).
-//     The BOXY template pattern keeps lights/shadows as separate sibling
-//     top-level groups, so this is safe in practice; non-conforming PSDs add a
-//     warning and should use the server fallback.
+//     ⚠️ Isto NÃO é caso raro, ao contrário do que este comentário afirmou por
+//     muito tempo ("the BOXY template keeps lights/shadows as separate sibling
+//     top-level groups, so this is safe in practice"). Medido em 10/08/2026 com
+//     `scene-fidelity`: 5 de 5 PSDs da amostra guardam luz/sombra DENTRO do
+//     container, e a extração descartava tudo com ZERO avisos em 6 arquivos.
+//     Agora cada descarte vira `warning` nomeando as camadas. Recompor de
+//     verdade (blend + clipping + máscara de grupo) continua pendente, e é o que
+//     separa a cena de poder substituir o PSD.
 //   - Faces sharing a single top-level container are all extracted, but only one
 //     base/over partition (by the first such container) is produced.
 
 import { flattenLayers, composePsd, BLEND_MAP } from '../compose.js';
+import { buildAdjustmentLut } from '../adjustments.js';
 import { computeFaces } from '../faces.js';
+import { parseEnvelopeWarp } from '../mesh-warp.js';
 import { BRAND_HIDE } from '../constants.js';
 import type { CreateCanvas, FaceSo } from '../types.js';
-import type { SceneDoc, SceneFace, SceneLayer, AssetMap, Quad } from './types.js';
+import type {
+  SceneDoc,
+  SceneFace,
+  SceneFaceInstance,
+  SceneLayer,
+  AssetMap,
+  Quad,
+  SceneLut,
+} from './types.js';
 
 export interface ExtractResult {
   doc: SceneDoc;
@@ -57,6 +72,109 @@ function subtreeHasFace(
 }
 
 /**
+ * Camadas de decoração que moram DENTRO do container da face — sombra, luz,
+ * overlay — e que a extração descarta junto com o container.
+ *
+ * O cabeçalho deste arquivo afirmava que o template BOXY guarda luz/sombra como
+ * grupos irmãos no topo, "safe in practice". Medido em 10/08/2026 sobre a
+ * amostra do `scene-fidelity`: **5 de 5** guardam dentro. `Double Cards Stack`
+ * tem `Shadow` (multiply .94) e `Light` (hard light .23) dentro de cada grupo de
+ * face; `Coffee Paper Cups`, `boxes_scene_3_bg` e `Capa CD` as têm como camadas
+ * CLIP logo abaixo; `paper-ghetto` tem um `Mockup Overlay`. É a maior parte da
+ * divergência que sobra, e saía **sem um aviso sequer**.
+ */
+function decoracaoDescartada(
+  container: any,
+  faceLinkIds: Set<string>,
+  facePaths: Set<string>,
+  path: string
+): string[] {
+  const achadas: string[] = [];
+  const anda = (layer: any, p: string) => {
+    for (const child of layer.children || []) {
+      const cp = `${p} > ${child.name || 'unnamed'}`;
+      if (subtreeHasFace(child, faceLinkIds, facePaths, cp)) {
+        if (child.children) anda(child, cp);
+        continue;
+      }
+      if (child.hidden || layerAlpha(child) <= 0) continue;
+      if (child.children) { anda(child, cp); continue; }
+      if (!child.canvas && !child.adjustment) continue;
+      achadas.push(child.name || 'unnamed');
+    }
+  };
+  anda(container, path);
+  return achadas;
+}
+
+/**
+ * A camada de recorte ("clipping", o CLIP do debug-tree) pinta só onde a camada
+ * de BAIXO tem alpha — no template BOXY é assim que `Shadow`/`Light` marcam a
+ * sombra em cima do produto sem sujar o cenário.
+ *
+ * Achatada SOZINHA ela recorta contra o nada e sai 100% transparente. Medido no
+ * `Coffee Paper Cups`: `over-1` e `over-2` tinham 19 KB e **0,00% de pixel com
+ * alpha** — a cena emitia as duas camadas, o render desenhava as duas, e nenhum
+ * pixel mudava. Os copos saíam sem sombra e o cenário batia, o que fazia o diff
+ * parecer erro de geometria.
+ *
+ * A cura é a semântica do Photoshop: achatar SEM o recorte e guardar o alpha da
+ * base como máscara.
+ */
+function indiceBaseDoRecorte(irmaos: any[], i: number): number {
+  for (let j = i - 1; j >= 0; j--) {
+    if (!irmaos[j].clipping) return j;
+  }
+  return -1;
+}
+
+/** Um canvas é totalmente transparente? (o sintoma que passou anos calado) */
+function totalmenteTransparente(canvas: any): boolean {
+  const w = canvas?.width ?? 0;
+  const h = canvas?.height ?? 0;
+  if (!w || !h) return true;
+  const d = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  for (let i = 3; i < d.length; i += 4) if (d[i] !== 0) return false;
+  return true;
+}
+
+/**
+ * A máscara raster do PSD vira um canvas do tamanho do documento cujo ALPHA é a
+ * máscara — que é o que `destination-in` espera no render.
+ *
+ * Duas coisas que parecem detalhe e não são: a máscara do ag-psd é CINZA opaco
+ * (alpha 255 em todo lugar), então usá-la crua mantinha tudo visível; e ela é um
+ * recorte com offset (`left`/`top`), não uma imagem do tamanho do documento —
+ * desenhada em 0,0 e esticada, ela desloca o recorte inteiro. Fora do retângulo
+ * vale o `defaultColor` (0 = escondido).
+ */
+function mascaraComoAlpha(mask: any, width: number, height: number, cc: CreateCanvas): any {
+  const out = cc(width, height);
+  const octx = out.getContext('2d');
+  if ((mask.defaultColor ?? 0) > 0) {
+    octx.fillStyle = '#fff';
+    octx.fillRect(0, 0, width, height);
+  }
+  const mw = mask.canvas.width;
+  const mh = mask.canvas.height;
+  const tmp = cc(mw, mh);
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(mask.canvas, 0, 0);
+  const img = tctx.getImageData(0, 0, mw, mh);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const cinza = d[i];
+    d[i] = 255;
+    d[i + 1] = 255;
+    d[i + 2] = 255;
+    d[i + 3] = cinza;
+  }
+  tctx.putImageData(img, 0, 0);
+  octx.drawImage(tmp, mask.left ?? 0, mask.top ?? 0);
+  return out;
+}
+
+/**
  * Flatten a list of top-level children into one canvas using the real
  * compositor. compose.ts is the single source of truth — zero re-implementation:
  * we hand composePsd a synthetic psd of the same document size.
@@ -70,6 +188,43 @@ function nextRef(prefix: string): string {
   return `${prefix}-${_refCounter++}`;
 }
 
+function hasUsableMask(layer: any): boolean {
+  const m = layer.mask;
+  return !!(m && !m.disabled && m.canvas && m.canvas.width > 0 && m.canvas.height > 0);
+}
+
+/**
+ * Um grupo "pass through" sem isolamento não existe como camada: seus filhos
+ * compõem DIRETO no pai. É literalmente o que `drawOne` faz em compose.ts
+ * (o atalho `passthrough`), e a condição aqui é a mesma — alpha cheio, sem
+ * máscara, sem clipping.
+ *
+ * Isto importa porque o grupo `FX` da BOXY é pass-through e guarda os
+ * adjustment layers globais. Tratado como um `over` achatado, ele perdia o
+ * ajuste inteiro. Expandido, cada filho vira uma camada de topo e o adjustment
+ * é emitido como `role: 'adjust'`, que é o que ele é.
+ */
+function expandirPassthrough(children: any[]): any[] {
+  const out: any[] = [];
+  for (const c of children) {
+    const alpha = layerAlpha(c);
+    const ehPassthrough = !c.blendMode || c.blendMode === 'pass through';
+    if (c.children && ehPassthrough && alpha >= 1 && !hasUsableMask(c)) {
+      out.push(...expandirPassthrough(c.children));
+    } else {
+      out.push(c);
+    }
+  }
+  return out;
+}
+
+/** `Uint8Array` não sobrevive ao JSON do SceneDoc — vira array comum. */
+function lutSerializavel(adjustment: any): SceneLut | null {
+  const lut = buildAdjustmentLut(adjustment);
+  if (!lut) return null;
+  return { r: Array.from(lut.r), g: Array.from(lut.g), b: Array.from(lut.b) };
+}
+
 /**
  * Extract a SceneDoc + layer canvases from a read PSD tree.
  *
@@ -81,7 +236,10 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
   _refCounter = 0;
   const width = psd.width;
   const height = psd.height;
-  const topChildren: any[] = psd.children || [];
+  // Grupos pass-through viram seus próprios filhos ANTES de particionar: eles
+  // não isolam nada, e mantê-los inteiros escondia adjustment layers globais
+  // dentro de um `over` que os descartava.
+  const topChildren: any[] = expandirPassthrough(psd.children || []);
 
   const allLayers = flattenLayers(topChildren);
   const smartObjects = allLayers.filter((l: any) => l.placedLayer);
@@ -110,46 +268,110 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
   const assets: AssetMap = {};
 
   for (const face of faces) {
-    const so =
+    const representante =
       allLayers.find((l: any) => l.path === face.smartObject) ||
       allLayers.find((l: any) => l.name === face.smartObject);
-    if (!so) {
+    if (!representante) {
       warnings.push(`face "${face.name}" (${face.smartObject}) não encontrada na árvore`);
       continue;
     }
-    if (so.placedLayer?.id) faceLinkIds.add(so.placedLayer.id);
-    facePaths.add(so.path);
 
-    const pl = so.placedLayer || {};
-    const innerW = Math.max(1, Math.round(pl.width || so.right - so.left || face.innerWidth || 1));
-    const innerH = Math.max(
-      1,
-      Math.round(pl.height || so.bottom - so.top || face.innerHeight || 1)
-    );
-    const rawQuad: number[] | null =
-      (pl.nonAffineTransform?.length === 8 && pl.nonAffineTransform) ||
-      (pl.transform?.length === 8 && pl.transform) ||
-      null;
+    // Todas as ocorrências do MESMO conteúdo vinculado — é o que o
+    // `replaceLinkedSmartObjects` preenche no compositor. Guardar só o
+    // representante perdia irmãos com blend próprio (o `Mockup Overlay`,
+    // multiply .5, do paper-ghetto).
+    const linkId = representante.placedLayer?.id;
+    const ocorrencias = linkId
+      ? allLayers.filter(
+          (l: any) =>
+            l.placedLayer?.id === linkId && !l.hidden && layerAlpha(l) > 0 && !BRAND_HIDE.test(l.name || '')
+        )
+      : [representante];
+    const usadas = ocorrencias.length ? ocorrencias : [representante];
 
+    for (const so of usadas) {
+      if (so.placedLayer?.id) faceLinkIds.add(so.placedLayer.id);
+      facePaths.add(so.path);
+    }
+
+    const instances: SceneFaceInstance[] = usadas.map((so: any) => {
+      const pl = so.placedLayer || {};
+      const innerW = Math.max(1, Math.round(pl.width || so.right - so.left || face.innerWidth || 1));
+      const innerH = Math.max(
+        1,
+        Math.round(pl.height || so.bottom - so.top || face.innerHeight || 1)
+      );
+      const rawQuad: number[] | null =
+        (pl.nonAffineTransform?.length === 8 && pl.nonAffineTransform) ||
+        (pl.transform?.length === 8 && pl.transform) ||
+        null;
+      const bruto = so.blendMode ?? 'normal';
+      const mapeado = BLEND_MAP[bruto];
+      if (mapeado === undefined) {
+        warnings.push(`blend mode não mapeado "${bruto}" na face "${face.name}"`);
+      }
+      const inst: SceneFaceInstance = {
+        quad: rawQuad ? ([...rawQuad] as Quad) : null,
+        innerW,
+        innerH,
+        blendMode: mapeado ?? 'source-over',
+        psBlend: bruto,
+        opacity: layerAlpha(so),
+      };
+      if (!rawQuad) inst.origin = { left: Math.floor(so.left ?? 0), top: Math.floor(so.top ?? 0) };
+      if (hasUsableMask(so)) {
+        const ref = nextRef('mask');
+        assets[ref] = mascaraComoAlpha(so.mask, width, height, cc);
+        inst.maskRef = ref;
+      }
+
+      // Warp de malha (Photoshop Warp) — o vinco do papel. Vai como dado, não
+      // como imagem: são 169 pontos, e rasterizar aqui congelaria a deformação
+      // na resolução da extração.
+      const malha = parseEnvelopeWarp(pl);
+      if (malha) inst.mesh = malha;
+
+      // Smart Filter "Displace" — o amassado do papel, a curvatura da caneca.
+      // O `preloadDisplacementMaps` (que o CHAMADOR roda, porque só ele tem
+      // acesso a disco) pendura os mapas já compostos aqui. Sem isto a cena
+      // desenhava a arte lisa por cima de um papel amassado, e o pôster do
+      // `paper-ghetto` era o caso mais visível: a grade seguia a perspectiva e
+      // ignorava o vinco.
+      const mapas: any[] = pl.__displacementCanvases || [];
+      if (mapas.length) {
+        if (mapas.length > 1) {
+          warnings.push(
+            `face "${face.name}" tem ${mapas.length} filtros Displace; a cena aplica só o primeiro`
+          );
+        }
+        const df = mapas[0];
+        if (df?.canvas) {
+          const ref = nextRef('disp');
+          assets[ref] = df.canvas;
+          inst.dispRef = ref;
+          inst.dispScale = df.hScale;
+          inst.dispVScale = df.vScale;
+          inst.dispSpace = 'inner';
+          inst.dispMapMode = df.mapMode;
+          inst.dispEdgeMode = df.edgeMode;
+        }
+      }
+      return inst;
+    });
+
+    const primeira = instances[0];
     const sceneFace: SceneFace = {
       key: face.key,
       name: face.name,
-      quad: rawQuad ? ([...rawQuad] as Quad) : null,
-      innerW,
-      innerH,
+      // Campos soltos = primeira instância, para quem lê o formato antigo.
+      quad: primeira.quad,
+      innerW: primeira.innerW,
+      innerH: primeira.innerH,
+      instances,
+      maskSpace: 'doc',
     };
-    if (!rawQuad) {
-      sceneFace.origin = { left: Math.floor(so.left ?? 0), top: Math.floor(so.top ?? 0) };
-    }
-
-    // Capture the face's raster mask if it has one (warps with the art at render).
-    const m = so.mask;
-    if (m && !m.disabled && m.canvas && m.canvas.width > 0 && m.canvas.height > 0) {
-      const ref = nextRef('mask');
-      assets[ref] = m.canvas;
-      sceneFace.maskRef = ref;
-      // Mask geometry is preserved on the canvas itself (left/top encoded in render).
-    }
+    if (primeira.origin) sceneFace.origin = primeira.origin;
+    if (primeira.maskRef) sceneFace.maskRef = primeira.maskRef;
     sceneFaces.push(sceneFace);
   }
 
@@ -205,8 +427,95 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
     // composited individually so its blend mode / opacity is preserved.
     for (let i = firstFaceIdx; i < topChildren.length; i++) {
       const c = topChildren[i];
-      if (isFaceContainer[i]) continue; // consumed by face geometry
+      if (isFaceContainer[i]) {
+        // Consumido pela geometria da face — mas o que ele levava junto vira
+        // aviso. Silêncio aqui é a diferença entre "a cena não serve" e "a cena
+        // serve", e por muito tempo a extração respondeu a segunda coisa sem ter
+        // olhado.
+        // A geometria da face é consumida, mas a DECORAÇÃO que mora junto
+        // (Shadow/Light irmãos da arte dentro do grupo) é recomposta como
+        // `over`, com a máscara do próprio grupo — senão ela vaza pro cenário.
+        const decor = (c.children || []).filter(
+          (ch: any) =>
+            !subtreeHasFace(ch, faceLinkIds, facePaths, `${topPaths[i]} > ${ch.name || 'unnamed'}`) &&
+            !ch.hidden &&
+            layerAlpha(ch) > 0 &&
+            !BRAND_HIDE.test(ch.name || '')
+        );
+        let mascaraRef: string | undefined;
+        if (decor.length && hasUsableMask(c)) {
+          mascaraRef = nextRef('grupomask');
+          assets[mascaraRef] = mascaraComoAlpha(c.mask, width, height, cc);
+        }
+        const naoRecompostas: string[] = [];
+        for (const ch of decor) {
+          const bruto = ch.blendMode ?? 'normal';
+          const mapeado = BLEND_MAP[bruto];
+          if (mapeado === undefined) {
+            warnings.push(`blend mode não mapeado "${bruto}" na camada "${ch.name || 'unnamed'}"`);
+          }
+          const r = nextRef('over');
+          assets[r] = flattenSubset(
+            [{ ...ch, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
+            width,
+            height,
+            cc
+          );
+          if (totalmenteTransparente(assets[r])) {
+            naoRecompostas.push(ch.name || 'unnamed');
+            delete assets[r];
+            continue;
+          }
+          layers.push({
+            role: 'over',
+            src: r,
+            blendMode: mapeado ?? 'source-over',
+            psBlend: bruto,
+            opacity: layerAlpha(ch),
+            left: 0,
+            top: 0,
+            ...(mascaraRef ? { maskRef: mascaraRef } : {}),
+          });
+        }
+        if (naoRecompostas.length) {
+          warnings.push(
+            `decoração dentro do container "${topPaths[i]}" achatou vazia: ` +
+              `${naoRecompostas.join(', ')} — a cena vai sair mais clara que o PSD`
+          );
+        }
+        continue;
+      }
       if (!visibleEligible(c)) continue;
+
+      // Adjustment layer: não tem pixels, tem tabela. Achatá-lo sozinho daria
+      // canvas vazio (a LUT não teria nada abaixo para ajustar) e o ajuste
+      // sumiria — era esta a causa da cena lavada.
+      if (c.adjustment && !c.canvas) {
+        const lut = lutSerializavel(c.adjustment);
+        if (!lut) {
+          // Tipo não suportado pelo buildAdjustmentLut (exposure, vibrance…).
+          // Vira aviso em vez de virar silêncio.
+          warnings.push(`adjustment não suportado na camada "${c.name || 'unnamed'}" — ignorado`);
+          continue;
+        }
+        const camada: SceneLayer = {
+          role: 'adjust',
+          src: '',
+          lut,
+          blendMode: 'source-over',
+          opacity: layerAlpha(c),
+          left: 0,
+          top: 0,
+        };
+        if (hasUsableMask(c)) {
+          const ref = nextRef('adjmask');
+          assets[ref] = c.mask.canvas;
+          camada.maskRef = ref;
+        }
+        layers.push(camada);
+        continue;
+      }
+
       const rawBlend = c.blendMode ?? 'normal';
       const mapped = BLEND_MAP[rawBlend];
       if (mapped === undefined) {
@@ -215,20 +524,54 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
       const ref = nextRef('over');
       // Flatten this single top-level child at full size (preserves its internal
       // composition); its own blend/opacity are applied at render time.
+      // `clipping: false` é obrigatório aqui: achatada sozinha, a camada de
+      // recorte não tem base contra a qual recortar e sai vazia.
       assets[ref] = flattenSubset(
-        [{ ...c, opacity: 1, fillOpacity: 1, blendMode: 'normal' }],
+        [{ ...c, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
         width,
         height,
         cc
       );
-      layers.push({
+      const camadaOver: SceneLayer = {
         role: 'over',
         src: ref,
         blendMode: mapped ?? 'source-over',
+        psBlend: rawBlend,
         opacity: layerAlpha(c),
         left: 0,
         top: 0,
-      });
+      };
+
+      // Recorte: o alpha da base vira máscara, que é o que o Photoshop faz.
+      if (c.clipping) {
+        const j = indiceBaseDoRecorte(topChildren, i);
+        const base = j >= 0 ? topChildren[j] : null;
+        if (base && isFaceContainer[j]) {
+          // A base é o container da face: assar aqui congelaria o placeholder.
+          camadaOver.clipToFaces = true;
+        } else if (base) {
+          const mref = nextRef('clipmask');
+          assets[mref] = flattenSubset(
+            [{ ...base, opacity: 1, fillOpacity: 1, blendMode: 'normal', clipping: false }],
+            width,
+            height,
+            cc
+          );
+          camadaOver.maskRef = mref;
+        } else {
+          warnings.push(
+            `camada de recorte "${c.name || 'unnamed'}" sem base embaixo — vai pintar sem recorte`
+          );
+        }
+      }
+
+      // Guarda geral: camada que não tem um pixel opaco não muda nada no render.
+      // Vale para qualquer causa futura, não só o recorte.
+      if (totalmenteTransparente(assets[ref])) {
+        warnings.push(`camada "${c.name || 'unnamed'}" achatou vazia — não muda um pixel do render`);
+      }
+
+      layers.push(camadaOver);
     }
   }
 

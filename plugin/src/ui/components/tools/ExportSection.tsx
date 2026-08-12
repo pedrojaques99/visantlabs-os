@@ -115,7 +115,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title={t('plugin.tools.export.dataJsonTitle', { scope: scanPage ? t('plugin.tools.export.scopeWholePage') : t('plugin.tools.export.scopeSelection') })}
+          title={t('plugin.tools.export.dataJsonTitle', {
+            scope: scanPage
+              ? t('plugin.tools.export.scopeWholePage')
+              : t('plugin.tools.export.scopeSelection'),
+          })}
           className="h-8 text-[10px]"
         >
           <Braces size={11} className="mr-1.5 text-muted-foreground" />
@@ -128,7 +132,11 @@ export function ExportSection() {
           busyLabel="…"
           variant="outline"
           size="sm"
-          title={t('plugin.tools.export.dataCsvTitle', { scope: scanPage ? t('plugin.tools.export.scopeWholePage') : t('plugin.tools.export.scopeSelection') })}
+          title={t('plugin.tools.export.dataCsvTitle', {
+            scope: scanPage
+              ? t('plugin.tools.export.scopeWholePage')
+              : t('plugin.tools.export.scopeSelection'),
+          })}
           className="h-8 text-[10px]"
         >
           <Table size={11} className="mr-1.5 text-muted-foreground" />

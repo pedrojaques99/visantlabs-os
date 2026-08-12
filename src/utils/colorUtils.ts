@@ -32,8 +32,15 @@ export function rgbToHex(r: number, g: number, b: number): string {
  * "#RRGGBB" (uppercase), or null when there aren't yet enough valid hex digits.
  */
 export function parseHex(raw: string): string | null {
-  let v = raw.trim().replace(/^#/, '').replace(/[^0-9a-fA-F]/g, '');
-  if (v.length === 3) v = v.split('').map((c) => c + c).join('');
+  let v = raw
+    .trim()
+    .replace(/^#/, '')
+    .replace(/[^0-9a-fA-F]/g, '');
+  if (v.length === 3)
+    v = v
+      .split('')
+      .map((c) => c + c)
+      .join('');
   if (v.length < 6) return null;
   return `#${v.slice(0, 6).toUpperCase()}`;
 }

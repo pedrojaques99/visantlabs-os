@@ -32,8 +32,7 @@ export const glassSurface = {
   // ── Surface: static inner surface / chip / input (NO hover, NO blur) ──
   surface: 'border border-border bg-muted/40',
   // ── Control: buttons / nav rows (readable fill, hover, NO blur) ──
-  control:
-    'border border-border bg-muted/50 transition-colors hover:border-ring hover:bg-accent',
+  control: 'border border-border bg-muted/50 transition-colors hover:border-ring hover:bg-accent',
   // ── Icon well: static, faint (NO hover, NO blur) ──
   icon: 'border border-border bg-muted/50',
 } as const;

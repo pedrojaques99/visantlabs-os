@@ -39,14 +39,21 @@ import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { toEntitlements } from '../lib/entitlements.js';
 import { grantProduct } from '../services/productGrantService.js';
+import {
+  POPUP_OAUTH_SOURCES,
+  isPopupOAuthSource,
+  renderPopupSuccessPage,
+  renderPopupErrorPage,
+} from '../lib/oauthPopupPage.js';
 
 const router = express.Router();
 const getFrontendUrl = () => FRONTEND_BASE_URL.replace(/\/+$/, '');
 
-// In-memory store for plugin OAuth sessions (sessionId → { token, createdAt })
+// In-memory store for popup OAuth sessions (sessionId → { token, source, createdAt })
+// `source` é o que a página de retorno usa pra saber pra onde mandar o usuário voltar.
 const pluginOAuthSessions = new Map<
   string,
-  { token?: string; error?: string; createdAt: number }
+  { token?: string; error?: string; source?: string; createdAt: number }
 >();
 const PLUGIN_SESSION_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -334,10 +341,25 @@ router.get('/google', oauthRateLimiter, (req, res) => {
     let state: string | undefined;
     let sessionId: string | undefined;
 
-    if (source === 'plugin') {
+    // `source` desconhecido é erro, não "sem source".
+    //
+    // Antes caía calado no fluxo de redirect: a resposta vinha sem sessionId, o
+    // cliente entrava no laço de poll com `undefined` e ficava girando até o
+    // timeout sem nunca dizer o porquê. Um typo em `?source=` custava um bug
+    // de login sem sintoma. Origem nova = registrar em POPUP_OAUTH_SOURCES.
+    if (source !== undefined && !isPopupOAuthSource(source)) {
+      return res.status(400).json({
+        error: 'Unknown OAuth source',
+        message: `Use uma destas ou omita o parâmetro: ${Object.keys(POPUP_OAUTH_SOURCES).join(', ')}`,
+      });
+    }
+
+    // Fluxo popup + poll: qualquer origem conhecida (plugin, club, cli…).
+    // O prefixo do state segue `plugin:` por compatibilidade com builds antigos.
+    if (isPopupOAuthSource(source)) {
       cleanExpiredSessions();
       sessionId = crypto.randomBytes(16).toString('hex');
-      pluginOAuthSessions.set(sessionId, { createdAt: Date.now() });
+      pluginOAuthSessions.set(sessionId, { createdAt: Date.now(), source });
       state = `plugin:${sessionId}`;
     } else if (referralCode) {
       state = `ref:${referralCode}`;
@@ -484,10 +506,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       if (session) {
         session.token = token;
       }
-      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Visant – Login OK</title>
-<style>body{background:#0a0a0a;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{text-align:center;padding:2rem}.check{font-size:3rem;margin-bottom:1rem}p{color:#999;font-size:.9rem}</style></head>
-<body><div class="card"><div class="check">&#10003;</div><h2>Login realizado!</h2><p>Volte para o Figma. Você pode fechar esta aba.</p></div></body></html>`);
+      return res.send(renderPopupSuccessPage(session?.source));
     }
 
     // Redirect to frontend with token
@@ -502,10 +521,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
       const sessionId = (req.query.state as string).substring(7);
       const session = pluginOAuthSessions.get(sessionId);
       if (session) session.error = 'oauth_failed';
-      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Visant – Erro</title>
-<style>body{background:#0a0a0a;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{text-align:center;padding:2rem}p{color:#999;font-size:.9rem}</style></head>
-<body><div class="card"><h2>Erro no login</h2><p>Tente novamente pelo plugin.</p></div></body></html>`);
+      return res.send(renderPopupErrorPage(session?.source));
     }
 
     res.redirect(`${getFrontendUrl()}/auth?error=oauth_failed`);
@@ -727,10 +743,25 @@ const checkoutExchangeRateLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again later' },
 });
 
-// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 24h.
-const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(
-  process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 24
-);
+// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 2h.
+//
+// Era 24h. O `session_id` viaja na QUERY STRING do success_url, ou seja, fica
+// na barra de endereços, no histórico do navegador, no autocomplete e em
+// qualquer print — e a troca não é one-time, por decisão consciente (um
+// refresh não pode quebrar o acesso de quem acabou de pagar). Somando as duas
+// coisas, o link era uma credencial de login válida por um dia inteiro pra
+// quem quer que o tivesse, inclusive colado num grupo.
+//
+// 2h preserva o caso de uso real (o pós-compra imediato, com refresh à
+// vontade) e corta a cauda longa, que é onde mora o vazamento. Quem voltar
+// depois disso entra por e-mail, que é o caminho normal.
+const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 2);
+
+// Validade do token nascido desta troca. Curta de propósito: 7 dias é a
+// validade de uma sessão que começou com SENHA, e esta começou com um link
+// que trafega em URL. Quem precisar de mais que isso faz login.
+const CHECKOUT_TOKEN_TTL = (process.env.CHECKOUT_TOKEN_TTL ||
+  '12h') as jwt.SignOptions['expiresIn'];
 
 router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, res) => {
   try {
@@ -796,15 +827,24 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
       stripeCustomerId,
     });
 
-    const token = jwt.sign({ userId: result.userId, email: result.email }, JWT_SECRET, {
-      expiresIn: '7d',
-    });
+    // `scope: 'checkout'` marca a origem do token. Hoje ele ainda é um token
+    // de conta (é o que o Club consome), mas com a marca no payload dá pra,
+    // adiante, recusar este token em rota sensível sem quebrar o fluxo de
+    // leitura do produto recém-comprado.
+    const token = jwt.sign(
+      { userId: result.userId, email: result.email, scope: 'checkout', sku },
+      JWT_SECRET,
+      { expiresIn: CHECKOUT_TOKEN_TTL }
+    );
 
     recordSession(result.userId, req).catch(() => {});
 
+    // Sem e-mail no log. Este console vai pro agregador de logs, que é retido
+    // e consultável, e o e-mail do comprador não precisa estar lá pra
+    // diagnosticar troca de sessão: o userId identifica igual e não é PII
+    // direta. O mesmo vale pro sku e pros flags, que são o que interessa.
     console.log('✅ Session minted from checkout:', {
       sku,
-      email: result.email,
       userId: result.userId,
       accountCreated: result.created,
       grantedNow: result.granted,
