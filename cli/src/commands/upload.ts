@@ -35,7 +35,10 @@ const MAX = 20 * 1024 * 1024;
 
 /** Confere o tipo real pelos magic bytes, nao pela extensao. */
 function sniff(buf: Buffer): string | null {
-  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])))
+  if (
+    buf.length >= 8 &&
+    buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  )
     return 'image/png';
   if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
   if (
@@ -63,7 +66,8 @@ export async function uploadCommand(files: string[], opts: { label?: string; jso
     try {
       if (!existsSync(file)) throw new Error('arquivo não encontrado');
       const size = statSync(file).size;
-      if (size > MAX) throw new Error(`${(size / 1024 / 1024).toFixed(1)}MB excede o limite de 20MB`);
+      if (size > MAX)
+        throw new Error(`${(size / 1024 / 1024).toFixed(1)}MB excede o limite de 20MB`);
       if (size === 0) throw new Error('arquivo vazio');
 
       const buf = readFileSync(file);
@@ -72,7 +76,9 @@ export async function uploadCommand(files: string[], opts: { label?: string; jso
       if (!real && !byExt) throw new Error('tipo de imagem não reconhecido');
       if (real && byExt && real !== byExt) {
         console.error(
-          chalk.yellow(`⚠ ${basename(file)}: extensão diz ${byExt}, conteúdo é ${real} — usando o conteúdo.`)
+          chalk.yellow(
+            `⚠ ${basename(file)}: extensão diz ${byExt}, conteúdo é ${real} — usando o conteúdo.`
+          )
         );
       }
       const contentType = real ?? byExt;

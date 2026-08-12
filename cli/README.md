@@ -65,7 +65,7 @@ inteiro no contexto e re-emitir os bytes: caro em token e, acima de alguns
 milhares de caracteres, o payload chega truncado e sobe uma imagem quebrada.
 Aqui o arquivo vai do disco pra rede sem passar pelo modelo.
 
-O comando confere o tipo pelos *magic bytes* (não pela extensão), manda `sha256`
+O comando confere o tipo pelos _magic bytes_ (não pela extensão), manda `sha256`
 e `bytes` junto, e falha se o servidor decodificar um tamanho diferente.
 
 ### `visant mcp setup`

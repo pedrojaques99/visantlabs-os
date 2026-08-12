@@ -2037,7 +2037,8 @@ server can reject a truncated payload instead of returning a broken URL.`,
           body: JSON.stringify({ data, contentType, label, bytes, sha256 }),
         });
         const result = (await resp.json()) as any;
-        if (!resp.ok) return ERR.internal(result?.message || result?.error || `Upload failed (${resp.status})`);
+        if (!resp.ok)
+          return ERR.internal(result?.message || result?.error || `Upload failed (${resp.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           url: result.url,

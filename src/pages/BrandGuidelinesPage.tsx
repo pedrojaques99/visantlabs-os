@@ -142,7 +142,9 @@ const CoverFallback = ({ colors, name }: { colors?: BrandGuideline['colors']; na
       style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)` }}
     >
       <div
-        className={hasBrandColors ? 'absolute inset-0 opacity-[0.07]' : 'absolute inset-0 opacity-[0.10]'}
+        className={
+          hasBrandColors ? 'absolute inset-0 opacity-[0.07]' : 'absolute inset-0 opacity-[0.10]'
+        }
         style={{ backgroundImage: DOT_TEXTURE }}
       />
     </div>
