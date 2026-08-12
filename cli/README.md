@@ -49,6 +49,25 @@ Remove as credenciais locais.
 
 Mostra o usuário autenticado e valida o token contra a API.
 
+### `visant upload <arquivo...>`
+
+Sobe imagem do disco e devolve a URL pública, pronta pra usar em `referenceImages`.
+
+```bash
+visant upload logo.png
+visant upload peca.jpg --label camiseta-01
+visant upload *.png --json          # saída limpa, sem banner — pra script/agente
+```
+
+**Prefira isto à tool MCP `upload-image` sempre que houver shell.** A tool só
+aceita base64 no corpo da chamada, o que obriga um agente a carregar o arquivo
+inteiro no contexto e re-emitir os bytes: caro em token e, acima de alguns
+milhares de caracteres, o payload chega truncado e sobe uma imagem quebrada.
+Aqui o arquivo vai do disco pra rede sem passar pelo modelo.
+
+O comando confere o tipo pelos *magic bytes* (não pela extensão), manda `sha256`
+e `bytes` junto, e falha se o servidor decodificar um tamanho diferente.
+
 ### `visant mcp setup`
 
 Configura o MCP no Claude Code — escreve `.claude/settings.json` com a conexão ao servidor Visant.

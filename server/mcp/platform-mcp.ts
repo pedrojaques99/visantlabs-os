@@ -1991,7 +1991,16 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
 
   server.tool(
     'upload-image',
-    'Upload a base64 image and get a permanent public URL. Required before mockup-generate/ai-generate-image when you have a local file. Free, no credits, max 20MB.',
+    `Upload a base64 image and get a permanent public URL. Free, no credits, max 20MB.
+
+PREFER THE CLI FOR LOCAL FILES: \`visant upload <file> --json\` sends the file
+straight from disk and prints the URL. Use it whenever you can run a shell.
+Passing base64 through this tool costs tokens proportional to the file size and,
+past a few thousand characters, is unreliable — the payload gets truncated in
+transit and a corrupt image is uploaded.
+
+If you must pass base64, ALWAYS send \`bytes\` (and ideally \`sha256\`) so the
+server can reject a truncated payload instead of returning a broken URL.`,
     {
       data: z
         .string()
@@ -2002,9 +2011,21 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .default('image/png')
         .describe('MIME type. Default: image/png.'),
       label: z.string().optional().describe('Optional label for organization (e.g. "sticker-v1").'),
+      bytes: z
+        .number()
+        .int()
+        .optional()
+        .describe(
+          'Exact byte length of the file. The server rejects the upload if the decoded payload differs — this is what catches a truncated base64.'
+        ),
+      sha256: z
+        .string()
+        .length(64)
+        .optional()
+        .describe('Hex sha256 of the file bytes. Verified server-side before storing.'),
     },
     { title: 'Upload Image', destructiveHint: false },
-    async ({ data, contentType, label }) => {
+    async ({ data, contentType, label, bytes, sha256 }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
       const scopeErr = requireScope('write');
@@ -2013,10 +2034,10 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         const resp = await fetch(`${INTERNAL_API_BASE}/api/images/upload`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ data, contentType, label }),
+          body: JSON.stringify({ data, contentType, label, bytes, sha256 }),
         });
         const result = (await resp.json()) as any;
-        if (!resp.ok) return ERR.internal(result?.error || `Upload failed (${resp.status})`);
+        if (!resp.ok) return ERR.internal(result?.message || result?.error || `Upload failed (${resp.status})`);
         const quota = await getQuotaMeta(currentUserId);
         return jsonResponse({
           url: result.url,

@@ -4759,7 +4759,7 @@
     },
     {
       "name": "upload-image",
-      "description": "Upload a base64 image and get a permanent public URL. Required before mockup-generate/ai-generate-image when you have a local file. Free, no credits, max 20MB.",
+      "description": "Upload a base64 image and get a permanent public URL. Free, no credits, max 20MB.\n\nPREFER THE CLI FOR LOCAL FILES: `visant upload <file> --json` sends the file\nstraight from disk and prints the URL. Use it whenever you can run a shell.\nPassing base64 through this tool costs tokens proportional to the file size and,\npast a few thousand characters, is unreliable — the payload gets truncated in\ntransit and a corrupt image is uploaded.\n\nIf you must pass base64, ALWAYS send `bytes` (and ideally `sha256`) so the\nserver can reject a truncated payload instead of returning a broken URL.",
       "required": ["data"],
       "properties": {
         "data": {
@@ -4776,6 +4776,18 @@
         "label": {
           "description": "Optional label for organization (e.g. \"sticker-v1\").",
           "type": "string"
+        },
+        "bytes": {
+          "description": "Exact byte length of the file. The server rejects the upload if the decoded payload differs — this is what catches a truncated base64.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "sha256": {
+          "description": "Hex sha256 of the file bytes. Verified server-side before storing.",
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
         }
       },
       "cost": "free",
