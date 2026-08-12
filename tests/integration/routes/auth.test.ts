@@ -162,7 +162,9 @@ describe('popup OAuth flow (source + poll)', () => {
   it('hands the token to the poll exactly once', async () => {
     const { agent, sessionId } = await startPopup('club');
 
-    await agent.get('/api/auth/google/callback').query({ code: 'mock-code', state: `plugin:${sessionId}` });
+    await agent
+      .get('/api/auth/google/callback')
+      .query({ code: 'mock-code', state: `plugin:${sessionId}` });
 
     const first = await agent.get(`/api/auth/google/poll/${sessionId}`);
     expect(first.body.status).toBe('complete');

@@ -7,12 +7,12 @@ Se você está plugando um app novo, leia só a tabela e a seção do seu fluxo.
 
 ## Os quatro fluxos
 
-| Fluxo | Entrada | Quem usa hoje | Quando escolher |
-|---|---|---|---|
-| **Redirect** | `GET /api/auth/google` (sem `source`) | App web `visantlabs.com` | O app roda numa aba normal e pode ser levado pro Google e trazido de volta |
-| **Popup + poll** | `GET /api/auth/google?source=<origem>` | Plugin do Figma, Visant Club | O app **não pode navegar pra fora** (iframe de plugin) ou está em outro domínio |
-| **OAuth 2.1 + PKCE** | `GET /oauth/authorize` | MCP (claude.ai), integrações de terceiro | App de terceiro pedindo acesso à conta de um usuário, com escopo |
-| **Device flow** | `POST /oauth/device/code` | CLI, agentes headless | Não há browser local nem `redirect_uri` pra escutar |
+| Fluxo                | Entrada                                | Quem usa hoje                            | Quando escolher                                                                 |
+| -------------------- | -------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------- |
+| **Redirect**         | `GET /api/auth/google` (sem `source`)  | App web `visantlabs.com`                 | O app roda numa aba normal e pode ser levado pro Google e trazido de volta      |
+| **Popup + poll**     | `GET /api/auth/google?source=<origem>` | Plugin do Figma, Visant Club             | O app **não pode navegar pra fora** (iframe de plugin) ou está em outro domínio |
+| **OAuth 2.1 + PKCE** | `GET /oauth/authorize`                 | MCP (claude.ai), integrações de terceiro | App de terceiro pedindo acesso à conta de um usuário, com escopo                |
+| **Device flow**      | `POST /oauth/device/code`              | CLI, agentes headless                    | Não há browser local nem `redirect_uri` pra escutar                             |
 
 Senha/e-mail (`POST /api/auth/signin`) atravessa todos: é o caminho padrão, e os
 de cima existem porque nem toda superfície consegue mostrar um formulário.
@@ -104,9 +104,9 @@ acima, nenhum repo tem código de OAuth — os outros acertos eram só documenta
 
 ## Onde mexer
 
-| O quê | Arquivo |
-|---|---|
-| Origens e cópia da página de retorno | `server/lib/oauthPopupPage.ts` |
-| Rotas Google (start, callback, poll, link) | `server/routes/auth.ts` |
-| OAuth 2.1 / device flow | `server/routes/oauth.ts` |
-| Testes do fluxo popup | `tests/integration/routes/auth.test.ts` |
+| O quê                                      | Arquivo                                 |
+| ------------------------------------------ | --------------------------------------- |
+| Origens e cópia da página de retorno       | `server/lib/oauthPopupPage.ts`          |
+| Rotas Google (start, callback, poll, link) | `server/routes/auth.ts`                 |
+| OAuth 2.1 / device flow                    | `server/routes/oauth.ts`                |
+| Testes do fluxo popup                      | `tests/integration/routes/auth.test.ts` |

@@ -98,7 +98,10 @@ function decoracaoDescartada(
         continue;
       }
       if (child.hidden || layerAlpha(child) <= 0) continue;
-      if (child.children) { anda(child, cp); continue; }
+      if (child.children) {
+        anda(child, cp);
+        continue;
+      }
       if (!child.canvas && !child.adjustment) continue;
       achadas.push(child.name || 'unnamed');
     }
@@ -284,7 +287,10 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
     const ocorrencias = linkId
       ? allLayers.filter(
           (l: any) =>
-            l.placedLayer?.id === linkId && !l.hidden && layerAlpha(l) > 0 && !BRAND_HIDE.test(l.name || '')
+            l.placedLayer?.id === linkId &&
+            !l.hidden &&
+            layerAlpha(l) > 0 &&
+            !BRAND_HIDE.test(l.name || '')
         )
       : [representante];
     const usadas = ocorrencias.length ? ocorrencias : [representante];
@@ -296,7 +302,10 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
 
     const instances: SceneFaceInstance[] = usadas.map((so: any) => {
       const pl = so.placedLayer || {};
-      const innerW = Math.max(1, Math.round(pl.width || so.right - so.left || face.innerWidth || 1));
+      const innerW = Math.max(
+        1,
+        Math.round(pl.width || so.right - so.left || face.innerWidth || 1)
+      );
       const innerH = Math.max(
         1,
         Math.round(pl.height || so.bottom - so.top || face.innerHeight || 1)
@@ -437,7 +446,12 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
         // `over`, com a máscara do próprio grupo — senão ela vaza pro cenário.
         const decor = (c.children || []).filter(
           (ch: any) =>
-            !subtreeHasFace(ch, faceLinkIds, facePaths, `${topPaths[i]} > ${ch.name || 'unnamed'}`) &&
+            !subtreeHasFace(
+              ch,
+              faceLinkIds,
+              facePaths,
+              `${topPaths[i]} > ${ch.name || 'unnamed'}`
+            ) &&
             !ch.hidden &&
             layerAlpha(ch) > 0 &&
             !BRAND_HIDE.test(ch.name || '')
@@ -568,7 +582,9 @@ export function extractScene(psd: any, cc: CreateCanvas, faceSos?: FaceSo[]): Ex
       // Guarda geral: camada que não tem um pixel opaco não muda nada no render.
       // Vale para qualquer causa futura, não só o recorte.
       if (totalmenteTransparente(assets[ref])) {
-        warnings.push(`camada "${c.name || 'unnamed'}" achatou vazia — não muda um pixel do render`);
+        warnings.push(
+          `camada "${c.name || 'unnamed'}" achatou vazia — não muda um pixel do render`
+        );
       }
 
       layers.push(camadaOver);
