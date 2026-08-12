@@ -1,31 +1,162 @@
-name: Deploy to VPS
+# Deploy do backend.
+#
+# Substitui o `Deploy to VPS` original, que estava quebrado em três níveis ao
+# mesmo tempo e reprovava em TODO push a main desde que existe:
+#
+#   1. Autenticava por SSH com secrets.VPS_HOST/VPS_USER/VPS_SSH_KEY — e o repo
+#      nunca teve secret nenhum. Morria em `Error: missing server host`, uma
+#      mensagem da action de terceiro que não diz o que fazer a respeito.
+#   2. Mesmo com os secrets, deployaria errado: fazia `git pull` + `pm2 restart`
+#      em /var/www/visantlabs-os, mas produção roda em container Docker sob
+#      Coolify. Reiniciaria um processo que não é o que atende a API.
+#   3. Terminava logo após o restart. "Webhook aceito" virava "deploy feito",
+#      então um container que sobe e morre em boot passava por sucesso — o
+#      antigo continua servindo e o job fica verde.
+#
+# O conserto dos três: falar com o Coolify (que é quem de fato deploya),
+# acompanhar o build até o fim, e — o ponto que importa — confirmar no
+# /api/health que o commit no ar é o commit deste run. Enquanto isso não bater,
+# o job não fica verde. Deploy silencioso deixa de ser possível.
+#
+# Secrets necessários (Settings › Secrets and variables › Actions):
+#   COOLIFY_URL       base do Coolify, ex.: http://<ip>:8000   (sem barra no fim)
+#   COOLIFY_TOKEN     Coolify › Keys & Tokens › API tokens, escopo de deploy
+#   COOLIFY_APP_UUID  UUID da aplicação (o último trecho da URL /application/<uuid>)
+# São secrets, e não valores no arquivo, porque este repositório é público e a
+# URL entrega um painel de administração exposto na internet.
+
+name: Deploy backend
 
 on:
   workflow_run:
-    workflows: ["Test Suite"]
+    workflows: ['Test Suite']
     types: [completed]
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit a verificar no ar (vazio = HEAD de main)'
+        required: false
 
 permissions:
   contents: read
 
+# Dois deploys concorrentes na mesma app disputam o mesmo container: o segundo
+# invalida o primeiro e a verificação passa a medir o build errado.
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    name: Deploy backend to Hostinger VPS
+    name: Deploy backend (Coolify)
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # workflow_dispatch não traz workflow_run: sem o segundo termo, subir na mão
+    # seria impossível — que é justamente o que faltou quando o deploy quebrou.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
-      - name: SSH deploy
-        uses: appleboy/ssh-action@v1.0.3
+      - uses: actions/checkout@v4
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/visantlabs-os
-            git pull origin main
-            npm ci --omit=dev
-            npx prisma generate
-            pm2 restart visantlabs-server --update-env
-            pm2 save
+          ref: ${{ github.event.workflow_run.head_sha || inputs.sha || 'main' }}
+          # A checagem de drift conta commits entre o que está no ar e o
+          # esperado; com histórico raso ela perde a contagem.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Portão — os secrets existem?
+        env:
+          URL: ${{ secrets.COOLIFY_URL }}
+          TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          APP: ${{ secrets.COOLIFY_APP_UUID }}
+        run: |
+          faltando=""
+          [ -n "$URL" ]   || faltando="$faltando COOLIFY_URL"
+          [ -n "$TOKEN" ] || faltando="$faltando COOLIFY_TOKEN"
+          [ -n "$APP" ]   || faltando="$faltando COOLIFY_APP_UUID"
+          if [ -n "$faltando" ]; then
+            echo "::error::Secrets ausentes:$faltando"
+            echo "O deploy não tem como acontecer. Cadastre em:"
+            echo "  Settings › Secrets and variables › Actions › New repository secret"
+            echo "O token sai do Coolify em: Keys & Tokens › API tokens."
+            exit 1
+          fi
+          echo "ok — os três secrets estão presentes."
+
+      - name: Disparar deploy no Coolify
+        id: disparo
+        env:
+          URL: ${{ secrets.COOLIFY_URL }}
+          TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          APP: ${{ secrets.COOLIFY_APP_UUID }}
+        run: |
+          set -euo pipefail
+          corpo=$(mktemp)
+          # --fail-with-body: sem isso o curl sai 0 em 401/404 e o job seguiria
+          # feliz medindo um deploy que nunca foi criado.
+          codigo=$(curl -sS --fail-with-body -o "$corpo" -w '%{http_code}' \
+            -H "Authorization: Bearer $TOKEN" \
+            "$URL/api/v1/deploy?uuid=$APP&force=false") || {
+              echo "::error::Coolify recusou o disparo (HTTP $codigo)"
+              # Seguro imprimir: secret lido via env é mascarado pelo Actions no
+              # log, então nem o corpo nem um eco do header vazam o token.
+              cat "$corpo" || true
+              exit 1
+            }
+
+          uuid=$(jq -r '.deployments[0].deployment_uuid // empty' "$corpo")
+          if [ -z "$uuid" ]; then
+            echo "::error::Coolify respondeu 200 mas sem deployment_uuid — nada foi enfileirado."
+            cat "$corpo"
+            exit 1
+          fi
+          echo "uuid=$uuid" >> "$GITHUB_OUTPUT"
+          echo "deployment $uuid enfileirado."
+          echo "log: $URL/project/_/application/$APP/deployment/$uuid"
+
+      - name: Acompanhar o build até terminar
+        env:
+          URL: ${{ secrets.COOLIFY_URL }}
+          TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          UUID: ${{ steps.disparo.outputs.uuid }}
+        run: |
+          set -uo pipefail
+          fim=$(( $(date +%s) + 900 ))
+          anterior=""
+          while [ "$(date +%s)" -lt "$fim" ]; do
+            json=$(curl -sS -H "Authorization: Bearer $TOKEN" "$URL/api/v1/deployments/$UUID" || echo '{}')
+            estado=$(echo "$json" | jq -r '.status // "?"')
+            [ "$estado" != "$anterior" ] && echo "  status: $estado" && anterior="$estado"
+            case "$estado" in
+              # Terminais tratados por lista de PENDENTES, e não de finais: o
+              # Coolify tem variantes ('cancelled-by-user', etc.) e assumir a
+              # lista de finais faria um estado desconhecido virar loop infinito
+              # até o timeout do job.
+              # '?' entre aspas: sem elas o case trata como glob de 1 caractere
+              # e qualquer status de uma letra cairia em "ainda rodando".
+              queued|in_progress|running|'?') ;;
+              finished|success)
+                echo "build concluído."; exit 0 ;;
+              *)
+                echo "::error::Deploy terminou como '$estado'."
+                echo "$json" | jq -r '.logs // ""' | tail -60
+                exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::15 min e o deploy não terminou. Ver o log no Coolify."
+          exit 1
+
+      - name: O commit está mesmo no ar?
+        # A pergunta que nenhuma das versões anteriores fazia. Build verde com
+        # container morto em boot deixa o código antigo servindo, e sem este
+        # passo o job fecharia verde exatamente nesse cenário.
+        run: |
+          node server/scripts/check-deploy-drift.mjs \
+            --ref "$(git rev-parse HEAD)" \
+            --aguardar 300
