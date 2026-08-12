@@ -16,7 +16,14 @@ ENV PATH="/root/.bun/bin:${PATH}"
 
 WORKDIR /app
 
-COPY package*.json ./
+# O .npmrc vem JUNTO do package*.json, e nao no `COPY . .` la embaixo: ele
+# carrega `legacy-peer-deps=true`, que foi a resolucao usada para gerar o lock.
+# Sem ele aqui, o `npm ci` da linha de baixo resolve peers no modo estrito,
+# monta uma arvore diferente da que o lock descreve e morre com dezenas de
+# "Missing: X from lock file" — sendo o primeiro `eslint@7.32.0`, o peer de
+# eslint-plugin-promise@5.2.0 que o modo legacy simplesmente nao instala.
+# CI e maquina local nunca viram isso porque nos dois o .npmrc ja esta no lugar.
+COPY package*.json .npmrc ./
 COPY prisma ./prisma/
 COPY scripts ./scripts/
 # Workspace packages (@visant/*) must exist BEFORE npm install: the install is
