@@ -18,8 +18,20 @@
  * Uso:
  *   node scripts/check-deploy-drift.mjs
  *   node scripts/check-deploy-drift.mjs --url https://api.visantlabs.com --ref main
+ *   node scripts/check-deploy-drift.mjs --ref <sha> --aguardar 300   (pós-deploy)
  *
  * Sai 1 se o que está no ar diverge do ref. Feito pra rodar em cron/CI.
+ *
+ * Dois modos, porque as duas perguntas são diferentes:
+ *
+ *   vigia   (padrão)      "isso aqui está drifted AGORA?" — usado em cron. Tolera
+ *                         divergência recente, porque deploy em andamento não é
+ *                         defeito, e alarme em todo merge vira alarme ignorado.
+ *
+ *   --aguardar <seg>      "o deploy que eu acabei de disparar CHEGOU?" — usado no
+ *                         CI logo após subir. Aqui a tolerância seria um bug: o
+ *                         deploy silencioso é exatamente o que estamos caçando,
+ *                         então espera até bater e reprova se estourar o prazo.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -32,10 +44,18 @@ const arg = (n, padrao) => {
 const URL_BASE = arg('url', process.env.DEPLOY_CHECK_URL || 'https://api.visantlabs.com');
 const REF = arg('ref', 'main');
 const TOLERANCIA_MIN = Number(arg('tolerancia', '30'));
+const AGUARDAR_SEG = Number(arg('aguardar', '0'));
+const INTERVALO_SEG = 10;
 
 function sha(ref) {
   try {
-    return execFileSync('git', ['rev-parse', ref], { encoding: 'utf8' }).trim();
+    // stderr ignorado de propósito: quando REF já é um SHA cru, a primeira
+    // tentativa (`origin/<sha>`) falha por definição e o `fatal:` do git faria
+    // o log do CI parecer quebrado num caminho que é esperado.
+    return execFileSync('git', ['rev-parse', ref], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
   } catch {
     return null;
   }
@@ -47,11 +67,61 @@ if (!esperado) {
   process.exit(2);
 }
 
-let saude;
-try {
+const curto = (s) => s.slice(0, 8);
+const dormir = (seg) => new Promise((r) => setTimeout(r, seg * 1000));
+
+async function consultarSaude() {
   const res = await fetch(`${URL_BASE}/api/health`, { signal: AbortSignal.timeout(15_000) });
   if (!res.ok) throw new Error(`health respondeu ${res.status}`);
-  saude = await res.json();
+  return res.json();
+}
+
+// ── Modo espera: usado logo depois de disparar um deploy ────────────────────
+if (AGUARDAR_SEG > 0) {
+  const limite = Date.now() + AGUARDAR_SEG * 1000;
+  let ultimoErro = null;
+  let visto = null;
+
+  console.log(`aguardando ${curto(esperado)} chegar em ${URL_BASE} (até ${AGUARDAR_SEG}s)…`);
+
+  while (Date.now() < limite) {
+    try {
+      const s = await consultarSaude();
+      if (s.commit === esperado) {
+        console.log(`✓ no ar = ${curto(esperado)} · up há ${Math.floor((s.uptime ?? 0) / 60)} min`);
+        process.exit(0);
+      }
+      // Reinício derruba o /api/health por alguns segundos: erro aqui é esperado
+      // no meio do caminho, e só vira veredito quando o prazo estoura.
+      if (s.commit !== visto) {
+        visto = s.commit;
+        console.log(`  … ainda ${visto ? curto(visto) : '(sem commit exposto)'}`);
+      }
+      ultimoErro = null;
+    } catch (err) {
+      ultimoErro = err instanceof Error ? err.message : String(err);
+      console.log(`  … ${ultimoErro}`);
+    }
+    await dormir(INTERVALO_SEG);
+  }
+
+  console.error('');
+  console.error(`✗ ${AGUARDAR_SEG}s depois, ${URL_BASE} não está rodando ${curto(esperado)}.`);
+  if (visto) console.error(`  Último commit visto no ar: ${curto(visto)}`);
+  if (ultimoErro) console.error(`  Último erro: ${ultimoErro}`);
+  console.error('');
+  console.error('  O deploy foi aceito mas não chegou. Ver, nesta ordem:');
+  console.error('   1. o log do build no Coolify (o passo anterior imprime a URL);');
+  console.error('   2. o container subiu e caiu? (crash em boot mantém o antigo servindo)');
+  console.error('   3. SOURCE_COMMIT chega na env do container? Sem ela o /api/health');
+  console.error('      não expõe `commit` e esta checagem não tem como confirmar nada.');
+  process.exit(1);
+}
+
+// ── Modo vigia (padrão) ────────────────────────────────────────────────────
+let saude;
+try {
+  saude = await consultarSaude();
 } catch (err) {
   // Servidor fora do ar é pior que drift, e merece o mesmo exit 1.
   console.error(`✗ ${URL_BASE} não respondeu: ${err instanceof Error ? err.message : err}`);
@@ -67,8 +137,6 @@ if (!rodando) {
   console.error('  não foi injetada no deploy. Sem isso, drift é indetectável.');
   process.exit(1);
 }
-
-const curto = (s) => s.slice(0, 8);
 
 if (rodando === esperado) {
   console.log(`✓ no ar = ${REF} (${curto(esperado)}) · up há ${upMin} min`);
@@ -97,7 +165,9 @@ if (upMin < TOLERANCIA_MIN) {
 
 console.error('');
 console.error('  O deploy não aconteceu. Checar, nesta ordem:');
-console.error('   1. o job "Deploy to VPS" rodou, ou saiu como `skipped`?');
-console.error('   2. os secrets VPS_HOST/VPS_USER/VPS_SSH_KEY existem? (`gh secret list`)');
-console.error('   3. se o deploy é manual, ninguém subiu — suba.');
+console.error('   1. o workflow "Deploy backend" rodou, ou saiu como `skipped`?');
+console.error('      (ele só dispara quando o "Test Suite" fecha VERDE em main)');
+console.error('   2. os secrets COOLIFY_URL/COOLIFY_TOKEN/COOLIFY_APP_UUID existem?');
+console.error('      (`gh secret list` — repo sem secrets faz o job falhar no portão)');
+console.error('   3. subir na mão: `gh workflow run "Deploy backend" --ref main`');
 process.exit(1);
