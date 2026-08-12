@@ -61,6 +61,31 @@ panel. Key values to update for production:
 All other variables (API keys, secrets, DB URIs) should match your current
 `.env` values. Never commit actual secrets.
 
+### "Use Docker Build Secrets" tem de ficar LIGADO
+
+No topo do painel de Environment Variables. Sem ele, o Coolify gera um Dockerfile
+com um `ARG` no topo para **cada** variável marcada como _Available at Buildtime_
+— e o build de 2026-08-11 tinha 39 delas, incluindo `STRIPE_SECRET_KEY`,
+`GOOGLE_CLIENT_SECRET`, `R2_SECRET_ACCESS_KEY` e `API_KEY_ENCRYPTION_KEY`. Build
+arg fica gravado nos metadados da imagem: quem tem a imagem tem as chaves,
+mesmo que a env de runtime seja outra. O próprio BuildKit avisa
+(`SecretsUsedInArgOrEnv`).
+
+Com o toggle ligado, essas variáveis passam a ser entregues como BuildKit secret
+mount (`RUN --mount=type=secret`) e nada é gravado em camada.
+
+Nada no build deste repo precisa de env: são `apt-get`, `bun`, `npm ci` e
+`npx prisma generate` — este último não lê `DATABASE_URL` (verificado). Se algum
+dia um passo precisar de segredo, ele tem de montar explicitamente:
+
+```dockerfile
+RUN --mount=type=secret,id=ALGUM_TOKEN \
+    ALGUM_TOKEN="$(cat /run/secrets/ALGUM_TOKEN)" comando
+```
+
+> Os `ARG` NÃO vêm do `Dockerfile` do repo (que tem ~50 linhas). Quem os injeta é
+> o Coolify — por isso o erro de build aponta para "Dockerfile:117".
+
 ---
 
 ## 4. Deploy
@@ -68,6 +93,16 @@ All other variables (API keys, secrets, DB URIs) should match your current
 1. Click **Deploy** in Coolify
 2. Watch the build logs — Prisma client generation runs inside the Dockerfile
 3. After deploy, verify health check:
+
+> **Build falhando em `npm` sem motivo aparente?** Procure `ENOSPC` no log
+> (`npm warn tar TAR_ENTRY_ERROR ENOSPC`). É disco cheio na VPS, não código —
+> em 2026-08-11 derrubou três deploys seguidos de commits sem nada em comum.
+> Limpeza: `docker builder prune -af` e `docker image prune -af` (NUNCA
+> `--volumes`: leva o banco junto). Prevenção: Servers → localhost → Docker
+> Cleanup, que roda `0 0 * * *`.
+>
+> Depois de subir, confirme que a produção é mesmo o commit que você mergeou:
+> `npm run check:deploy`. Merge verde não significa estar no ar.
 
 ```bash
 curl https://api.visantlabs.com/api/health
