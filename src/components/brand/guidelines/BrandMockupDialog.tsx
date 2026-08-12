@@ -257,7 +257,13 @@ export const BrandMockupDialog: React.FC<Props> = ({
             brandGuidelineId: guideline.id,
             aspectRatio,
           } as any)
-          .catch(() => {});
+          // O crédito JÁ foi cobrado e a imagem já está na tela; se a persistência
+          // falha, o asset simplesmente nunca aparece em "Meus Mockups" e o
+          // usuário não tem como saber. Avisa pra ele ao menos poder baixar.
+          .catch((err) => {
+            console.warn('[brand-mockup] auto-save failed:', err);
+            toast.warning(t('brandMockupDialog.saveFailed'));
+          });
       } else {
         setErrorInfo({
           title: t('brandMockupDialog.error.noImage.title'),
@@ -310,7 +316,11 @@ export const BrandMockupDialog: React.FC<Props> = ({
   }, []);
 
   const handleGenerateBatch = useCallback(async () => {
-    const selected = Array.from(selectedSuggestions).sort();
+    // `.sort()` sem comparador ordena como STRING: com 10+ sugestões daria
+    // [1, 10, 2] e embaralharia o mapeamento `batchResults[idx]` (barra de
+    // progresso e slot de cada imagem). Só não quebrava porque o surprise-me
+    // pedia 10 itens (índices 0-9).
+    const selected = Array.from(selectedSuggestions).sort((a, b) => a - b);
     if (selected.length === 0) return;
     // Gate the whole batch upfront — otherwise N calls would each fail into
     // silent "erro" tiles when the user can't afford the run.
@@ -329,6 +339,10 @@ export const BrandMockupDialog: React.FC<Props> = ({
     cancelledRef.current = false;
 
     let successCount = 0;
+    // Persistência é best-effort e roda em paralelo à geração; guardamos as
+    // promises pra poder AVISAR no fim se algum asset gerado (e cobrado) não
+    // chegou em "Meus Mockups". Antes cada falha morria num `.catch(() => {})`.
+    const savePromises: Array<Promise<boolean>> = [];
 
     for (let idx = 0; idx < selected.length; idx++) {
       if (cancelledRef.current) break;
@@ -359,24 +373,34 @@ export const BrandMockupDialog: React.FC<Props> = ({
             return next;
           });
           successCount++;
-          mockupApi
-            .save({
-              imageUrl: res.imageUrl || undefined,
-              imageBase64: !res.imageUrl ? res.imageBase64 : undefined,
-              prompt: s.prompt,
-              designType: 'brand-mockup',
-              tags: ['brand-guidelines', s.category],
-              brandingTags: [guideline.identity?.name || ''].filter(Boolean),
-              brandGuidelineId: guideline.id,
-              aspectRatio: ar,
-            } as any)
-            .catch(() => {});
+          savePromises.push(
+            mockupApi
+              .save({
+                imageUrl: res.imageUrl || undefined,
+                imageBase64: !res.imageUrl ? res.imageBase64 : undefined,
+                prompt: s.prompt,
+                designType: 'brand-mockup',
+                tags: ['brand-guidelines', s.category],
+                brandingTags: [guideline.identity?.name || ''].filter(Boolean),
+                brandGuidelineId: guideline.id,
+                aspectRatio: ar,
+              } as any)
+              .then(() => true)
+              .catch((err) => {
+                console.warn('[brand-mockup] batch auto-save failed:', err);
+                return false;
+              })
+          );
         }
       } catch {
         /* slot stays null */
       }
       setBatchProgress(idx + 1);
     }
+
+    // Um único aviso no fim (não um por item) se algum gerado não persistiu.
+    const saveFailures = (await Promise.all(savePromises)).filter((ok) => !ok).length;
+    if (saveFailures > 0) toast.warning(t('brandMockupDialog.saveFailed'));
 
     if (cancelledRef.current && successCount > 0) {
       toast.info(

@@ -138,6 +138,25 @@ export const translate = (
 };
 
 /**
+ * `translate()` devolve a PRÓPRIA CHAVE quando ela não existe em nenhum locale —
+ * uma string truthy. Por isso o padrão "t(chave) || 'Fallback'" espalhado pelo app
+ * é código morto: o `||` nunca dispara e a chave crua vaza pra tela.
+ *
+ * Este helper é o jeito certo de ter fallback: compara com a chave e só então
+ * usa o texto de reserva. Use em chave DINÂMICA (montada em runtime), onde não dá
+ * pra garantir a existência lendo o JSON.
+ */
+export const translateOr = (
+  key: string,
+  fallback: string,
+  locale?: Locale,
+  params?: Record<string, string | number>
+): string => {
+  const value = translate(key, locale, params);
+  return value === key ? fallback : value;
+};
+
+/**
  * Format a date as dd/mm/yyyy (pt-BR) or mm/dd/yyyy (en-US) based on locale.
  */
 export const formatDate = (date: string | Date, locale?: Locale): string => {

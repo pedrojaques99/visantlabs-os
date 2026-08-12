@@ -643,7 +643,8 @@
       "savedToMediaKit": "Saved to Media Kit",
       "saveError": "Error saving",
       "savedAllToMediaKit": "{count} mockup{plural} saved to Media Kit"
-    }
+    },
+    "saveFailed": "The image was generated but could not be saved to your library — download it before closing."
   },
   "nav": {
     "context": "CONTEXT",
@@ -2797,7 +2798,8 @@
     "viewGuidelines": "View guidelines",
     "gallery": {
       "title": "Output gallery",
-      "viewAll": "View all"
+      "viewAll": "View all",
+      "loadError": "Could not load your outputs."
     },
     "connect": {
       "subtitle": "On-brand by default, colors, fonts, logos & voice, automatically.",
@@ -2849,6 +2851,30 @@
       "new": "New",
       "title": "In progress",
       "loadError": "Could not load your work in progress. Try again."
+    },
+    "surprise": {
+      "title": "Free mockups",
+      "surpriseMe": "Surprise me",
+      "saved": "Saved",
+      "savedToLibrary": "Saved to My Mockups",
+      "saveFailed": "Could not save the mockup",
+      "feedBroken": "Could not compose the mockups right now.",
+      "loadFailed": "Could not load suggestions right now.",
+      "noAssets": "Add a logo or artwork to the brand to generate on-brand mockups.",
+      "addLogo": "Add logo",
+      "noScenes": "No commercial scene available yet.",
+      "noneYet": "No suggestions for this brand yet."
+    },
+    "changeLogoDialog": {
+      "title": "Change primary logo",
+      "upload": "Upload an image or SVG",
+      "brandLogos": "Brand logos",
+      "fromMedia": "From the media library",
+      "currentPrimary": "Current primary logo",
+      "setPrimary": "Set as primary",
+      "updated": "Logo updated",
+      "primarySet": "Primary logo set",
+      "failed": "Could not change the logo"
     }
   },
   "common": {
@@ -6501,5 +6527,83 @@
     "opening": "Opening {tool}...",
     "nothingToSend": "Nothing to send yet. Generate or select an asset first.",
     "sendFailed": "Couldn't send the asset. Try again in a moment."
+  },
+  "brandPanel": {
+    "makeSomething": "Make something",
+    "liveAiContext": "Live AI context",
+    "daysOut": "{n}d out",
+    "refresh": "Refresh",
+    "refreshAria": "Regenerate ideas",
+    "generateFor": "Generate ideas for {label}",
+    "generateTailored": "Generate tailored ideas",
+    "mockupTitle": "Put the brand on real products",
+    "renderAria": "Render on-brand",
+    "renderTitle": "Render on-brand (web — no Figma)",
+    "copyPrompt": "Copy prompt",
+    "promptCopied": "Prompt copied",
+    "copyFailed": "Couldn’t copy",
+    "briefCopied": "Brief copied — run it in your connected AI to build the {kind}.",
+    "contextCopied": "Brand context copied — paste it into your AI",
+    "contextCopyFailed": "Couldn’t copy context",
+    "nothingToCompile": "Nothing to compile",
+    "tokensDownloaded": "{format} tokens downloaded",
+    "compileFailed": "Couldn’t compile tokens",
+    "assistantsBlurb": "Your colors, type, logos and voice — loaded into any assistant, automatically.",
+    "connect": "Connect to your AI",
+    "shareConnect": "Share + connect",
+    "copyContext": "Copy brand context",
+    "notConfigured": "Set a cheap text-provider key (Groq / NVIDIA NIM) to unlock seasonal idea suggestions.",
+    "ideasError": "Live ideas didn’t load: {message}",
+    "kind": {
+      "mockup": "Mockup",
+      "social": "Social",
+      "campaign": "Campaign",
+      "video": "Video",
+      "budget": "Budget",
+      "naming": "Naming"
+    },
+    "starter": {
+      "social": "Social",
+      "print": "Print",
+      "ad": "Ad",
+      "instagramPost": "Instagram feed post",
+      "promoStory": "Promo story",
+      "launchPoster": "Launch poster",
+      "campaignAd": "Campaign ad"
+    },
+    "connectFirst": "Make the brand public first to connect it",
+    "connectFailed": "Could not generate the connect link"
+  },
+  "campaigns": {
+    "title": "Campaigns",
+    "description": "Brand-scoped campaigns, generated from your product and brand and saved here to pick back up anytime.",
+    "creative": "Creative",
+    "newCampaign": "New campaign",
+    "signedOutTitle": "Sign in to see your campaigns",
+    "signedOutDesc": "Campaigns are generated from your brand and saved here so you can pick the work back up anytime.",
+    "loadErrorTitle": "Couldn’t load your campaigns",
+    "loadErrorDesc": "Your campaigns are safe. Something went wrong fetching them — try again.",
+    "emptyBrandTitle": "No campaigns for this brand yet",
+    "emptyTitle": "No campaigns yet",
+    "emptyDesc": "Open Canvas and ask the assistant to generate a campaign from your product and brand — it lands here automatically.",
+    "emptyAction": "Generate in Canvas",
+    "ads": "ads",
+    "status": {
+      "planning": "planning",
+      "generating": "generating",
+      "done": "done",
+      "error": "error"
+    },
+    "detail": {
+      "fallbackTitle": "Campaign",
+      "back": "Campaigns",
+      "backAria": "Back to campaigns",
+      "loadErrorTitle": "Couldn’t load this campaign",
+      "loadErrorDesc": "Your campaign is safe. Something went wrong fetching it — try again.",
+      "noResults": "No results yet",
+      "failed": "This campaign failed.",
+      "stillGenerating": "This campaign is still generating.",
+      "download": "Download"
+    }
   }
 }

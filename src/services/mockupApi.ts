@@ -133,14 +133,15 @@ export const mockupApi = {
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     } catch (error: any) {
-      // Handle network errors, timeouts, and connection failures gracefully
-      if (
-        error?.message?.includes('Failed to fetch') ||
-        error?.message?.includes('NetworkError') ||
-        error?.name === 'TypeError'
-      ) {
+      // ATENÇÃO: o teste NÃO pode ser por substring da mensagem. A mensagem
+      // padrão do ramo !response.ok começa com "Failed to fetch mockups:", então
+      // o antigo `includes('Failed to fetch')` engolia um 401/500 de corpo vazio
+      // e devolvia [] — a UI mostrava "nenhum mockup" numa falha real de servidor
+      // (silent-empty), e `isError` do React Query nunca ficava true.
+      // Erro HTTP tem `.status`; falha de rede do fetch, não.
+      if (error?.status === undefined && error?.name === 'TypeError') {
         console.error('Network error fetching mockups:', error);
-        // Return empty array to allow UI to load gracefully
+        // Offline / DNS / conexão recusada → degrada em lista vazia.
         return [];
       }
       throw error;

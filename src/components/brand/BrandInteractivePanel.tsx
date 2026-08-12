@@ -6,33 +6,36 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
 import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
+import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi, type BrandSuggestion } from '@/services/brandGuidelineApi';
 
-// Suggestion kind → icon/label/execution mode (SSoT shared with the cockpit).
+// Suggestion kind → icon/labelKey/execution mode (SSoT shared with the cockpit).
 const KIND_META = SUGGESTION_KIND_META;
 
 // Static, always-available starters shown when live AI ideas are offline. The
 // generator injects the brand, so these stay on-brand without any AI call —
 // the panel never dead-ends on an error in the hero.
-const STATIC_STARTERS: Array<{ title: string; label: string; prompt: string }> = [
+// `prompt` fica em inglês DE PROPÓSITO: é entrada de modelo de imagem, não texto
+// de interface. Só titleKey/labelKey são visíveis e por isso traduzidos.
+const STATIC_STARTERS: Array<{ titleKey: string; labelKey: string; prompt: string }> = [
   {
-    title: 'Instagram feed post',
-    label: 'Social',
+    titleKey: 'brandPanel.starter.instagramPost',
+    labelKey: 'brandPanel.starter.social',
     prompt: 'A bold, on-brand Instagram feed post announcing what makes this brand special.',
   },
   {
-    title: 'Promo story',
-    label: 'Social',
+    titleKey: 'brandPanel.starter.promoStory',
+    labelKey: 'brandPanel.starter.social',
     prompt: 'A vertical, on-brand Instagram story promoting a current offer or launch.',
   },
   {
-    title: 'Launch poster',
-    label: 'Print',
+    titleKey: 'brandPanel.starter.launchPoster',
+    labelKey: 'brandPanel.starter.print',
     prompt: 'A striking on-brand launch poster with the brand logo, a headline and key message.',
   },
   {
-    title: 'Campaign ad',
-    label: 'Ad',
+    titleKey: 'brandPanel.starter.campaignAd',
+    labelKey: 'brandPanel.starter.ad',
     prompt: 'A clean on-brand ad creative with a strong headline and a clear call to action.',
   },
 ];
@@ -171,50 +174,55 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   fullWidth,
   className,
 }) => {
+  const { t } = useTranslation();
   // Seasonal suggestions — shared SSoT hook (also powers the home cockpit).
-  const { suggestions, seasonal, loading, refreshing, error, load } = useBrandSuggestions(
-    guidelineId,
-    4
-  );
+  const { suggestions, seasonal, loading, refreshing, error, errorCode, load } =
+    useBrandSuggestions(guidelineId, 4);
   const [busy, setBusy] = useState<string | null>(null); // which connect action is running
   const [renderOpen, setRenderOpen] = useState(false);
   const [renderInitial, setRenderInitial] = useState<
     { template?: string; h1?: string; brief?: string } | undefined
   >(undefined);
 
-  const copyPrompt = useCallback(async (prompt: string) => {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      toast.success('Prompt copied');
-    } catch {
-      toast.error('Couldn’t copy');
-    }
-  }, []);
+  const copyPrompt = useCallback(
+    async (prompt: string) => {
+      try {
+        await navigator.clipboard.writeText(prompt);
+        toast.success(t('brandPanel.promptCopied'));
+      } catch {
+        toast.error(t('brandPanel.copyFailed'));
+      }
+    },
+    [t]
+  );
 
   // Non-mockup kinds: copy the ready-to-run brief and point the user at their
   // connected AI (which executes it via the Visant MCP toolbelt).
-  const sendToAI = useCallback(async (s: BrandSuggestion) => {
-    try {
-      await navigator.clipboard.writeText(s.prompt);
-      const label = (KIND_META[s.kind]?.label || 'asset').toLowerCase();
-      toast.success(`Brief copied — run it in your connected AI to build the ${label}.`);
-    } catch {
-      toast.error('Couldn’t copy');
-    }
-  }, []);
+  const sendToAI = useCallback(
+    async (s: BrandSuggestion) => {
+      try {
+        await navigator.clipboard.writeText(s.prompt);
+        const kind = t(KIND_META[s.kind]?.labelKey ?? KIND_META.mockup.labelKey).toLowerCase();
+        toast.success(t('brandPanel.briefCopied', { kind }));
+      } catch {
+        toast.error(t('brandPanel.copyFailed'));
+      }
+    },
+    [t]
+  );
 
   const copyContext = useCallback(async () => {
     setBusy('context');
     try {
       const ctx = await brandGuidelineApi.getContext(guidelineId, 'prompt');
       await navigator.clipboard.writeText(typeof ctx === 'string' ? ctx : JSON.stringify(ctx));
-      toast.success('Brand context copied — paste it into your AI');
+      toast.success(t('brandPanel.contextCopied'));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Couldn’t copy context');
+      toast.error(e instanceof Error ? e.message : t('brandPanel.contextCopyFailed'));
     } finally {
       setBusy(null);
     }
-  }, [guidelineId]);
+  }, [guidelineId, t]);
 
   const compileTokens = useCallback(
     async (format: 'css' | 'tailwind') => {
@@ -222,7 +230,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
       try {
         const { outputs } = await brandGuidelineApi.compile(guidelineId, format);
         const out = outputs?.[0];
-        if (!out) throw new Error('Nothing to compile');
+        if (!out) throw new Error(t('brandPanel.nothingToCompile'));
         const blob = new Blob([out.content], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -230,17 +238,20 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         a.download = out.filename;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success(`${format.toUpperCase()} tokens downloaded`);
+        toast.success(t('brandPanel.tokensDownloaded', { format: format.toUpperCase() }));
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Couldn’t compile tokens');
+        toast.error(e instanceof Error ? e.message : t('brandPanel.compileFailed'));
       } finally {
         setBusy(null);
       }
     },
-    [guidelineId]
+    [guidelineId, t]
   );
 
-  const aiConfigured = !error || !error.includes('aren’t enabled');
+  // Antes isto era um match de SUBSTRING na mensagem traduzida ("aren’t enabled"),
+  // que nunca batia com o texto real ("are not enabled") — a dica de configuração
+  // jamais aparecia. Agora vai pelo CÓDIGO do erro, imune a idioma e a copy.
+  const aiConfigured = errorCode !== 'suggestions_not_configured';
 
   return (
     <div
@@ -257,10 +268,12 @@ export const BrandInteractivePanel: React.FC<Props> = ({
       >
         <div className="flex items-baseline justify-between gap-4 mb-8">
           <div className="flex items-baseline gap-3 min-w-0">
-            <MicroTitle className="text-[var(--brand-text)]/50">Make something</MicroTitle>
+            <MicroTitle className="text-[var(--brand-text)]/50">
+              {t('brandPanel.makeSomething')}
+            </MicroTitle>
             {seasonal && (
               <span className="hidden sm:inline truncate text-[10px] uppercase tracking-widest text-[var(--brand-text)]/30">
-                {seasonal.label} · {seasonal.daysAway}d out
+                {seasonal.label} · {t('brandPanel.daysOut', { n: seasonal.daysAway })}
               </span>
             )}
           </div>
@@ -269,10 +282,10 @@ export const BrandInteractivePanel: React.FC<Props> = ({
               onClick={() => load(true)}
               disabled={loading || refreshing}
               className="flex items-center gap-1.5 shrink-0 text-[10px] uppercase tracking-widest text-[var(--brand-text)]/35 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
-              aria-label="Regenerate ideas"
+              aria-label={t('brandPanel.refreshAria')}
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
-              Refresh
+              {t('brandPanel.refresh')}
             </button>
           )}
         </div>
@@ -282,8 +295,8 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         {onMockup && (
           <div className="mb-3">
             <IdeaCard
-              kicker="Mockup"
-              title="Aplicar a marca em produtos reais"
+              kicker={t('brandPanel.kind.mockup')}
+              title={t('brandPanel.mockupTitle')}
               onPrimary={onMockup}
             />
           </div>
@@ -307,19 +320,29 @@ export const BrandInteractivePanel: React.FC<Props> = ({
               {STATIC_STARTERS.map((s, i) => (
                 <IdeaCard
                   key={i}
-                  kicker={s.label}
-                  title={s.title}
+                  kicker={t(s.labelKey)}
+                  title={t(s.titleKey)}
                   onPrimary={() => onGenerate(s.prompt)}
                 />
               ))}
             </div>
+            {/* O erro das ideias ao vivo PRECISA aparecer: sem isto uma falha real
+                fica indistinguível de "ainda não gerei ideias" — os starters
+                estáticos escondiam a quebra (silent-empty). */}
+            {error && (
+              <p role="status" className="text-[11px] leading-relaxed text-[var(--brand-text)]/45">
+                {t('brandPanel.ideasError', { message: error })}
+              </p>
+            )}
             <button
               onClick={() => load(true)}
               disabled={refreshing}
               className={cn(primaryBtn, 'h-9 px-4 w-full sm:w-auto justify-center')}
             >
               <span>
-                {seasonal ? `Generate ideas for ${seasonal.label}` : 'Generate tailored ideas'}
+                {seasonal
+                  ? t('brandPanel.generateFor', { label: seasonal.label })
+                  : t('brandPanel.generateTailored')}
               </span>
               <ArrowRight
                 size={13}
@@ -335,7 +358,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
               return (
                 <IdeaCard
                   key={i}
-                  kicker={meta.label}
+                  kicker={t(meta.labelKey)}
                   title={s.title}
                   body={s.rationale}
                   onPrimary={() => (isInline ? onGenerate(s.prompt) : sendToAI(s))}
@@ -352,8 +375,8 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                           setRenderOpen(true);
                         }}
                         className={iconBtn}
-                        aria-label="Render on-brand"
-                        title="Render on-brand (web — no Figma)"
+                        aria-label={t('brandPanel.renderAria')}
+                        title={t('brandPanel.renderTitle')}
                       >
                         <Layout size={12} />
                       </button>
@@ -363,8 +386,8 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                           copyPrompt(s.prompt);
                         }}
                         className={iconBtn}
-                        aria-label="Copy prompt"
-                        title="Copy prompt"
+                        aria-label={t('brandPanel.copyPrompt')}
+                        title={t('brandPanel.copyPrompt')}
                       >
                         <Copy size={12} />
                       </button>
@@ -382,7 +405,9 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         padding="lg"
         className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10 flex flex-col"
       >
-        <MicroTitle className="text-[var(--brand-text)]/50 mb-6">Live AI context</MicroTitle>
+        <MicroTitle className="text-[var(--brand-text)]/50 mb-6">
+          {t('brandPanel.liveAiContext')}
+        </MicroTitle>
 
         {/* The assistants this brand plugs into — real marks, no chrome. */}
         <div className="flex items-center gap-2 mb-6">
@@ -398,7 +423,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         </div>
 
         <p className="text-[13px] text-[var(--brand-text)]/50 leading-relaxed mb-6 max-w-xs">
-          Your colors, type, logos and voice — loaded into any assistant, automatically.
+          {t('brandPanel.assistantsBlurb')}
         </p>
 
         <div className="flex flex-col gap-2 mt-auto">
@@ -407,7 +432,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             disabled={connecting}
             className={cn(primaryBtn, 'h-10 px-4 justify-between')}
           >
-            <span>{isShared ? 'Connect to your AI' : 'Share + connect'}</span>
+            <span>{isShared ? t('brandPanel.connect') : t('brandPanel.shareConnect')}</span>
             {connecting ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
@@ -417,12 +442,16 @@ export const BrandInteractivePanel: React.FC<Props> = ({
               />
             )}
           </button>
+          {/* `busy` é um slot ÚNICO pras três ações: desabilitar só a própria
+              deixava a segunda clicada sobrescrever o slot, o spinner da primeira
+              sumia e ela voltava clicável no meio do request (pedido duplicado).
+              Enquanto qualquer uma roda, as três ficam travadas. */}
           <button
             onClick={copyContext}
-            disabled={busy === 'context'}
+            disabled={!!busy}
             className={cn(ghostBtn, 'h-10 px-4 justify-between')}
           >
-            <span>Copy brand context</span>
+            <span>{t('brandPanel.copyContext')}</span>
             {busy === 'context' ? (
               <Loader2 size={13} className="animate-spin" />
             ) : (
@@ -432,14 +461,14 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           <div className="flex gap-2">
             <button
               onClick={() => compileTokens('css')}
-              disabled={busy === 'css'}
+              disabled={!!busy}
               className={cn(ghostBtn, 'h-10 flex-1 justify-center text-xs font-mono')}
             >
               {busy === 'css' ? <Loader2 size={12} className="animate-spin" /> : 'CSS'}
             </button>
             <button
               onClick={() => compileTokens('tailwind')}
-              disabled={busy === 'tailwind'}
+              disabled={!!busy}
               className={cn(ghostBtn, 'h-10 flex-1 justify-center text-xs font-mono')}
             >
               {busy === 'tailwind' ? <Loader2 size={12} className="animate-spin" /> : 'Tailwind'}
@@ -448,7 +477,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         </div>
         {!aiConfigured && (
           <p className="text-[10px] text-[var(--brand-text)]/40 mt-5 leading-relaxed">
-            Set a cheap text-provider key (Groq / NVIDIA NIM) to unlock seasonal idea suggestions.
+            {t('brandPanel.notConfigured')}
           </p>
         )}
       </GlassPanel>

@@ -42,7 +42,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
       ? [
           {
             value: ALL_VALUE,
-            label: t('nav.allBrands') || 'Todas as marcas',
+            label: t('nav.allBrands'),
             icon: <Layers size={13} className="text-neutral-400" />,
           },
         ]
@@ -84,7 +84,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
         footer={
           brands.length > 1 ? (
             <div className="flex items-center justify-between px-2 py-1.5 text-[10px] text-neutral-500">
-              <span>{t('nav.lastBrand') || 'Última marca'}</span>
+              <span>{t('nav.lastBrand')}</span>
               <kbd className="font-mono px-1 py-0.5 rounded bg-neutral-800/60 border border-neutral-700/50 text-neutral-400">
                 ⌥B
               </kbd>

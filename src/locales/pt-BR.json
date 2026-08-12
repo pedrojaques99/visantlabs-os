@@ -643,7 +643,8 @@
       "savedToMediaKit": "Salvo no Media Kit",
       "saveError": "Erro ao salvar",
       "savedAllToMediaKit": "{count} mockup{plural} salvo{plural} no Media Kit"
-    }
+    },
+    "saveFailed": "A imagem foi gerada mas não deu pra salvar na sua biblioteca — baixe antes de fechar."
   },
   "nav": {
     "context": "CONTEXTO",
@@ -2797,7 +2798,8 @@
     "viewGuidelines": "Ver guidelines",
     "gallery": {
       "title": "Galeria de outputs",
-      "viewAll": "Ver todos"
+      "viewAll": "Ver todos",
+      "loadError": "Não foi possível carregar seus outputs."
     },
     "connect": {
       "subtitle": "On-brand por padrão, cores, fontes, logos e voz, automaticamente.",
@@ -2849,6 +2851,30 @@
       "new": "Novo",
       "title": "Em andamento",
       "loadError": "Não foi possível carregar seu trabalho em andamento. Tente de novo."
+    },
+    "surprise": {
+      "title": "Mockups grátis",
+      "surpriseMe": "Surpreenda-me",
+      "saved": "Salvo",
+      "savedToLibrary": "Salvo em Meus Mockups",
+      "saveFailed": "Não deu pra salvar o mockup",
+      "feedBroken": "Não deu pra compor os mockups agora.",
+      "loadFailed": "Não deu pra carregar sugestões agora.",
+      "noAssets": "Adicione um logo ou arte à marca pra gerar mockups on-brand.",
+      "addLogo": "Adicionar logo",
+      "noScenes": "Nenhuma cena comercial disponível ainda.",
+      "noneYet": "Sem sugestões pra esta marca ainda."
+    },
+    "changeLogoDialog": {
+      "title": "Trocar logo principal",
+      "upload": "Enviar imagem ou SVG",
+      "brandLogos": "Logos da marca",
+      "fromMedia": "Da biblioteca de media",
+      "currentPrimary": "Logo principal atual",
+      "setPrimary": "Definir como principal",
+      "updated": "Logo atualizado",
+      "primarySet": "Logo principal definido",
+      "failed": "Falha ao trocar o logo"
     }
   },
   "common": {
@@ -6501,5 +6527,83 @@
     "opening": "Abrindo {tool}...",
     "nothingToSend": "Nada para enviar ainda. Gere ou selecione um asset primeiro.",
     "sendFailed": "Não conseguimos enviar o asset. Tente de novo em instantes."
+  },
+  "brandPanel": {
+    "makeSomething": "Fazer alguma coisa",
+    "liveAiContext": "Contexto vivo pra IA",
+    "daysOut": "faltam {n}d",
+    "refresh": "Atualizar",
+    "refreshAria": "Gerar novas ideias",
+    "generateFor": "Gerar ideias pra {label}",
+    "generateTailored": "Gerar ideias sob medida",
+    "mockupTitle": "Aplicar a marca em produtos reais",
+    "renderAria": "Renderizar on-brand",
+    "renderTitle": "Renderizar on-brand (web, sem Figma)",
+    "copyPrompt": "Copiar prompt",
+    "promptCopied": "Prompt copiado",
+    "copyFailed": "Não foi possível copiar",
+    "briefCopied": "Brief copiado, rode na sua IA conectada pra montar o {kind}.",
+    "contextCopied": "Contexto da marca copiado, cole na sua IA",
+    "contextCopyFailed": "Não foi possível copiar o contexto",
+    "nothingToCompile": "Nada pra compilar",
+    "tokensDownloaded": "Tokens {format} baixados",
+    "compileFailed": "Não foi possível compilar os tokens",
+    "assistantsBlurb": "Suas cores, tipografia, logos e voz, carregados em qualquer assistente, automaticamente.",
+    "connect": "Conectar na sua IA",
+    "shareConnect": "Publicar + conectar",
+    "copyContext": "Copiar contexto da marca",
+    "notConfigured": "Configure uma chave de provider de texto barato (Groq / NVIDIA NIM) pra liberar as sugestões sazonais.",
+    "ideasError": "As ideias ao vivo não carregaram: {message}",
+    "kind": {
+      "mockup": "Mockup",
+      "social": "Social",
+      "campaign": "Campanha",
+      "video": "Vídeo",
+      "budget": "Orçamento",
+      "naming": "Naming"
+    },
+    "starter": {
+      "social": "Social",
+      "print": "Impresso",
+      "ad": "Anúncio",
+      "instagramPost": "Post de feed no Instagram",
+      "promoStory": "Story de promoção",
+      "launchPoster": "Cartaz de lançamento",
+      "campaignAd": "Anúncio de campanha"
+    },
+    "connectFirst": "Publique a marca antes de conectar",
+    "connectFailed": "Não foi possível gerar o link de conexão"
+  },
+  "campaigns": {
+    "title": "Campanhas",
+    "description": "Campanhas por marca, geradas do seu produto e da sua marca e salvas aqui pra você retomar quando quiser.",
+    "creative": "Criativo",
+    "newCampaign": "Nova campanha",
+    "signedOutTitle": "Entre pra ver suas campanhas",
+    "signedOutDesc": "As campanhas são geradas a partir da sua marca e ficam salvas aqui pra você retomar o trabalho quando quiser.",
+    "loadErrorTitle": "Não deu pra carregar suas campanhas",
+    "loadErrorDesc": "Suas campanhas estão salvas. Algo falhou ao buscar — tente de novo.",
+    "emptyBrandTitle": "Nenhuma campanha nesta marca ainda",
+    "emptyTitle": "Nenhuma campanha ainda",
+    "emptyDesc": "Abra o Canvas e peça pro assistente gerar uma campanha do seu produto e da sua marca — ela aparece aqui sozinha.",
+    "emptyAction": "Gerar no Canvas",
+    "ads": "anúncios",
+    "status": {
+      "planning": "planejando",
+      "generating": "gerando",
+      "done": "pronto",
+      "error": "erro"
+    },
+    "detail": {
+      "fallbackTitle": "Campanha",
+      "back": "Campanhas",
+      "backAria": "Voltar pras campanhas",
+      "loadErrorTitle": "Não deu pra carregar esta campanha",
+      "loadErrorDesc": "Sua campanha está salva. Algo falhou ao buscar — tente de novo.",
+      "noResults": "Nenhum resultado ainda",
+      "failed": "Esta campanha falhou.",
+      "stillGenerating": "Esta campanha ainda está gerando.",
+      "download": "Baixar"
+    }
   }
 }

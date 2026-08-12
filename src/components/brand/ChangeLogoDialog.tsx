@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 type Logos = NonNullable<BrandGuideline['logos']>;
@@ -28,6 +29,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { t } = useTranslation();
   const id = guideline.id ?? '';
   const logos = (guideline.logos ?? []) as Logos;
   const media = (guideline.media ?? []).filter((m) => m.type === 'image');
@@ -61,7 +63,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
       toast.success(okMsg);
       onOpenChange(false);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Falha ao trocar o logo');
+      toast.error(e instanceof Error ? e.message : t('cockpit.changeLogoDialog.failed'));
     } finally {
       setBusy(false);
     }
@@ -76,7 +78,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
         id,
         data: { logos: setPrimary(allLogos as Logos, logo.id) },
       });
-    }, 'Logo atualizado');
+    }, t('cockpit.changeLogoDialog.updated'));
   };
 
   const onPickMedia = (url: string) =>
@@ -86,12 +88,12 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
         id,
         data: { logos: setPrimary(allLogos as Logos, logo.id) },
       });
-    }, 'Logo atualizado');
+    }, t('cockpit.changeLogoDialog.updated'));
 
   const onPickExisting = (logoId: string) =>
     run(async () => {
       await updateGuideline.mutateAsync({ id, data: { logos: setPrimary(logos, logoId) } });
-    }, 'Logo principal definido');
+    }, t('cockpit.changeLogoDialog.primarySet'));
 
   const gridCls = 'grid grid-cols-3 sm:grid-cols-5 gap-2';
   const labelCls = 'text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2';
@@ -103,7 +105,9 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
         className="max-h-[85vh] overflow-y-auto bg-neutral-950 border-white/10"
       >
         <SheetHeader>
-          <SheetTitle className="text-neutral-200">Trocar logo principal</SheetTitle>
+          <SheetTitle className="text-neutral-200">
+            {t('cockpit.changeLogoDialog.title')}
+          </SheetTitle>
         </SheetHeader>
 
         <div
@@ -118,7 +122,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
             className="w-full h-24 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-white/15 text-neutral-500 hover:border-brand-cyan/40 hover:text-neutral-300 transition-colors"
           >
             <Upload size={18} />
-            <span className="text-xs">Enviar imagem ou SVG</span>
+            <span className="text-xs">{t('cockpit.changeLogoDialog.upload')}</span>
           </button>
           <input
             ref={fileRef}
@@ -131,19 +135,25 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
           {/* Logos existentes → promover a principal */}
           {logos.length > 0 && (
             <div>
-              <p className={labelCls}>Logos da marca</p>
+              <p className={labelCls}>{t('cockpit.changeLogoDialog.brandLogos')}</p>
               <div className={gridCls}>
                 {logos.map((l) => (
                   <button
                     key={l.id}
-                    onClick={() => onPickExisting(l.id)}
+                    // Já é a principal → clicar disparava um PUT completo e um
+                    // toast de "definido" sem nada ter mudado.
+                    onClick={() => l.variant !== 'primary' && onPickExisting(l.id)}
+                    disabled={l.variant === 'primary'}
+                    aria-current={l.variant === 'primary' ? 'true' : undefined}
                     title={
-                      l.variant === 'primary' ? 'Logo principal atual' : 'Definir como principal'
+                      l.variant === 'primary'
+                        ? t('cockpit.changeLogoDialog.currentPrimary')
+                        : t('cockpit.changeLogoDialog.setPrimary')
                     }
                     className={cn(
                       'relative aspect-square rounded-md border p-2 flex items-center justify-center bg-white/[0.03] transition-colors',
                       l.variant === 'primary'
-                        ? 'border-brand-cyan/50 ring-1 ring-brand-cyan/20'
+                        ? 'border-brand-cyan/50 ring-1 ring-brand-cyan/20 cursor-default'
                         : 'border-neutral-800 hover:border-white/20'
                     )}
                   >
@@ -163,7 +173,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
           {/* Da biblioteca de media */}
           {media.length > 0 && (
             <div>
-              <p className={labelCls}>Da biblioteca de media</p>
+              <p className={labelCls}>{t('cockpit.changeLogoDialog.fromMedia')}</p>
               <div className={gridCls}>
                 {media.map((m) => (
                   <button
