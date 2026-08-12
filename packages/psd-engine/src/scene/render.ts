@@ -133,10 +133,17 @@ export function renderScene(
           const mW = Math.max(1, Math.ceil(maX - miX));
           const mH = Math.max(1, Math.ceil(maY - miY));
           const meshCanvas = cc(mW, mH);
-          meshWarp(meshCanvas.getContext('2d'), artCanvas, inst.innerW, inst.innerH, inst.mesh, (nx, ny) => {
-            const p = paraQuad(nx, ny);
-            return { x: p.x - miX, y: p.y - miY };
-          });
+          meshWarp(
+            meshCanvas.getContext('2d'),
+            artCanvas,
+            inst.innerW,
+            inst.innerH,
+            inst.mesh,
+            (nx, ny) => {
+              const p = paraQuad(nx, ny);
+              return { x: p.x - miX, y: p.y - miY };
+            }
+          );
           faceCanvas = meshCanvas;
           dx = Math.floor(miX);
           dy = Math.floor(miY);
@@ -175,7 +182,14 @@ export function renderScene(
       // inteira esticada. Esticar uma máscara de documento dentro do quad
       // deforma o recorte e ninguém vê pelo resultado, só pela borda errada.
       if (inst.maskRef && assets[inst.maskRef]) {
-        aplicarMascara(faceCanvas, assets[inst.maskRef], cc, face.maskSpace === 'doc' ? dx : 0, face.maskSpace === 'doc' ? dy : 0, face.maskSpace === 'doc');
+        aplicarMascara(
+          faceCanvas,
+          assets[inst.maskRef],
+          cc,
+          face.maskSpace === 'doc' ? dx : 0,
+          face.maskSpace === 'doc' ? dy : 0,
+          face.maskSpace === 'doc'
+        );
       }
 
       desenharFace(ctx, faceCanvas, inst, dx, dy, doc, cc);

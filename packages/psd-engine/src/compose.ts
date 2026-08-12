@@ -374,7 +374,13 @@ function blendCh(mode: string, b: number, s: number): number {
  * Implements Porter-Duff "source-over" compositing with a custom blend function.
  * Called only for modes in PIXEL_BLEND_SET.
  */
-export function pixelBlendMode(dstCtx: any, srcCanvas: any, mode: string, W: number, H: number): void {
+export function pixelBlendMode(
+  dstCtx: any,
+  srcCanvas: any,
+  mode: string,
+  W: number,
+  H: number
+): void {
   const dstImg = dstCtx.getImageData(0, 0, W, H);
   const srcImg = (srcCanvas.getContext('2d') as any).getImageData(0, 0, W, H);
   const d = dstImg.data;

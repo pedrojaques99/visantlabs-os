@@ -124,25 +124,36 @@ export async function deriveTools(): Promise<GeneratedTool[]> {
   return tools;
 }
 
-function serialize(tools: GeneratedTool[]): string {
-  return (
-    JSON.stringify(
-      {
-        $comment:
-          'GERADO por scripts/sync-mcp-registry.ts a partir de server/mcp/platform-mcp.ts. NAO EDITE A MAO — rode `npm run mcp:sync`.',
-        generatedFrom: 'server/mcp/platform-mcp.ts',
-        tools,
-      },
-      null,
-      2
-    ) + '\n'
+/**
+ * Serializa JA no estilo do Prettier.
+ *
+ * O `format:check` do CI varre `**\/*.json`, e o gerado entra nessa conta: com
+ * `JSON.stringify` cru, os dois portoes se contradiziam — `mcp:sync --check`
+ * exigia a saida do stringify, o `format:check` exigia a do Prettier, e nao
+ * havia arquivo que passasse nos dois. Ficou vermelho em main sem ninguem ter
+ * escrito nada errado.
+ */
+async function serialize(tools: GeneratedTool[]): Promise<string> {
+  const raw = JSON.stringify(
+    {
+      $comment:
+        'GERADO por scripts/sync-mcp-registry.ts a partir de server/mcp/platform-mcp.ts. NAO EDITE A MAO — rode `npm run mcp:sync`.',
+      generatedFrom: 'server/mcp/platform-mcp.ts',
+      tools,
+    },
+    null,
+    2
   );
+
+  const prettier = await import('prettier');
+  const config = (await prettier.resolveConfig(OUT)) ?? {};
+  return prettier.format(raw, { ...config, filepath: OUT });
 }
 
 async function main() {
   const check = process.argv.includes('--check');
   const tools = await deriveTools();
-  const next = serialize(tools);
+  const next = await serialize(tools);
 
   if (check) {
     const current = existsSync(OUT) ? readFileSync(OUT, 'utf-8') : '';

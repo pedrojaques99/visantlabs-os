@@ -30,7 +30,10 @@ export interface ColorSlot {
   hidden: boolean;
 }
 
-const dois = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+const dois = (n: number) =>
+  Math.max(0, Math.min(255, Math.round(n)))
+    .toString(16)
+    .padStart(2, '0');
 
 export function rgbParaHex(c: { r: number; g: number; b: number }): string {
   return `#${dois(c.r)}${dois(c.g)}${dois(c.b)}`;
