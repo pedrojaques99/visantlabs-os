@@ -136,11 +136,15 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
   }, []);
 
   // Featured tools — the bento. First one is wide. Image + short label.
+  // As imagens são prints reais tirados por scripts/capture-app-shots.mjs.
+  // A ordem segue a qualidade do print: o card largo carrega a tela mais forte.
+  // Mockup Machine e Branding ficaram de fora porque só rendem print decente
+  // depois de gerar conteúdo; voltam quando tiverem captura própria.
   const bento = [
     {
-      img: 'mockup-machine',
-      name: t('landing.bento.mockupName'),
-      desc: t('landing.bento.mockupDesc'),
+      img: 'image-lab',
+      name: t('landing.bento.imageLabName'),
+      desc: t('landing.bento.imageLabDesc'),
       wide: true,
     },
     {
@@ -151,9 +155,9 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
     { img: 'canvas', name: t('landing.bento.canvasName'), desc: t('landing.bento.canvasDesc') },
     { img: '3d-studio', name: t('landing.bento.studioName'), desc: t('landing.bento.studioDesc') },
     {
-      img: 'branding-machine',
-      name: t('landing.bento.brandingName'),
-      desc: t('landing.bento.brandingDesc'),
+      img: 'playground',
+      name: t('landing.bento.playgroundName'),
+      desc: t('landing.bento.playgroundDesc'),
     },
   ];
 
@@ -200,14 +204,25 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       {/* ── Hero ────────────────────────────────────────────────── */}
       <header className="relative h-[100svh] min-h-[640px] overflow-hidden">
         {/* 3D logo as full background */}
-        <div data-stage aria-hidden className="absolute inset-0 z-0 opacity-60">
+        <div data-stage aria-hidden className="absolute inset-0 z-0 opacity-75">
           <VisantLogo3D
             presetIndex={1}
             xOffsetPx={0}
             shaderName={sessionShader}
             shaderIntensity={shaderIntensity}
+            // Hero manda no palco: no tamanho do launcher (10) o logo sumia
+            // atrás da headline e lia como artefato, não como arte.
+            scale={isMobile ? 3.6 : 14}
           />
         </div>
+
+        {/* Scrim atrás do bloco de texto. Com o logo grande, headline e lead
+            caíam em cima do vidro e perdiam contraste. Escurece só o miolo e
+            deixa a borda do anel brilhando em volta do texto. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(ellipse_58%_42%_at_50%_46%,rgba(10,10,10,0.86),rgba(10,10,10,0.45)_55%,transparent_78%)]"
+        />
 
         {/* Bottom fade so hero bleeds into bento cleanly */}
         <div

@@ -156,8 +156,15 @@ async function main() {
   const next = await serialize(tools);
 
   if (check) {
+    // Compara sem fim de linha. Com `core.autocrlf=true` o git entrega o
+    // arquivo em CRLF no working tree enquanto `serialize()` devolve LF, e a
+    // comparacao crua reprovava em toda maquina Windows mesmo com o conteudo
+    // identico byte a byte. Em CI Linux passava, entao o portao mentia so pra
+    // quem desenvolve. E o mesmo tipo de briga entre portoes que o comentario
+    // do `serialize()` descreve, agora entre plataformas.
+    const eol = (s: string) => s.replace(/\r\n/g, '\n');
     const current = existsSync(OUT) ? readFileSync(OUT, 'utf-8') : '';
-    if (current !== next) {
+    if (eol(current) !== eol(next)) {
       console.error(
         `[mcp:sync] ${OUT} esta desatualizado em relacao a platform-mcp.ts.\n` +
           '           Rode `npm run mcp:sync` e commite o resultado.'

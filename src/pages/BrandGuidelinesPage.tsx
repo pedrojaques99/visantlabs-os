@@ -115,9 +115,26 @@ const getCoverUrl = (g: BrandGuideline): string | null => {
   return null;
 };
 
-const CoverFallback = ({ colors }: { colors?: BrandGuideline['colors'] }) => {
-  const c1 = colors?.[0]?.hex || '#262626';
-  const c2 = colors?.[1]?.hex || '#171717';
+// Textura do fallback: grade de pontos, o mesmo vocabulário do
+// GridDotsBackground. Antes era um tabuleiro de xadrez de 40px, que é o
+// símbolo universal de "PNG transparente / imagem quebrada" — marca sem capa
+// ficava visualmente idêntica a marca com asset corrompido, e a tela inteira
+// lia como bug.
+const DOT_TEXTURE =
+  "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23fff'/%3E%3C/svg%3E\")";
+
+/**
+ * Capa sintética pra marca sem imagem de capa.
+ *
+ * A marca sem cor cadastrada caía em dois cinzas e o card sumia no fundo, o
+ * que dava o mesmo resultado do bug que estamos consertando. O hash do nome
+ * gera um tom estável (mesma marca, mesma cor em todo reload) só nesse caso.
+ */
+const CoverFallback = ({ colors, name }: { colors?: BrandGuideline['colors']; name?: string }) => {
+  const hasBrandColors = !!colors?.[0]?.hex;
+  const hue = [...(name || 'brand')].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
+  const c1 = colors?.[0]?.hex || `hsl(${hue} 32% 26%)`;
+  const c2 = colors?.[1]?.hex || `hsl(${(hue + 40) % 360} 28% 13%)`;
   const c3 = colors?.[2]?.hex || c1;
   return (
     <div
@@ -125,11 +142,10 @@ const CoverFallback = ({ colors }: { colors?: BrandGuideline['colors'] }) => {
       style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)` }}
     >
       <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='1'%3E%3Cpath d='M0 0h20v20H0zM20 20h20v20H20z'/%3E%3C/g%3E%3C/svg%3E\")",
-        }}
+        className={
+          hasBrandColors ? 'absolute inset-0 opacity-[0.07]' : 'absolute inset-0 opacity-[0.10]'
+        }
+        style={{ backgroundImage: DOT_TEXTURE }}
       />
     </div>
   );
@@ -235,7 +251,7 @@ const BrandCard = ({
             />
           </>
         ) : (
-          <CoverFallback colors={guideline.colors} />
+          <CoverFallback colors={guideline.colors} name={brandName} />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
 

@@ -589,7 +589,7 @@ export const HomePage: React.FC = () => {
                     className="flex flex-col items-center gap-5 mt-4"
                   >
                     <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none text-center">
-                      experimental design laboratory
+                      brand context for your agent
                     </p>
                     <button
                       onClick={() => setShowAuthModal(true)}
@@ -639,7 +639,7 @@ export const HomePage: React.FC = () => {
                       className="flex flex-col gap-5"
                     >
                       <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none">
-                        experimental design laboratory
+                        brand context for your agent
                       </p>
                       <button
                         onClick={() => setShowAuthModal(true)}
@@ -678,7 +678,7 @@ export const HomePage: React.FC = () => {
             className="absolute bottom-6 font-mono text-[10px] text-neutral-800 tracking-widest uppercase select-none"
             aria-hidden
           >
-            ↑ ↓ navigate · enter select
+            ↑ ↓ navigate, enter select
           </motion.p>
         )}
 

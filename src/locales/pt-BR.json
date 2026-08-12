@@ -643,7 +643,8 @@
       "savedToMediaKit": "Salvo no Media Kit",
       "saveError": "Erro ao salvar",
       "savedAllToMediaKit": "{count} mockup{plural} salvo{plural} no Media Kit"
-    }
+    },
+    "saveFailed": "A imagem foi gerada mas não deu pra salvar na sua biblioteca — baixe antes de fechar."
   },
   "nav": {
     "context": "CONTEXTO",
@@ -2797,7 +2798,8 @@
     "viewGuidelines": "Ver guidelines",
     "gallery": {
       "title": "Galeria de outputs",
-      "viewAll": "Ver todos"
+      "viewAll": "Ver todos",
+      "loadError": "Não foi possível carregar seus outputs."
     },
     "connect": {
       "subtitle": "On-brand por padrão, cores, fontes, logos e voz, automaticamente.",
@@ -2849,6 +2851,30 @@
       "new": "Novo",
       "title": "Em andamento",
       "loadError": "Não foi possível carregar seu trabalho em andamento. Tente de novo."
+    },
+    "surprise": {
+      "title": "Mockups grátis",
+      "surpriseMe": "Surpreenda-me",
+      "saved": "Salvo",
+      "savedToLibrary": "Salvo em Meus Mockups",
+      "saveFailed": "Não deu pra salvar o mockup",
+      "feedBroken": "Não deu pra compor os mockups agora.",
+      "loadFailed": "Não deu pra carregar sugestões agora.",
+      "noAssets": "Adicione um logo ou arte à marca pra gerar mockups on-brand.",
+      "addLogo": "Adicionar logo",
+      "noScenes": "Nenhuma cena comercial disponível ainda.",
+      "noneYet": "Sem sugestões pra esta marca ainda."
+    },
+    "changeLogoDialog": {
+      "title": "Trocar logo principal",
+      "upload": "Enviar imagem ou SVG",
+      "brandLogos": "Logos da marca",
+      "fromMedia": "Da biblioteca de media",
+      "currentPrimary": "Logo principal atual",
+      "setPrimary": "Definir como principal",
+      "updated": "Logo atualizado",
+      "primarySet": "Logo principal definido",
+      "failed": "Falha ao trocar o logo"
     }
   },
   "common": {
@@ -3756,8 +3782,8 @@
     "heroSubtitle": "e experimente a Mockup Machine®",
     "heroTitle": "Crie com moderação",
     "sendImage": "Enviar imagem",
-    "seoDescription": "Laboratório de ferramentas criativas para designers e times de marca.",
-    "seoTitle": "Visant Labs®"
+    "seoDescription": "Sobe sua marca uma vez e todo output de IA sai on-brand. Mockup, campanha e deck lendo o mesmo guia.",
+    "seoTitle": "Brand guidelines para agentes de IA. Visant Labs®"
   },
   "messages": {
     "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
@@ -6331,55 +6357,55 @@
   },
   "landing": {
     "hero": {
-      "titleLine1": "Pare de corrigir outputs",
-      "titleLine2": "que ignoram sua marca.",
-      "subtitle": "Suas brand guidelines viram contexto estruturado para qualquer modelo. O que sai sempre parece seu.",
-      "icp": "Para designers, agências e times de marketing que produzem com modelos generativos.",
+      "titleLine1": "Um guia de marca",
+      "titleLine2": "para o seu agente.",
+      "subtitle": "Sobe a marca uma vez. Todo output depois já sai na sua cor, na sua letra, no seu tom.",
+      "icp": "Pra designer que projeta com agente.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver os apps"
     },
     "proof": {
-      "eyebrow": "Peças geradas",
-      "title": "Uma marca. Todo formato. Sempre on-brand.",
-      "subtitle": "Cada peça abaixo saiu de uma brand guideline viva, sem ninguém redesenhar nada. Do saco de café ao dashboard, tudo puxa a mesma identidade."
+      "eyebrow": "Saiu do guia",
+      "title": "Todas leram o mesmo guia.",
+      "subtitle": "Do saco de café ao dashboard. Catorze marcas."
     },
     "howItWorks": {
       "eyebrow": "Como funciona",
-      "title": "Três passos. Zero retrabalho.",
+      "title": "Do PDF ao primeiro output.",
       "step1Num": "01",
-      "step1Title": "Suba suas guidelines",
-      "step1Desc": "PDF, URL ou texto. Visant extrai a essência da sua identidade, cores, tipografia, tom de voz, regras.",
+      "step1Title": "Sobe o material",
+      "step1Desc": "PDF, imagem, link ou texto colado.",
       "step2Num": "02",
-      "step2Title": "Viram contexto real",
-      "step2Desc": "Suas regras deixam de ser um documento e passam a ser contexto estruturado que qualquer modelo lê antes de gerar.",
+      "step2Title": "Vira contexto tipado",
+      "step2Desc": "Paleta, régua de logo, tom. Campo a campo.",
       "step3Num": "03",
-      "step3Title": "O output parece seu",
-      "step3Desc": "Mockups, copy, campanhas. Gerados dentro da sua identidade. Sem precisar corrigir o que saiu errado."
+      "step3Title": "O agente produz",
+      "step3Desc": "Mockup, campanha, deck. Mesma régua em tudo."
     },
     "trust": {
       "label1": "Open source",
       "label2": "API-first",
-      "label3": "MCP-ready",
-      "label4": "Figma Plugin"
+      "label3": "131 tools no MCP",
+      "label4": "Plugin do Figma"
     },
     "bento": {
-      "eyebrow": "A plataforma",
-      "title": "Tudo parece seu. Sempre.",
-      "mockupName": "Mockup Machine",
-      "mockupDesc": "Mockups realistas do produto em segundos.",
+      "eyebrow": "Onde o guia entra",
+      "title": "As ferramentas que leem o guia.",
       "brandName": "Brand Guidelines",
-      "brandDesc": "Sua identidade entra na geração antes do modelo desenhar.",
+      "brandDesc": "A fonte que o resto lê.",
       "canvasName": "Canvas",
-      "canvasDesc": "Desenhe, conecte, gere. Tudo num canvas.",
+      "canvasDesc": "Desenha, conecta, gera.",
       "studioName": "3D Studio",
-      "studioDesc": "Cenas e render 3D no navegador.",
-      "brandingName": "Branding",
-      "brandingDesc": "Identidades que parecem suas desde o primeiro rascunho."
+      "studioDesc": "Cena e render 3D no navegador.",
+      "imageLabName": "Image Lab",
+      "imageLabDesc": "Halftone, riso, upscale. No navegador.",
+      "playgroundName": "Playground",
+      "playgroundDesc": "Mini-app gerado e rodando na hora."
     },
     "finalCta": {
-      "title": "Sua marca. Consistente em tudo que você gera.",
+      "title": "Dá o guia pro seu agente.",
       "button": "Começar grátis",
-      "anchor": "Grátis pra começar. Sem cartão de crédito, cancele quando quiser."
+      "anchor": "Grátis pra começar. Sem cartão."
     },
     "footer": {
       "tagline": "Sua marca alimenta a geração."
@@ -6501,5 +6527,83 @@
     "opening": "Abrindo {tool}...",
     "nothingToSend": "Nada para enviar ainda. Gere ou selecione um asset primeiro.",
     "sendFailed": "Não conseguimos enviar o asset. Tente de novo em instantes."
+  },
+  "brandPanel": {
+    "makeSomething": "Fazer alguma coisa",
+    "liveAiContext": "Contexto vivo pra IA",
+    "daysOut": "faltam {n}d",
+    "refresh": "Atualizar",
+    "refreshAria": "Gerar novas ideias",
+    "generateFor": "Gerar ideias pra {label}",
+    "generateTailored": "Gerar ideias sob medida",
+    "mockupTitle": "Aplicar a marca em produtos reais",
+    "renderAria": "Renderizar on-brand",
+    "renderTitle": "Renderizar on-brand (web, sem Figma)",
+    "copyPrompt": "Copiar prompt",
+    "promptCopied": "Prompt copiado",
+    "copyFailed": "Não foi possível copiar",
+    "briefCopied": "Brief copiado, rode na sua IA conectada pra montar o {kind}.",
+    "contextCopied": "Contexto da marca copiado, cole na sua IA",
+    "contextCopyFailed": "Não foi possível copiar o contexto",
+    "nothingToCompile": "Nada pra compilar",
+    "tokensDownloaded": "Tokens {format} baixados",
+    "compileFailed": "Não foi possível compilar os tokens",
+    "assistantsBlurb": "Suas cores, tipografia, logos e voz, carregados em qualquer assistente, automaticamente.",
+    "connect": "Conectar na sua IA",
+    "shareConnect": "Publicar + conectar",
+    "copyContext": "Copiar contexto da marca",
+    "notConfigured": "Configure uma chave de provider de texto barato (Groq / NVIDIA NIM) pra liberar as sugestões sazonais.",
+    "ideasError": "As ideias ao vivo não carregaram: {message}",
+    "kind": {
+      "mockup": "Mockup",
+      "social": "Social",
+      "campaign": "Campanha",
+      "video": "Vídeo",
+      "budget": "Orçamento",
+      "naming": "Naming"
+    },
+    "starter": {
+      "social": "Social",
+      "print": "Impresso",
+      "ad": "Anúncio",
+      "instagramPost": "Post de feed no Instagram",
+      "promoStory": "Story de promoção",
+      "launchPoster": "Cartaz de lançamento",
+      "campaignAd": "Anúncio de campanha"
+    },
+    "connectFirst": "Publique a marca antes de conectar",
+    "connectFailed": "Não foi possível gerar o link de conexão"
+  },
+  "campaigns": {
+    "title": "Campanhas",
+    "description": "Campanhas por marca, geradas do seu produto e da sua marca e salvas aqui pra você retomar quando quiser.",
+    "creative": "Criativo",
+    "newCampaign": "Nova campanha",
+    "signedOutTitle": "Entre pra ver suas campanhas",
+    "signedOutDesc": "As campanhas são geradas a partir da sua marca e ficam salvas aqui pra você retomar o trabalho quando quiser.",
+    "loadErrorTitle": "Não deu pra carregar suas campanhas",
+    "loadErrorDesc": "Suas campanhas estão salvas. Algo falhou ao buscar — tente de novo.",
+    "emptyBrandTitle": "Nenhuma campanha nesta marca ainda",
+    "emptyTitle": "Nenhuma campanha ainda",
+    "emptyDesc": "Abra o Canvas e peça pro assistente gerar uma campanha do seu produto e da sua marca — ela aparece aqui sozinha.",
+    "emptyAction": "Gerar no Canvas",
+    "ads": "anúncios",
+    "status": {
+      "planning": "planejando",
+      "generating": "gerando",
+      "done": "pronto",
+      "error": "erro"
+    },
+    "detail": {
+      "fallbackTitle": "Campanha",
+      "back": "Campanhas",
+      "backAria": "Voltar pras campanhas",
+      "loadErrorTitle": "Não deu pra carregar esta campanha",
+      "loadErrorDesc": "Sua campanha está salva. Algo falhou ao buscar — tente de novo.",
+      "noResults": "Nenhum resultado ainda",
+      "failed": "Esta campanha falhou.",
+      "stillGenerating": "Esta campanha ainda está gerando.",
+      "download": "Baixar"
+    }
   }
 }

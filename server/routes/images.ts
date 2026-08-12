@@ -1,4 +1,5 @@
 import express, { Request, Response as ExpressResponse } from 'express';
+import { createHash } from 'crypto';
 import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
@@ -21,6 +22,44 @@ import { CacheKey, CACHE_TTL, hashQuery, hashObject } from '../lib/cache-utils.j
 
 const execPromise = promisify(exec);
 const execFilePromise = promisify(execFile);
+
+/**
+ * Detecta truncamento de payload. Devolve `true` SO' quando tem certeza de que
+ * os bytes estao cortados.
+ *
+ * Duas escolhas deliberadas, pra nao trocar um bug por outro:
+ *
+ * 1. Julga pelo tipo DETECTADO nos magic bytes, nunca pelo `contentType`
+ *    declarado. Varios chamadores internos mandam 'image/png' fixo enquanto o
+ *    render devolve JPEG -- isso sempre funcionou (o browser fareja o tipo) e
+ *    nao pode virar erro agora.
+ * 2. Bytes de tipo NAO reconhecido passam. Antes passavam; endurecer aqui
+ *    quebraria chamador que hoje funciona, e o caso que queremos pegar
+ *    (base64 truncado de png/jpeg/webp) ja' esta' coberto.
+ *
+ * O marcador de fim e' procurado numa janela de 64B em vez da ultima posicao
+ * exata: arquivo legitimo as vezes carrega padding ou metadado depois do
+ * marcador. A janela ainda pega truncamento, que corta bytes aos milhares.
+ */
+function isTruncatedImage(buf: Buffer): boolean {
+  if (buf.length < 12) return false;
+
+  const PNG_SIG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  if (buf.subarray(0, 8).equals(PNG_SIG)) {
+    return !buf.subarray(-64).includes(Buffer.from('IEND', 'ascii'));
+  }
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    return !buf.subarray(-64).includes(Buffer.from([0xff, 0xd9]));
+  }
+  if (
+    buf.subarray(0, 4).toString('ascii') === 'RIFF' &&
+    buf.subarray(8, 12).toString('ascii') === 'WEBP'
+  ) {
+    // sobra no fim tudo bem; FALTA e' truncamento.
+    return buf.readUInt32LE(4) + 8 > buf.length;
+  }
+  return false;
+}
 
 // Cache for extraction results (30 minute TTL)
 const extractionCache = new LRUCache<string, any>({
@@ -1168,7 +1207,7 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
     const userId = (req as any).userId;
     if (!userId) return res.status(401).json({ error: 'Authentication required' });
 
-    const { data, contentType = 'image/png', label } = req.body;
+    const { data, contentType = 'image/png', label, sha256, bytes } = req.body;
     if (!data || typeof data !== 'string') {
       return res.status(400).json({ error: 'Base64 image data is required in the "data" field.' });
     }
@@ -1186,6 +1225,41 @@ router.post('/upload', authenticate, apiRateLimiter, async (req: Request, res: E
     const maxSize = 20 * 1024 * 1024; // 20MB
     if (buffer.length > maxSize) {
       return res.status(400).json({ error: 'Image exceeds 20MB limit.' });
+    }
+
+    // ── integridade ────────────────────────────────────────────────────────
+    // Buffer.from(x, 'base64') descarta cauda invalida SEM erro. Um caller que
+    // trunca o base64 (tipico de agente LLM re-emitindo os bytes) subia uma
+    // imagem quebrada e recebia 200 com uma URL que nao abre. Falhar aqui.
+    if (typeof bytes === 'number' && bytes !== buffer.length) {
+      return res.status(400).json({
+        error: 'integrity_mismatch',
+        message: `Caller declared ${bytes} bytes, decoded ${buffer.length}. The base64 payload was truncated or altered in transit — do not use the result.`,
+        declared: bytes,
+        decoded: buffer.length,
+      });
+    }
+    if (typeof sha256 === 'string' && sha256.length === 64) {
+      const actual = createHash('sha256').update(buffer).digest('hex');
+      if (actual !== sha256.toLowerCase()) {
+        return res.status(400).json({
+          error: 'integrity_mismatch',
+          message: 'sha256 of the decoded payload does not match the declared digest.',
+          declared: sha256.toLowerCase(),
+          decoded: actual,
+        });
+      }
+    }
+
+    // Sem digest declarado ainda da' pra pegar o caso que motivou tudo isto:
+    // payload de imagem conhecida que chegou cortado.
+    if (isTruncatedImage(buffer)) {
+      return res.status(400).json({
+        error: 'truncated_image',
+        message:
+          'Decoded payload is a truncated image — the end-of-image marker is missing. The base64 was cut off in transit; do not use the result.',
+        decoded: buffer.length,
+      });
     }
 
     if (!isR2Configured()) {

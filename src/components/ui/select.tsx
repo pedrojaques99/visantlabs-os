@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export interface SelectOption {
   value: string;
@@ -91,23 +92,18 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       };
     }, [isOpen, updatePosition]);
 
-    // Close on outside click — checks both trigger and portal dropdown
-    React.useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        const target = event.target as Node;
-        const insideTrigger = containerRef.current?.contains(target);
-        const insideDropdown = dropdownRef.current?.contains(target);
-        if (!insideTrigger && !insideDropdown) {
-          setIsOpen(false);
-          setFocusedIndex(0);
-        }
-      };
-
-      if (isOpen) {
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-      }
-    }, [isOpen]);
+    // Close on outside click — SSoT `useClickOutside`, com os DOIS refs (o painel
+    // vive num portal, então não é descendente do gatilho no DOM).
+    // `escape: false` porque o Escape já é tratado na navegação por teclado
+    // abaixo, que além de fechar devolve o foco ao gatilho.
+    useClickOutside(
+      [containerRef, dropdownRef],
+      () => {
+        setIsOpen(false);
+        setFocusedIndex(0);
+      },
+      { enabled: isOpen, escape: false }
+    );
 
     // Keyboard navigation
     React.useEffect(() => {
@@ -172,6 +168,10 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       onChange(newValue);
       setIsOpen(false);
       setFocusedIndex(-1);
+      // Devolve o foco ao gatilho. Só o ramo de Escape fazia isso: escolher uma
+      // opção (clique ou Enter) fechava o menu e DERRUBAVA o foco no body, o que
+      // manda o teclado de volta pro começo da página.
+      buttonRef.current?.focus();
     };
 
     const baseStyles =

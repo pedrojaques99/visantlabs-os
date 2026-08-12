@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -17,7 +17,8 @@ import { GlassPanel } from '@/components/ui/GlassPanel';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useActiveBrand } from '@/contexts/ActiveBrandContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useCampaigns, useCampaign } from '@/hooks/queries/useCampaigns';
 import type { CampaignSummary } from '@/services/campaignApi';
 
@@ -29,13 +30,27 @@ import type { CampaignSummary } from '@/services/campaignApi';
  */
 export const CampaignsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAuthenticated } = useLayout();
   const isLoggedIn = isAuthenticated === true;
 
-  const { data: brands = [] } = useBrandGuidelines(isLoggedIn);
+  // A marca vem do SSoT global (o chip do AppSpine já renderiza nesta rota,
+  // porque `/campaigns` é contexto de produção). Antes esta página tinha um
+  // <select> PRÓPRIO, semeado uma única vez do `?brandId=`: trocar de marca no
+  // chip do topo não mexia nele, e os dois controles divergiam em silêncio.
+  const { activeBrand, isAllBrands, setActiveBrand, brands } = useActiveBrand();
+  const brandId = isAllBrands ? '' : (activeBrand?.id ?? '');
   const [searchParams] = useSearchParams();
-  const [brandId, setBrandId] = useState<string>(searchParams.get('brandId') || '');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Link de entrada com `?brandId=` (ex.: o card "em andamento" do cockpit)
+  // manda a marca ativa pro alvo, em vez de abrir divergente do chip.
+  const urlBrandId = searchParams.get('brandId');
+  useEffect(() => {
+    if (!urlBrandId || urlBrandId === activeBrand?.id) return;
+    if (!brands.some((g) => g.id === urlBrandId)) return;
+    setActiveBrand(urlBrandId);
+  }, [urlBrandId, activeBrand?.id, brands, setActiveBrand]);
 
   const { data: campaigns = [], isLoading, isError, refetch } = useCampaigns(brandId || undefined);
 
@@ -43,66 +58,42 @@ export const CampaignsPage: React.FC = () => {
     return <CampaignDetail id={selectedId} onBack={() => setSelectedId(null)} />;
   }
 
-  // Filtro de marca. A espinha do app é estreita no mobile (chip de marca +
-  // créditos já ocupam quase tudo): abaixo de `md` este select sai do topo e
-  // vai pro corpo da página — nenhuma ação some, ela só muda de lugar.
-  const brandFilter =
-    brands.length > 0 ? (
-      <select
-        value={brandId}
-        onChange={(e) => setBrandId(e.target.value)}
-        aria-label="Filtrar por marca"
-        className="min-w-0 max-w-full px-3 py-1.5 rounded-md bg-neutral-900/80 border border-white/10 text-xs text-neutral-300 focus:outline-none focus:border-white/20 transition-colors appearance-none cursor-pointer"
-      >
-        <option value="">All brands</option>
-        {brands.map((g: any) => (
-          <option key={g.id} value={g.id}>
-            {g.identity?.name || g.name || g.id}
-          </option>
-        ))}
-      </select>
-    ) : null;
-
   return (
     <PageShell
       pageId="campaigns"
-      title="Campaigns"
-      description="Brand-scoped campaigns, generated from your product and brand and saved here to pick back up anytime."
+      title={t('campaigns.title')}
+      description={t('campaigns.description')}
       width="7xl"
       actions={
         <div className="flex items-center gap-2">
-          {/* Brand switcher — só de `md` pra cima; abaixo disso vive no corpo. */}
-          {brandFilter && <div className="hidden md:block">{brandFilter}</div>}
-
+          {/* Sem seletor de marca aqui: o chip do AppSpine é o único. */}
           {/* Create from brand */}
           <button
             onClick={() => navigate(brandId ? `/create?brandId=${brandId}` : '/create')}
-            title="Creative"
+            title={t('campaigns.creative')}
             className="shrink-0 flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs text-neutral-400 border border-white/10 bg-neutral-900/50 hover:border-neutral-600 hover:text-neutral-200 transition-colors"
           >
             <Wand2 size={12} />
-            <span className="hidden md:inline">Creative</span>
+            <span className="hidden md:inline">{t('campaigns.creative')}</span>
           </button>
 
           {/* Generate campaign (lives in Canvas chat today) — primary CTA */}
           <button
             onClick={() => navigate('/canvas')}
-            title="New campaign"
+            title={t('campaigns.newCampaign')}
             className="shrink-0 flex items-center gap-1.5 px-2 md:px-3 py-1.5 rounded-md text-xs font-medium bg-brand-cyan text-black hover:bg-brand-cyan/90 transition-colors"
           >
             <Plus size={12} />
-            <span className="hidden md:inline">New campaign</span>
+            <span className="hidden md:inline">{t('campaigns.newCampaign')}</span>
           </button>
         </div>
       }
     >
-      {brandFilter && <div className="md:hidden mb-4">{brandFilter}</div>}
-
       {!isLoggedIn ? (
         <EmptyState
           icon={Megaphone}
-          title="Sign in to see your campaigns"
-          description="Campaigns are generated from your brand and saved here so you can pick the work back up anytime."
+          title={t('campaigns.signedOutTitle')}
+          description={t('campaigns.signedOutDesc')}
         />
       ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -121,16 +112,16 @@ export const CampaignsPage: React.FC = () => {
         </div>
       ) : isError ? (
         <ErrorState
-          title="Couldn't load your campaigns"
-          description="Your campaigns are safe. Something went wrong fetching them — try again."
+          title={t('campaigns.loadErrorTitle')}
+          description={t('campaigns.loadErrorDesc')}
           onRetry={() => refetch()}
         />
       ) : campaigns.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title={brandId ? 'No campaigns for this brand yet' : 'No campaigns yet'}
-          description="Open Canvas and ask the assistant to generate a campaign from your product and brand — it lands here automatically."
-          actionLabel="Generate in Canvas"
+          title={brandId ? t('campaigns.emptyBrandTitle') : t('campaigns.emptyTitle')}
+          description={t('campaigns.emptyDesc')}
+          actionLabel={t('campaigns.emptyAction')}
           onAction={() => navigate('/canvas')}
         />
       ) : (
@@ -144,18 +135,28 @@ export const CampaignsPage: React.FC = () => {
   );
 };
 
+// Chaves de tradução ESCRITAS POR EXTENSO (não montadas em template): o scanner
+// de i18n bloqueia chave dinâmica que ele não consegue resolver estaticamente —
+// e é justamente esse tipo de chave que some de um locale sem ninguém notar.
+const STATUS_META: Record<CampaignSummary['status'], { color: string; labelKey: string }> = {
+  planning: { color: 'text-neutral-400', labelKey: 'campaigns.status.planning' },
+  generating: { color: 'text-neutral-300', labelKey: 'campaigns.status.generating' },
+  done: { color: 'text-success', labelKey: 'campaigns.status.done' },
+  error: { color: 'text-destructive', labelKey: 'campaigns.status.error' },
+};
+
 function StatusBadge({ status }: { status: CampaignSummary['status'] }) {
-  const map: Record<CampaignSummary['status'], [string, string]> = {
-    planning: ['text-neutral-400', 'planning'],
-    generating: ['text-neutral-300', 'generating'],
-    done: ['text-success', 'done'],
-    error: ['text-destructive', 'error'],
-  };
-  const [color, label] = map[status] ?? map.planning;
-  return <span className={cn('text-[10px] font-mono tracking-wide', color)}>{label}</span>;
+  const { t } = useTranslation();
+  const meta = STATUS_META[status] ?? STATUS_META.planning;
+  return (
+    <span className={cn('text-[10px] font-mono tracking-wide', meta.color)}>
+      {t(meta.labelKey)}
+    </span>
+  );
 }
 
 function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void }) {
+  const { t } = useTranslation();
   const pct = c.totalCount ? Math.round((c.completedCount / c.totalCount) * 100) : 0;
   return (
     <button
@@ -182,10 +183,10 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
         <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500">
           {c.totalCount ? (
             <span>
-              {c.completedCount}/{c.totalCount} ads
+              {c.completedCount}/{c.totalCount} {t('campaigns.ads')}
             </span>
           ) : (
-            <span className="capitalize">{c.status}</span>
+            <StatusBadge status={c.status} />
           )}
           <span className="truncate ml-2">{c.formats.join(' · ')}</span>
         </div>
@@ -204,13 +205,14 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
 }
 
 function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
+  const { t } = useTranslation();
   const { data: campaign, isLoading, isError, refetch } = useCampaign(id);
   const results = campaign?.results ?? [];
 
   return (
     <PageShell
       pageId="campaign-detail"
-      title={campaign?.name || 'Campaign'}
+      title={campaign?.name || t('campaigns.detail.fallbackTitle')}
       width="7xl"
       actions={
         <div className="flex items-center gap-3">
@@ -222,10 +224,10 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
-            aria-label="Back to campaigns"
+            aria-label={t('campaigns.detail.backAria')}
           >
             <ArrowLeft size={14} />
-            Campaigns
+            {t('campaigns.detail.back')}
           </button>
         </div>
       }
@@ -236,20 +238,20 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
         </div>
       ) : isError ? (
         <ErrorState
-          title="Couldn't load this campaign"
-          description="Your campaign is safe. Something went wrong fetching it — try again."
+          title={t('campaigns.detail.loadErrorTitle')}
+          description={t('campaigns.detail.loadErrorDesc')}
           onRetry={() => refetch()}
         />
       ) : results.length === 0 ? (
         <div className="flex items-center justify-center py-24">
           <GlassPanel padding="lg" className="max-w-md text-center">
             <MicroTitle as="h3" className="text-neutral-300 mb-2">
-              No results yet
+              {t('campaigns.detail.noResults')}
             </MicroTitle>
             <p className="text-sm text-neutral-500">
               {campaign?.status === 'error'
-                ? campaign?.error || 'This campaign failed.'
-                : 'This campaign is still generating.'}
+                ? campaign?.error || t('campaigns.detail.failed')
+                : t('campaigns.detail.stillGenerating')}
             </p>
           </GlassPanel>
         </div>
@@ -295,7 +297,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
                     className="flex items-center gap-1 px-2 py-1 w-fit rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
                   >
                     <Download size={10} />
-                    Download
+                    {t('campaigns.detail.download')}
                   </a>
                 </div>
               )}

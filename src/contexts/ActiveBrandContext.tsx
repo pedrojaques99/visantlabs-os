@@ -50,6 +50,11 @@ interface ActiveBrandContextValue {
   /** Ids de marcas visitadas recentemente (MRU, mais-recente-primeiro). */
   recentBrandIds: string[];
   isLoading: boolean;
+  /** A LISTA falhou de verdade. Sem isto, lista vazia por erro é indistinguível
+   *  de "usuário sem marca" e a home manda criar a primeira marca a quem já tem. */
+  isError: boolean;
+  /** Tenta buscar a lista de novo (usado pelo estado de erro da home). */
+  refetchBrands: () => void;
 }
 
 const ActiveBrandContext = createContext<ActiveBrandContextValue | null>(null);
@@ -61,7 +66,12 @@ function hasAuthToken(): boolean {
 export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Query gated no token (otimista, igual ao Layout) para não disparar 401 em
   // visitante deslogado — o provider é seguro de montar acima das rotas.
-  const { data: allBrands = [], isLoading } = useBrandGuidelines(hasAuthToken());
+  const {
+    data: allBrands = [],
+    isLoading,
+    isError,
+    refetch: refetchBrands,
+  } = useBrandGuidelines(hasAuthToken());
 
   const brands = useMemo(() => allBrands.filter((g) => g.status !== 'archived'), [allBrands]);
 
@@ -106,6 +116,28 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [location.pathname, isAllBrands, brands]);
 
+  // Sincroniza entre ABAS. A marca ativa mora no localStorage, mas sem ouvir o
+  // evento `storage` duas abas divergiam em silêncio: trocar de marca na aba A
+  // deixava a aba B produzindo pra marca antiga (com o chip mostrando a antiga
+  // também) — e o usuário não tem como perceber. O evento só dispara nas OUTRAS
+  // abas, então não há loop com o `setActiveBrand` local.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== ACTIVE_BRAND_LS_KEY) return;
+      if (e.newValue) {
+        setIsAllBrands(false);
+        setActiveBrandId(e.newValue);
+      } else {
+        // Removida = a outra aba entrou em "Todas as marcas".
+        setIsAllBrands(true);
+        setActiveBrandId(null);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   const [recentBrandIds, setRecentBrandIds] = useState<string[]>(() => readRecent());
 
   const setActiveBrand = useCallback((id: string | null) => {
@@ -142,6 +174,8 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setActiveBrand,
       recentBrandIds,
       isLoading,
+      isError,
+      refetchBrands,
     }),
     [
       activeBrandId,
@@ -152,6 +186,8 @@ export const ActiveBrandProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setActiveBrand,
       recentBrandIds,
       isLoading,
+      isError,
+      refetchBrands,
     ]
   );
 

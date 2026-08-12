@@ -296,7 +296,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-border hover:border-ring hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
-            <span className="hidden sm:inline">Register</span>
+            <span className="hidden sm:inline">{t('header.register')}</span>
           </Button>
         )}
         {isAuthenticated && onMyOutputsClick && (

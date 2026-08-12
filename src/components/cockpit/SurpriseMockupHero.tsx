@@ -63,7 +63,12 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
   onAddAsset,
 }) => {
   const { t } = useTranslation();
-  const { data, isLoading: loadingRecipes, error: recipesError } = useMockupSuggestions(brandId);
+  const {
+    data,
+    isLoading: loadingRecipes,
+    error: recipesError,
+    refetch: refetchRecipes,
+  } = useMockupSuggestions(brandId);
 
   const [recipes, setRecipes] = useState<MockupRecipe[]>([]);
   const [idx, setIdx] = useState(0);
@@ -130,6 +135,11 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
         setImgUrl(url);
         setRendering(false);
         failStreak.current = 0;
+        // Um render que DEU CERTO desfaz o veredito de "feed quebrado". Sem isto
+        // `feedBroken` só era ligado, nunca desligado: o tile ficava preso na
+        // mensagem de erro pro resto da vida do componente mesmo voltando a
+        // renderizar (a falha era transitória — rede, CORS intermitente).
+        setFeedBroken(false);
       } catch (err) {
         if (cancelled) return;
         // One scene failing is normal (not every PSD is in the public library) →
@@ -180,6 +190,13 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
           setIdx(next);
           return;
         }
+        setCursor(null);
+      } catch (err) {
+        // `getMockupSuggestions` LANÇA em resposta não-ok e todos os chamadores
+        // usam `void surprise()` — sem este catch a falha virava unhandled
+        // rejection e o feed parava calado. Zera o cursor (não adianta insistir
+        // na mesma página) e deixa cair no wrap-around abaixo.
+        console.warn('[surprise-mockup] could not fetch more suggestions:', err);
         setCursor(null);
       } finally {
         setFetchingMore(false);
@@ -241,28 +258,37 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
         brandGuidelineId: brandId,
       });
       setSavedKey(pairKey(current));
-      toast.success('Salvo em Meus Mockups');
+      toast.success(t('cockpit.surprise.savedToLibrary'));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Não deu pra salvar o mockup');
+      toast.error(err instanceof Error ? err.message : t('cockpit.surprise.saveFailed'));
     } finally {
       setSaving(false);
     }
-  }, [current, saving, brandId]);
+  }, [current, saving, brandId, t]);
 
   const isSaved = !!current && savedKey === pairKey(current);
   const canAct = !!imgUrl && !rendering && !renderError;
 
   const busy = loadingRecipes || rendering || fetchingMore;
 
+  // Estados de FALHA (recuperáveis com um retry) vs. estados de vazio real.
+  // A copy dizia "tente recarregar" mas não havia controle nenhum na tela.
+  const isRecoverable = feedBroken || !!recipesError;
+  const retryFeed = useCallback(() => {
+    failStreak.current = 0;
+    setFeedBroken(false);
+    setRenderError(false);
+    void refetchRecipes();
+  }, [refetchRecipes]);
+
   const emptyCopy = useMemo(() => {
-    if (feedBroken) return 'Não deu pra compor os mockups agora. Tente recarregar.';
-    if (recipesError) return 'Não deu pra carregar sugestões agora.';
-    if (reason === 'no_assets')
-      return 'Adicione um logo ou arte à marca pra gerar mockups on-brand.';
-    if (reason === 'no_scenes') return 'Nenhuma cena comercial disponível ainda.';
-    if (!loadingRecipes && recipes.length === 0) return 'Sem sugestões pra esta marca ainda.';
+    if (feedBroken) return t('cockpit.surprise.feedBroken');
+    if (recipesError) return t('cockpit.surprise.loadFailed');
+    if (reason === 'no_assets') return t('cockpit.surprise.noAssets');
+    if (reason === 'no_scenes') return t('cockpit.surprise.noScenes');
+    if (!loadingRecipes && recipes.length === 0) return t('cockpit.surprise.noneYet');
     return null;
-  }, [feedBroken, recipesError, reason, loadingRecipes, recipes.length]);
+  }, [feedBroken, recipesError, reason, loadingRecipes, recipes.length, t]);
 
   return (
     <section
@@ -272,7 +298,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
       <div className="flex items-center justify-between gap-3">
         <MicroTitle className="flex items-center gap-1.5">
           <Zap className="size-3.5" />
-          Mockups grátis
+          {t('cockpit.surprise.title')}
         </MicroTitle>
         <Button
           size="xs"
@@ -280,7 +306,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
           onClick={() => void surprise()}
           disabled={busy || (!current && !emptyCopy)}
           className="gap-1.5"
-          aria-label="Surpreenda-me"
+          aria-label={t('cockpit.surprise.surpriseMe')}
         >
           <RefreshCw className={cn('size-3.5', busy && 'animate-spin')} />
         </Button>
@@ -300,7 +326,13 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
           {reason === 'no_assets' && onAddAsset && (
             <Button size="xs" variant="secondary" onClick={onAddAsset} className="mt-1 gap-1.5">
               <Zap className="size-3.5" />
-              Adicionar logo
+              {t('cockpit.surprise.addLogo')}
+            </Button>
+          )}
+          {isRecoverable && (
+            <Button size="xs" variant="secondary" onClick={retryFeed} className="mt-1 gap-1.5">
+              <RefreshCw className="size-3.5" />
+              {t('common.retry')}
             </Button>
           )}
         </div>
@@ -331,13 +363,16 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
                   'opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300'
                 )}
               >
-                <Tooltip content={isSaved ? 'Salvo' : t('common.save') || 'Salvar'} position="top">
+                <Tooltip
+                  content={isSaved ? t('cockpit.surprise.saved') : t('common.save')}
+                  position="top"
+                >
                   <Button
                     variant="action"
                     onClick={() => void save()}
                     disabled={saving || isSaved}
                     className="w-8 h-8 p-1.5 hover:text-white hover:bg-white/10"
-                    aria-label={t('common.save') || 'Salvar'}
+                    aria-label={t('common.save')}
                   >
                     {isSaved ? (
                       <Check className="size-4 text-brand-cyan" />
@@ -346,12 +381,12 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
                     )}
                   </Button>
                 </Tooltip>
-                <Tooltip content={t('common.download') || 'Baixar'} position="top">
+                <Tooltip content={t('common.download')} position="top">
                   <Button
                     variant="action"
                     onClick={download}
                     className="w-8 h-8 p-1.5 hover:text-white hover:bg-white/10"
-                    aria-label={t('common.download') || 'Baixar'}
+                    aria-label={t('common.download')}
                   >
                     <Download className="size-4" />
                   </Button>

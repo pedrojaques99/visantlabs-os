@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
+import { translate } from '@/utils/localeUtils';
 
 /**
  * Mint do link de conexão MCP ("Connect to AI") — SSoT extracted from
@@ -15,7 +16,7 @@ export function useConnectBrandToAI() {
   const connect = useCallback(
     async (publicSlug: string | null | undefined, onMissingSlug?: () => void) => {
       if (!publicSlug) {
-        toast.error('Make the brand public first to connect it');
+        toast.error(translate('brandPanel.connectFirst'));
         onMissingSlug?.();
         return;
       }
@@ -24,7 +25,7 @@ export function useConnectBrandToAI() {
         const { connectUrl } = await brandGuidelineApi.getPublicConnectLink(publicSlug);
         window.location.href = connectUrl;
       } catch {
-        toast.error('Failed to generate connect link');
+        toast.error(translate('brandPanel.connectFailed'));
         setConnecting(false);
       }
     },

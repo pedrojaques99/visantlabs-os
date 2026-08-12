@@ -589,6 +589,32 @@ router.get(
         planName,
         brandQuota,
         seatQuota,
+        /**
+         * O customer do Stripe, pra quem consome esta rota poder abrir o portal
+         * de cobrança AUTENTICADO.
+         *
+         * Sem ele, o Visant Club não tinha como criar a sessão do portal no
+         * servidor e caía num link público onde o membro — que já está logado —
+         * digita o e-mail de novo e espera um magic link. O código do Club que
+         * usa este campo já existe e está escrito esperando exatamente por ele
+         * (`app/api/billing-portal/route.ts`, e o tipo em `lib/visantlabs.ts`
+         * já o declara opcional): o recurso estava pronto dos dois lados e
+         * invisível por um campo que não era devolvido.
+         *
+         * O valor já vinha sendo GRAVADO em toda compra pelo Stripe
+         * (`productGrantService`, na criação da conta e com backfill quando ela
+         * já existia sem ele). Só não saía daqui.
+         *
+         * `?? null` e não `undefined`: quem lê precisa distinguir "esta conta
+         * não tem customer" de "esta versão da API não fala sobre customer".
+         * Omitir o campo faz as duas coisas parecerem a mesma.
+         *
+         * Sobre expor `cus_...` ao dono da conta: ele é um identificador, não
+         * uma credencial — sozinho não abre nada, porque criar sessão de portal
+         * exige a chave secreta, que não sai daqui. Quem chama esta rota já
+         * está autenticado e só enxerga o próprio registro.
+         */
+        stripeCustomerId: user.stripeCustomerId ?? null,
       });
     } catch (error) {
       next(error);

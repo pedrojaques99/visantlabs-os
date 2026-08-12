@@ -736,7 +736,7 @@ export const Studio3DPage: React.FC = () => {
           <button
             onClick={undoWithFeedback}
             disabled={!canUndo}
-            title={`Undo (Ctrl+Z)${undoCount ? ` · ${undoCount}` : ''}`}
+            title={`Undo (Ctrl+Z)${undoCount ? `: ${undoCount}` : ''}`}
             className={cn(
               'relative flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
@@ -752,7 +752,7 @@ export const Studio3DPage: React.FC = () => {
           <button
             onClick={redoWithFeedback}
             disabled={!canRedo}
-            title={`Redo (Ctrl+Shift+Z)${redoCount ? ` · ${redoCount}` : ''}`}
+            title={`Redo (Ctrl+Shift+Z)${redoCount ? `: ${redoCount}` : ''}`}
             className={cn(
               'relative flex items-center justify-center rounded-lg text-neutral-600 hover:text-neutral-300 hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-all',
               isMobile ? 'w-11 h-11' : 'w-9 h-9'
@@ -1079,7 +1079,7 @@ export const Studio3DPage: React.FC = () => {
                 autoRenderState !== 'error' &&
                 autoRenderStartTime > 0 && (
                   <p className="text-[10px] font-mono text-neutral-500">
-                    {autoRender?.toUpperCase()} ·{' '}
+                    {autoRender?.toUpperCase()}:{' '}
                     {Math.round((Date.now() - autoRenderStartTime) / 1000)}s elapsed
                   </p>
                 )}

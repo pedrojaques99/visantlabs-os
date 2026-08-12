@@ -60,27 +60,30 @@ export interface BrandQuota {
 }
 
 export const brandGuidelineApi = {
+  /**
+   * NÃO engolir erro aqui. Isto devolvia `[]` em QUALQUER falha (500, 401, rede),
+   * e uma lista vazia é indistinguível de "o usuário não tem marca": o HomeRoute
+   * mandava um cliente com 12 marcas criar a primeira. Quem chama trata o erro
+   * (React Query já dá `isError` + retry).
+   */
   async getAll(params?: { limit?: number; offset?: number }): Promise<BrandGuideline[]> {
-    try {
-      const qs = new URLSearchParams();
-      if (params?.limit) qs.set('limit', String(params.limit));
-      if (params?.offset) qs.set('offset', String(params.offset));
-      const suffix = qs.toString() ? `?${qs}` : '';
+    const qs = new URLSearchParams();
+    if (params?.limit) qs.set('limit', String(params.limit));
+    if (params?.offset) qs.set('offset', String(params.offset));
+    const suffix = qs.toString() ? `?${qs}` : '';
 
-      const response = await fetch(`${API_BASE_URL}/brand-guidelines${suffix}`, {
-        headers: getAuthHeaders(),
-      });
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines${suffix}`, {
+      headers: getAuthHeaders(),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch brand guidelines: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return Array.isArray(data.guidelines) ? data.guidelines : [];
-    } catch (error) {
-      console.error('API Error fetching brand guidelines:', error);
-      return [];
+    if (!response.ok) {
+      const error = new Error(`Failed to fetch brand guidelines: ${response.status}`);
+      (error as any).status = response.status;
+      throw error;
     }
+
+    const data = await response.json();
+    return Array.isArray(data.guidelines) ? data.guidelines : [];
   },
 
   async getById(id: string): Promise<BrandGuideline> {

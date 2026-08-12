@@ -330,6 +330,12 @@ export interface VisantLogo3DProps {
   modelUrl?: string;
   /** Overrides the active preset's emissive color (e.g. to follow a brand's accent color) */
   accentColor?: string;
+  /**
+   * Overrides the mesh scale (desktop default 10, mobile 2.8). A hero wants the
+   * logo dominant; the TUI launcher wants it as a backdrop behind the app list,
+   * so the size is per-surface and not a new global default.
+   */
+  scale?: number;
 }
 
 export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
@@ -340,6 +346,7 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
   shaderIntensity = 0,
   modelUrl,
   accentColor,
+  scale: scaleOverride,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const fov = window.innerWidth < 768 ? 120 : 100;
@@ -425,7 +432,7 @@ export const VisantLogo3D: React.FC<VisantLogo3DProps> = ({
             >
               <LogoMesh
                 isMobile={isMobile}
-                scale={isMobile ? 2.8 : 10}
+                scale={scaleOverride ?? (isMobile ? 2.8 : 10)}
                 preset={preset}
                 xOffset={meshX}
                 modelUrl={modelUrl}

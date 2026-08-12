@@ -6,6 +6,7 @@ import { logoutCommand } from './commands/logout.js';
 import { whoamiCommand } from './commands/whoami.js';
 import { mcpSetupCommand, mcpStatusCommand } from './commands/mcp.js';
 import { skillsInstallCommand, skillsListCommand } from './commands/skills.js';
+import { uploadCommand } from './commands/upload.js';
 
 function printBanner() {
   console.log();
@@ -25,7 +26,11 @@ program
   .name('visant')
   .description('Visant Labs CLI')
   .version('0.1.0')
-  .hook('preAction', () => printBanner());
+  // O banner suja stdout de quem consome a saida por script/agente.
+  .hook('preAction', (_thisCmd, actionCmd) => {
+    if (actionCmd.opts().json) return;
+    printBanner();
+  });
 
 program
   .command('login')
@@ -65,6 +70,14 @@ program
   .description('Atalho: configura MCP no projeto atual (= visant mcp setup --project)')
   .option('--global', 'Aplicar globalmente')
   .action((opts) => mcpSetupCommand({ project: !opts.global, ...opts }));
+
+program
+  .command('upload')
+  .argument('<files...>', 'Arquivo(s) de imagem local(is)')
+  .description('Subir imagem do disco e receber a URL pública (sem base64 no meio)')
+  .option('--label <label>', 'Rótulo para organização')
+  .option('--json', 'Saída em JSON, sem banner — para uso por script/agente')
+  .action((files, opts) => uploadCommand(files, opts));
 
 const skills = program
   .command('skills')

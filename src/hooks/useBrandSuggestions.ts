@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image as ImageIcon,
   Instagram,
@@ -28,20 +28,22 @@ export interface SeasonalMoment {
   daysAway: number;
 }
 
-// Each suggestion kind → its icon, label, and how it's executed:
+// Each suggestion kind → its icon, i18n label key, and how it's executed:
 //  · 'inline'  = Visant generates it in-app (only mockups have a clean brand-aware path)
 //  · 'ai'      = handed to the brand's connected AI assistant (which has the full
 //                Visant MCP toolbelt: campaign/creative/budget/video/naming)
+// `labelKey` (não `label`) porque o kicker é texto VISÍVEL — inclusive na página
+// pública da marca, que um cliente pt-BR abre.
 export const SUGGESTION_KIND_META: Record<
   BrandSuggestionKind,
-  { label: string; Icon: LucideIcon; mode: 'inline' | 'ai' }
+  { labelKey: string; Icon: LucideIcon; mode: 'inline' | 'ai' }
 > = {
-  mockup: { label: 'Mockup', Icon: ImageIcon, mode: 'inline' },
-  social: { label: 'Social', Icon: Instagram, mode: 'ai' },
-  campaign: { label: 'Campaign', Icon: Megaphone, mode: 'ai' },
-  video: { label: 'Video', Icon: Video, mode: 'ai' },
-  budget: { label: 'Budget', Icon: FileText, mode: 'ai' },
-  naming: { label: 'Naming', Icon: Type, mode: 'ai' },
+  mockup: { labelKey: 'brandPanel.kind.mockup', Icon: ImageIcon, mode: 'inline' },
+  social: { labelKey: 'brandPanel.kind.social', Icon: Instagram, mode: 'ai' },
+  campaign: { labelKey: 'brandPanel.kind.campaign', Icon: Megaphone, mode: 'ai' },
+  video: { labelKey: 'brandPanel.kind.video', Icon: Video, mode: 'ai' },
+  budget: { labelKey: 'brandPanel.kind.budget', Icon: FileText, mode: 'ai' },
+  naming: { labelKey: 'brandPanel.kind.naming', Icon: Type, mode: 'ai' },
 };
 
 function friendlyError(e: unknown): { code?: string; message: string } {
@@ -95,10 +97,27 @@ export function useBrandSuggestions(guidelineId: string | null | undefined, coun
   const [suggestions, setSuggestions] = useState<BrandSuggestion[]>([]);
   const [seasonal, setSeasonal] = useState<SeasonalMoment | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Código do erro (não a mensagem) — quem consome decide o que mostrar sem
+  // fazer match de substring em texto traduzido (que quebra em outro idioma).
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+
+  // Guarda de corrida: só a resposta do pedido MAIS RECENTE pode escrever estado.
+  // Sem isso, trocar de marca rápido (ou clicar Refresh durante o load inicial)
+  // deixa a resposta antiga sobrescrever a nova.
+  const requestId = useRef(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const load = useCallback(
     async (force = false) => {
       if (!guidelineId) return;
+      const myId = ++requestId.current;
+      const isStale = () => !mounted.current || myId !== requestId.current;
       if (force) setRefreshing(true);
       else setLoading(true);
       try {
@@ -111,16 +130,24 @@ export function useBrandSuggestions(guidelineId: string | null | undefined, coun
         });
         const next = res.suggestions || [];
         const nextSeasonal = res.seasonal?.upcoming?.[0] || null;
+        // Persist whatever the server gave us (only when it actually has ideas).
+        // Fica ANTES do guard: o cache local vale mesmo se o componente saiu.
+        if (next.length) writeLocal(guidelineId, next, nextSeasonal);
+        if (isStale()) return;
         setSuggestions(next);
         setSeasonal(nextSeasonal);
         setError(null);
-        // Persist whatever the server gave us (only when it actually has ideas).
-        if (next.length) writeLocal(guidelineId, next, nextSeasonal);
+        setErrorCode(null);
       } catch (e) {
-        setError(friendlyError(e).message);
+        if (isStale()) return;
+        const friendly = friendlyError(e);
+        setError(friendly.message);
+        setErrorCode(friendly.code ?? 'unknown');
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (!isStale()) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [guidelineId, count]
@@ -128,16 +155,26 @@ export function useBrandSuggestions(guidelineId: string | null | undefined, coun
 
   useEffect(() => {
     if (!guidelineId) return;
+    // Trocou de marca → o estado da marca ANTERIOR não pode continuar na tela.
+    // (Sem isto o painel mostra as ideias da marca velha até a nova responder.)
+    setError(null);
+    setErrorCode(null);
     // Instant paint from the local mirror — zero network, zero spend.
     const cached = readLocal(guidelineId);
     if (cached && cached.suggestions.length) {
+      // Invalida qualquer resposta em voo da marca anterior.
+      requestId.current++;
       setSuggestions(cached.suggestions);
       setSeasonal(cached.seasonal);
+      setLoading(false);
+      setRefreshing(false);
       return;
     }
+    setSuggestions([]);
+    setSeasonal(null);
     // No local copy → a free cache-only probe (server cache or starters).
     load(false);
   }, [guidelineId, load]);
 
-  return { suggestions, seasonal, loading, refreshing, error, load };
+  return { suggestions, seasonal, loading, refreshing, error, errorCode, load };
 }

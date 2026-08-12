@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ErrorBoundaryWrapper } from './components/ErrorBoundaryWrapper';
 import { GlitchLoader } from './components/ui/GlitchLoader';
+import { ErrorState } from './components/ui/ErrorState';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 import { ActiveBrandKitProvider } from './contexts/BrandKitContext';
@@ -11,7 +12,6 @@ import { DesktopOnlyGate } from './components/shared/DesktopOnlyGate';
 import { PremiumGate } from './components/shared/PremiumGate';
 import { FEATURE_COCKPIT, FEATURE_COPILOT } from './config/featureFlags';
 import { useLayout } from './hooks/useLayout';
-import { useLauncherApps } from './pages/HomePage';
 import { useActiveBrand } from './contexts/ActiveBrandContext';
 
 // Lazy load all pages for code-splitting with automatic retry
@@ -19,8 +19,8 @@ const HomePage = lazyWithRetry(() =>
   import('./pages/HomePage').then((m) => ({ default: m.HomePage }))
 );
 // Cockpit moved out of the home hijack into its own route (plano Revenue-Centric,
-// Fase 5): reuses HomePage's useLauncherApps (SSoT for the apps roster) so
-// BrandCockpit gets the exact same apps/onSelectApp it always has.
+// Fase 5). NÃO importar nada de './pages/HomePage' aqui: um import estático
+// puxava a HomePage inteira pro bundle inicial e anulava o lazyWithRetry dela.
 const BrandCockpit = lazyWithRetry(() =>
   import('./components/cockpit/BrandCockpit').then((m) => ({ default: m.BrandCockpit }))
 );
@@ -301,8 +301,7 @@ const LoadingFallback = () => (
  */
 const HomeRoute: React.FC = () => {
   const { isAuthenticated } = useLayout();
-  const { activeBrand, brands, isAllBrands, isLoading } = useActiveBrand();
-  const { apps, handleSelect } = useLauncherApps();
+  const { activeBrand, brands, isAllBrands, isLoading, isError, refetchBrands } = useActiveBrand();
 
   if (isAuthenticated === false) {
     return <Navigate to="/" replace />;
@@ -315,6 +314,13 @@ const HomeRoute: React.FC = () => {
   // (via HomePage → /cockpit) e quem chega em '/cockpit' direto veem A MESMA
   // tela. Criar a marca aqui liga a marca ativa e o próprio HomeRoute troca
   // pro cockpit no render seguinte, sem navegação.
+  // A LISTA falhou ≠ o usuário não tem marca. Sem esta ramificação, um 500 na
+  // rota de marcas mandava quem já tem 12 marcas "criar a primeira" — e o
+  // serviço engolia o erro em `[]`, então nem dava pra saber. Ver ErrorState.
+  if (isError && brands.length === 0) {
+    return <ErrorState onRetry={() => refetchBrands()} />;
+  }
+
   if (brands.length === 0) {
     return <GettingStartedChecklist variant="page" />;
   }
@@ -327,7 +333,7 @@ const HomeRoute: React.FC = () => {
   }
 
   if (FEATURE_COCKPIT && activeBrand?.id && !isAllBrands) {
-    return <BrandCockpit apps={apps} onSelectApp={handleSelect} />;
+    return <BrandCockpit />;
   }
   return <Navigate to="/brand-guidelines" replace />;
 };

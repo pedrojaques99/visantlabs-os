@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
 import {
   Settings,
   Plus,
@@ -35,7 +34,6 @@ import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { cn } from '@/lib/utils';
 import { glassSurface } from '@/lib/ui/glass';
 import { FEATURE_COPILOT } from '@/config/featureFlags';
-import type { AppConfig } from '@/services/appsService';
 
 // Mockup generator dialog — owner-only, loaded on demand (same as brand view).
 const BrandMockupDialog = lazyWithRetry(() =>
@@ -89,25 +87,23 @@ interface WorkItem {
   updatedAt: string;
 }
 
-interface BrandCockpitProps {
-  /** Pinned launcher apps — same roster/sort as the TUI (SSoT lives in HomePage). */
-  apps: AppConfig[];
-  onSelectApp: (app: AppConfig) => void;
-}
-
 const cardCls = cn('rounded-2xl', glassSurface.panel);
 
 /** Inner tile inside a bento card (one radius step down from the card). */
 const tileCls = cn('rounded-xl', glassSurface.tile);
 
-export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
-  const { t } = useTranslation();
+export const BrandCockpit: React.FC = () => {
+  const { t, tOr } = useTranslation();
   const navigate = useNavigate();
 
   // Marca ativa vem do SSoT global (ActiveBrandContext) — o cockpit não gere
   // mais o estado/localStorage localmente. O rail e o hero ficam em sincronia.
   const { brands: activeBrands, activeBrand, isLoading: brandsLoading } = useActiveBrand();
-  const hasBrand = !!activeBrand?.id;
+  // Id em variável própria: os callbacks abaixo dependem só DELE. Lendo
+  // `activeBrand?.id` lá dentro, o React Compiler infere o objeto inteiro como
+  // dependência, não bate com a lista manual e desiste de otimizar o componente.
+  const activeBrandId = activeBrand?.id;
+  const hasBrand = !!activeBrandId;
 
   // "Todas as marcas" (isAllBrands) → o HomeRoute mostra o grid, não o cockpit;
   // então aqui a marca ativa é sempre concreta. Sem guard local (plano
@@ -165,7 +161,14 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
   // that lies to a user who already has work in flight (silent-empty).
   const workError = campaignsError || projectsError;
   // Per-brand output gallery — every generated mockup persists against the brand.
-  const { data: brandMockups = [] } = useBrandMockups(activeBrand?.id, hasBrand);
+  // `isError` agora é ALCANÇÁVEL (o mockupApi parou de engolir erro HTTP em []).
+  // Sem consumir aqui, uma falha some com a seção inteira em silêncio — que é
+  // exatamente o silent-empty que acabamos de matar na camada de serviço.
+  const {
+    data: brandMockups = [],
+    isError: mockupsError,
+    refetch: refetchMockups,
+  } = useBrandMockups(activeBrandId, hasBrand);
   const workItems = useMemo<WorkItem[]>(() => {
     const items: WorkItem[] = [
       ...campaigns.map((c) => ({
@@ -195,12 +198,12 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
   const openWorkItem = useCallback(
     (item: WorkItem) => {
       if (item.kind === 'campaign') {
-        navigate(activeBrand?.id ? `/campaigns?brandId=${activeBrand.id}` : '/campaigns');
+        navigate(activeBrandId ? `/campaigns?brandId=${activeBrandId}` : '/campaigns');
       } else {
         navigate(`/create?project=${item.id}`);
       }
     },
-    [navigate, activeBrand]
+    [navigate, activeBrandId]
   );
 
   const [mockupPrompt, setMockupPrompt] = useState<string | undefined>(undefined);
@@ -227,9 +230,9 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
   const { connecting, connect } = useConnectBrandToAI();
   const handleConnect = useCallback(async () => {
     await connect(heroBrand?.publicSlug, () =>
-      navigate(activeBrand?.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines')
+      navigate(activeBrandId ? `/brand-guidelines?id=${activeBrandId}` : '/brand-guidelines')
     );
-  }, [connect, heroBrand?.publicSlug, activeBrand?.id, navigate]);
+  }, [connect, heroBrand?.publicSlug, activeBrandId, navigate]);
 
   // ── Brand Depth — the "save file" of the brand: how deep the guideline is,
   // from the same completeness scorer the grid uses. Deterministic, zero backend.
@@ -241,9 +244,8 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
     [depthReport.missing]
   );
   const openGuideline = useCallback(
-    () =>
-      navigate(activeBrand?.id ? `/brand-guidelines?id=${activeBrand.id}` : '/brand-guidelines'),
-    [navigate, activeBrand]
+    () => navigate(activeBrandId ? `/brand-guidelines?id=${activeBrandId}` : '/brand-guidelines'),
+    [navigate, activeBrandId]
   );
 
   // "Ver guidelines" — abre a rota pública numa nova aba (o que o cliente/mundo vê).
@@ -252,11 +254,11 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
     const slug = heroBrand?.publicSlug;
     const url = slug
       ? `/brand/${slug}`
-      : activeBrand?.id
-        ? `/brand-guidelines?id=${activeBrand.id}`
+      : activeBrandId
+        ? `/brand-guidelines?id=${activeBrandId}`
         : '/brand-guidelines';
     window.open(url, '_blank', 'noopener,noreferrer');
-  }, [heroBrand?.publicSlug, activeBrand?.id]);
+  }, [heroBrand?.publicSlug, activeBrandId]);
 
   // ── Render ──
   // Guard defensivo FORA do AnimatePresence: o HomeRoute já garante marca ativa,
@@ -311,8 +313,8 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                       set-primary já existem no LogosSection). Dialog inline = follow-up. */}
                   <button
                     onClick={() => setChangeLogoOpen(true)}
-                    aria-label={t('cockpit.changeLogo') || 'Trocar logo'}
-                    title={t('cockpit.changeLogo') || 'Trocar logo'}
+                    aria-label={t('cockpit.changeLogo')}
+                    title={t('cockpit.changeLogo')}
                     className="relative group/logo shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan/40"
                   >
                     <BrandAvatar
@@ -434,7 +436,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                             className="group flex items-center justify-between gap-3 w-full py-1.5 text-left border-b border-border last:border-0"
                           >
                             <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors truncate">
-                              {t(`brandCompleteness.${rule.id}`) || rule.label}
+                              {tOr(`brandCompleteness.${rule.id}`, rule.label)}
                             </span>
                             <ChevronRight
                               size={12}
@@ -492,7 +494,11 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
                   {activeBrand?.id && (
                     <React.Suspense fallback={null}>
+                      {/* `key` obrigatória: o hero guarda um Set de pares já vistos
+                          em ref. Sem remontar por marca, os pares da marca A
+                          seguem filtrando a paginação da marca B. */}
                       <SurpriseMockupHero
+                        key={activeBrand.id}
                         brandId={activeBrand.id}
                         onAddAsset={() => setChangeLogoOpen(true)}
                       />
@@ -524,8 +530,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                     {workError && workItems.length === 0 ? (
                       <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 py-10">
                         <p className="text-xs text-muted-foreground max-w-sm">
-                          {t('cockpit.work.loadError') ||
-                            'Could not load your work in progress. Try again.'}
+                          {t('cockpit.work.loadError')}
                         </p>
                         <Button
                           variant="surface"
@@ -535,7 +540,7 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                             void refetchProjects();
                           }}
                         >
-                          {t('common.retry') || 'Try again'}
+                          {t('common.retry')}
                         </Button>
                       </div>
                     ) : workItems.length > 0 ? (
@@ -598,6 +603,20 @@ export const BrandCockpit: React.FC<BrandCockpitProps> = () => {
                   </section>
                 </div>
               </div>
+
+              {/* Falha de carga ≠ "nenhum output ainda": estado próprio + retry. */}
+              {mockupsError && brandMockups.length === 0 && (
+                <section
+                  aria-label={t('cockpit.gallery.title')}
+                  data-vsn-region="output-gallery"
+                  className={cn(cardCls, 'p-5 flex items-center justify-between gap-3')}
+                >
+                  <p className="text-xs text-muted-foreground">{t('cockpit.gallery.loadError')}</p>
+                  <Button variant="surface" size="xs" onClick={() => void refetchMockups()}>
+                    {t('common.retry')}
+                  </Button>
+                </section>
+              )}
 
               {/* ── Output gallery — every generated asset, persisted per brand ── */}
               {brandMockups.length > 0 && (
