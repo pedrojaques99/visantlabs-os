@@ -67,12 +67,31 @@ e chamar o campo de `resolution` faria a resposta prometer o que não controla.
 como resultado. Se o valor efetivo não é conhecido, ou não devolve o campo, ou
 nomeia como `...Requested`.
 
+## O que a correção nº 3 revelou na primeira hora
+
+A pendência que abri aqui era: "o `resolution` do Gemini não está sendo honrado,
+1K/2K/4K devolvem 1024×1536". Assim que os campos novos subiram, a resposta
+explicou sozinha:
+
+```json
+{ "model": "gpt-image-1", "provider": "openai",
+  "modelRequested": "gemini-3-pro-image-preview", "fellBack": true }
+```
+
+**O `resolution` nunca foi ignorado — as requisições não chegavam no Gemini.**
+Caíam no fallback da OpenAI, que entrega 1024×1536. `gemini-3-pro-image-preview`
+e `gemini-3.1-flash-image-preview` caem os dois, então é **o provider Gemini
+inteiro que está fora** para esta conta, não um modelo. Chave inválida, quota
+estourada ou o breaker do `withResilience` aberto — só o log do servidor separa.
+
+Enquanto a resposta ecoava o pedido, isso era **invisível**: o usuário pedia
+Gemini, recebia OpenAI, e a API confirmava que tinha entregue Gemini.
+
+Fica como lição, não só como bug: **todo eco de parâmetro de entrada é um lugar
+onde uma falha de produção pode se esconder.**
+
 ## Pendência conhecida
 
-O `resolution` do `gemini-3-pro-image-preview` não estava sendo honrado em teste
-manual: pedindo 1K, 2K ou 4K, a saída veio 1024×1536 em todas as tentativas
-menos uma (1856×2304). O código repassa `imageConfig.imageSize` corretamente, e
-`supportsImageConfig` está `true` pro modelo — então a suspeita é do lado do
-provider, ou de interação com `referenceImages`. Com os campos novos de
-`fellBack`/`model` dá pra descartar fallback como causa na próxima investigação.
-Não resolvido.
+Provider Gemini fora para esta conta (ver acima). Diagnóstico precisa do log do
+backend — a linha `[GENERATION] Fell back to %s (%s)` em `routes/mockups.ts`
+registra `failedAttempts` com a causa real.
