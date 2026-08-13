@@ -2,7 +2,7 @@ import type { UploadedImage, AspectRatio } from '../../src/types/types.js';
 import type { ReveModelId } from '../../src/constants/reveModels.js';
 import { REVE_MODELS, resolveReveAspectRatio } from '../../src/constants/reveModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
-import { withResilience } from '../lib/ai-resilience.js';
+import { meteredCall } from '../lib/ai/metered.js';
 
 const REVE_BASE_URL = 'https://api.reve.com/v1';
 
@@ -124,32 +124,43 @@ export async function generateReveImage(options: ReveGenerateOptions): Promise<R
     }`
   );
 
-  return withResilience('reve', async () => {
-    const response = await safeFetch(`${REVE_BASE_URL}/image/create`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+  return meteredCall(
+    {
+      provider: 'reve',
+      model,
+      operation: 'reve-generate',
+      resilienceKey: 'reve',
+      apiKeySource: specificApiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      usage: { images: 1, resolution: reveAspect },
+    },
+    async () => {
+      const response = await safeFetch(`${REVE_BASE_URL}/image/create`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      handleReveError(response, await response.text(), 'Generate');
+      if (!response.ok) {
+        handleReveError(response, await response.text(), 'Generate');
+      }
+
+      const data = await response.json();
+      const image = validateReveResponse(data, 'generation');
+
+      console.log(
+        `[Reve] Generation complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
+          data.credits_used ?? 'n/a'
+        }`
+      );
+
+      return { base64: image, seed: data.seed, requestId: data.request_id };
     }
-
-    const data = await response.json();
-    const image = validateReveResponse(data, 'generation');
-
-    console.log(
-      `[Reve] Generation complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
-        data.credits_used ?? 'n/a'
-      }`
-    );
-
-    return { base64: image, seed: data.seed, requestId: data.request_id };
-  });
+  );
 }
 
 // ── Image-to-image edit ─────────────────────────────────────────────────────────
@@ -182,32 +193,44 @@ export async function editReveImage(options: ReveEditOptions): Promise<ReveGener
     }`
   );
 
-  return withResilience('reve', async () => {
-    const response = await safeFetch(`${REVE_BASE_URL}/image/edit`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+  return meteredCall(
+    {
+      provider: 'reve',
+      model: `reve-edit-${version}`,
+      operation: 'reve-edit',
+      resilienceKey: 'reve',
+      apiKeySource: specificApiKey ? 'user' : 'system',
+      promptLength: editInstruction.length,
+      hasInputImage: true,
+      usage: { images: 1, resolution: aspectRatio },
+    },
+    async () => {
+      const response = await safeFetch(`${REVE_BASE_URL}/image/edit`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      handleReveError(response, await response.text(), 'Edit');
+      if (!response.ok) {
+        handleReveError(response, await response.text(), 'Edit');
+      }
+
+      const data = await response.json();
+      const image = validateReveResponse(data, 'edit');
+
+      console.log(
+        `[Reve] Edit complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
+          data.credits_used ?? 'n/a'
+        }`
+      );
+
+      return { base64: image, requestId: data.request_id };
     }
-
-    const data = await response.json();
-    const image = validateReveResponse(data, 'edit');
-
-    console.log(
-      `[Reve] Edit complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
-        data.credits_used ?? 'n/a'
-      }`
-    );
-
-    return { base64: image, requestId: data.request_id };
-  });
+  );
 }
 
 // ── Multi-image remix ───────────────────────────────────────────────────────────
@@ -252,30 +275,42 @@ export async function remixReveImage(options: ReveRemixOptions): Promise<ReveGen
     }, keySource=${specificApiKey ? 'user' : 'server'}`
   );
 
-  return withResilience('reve', async () => {
-    const response = await safeFetch(`${REVE_BASE_URL}/image/remix`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+  return meteredCall(
+    {
+      provider: 'reve',
+      model: `reve-remix-${version}`,
+      operation: 'reve-remix',
+      resilienceKey: 'reve',
+      apiKeySource: specificApiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      hasInputImage: true,
+      usage: { images: 1, resolution: aspectRatio },
+    },
+    async () => {
+      const response = await safeFetch(`${REVE_BASE_URL}/image/remix`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      handleReveError(response, await response.text(), 'Remix');
+      if (!response.ok) {
+        handleReveError(response, await response.text(), 'Remix');
+      }
+
+      const data = await response.json();
+      const image = validateReveResponse(data, 'remix');
+
+      console.log(
+        `[Reve] Remix complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
+          data.credits_used ?? 'n/a'
+        }`
+      );
+
+      return { base64: image, requestId: data.request_id };
     }
-
-    const data = await response.json();
-    const image = validateReveResponse(data, 'remix');
-
-    console.log(
-      `[Reve] Remix complete. requestId=${data.request_id ?? 'n/a'}, creditsUsed=${
-        data.credits_used ?? 'n/a'
-      }`
-    );
-
-    return { base64: image, requestId: data.request_id };
-  });
+  );
 }

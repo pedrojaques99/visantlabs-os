@@ -50,6 +50,7 @@ import {
 } from '../services/sceneMatcher.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
+import { meteredCall, measureGeminiResponse } from '../lib/ai/metered.js';
 import { v4 as uuidv4 } from 'uuid';
 import { vectorService } from '../services/vectorService.js';
 import { knowledgeService } from '../services/knowledgeService.js';
@@ -3015,10 +3016,23 @@ Do NOT include fields that already exist.`;
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
 
-    const result = await model.generateContent([
-      { text: systemPrompt },
-      { text: `Existing brand context:\n${brandContext}\n\nGenerate the missing fields as JSON.` },
-    ]);
+    const result = await meteredCall(
+      {
+        provider: 'gemini',
+        model: GEMINI_MODELS.TEXT,
+        operation: 'brand-fill-missing-fields',
+        userId: req.userId,
+        feature: 'branding',
+      },
+      () =>
+        model.generateContent([
+          { text: systemPrompt },
+          {
+            text: `Existing brand context:\n${brandContext}\n\nGenerate the missing fields as JSON.`,
+          },
+        ]),
+      (r) => measureGeminiResponse(r)
+    );
 
     const responseText = result.response.text();
 
@@ -3132,10 +3146,23 @@ Return ONLY a JSON array:
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
 
-    const result = await model.generateContent([
-      { text: systemPrompt },
-      { text: `Brand context:\n${brandContext}\n\nSuggest ${count} mockup prompts as JSON array.` },
-    ]);
+    const result = await meteredCall(
+      {
+        provider: 'gemini',
+        model: GEMINI_MODELS.TEXT,
+        operation: 'brand-suggest-mockup-prompts',
+        userId: req.userId,
+        feature: 'branding',
+      },
+      () =>
+        model.generateContent([
+          { text: systemPrompt },
+          {
+            text: `Brand context:\n${brandContext}\n\nSuggest ${count} mockup prompts as JSON array.`,
+          },
+        ]),
+      (r) => measureGeminiResponse(r)
+    );
 
     const responseText = result.response.text();
     const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);

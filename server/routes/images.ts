@@ -602,13 +602,17 @@ router.post(
     2. Bounding box must be [ymin, xmin, ymax, xmax] in 0-1000 scale.
     3. Return in JSON format.`;
 
-      const { GoogleGenAI } = await import('@google/genai');
+      const { meteredGemini } = await import('../lib/ai/metered.js');
       const { GEMINI_MODELS } = await import('../../src/constants/geminiModels.js');
       const apiKey = getGoogleApiKey();
       if (!apiKey) throw new Error('AI API Key not configured');
 
       await chargeCredits((req as unknown as AuthRequest).userId!, 1);
-      const genAI = new GoogleGenAI({ apiKey });
+      const genAI = meteredGemini({
+        apiKey,
+        operation: 'document-detect-images',
+        userId: (req as unknown as AuthRequest).userId,
+      });
       const result = await genAI.models.generateContent({
         model: GEMINI_MODELS.IMAGE_NB2,
         contents: [

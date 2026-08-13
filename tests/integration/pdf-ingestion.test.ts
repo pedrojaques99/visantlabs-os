@@ -15,6 +15,16 @@ vi.mock('../../server/services/vectorService', () => ({
   },
 }));
 
+// O embedding também é rede: este arquivo chamava a API de verdade e passou a falhar com
+// `RateLimitError` (429) quando a quota do projeto secou. Uma suíte que gasta dinheiro a cada
+// rodada é gasto invisível como qualquer outro — ver `.agent/plans/AI-SPEND-ACCOUNTING.md`.
+// O que este teste cobre é a COSTURA (parse → chunk → embed → upsert), não o provedor.
+vi.mock('../../server/services/geminiService', () => ({
+  getMultimodalEmbedding: vi.fn(async () => ({
+    embedding: Array.from({ length: 768 }, (_, i) => (i % 7) / 7),
+  })),
+}));
+
 describe('Media Ingestion Flow', () => {
   beforeAll(() => {
     // Force mock mode by clearing Pinecone API key to avoid SDK validator bugs

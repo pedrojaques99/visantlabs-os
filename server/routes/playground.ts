@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { GoogleGenAI } from '@google/genai';
+import { meteredGemini } from '../lib/ai/metered.js';
 import { authenticate, type AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import type { Prisma } from '@prisma/client';
@@ -19,7 +20,8 @@ function validateId(id: string): boolean {
   return isValidObjectId(id);
 }
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const getAI = () =>
+  meteredGemini({ apiKey: process.env.GEMINI_API_KEY!, operation: 'playground-generate' });
 
 const playgroundRateLimit = rateLimit({
   windowMs: 60_000,

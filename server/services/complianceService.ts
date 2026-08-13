@@ -6,6 +6,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { meteredGemini } from '../lib/ai/metered.js';
 import { stripDataUriPrefix } from '../lib/dataUri.js';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
@@ -234,7 +235,11 @@ async function analyzeTextTone(
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY || '' });
+    const ai = meteredGemini({
+      apiKey: apiKey || process.env.GEMINI_API_KEY || '',
+      operation: 'compliance-check',
+      apiKeySource: apiKey ? 'user' : 'system',
+    });
 
     const prompt = `You are a brand compliance analyst. Analyze if the following text matches the brand voice guidelines.
 
@@ -303,7 +308,11 @@ async function analyzeImageCompliance(
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY || '' });
+    const ai = meteredGemini({
+      apiKey: apiKey || process.env.GEMINI_API_KEY || '',
+      operation: 'compliance-check',
+      apiKeySource: apiKey ? 'user' : 'system',
+    });
     const brandContext = buildBrandContext(guideline, {
       compact: true,
       sections: BRAND_SECTION_PRESETS.visual,

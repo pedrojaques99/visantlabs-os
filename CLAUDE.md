@@ -13,6 +13,18 @@
 
 Never create new UI components without explicit permission. Use existing from `src/components/`.
 
+## LEI: toda chamada de IA contabiliza
+
+Chamada a provedor pago (Gemini, OpenAI, Veo, Ideogram, Reve, Seedream) **grava um `usage_record`** —
+sucesso, erro e retry, porque o provedor cobra os três. Nunca instanciar cliente de provedor num
+arquivo novo: usar o portão. Portão executável:
+
+```bash
+node server/scripts/scan-ai-metering.mjs --check
+```
+
+Contexto e migração pendente: `.agent/plans/AI-SPEND-ACCOUNTING.md`
+
 ## Code Patterns
 
 - Canvas state: prefer sub-contexts for hot state; legacy uses full `CanvasHeaderContext`

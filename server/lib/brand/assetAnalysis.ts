@@ -12,6 +12,7 @@
  * generation, not just stored files.
  */
 import { GoogleGenAI, Type } from '@google/genai';
+import { meteredGemini } from '../ai/metered.js';
 import { safeFetch } from '../../utils/securityValidation.js';
 import { shouldRetry } from '../ai-resilience.js';
 import { GEMINI_MODELS } from '../../../src/constants/geminiModels.js';
@@ -410,7 +411,11 @@ function isSpendCap(err: unknown): boolean {
 
 /** Gemini path — best structured output (native JSON schema). Throws on failure. */
 async function analyzeWithGemini(img: AssetImage, maxAttempts = 4): Promise<BrandAssetAnalysis> {
-  const ai = new GoogleGenAI({ apiKey: geminiKey() });
+  const ai = meteredGemini({
+    apiKey: geminiKey(),
+    operation: 'asset-analysis',
+    feature: 'branding',
+  });
   const response = await generateWithRetry(
     () =>
       ai.models.generateContent({

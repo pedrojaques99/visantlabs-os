@@ -6,6 +6,7 @@ import { BrandGuideline } from '../types/brandGuideline.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
+import { meteredCall, measureGeminiResponse } from './ai/metered.js';
 
 const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract ALL brand guideline information you can find.
 
@@ -121,7 +122,19 @@ export async function extractBrandData(
   // do NOT swallow exceptions into `{}`: that masqueraded a failed extraction as
   // "found nothing", letting the caller charge a credit and report false success.
   try {
-    const result = await model.generateContent(parts);
+    const result = await meteredCall(
+      {
+        provider: 'gemini',
+        model: GEMINI_MODELS.TEXT,
+        operation: 'brand-extract',
+        userId,
+        feature: 'branding',
+        promptLength: combinedText.length,
+        hasInputImage: !!images?.length,
+      },
+      () => model.generateContent(parts),
+      (r) => measureGeminiResponse(r)
+    );
     const text = result.response.text();
     const jsonStr = extractJson(text);
     return validateExtracted(JSON.parse(jsonStr));

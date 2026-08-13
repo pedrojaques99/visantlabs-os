@@ -12,9 +12,12 @@ import { dirname, join, resolve } from "node:path";
 import { wcagContrast } from "culori";
 import { compileBrandTokens, emitCss, loadCraft } from "../src/engine.js";
 import { fetchBrand, brandSlug } from "../src/fetch-brand.js";
+import { resolveFonts, fontReport } from "../src/fonts.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
+const semRede = argv.includes("--no-fonts");
+const fontesEstritas = argv.includes("--strict-fonts");
 
 async function loadSeed() {
   const brandFlag = argv.indexOf("--brand");
@@ -29,7 +32,11 @@ async function loadSeed() {
 
 const brand = await loadSeed();
 const compiled = compileBrandTokens(brand);
-const css = emitCss(compiled, loadCraft());
+
+// Resolve as faces ANTES de emitir: o CSS precisa importar o que dá para
+// carregar e declarar o que não dá. `--no-fonts` pula a rede (CI offline).
+const fontes = semRede ? [] : await resolveFonts(compiled.type);
+const css = emitCss(compiled, loadCraft(), { fonts: fontes });
 
 const outDir = join(here, "../dist");
 mkdirSync(outDir, { recursive: true });
@@ -47,7 +54,16 @@ const m = compiled.meta ?? {};
 console.log(
   `\n${m.name ?? brandSlug(brand)}${m.completeness != null ? `  ·  vault ${m.completeness}% completo` : ""}`,
 );
-console.log(`  type — display: ${compiled.type.display} · sans: ${compiled.type.sans}`);
+// Relatório de fonte — o par que faltava do de contraste. Cor era verificada
+// e travava o build; tipografia era só afirmada. Ver src/fonts.js.
+if (fontes.length) {
+  console.log("\n[fonte]");
+  for (const linha of fontReport(fontes)) console.log(linha);
+} else {
+  console.log(
+    `\n[fonte] não verificada (--no-fonts) — display: ${compiled.type.display} · sans: ${compiled.type.sans}`,
+  );
+}
 
 let failed = false;
 for (const mode of ["light", "dark"]) {
@@ -70,4 +86,18 @@ console.log(`\n✓ wrote ${outFile}`);
 if (failed) {
   console.error("\n✗ contrast gate failed — tokens NOT fit to ship");
   process.exit(1);
+}
+
+// Fonte ausente NÃO reprova por padrão: face paga e licenciada é decisão
+// legítima de marca. O que era inaceitável é sumir em silêncio — agora ela
+// aparece no relatório e no topo do CSS. Com --strict-fonts, vira portão.
+const ausentes = fontes.filter((f) => f.availability !== "google");
+if (ausentes.length) {
+  console.error(
+    `\n⚠ ${ausentes.length} face(s) sem carregamento resolvido: ${ausentes
+      .map((f) => f.family)
+      .join(", ")}`,
+  );
+  console.error("  carregue via @font-face/next-font, ou corrija a família no vault.");
+  if (fontesEstritas) process.exit(1);
 }

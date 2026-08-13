@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { FigmaOperation } from '../../../src/lib/figma-types.js';
 import type { AIProvider, AIGenerationOptions, AIGenerationResult } from './types.js';
 import { GEMINI_MODELS } from '../../../src/constants/geminiModels.js';
+import { meteredCall, measureGeminiResponse } from '../ai/metered.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -57,7 +58,17 @@ const geminiProvider: AIProvider = {
         }
       }
 
-      const result = await model.generateContent(parts as any);
+      const result = await meteredCall(
+        {
+          provider: 'gemini',
+          model: GEMINI_MODELS.TEXT,
+          operation: 'figma-operations',
+          promptLength: userPrompt.length,
+          hasInputImage: !!options?.attachments?.length,
+        },
+        () => model.generateContent(parts as any),
+        (r) => measureGeminiResponse(r)
+      );
       const responseText = result.response.text();
 
       // Extract token usage from Gemini response
@@ -145,7 +156,17 @@ export async function generateText(
     }
   }
 
-  const result = await model.generateContent(parts);
+  const result = await meteredCall(
+    {
+      provider: 'gemini',
+      model: GEMINI_MODELS.TEXT,
+      operation: 'generate-text',
+      promptLength: userPrompt.length,
+      hasInputImage: !!attachments?.length,
+    },
+    () => model.generateContent(parts),
+    (r) => measureGeminiResponse(r)
+  );
   const text = result.response.text();
 
   const meta = result.response.usageMetadata;
