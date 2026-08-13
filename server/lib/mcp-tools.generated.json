@@ -173,7 +173,7 @@
         },
         "resolution": {
           "default": "1K",
-          "description": "Higher = more credits.",
+          "description": "Higher = more credits. NOT a promise of pixel dimensions: each provider maps this differently. On OpenAI (gpt-image-*) 1K/2K/4K all produce the same size (1024x1536 portrait) and the token only raises quality. Read the width/height in the response for what actually came out.",
           "type": "string",
           "enum": ["1K", "2K", "4K"]
         },
@@ -3632,7 +3632,7 @@
         },
         "resolution": {
           "default": "1K",
-          "description": "Higher = more credits.",
+          "description": "Higher = more credits. NOT a promise of pixel dimensions: each provider maps this differently. On OpenAI (gpt-image-*) 1K/2K/4K all produce the same size (1024x1536 portrait) and the token only raises quality. Read the width/height in the response for what actually came out.",
           "type": "string",
           "enum": ["1K", "2K", "4K"]
         },

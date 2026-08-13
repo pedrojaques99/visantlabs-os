@@ -1283,7 +1283,12 @@ PREFER imageUrl for the input — every generation tool already returns one, so 
         .enum(['1:1', '9:16', '16:9', '4:5'])
         .default('1:1')
         .describe('Output aspect ratio.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
+      resolution: z
+        .enum(['1K', '2K', '4K'])
+        .default('1K')
+        .describe(
+          'Higher = more credits. NOT a promise of pixel dimensions: each provider maps this differently. On OpenAI (gpt-image-*) 1K/2K/4K all produce the same size (1024x1536 portrait) and the token only raises quality. Read the width/height in the response for what actually came out.'
+        ),
       referenceImages: z
         .array(z.string())
         .optional()
@@ -1326,6 +1331,10 @@ PREFER imageUrl for the input — every generation tool already returns one, so 
           fellBack: result.fellBack ?? false,
           aspectRatio,
           resolutionRequested: resolution,
+          // Dimensão medida na imagem que saiu. É o único campo que responde
+          // "o resolution que pedi valeu?" — ver nota no schema de resolution.
+          width: result.width ?? null,
+          height: result.height ?? null,
           seed: result.seed ?? seed ?? null,
           creditsUsed: result.creditsUsed ?? null,
           _meta: slimMeta(quota),
@@ -1373,7 +1382,12 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
         .enum(['1:1', '9:16', '16:9', '4:5'])
         .default('1:1')
         .describe('1:1=square, 9:16=story, 16:9=landscape, 4:5=portrait.'),
-      resolution: z.enum(['1K', '2K', '4K']).default('1K').describe('Higher = more credits.'),
+      resolution: z
+        .enum(['1K', '2K', '4K'])
+        .default('1K')
+        .describe(
+          'Higher = more credits. NOT a promise of pixel dimensions: each provider maps this differently. On OpenAI (gpt-image-*) 1K/2K/4K all produce the same size (1024x1536 portrait) and the token only raises quality. Read the width/height in the response for what actually came out.'
+        ),
       designType: z
         .string()
         .optional()
@@ -1440,6 +1454,8 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           provider: result.providerUsed ?? result.provider ?? provider,
           modelRequested: model,
           fellBack: result.fellBack ?? false,
+          width: result.width ?? null,
+          height: result.height ?? null,
           aspectRatio,
           resolutionRequested: resolution,
           seed: result.seed ?? seed ?? null,
