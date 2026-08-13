@@ -84,7 +84,10 @@ describe('moodboard routes — image input by URL', () => {
     const { user } = await createUser({ isAdmin: true });
     const agent = await request();
 
-    const res = await agent.post('/api/moodboard/detect-grid').set('x-mcp-user-id', user.id).send({});
+    const res = await agent
+      .post('/api/moodboard/detect-grid')
+      .set('x-mcp-user-id', user.id)
+      .send({});
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/imageUrl/);
