@@ -14,6 +14,7 @@ import { sanitizeForPrompt } from '../utils/promptSanitize.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { OPENAI_IMAGE_MODELS } from '../../src/constants/openaiModels.js';
 import OpenAI from 'openai';
+import { meteredCall } from '../lib/ai/metered.js';
 import { chargeCredits, refundCreditsWithRetry } from '../lib/credits.js';
 import { getCreditsRequired } from '../utils/usageTracking.js';
 
@@ -170,21 +171,35 @@ ${formatGuide}
 Respond with a JSON object: { "results": [{"adAngle":"...","format":"...","prompt":"..."}] }
 Each prompt must be 80-150 words. No explanations — only the JSON.`;
 
-  const response = await client.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      {
-        role: 'user',
-        content: `Campaign brief: ${sanitizeForPrompt(
-          brief,
-          2000
-        )}\n\nGenerate ${count} prompts for these pairs:\n${JSON.stringify(planned, null, 2)}`,
-      },
-    ],
-    response_format: { type: 'json_object' },
-    temperature: 0.85,
-  });
+  const response = await meteredCall(
+    {
+      provider: 'openai',
+      model: 'gpt-4o',
+      operation: 'campaign-plan-prompts',
+      feature: 'canvas',
+      promptLength: brief.length,
+    },
+    () =>
+      client.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: `Campaign brief: ${sanitizeForPrompt(
+              brief,
+              2000
+            )}\n\nGenerate ${count} prompts for these pairs:\n${JSON.stringify(planned, null, 2)}`,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.85,
+      }),
+    (r) => ({
+      inputTokens: r.usage?.prompt_tokens,
+      outputTokens: r.usage?.completion_tokens,
+    })
+  );
 
   const content = response.choices[0]?.message?.content ?? '{"results":[]}';
   const parsed = JSON.parse(content) as {

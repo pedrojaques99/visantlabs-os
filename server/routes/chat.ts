@@ -1,5 +1,6 @@
 import express, { Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
+import { meteredGemini } from '../lib/ai/metered.js';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
@@ -408,7 +409,12 @@ router.post(
       }
 
       try {
-        const ai = new GoogleGenAI({ apiKey });
+        const ai = meteredGemini({
+          apiKey,
+          operation: 'chat-generate',
+          userId: req.userId,
+          apiKeySource: userOwnKey ? 'user' : 'system',
+        });
         const response = await ai.models.generateContent({
           model: GEMINI_MODELS.TEXT,
           contents: contents as any,

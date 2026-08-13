@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { meteredCall } from '../lib/ai/metered.js';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -185,6 +186,11 @@ export interface GenerateVideoParams {
   aspectRatio?: string;
   duration?: string;
   isLooping?: boolean;
+  // Contexto de contabilização (LEI: toda chamada grava usage_record).
+  // Opcionais no fim da assinatura, pela regra do repo.
+  userId?: string | null;
+  feature?: string;
+  surface?: 'ui' | 'mcp' | 'copilot';
 }
 
 /**
@@ -207,6 +213,9 @@ export const generateVideo = async (params: GenerateVideoParams): Promise<string
     aspectRatio,
     duration,
     isLooping,
+    userId,
+    feature,
+    surface,
   } = params;
 
   // Normalize model name - map old model names to new valid model
@@ -303,8 +312,26 @@ export const generateVideo = async (params: GenerateVideoParams): Promise<string
           };
         }
 
-        // Start video generation - returns an operation
-        let operation = await getAI().models.generateVideos(requestParams);
+        // Start video generation - returns an operation.
+        // Contabilizado por tentativa: o withRetry acima repete, e a Google cobra cada repetição.
+        let operation = await meteredCall(
+          {
+            provider: 'gemini',
+            model: normalizedModel,
+            operation: 'video-generate',
+            userId,
+            feature,
+            surface,
+            promptLength: prompt?.length,
+            hasInputImage: !!(startFrame || endFrame || imageBase64 || referenceImages?.length),
+            usage: {
+              videos: 1,
+              videoSeconds: requestParams.numberOfSeconds ?? (parseInt(duration || '', 10) || 8),
+              resolution: aspectRatio,
+            },
+          },
+          () => getAI().models.generateVideos(requestParams)
+        );
 
         // Poll the operation status until the video is ready
         const pollInterval = 10000; // 10 seconds

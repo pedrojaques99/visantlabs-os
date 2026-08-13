@@ -6,6 +6,7 @@ import type {
 import { IDEOGRAM_MODELS, resolveIdeogramAspectRatio } from '../../src/constants/ideogramModels.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { withResilience } from '../lib/ai-resilience.js';
+import { meterResult } from '../lib/ai/metered.js';
 
 const IDEOGRAM_BASE_URL = 'https://api.ideogram.ai';
 
@@ -176,53 +177,65 @@ export async function generateIdeogramImage(
       }, keySource=${specificApiKey ? 'user' : 'server'}`
     );
 
-    return withResilience('ideogram', async () => {
-      const formData = new FormData();
-      formData.append('prompt', prompt);
-      formData.append('rendering_speed', renderingSpeed);
-      formData.append('magic_prompt', magicPrompt);
-      formData.append('num_images', '1');
-      if (aspectRatio) formData.append('aspect_ratio', ideogramAspect);
-      if (negativePrompt) formData.append('negative_prompt', negativePrompt);
-      if (styleType) formData.append('style_type', styleType);
-      if (typeof seed === 'number') formData.append('seed', String(seed));
+    return meterResult(
+      {
+        provider: 'ideogram',
+        model,
+        operation: 'ideogram-generate-refs',
+        resilienceKey: 'ideogram',
+        apiKeySource: specificApiKey ? 'user' : 'system',
+        promptLength: prompt.length,
+        hasInputImage: true,
+        usage: { images: 1, resolution: ideogramAspect },
+      },
+      withResilience('ideogram', async () => {
+        const formData = new FormData();
+        formData.append('prompt', prompt);
+        formData.append('rendering_speed', renderingSpeed);
+        formData.append('magic_prompt', magicPrompt);
+        formData.append('num_images', '1');
+        if (aspectRatio) formData.append('aspect_ratio', ideogramAspect);
+        if (negativePrompt) formData.append('negative_prompt', negativePrompt);
+        if (styleType) formData.append('style_type', styleType);
+        if (typeof seed === 'number') formData.append('seed', String(seed));
 
-      for (const ref of referenceImages!.slice(0, 4)) {
-        try {
-          const refBuffer = await resolveImageToBuffer(ref);
-          const refMime = getMimeType(ref);
-          formData.append(
-            'character_reference_images',
-            new Blob([refBuffer], { type: refMime }),
-            `ref.${getExtension(refMime)}`
-          );
-        } catch {
-          // non-critical
+        for (const ref of referenceImages!.slice(0, 4)) {
+          try {
+            const refBuffer = await resolveImageToBuffer(ref);
+            const refMime = getMimeType(ref);
+            formData.append(
+              'character_reference_images',
+              new Blob([refBuffer], { type: refMime }),
+              `ref.${getExtension(refMime)}`
+            );
+          } catch {
+            // non-critical
+          }
         }
-      }
 
-      const response = await safeFetch(endpoint, {
-        method: 'POST',
-        headers: { 'Api-Key': apiKey },
-        body: formData,
-      });
+        const response = await safeFetch(endpoint, {
+          method: 'POST',
+          headers: { 'Api-Key': apiKey },
+          body: formData,
+        });
 
-      if (!response.ok) {
-        handleIdeogramError(response, await response.text());
-      }
+        if (!response.ok) {
+          handleIdeogramError(response, await response.text());
+        }
 
-      const data = await response.json();
-      const parsed = parseIdeogramResponse(data);
-      const base64 = await downloadImageAsBase64(parsed.url);
+        const data = await response.json();
+        const parsed = parseIdeogramResponse(data);
+        const base64 = await downloadImageAsBase64(parsed.url);
 
-      console.log(
-        `[Ideogram] Generation with refs complete. seed=${parsed.seed ?? 'n/a'}, resolution=${
-          parsed.resolution ?? 'n/a'
-        }`
-      );
+        console.log(
+          `[Ideogram] Generation with refs complete. seed=${parsed.seed ?? 'n/a'}, resolution=${
+            parsed.resolution ?? 'n/a'
+          }`
+        );
 
-      return { base64, seed: parsed.seed, resolution: parsed.resolution };
-    });
+        return { base64, seed: parsed.seed, resolution: parsed.resolution };
+      })
+    );
   }
 
   // Standard JSON text-to-image (V4 or V3 without refs)
@@ -254,32 +267,43 @@ export async function generateIdeogramImage(
     }`
   );
 
-  return withResilience('ideogram', async () => {
-    const response = await safeFetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Api-Key': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+  return meterResult(
+    {
+      provider: 'ideogram',
+      model,
+      operation: 'ideogram-generate',
+      resilienceKey: 'ideogram',
+      apiKeySource: specificApiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      usage: { images: 1, resolution: ideogramAspect },
+    },
+    withResilience('ideogram', async () => {
+      const response = await safeFetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Api-Key': apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      handleIdeogramError(response, await response.text());
-    }
+      if (!response.ok) {
+        handleIdeogramError(response, await response.text());
+      }
 
-    const data = await response.json();
-    const parsed = parseIdeogramResponse(data);
-    const base64 = await downloadImageAsBase64(parsed.url);
+      const data = await response.json();
+      const parsed = parseIdeogramResponse(data);
+      const base64 = await downloadImageAsBase64(parsed.url);
 
-    console.log(
-      `[Ideogram] Generation complete. seed=${parsed.seed ?? 'n/a'}, resolution=${
-        parsed.resolution ?? 'n/a'
-      }`
-    );
+      console.log(
+        `[Ideogram] Generation complete. seed=${parsed.seed ?? 'n/a'}, resolution=${
+          parsed.resolution ?? 'n/a'
+        }`
+      );
 
-    return { base64, seed: parsed.seed, resolution: parsed.resolution };
-  });
+      return { base64, seed: parsed.seed, resolution: parsed.resolution };
+    })
+  );
 }
 
 /**
@@ -313,65 +337,77 @@ export async function remixIdeogramImage(
     }, keySource=${specificApiKey ? 'user' : 'server'}`
   );
 
-  return withResilience('ideogram', async () => {
-    const formData = new FormData();
+  return meterResult(
+    {
+      provider: 'ideogram',
+      model: 'ideogram-v3-remix',
+      operation: 'ideogram-remix',
+      resilienceKey: 'ideogram',
+      apiKeySource: specificApiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      hasInputImage: true,
+      usage: { images: 1, resolution: ideogramAspect },
+    },
+    withResilience('ideogram', async () => {
+      const formData = new FormData();
 
-    const imageBuffer = await resolveImageToBuffer(baseImage);
-    const mime = getMimeType(baseImage);
-    formData.append(
-      'image',
-      new Blob([imageBuffer], { type: mime }),
-      `input.${getExtension(mime)}`
-    );
+      const imageBuffer = await resolveImageToBuffer(baseImage);
+      const mime = getMimeType(baseImage);
+      formData.append(
+        'image',
+        new Blob([imageBuffer], { type: mime }),
+        `input.${getExtension(mime)}`
+      );
 
-    formData.append('prompt', prompt);
-    formData.append('image_weight', String(imageWeight));
-    formData.append('rendering_speed', renderingSpeed);
-    formData.append('magic_prompt', magicPrompt);
-    formData.append('num_images', '1');
-    if (aspectRatio) formData.append('aspect_ratio', ideogramAspect);
-    if (negativePrompt) formData.append('negative_prompt', negativePrompt);
-    if (styleType) formData.append('style_type', styleType);
-    if (typeof seed === 'number') formData.append('seed', String(seed));
+      formData.append('prompt', prompt);
+      formData.append('image_weight', String(imageWeight));
+      formData.append('rendering_speed', renderingSpeed);
+      formData.append('magic_prompt', magicPrompt);
+      formData.append('num_images', '1');
+      if (aspectRatio) formData.append('aspect_ratio', ideogramAspect);
+      if (negativePrompt) formData.append('negative_prompt', negativePrompt);
+      if (styleType) formData.append('style_type', styleType);
+      if (typeof seed === 'number') formData.append('seed', String(seed));
 
-    if (referenceImages?.length) {
-      for (const ref of referenceImages.slice(0, 4)) {
-        try {
-          const refBuffer = await resolveImageToBuffer(ref);
-          const refMime = getMimeType(ref);
-          formData.append(
-            'character_reference_images',
-            new Blob([refBuffer], { type: refMime }),
-            `ref.${getExtension(refMime)}`
-          );
-        } catch {
-          // non-critical — skip failed ref images
+      if (referenceImages?.length) {
+        for (const ref of referenceImages.slice(0, 4)) {
+          try {
+            const refBuffer = await resolveImageToBuffer(ref);
+            const refMime = getMimeType(ref);
+            formData.append(
+              'character_reference_images',
+              new Blob([refBuffer], { type: refMime }),
+              `ref.${getExtension(refMime)}`
+            );
+          } catch {
+            // non-critical — skip failed ref images
+          }
         }
       }
-    }
 
-    const response = await safeFetch(endpoint, {
-      method: 'POST',
-      headers: { 'Api-Key': apiKey },
-      body: formData,
-    });
+      const response = await safeFetch(endpoint, {
+        method: 'POST',
+        headers: { 'Api-Key': apiKey },
+        body: formData,
+      });
 
-    if (!response.ok) {
-      handleIdeogramError(response, await response.text());
-    }
+      if (!response.ok) {
+        handleIdeogramError(response, await response.text());
+      }
 
-    const data = await response.json();
-    const parsed = parseIdeogramResponse(data);
-    const base64 = await downloadImageAsBase64(parsed.url);
+      const data = await response.json();
+      const parsed = parseIdeogramResponse(data);
+      const base64 = await downloadImageAsBase64(parsed.url);
 
-    console.log(
-      `[Ideogram] Remix complete. seed=${parsed.seed ?? 'n/a'}, resolution=${
-        parsed.resolution ?? 'n/a'
-      }`
-    );
+      console.log(
+        `[Ideogram] Remix complete. seed=${parsed.seed ?? 'n/a'}, resolution=${
+          parsed.resolution ?? 'n/a'
+        }`
+      );
 
-    return { base64, seed: parsed.seed, resolution: parsed.resolution };
-  });
+      return { base64, seed: parsed.seed, resolution: parsed.resolution };
+    })
+  );
 }
 
 /**
@@ -399,50 +435,62 @@ export async function editIdeogramImage(
     `[Ideogram] Editing: hasMask=${!!mask}, keySource=${specificApiKey ? 'user' : 'server'}`
   );
 
-  return withResilience('ideogram', async () => {
-    const formData = new FormData();
+  return meterResult(
+    {
+      provider: 'ideogram',
+      model: 'ideogram-v3-edit',
+      operation: 'ideogram-edit',
+      resilienceKey: 'ideogram',
+      apiKeySource: specificApiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      hasInputImage: true,
+      usage: { images: 1 },
+    },
+    withResilience('ideogram', async () => {
+      const formData = new FormData();
 
-    const imageBuffer = await resolveImageToBuffer(baseImage);
-    const mime = getMimeType(baseImage);
-    formData.append(
-      'image',
-      new Blob([imageBuffer], { type: mime }),
-      `input.${getExtension(mime)}`
-    );
-
-    if (mask) {
-      const maskBuffer = await resolveImageToBuffer(mask);
-      const maskMime = getMimeType(mask);
+      const imageBuffer = await resolveImageToBuffer(baseImage);
+      const mime = getMimeType(baseImage);
       formData.append(
-        'mask',
-        new Blob([maskBuffer], { type: maskMime }),
-        `mask.${getExtension(maskMime)}`
+        'image',
+        new Blob([imageBuffer], { type: mime }),
+        `input.${getExtension(mime)}`
       );
-    }
 
-    formData.append('prompt', prompt);
-    formData.append('rendering_speed', renderingSpeed);
-    formData.append('magic_prompt', magicPrompt);
-    formData.append('num_images', '1');
-    if (styleType) formData.append('style_type', styleType);
-    if (typeof seed === 'number') formData.append('seed', String(seed));
+      if (mask) {
+        const maskBuffer = await resolveImageToBuffer(mask);
+        const maskMime = getMimeType(mask);
+        formData.append(
+          'mask',
+          new Blob([maskBuffer], { type: maskMime }),
+          `mask.${getExtension(maskMime)}`
+        );
+      }
 
-    const response = await safeFetch(endpoint, {
-      method: 'POST',
-      headers: { 'Api-Key': apiKey },
-      body: formData,
-    });
+      formData.append('prompt', prompt);
+      formData.append('rendering_speed', renderingSpeed);
+      formData.append('magic_prompt', magicPrompt);
+      formData.append('num_images', '1');
+      if (styleType) formData.append('style_type', styleType);
+      if (typeof seed === 'number') formData.append('seed', String(seed));
 
-    if (!response.ok) {
-      handleIdeogramError(response, await response.text());
-    }
+      const response = await safeFetch(endpoint, {
+        method: 'POST',
+        headers: { 'Api-Key': apiKey },
+        body: formData,
+      });
 
-    const data = await response.json();
-    const parsed = parseIdeogramResponse(data);
-    const base64 = await downloadImageAsBase64(parsed.url);
+      if (!response.ok) {
+        handleIdeogramError(response, await response.text());
+      }
 
-    console.log(`[Ideogram] Edit complete. seed=${parsed.seed ?? 'n/a'}`);
+      const data = await response.json();
+      const parsed = parseIdeogramResponse(data);
+      const base64 = await downloadImageAsBase64(parsed.url);
 
-    return { base64, seed: parsed.seed, resolution: parsed.resolution };
-  });
+      console.log(`[Ideogram] Edit complete. seed=${parsed.seed ?? 'n/a'}`);
+
+      return { base64, seed: parsed.seed, resolution: parsed.resolution };
+    })
+  );
 }

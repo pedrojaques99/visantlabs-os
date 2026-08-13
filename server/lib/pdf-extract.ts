@@ -17,6 +17,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { tokenizePdf, type PdfTokens, type TextBlock } from './pdf-tokenize.js';
+import { meteredCall, measureGeminiResponse } from './ai/metered.js';
 import { convertEpsToPdf } from '../services/ghostscriptService.js';
 
 const SEMANTIC_PROMPT = `You are a brand strategy expert. Brand tokens (colors, fonts, images) have ALREADY been extracted algorithmically from the PDF. Your job is the SEMANTIC content only.
@@ -153,7 +154,19 @@ export async function extractPdfStreaming(
       parts.push({ inlineData: { mimeType: 'image/png', data: small } });
     }
 
-    const result = await model.generateContent(parts);
+    const result = await meteredCall(
+      {
+        provider: 'gemini',
+        model: GEMINI_MODELS.FLASH_2_5,
+        operation: 'pdf-extract-semantic',
+        userId,
+        feature: 'branding',
+        promptLength: textForLlm.length,
+        hasInputImage: sampleImages.length > 0,
+      },
+      () => model.generateContent(parts),
+      (r) => measureGeminiResponse(r)
+    );
     const text = result.response.text();
     const jsonStr = extractJson(text);
     const semantic: any = JSON.parse(jsonStr);

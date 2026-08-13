@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import type { Resolution, AspectRatio } from '../../src/types/types.js';
 import { withResilience } from '../lib/ai-resilience.js';
+import { meteredCall } from '../lib/ai/metered.js';
 import {
   OPENAI_IMAGE_MODELS,
   OPENAI_QUALITY_MAP,
@@ -85,15 +86,26 @@ export async function generateOpenAIImage(
       }
     }
 
-    const response = await withResilience('openai-image', () =>
-      client.images.edit({
+    const response = await meteredCall(
+      {
+        provider: 'openai',
         model,
-        image: imageFiles.length === 1 ? imageFiles[0] : imageFiles,
-        prompt,
-        size: size as any,
-        quality,
-        n: 1,
-      })
+        operation: 'openai-image-edit',
+        resilienceKey: 'openai-image',
+        apiKeySource: apiKey ? 'user' : 'system',
+        promptLength: prompt.length,
+        hasInputImage: true,
+        usage: { images: 1, resolution },
+      },
+      () =>
+        client.images.edit({
+          model,
+          image: imageFiles.length === 1 ? imageFiles[0] : imageFiles,
+          prompt,
+          size: size as any,
+          quality,
+          n: 1,
+        })
     );
 
     const result = response.data?.[0];
@@ -106,14 +118,24 @@ export async function generateOpenAIImage(
   }
 
   // Text-to-image mode — uses images.generate (no reference images)
-  const response = await withResilience('openai-image', () =>
-    client.images.generate({
+  const response = await meteredCall(
+    {
+      provider: 'openai',
       model,
-      prompt,
-      size: size as any,
-      quality,
-      n: 1,
-    })
+      operation: 'openai-image-generate',
+      resilienceKey: 'openai-image',
+      apiKeySource: apiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      usage: { images: 1, resolution },
+    },
+    () =>
+      client.images.generate({
+        model,
+        prompt,
+        size: size as any,
+        quality,
+        n: 1,
+      })
   );
 
   const result = response.data?.[0];

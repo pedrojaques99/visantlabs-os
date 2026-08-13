@@ -209,15 +209,28 @@ export async function generativeExpand(
       req.resolution || '1K'
     ] ?? 'medium';
 
-  const response = await client.images.edit({
-    model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
-    image: imageFile,
-    mask: maskFile,
-    prompt,
-    size: size as any,
-    quality,
-    n: 1,
-  });
+  const { meteredCall } = await import('../lib/ai/metered.js');
+  const response = await meteredCall(
+    {
+      provider: 'openai',
+      model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
+      operation: 'generative-expand',
+      apiKeySource: req.apiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      hasInputImage: true,
+      usage: { images: 1, resolution: req.resolution || '1K' },
+    },
+    () =>
+      client.images.edit({
+        model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
+        image: imageFile,
+        mask: maskFile,
+        prompt,
+        size: size as any,
+        quality,
+        n: 1,
+      })
+  );
 
   const resultData = response.data?.[0];
   if (!resultData?.b64_json) throw new Error('Generative expand returned no image data.');

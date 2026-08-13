@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
+import { meteredGemini } from '../lib/ai/metered.js';
 import type {
   CentralMessage,
   BrandPillar,
@@ -35,7 +36,7 @@ const getAI = (): GoogleGenAI => {
     if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
       throw new Error('GEMINI_API_KEY não encontrada.');
     }
-    ai = new GoogleGenAI({ apiKey });
+    ai = meteredGemini({ apiKey, operation: 'branding-v2', feature: 'brandingmachine' });
   }
   return ai;
 };

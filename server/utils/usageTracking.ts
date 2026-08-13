@@ -9,6 +9,7 @@ import { isImagenModel } from '../../src/constants/imagenModels.js';
 import { isIdeogramModel } from '../../src/constants/ideogramModels.js';
 import { isReveModel } from '../../src/constants/reveModels.js';
 import { lookupCredits } from '../lib/pricing-data.js';
+import { computeCost, isFreeModel } from '../lib/ai/cost.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
 
@@ -35,29 +36,8 @@ export interface UsageRecord {
 
 export type GenerationSurface = 'ui' | 'mcp' | 'copilot';
 
-// Text generation pricing (tokens-based)
-// Prices are per 1 million tokens (USD)
-const TEXT_GENERATION_PRICING: Record<
-  string,
-  { inputPricePer1M: number; outputPricePer1M: number }
-> = {
-  [GEMINI_MODELS.FLASH_3_5]: {
-    inputPricePer1M: 1.5,
-    outputPricePer1M: 9.0,
-  },
-  [GEMINI_MODELS.FLASH_3]: {
-    inputPricePer1M: 0.1,
-    outputPricePer1M: 0.4,
-  },
-  [GEMINI_MODELS.PRO_3_1]: {
-    inputPricePer1M: 1.25,
-    outputPricePer1M: 5.0,
-  },
-  [GEMINI_MODELS.FLASH_2_5]: {
-    inputPricePer1M: 0.15,
-    outputPricePer1M: 0.6,
-  },
-};
+// A tabela de preço de texto mudou de casa: `server/lib/ai/cost.ts`, junto com a de imagem e
+// vídeo. Duas tabelas do mesmo preço divergem em silêncio.
 
 /**
  * Get credits required for image generation based on model and resolution.
@@ -207,28 +187,11 @@ export function calculateImageGenerationCost(
 }
 
 /**
- * Calculate cost for text generation (tokens-based)
- * Supports separate input and output token pricing
+ * Calculate cost for text generation (tokens-based).
+ * Reexportado de `server/lib/ai/cost.ts` — a tabela de preço mora lá, junto com a de imagem e
+ * vídeo, pra não existirem duas contas do mesmo gasto.
  */
-export function calculateTextGenerationCost(
-  inputTokens: number,
-  outputTokens: number,
-  model: string = GEMINI_MODELS.TEXT
-): number {
-  const pricing = TEXT_GENERATION_PRICING[model] || TEXT_GENERATION_PRICING[GEMINI_MODELS.TEXT];
-
-  if (!pricing) {
-    console.warn(`Unknown text model pricing for ${model}, using Flash rates as fallback`);
-    // Fallback to Flash rates
-    return (inputTokens / 1_000_000) * 0.3 + (outputTokens / 1_000_000) * 2.5;
-  }
-
-  // Calculate cost: (Tokens / 1M) * PricePer1M
-  const inputCost = (inputTokens / 1_000_000) * pricing.inputPricePer1M;
-  const outputCost = (outputTokens / 1_000_000) * pricing.outputPricePer1M;
-
-  return inputCost + outputCost;
-}
+export { calculateTextGenerationCost } from '../lib/ai/cost.js';
 
 /**
  * Create a usage record for billing
@@ -248,15 +211,18 @@ export function createUsageRecord(
   brandGuidelineId?: string | null,
   surface?: GenerationSurface
 ): UsageRecord {
-  // Determine if this is an image/video generation or text/analysis task
-  let cost = 0;
+  // Custo pela MESMA conta do portão (`server/lib/ai/cost.ts`).
+  // A versão anterior cobrava só imagem OU token, então vídeo — que não é nenhum dos dois —
+  // caía em `cost: 0`. Foi assim que 11 registros de Veo entraram zerados em dez/2025.
+  const cost = computeCost(model, {
+    images: imagesGenerated,
+    inputTokens,
+    outputTokens,
+    resolution,
+  });
 
-  if (imagesGenerated > 0) {
-    // It's an image generation
-    cost = calculateImageGenerationCost(imagesGenerated, model, hasInputImage, resolution);
-  } else if (inputTokens !== undefined || outputTokens !== undefined) {
-    // It's a text/analysis task (prompt generation, categorization, etc.)
-    cost = calculateTextGenerationCost(inputTokens || 0, outputTokens || 0, model);
+  if (cost === 0 && !isFreeModel(model) && (imagesGenerated > 0 || inputTokens || outputTokens)) {
+    console.warn(`[usage] custo 0 num modelo pago — ${model}. Confira src/utils/pricing.ts.`);
   }
 
   return {

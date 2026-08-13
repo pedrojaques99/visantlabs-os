@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality, Type, Schema } from '@google/genai';
+import { meteredGemini } from '../lib/ai/metered.js';
 import { stripDataUriPrefix } from '../lib/dataUri.js';
 import dotenv from 'dotenv';
 
@@ -46,14 +47,34 @@ DIRETRIZES:
 5. JAMAIS utilize emojis. Use linguagem clara, objetiva e bem estruturada.
 6. Identifique e adapte-se ao idioma do usuário automaticamente, mantendo a consistência linguística em toda a resposta.`;
 
-// Lazy initialization to avoid breaking app startup if API key is not configured
-let ai: GoogleGenAI | null = null;
-let currentApiKey: string | null = null;
 let withRetryCallCount = 0;
 
-const getAI = (apiKey?: string): GoogleGenAI => {
+/** Contexto opcional de contabilização, propagado pelas funções deste serviço. */
+type MeteredCtx = {
+  operation?: string;
+  userId?: string | null;
+  feature?: string;
+  surface?: 'ui' | 'mcp' | 'copilot';
+  brandGuidelineId?: string | null;
+};
+
+/**
+ * Cliente contabilizado (LEI: toda chamada grava usage_record).
+ * `meteredGemini` devolve o SDK com `models.*` proxied — quem chama não muda nada.
+ * O cliente NÃO é cacheado: o contexto (operação, usuário) muda a cada chamada, e
+ * `new GoogleGenAI` é barato perto da chamada de rede que vem depois.
+ */
+const getAI = (apiKey?: string, ctx?: MeteredCtx): GoogleGenAI => {
+  const meta = {
+    operation: ctx?.operation ?? 'gemini-service',
+    userId: ctx?.userId,
+    feature: ctx?.feature,
+    surface: ctx?.surface,
+    brandGuidelineId: ctx?.brandGuidelineId,
+  };
+
   if (apiKey && apiKey.trim().length > 0) {
-    return new GoogleGenAI({ apiKey: apiKey.trim() });
+    return meteredGemini({ apiKey: apiKey.trim(), apiKeySource: 'user', ...meta });
   }
 
   const currentKey = (
@@ -63,18 +84,14 @@ const getAI = (apiKey?: string): GoogleGenAI => {
     ''
   ).trim();
 
-  if (!ai || currentApiKey !== currentKey) {
-    if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
-      throw new Error(
-        'GEMINI_API_KEY não encontrada. ' +
-          'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA.'
-      );
-    }
-
-    currentApiKey = currentKey;
-    ai = new GoogleGenAI({ apiKey: currentKey });
+  if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
+    throw new Error(
+      'GEMINI_API_KEY não encontrada. ' +
+        'Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA.'
+    );
   }
-  return ai;
+
+  return meteredGemini({ apiKey: currentKey, apiKeySource: 'system', ...meta });
 };
 
 /**
@@ -86,7 +103,7 @@ export const quickTextCall = async (
   userPrompt: string,
   apiKey?: string
 ): Promise<string> => {
-  const response = await getAI(apiKey).models.generateContent({
+  const response = await getAI(apiKey, { operation: 'quick-text-call' }).models.generateContent({
     model: GEMINI_MODELS.FLASH_3_LITE,
     contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }],
     config: {
@@ -375,15 +392,17 @@ export const generateMockup = async (
         };
       }
 
-      const response = await getAI(apiKey).models.generateContent({
-        model: model,
-        contents: [
-          {
-            parts: parts,
-          },
-        ],
-        config: config,
-      });
+      const response = await getAI(apiKey, { operation: 'mockup-generate' }).models.generateContent(
+        {
+          model: model,
+          contents: [
+            {
+              parts: parts,
+            },
+          ],
+          config: config,
+        }
+      );
 
       let textResponse = '';
       for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -443,7 +462,9 @@ export const suggestCategories = async (
 
       const base64Data = await resolveImageBase64(baseImage);
 
-      const response = await getAI(apiKey).models.generateContent({
+      const response = await getAI(apiKey, {
+        operation: 'suggest-categories',
+      }).models.generateContent({
         model: GEMINI_MODELS.TEXT,
         contents: [
           {
@@ -548,7 +569,9 @@ export const analyzeMockupSetup = async (
 
       if (process.env.NODE_ENV === 'development')
         console.log('[dev] analyzeMockupSetup: Gemini generateContent start');
-      const response = await getAI(userApiKey).models.generateContent({
+      const response = await getAI(userApiKey, {
+        operation: 'analyze-mockup-setup',
+      }).models.generateContent({
         model: GEMINI_MODELS.TEXT,
         contents: [
           {
@@ -855,7 +878,9 @@ export const generateSmartPrompt = async (
       }
       parts.push({ text: promptToGemini });
 
-      const response = await getAI(apiKey).models.generateContent({
+      const response = await getAI(apiKey, {
+        operation: 'generate-smart-prompt',
+      }).models.generateContent({
         model: GEMINI_MODELS.TEXT,
         contents: [{ parts }],
       });
@@ -952,7 +977,9 @@ Additional Instructions: ${params.instructions || 'Nenhuma'}
 - Se não houver mudanças necessárias, "refinedPrompt" deve ser idêntico ao original.
 - Não use emojis.`;
 
-      const response = await getAI(apiKey).models.generateContent({
+      const response = await getAI(apiKey, {
+        operation: 'reflect-and-refine-prompt',
+      }).models.generateContent({
         model: GEMINI_MODELS.TEXT,
         contents: [{ parts: [{ text: critiquePrompt }] }],
         config: {
@@ -1028,7 +1055,9 @@ export const generateMergePrompt = async (
 
       parts.push({ text: promptToGemini });
 
-      const response = await getAI().models.generateContent({
+      const response = await getAI(undefined, {
+        operation: 'generate-merge-prompt',
+      }).models.generateContent({
         model: GEMINI_MODELS.TEXT,
         contents: [{ parts }],
       });
@@ -1212,7 +1241,9 @@ export const changeObjectInMockup = async (
         config.imageConfig = { imageSize: resolution };
       }
 
-      const response = await getAI().models.generateContent({
+      const response = await getAI(undefined, {
+        operation: 'change-object-in-mockup',
+      }).models.generateContent({
         model: model,
         contents: [
           {
@@ -1271,7 +1302,9 @@ export const applyThemeToMockup = async (
         config.imageConfig = { imageSize: resolution };
       }
 
-      const response = await getAI().models.generateContent({
+      const response = await getAI(undefined, {
+        operation: 'apply-theme-to-mockup',
+      }).models.generateContent({
         model: model,
         contents: [
           {
@@ -1354,7 +1387,7 @@ Retorne em formato JSON:
         { text: prompt },
       ];
 
-      const response = await getAI(apiKey).models.generateContent({
+      const response = await getAI(apiKey, { operation: 'describe-image' }).models.generateContent({
         model: GEMINI_MODELS.TEXT,
         contents: [{ parts }],
         config: {
@@ -1826,7 +1859,9 @@ Return ONLY tags that work well together with the current selections.`;
         properties[categoryMap[cat] || cat] = { type: Type.ARRAY, items: { type: Type.STRING } };
       }
 
-      const response = await getAI(userApiKey).models.generateContent({
+      const response = await getAI(userApiKey, {
+        operation: 'refine-suggestions',
+      }).models.generateContent({
         model: GEMINI_MODELS.TEXT, // Faster model for text-only
         contents: [{ parts: [{ text: prompt }] }],
         config: {
@@ -1884,7 +1919,7 @@ export const getMultimodalEmbedding = async (
 ): Promise<EmbeddingResult> => {
   return withRetry(
     async () => {
-      const ai = getAI(userApiKey);
+      const ai = getAI(userApiKey, { operation: 'multimodal-embedding' });
 
       // The new @google/genai SDK uses a slightly different structure for embeddings
       const response = await ai.models.embedContent({
@@ -1938,7 +1973,7 @@ export const chatWithAIContext = async (
   } = options;
   return withRetry(
     async () => {
-      const ai = getAI(apiKey);
+      const ai = getAI(apiKey, { operation: 'chat-with-ai-context' });
 
       // Use the provided niche instruction or fallback to the generic intelligent one.
       //
@@ -2022,7 +2057,7 @@ export interface AnimationSuggestion {
 }
 
 export const detectGridItems = async (base64Image: string): Promise<BoundingBox[]> => {
-  const geminiAI = getAI();
+  const geminiAI = getAI(undefined, { operation: 'detect-grid-items' });
 
   const response = await withRetry(
     async () => {
@@ -2078,7 +2113,7 @@ export const upscaleImageMoodboard = async (
   base64Image: string,
   size: '1K' | '2K' | '4K' = '4K'
 ): Promise<string> => {
-  const geminiAI = getAI();
+  const geminiAI = getAI(undefined, { operation: 'upscale-moodboard' });
 
   const response = await withRetry(
     async () => {
@@ -2117,7 +2152,7 @@ export const upscaleImageMoodboard = async (
 export const suggestAnimationPresets = async (
   images: { id: string; base64: string }[]
 ): Promise<AnimationSuggestion[]> => {
-  const geminiAI = getAI();
+  const geminiAI = getAI(undefined, { operation: 'suggest-animation-presets' });
 
   const response = await withRetry(
     async () => {

@@ -18,6 +18,7 @@ import {
   type CreativeAIResponseValidated,
 } from './creative-schema.js';
 import { withResilience } from './ai-resilience.js';
+import { meteredCall, measureGeminiResponse } from './ai/metered.js';
 import { buildBrandContextJSON, BRAND_SECTION_PRESETS } from './brandContextBuilder.js';
 import type { BrandGuideline } from '../../src/lib/figma-types.js';
 
@@ -155,8 +156,17 @@ async function callGemini(
   userMessage: string,
   attempt = 1
 ): Promise<{ plan: CreativeAIResponseValidated; raw: string }> {
-  const result = await withResilience('gemini', () =>
-    getModel().generateContent([{ text: SYSTEM_PROMPT }, { text: userMessage }])
+  // meteredCall já embrulha em withResilience — não empilhar os dois.
+  const result = await meteredCall(
+    {
+      provider: 'gemini',
+      model: GEMINI_MODELS.TEXT,
+      operation: 'creative-plan',
+      feature: 'canvas',
+      promptLength: userMessage.length,
+    },
+    () => getModel().generateContent([{ text: SYSTEM_PROMPT }, { text: userMessage }]),
+    (r) => measureGeminiResponse(r)
   );
   const raw = result.response.text();
 

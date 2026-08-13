@@ -43,6 +43,16 @@ jobs:
           fi
           echo "✅ No hardcoded /api/ fetch calls found"
 
+  ai-metering:
+    name: Toda chamada de IA contabiliza
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node server/scripts/scan-ai-metering.mjs --check
+
   unit:
     name: Unit tests
     runs-on: ubuntu-latest

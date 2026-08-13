@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { meteredCall, measureGeminiResponse } from '../lib/ai/metered.js';
 import { BrandGuideline } from '../../src/lib/figma-types.js';
 import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { buildBrandContext, BRAND_SECTION_PRESETS } from '../lib/brandContextBuilder.js';
@@ -59,15 +60,26 @@ export class BrandIntelligenceService {
     `;
 
     try {
-      const result = await model.generateContent([
-        prompt,
+      const result = await meteredCall(
         {
-          inlineData: {
-            data: base64Data,
-            mimeType: 'image/png',
-          },
+          provider: 'gemini',
+          model: GEMINI_MODELS.TEXT,
+          operation: 'brand-intelligence-image',
+          feature: 'branding',
+          hasInputImage: true,
         },
-      ]);
+        () =>
+          model.generateContent([
+            prompt,
+            {
+              inlineData: {
+                data: base64Data,
+                mimeType: 'image/png',
+              },
+            },
+          ]),
+        (r) => measureGeminiResponse(r)
+      );
 
       const response = await result.response;
       const text = response
@@ -105,7 +117,17 @@ export class BrandIntelligenceService {
       Retorne um array JSON de objetos: { title, description }.
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await meteredCall(
+      {
+        provider: 'gemini',
+        model: GEMINI_MODELS.PRO_2_0,
+        operation: 'brand-design-tips',
+        feature: 'branding',
+        promptLength: prompt.length,
+      },
+      () => model.generateContent(prompt),
+      (r) => measureGeminiResponse(r)
+    );
     const response = await result.response;
     return JSON.parse(response.text().replace(/```json|```/g, ''));
   }
@@ -146,7 +168,17 @@ export class BrandIntelligenceService {
     `;
 
     try {
-      const result = await model.generateContent(prompt);
+      const result = await meteredCall(
+        {
+          provider: 'gemini',
+          model: GEMINI_MODELS.PRO_2_0,
+          operation: 'adapt-operations-to-brand',
+          feature: 'figma',
+          promptLength: prompt.length,
+        },
+        () => model.generateContent(prompt),
+        (r) => measureGeminiResponse(r)
+      );
       const text = result.response
         .text()
         .replace(/```json|```/g, '')

@@ -14,6 +14,7 @@
  * Used by: imagelab route, MCP tool, canvas ReactFlow, creative studio.
  */
 import OpenAI from 'openai';
+import { meteredCall } from '../lib/ai/metered.js';
 import { uploadImage } from './r2Service.js';
 import { prisma } from '../db/prisma.js';
 import { stripDataUriPrefix } from '../lib/dataUri.js';
@@ -224,15 +225,28 @@ export async function inpaint(req: InpaintRequest, userId: string): Promise<Inpa
   const size = resolveOpenAISize(req.resolution || '1K', req.aspectRatio);
   const quality = OPENAI_QUALITY_MAP[req.resolution || '1K'] ?? 'medium';
 
-  const response = await client.images.edit({
-    model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
-    image: imageFile,
-    mask: maskFile,
-    prompt,
-    size: size as any,
-    quality,
-    n: 1,
-  });
+  const response = await meteredCall(
+    {
+      provider: 'openai',
+      model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
+      operation: 'inpaint',
+      userId,
+      apiKeySource: req.apiKey ? 'user' : 'system',
+      promptLength: prompt.length,
+      hasInputImage: true,
+      usage: { images: 1, resolution: req.resolution || '1K' },
+    },
+    () =>
+      client.images.edit({
+        model: OPENAI_IMAGE_MODELS.GPT_IMAGE_2,
+        image: imageFile,
+        mask: maskFile,
+        prompt,
+        size: size as any,
+        quality,
+        n: 1,
+      })
+  );
 
   const result = response.data?.[0];
   if (!result?.b64_json) throw new Error('Inpainting returned no image data.');

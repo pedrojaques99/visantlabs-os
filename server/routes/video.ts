@@ -399,6 +399,9 @@ router.post(
             aspectRatio,
             duration,
             isLooping: req.body.isLooping,
+            // LEI: sem isto o gasto do Veo grava sem dono.
+            userId: req.userId,
+            feature: 'canvas',
           });
         }
 

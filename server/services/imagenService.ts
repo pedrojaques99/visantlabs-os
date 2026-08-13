@@ -1,15 +1,17 @@
 import { GoogleGenAI, SubjectReferenceImage, SubjectReferenceType } from '@google/genai';
 import type { ImagenModelId } from '../../src/constants/imagenModels.js';
+import { meteredGemini } from '../lib/ai/metered.js';
 
 const IMAGEN_EDIT_MODEL = 'imagen-3.0-capability-001';
 
-let ai: GoogleGenAI | null = null;
-let currentApiKey: string | null = null;
 let editImageSupported: boolean | null = null;
 
-function getAI(apiKey?: string): GoogleGenAI {
+/** Cliente contabilizado — LEI: toda chamada grava usage_record. */
+function getAI(apiKey?: string, ctx?: { userId?: string | null; feature?: string }): GoogleGenAI {
+  const meta = { operation: 'imagen-generate', userId: ctx?.userId, feature: ctx?.feature };
+
   if (apiKey && apiKey.trim().length > 0) {
-    return new GoogleGenAI({ apiKey: apiKey.trim() });
+    return meteredGemini({ apiKey: apiKey.trim(), apiKeySource: 'user', ...meta });
   }
 
   const key = (
@@ -19,14 +21,10 @@ function getAI(apiKey?: string): GoogleGenAI {
     ''
   ).trim();
 
-  if (!ai || currentApiKey !== key) {
-    if (!key || key === 'undefined' || key.length === 0) {
-      throw new Error('GEMINI_API_KEY not configured for Imagen generation');
-    }
-    currentApiKey = key;
-    ai = new GoogleGenAI({ apiKey: key });
+  if (!key || key === 'undefined' || key.length === 0) {
+    throw new Error('GEMINI_API_KEY not configured for Imagen generation');
   }
-  return ai;
+  return meteredGemini({ apiKey: key, apiKeySource: 'system', ...meta });
 }
 
 export interface ImagenReferenceImage {
