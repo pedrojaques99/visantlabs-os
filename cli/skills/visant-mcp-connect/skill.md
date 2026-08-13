@@ -133,8 +133,19 @@ As tools aparecem com o prefixo `mcp__visant__` na próxima sessão.
 | `ai-generate-naming`           | Gerar nomes de marca/produto a partir de um brief                                           | Credits |
 | `ai-change-object`             | Substituir/modificar objetos em mockup existente                                            | Credits |
 | `ai-apply-theme`               | Aplicar temas visuais (christmas, cyberpunk, minimalist...)                                 | Credits |
-| `smart-analyze`                | Auto-detectar tipo de design + gerar prompt pronto para mockup-generate                     | Free    |
-| `upload-image`                 | Upload base64 → URL pública (R2). Sempre usar antes de mockup-generate.                     | Free    |
+| `smart-analyze`                | Auto-detectar tipo de design + gerar prompt pronto. Aceita `imageUrl` (preferido) ou base64 | Free    |
+| `upload-image`                 | Upload base64 → URL pública (R2). Se houver shell, use `visant upload` no lugar.            | Free    |
+
+> **Imagem entra por URL, não por base64.** Passar base64 numa tool obriga o
+> agente a carregar o arquivo no próprio contexto e re-emitir os bytes: custo de
+> token proporcional ao arquivo e, acima de alguns milhares de caracteres, o
+> payload chega **truncado** — e o upload aceitava calado, devolvendo 200 com uma
+> imagem quebrada.
+>
+> Com shell disponível, o caminho é `visant upload <arquivo> --json`, que manda o
+> arquivo do disco pra rede sem passar pelo modelo. As tools de imagem
+> (`moodboard-detect-grid`, `moodboard-upscale`, `smart-analyze`,
+> `ai-describe-image`, `ai-change-object`, `ai-apply-theme`) aceitam `imageUrl`.
 
 ### Creative Studio (8 tools)
 
@@ -229,9 +240,13 @@ As tools aparecem com o prefixo `mcp__visant__` na próxima sessão.
 
 ### Mockup de design existente (logo, sticker, poster)
 
-1. `upload-image` — converter base64 → URL pública
+1. `visant upload <arquivo> --json` — arquivo do disco → URL pública, sem passar
+   pelo modelo. Sem shell disponível, use a tool `upload-image` com base64.
 2. `mockup-generate` — URL em `referenceImages`, descreva SÓ a cena no `prompt`
    - **NÃO** descreva o design (texto, layout, fontes) — a AI vai alucinar
+3. Confira `model`, `provider` e `fellBack` na resposta: o roteador troca de
+   modelo quando o escolhido falha, e o campo `width`/`height` diz a dimensão
+   que de fato saiu (`resolution` é só o que você pediu).
 
 ### Brand → Design System → Code
 
@@ -292,4 +307,5 @@ Atualize o Bearer no MCP config e reinicie a sessão. Se não existir: `npx visa
 - **creative-full** é o atalho — evita encadear generate + mockup-generate + render manualmente.
 - **Créditos**: `payments-subscription-status` ou `payments-usage` mostra saldo detalhado. `settings-byok-status` mostra quais API keys estão configuradas.
 - **Tools grátis**: upload-image, ai-describe-image, ai-improve-prompt, ai-suggest-prompt-variations, ai-extract-colors, smart-analyze.
+- **A resposta de geração diz o que ACONTECEU, não o que você pediu**: `model` e `provider` são o que rodou, `modelRequested` é o que você pediu, `fellBack` avisa se houve troca, e `width`/`height` são a dimensão medida na imagem. `resolutionRequested` tem esse nome porque `resolution` não é promessa de dimensão — na OpenAI, 1K e 4K saem do mesmo tamanho e o token só muda a qualidade.
 - **Scope enforcement**: tokens OAuth respeitam scopes `read`, `write`, `generate` — tools de geração requerem scope `generate`.

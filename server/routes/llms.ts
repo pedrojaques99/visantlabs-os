@@ -335,6 +335,16 @@ Core differentiator: brand guidelines are INPUT for AI generation, not just stat
 
 ### Image & Media
 
+Image tools take \`imageUrl\` — prefer it over base64, which costs tokens
+proportional to the file and truncates on large images. With a shell available,
+\`visant upload <file> --json\` (npm i -g visantlabs) turns a local file into a
+URL without the bytes passing through the model.
+
+Generation responses report what ACTUALLY ran (\`model\`, \`provider\`,
+\`fellBack\`) plus the measured \`width\`/\`height\`. \`resolutionRequested\` is
+only what you asked for: on OpenAI, 1K and 4K yield the same dimensions and the
+token only changes quality.
+
 - \`ai-generate-image\` (W) — Generate image from prompt. ~2 credits.
 - \`upload-image\` (W) — Upload image, returns public URL
 - \`ai-describe-image\` (R) — Analyze and describe an image
