@@ -48,7 +48,7 @@ describe('fetchBrand — request construction', () => {
 
     const { url } = impl.calls[0];
     expect(url).toBe(
-      `https://api.visantlabs.com/api/brand-guidelines/${BRAND_ID}?sections=colors,typography`,
+      `https://api.visantlabs.com/api/brand-guidelines/${BRAND_ID}?sections=colors,typography`
     );
     expect(url).not.toContain('/v1/');
   });
@@ -67,14 +67,14 @@ describe('fetchBrand — request construction', () => {
       fetchImpl: impl,
     });
     expect(impl.calls[0].url).toBe(
-      `http://localhost:8080/api/brand-guidelines/${BRAND_ID}?sections=colors,typography`,
+      `http://localhost:8080/api/brand-guidelines/${BRAND_ID}?sections=colors,typography`
     );
   });
 
   it('throws a typed error carrying the status and url on a non-2xx', async () => {
     const impl = stubFetch({}, { status: 404 });
     await expect(fetchBrand(BRAND_ID, { token: 't', fetchImpl: impl })).rejects.toThrow(
-      BrandFetchError,
+      BrandFetchError
     );
   });
 
@@ -82,7 +82,7 @@ describe('fetchBrand — request construction', () => {
     const impl = stubFetch(PAYLOAD);
     await expect(fetchBrand('', { token: 't', fetchImpl: impl })).rejects.toThrow(BrandFetchError);
     await expect(
-      fetchBrand(BRAND_ID, { token: '', baseUrl: 'x', fetchImpl: impl }),
+      fetchBrand(BRAND_ID, { token: '', baseUrl: 'x', fetchImpl: impl })
     ).rejects.toThrow(/missing API token/);
     expect(impl.calls).toHaveLength(0);
   });

@@ -114,7 +114,9 @@ export function fontHeader(fonts = []) {
 
   if (faltantes.length) {
     linhas.push('');
-    linhas.push('/* ⚠ FONTE NÃO RESOLVIDA — o token abaixo promete o que o projeto talvez não entregue.');
+    linhas.push(
+      '/* ⚠ FONTE NÃO RESOLVIDA — o token abaixo promete o que o projeto talvez não entregue.'
+    );
     for (const f of faltantes) {
       const motivo =
         f.availability === 'absent'
@@ -134,7 +136,5 @@ export function fontHeader(fonts = []) {
 /** Uma linha por papel, para o relatório de build ficar do lado do de contraste. */
 export function fontReport(fonts = []) {
   const rotulo = { google: 'OK   ', absent: 'AUSENTE', unknown: '? ' };
-  return fonts.map(
-    (f) => `  ${rotulo[f.availability] ?? '? '}  ${f.role.padEnd(7)} ${f.family}`
-  );
+  return fonts.map((f) => `  ${rotulo[f.availability] ?? '? '}  ${f.role.padEnd(7)} ${f.family}`);
 }
