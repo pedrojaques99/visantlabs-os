@@ -3,7 +3,11 @@
 // brand id"; without it every consumer hand-copies a fixture and the tokens
 // drift from the vault the moment someone edits the brand.
 
-const DEFAULT_BASE = 'https://api.visantlabs.com';
+// The `/api` prefix is part of the base, matching `cli/src/lib/api.ts` and the
+// `VISANT_API_URL` documented in `cli/README.md`. Keeping the two in sync means
+// one env var works for every consumer in the repo. The engine used to default
+// to the bare host and request `/v1/brand-guidelines/...`, which 404s.
+const DEFAULT_BASE = 'https://api.visantlabs.com/api';
 
 export class BrandFetchError extends Error {
   constructor(message, detail) {
@@ -16,9 +20,9 @@ export class BrandFetchError extends Error {
 /**
  * Fetch the token-relevant sections of a brand guideline.
  *
- * Only `colors` and `typography` are requested. The rest of the vault (voice,
- * personas, manifesto) is large and irrelevant here — asking for `full` would
- * burn payload on every build for data the engine cannot use.
+ * `sections=colors,typography` states intent, but the API currently ignores it
+ * and returns the whole vault — so do not count on a smaller payload here.
+ * `normalizeBrand` throws away everything the engine cannot use either way.
  *
  * @param {string} brandId
  * @param {{ token?: string, baseUrl?: string, fetchImpl?: typeof fetch }} [opts]
@@ -33,9 +37,9 @@ export async function fetchBrand(brandId, opts = {}) {
     });
   }
 
-  const base = opts.baseUrl ?? process.env.VISANT_API_URL ?? DEFAULT_BASE;
+  const base = (opts.baseUrl ?? process.env.VISANT_API_URL ?? DEFAULT_BASE).replace(/\/+$/, '');
   const doFetch = opts.fetchImpl ?? globalThis.fetch;
-  const url = `${base}/v1/brand-guidelines/${encodeURIComponent(brandId)}?sections=colors,typography`;
+  const url = `${base}/brand-guidelines/${encodeURIComponent(brandId)}?sections=colors,typography`;
 
   const res = await doFetch(url, {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
