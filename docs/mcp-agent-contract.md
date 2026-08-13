@@ -51,12 +51,12 @@ como o `resolution` também era só eco, não havia como saber se ele foi honrad
 
 Agora:
 
-| campo | significado |
-|---|---|
-| `model` | o que **rodou** |
-| `provider` | o provider que rodou |
-| `modelRequested` | o que foi pedido |
-| `fellBack` | `true` se houve troca |
+| campo                 | significado                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| `model`               | o que **rodou**                                                   |
+| `provider`            | o provider que rodou                                              |
+| `modelRequested`      | o que foi pedido                                                  |
+| `fellBack`            | `true` se houve troca                                             |
 | `resolutionRequested` | o que foi pedido — deliberadamente **não** é promessa do que saiu |
 
 `resolutionRequested` tem esse nome de propósito: o serviço repassa
@@ -74,8 +74,12 @@ A pendência que abri aqui era: "o `resolution` do Gemini não está sendo honra
 explicou sozinha:
 
 ```json
-{ "model": "gpt-image-1", "provider": "openai",
-  "modelRequested": "gemini-3-pro-image-preview", "fellBack": true }
+{
+  "model": "gpt-image-1",
+  "provider": "openai",
+  "modelRequested": "gemini-3-pro-image-preview",
+  "fellBack": true
+}
 ```
 
 **O `resolution` nunca foi ignorado — as requisições não chegavam no Gemini.**
