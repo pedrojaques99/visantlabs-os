@@ -14,8 +14,31 @@ import {
   detectGridItems,
   upscaleImageMoodboard,
   suggestAnimationPresets,
+  resolveImageBase64,
 } from '../services/geminiService.js';
 import { chargeCredits } from '../lib/credits.js';
+import { uploadImage, isR2Configured } from '../services/r2Service.js';
+
+/**
+ * Aceita a imagem por base64 OU por URL.
+ *
+ * So' base64 e' hostil pra quem chama via MCP: o agente tem que carregar o
+ * arquivo inteiro no proprio contexto e re-emitir os bytes -- caro em token e,
+ * passando de alguns milhares de caracteres, chega truncado. E a URL ja' existe:
+ * toda geracao da plataforma devolve uma.
+ *
+ * O download passa por `resolveImageBase64`, que usa `safeFetch` e portanto
+ * mantem a validacao anti-SSRF. Nao ha' caminho novo pra rede aqui.
+ */
+async function lerImagem(body: any, campo = 'imageBase64'): Promise<string> {
+  const b64 = body?.[campo];
+  const url = body?.imageUrl;
+  if (typeof b64 === 'string' && b64.length > 0) return b64;
+  if (typeof url === 'string' && url.trim().length > 0) {
+    return resolveImageBase64({ url, mimeType: 'image/png' } as any);
+  }
+  throw Object.assign(new Error(`${campo} or imageUrl is required`), { status: 400 });
+}
 
 const router = express.Router();
 
@@ -44,13 +67,15 @@ router.post(
   checkSubscription,
   async (req: SubscriptionRequest, res, next) => {
     try {
-      const { imageBase64 } = req.body;
-      if (!imageBase64 || typeof imageBase64 !== 'string') {
-        return res.status(400).json({ error: 'imageBase64 is required' });
+      let imagem: string;
+      try {
+        imagem = await lerImagem(req.body);
+      } catch (e: any) {
+        return res.status(400).json({ error: e.message });
       }
 
       await chargeCredits(req.userId!, 1);
-      const boxes = await detectGridItems(imageBase64);
+      const boxes = await detectGridItems(imagem);
       res.json({ boxes });
     } catch (err) {
       next(err);
@@ -67,17 +92,36 @@ router.post(
   checkSubscription,
   async (req: SubscriptionRequest, res, next) => {
     try {
-      const { imageBase64, size = '4K' } = req.body;
-      if (!imageBase64 || typeof imageBase64 !== 'string') {
-        return res.status(400).json({ error: 'imageBase64 is required' });
-      }
+      const { size = '4K' } = req.body;
       if (!['1K', '2K', '4K'].includes(size)) {
         return res.status(400).json({ error: 'size must be 1K, 2K, or 4K' });
       }
+      let imagem: string;
+      try {
+        imagem = await lerImagem(req.body);
+      } catch (e: any) {
+        return res.status(400).json({ error: e.message });
+      }
 
       await chargeCredits(req.userId!, 2);
-      const upscaledBase64 = await upscaleImageMoodboard(imageBase64, size as '1K' | '2K' | '4K');
-      res.json({ upscaledBase64 });
+      const upscaledBase64 = await upscaleImageMoodboard(imagem, size as '1K' | '2K' | '4K');
+
+      // Devolver uma imagem 4K como base64 e' inutilizavel por agente: sao
+      // megabytes de texto na resposta. Sobe pro R2 e devolve URL. O campo
+      // base64 continua saindo pra nao quebrar o front que ja' consome.
+      let url: string | null = null;
+      if (isR2Configured()) {
+        try {
+          url = await uploadImage(
+            upscaledBase64,
+            (req as AuthRequest).userId!,
+            `upscale-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+          );
+        } catch (e: any) {
+          console.warn('[moodboard/upscale] R2 upload falhou (segue com base64):', e?.message);
+        }
+      }
+      res.json({ upscaledBase64, url, size });
     } catch (err) {
       next(err);
     }

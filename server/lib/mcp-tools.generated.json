@@ -3771,12 +3771,17 @@
     },
     {
       "name": "moodboard-detect-grid",
-      "description": "Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.",
-      "required": ["imageBase64"],
+      "description": "Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.\n\nPREFER imageUrl. Passing base64 costs tokens proportional to the file and truncates on large images — get a URL with `visant upload <file> --json` or the upload-image tool first.",
+      "required": [],
       "properties": {
-        "imageBase64": {
+        "imageUrl": {
+          "description": "Public URL of the moodboard image. PREFER THIS — no token cost, no truncation.",
           "type": "string",
-          "description": "Base64-encoded moodboard image to analyze."
+          "format": "uri"
+        },
+        "imageBase64": {
+          "description": "Base64-encoded moodboard image. Fallback only; prefer imageUrl.",
+          "type": "string"
         }
       },
       "cost": "free",
@@ -3815,12 +3820,17 @@
     },
     {
       "name": "moodboard-upscale",
-      "description": "Upscale an image to 1K, 2K, or 4K resolution using Gemini image enhancement. Use after extracting a cell from a moodboard to get a high-resolution standalone version.",
-      "required": ["imageBase64"],
+      "description": "Upscale an image to 1K, 2K, or 4K using Gemini image enhancement. Returns a public URL.\n\nPREFER imageUrl for the input — every generation tool already returns one, so you rarely need base64 at all. Passing base64 costs tokens proportional to the file and truncates on large images.",
+      "required": [],
       "properties": {
-        "imageBase64": {
+        "imageUrl": {
+          "description": "Public URL of the image to upscale. PREFER THIS.",
           "type": "string",
-          "description": "Base64-encoded image to upscale."
+          "format": "uri"
+        },
+        "imageBase64": {
+          "description": "Base64-encoded image. Fallback only; prefer imageUrl.",
+          "type": "string"
         },
         "size": {
           "default": "4K",
@@ -4408,12 +4418,17 @@
     },
     {
       "name": "smart-analyze",
-      "description": "AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Costs 1 credit.",
-      "required": ["base64"],
+      "description": "AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Costs 1 credit.\n\nPREFER imageUrl. Passing base64 costs tokens proportional to the file and truncates on large images — get a URL with `visant upload <file> --json` or the upload-image tool first.",
+      "required": [],
       "properties": {
-        "base64": {
+        "imageUrl": {
+          "description": "Public URL of the image to analyze. PREFER THIS.",
           "type": "string",
-          "description": "Base64-encoded image to analyze."
+          "format": "uri"
+        },
+        "base64": {
+          "description": "Base64-encoded image. Fallback only; prefer imageUrl.",
+          "type": "string"
         },
         "mimeType": {
           "default": "image/png",

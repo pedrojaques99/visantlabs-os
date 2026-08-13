@@ -26,6 +26,20 @@ vi.mock('../../../server/services/spacesService.js', async () => {
   };
 });
 
+// `uploadRenderOutput` passou a PREFERIR R2, caindo pro Spaces só por FALHA de
+// upload. Com apenas o Spaces mockado, este teste deixou de exercitar um mock e
+// passou a subir o render de verdade — rede dentro da suíte, e arquivo escrito
+// num bucket real a cada rodada. Mockar os dois lados fecha o vazamento e volta
+// a asserção a valer.
+vi.mock('../../../server/services/r2Service.js', async () => {
+  const actual = await vi.importActual<any>('../../../server/services/r2Service.js');
+  return {
+    ...actual,
+    isR2Configured: () => true,
+    uploadSharedAsset: async (_buf: Buffer, key: string) => `https://cdn.test/${key}`,
+  };
+});
+
 // resolvePsdPath é usado pelo fast path indiretamente? Não — o fast path do
 // service NÃO resolve Drive (só lê a scene do Mongo + assets do Spaces). Mas a
 // rota /render não chama resolvePsdPath no fast path; o service decide. OK.
