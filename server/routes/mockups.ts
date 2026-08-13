@@ -1356,7 +1356,11 @@ router.post(
         const usageRecord = createUsageRecord(
           req.userId!,
           actualImagesCount, // Always 1 for this endpoint
-          model,
+          // O modelo que RODOU, não o pedido. Quando o roteador de fallback
+          // troca de provider, gravar o pedido registra o custo do modelo
+          // errado — e o fallback costuma ser mais caro, então o erro sempre
+          // caiu para menos. Ver `fellBack` na resposta.
+          effectiveModel || model,
           !!baseImage,
           promptText.length,
           resolution as Resolution | undefined,
