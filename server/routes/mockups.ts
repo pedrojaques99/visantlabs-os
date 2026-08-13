@@ -1542,6 +1542,27 @@ router.post(
         }
       }
 
+      // Dimensão REAL do que saiu, medida nos bytes.
+      //
+      // `resolution` é um token nosso ('1K'|'2K'|'4K') e cada provider decide o
+      // que fazer com ele. Na OpenAI, 1K/2K/3K/4K caem TODOS em 1024x1536 no
+      // retrato — lá o token vira `quality`, não tamanho. Sem medir, quem chama
+      // pede 4K, recebe 1024x1536 e não tem como distinguir limite do provider,
+      // fallback de modelo, ou bug nosso. Essa dúvida já custou horas.
+      let outWidth: number | undefined = width || undefined;
+      let outHeight: number | undefined = height || undefined;
+      try {
+        const sharp = (await import('sharp')).default;
+        const meta = await sharp(Buffer.from(imageBase64, 'base64')).metadata();
+        if (meta.width && meta.height) {
+          outWidth = meta.width;
+          outHeight = meta.height;
+        }
+      } catch (err: any) {
+        // Medir é diagnóstico, não entrega: nunca derrubar a geração por isso.
+        console.warn(`${logPrefix} [GENERATION] não consegui medir a saída: ${err?.message}`);
+      }
+
       // Cache the result before sending
       const responseData = {
         imageBase64: imageUrl ? undefined : imageBase64,
@@ -1553,8 +1574,8 @@ router.post(
         creditsDeducted: actualCreditsDeducted,
         creditsRemaining: totalCreditsRemaining,
         isAdmin,
-        width: width || undefined,
-        height: height || undefined,
+        width: outWidth,
+        height: outHeight,
         requestId,
         generationId: randomUUID(),
       };
