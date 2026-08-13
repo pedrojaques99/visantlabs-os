@@ -2454,6 +2454,22 @@ router.post(
       const saveToLib = req.body.saveToLib === true || req.body.saveToLib === 'true';
       const publish = req.body.publish === true || req.body.publish === 'true';
 
+      // Aceita `image.url` alem de `image.base64`. Exigir base64 obriga um
+      // agente a carregar o arquivo no proprio contexto e re-emitir os bytes —
+      // caro, e trunca em arquivo grande. A URL e' resolvida AQUI, antes da
+      // validacao, de proposito: `validateImageInput` e' compartilhado com
+      // outras rotas do plugin que de fato dependem de base64, e afrouxa-lo
+      // deixaria passar imagem sem bytes pra handler que nao sabe buscar.
+      // O download usa `safeFetch` por dentro, entao a protecao SSRF continua.
+      if (!image?.base64 && typeof image?.url === 'string' && image.url.trim()) {
+        try {
+          const { resolveImageBase64 } = await import('../services/geminiService.js');
+          image.base64 = await resolveImageBase64(image);
+        } catch (e: any) {
+          return res.status(400).json({ error: `Could not fetch image from url: ${e.message}` });
+        }
+      }
+
       // Validate image input
       const validation = validateImageInput(image);
       if (!validation.valid) {

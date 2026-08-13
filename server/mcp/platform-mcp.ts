@@ -996,19 +996,31 @@ Content-Type: application/json
 
   server.tool(
     'moodboard-detect-grid',
-    'Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.',
+    `Detect individual image bounding boxes in a moodboard or grid image. Returns cell coordinates so each section can be cropped and extracted individually.
+
+PREFER imageUrl. Passing base64 costs tokens proportional to the file and truncates on large images — get a URL with \`visant upload <file> --json\` or the upload-image tool first.`,
     {
-      imageBase64: z.string().describe('Base64-encoded moodboard image to analyze.'),
+      imageUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe('Public URL of the moodboard image. PREFER THIS — no token cost, no truncation.'),
+      imageBase64: z
+        .string()
+        .optional()
+        .describe('Base64-encoded moodboard image. Fallback only; prefer imageUrl.'),
     },
     { title: 'Detect Moodboard Grid', readOnlyHint: true },
-    async ({ imageBase64 }) => {
+    async ({ imageBase64, imageUrl }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
+      if (!imageBase64 && !imageUrl)
+        return mcpError('BAD_REQUEST', 'Provide imageUrl (preferred) or imageBase64.');
       try {
         const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/detect-grid`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ imageBase64 }),
+          body: JSON.stringify({ imageBase64, imageUrl }),
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Detection failed (${resp.status})`);
@@ -1021,24 +1033,43 @@ Content-Type: application/json
 
   server.tool(
     'moodboard-upscale',
-    'Upscale an image to 1K, 2K, or 4K resolution using Gemini image enhancement. Use after extracting a cell from a moodboard to get a high-resolution standalone version.',
+    `Upscale an image to 1K, 2K, or 4K using Gemini image enhancement. Returns a public URL.
+
+PREFER imageUrl for the input — every generation tool already returns one, so you rarely need base64 at all. Passing base64 costs tokens proportional to the file and truncates on large images.`,
     {
-      imageBase64: z.string().describe('Base64-encoded image to upscale.'),
+      imageUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe('Public URL of the image to upscale. PREFER THIS.'),
+      imageBase64: z
+        .string()
+        .optional()
+        .describe('Base64-encoded image. Fallback only; prefer imageUrl.'),
       size: z.enum(['1K', '2K', '4K']).default('4K').describe('Target resolution.'),
     },
     { title: 'Upscale Image', destructiveHint: false },
-    async ({ imageBase64, size }) => {
+    async ({ imageBase64, imageUrl, size }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
+      if (!imageBase64 && !imageUrl)
+        return mcpError('BAD_REQUEST', 'Provide imageUrl (preferred) or imageBase64.');
       try {
         const resp = await fetch(`${INTERNAL_API_BASE}/api/moodboard/upscale`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
-          body: JSON.stringify({ imageBase64, size }),
+          body: JSON.stringify({ imageBase64, imageUrl, size }),
         });
         const result = (await resp.json()) as any;
         if (!resp.ok) return ERR.internal(result?.error || `Upscale failed (${resp.status})`);
-        return jsonResponse({ upscaledBase64: result.upscaledBase64, size });
+        // Nunca devolver a imagem em base64 aqui: um 4K vira megabytes de texto
+        // e estoura o contexto de quem chamou. A URL e' a entrega.
+        if (!result.url) {
+          return ERR.internal(
+            'Upscale succeeded but storage is not configured, so no URL could be returned.'
+          );
+        }
+        return jsonResponse({ url: result.url, size });
       } catch (err: any) {
         return ERR.internal(err.message);
       }
@@ -1284,11 +1315,17 @@ Content-Type: application/json
           return ERR.internal(detail || `Image generation failed (${response.status})`);
         }
         const quota = await getQuotaMeta(currentUserId);
+        // Reportar o que RODOU, nao o que foi pedido. O roteador de fallback
+        // pode trocar de modelo/provider quando o escolhido falha, e ecoar o
+        // pedido de volta faz a resposta mentir sobre a propria geracao.
         return jsonResponse({
           imageUrl: result.imageUrl || null,
-          model,
+          model: result.modelUsed ?? model,
+          provider: result.providerUsed ?? null,
+          modelRequested: model,
+          fellBack: result.fellBack ?? false,
           aspectRatio,
-          resolution,
+          resolutionRequested: resolution,
           seed: result.seed ?? seed ?? null,
           creditsUsed: result.creditsUsed ?? null,
           _meta: slimMeta(quota),
@@ -1398,10 +1435,13 @@ Example call: { "prompt": "business card on white surface, natural light", "bran
           imageUrl: result.imageUrl || null,
           mockupId: result.id || result.mockup?.id || null,
           hasImage: !!result.imageBase64 || !!result.imageUrl,
-          model,
-          provider: result.provider || provider,
+          // Ver nota em ai-generate-image: reportar o que rodou, nao o pedido.
+          model: result.modelUsed ?? model,
+          provider: result.providerUsed ?? result.provider ?? provider,
+          modelRequested: model,
+          fellBack: result.fellBack ?? false,
           aspectRatio,
-          resolution,
+          resolutionRequested: resolution,
           seed: result.seed ?? seed ?? null,
           creditsUsed: result.creditsUsed ?? null,
           _meta: slimMeta(quota),
@@ -6027,9 +6067,19 @@ server can reject a truncated payload instead of returning a broken URL.`,
   // ─── Smart Analyze ─────────────────────────────────────────────────────────
   server.tool(
     'smart-analyze',
-    'AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Costs 1 credit.',
+    `AI-powered image analysis. Detects design type (logo, UI, photo, illustration), suggests mockup category and prompt, and returns a ready-to-use prompt for mockup-generate. Costs 1 credit.
+
+PREFER imageUrl. Passing base64 costs tokens proportional to the file and truncates on large images — get a URL with \`visant upload <file> --json\` or the upload-image tool first.`,
     {
-      base64: z.string().describe('Base64-encoded image to analyze.'),
+      imageUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe('Public URL of the image to analyze. PREFER THIS.'),
+      base64: z
+        .string()
+        .optional()
+        .describe('Base64-encoded image. Fallback only; prefer imageUrl.'),
       mimeType: z.string().default('image/png').describe('Image MIME type.'),
       brandGuideline: z
         .string()
@@ -6037,15 +6087,17 @@ server can reject a truncated payload instead of returning a broken URL.`,
         .describe('Brand guideline ID for brand-aware analysis.'),
     },
     { title: 'Analyze Image', readOnlyHint: true },
-    async ({ base64, mimeType, brandGuideline }) => {
+    async ({ base64, imageUrl, mimeType, brandGuideline }) => {
       const currentUserId = getMcpUserId();
       if (!currentUserId) return ERR.auth();
+      if (!base64 && !imageUrl)
+        return mcpError('BAD_REQUEST', 'Provide imageUrl (preferred) or base64.');
       try {
         const res = await fetch(`${INTERNAL_API_BASE}/api/plugin/smart-analyze`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-mcp-user-id': currentUserId },
           body: JSON.stringify({
-            image: { base64, mimeType },
+            image: { base64, url: imageUrl, mimeType },
             mode: 'image-gen',
             brandGuideline,
           }),
