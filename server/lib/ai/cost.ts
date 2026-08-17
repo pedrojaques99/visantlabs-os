@@ -35,6 +35,12 @@ const TEXT_GENERATION_PRICING: Record<
   [GEMINI_MODELS.FLASH_3]: { inputPricePer1M: 0.1, outputPricePer1M: 0.4 },
   [GEMINI_MODELS.PRO_3_1]: { inputPricePer1M: 1.25, outputPricePer1M: 5.0 },
   [GEMINI_MODELS.FLASH_2_5]: { inputPricePer1M: 0.15, outputPricePer1M: 0.6 },
+  // OpenAI — o fallback que EFETIVAMENTE roda quando o Gemini cai (cascata de
+  // `ai-providers/cheapText.ts`). Sem estas duas linhas o custo do fallback
+  // saía cobrado a tabela do Flash, ou seja: o dia em que o Gemini cai é
+  // exatamente o dia em que o relatório de custo passa a mentir.
+  'gpt-4o': { inputPricePer1M: 2.5, outputPricePer1M: 10.0 },
+  'gpt-4o-mini': { inputPricePer1M: 0.15, outputPricePer1M: 0.6 },
 };
 
 /** Custo de geração de texto (por token, input e output com preços distintos). */
@@ -66,6 +72,10 @@ export function isFreeModel(model: string): boolean {
  * Vídeo vem PRIMEIRO de propósito — é a chamada mais cara do catálogo e era a que caía em 0.
  */
 export function computeCost(model: string, usage: MeteredUsage): number {
+  // Modelo grátis (`...:free`, local) custa 0 de verdade. Sem esta saída, ele
+  // caía na tarifa-fallback de texto e o relatório inventava gasto que não houve.
+  if (isFreeModel(model)) return 0;
+
   let cost = 0;
 
   if (usage.videoSeconds || usage.videos) {

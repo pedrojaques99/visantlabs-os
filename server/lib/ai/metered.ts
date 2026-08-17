@@ -30,7 +30,18 @@ import { aiCall } from '../ai-wrapper.js';
 // Re-export: o custo é calculado em `ai/cost.ts` (fonte única, compartilhada com o caminho legado).
 export { computeCost, type MeteredUsage };
 
-export type MeteredProvider = 'gemini' | 'openai' | 'ideogram' | 'reve' | 'seedream';
+export type MeteredProvider =
+  | 'gemini'
+  | 'openai'
+  | 'ideogram'
+  | 'reve'
+  | 'seedream'
+  // Providers da cascata de texto (`ai-providers/cheapText.ts`). Tier grátis não
+  // é o mesmo que grátis pra sempre — o gasto deles conta igual.
+  | 'groq'
+  | 'cerebras'
+  | 'nvidia'
+  | 'openrouter';
 
 export interface MeteredContext {
   provider: MeteredProvider;

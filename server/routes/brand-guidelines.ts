@@ -48,9 +48,6 @@ import {
   type AssetForMatch,
   type SceneForMatch,
 } from '../services/sceneMatcher.js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
-import { meteredCall, measureGeminiResponse } from '../lib/ai/metered.js';
 import { v4 as uuidv4 } from 'uuid';
 import { vectorService } from '../services/vectorService.js';
 import { knowledgeService } from '../services/knowledgeService.js';
@@ -83,6 +80,7 @@ import {
 } from '../lib/brand/assetVectors.js';
 import {
   completeCheapText,
+  completeText,
   parseJsonLoose,
   isCheapTextConfigured,
 } from '../lib/ai-providers/cheapText.js';
@@ -2938,8 +2936,10 @@ router.post('/:id/ai-populate', apiRateLimiter, authenticate, async (req: AuthRe
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-    const apiKey = await getGeminiApiKey(req.userId);
-    if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' });
+    // Portão da CASCATA, não do Gemini: exigir chave Gemini aqui barraria a rota
+    // justamente no cenário em que a cascata existe pra salvar (Gemini fora).
+    if (!isCheapTextConfigured())
+      return res.status(503).json({ error: 'No AI provider is configured' });
 
     const bg = guideline as unknown as BrandGuideline;
     const requestedSections: string[] | undefined = req.body.sections;
@@ -3013,28 +3013,19 @@ Do NOT include fields that already exist.`;
 
     await chargeCredits(req.userId!, 1);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
-
-    const result = await meteredCall(
-      {
-        provider: 'gemini',
-        model: GEMINI_MODELS.TEXT,
-        operation: 'brand-fill-missing-fields',
-        userId: req.userId,
-        feature: 'branding',
-      },
-      () =>
-        model.generateContent([
-          { text: systemPrompt },
-          {
-            text: `Existing brand context:\n${brandContext}\n\nGenerate the missing fields as JSON.`,
-          },
-        ]),
-      (r) => measureGeminiResponse(r)
-    );
-
-    const responseText = result.response.text();
+    // Cascata, não Gemini direto: o crédito já foi cobrado ACIMA, então uma
+    // quota estourada aqui cobrava do usuário e devolvia erro. A cascata cai
+    // pro próximo provider antes de chegar nisso.
+    const { text: responseText } = await completeText({
+      system: systemPrompt,
+      user: `Existing brand context:\n${brandContext}\n\nGenerate the missing fields as JSON.`,
+      userId: req.userId,
+      json: true,
+      tier: 'quality',
+      maxTokens: 4096,
+      operation: 'brand-fill-missing-fields',
+      feature: 'branding',
+    });
 
     const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
     let jsonStr = codeBlock ? codeBlock[1].trim() : undefined;
@@ -3095,8 +3086,10 @@ router.post('/:id/suggest-mockups', apiRateLimiter, authenticate, async (req: Au
     });
     if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' });
 
-    const apiKey = await getGeminiApiKey(req.userId);
-    if (!apiKey) return res.status(400).json({ error: 'Gemini API key not configured' });
+    // Portão da CASCATA, não do Gemini: exigir chave Gemini aqui barraria a rota
+    // justamente no cenário em que a cascata existe pra salvar (Gemini fora).
+    if (!isCheapTextConfigured())
+      return res.status(503).json({ error: 'No AI provider is configured' });
 
     // The prompt below forbids naming the brand or describing the logo — this
     // asks for physical scenes only. Voice, strategy, personas and knowledge
@@ -3143,28 +3136,18 @@ Return ONLY a JSON array:
 
     await chargeCredits(req.userId!, 1);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
-
-    const result = await meteredCall(
-      {
-        provider: 'gemini',
-        model: GEMINI_MODELS.TEXT,
-        operation: 'brand-suggest-mockup-prompts',
-        userId: req.userId,
-        feature: 'branding',
-      },
-      () =>
-        model.generateContent([
-          { text: systemPrompt },
-          {
-            text: `Brand context:\n${brandContext}\n\nSuggest ${count} mockup prompts as JSON array.`,
-          },
-        ]),
-      (r) => measureGeminiResponse(r)
-    );
-
-    const responseText = result.response.text();
+    // Cascata (mesmo motivo do fill-missing-fields: o crédito já saiu acima).
+    // Sem `json: true` de propósito — a resposta aqui é um ARRAY, e o
+    // `response_format: json_object` do OpenAI força objeto no topo.
+    const { text: responseText } = await completeText({
+      system: systemPrompt,
+      user: `Brand context:\n${brandContext}\n\nSuggest ${count} mockup prompts as JSON array.`,
+      userId: req.userId,
+      tier: 'quality',
+      maxTokens: 4096,
+      operation: 'brand-suggest-mockup-prompts',
+      feature: 'branding',
+    });
     const codeBlock = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
     let jsonStr = codeBlock ? codeBlock[1].trim() : undefined;
     if (!jsonStr) {
