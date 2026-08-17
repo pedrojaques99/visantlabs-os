@@ -6,7 +6,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
  */
 async function load(
   envOverrides: Record<string, string | undefined>,
-  fetchImpl: (url: string) => any
+  fetchImpl: (url: string) => any,
+  /** `getOpenAiApiKey` LANÇA quando não há chave — reproduzir isso é o ponto de um dos testes. */
+  keyOpts: { openAiKeyThrows?: boolean } = {}
 ) {
   vi.resetModules();
   vi.doMock('../../../config/env.js', () => ({ env: { ...envOverrides } }));
@@ -14,13 +16,18 @@ async function load(
     getGeminiApiKey: async () => envOverrides.GEMINI_API_KEY,
   }));
   vi.doMock('../../../utils/openAiApiKey.js', () => ({
-    getOpenAiApiKey: async () => envOverrides.OPENAI_API_KEY,
+    getOpenAiApiKey: async () => {
+      if (keyOpts.openAiKeyThrows) throw new Error('OpenAI API key is not configured.');
+      return envOverrides.OPENAI_API_KEY;
+    },
   }));
   // `init` é declarado porque os testes de tier inspecionam o body enviado.
   const safeFetch = vi.fn((url: string, _init?: unknown) => Promise.resolve(fetchImpl(url)));
   vi.doMock('../../../utils/securityValidation.js', () => ({ safeFetch }));
+  const recordAiUsage = vi.fn();
+  vi.doMock('../../ai/metered.js', () => ({ recordAiUsage }));
   const mod = await import('../cheapText.js');
-  return { mod, safeFetch };
+  return { mod, safeFetch, recordAiUsage };
 }
 
 const ok = (content: string) => ({
@@ -326,6 +333,100 @@ describe('cheapText router', () => {
     }));
     const mod = await import('../cheapText.js');
     expect((await mod.completeText({ system: 's', user: 'u' })).tokens).toBe(1234);
+  });
+
+  // ── Visão (imagem na cascata) ──────────────────────────────────────────────
+  // Existe porque a extração de marca lê PDF e print. Um provider texto-puro
+  // não recusa a imagem: ele responde sobre um conteúdo que nunca viu.
+
+  it('sends images as OpenAI-shaped image_url parts', async () => {
+    const { mod, safeFetch } = await load({ GEMINI_API_KEY: 'gm' }, () => ok('{}'));
+    await mod.completeText({
+      system: 's',
+      user: 'u',
+      images: ['data:image/png;base64,AAA', 'BBB'],
+    });
+    const body = JSON.parse((safeFetch.mock.calls[0][1] as any).body);
+    expect(body.messages[1].content[0]).toEqual({ type: 'text', text: 'u' });
+    expect(body.messages[1].content[1].image_url.url).toBe('data:image/png;base64,AAA');
+    // base64 cru ganha o prefixo — sem ele todo provider devolve 400
+    expect(body.messages[1].content[2].image_url.url).toBe('data:image/png;base64,BBB');
+  });
+
+  it('keeps plain-string content when there are no images', async () => {
+    const { mod, safeFetch } = await load({ GROQ_API_KEY: 'g' }, () => ok('hi'));
+    await mod.completeText({ system: 's', user: 'u' });
+    expect(JSON.parse((safeFetch.mock.calls[0][1] as any).body).messages[1].content).toBe('u');
+  });
+
+  it('skips text-only providers when images are present', async () => {
+    const calls: string[] = [];
+    const { mod } = await load({ GROQ_API_KEY: 'g', GEMINI_API_KEY: 'gm' }, (url) => {
+      calls.push(url.includes('groq') ? 'groq' : 'gemini');
+      return ok('{}');
+    });
+    const res = await mod.completeText({ system: 's', user: 'u', images: ['AAA'] });
+    // groq é mais barato E tem chave, mas é cego: nem é tentado.
+    expect(calls).toEqual(['gemini']);
+    expect(res.provider).toBe('gemini');
+  });
+
+  it('cascades gemini → openai on vision when gemini is over quota', async () => {
+    const { mod } = await load({ GEMINI_API_KEY: 'gm', OPENAI_API_KEY: 'o' }, (url) =>
+      url.includes('generativelanguage') ? fail(429) : ok('{}')
+    );
+    const res = await mod.completeText({ system: 's', user: 'u', images: ['AAA'] });
+    expect(res.provider).toBe('openai'); // o caso real: Gemini fora do ar por dias
+  });
+
+  it('says so when no vision-capable provider is configured', async () => {
+    const { mod } = await load({ GROQ_API_KEY: 'g' }, () => ok('{}'));
+    await expect(mod.completeText({ system: 's', user: 'u', images: ['AAA'] })).rejects.toThrow(
+      /no vision-capable provider configured/
+    );
+  });
+
+  it('gives images a longer timeout than a short text suggestion', async () => {
+    const { mod, safeFetch } = await load({ GEMINI_API_KEY: 'gm' }, () => ok('{}'));
+    await mod.completeText({ system: 's', user: 'u' });
+    expect((safeFetch.mock.calls[0][1] as any).timeoutMs).toBe(15_000);
+    await mod.completeText({ system: 's', user: 'u', images: ['AAA'] });
+    expect((safeFetch.mock.calls[1][1] as any).timeoutMs).toBe(90_000);
+  });
+
+  // ── Robustez da cascata ────────────────────────────────────────────────────
+
+  it('skips a provider whose key resolver throws instead of aborting the chain', async () => {
+    // getOpenAiApiKey lança quando não há chave. Sem o catch, um provider
+    // desconfigurado no fim da fila derruba a cascata inteira.
+    const { mod } = await load({ GEMINI_API_KEY: 'gm' }, () => ok('hi'), {
+      openAiKeyThrows: true,
+    });
+    const res = await mod.completeText({ system: 's', user: 'u', preferProvider: 'openai' });
+    expect(res.provider).toBe('gemini');
+  });
+
+  // ── LEI: toda chamada de IA contabiliza ────────────────────────────────────
+
+  it('records a usage_record for the provider that served', async () => {
+    const { mod, recordAiUsage } = await load({ GROQ_API_KEY: 'g' }, () => ok('hi'));
+    await mod.completeText({ system: 's', user: 'uu', operation: 'brand-extract' });
+    expect(recordAiUsage).toHaveBeenCalledTimes(1);
+    const [ctx, , outcome] = recordAiUsage.mock.calls[0];
+    expect(ctx.provider).toBe('groq');
+    expect(ctx.operation).toBe('brand-extract');
+    expect(outcome).toBe('ok');
+  });
+
+  it('records the failed attempt too — the provider bills it', async () => {
+    const { mod, recordAiUsage } = await load({ GROQ_API_KEY: 'g', GEMINI_API_KEY: 'gm' }, (url) =>
+      url.includes('groq') ? fail(500) : ok('hi')
+    );
+    await mod.completeText({ system: 's', user: 'u' });
+    expect(recordAiUsage.mock.calls.map((c) => [c[0].provider, c[2]])).toEqual([
+      ['groq', 'error'],
+      ['gemini', 'ok'],
+    ]);
   });
 
   it('parseJsonLoose handles fenced, raw, and prose-wrapped JSON', async () => {

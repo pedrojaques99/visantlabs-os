@@ -1,12 +1,8 @@
 // server/lib/brand-extract.ts
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ParsedChunk } from './brand-parse.js';
-import { stripDataUriPrefix } from './dataUri.js';
 import { BrandGuideline } from '../types/brandGuideline.js';
-import { getGeminiApiKey } from '../utils/geminiApiKey.js';
-import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 import { sanitizeForPrompt } from '../utils/promptSanitize.js';
-import { meteredCall, measureGeminiResponse } from './ai/metered.js';
+import { completeText } from './ai-providers/cheapText.js';
 
 const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract ALL brand guideline information you can find.
 
@@ -89,59 +85,50 @@ export async function extractBrandData(
   images?: string[],
   userId?: string
 ): Promise<ExtractedBrandData> {
-  const apiKey = await getGeminiApiKey(userId);
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured for brand extraction');
-
   const combinedText = chunks
     .map((c) => `--- ${c.source} (${c.type}) ---\n${c.text}`)
     .join('\n\n')
     .slice(0, 20000); // limit tokens — strategy docs need more space
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  // GEMINI_MODELS.TEXT is gemini-3-flash which is multimodal
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODELS.TEXT });
-
-  const parts: any[] = [
-    { text: EXTRACTION_PROMPT + '\n\nContent:\n' + sanitizeForPrompt(combinedText, 20000) },
-  ];
-
-  if (images && images.length > 0) {
-    for (const imgBase64 of images) {
-      parts.push({
-        inlineData: {
-          mimeType: 'image/png',
-          data: stripDataUriPrefix(imgBase64),
-        },
-      });
-    }
-  }
 
   // NOTE: a *successful* call that legitimately finds no brand info returns `{}`
   // (the LLM emits valid empty/minimal JSON → validateExtracted strips it). Only a
   // genuine failure — network, parse, quota/spend-cap — throws here. We deliberately
   // do NOT swallow exceptions into `{}`: that masqueraded a failed extraction as
   // "found nothing", letting the caller charge a credit and report false success.
+  //
+  // A chamada vai pela cascata (`ai-providers/cheapText.ts`), não direto no
+  // Gemini: quota estourada do Gemini derrubava TODO ingest do produto, sendo
+  // que já existia uma cascata multi-provider no repo. Com imagem, a cascata se
+  // restringe sozinha aos providers que enxergam.
   try {
-    const result = await meteredCall(
-      {
-        provider: 'gemini',
-        model: GEMINI_MODELS.TEXT,
-        operation: 'brand-extract',
-        userId,
-        feature: 'branding',
-        promptLength: combinedText.length,
-        hasInputImage: !!images?.length,
-      },
-      () => model.generateContent(parts),
-      (r) => measureGeminiResponse(r)
-    );
-    const text = result.response.text();
+    const { text, provider, model } = await completeText({
+      system: EXTRACTION_PROMPT,
+      user: 'Content:\n' + sanitizeForPrompt(combinedText, 20000),
+      images,
+      userId,
+      json: true,
+      // Extração de marca é o resultado que o usuário PAGA (1 crédito) e o
+      // JSON tem persona, arquétipo, manifesto — 1024 tokens truncariam no meio.
+      tier: 'quality',
+      maxTokens: 8192,
+      temperature: 0.2,
+      operation: 'brand-extract',
+      feature: 'branding',
+    });
+    console.log(`[Brand Extract] served by ${provider}/${model}`);
     const jsonStr = extractJson(text);
     return validateExtracted(JSON.parse(jsonStr));
   } catch (error: any) {
     const raw = String(error?.message || error || '');
     console.error('[Brand Extract] LLM extraction failed:', raw);
     // Normalize the most common hard failures to a stable, mappable message.
+    // `cheaptext_unavailable` = a cascata inteira caiu (todo provider sem chave,
+    // em cooldown ou fora do ar) — é indisponibilidade, não fonte ruim.
+    if (raw.startsWith('cheaptext_unavailable')) {
+      throw new Error(
+        'extraction_unavailable: no AI provider is available right now — try again shortly.'
+      );
+    }
     if (/quota|RESOURCE_EXHAUSTED|rate.?limit|429/i.test(raw)) {
       throw new Error(
         'extraction_unavailable: AI extraction is temporarily over quota — try again shortly.'

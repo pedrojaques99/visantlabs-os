@@ -47,6 +47,18 @@ const METER_PATTERNS = [
 // Arquivos que podem instanciar provedor por natureza (o próprio portão e este scanner).
 const GATE_FILES = ['server/lib/ai/metered.ts', 'server/scripts/scan-ai-metering.mjs'];
 
+/**
+ * Tira comentários antes de procurar prova de contabilização.
+ *
+ * Sem isto o portão aceitava a PALAVRA como prova: `cheapText.ts` gastava em 6
+ * providers sem gravar nada e passava como OK só porque um comentário citava
+ * `usage_records`. Descoberto em 17/ago/2026, no dia em que a cascata virou o
+ * caminho principal do ingest de marca.
+ */
+function stripComments(src) {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+}
+
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
     if (name === 'node_modules' || name === 'dist' || name === '__tests__') continue;
@@ -75,7 +87,7 @@ for (const file of walk(SERVER)) {
   }
   if (!providers.size) continue;
 
-  const metered = METER_PATTERNS.some((re) => re.test(src));
+  const metered = METER_PATTERNS.some((re) => re.test(stripComments(src)));
   findings.push({ file: rel, providers: [...providers].sort(), calls, metered });
 }
 

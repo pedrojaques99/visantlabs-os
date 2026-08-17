@@ -18,6 +18,7 @@ import { env } from '../../config/env.js';
 import { safeFetch } from '../../utils/securityValidation.js';
 import { getGeminiApiKey } from '../../utils/geminiApiKey.js';
 import { getOpenAiApiKey } from '../../utils/openAiApiKey.js';
+import { recordAiUsage } from '../ai/metered.js';
 
 export type CheapTextProviderId =
   | 'groq'
@@ -54,6 +55,13 @@ interface ProviderSpec {
    * intenção, garantia mais fraca. Ver `buildResponseFormat`.
    */
   supportsJsonSchema?: boolean;
+  /**
+   * Aceita imagem na mensagem (`content: [{type:'image_url'}]` do shape
+   * OpenAI). Quem NÃO declara isto é PULADO quando o caller manda imagem —
+   * mandar imagem pra um modelo texto-puro não dá erro barulhento, dá
+   * alucinação silenciosa sobre um conteúdo que ele nunca viu.
+   */
+  supportsVision?: boolean;
 }
 
 // Cost-benefit order: free/cheapest first, paid last. Models chosen for fast,
@@ -109,6 +117,8 @@ const PROVIDERS: ProviderSpec[] = [
     getOwnKey: (userId) => getGeminiApiKey(userId, { skipFallback: true }),
     supportsByok: true,
     supportsJsonSchema: true,
+    // gemini-2.5-flash e gemini-3-flash-preview são multimodais — mesmo ID serve texto e imagem.
+    supportsVision: true,
   },
   {
     id: 'openai',
@@ -121,8 +131,13 @@ const PROVIDERS: ProviderSpec[] = [
     getOwnKey: (userId) => getOpenAiApiKey(userId, { skipFallback: true }),
     supportsByok: true,
     supportsJsonSchema: true,
+    // gpt-4o e gpt-4o-mini aceitam image_url — os dois tiers enxergam.
+    supportsVision: true,
   },
 ];
+
+/** Providers que enxergam imagem. Usado na mensagem de erro e em `cheapTextStatus`. */
+const VISION_PROVIDERS = PROVIDERS.filter((p) => p.supportsVision).map((p) => p.id);
 
 // ── Per-provider cooldown (module-scoped, mirrors assetAnalysis) ──────────────
 const cooldownUntil = new Map<CheapTextProviderId, number>();
@@ -171,6 +186,19 @@ export interface CheapTextOptions {
    * fallback coexistem em vez de um anular o outro.
    */
   apiKeyOverride?: { provider: CheapTextProviderId; key: string };
+  /**
+   * Imagens (data URI ou base64 cru) a anexar na mensagem do usuário. Quando
+   * presente, a cascata só considera providers `supportsVision` — o resto não
+   * é "pior", é cego, e um resumo inventado de uma imagem que o modelo não viu
+   * é pior que erro.
+   */
+  images?: string[];
+  /** Rótulo do gasto no `usage_record` (ex. 'brand-extract'). Default 'cheap-text'. */
+  operation?: string;
+  /** Feature de negócio do gasto, pro relatório de custo. */
+  feature?: string;
+  /** Timeout por tentativa. Default 15s (texto) / 90s (com imagem). */
+  timeoutMs?: number;
 }
 
 export interface CheapTextResult {
@@ -198,9 +226,10 @@ export interface CheapTextResult {
  * usuário só valeria por acaso, quando os anteriores falhassem. Preferir é
  * "tenta primeiro", não "só esse": o fallback continua valendo se ele cair.
  */
-function orderedProviders(prefer?: CheapTextProviderId): ProviderSpec[] {
+function orderedProviders(prefer?: CheapTextProviderId, needsVision = false): ProviderSpec[] {
   const primary = prefer || (env.TEXT_GEN_PRIMARY as CheapTextProviderId | undefined);
-  return [...PROVIDERS].sort((a, b) => {
+  const pool = needsVision ? PROVIDERS.filter((p) => p.supportsVision) : PROVIDERS;
+  return [...pool].sort((a, b) => {
     if (primary) {
       if (a.id === primary) return -1;
       if (b.id === primary) return 1;
@@ -247,6 +276,27 @@ function systemFor(p: ProviderSpec, opts: CheapTextOptions): string {
   ].join('\n');
 }
 
+/**
+ * Base64 cru vira data URI. Os providers OpenAI-compat só aceitam `image_url`
+ * com URL completa; mandar o base64 pelado devolve 400 em todos eles.
+ */
+function toDataUri(img: string): string {
+  return img.startsWith('data:') ? img : `data:image/png;base64,${img}`;
+}
+
+/**
+ * Conteúdo da mensagem do usuário. String quando é só texto (shape que TODO
+ * provider aceita, inclusive os text-only), array de partes quando há imagem.
+ */
+function userContentFor(opts: CheapTextOptions): unknown {
+  const images = opts.images?.filter(Boolean) ?? [];
+  if (images.length === 0) return opts.user;
+  return [
+    { type: 'text', text: opts.user },
+    ...images.map((img) => ({ type: 'image_url', image_url: { url: toDataUri(img) } })),
+  ];
+}
+
 async function callProvider(
   p: ProviderSpec,
   key: string,
@@ -258,7 +308,7 @@ async function callProvider(
     model,
     messages: [
       { role: 'system', content: systemFor(p, opts) },
-      { role: 'user', content: opts.user },
+      { role: 'user', content: userContentFor(opts) },
     ],
     temperature: opts.temperature ?? 0.7,
     max_tokens: opts.maxTokens ?? 1024,
@@ -275,7 +325,10 @@ async function callProvider(
       'X-Title': 'Visant Labs',
     },
     body: JSON.stringify(body),
-    timeoutMs: 15_000,
+    // 15s serve pra sugestão curta. Extração multimodal (PDF de marca, 12
+    // imagens inline) não cabe nisso — o timeout curto virava "provider caiu"
+    // e derrubava a cascata inteira por impaciência.
+    timeoutMs: opts.timeoutMs ?? (opts.images?.length ? 90_000 : 15_000),
   } as any);
 
   if (!res.ok) {
@@ -325,15 +378,34 @@ export async function completeText(opts: CheapTextOptions): Promise<CheapTextRes
   // Chave do caller manda no provider dela ir primeiro — é a intenção explícita
   // do usuário, acima de custo e de TEXT_GEN_PRIMARY.
   const override = opts.apiKeyOverride;
-  const providers = orderedProviders(override?.provider || opts.preferProvider);
+  const needsVision = !!opts.images?.length;
+  const providers = orderedProviders(override?.provider || opts.preferProvider, needsVision);
   let configured = 0;
 
   for (const p of providers) {
     if (inCooldown(p.id)) continue;
     const isOverridden = override?.provider === p.id;
-    const key = isOverridden ? override!.key : await p.getKey(opts.userId);
+    // `getKey` pode LANÇAR (getOpenAiApiKey lança quando não há chave nenhuma).
+    // Sem este catch, um provider desconfigurado no fim da fila derruba a
+    // cascata inteira em vez de ser pulado — o oposto do ponto dela existir.
+    let key: string | undefined;
+    try {
+      key = isOverridden ? override!.key : await p.getKey(opts.userId);
+    } catch {
+      key = undefined;
+    }
     if (!key) continue;
     configured++;
+    const model = modelFor(p, opts);
+    const meterCtx = {
+      provider: p.id,
+      model,
+      operation: opts.operation ?? 'cheap-text',
+      userId: opts.userId,
+      feature: opts.feature,
+      promptLength: opts.user.length,
+      hasInputImage: needsVision,
+    } as const;
     try {
       const { text, tokens, inputTokens, outputTokens } = await callProvider(p, key, opts);
       // BYOK só conta se a chave que EFETIVAMENTE serviu é do usuário — comparar
@@ -348,23 +420,36 @@ export async function completeText(opts: CheapTextOptions): Promise<CheapTextRes
           /* na dúvida, cobra normal */
         }
       }
+      // LEI: toda chamada a provedor pago grava um usage_record — inclusive a que
+      // falhou, e inclusive a de um provider "grátis" (o tier grátis acaba).
+      recordAiUsage(
+        { ...meterCtx, apiKeySource: usedUserKey ? 'user' : 'system' },
+        { inputTokens, outputTokens },
+        'ok'
+      );
       return {
         text,
         provider: p.id,
-        model: modelFor(p, opts),
+        model,
         usedUserKey,
         tokens,
         inputTokens,
         outputTokens,
       };
     } catch (err) {
+      recordAiUsage(meterCtx, {}, 'error', (err as any)?.message || String(err));
       classifyAndCooldown(p, err);
       console.warn(`[cheapText] ${p.id} failed, cascading:`, (err as any)?.message || err);
       // continue to next provider
     }
   }
 
-  const reason = configured === 0 ? 'no provider configured' : 'all providers failed/cooling-down';
+  const reason =
+    configured === 0
+      ? needsVision
+        ? `no vision-capable provider configured (needs one of: ${VISION_PROVIDERS.join(', ')})`
+        : 'no provider configured'
+      : 'all providers failed/cooling-down';
   throw new Error(`cheaptext_unavailable: ${reason}`);
 }
 
@@ -410,6 +495,9 @@ export function isCheapTextConfigured(): boolean {
     env.NVIDIA_API_KEY ||
     env.OPENROUTER_API_KEY ||
     env.GEMINI_API_KEY ||
-    env.OPENAI_API_KEY
+    env.OPENAI_API_KEY ||
+    // `getOpenAiApiKey` também aceita OPENAI_KEY; sem isto uma instalação que só
+    // tem esse nome se declara "sem provider" e o portão da rota fecha à toa.
+    process.env.OPENAI_KEY
   );
 }
