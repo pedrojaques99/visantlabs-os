@@ -52,7 +52,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
         <Button
           variant="brand"
           onClick={addDeliverable}
-          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan transition-colors duration-300 flex items-center justify-center"
+          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground transition-colors duration-300 flex items-center justify-center"
           title={t('budget.addDeliverable') || 'Adicionar Entregável'}
         >
           <Plus size={18} />
@@ -109,7 +109,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => removeDeliverable(index)}
-                    className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors self-start sm:self-auto"
                     title={t('budget.removeDeliverable')}
                   >
                     <Trash2 size={18} />

@@ -210,10 +210,8 @@ export const GridMachinePage: React.FC = () => {
               <Upload size={20} className="text-neutral-500 group-hover:text-neutral-300" />
             </div>
             <div className="text-center">
-              <p className="text-[12px] text-neutral-400">
-                {t('grid.machine.drop_an_svg_file_here')}
-              </p>
-              <p className="text-[10px] text-neutral-600 mt-1">
+              <p className="text-xs text-neutral-400">{t('grid.machine.drop_an_svg_file_here')}</p>
+              <p className="text-2xs text-neutral-600 mt-1">
                 {t('grid.machine.or_click_ctrlv_to_paste')}
               </p>
             </div>

@@ -283,7 +283,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://aistudio.google.com/app/apikey"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-brand-cyan hover:text-brand-cyan/80 underline flex items-center gap-1"
+                    className="text-foreground hover:text-brand-cyan/80 underline flex items-center gap-1"
                   >
                     Google AI Studio API Keys
                     <ExternalLink size={14} />
@@ -294,7 +294,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://cloud.google.com/docs/authentication/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-brand-cyan hover:text-brand-cyan/80 underline flex items-center gap-1"
+                    className="text-foreground hover:text-brand-cyan/80 underline flex items-center gap-1"
                   >
                     Google Cloud API Key Best Practices
                     <ExternalLink size={14} />
@@ -305,7 +305,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://cloud.google.com/security/best-practices"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-brand-cyan hover:text-brand-cyan/80 underline flex items-center gap-1"
+                    className="text-foreground hover:text-brand-cyan/80 underline flex items-center gap-1"
                   >
                     Google Cloud Security Best Practices
                     <ExternalLink size={14} />

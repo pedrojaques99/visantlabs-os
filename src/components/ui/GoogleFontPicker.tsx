@@ -157,7 +157,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({
           <div className="max-h-60 overflow-y-auto p-1 py-1 scrollbar-thin scrollbar-thumb-white/10">
             {filteredBrandFonts.length > 0 && (
               <>
-                <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-widest text-neutral-500 font-mono">
+                <div className="px-3 pt-2 pb-1 text-2xs uppercase tracking-widest text-neutral-500 font-mono">
                   Brand Fonts
                 </div>
                 {filteredBrandFonts.map((font) => (
@@ -197,7 +197,7 @@ export const GoogleFontPicker: React.FC<GoogleFontPickerProps> = ({
                 </button>
               ))
             ) : filteredBrandFonts.length === 0 ? (
-              <div className="p-4 text-center text-neutral-600 text-[10px] uppercase tracking-widest">
+              <div className="p-4 text-center text-neutral-600 text-2xs uppercase tracking-widest">
                 {isLoadingFonts ? 'Loading fonts...' : 'No fonts found'}
               </div>
             ) : null}

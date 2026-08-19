@@ -51,7 +51,7 @@ export const CameraControls: React.FC<Props> = ({
         type="button"
         onClick={onZoomReset}
         title="Reset 100% (Cmd+0)"
-        className="min-w-[48px] px-2 py-1 text-[10px] font-mono text-neutral-300 hover:text-white rounded transition-colors hover:bg-white/5"
+        className="min-w-[48px] px-2 py-1 text-2xs font-mono text-neutral-300 hover:text-white rounded transition-colors hover:bg-white/5"
       >
         {pct}%
       </button>

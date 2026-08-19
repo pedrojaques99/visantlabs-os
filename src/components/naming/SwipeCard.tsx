@@ -114,21 +114,21 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   className="pointer-events-none absolute top-5 right-5 flex items-center gap-1.5 rounded-lg border border-destructive/60 px-2.5 py-1 text-destructive"
                 >
                   <X size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Nope</span>
+                  <span className="text-2xs font-bold uppercase tracking-widest">Nope</span>
                 </motion.div>
                 <motion.div
                   style={{ opacity: likeOpacity }}
                   className="pointer-events-none absolute top-5 left-5 flex items-center gap-1.5 rounded-lg border border-success/60 px-2.5 py-1 text-success"
                 >
                   <Heart size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Curti</span>
+                  <span className="text-2xs font-bold uppercase tracking-widest">Curti</span>
                 </motion.div>
                 <motion.div
                   style={{ opacity: superOpacity }}
-                  className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-brand-cyan"
+                  className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg border border-brand-cyan/70 px-3 py-1.5 text-foreground"
                 >
                   <Gem size={18} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Superlike</span>
+                  <span className="text-2xs font-bold uppercase tracking-widest">Superlike</span>
                 </motion.div>
               </>
             )}
@@ -138,7 +138,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             {active && (
               <>
                 {/* Território — pill suave (não mono cru) */}
-                <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+                <span className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-2xs font-mono uppercase tracking-widest text-neutral-400">
                   {formatTag(card.territory)}
                 </span>
 
@@ -156,7 +156,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 </p>
 
                 {/* Técnica — mono só aqui (label técnico de verdade) */}
-                <span className="mt-6 text-[10px] uppercase tracking-wider text-neutral-600">
+                <span className="mt-6 text-2xs uppercase tracking-wider text-neutral-600">
                   {formatTag(card.technique)}
                 </span>
 
@@ -164,7 +164,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 {card.availability?.status === 'partial' && (
                   <span
                     title={`Já registrado: ${card.availability.registered.join(', ')}`}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-2xs font-mono text-warning"
                   >
                     <Globe size={11} />
                     {card.availability.registered.join(', ')} em uso
@@ -176,7 +176,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 {card.availability?.status === 'unknown' && (
                   <span
                     title="RDAP indisponível — não foi possível verificar o domínio"
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[10px] font-mono text-neutral-500"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-2xs font-mono text-neutral-500"
                   >
                     <Globe size={11} />
                     domínio não verificado
@@ -185,7 +185,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
                 {/* Flag de risco */}
                 {card.riskFlag && (
-                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[10px] font-mono text-warning">
+                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-2xs font-mono text-warning">
                     <AlertTriangle size={11} />
                     {card.riskFlag}
                   </span>

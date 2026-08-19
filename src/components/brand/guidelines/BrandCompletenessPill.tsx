@@ -63,7 +63,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
           <button
             type="button"
             className={cn(
-              'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-[11px] font-medium transition-[color,background-color,border-color,opacity] hover:opacity-90',
+              'flex items-center gap-1.5 h-8 px-2.5 rounded-full border text-2xs font-medium transition-[color,background-color,border-color,opacity] hover:opacity-90',
               style.ring
             )}
             aria-label={`Prontidão pra IA ${report.score}%`}
@@ -83,10 +83,10 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
           {/* Header: enquadra pelo OUTPUT (não pela vaidade "% completo"). Sem as
               6 barrinhas de grupo — não diziam nada e eram cara de dashboard slop. */}
           <div className="p-4 border-b border-neutral-800">
-            <div className="text-[10px] uppercase tracking-wider text-neutral-600">
+            <div className="text-2xs uppercase tracking-wider text-neutral-600">
               Prontidão pra IA
             </div>
-            <p className="mt-1.5 text-[13px] text-neutral-300 leading-snug">
+            <p className="mt-1.5 text-sm text-neutral-300 leading-snug">
               {missingCount === 0 ? (
                 'Marca pronta — a IA gera com todo o contexto.'
               ) : (
@@ -102,7 +102,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
           {/* Gaps: cada um amarrado à CONSEQUÊNCIA de geração — sem "+N pontos". */}
           <div className="max-h-[300px] overflow-y-auto p-2">
             {missingCount === 0 ? (
-              <div className="flex items-center gap-2 px-2 py-3 text-[12px] text-success">
+              <div className="flex items-center gap-2 px-2 py-3 text-xs text-success">
                 <CheckCircle2 size={14} />
                 {t('brandGuidelines.completenessAllSet')}
               </div>
@@ -123,7 +123,7 @@ export const BrandCompletenessPill: React.FC<BrandCompletenessPillProps> = ({ gu
                           {t(`brandCompleteness.${rule.id}`) || rule.label}
                         </div>
                         {WHY_BY_ID[rule.id] && (
-                          <div className="text-[11px] text-neutral-500 leading-snug mt-0.5">
+                          <div className="text-2xs text-neutral-500 leading-snug mt-0.5">
                             {WHY_BY_ID[rule.id]}
                           </div>
                         )}

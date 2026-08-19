@@ -125,7 +125,7 @@ const SectionShell: React.FC<{
           <div className="w-2 h-0.5 bg-neutral-400 rounded" />
         ) : null}
       </div>
-      <span className="text-[10px] uppercase tracking-widest text-neutral-500 flex-1">{label}</span>
+      <span className="text-2xs uppercase tracking-widest text-neutral-500 flex-1">{label}</span>
       {loading && <GlitchLoader size={11} className="flex-shrink-0" />}
     </div>
     {children && <div className="px-2 pb-2.5">{children}</div>}
@@ -152,7 +152,7 @@ const ColorsSection: React.FC<{ data: any[]; sel: Set<number>; toggle: (i: numbe
           style={{ backgroundColor: c.hex }}
         />
         <span className="text-xs text-neutral-300 truncate">{c.name || c.hex}</span>
-        <span className="text-[10px] font-mono text-neutral-600 ml-auto">{c.hex}</span>
+        <span className="text-2xs font-mono text-neutral-600 ml-auto">{c.hex}</span>
       </ItemCheck>
     ))}
   </div>
@@ -172,7 +172,7 @@ const TypographySection: React.FC<{
         >
           {f.family}
         </span>
-        <span className="text-[10px] font-mono text-neutral-600">
+        <span className="text-2xs font-mono text-neutral-600">
           {f.style} · {f.size}px
         </span>
       </ItemCheck>
@@ -211,7 +211,7 @@ const ShadowsSection: React.FC<{ data: any[]; sel: Set<number>; toggle: (i: numb
           style={{ boxShadow: s.css }}
         />
         <span className="text-xs text-neutral-400">{s.name}</span>
-        <span className="text-[10px] font-mono text-neutral-700 ml-auto truncate max-w-[140px]">
+        <span className="text-2xs font-mono text-neutral-700 ml-auto truncate max-w-[140px]">
           {s.css}
         </span>
       </ItemCheck>
@@ -232,7 +232,7 @@ const BordersSection: React.FC<{ data: any[]; sel: Set<number>; toggle: (i: numb
           style={{ border: `${b.width}px solid ${b.color}` }}
         />
         <span className="text-xs text-neutral-400">{b.name}</span>
-        <span className="text-[10px] font-mono text-neutral-700 ml-auto">
+        <span className="text-2xs font-mono text-neutral-700 ml-auto">
           {b.color} {b.width}px
         </span>
       </ItemCheck>
@@ -252,7 +252,7 @@ const RadiiSection: React.FC<{ data: number[]; sel: Set<number>; toggle: (i: num
           className="w-5 h-5 bg-neutral-700/40 border border-neutral-800 flex-shrink-0"
           style={{ borderRadius: `${r}px` }}
         />
-        <span className="text-[10px] font-mono text-neutral-500">{r}px</span>
+        <span className="text-2xs font-mono text-neutral-500">{r}px</span>
       </ItemCheck>
     ))}
   </div>
@@ -266,9 +266,7 @@ const StrategySection: React.FC<{
   <div className="space-y-0">
     {items.map((item, i) => (
       <ItemCheck key={i} checked={sel.has(i)} onToggle={() => toggle(i)} dim>
-        <span className="text-[10px] font-mono text-neutral-600 flex-shrink-0 w-16">
-          {item.label}
-        </span>
+        <span className="text-2xs font-mono text-neutral-600 flex-shrink-0 w-16">{item.label}</span>
         <span className="text-xs text-neutral-400 truncate italic">"{item.value}"</span>
       </ItemCheck>
     ))}
@@ -283,13 +281,11 @@ const ComponentsSection: React.FC<{
   <div className="flex flex-wrap gap-0.5">
     {data.slice(0, 20).map((c, i) => (
       <ItemCheck key={i} checked={sel.has(i)} onToggle={() => toggle(i)} dim>
-        <span className="text-[10px] font-mono text-neutral-500 max-w-[100px] truncate">
-          {c.name}
-        </span>
+        <span className="text-2xs font-mono text-neutral-500 max-w-[100px] truncate">{c.name}</span>
       </ItemCheck>
     ))}
     {data.length > 20 && (
-      <span className="text-[10px] text-neutral-700 font-mono px-2 py-1">+{data.length - 20}</span>
+      <span className="text-2xs text-neutral-700 font-mono px-2 py-1">+{data.length - 20}</span>
     )}
   </div>
 );
@@ -589,7 +585,7 @@ export const BrandIngestModal: React.FC<BrandIngestModalProps> = ({
                       ? 'Add selected tokens, keep existing'
                       : 'Replace tokens with selected data'
                   }
-                  className={`px-2.5 h-6 rounded text-[10px] font-mono uppercase transition-colors ${
+                  className={`px-2.5 h-6 rounded text-2xs font-mono uppercase transition-colors ${
                     mode === m
                       ? 'bg-white/10 text-neutral-200'
                       : 'text-neutral-600 hover:text-neutral-400'

@@ -34,7 +34,7 @@ const buttonVariants = cva(
         // Toolbar compact — uppercase tracking, neutral accent on hover
         // Usage: canvas headers, guideline export bars
         toolbar:
-          'h-9 px-4 text-[10px] font-bold uppercase tracking-widest rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50',
+          'h-9 px-4 text-2xs font-bold uppercase tracking-widest rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50',
         // ── Icon actions ─────────────────────────────────────────────────────
         // Inline icon — hover-reveal action icons inside cards/rows
         // Usage: edit, copy, delete icons that appear on group-hover
@@ -46,7 +46,7 @@ const buttonVariants = cva(
         // Full-width monospace dropdown item
         // Usage: auth dropdowns, footer policy links, language selector
         menuItem:
-          'w-full justify-start px-3 py-2 rounded-md text-[10px] font-mono text-neutral-400 hover:text-white hover:bg-neutral-900/50',
+          'w-full justify-start px-3 py-2 rounded-md text-2xs font-mono text-neutral-400 hover:text-white hover:bg-neutral-900/50',
         // ── Subtle surface ─────────────────────────────────────────────────
         // Low-contrast action — header bars, inline triggers, non-primary CTAs
         subtle: 'bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200',
@@ -57,7 +57,7 @@ const buttonVariants = cva(
       size: {
         default: 'h-10 px-4 py-2',
         sm: 'h-9 rounded-md px-3',
-        xs: 'h-7 rounded-md px-2 text-[10px]',
+        xs: 'h-7 rounded-md px-2 text-2xs',
         lg: 'h-11 rounded-md px-8',
         icon: 'h-10 w-10',
         'icon-sm': 'h-8 w-8',

@@ -270,7 +270,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                   key={format}
                   onClick={() => setExportFormat(format)}
                   className={cn(
-                    'px-3 py-1 text-[10px] font-mono rounded transition-colors',
+                    'px-3 py-1 text-2xs font-mono rounded transition-colors',
                     exportFormat === format
                       ? 'bg-neutral-700/20 text-neutral-400 border border-neutral-600/30'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -330,13 +330,10 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     </div>
 
                     <div className="bg-neutral-950/60 backdrop-blur-md rounded-md p-2 translate-y-1 group-hover:translate-y-0 transition-transform">
-                      <p
-                        className="text-[10px] text-neutral-200 font-mono truncate"
-                        title={img.name}
-                      >
+                      <p className="text-2xs text-neutral-200 font-mono truncate" title={img.name}>
                         {img.name}
                       </p>
-                      <p className="text-[10px] text-neutral-400 uppercase mt-0.5">{img.type}</p>
+                      <p className="text-2xs text-neutral-400 uppercase mt-0.5">{img.type}</p>
                     </div>
                   </div>
                 </div>

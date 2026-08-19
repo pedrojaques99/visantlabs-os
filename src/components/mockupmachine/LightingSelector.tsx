@@ -60,7 +60,7 @@ export const LightingSelector: React.FC<LightingSelectorProps> = ({
         <Sun size={16} />
         <span className="text-sm font-medium">New Lighting</span>
         {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-          <span className="text-xs font-mono text-brand-cyan ml-auto mr-1 font-semibold">
+          <span className="text-xs font-mono text-foreground ml-auto mr-1 font-semibold">
             {creditsPerOperation}
           </span>
         )}

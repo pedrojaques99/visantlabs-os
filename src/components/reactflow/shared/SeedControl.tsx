@@ -79,7 +79,7 @@ export const SeedControl: React.FC<SeedControlProps> = ({
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <NodeLabel className="mb-1 text-[10px]">Seed</NodeLabel>
+      <NodeLabel className="mb-1 text-2xs">Seed</NodeLabel>
       <div className="flex items-center gap-1.5">
         {/* Seed Input */}
         <input

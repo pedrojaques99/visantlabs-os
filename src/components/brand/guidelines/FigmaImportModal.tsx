@@ -106,7 +106,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                   />
                 ))}
                 {previewData.colors.length > 12 && (
-                  <div className="w-8 h-8 rounded-md bg-neutral-800 flex items-center justify-center text-[10px] text-neutral-500 font-mono">
+                  <div className="w-8 h-8 rounded-md bg-neutral-800 flex items-center justify-center text-2xs text-neutral-500 font-mono">
                     +{previewData.colors.length - 12}
                   </div>
                 )}
@@ -143,7 +143,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                   </div>
                 ))}
                 {previewData.typography.length > 4 && (
-                  <p className="text-[10px] text-neutral-600 font-mono text-center pt-1 border-t border-neutral-800/30">
+                  <p className="text-2xs text-neutral-600 font-mono text-center pt-1 border-t border-neutral-800/30">
                     + {previewData.typography.length - 4} estilos adicionais
                   </p>
                 )}
@@ -192,7 +192,7 @@ export const FigmaImportModal: React.FC<FigmaImportModalProps> = ({
                         <ImageIcon className="text-neutral-700" size={24} />
                       </div>
                     )}
-                    <span className="text-[10px] font-mono text-neutral-400 truncate w-full text-center">
+                    <span className="text-2xs font-mono text-neutral-400 truncate w-full text-center">
                       {comp.name}
                     </span>
                     {selectedLogos.includes(comp.key) && (

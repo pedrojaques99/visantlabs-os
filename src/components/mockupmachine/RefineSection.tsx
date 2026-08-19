@@ -164,7 +164,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
       <SkeletonText loading={isGenerating} className="min-w-0">
         <label
           className={cn(
-            'text-[10px] font-mono select-none cursor-pointer',
+            'text-2xs font-mono select-none cursor-pointer',
             theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
           )}
         >
@@ -273,7 +273,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
                   <span
-                    className={`text-[10px] ${
+                    className={`text-2xs ${
                       theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                     }`}
                   >
@@ -281,7 +281,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   </span>
                 </SkeletonText>
                 {!isColorPaletteExpanded && selectedColors.length > 0 && (
-                  <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
+                  <span className="text-2xs font-mono truncate max-w-[200px] text-foreground">
                     {selectedColors.map((color) => color).join(', ')}
                   </span>
                 )}
@@ -290,7 +290,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
             <div className="flex items-center gap-2 flex-shrink-0">
               <SkeletonText loading={isGenerating}>
                 <span
-                  className={`text-[10px] font-mono ${
+                  className={`text-2xs font-mono ${
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'
                   }`}
                 >
@@ -313,7 +313,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                   <div
                     key={color}
                     onClick={() => onRemoveColor(color)}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-colors duration-200 text-[10px] font-mono group ${
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-colors duration-200 text-2xs font-mono group ${
                       theme === 'dark'
                         ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
                         : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'

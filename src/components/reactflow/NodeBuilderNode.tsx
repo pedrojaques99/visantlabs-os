@@ -151,10 +151,10 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <Blocks size={18} className="text-muted-foreground" />
           </div>
           <div>
-            <h3 className="text-[12px] font-bold node-text-primary font-mono tracking-wider">
+            <h3 className="text-xs font-bold node-text-primary font-mono tracking-wider">
               NODE ARCHITECT
             </h3>
-            <p className="text-[10px] text-neutral-500 font-mono flex items-center gap-1">
+            <p className="text-2xs text-neutral-500 font-mono flex items-center gap-1">
               {isLoading ? PROCESSING_STEPS[processingStep].label : 'READY TO CONSTRUCT'}
               {isLoading && <span className="w-1 h-1 bg-muted-foreground rounded-full" />}
             </p>
@@ -206,7 +206,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                     />
                     <span
                       className={cn(
-                        'text-[10px] font-mono tracking-widest transition-colors duration-300',
+                        'text-2xs font-mono tracking-widest transition-colors duration-300',
                         isActive
                           ? 'text-brand-cyan'
                           : isPast
@@ -237,7 +237,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
           <div className="node-margin space-y-4 py-2">
             {!activeCategory ? (
               <>
-                <p className="text-[11px] font-mono text-neutral-400 px-1">
+                <p className="text-2xs font-mono text-neutral-400 px-1">
                   Choose a logic blueprint to begin:
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -250,7 +250,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                         <cat.icon size={16} style={{ color: cat.color }} />
                       </div>
-                      <span className="text-[11px] font-medium text-neutral-300 font-mono tracking-tight">
+                      <span className="text-2xs font-medium text-neutral-300 font-mono tracking-tight">
                         {cat.name}
                       </span>
                     </button>
@@ -261,14 +261,14 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-300">
                 <div className="flex items-center justify-between px-1">
                   <p
-                    className="text-[11px] font-bold"
+                    className="text-2xs font-bold"
                     style={{ color: CATEGORIES.find((c) => c.id === activeCategory)?.color }}
                   >
                     {CATEGORIES.find((c) => c.id === activeCategory)?.name} Presets
                   </p>
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className="nodrag nopan text-[10px] font-mono text-neutral-500 hover:text-neutral-300"
+                    className="nodrag nopan text-2xs font-mono text-neutral-500 hover:text-neutral-300"
                   >
                     Back
                   </button>
@@ -283,7 +283,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                       }}
                       className="nodrag nopan w-full flex items-center justify-between p-2 rounded-md bg-neutral-900/30 border-node border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 transition-colors group group"
                     >
-                      <span className="text-[10px] font-mono text-neutral-400 group-hover:text-brand-cyan transition-colors truncate">
+                      <span className="text-2xs font-mono text-neutral-400 group-hover:text-brand-cyan transition-colors truncate">
                         "{hint}"
                       </span>
                       <Plus
@@ -308,7 +308,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
               >
                 <div
                   className={cn(
-                    'rounded-2xl px-3 py-2 text-[11px] font-mono leading-relaxed border-node shadow-sm',
+                    'rounded-2xl px-3 py-2 text-2xs font-mono leading-relaxed border-node shadow-sm',
                     msg.role === 'user'
                       ? 'bg-neutral-900 border-neutral-800 text-neutral-200 rounded-tr-none'
                       : 'bg-neutral-800/50 border-neutral-800 text-neutral-200 rounded-tl-none'
@@ -321,7 +321,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             {isLoading && (
               <div className="flex items-center gap-3 px-3 py-2 bg-neutral-800/50 border-node border-neutral-800 rounded-2xl rounded-tl-none mr-8">
                 <GlitchLoader size={14} color="var(--brand-cyan)" />
-                <span className="text-muted-foreground text-[10px] font-bold">
+                <span className="text-muted-foreground text-2xs font-bold">
                   {PROCESSING_STEPS[processingStep].label}
                 </span>
                 <span className="ml-auto flex gap-0.5">
@@ -353,10 +353,10 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
                 <Zap size={20} className="text-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-bold text-foreground tracking-tight">
+                <p className="text-xs font-bold text-foreground tracking-tight">
                   {pendingDefinition.name}
                 </p>
-                <p className="text-[10px] text-muted-foreground font-mono leading-tight mt-0.5">
+                <p className="text-2xs text-muted-foreground font-mono leading-tight mt-0.5">
                   {pendingDefinition.description}
                 </p>
               </div>
@@ -365,7 +365,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <div className="pt-2 border-t border-neutral-800">
               <button
                 onClick={handleSpawn}
-                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-brand-cyan text-black font-bold text-[11px] uppercase tracking-widest transition-[color,background-color,border-color,box-shadow] shadow-[0_0_15px_rgba(0,195,255,0.3)]"
+                className="nodrag nopan w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-brand-cyan text-black font-bold text-2xs uppercase tracking-widest transition-[color,background-color,border-color,box-shadow] shadow-[0_0_15px_rgba(0,195,255,0.3)]"
               >
                 <Plus size={14} strokeWidth={3} />
                 Deploy Node to Canvas
@@ -396,7 +396,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             disabled={isLoading || !!pendingDefinition}
             placeholder={pendingDefinition ? 'Blueprint ready' : 'Describe the logic...'}
             rows={1}
-            className="nodrag nopan flex-1 resize-none bg-transparent px-2 py-1.5 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:outline-none min-h-[32px] max-h-[120px]"
+            className="nodrag nopan flex-1 resize-none bg-transparent px-2 py-1.5 text-2xs font-mono text-neutral-200 placeholder:text-neutral-600 focus:outline-none min-h-[32px] max-h-[120px]"
           />
           <NodeButton
             variant="primary"
@@ -408,7 +408,7 @@ export const NodeBuilderNode = memo(({ data, selected, id, dragging }: NodeProps
             <Send size={16} />
           </NodeButton>
         </div>
-        <p className="text-[10px] font-mono text-neutral-600 mt-2 text-center uppercase tracking-tighter opacity-50">
+        <p className="text-2xs font-mono text-neutral-600 mt-2 text-center uppercase tracking-tighter opacity-50">
           Enter to send • Shift+Enter for newline
         </p>
       </div>

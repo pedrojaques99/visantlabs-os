@@ -743,7 +743,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                 {/* Sessions section */}
                 <div className="flex-1 overflow-y-auto px-3 pb-3">
-                  <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                  <div className="px-3 py-2 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
                     {t('chatShell.sessions')}
                   </div>
                   {loadingSessions ? (
@@ -883,7 +883,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           <button
                             type="button"
                             onClick={() => setWizardOpen(true)}
-                            className="flex items-center gap-2 w-full px-2 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                            className="flex items-center gap-2 w-full px-2 py-2 text-2xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                           >
                             <Plus size={12} />
                             {t('chatShell.newBrand')}
@@ -950,7 +950,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                             type="button"
                             onClick={() => setInput(s)}
                             className={cn(
-                              'text-left px-4 py-3 rounded-xl text-xs text-muted-foreground hover:border-ring hover:text-foreground flex items-center gap-2.5',
+                              'text-left px-4 py-3 rounded-xl text-xs text-muted-foreground hover:border-border-hover hover:text-foreground flex items-center gap-2.5',
                               glassSurface.tile
                             )}
                           >
@@ -1029,7 +1029,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                           {activePlan.proposals?.length > 0 && (
                             <div className="space-y-1.5">
-                              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+                              <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-widest">
                                 {t('chatShell.proposedVariations')}
                               </p>
                               {activePlan.proposals.map((p, i) => (
@@ -1043,7 +1043,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                                   <div className="min-w-0">
                                     <p className="text-xs font-medium text-foreground">{p.title}</p>
                                     {p.aspectRatio && (
-                                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                                      <p className="text-2xs text-muted-foreground mt-0.5">
                                         {p.aspectRatio}
                                       </p>
                                     )}
@@ -1055,7 +1055,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
 
                           {activePlan.questions && activePlan.questions.length > 0 && (
                             <div className="space-y-2.5">
-                              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+                              <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-widest">
                                 {t('chatShell.questions')}
                               </p>
                               {activePlan.questions.map((q, i) => (
@@ -1199,10 +1199,10 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         type="button"
                         onClick={() => setPlanModeActive((v) => !v)}
                         className={cn(
-                          'flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors',
+                          'flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-2xs font-medium transition-colors',
                           planModeActive
                             ? 'bg-success/10 border-success/30 text-success'
-                            : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground hover:border-ring'
+                            : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground hover:border-border-hover'
                         )}
                         title={t('chatShell.planModeTooltip')}
                       >
@@ -1213,7 +1213,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                         {t('chatShell.planMode')}
                       </button>
 
-                      <div className="flex items-center rounded-md border border-border overflow-hidden text-[11px] font-medium">
+                      <div className="flex items-center rounded-md border border-border overflow-hidden text-2xs font-medium">
                         {(['layers', 'image', 'both'] as const).map((mode) => (
                           <button
                             key={mode}
@@ -1277,7 +1277,7 @@ export const ChatShell: React.FC<ChatShellProps> = ({
                           type="button"
                           onClick={() => setPanelTab(tab)}
                           className={cn(
-                            'px-2.5 py-1 text-[11px] font-medium rounded transition-colors',
+                            'px-2.5 py-1 text-2xs font-medium rounded transition-colors',
                             panelTab === tab
                               ? 'bg-accent text-foreground'
                               : 'text-muted-foreground hover:text-foreground'

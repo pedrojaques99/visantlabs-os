@@ -60,8 +60,8 @@ export const MyOutputsPage: React.FC = () => {
     }
   }, [mockups]);
 
-  // Filter mockups based on search and tag filter
-  const filteredMockups = useMemo(() => {
+  // Search+tag match, independente da marca — base pras duas seções abaixo.
+  const searchTagMatches = useMemo(() => {
     if (!Array.isArray(mockups) || mockups.length === 0) {
       return [];
     }
@@ -92,14 +92,26 @@ export const MyOutputsPage: React.FC = () => {
           tags.includes(filterTag.toLowerCase()) ||
           brandingTags.includes(filterTag.toLowerCase());
 
-        const matchesBrand = !brandId || mockup.brandGuidelineId === brandId;
-
-        return matchesSearch && matchesTag && matchesBrand;
+        return matchesSearch && matchesTag;
       });
     } catch {
       return [];
     }
-  }, [mockups, searchQuery, filterTag, brandId]);
+  }, [mockups, searchQuery, filterTag]);
+
+  // Mockups da marca ativa (o grid principal).
+  const filteredMockups = useMemo(() => {
+    if (!brandId) return searchTagMatches;
+    return searchTagMatches.filter((m) => m.brandGuidelineId === brandId);
+  }, [searchTagMatches, brandId]);
+
+  // De outras marcas — só existe quando há marca ativa: mostra o resto do
+  // acervo (mesmo filtro de busca/tag) abaixo da seção da marca selecionada,
+  // em vez de deixar o usuário preso a um grid vazio.
+  const otherBrandMockups = useMemo(() => {
+    if (!brandId) return [];
+    return searchTagMatches.filter((m) => m.brandGuidelineId !== brandId);
+  }, [searchTagMatches, brandId]);
 
   // Handler functions
   const handleView = useCallback((mockup: Mockup) => {
@@ -267,32 +279,39 @@ export const MyOutputsPage: React.FC = () => {
     setSelectedMockup(null);
   };
 
+  // Ordem visual real do scroll (marca ativa + outras marcas abaixo) — o
+  // viewer navega por essa lista combinada, não só pela seção da marca.
+  const visibleMockups = useMemo(
+    () => [...filteredMockups, ...otherBrandMockups],
+    [filteredMockups, otherBrandMockups]
+  );
+
   // Get current index for navigation
   const getCurrentIndex = useCallback(() => {
-    if (!selectedMockup || !filteredMockups.length) return 0;
-    const index = filteredMockups.findIndex((m) => m._id === selectedMockup._id);
+    if (!selectedMockup || !visibleMockups.length) return 0;
+    const index = visibleMockups.findIndex((m) => m._id === selectedMockup._id);
     return index >= 0 ? index : 0;
-  }, [selectedMockup, filteredMockups]);
+  }, [selectedMockup, visibleMockups]);
 
   const currentIndex = useMemo(() => getCurrentIndex(), [getCurrentIndex]);
   const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < filteredMockups.length - 1;
+  const hasNext = currentIndex < visibleMockups.length - 1;
 
   const handlePreviousMockup = useCallback(() => {
-    if (!hasPrevious || !filteredMockups.length) return;
+    if (!hasPrevious || !visibleMockups.length) return;
     const newIndex = currentIndex - 1;
     if (newIndex >= 0) {
-      setSelectedMockup(filteredMockups[newIndex]);
+      setSelectedMockup(visibleMockups[newIndex]);
     }
-  }, [hasPrevious, filteredMockups, currentIndex]);
+  }, [hasPrevious, visibleMockups, currentIndex]);
 
   const handleNextMockup = useCallback(() => {
-    if (!hasNext || !filteredMockups.length) return;
+    if (!hasNext || !visibleMockups.length) return;
     const newIndex = currentIndex + 1;
-    if (newIndex < filteredMockups.length) {
-      setSelectedMockup(filteredMockups[newIndex]);
+    if (newIndex < visibleMockups.length) {
+      setSelectedMockup(visibleMockups[newIndex]);
     }
-  }, [hasNext, filteredMockups, currentIndex]);
+  }, [hasNext, visibleMockups, currentIndex]);
 
   // Handler to navigate to MockupMachinePage with image for editing
   const handleNavigateToMockupMachine = useCallback(
@@ -336,6 +355,47 @@ export const MyOutputsPage: React.FC = () => {
     const totalCredits = subscriptionStatus.totalCredits || 0;
     return totalCredits < creditsNeededForEdit;
   }, [isAuthenticated, subscriptionStatus, creditsNeededForEdit]);
+
+  const renderMockupTile = useCallback(
+    (mockup: Mockup) => {
+      const imageUrl = getImageUrl(mockup)!;
+      return (
+        <div className="group relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all">
+          <button
+            type="button"
+            onClick={() => handleView(mockup)}
+            className="block w-full cursor-pointer focus:outline-none"
+            aria-label={t('apps.open')}
+          >
+            <Thumb
+              src={imageUrl}
+              alt={mockup.prompt || 'Output'}
+              className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-300"
+              fallbackLabel={t('common.unavailable') || 'unavailable'}
+              loading="lazy"
+            />
+          </button>
+          {isAuthenticated && mockup._id && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(mockup._id!);
+              }}
+              disabled={deletingId === mockup._id}
+              className={cn(
+                hoverReveal,
+                'absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-destructive hover:border-destructive/50 disabled:opacity-50 disabled:cursor-not-allowed z-10'
+              )}
+              aria-label={t('my.outputs.delete_output')}
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
+        </div>
+      );
+    },
+    [handleView, isAuthenticated, deletingId, handleDelete, t]
+  );
 
   if (isLoading) {
     return (
@@ -396,12 +456,12 @@ export const MyOutputsPage: React.FC = () => {
           allTags.length > 0 &&
           createPortal(
             <div className="px-2 pb-3">
-              <p className="px-1 pb-1.5 text-[11px] text-sidebar-foreground/50">Tags</p>
+              <p className="px-1 pb-1.5 text-2xs text-sidebar-foreground/50">Tags</p>
               <div className="flex flex-wrap gap-1">
                 {filterTag && (
                   <button
                     onClick={() => setFilterTag(null)}
-                    className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-[11px]"
+                    className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-2xs"
                   >
                     {filterTag}
                     <X className="h-2.5 w-2.5" />
@@ -413,7 +473,7 @@ export const MyOutputsPage: React.FC = () => {
                     <button
                       key={tg}
                       onClick={() => setFilterTag(tg)}
-                      className="rounded-md px-1.5 py-0.5 text-[11px] text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                      className="rounded-md px-1.5 py-0.5 text-2xs text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                     >
                       {tg}
                     </button>
@@ -428,7 +488,7 @@ export const MyOutputsPage: React.FC = () => {
           {/* Floating Column Control */}
           {error && mockups.length === 0 ? (
             <ErrorState onRetry={loadMockups} />
-          ) : filteredMockups.length === 0 ? (
+          ) : filteredMockups.length === 0 && otherBrandMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <ImageIcon size={64} className="text-muted-foreground mb-4" strokeWidth={1} />
               <h2 className="text-lg font-semibold text-foreground mb-1.5">
@@ -464,50 +524,39 @@ export const MyOutputsPage: React.FC = () => {
               )}
             </div>
           ) : (
-            // SSoT masonry (mesmo componente da /references) — colunas responsivas,
-            // sem reflow ao paginar, aspect-ratio natural (fim do aspect-square).
-            <Masonry
-              items={filteredMockups.filter((m) => getImageUrl(m))}
-              getKey={(m) => m._id || getImageUrl(m)}
-              gap={12}
-              renderItem={(mockup) => {
-                const imageUrl = getImageUrl(mockup)!;
-                return (
-                  <div className="group relative rounded-xl overflow-hidden bg-card ring-1 ring-border hover:ring-ring transition-all">
-                    <button
-                      type="button"
-                      onClick={() => handleView(mockup)}
-                      className="block w-full cursor-pointer focus:outline-none"
-                      aria-label={t('apps.open')}
-                    >
-                      <Thumb
-                        src={imageUrl}
-                        alt={mockup.prompt || 'Output'}
-                        className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-300"
-                        fallbackLabel={t('common.unavailable') || 'unavailable'}
-                        loading="lazy"
-                      />
-                    </button>
-                    {isAuthenticated && mockup._id && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(mockup._id!);
-                        }}
-                        disabled={deletingId === mockup._id}
-                        className={cn(
-                          hoverReveal,
-                          'absolute top-2 right-2 p-2 bg-neutral-950/60 backdrop-blur-sm border border-destructive/30 rounded text-destructive hover:border-destructive/50 disabled:opacity-50 disabled:cursor-not-allowed z-10'
-                        )}
-                        aria-label={t('my.outputs.delete_output')}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                );
-              }}
-            />
+            <>
+              {filteredMockups.length > 0 ? (
+                // SSoT masonry (mesmo componente da /references) — colunas responsivas,
+                // sem reflow ao paginar, aspect-ratio natural (fim do aspect-square).
+                <Masonry
+                  items={filteredMockups.filter((m) => getImageUrl(m))}
+                  getKey={(m) => m._id || getImageUrl(m)}
+                  gap={12}
+                  renderItem={renderMockupTile}
+                />
+              ) : (
+                // Marca ativa sem resultado, mas há acervo de outras marcas logo
+                // abaixo — nota curta em vez do empty-state cheio (que já cobre
+                // o caso "nada em lugar nenhum" acima).
+                <div className="py-6 text-sm text-muted-foreground">
+                  {t('myOutputs.noResultsForBrand') || 'No results for this brand.'}
+                </div>
+              )}
+
+              {otherBrandMockups.length > 0 && (
+                <div className={filteredMockups.length > 0 ? 'mt-10' : undefined}>
+                  <h3 className="mb-3 text-sm font-medium text-foreground">
+                    {t('myOutputs.otherBrands') || 'From other brands'}
+                  </h3>
+                  <Masonry
+                    items={otherBrandMockups.filter((m) => getImageUrl(m))}
+                    getKey={(m) => m._id || getImageUrl(m)}
+                    gap={12}
+                    renderItem={renderMockupTile}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
 

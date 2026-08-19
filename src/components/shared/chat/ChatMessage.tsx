@@ -258,7 +258,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                     type="button"
                     onClick={() => hasDetail && setExpandedToolId(isExpanded ? null : call.id)}
                     className={cn(
-                      'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-[11px] font-mono transition-colors',
+                      'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-2xs font-mono transition-colors',
                       isError
                         ? 'bg-destructive/5 border-destructive/20 text-destructive'
                         : isRunning
@@ -282,9 +282,9 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                       {label}
                     </span>
                     {durationLabel && (
-                      <span className="text-[10px] opacity-40 shrink-0">{durationLabel}</span>
+                      <span className="text-2xs opacity-40 shrink-0">{durationLabel}</span>
                     )}
-                    <span className="text-[10px] opacity-60 shrink-0 ml-1">
+                    <span className="text-2xs opacity-60 shrink-0 ml-1">
                       {isError
                         ? (call.errorMessage || 'falhou').slice(0, 40)
                         : call.summary || call.status}
@@ -301,7 +301,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                   </button>
 
                   {isExpanded && call.args && (
-                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-muted border border-border text-[11px] space-y-2">
+                    <div className="mt-1 ml-3 px-3 py-2.5 rounded-lg bg-muted border border-border text-2xs space-y-2">
                       {call.name === 'propose_creative_plan' && (
                         <>
                           {call.args.summary && (
@@ -309,7 +309,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.proposals?.length > 0 && (
                             <div className="space-y-1">
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                              <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-widest">
                                 Variações
                               </p>
                               {call.args.proposals.map((p: any, i: number) => (
@@ -331,7 +331,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                           )}
                           {call.args.questions?.length > 0 && (
                             <div className="space-y-0.5">
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                              <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-widest">
                                 Perguntas feitas
                               </p>
                               {call.args.questions.map((q: string, i: number) => (
@@ -376,7 +376,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({
                         'update_session_memory',
                         'generate_or_update_mockup',
                       ].includes(call.name) && (
-                        <pre className="text-muted-foreground whitespace-pre-wrap break-all text-[10px]">
+                        <pre className="text-muted-foreground whitespace-pre-wrap break-all text-2xs">
                           {JSON.stringify(call.args, null, 2).slice(0, 400)}
                         </pre>
                       )}

@@ -258,7 +258,7 @@ export const VisualSearchPage: React.FC = () => {
               setUserPickedTab(true);
             }}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono uppercase tracking-wider border transition-colors',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-2xs font-mono uppercase tracking-wider border transition-colors',
               isActive
                 ? 'bg-white/5 border-white/10 text-neutral-200'
                 : 'border-transparent text-neutral-600 hover:text-neutral-400 hover:bg-white/[0.03]'
@@ -271,7 +271,7 @@ export const VisualSearchPage: React.FC = () => {
       })}
 
       {hasSearched && !isLoading && filteredResults.length > 0 && (
-        <span className="ml-auto text-[10px] font-mono text-neutral-700">
+        <span className="ml-auto text-2xs font-mono text-neutral-700">
           {filteredResults.length} results
         </span>
       )}
@@ -327,7 +327,7 @@ export const VisualSearchPage: React.FC = () => {
           {/* Letter Crops */}
           {letterCrops.length > 0 && !isLoading && (
             <div className="mt-4 mb-6">
-              <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider mb-3">
+              <p className="text-2xs font-mono text-neutral-600 uppercase tracking-wider mb-3">
                 Isolated · {letterCrops.length} crops
               </p>
               <div
@@ -466,7 +466,7 @@ const CropCard: React.FC<{ crop: LetterCrop }> = ({ crop }) => {
       </div>
       {crop.style && (
         <div className="absolute bottom-0 inset-x-0 bg-neutral-950/80 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-[11px] text-neutral-300">{crop.style}</span>
+          <span className="text-2xs text-neutral-300">{crop.style}</span>
         </div>
       )}
     </a>
@@ -507,9 +507,7 @@ const ResultCard: React.FC<{
         />
 
         <div className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
-          <p className="text-[11px] text-neutral-200 line-clamp-2 leading-relaxed">
-            {result.title}
-          </p>
+          <p className="text-2xs text-neutral-200 line-clamp-2 leading-relaxed">{result.title}</p>
         </div>
       </div>
     </div>
@@ -580,7 +578,7 @@ const ResultModal: React.FC<{
             <h3 className="text-sm text-neutral-200 font-medium">{result.title}</h3>
 
             {result.attribution && (
-              <p className="text-[11px] text-neutral-600">
+              <p className="text-2xs text-neutral-600">
                 {result.attribution.authorUrl ? (
                   <a
                     href={result.attribution.authorUrl}
@@ -602,7 +600,7 @@ const ResultModal: React.FC<{
               href={result.imageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="inline-flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
             >
               <ExternalLink size={12} />
               Open original

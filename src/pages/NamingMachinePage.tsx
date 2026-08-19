@@ -724,7 +724,7 @@ export const NamingMachinePage: React.FC = () => {
   );
 
   const statusBar = (
-    <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest">
+    <div className="flex items-center gap-3 text-2xs uppercase tracking-widest">
       {seenCount > 0 && (
         <span className="text-neutral-400">
           {seenCount} vistos{likedCount > 0 && ` · ${likedCount} curtidos`}
@@ -810,7 +810,7 @@ export const NamingMachinePage: React.FC = () => {
                 >
                   <X size={22} />
                 </button>
-                <span className="text-[11px] text-neutral-500">Não é isso</span>
+                <span className="text-2xs text-neutral-500">Não é isso</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <button
@@ -820,23 +820,23 @@ export const NamingMachinePage: React.FC = () => {
                 >
                   <Heart size={22} />
                 </button>
-                <span className="text-[11px] text-neutral-300">Gostei</span>
+                <span className="text-2xs text-neutral-300">Gostei</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <button
                   onClick={() => triggerVerdict('superlike')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-brand-cyan transition-colors hover:border-neutral-700 hover:bg-brand-cyan/15"
+                  className="flex h-14 w-14 items-center justify-center rounded-full border border-brand-cyan/30 bg-brand-cyan/[0.08] text-foreground transition-colors hover:border-neutral-700 hover:bg-brand-cyan/15"
                   aria-label="Salvar (S)"
                 >
                   <Bookmark size={22} />
                 </button>
-                <span className="text-[11px] text-neutral-500">Salvar</span>
+                <span className="text-2xs text-neutral-500">Salvar</span>
               </div>
             </div>
           )}
 
           {activeCard && (
-            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-700">
+            <p className="text-2xs font-mono uppercase tracking-widest text-neutral-700">
               N não é isso · C gostei · S salvar · D desfaz
             </p>
           )}

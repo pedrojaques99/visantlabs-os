@@ -166,7 +166,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 size="xs"
                 onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
                 className={cn(
-                  showSystemPromptEditor && 'text-brand-cyan border-neutral-800 bg-brand-cyan/5'
+                  showSystemPromptEditor && 'text-foreground border-neutral-800 bg-brand-cyan/5'
                 )}
               >
                 <Settings2 size={14} />
@@ -179,7 +179,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {showSystemPromptEditor && (
           <div className="px-4 py-3 border-b border-neutral-700/30 bg-neutral-900/50 backdrop-blur-sm animate-in slide-in-from-top-1">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] font-semibold text-neutral-400">
+              <label className="text-2xs font-semibold text-neutral-400">
                 {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt'}
               </label>
               <div className="flex items-center gap-2">
@@ -187,7 +187,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   variant="ghost"
                   size="xs"
                   onClick={handleResetSystemPrompt}
-                  className="text-[10px]"
+                  className="text-2xs"
                 >
                   {t('common.reset') || 'Reset'}
                 </NodeButton>
@@ -195,7 +195,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   variant="primary"
                   size="xs"
                   onClick={handleSaveSystemPrompt}
-                  className="text-[10px]"
+                  className="text-2xs"
                 >
                   {t('common.save') || 'Save'}
                 </NodeButton>
@@ -246,11 +246,11 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           {hasContext && (
             <div className="flex items-center justify-between pb-3 border-b border-neutral-700/20">
               <div className="flex gap-2">
-                <span className="text-[10px] text-neutral-400 flex items-center gap-1 uppercase font-bold tracking-widest">
+                <span className="text-2xs text-neutral-400 flex items-center gap-1 uppercase font-bold tracking-widest">
                   <CheckCircle2 size={10} /> {t('canvasNodes.chatNode.context') || 'Context'}
                 </span>
                 {connectedImages.length > 0 && (
-                  <span className="text-[10px] bg-neutral-800 text-neutral-300 px-2 rounded-full border-node border-neutral-800">
+                  <span className="text-2xs bg-neutral-800 text-neutral-300 px-2 rounded-full border-node border-neutral-800">
                     {t('canvasNodes.chatNode.images')}: {connectedImages.length}
                   </span>
                 )}

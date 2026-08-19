@@ -412,7 +412,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50">
-          <span className="text-[11px] uppercase tracking-widest text-neutral-300">
+          <span className="text-2xs uppercase tracking-widest text-neutral-300">
             Export Settings
           </span>
           <button
@@ -435,7 +435,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 className="block max-h-[160px] max-w-full object-contain"
               />
               {/* Loop counter badge */}
-              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-[10px] font-mono text-neutral-400">
+              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-2xs font-mono text-neutral-400">
                 {loopCount}x loop
               </div>
               <button
@@ -473,14 +473,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format */}
           <div className="space-y-2">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">Format</span>
+            <span className="text-2xs uppercase tracking-widest text-neutral-500">Format</span>
             <div className="flex flex-wrap gap-1.5">
               {FORMAT_OPTIONS.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setFormat(f.id)}
                   className={cn(
-                    'flex-1 min-w-[52px] py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-200 border',
+                    'flex-1 min-w-[52px] py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 border',
                     format === f.id
                       ? 'bg-white/10 text-white border-white/20'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -506,7 +506,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     if (p.duration) onVideoDurationChange?.(p.duration);
                     if (p.fps) onVideoFpsChange?.(p.fps);
                   }}
-                  className="px-2.5 py-1 rounded-full text-[10px] font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
+                  className="px-2.5 py-1 rounded-full text-2xs font-mono text-neutral-500 bg-neutral-900/50 border border-neutral-800/50 hover:bg-white/5 hover:text-neutral-300 transition-colors"
                 >
                   {p.label}
                 </button>
@@ -532,14 +532,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scale (raster image only) */}
           {!isVideoFormat && format !== 'svg' && (
             <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-neutral-500">Scale</span>
+              <span className="text-2xs uppercase tracking-widest text-neutral-500">Scale</span>
               <div className="flex gap-1.5">
                 {SCALE_OPTIONS.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setScale(s.id)}
                     className={cn(
-                      'flex-1 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-200 border',
+                      'flex-1 py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 border',
                       scale === s.id
                         ? 'bg-white/10 text-white border-white/20'
                         : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -567,7 +567,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   hint="Video duration in seconds"
                 />
                 <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                  <span className="text-2xs font-mono text-neutral-500 uppercase tracking-widest">
                     FPS
                   </span>
                   <div className="flex gap-1">
@@ -576,7 +576,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                         key={f.id}
                         onClick={() => onVideoFpsChange?.(f.id)}
                         className={cn(
-                          'flex-1 py-1.5 rounded text-[10px] font-mono transition-colors border',
+                          'flex-1 py-1.5 rounded text-2xs font-mono transition-colors border',
                           videoFps === f.id
                             ? 'bg-white/10 text-white border-white/20'
                             : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -592,7 +592,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           )}
 
           {/* Output info */}
-          <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 bg-neutral-900/40 rounded-md px-3 py-2">
+          <div className="flex items-center justify-between text-2xs font-mono text-neutral-500 bg-neutral-900/40 rounded-md px-3 py-2">
             <span>Output</span>
             <div className="flex items-center gap-3">
               {isVideoFormat ? (
@@ -650,7 +650,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <>
                 <Download size={14} />
                 Export {FORMAT_OPTIONS.find((f) => f.id === format)?.label}
-                <kbd className="ml-1 text-[10px] opacity-40">⏎</kbd>
+                <kbd className="ml-1 text-2xs opacity-40">⏎</kbd>
               </>
             )}
           </Button>

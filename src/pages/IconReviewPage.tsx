@@ -146,7 +146,7 @@ export function IconReviewPage() {
               className="group relative flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-colors hover:border-brand-cyan/50 hover:bg-white/[0.06]"
             >
               <span
-                className={`absolute right-2 top-2 rounded-full px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${
+                className={`absolute right-2 top-2 rounded-full px-1.5 py-0.5 font-mono text-2xs tabular-nums ${
                   count === 0 ? 'bg-white/5 text-white/30' : 'bg-white/10 text-white/60'
                 }`}
               >
@@ -155,11 +155,11 @@ export function IconReviewPage() {
               {Cmp ? (
                 <Cmp size={32} weight={weight} className="text-white/90" />
               ) : (
-                <span className="text-xs text-red-400">?</span>
+                <span className="text-xs text-destructive">?</span>
               )}
               <div className="font-mono text-xs text-white/80">{name}</div>
               {overridden && (
-                <div className="font-mono text-[10px] text-neutral-400">→ {overridden}</div>
+                <div className="font-mono text-2xs text-neutral-400">→ {overridden}</div>
               )}
             </button>
           );
@@ -187,7 +187,7 @@ export function IconReviewPage() {
                 })()}
                 <div>
                   <div className="font-mono text-sm text-white">{editing}</div>
-                  <div className="text-[11px] text-white/40">escolha o glifo Phosphor</div>
+                  <div className="text-2xs text-white/40">escolha o glifo Phosphor</div>
                 </div>
               </div>
               <button
@@ -221,7 +221,7 @@ export function IconReviewPage() {
                     className="flex flex-col items-center gap-2 rounded-lg border border-transparent p-3 text-center transition-colors hover:border-white/20 hover:bg-white/[0.06] disabled:opacity-40"
                   >
                     {P ? <P size={24} weight={weight} className="text-white/85" /> : null}
-                    <span className="w-full truncate font-mono text-[9px] text-white/50">{pn}</span>
+                    <span className="w-full truncate font-mono text-3xs text-white/50">{pn}</span>
                   </button>
                 );
               })}

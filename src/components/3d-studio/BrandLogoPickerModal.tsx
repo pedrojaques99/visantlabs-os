@@ -70,7 +70,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
         <div className="space-y-3">
           <button
             onClick={handleBack}
-            className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white transition-colors"
+            className="flex items-center gap-1 text-2xs text-neutral-400 hover:text-white transition-colors"
           >
             <ChevronLeft size={14} /> Back to guidelines
           </button>
@@ -96,7 +96,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                       className={cn(
                         'group relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors cursor-pointer',
                         svg
-                          ? 'border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/5'
+                          ? 'border-success/30 hover:border-success/60 hover:bg-success/5'
                           : 'border-white/10 hover:border-white/30 hover:bg-white/5'
                       )}
                     >
@@ -108,16 +108,14 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                         />
                         <span
                           className={cn(
-                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider',
-                            svg
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : 'bg-white/10 text-neutral-500'
+                            'absolute top-1 right-1 px-1.5 py-0.5 rounded text-3xs font-mono uppercase tracking-wider',
+                            svg ? 'bg-success/20 text-success' : 'bg-white/10 text-neutral-500'
                           )}
                         >
                           {svg ? 'SVG' : 'IMG'}
                         </span>
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 group-hover:text-white transition-colors">
+                      <span className="text-2xs uppercase tracking-wider text-neutral-400 group-hover:text-white transition-colors">
                         {logo.label || logo.variant}
                       </span>
                     </button>
@@ -163,7 +161,7 @@ export const BrandLogoPickerModal: React.FC<BrandLogoPickerModalProps> = ({
                       {g.identity?.name || g.name || 'Untitled'}
                     </p>
                     {g.logos && g.logos.length > 0 && (
-                      <p className="text-[10px] text-neutral-500">
+                      <p className="text-2xs text-neutral-500">
                         {g.logos.length} logo{g.logos.length > 1 ? 's' : ''}
                       </p>
                     )}

@@ -98,10 +98,10 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       className={cn(
         'aspect-square border-2 active:scale-[0.98] transition-all duration-200 relative flex flex-col items-center justify-center gap-3 w-full',
         showError
-          ? 'border-red-500/40 hover:border-red-500/60 hover:bg-red-500/5 cursor-pointer group'
+          ? 'border-destructive/40 hover:border-destructive/60 hover:bg-destructive/5 cursor-pointer group'
           : isBlocked
             ? // Blocked = missing deps. Clickable so the click routes into the dep-generation flow.
-              'opacity-80 cursor-pointer border-red-500/20 hover:border-red-500/40'
+              'opacity-80 cursor-pointer border-destructive/20 hover:border-destructive/40'
             : 'border-white/10 hover:border-white/20 hover:bg-white/5 cursor-pointer group',
         isGenerating && 'opacity-50 cursor-not-allowed'
       )}
@@ -129,11 +129,11 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {showError && (
           <div
             className={`absolute top-2 left-2 p-1.5 rounded-md ${
-              theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
+              theme === 'dark' ? 'bg-destructive/20' : 'bg-destructive'
             }`}
           >
             <AlertTriangle
-              className={`h-3 w-3 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`}
+              className={`h-3 w-3 ${theme === 'dark' ? 'text-destructive' : 'text-destructive'}`}
             />
           </div>
         )}
@@ -142,10 +142,12 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {isBlocked && !showError && (
           <div
             className={`absolute top-2 left-2 p-1.5 rounded-md ${
-              theme === 'dark' ? 'bg-red-500/20' : 'bg-red-100'
+              theme === 'dark' ? 'bg-destructive/20' : 'bg-destructive'
             }`}
           >
-            <Lock className={`h-3 w-3 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`} />
+            <Lock
+              className={`h-3 w-3 ${theme === 'dark' ? 'text-destructive' : 'text-destructive'}`}
+            />
           </div>
         )}
 
@@ -171,13 +173,18 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {showError && (
           <div
             className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 ${
-              theme === 'dark' ? 'bg-red-500/20 border-red-500/30' : 'bg-red-100 border-red-300'
+              theme === 'dark'
+                ? 'bg-destructive/20 border-destructive/30'
+                : 'bg-destructive border-destructive'
             }`}
           >
-            <RotateCw size={12} className={theme === 'dark' ? 'text-red-400' : 'text-red-600'} />
+            <RotateCw
+              size={12}
+              className={theme === 'dark' ? 'text-destructive' : 'text-destructive'}
+            />
             <span
               className={`text-xs font-mono font-semibold ${
-                theme === 'dark' ? 'text-red-400' : 'text-red-600'
+                theme === 'dark' ? 'text-destructive' : 'text-destructive'
               }`}
             >
               Retry
@@ -212,13 +219,18 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
         {isBlocked && (
           <div
             className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 ${
-              theme === 'dark' ? 'bg-red-500/20 border-red-500/30' : 'bg-red-100 border-red-300'
+              theme === 'dark'
+                ? 'bg-destructive/20 border-destructive/30'
+                : 'bg-destructive border-destructive'
             }`}
           >
-            <Lock size={12} className={theme === 'dark' ? 'text-red-400' : 'text-red-600'} />
+            <Lock
+              size={12}
+              className={theme === 'dark' ? 'text-destructive' : 'text-destructive'}
+            />
             <span
               className={`text-xs font-mono font-semibold ${
-                theme === 'dark' ? 'text-red-400' : 'text-red-600'
+                theme === 'dark' ? 'text-destructive' : 'text-destructive'
               }`}
             >
               Bloqueado

@@ -149,9 +149,7 @@ function StatusBadge({ status }: { status: CampaignSummary['status'] }) {
   const { t } = useTranslation();
   const meta = STATUS_META[status] ?? STATUS_META.planning;
   return (
-    <span className={cn('text-[10px] font-mono tracking-wide', meta.color)}>
-      {t(meta.labelKey)}
-    </span>
+    <span className={cn('text-2xs font-mono tracking-wide', meta.color)}>{t(meta.labelKey)}</span>
   );
 }
 
@@ -179,8 +177,8 @@ function CampaignCard({ c, onOpen }: { c: CampaignSummary; onOpen: () => void })
         </div>
       </div>
       <div className="p-3 space-y-2 border-t border-white/10">
-        <p className="text-[12px] text-neutral-200 truncate">{c.name}</p>
-        <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500">
+        <p className="text-xs text-neutral-200 truncate">{c.name}</p>
+        <div className="flex items-center justify-between text-2xs font-mono text-neutral-500">
           {c.totalCount ? (
             <span>
               {c.completedCount}/{c.totalCount} {t('campaigns.ads')}
@@ -264,12 +262,12 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
             >
               <div className="relative aspect-square bg-neutral-900 flex items-center justify-center">
                 <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-                  <span className="text-[10px] font-mono text-neutral-300 tracking-wide">
+                  <span className="text-2xs font-mono text-neutral-300 tracking-wide">
                     {r.adAngle}
                   </span>
                 </div>
                 <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-black/50 border border-neutral-800">
-                  <span className="text-[10px] font-mono text-neutral-500">{r.format}</span>
+                  <span className="text-2xs font-mono text-neutral-500">{r.format}</span>
                 </div>
                 {r.status === 'done' && r.imageUrl ? (
                   <img
@@ -281,7 +279,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
                 ) : r.status === 'error' ? (
                   <div className="flex flex-col items-center gap-2 px-4 text-center">
                     <AlertCircle size={20} className="text-destructive/60" />
-                    <span className="text-[10px] font-mono text-destructive">{r.error}</span>
+                    <span className="text-2xs font-mono text-destructive">{r.error}</span>
                   </div>
                 ) : (
                   <Loader2 size={22} className="animate-spin text-neutral-600" />
@@ -294,7 +292,7 @@ function CampaignDetail({ id, onBack }: { id: string; onBack: () => void }) {
                     download={`campaign-${r.index}.png`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-2 py-1 w-fit rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 w-fit rounded text-2xs font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
                   >
                     <Download size={10} />
                     {t('campaigns.detail.download')}

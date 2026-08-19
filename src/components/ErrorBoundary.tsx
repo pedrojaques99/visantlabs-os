@@ -208,7 +208,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-neutral-950/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
               <div className="flex justify-center">
-                <RefreshCw className="h-8 w-8 text-brand-cyan animate-spin" />
+                <RefreshCw className="h-8 w-8 text-foreground animate-spin" />
               </div>
               <p className="text-sm text-neutral-400 font-mono">
                 {translations.retrying || 'Retrying...'}
@@ -301,7 +301,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <Button
                     variant="brand"
                     onClick={this.handleRetryChunk}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 hover:border-neutral-600/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 hover:border-neutral-600/50 text-foreground rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
@@ -320,7 +320,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <Button
                     variant="brand"
                     onClick={this.handleReset}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 hover:border-neutral-600/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 hover:border-neutral-600/50 text-foreground rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.tryAgain || 'Try Again'}

@@ -173,12 +173,12 @@ export const ConnectedAppsPage: React.FC = () => {
                       <div className="flex items-center gap-2 mt-0.5">
                         <div className="flex gap-1">
                           {app.scopes.map((s) => (
-                            <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">
+                            <Badge key={s} variant="secondary" className="text-2xs px-1.5 py-0">
                               {SCOPE_LABELS[s] || s}
                             </Badge>
                           ))}
                         </div>
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <span className="text-2xs text-muted-foreground flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {formatDateShort(app.createdAt)}
                         </span>

@@ -103,7 +103,7 @@ export const MensagemCentralSection: React.FC<MensagemCentralSectionProps> = ({
 
         {hasMessage && (
           <div className="pt-3 border-t border-neutral-800">
-            <p className="text-[11px] text-neutral-600 font-mono mb-2">Preview</p>
+            <p className="text-2xs text-neutral-600 font-mono mb-2">Preview</p>
             <p className="text-sm text-neutral-300 leading-relaxed">
               {cm.product && <span className="font-semibold text-neutral-100">{cm.product}</span>}
               {cm.product && cm.differential && (

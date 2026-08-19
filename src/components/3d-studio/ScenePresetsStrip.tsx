@@ -86,7 +86,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                   <div className="w-full h-full animate-pulse bg-white/5" />
                 )}
               </div>
-              <span className="text-[9px] text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+              <span className="text-3xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
                 {preset.label}
               </span>
             </button>
@@ -108,7 +108,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                 className="text-neutral-500 group-hover:text-neutral-300 transition-colors"
               />
             </div>
-            <span className="text-[9px] text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+            <span className="text-3xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
               Random
             </span>
           </button>
@@ -144,7 +144,7 @@ export const ScenePresetsStrip: React.FC<{ flat?: boolean }> = React.memo(({ fla
                     }}
                   />
                 </div>
-                <span className="text-[9px] text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
+                <span className="text-3xs text-neutral-500 group-hover:text-neutral-300 transition-colors max-w-14 truncate">
                   {scene.label}
                 </span>
               </button>

@@ -400,7 +400,7 @@ export const CanvasProjectsPage: React.FC = () => {
         variant="ghost"
         onClick={() => setShowWorkflowLibrary(true)}
         title={t('workflows.importWorkflow') || 'Library'}
-        className="shrink-0 h-10 px-2 sm:px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-colors rounded-md flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+        className="shrink-0 h-10 px-2 sm:px-3 hover:bg-neutral-900/40 text-neutral-400 hover:text-brand-cyan transition-colors rounded-md flex items-center gap-2 text-2xs font-bold uppercase tracking-widest"
       >
         <FolderOpen className="h-4 w-4" />
         <span>{t('workflows.importWorkflow') || 'Library'}</span>
@@ -468,7 +468,7 @@ export const CanvasProjectsPage: React.FC = () => {
         variant="brand"
         onClick={handleCreateNew}
         title={t('canvas.newProject') || 'New Project'}
-        className="shrink-0 h-10 px-2 sm:px-6 md:px-2 lg:px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
+        className="shrink-0 h-10 px-2 sm:px-6 md:px-2 lg:px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-2xs rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
       >
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline md:hidden lg:inline">
@@ -552,6 +552,7 @@ export const CanvasProjectsPage: React.FC = () => {
         { label: t('canvas.projects.title') || 'Projects' },
       ]}
       actions={headerActions}
+      noBackground
     >
       <div className="relative z-10">
         {/* Secundárias abaixo de `xl` — mesmas ações da espinha, só
@@ -588,13 +589,25 @@ export const CanvasProjectsPage: React.FC = () => {
                 : t('canvas.noProjectsForBrand') ||
                   'No canvas projects are linked to the active brand.'}
             </p>
-            {searchQuery.trim() && (
+            {searchQuery.trim() ? (
               <Button
                 variant="ghost"
                 onClick={() => setSearchQuery('')}
                 className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
               >
                 {t('canvas.clearSearch') || 'Clear Search'}
+              </Button>
+            ) : (
+              // Sem busca ativa, "nenhum encontrado" não pode ser um beco sem
+              // saída — o dono desta marca ainda pode criar o primeiro projeto
+              // dela aqui, mesma ação do header.
+              <Button
+                variant="brand"
+                onClick={handleCreateNew}
+                className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+              >
+                <Pickaxe className="h-4 w-4" />
+                {t('canvas.createFirstProjectButton') || 'Create Your First Project'}
               </Button>
             )}
           </div>
@@ -682,7 +695,7 @@ export const CanvasProjectsPage: React.FC = () => {
                         )}
                       </div>
                       <div
-                        className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono mb-4 uppercase tracking-widest"
+                        className="flex items-center gap-2 text-2xs text-neutral-500 font-mono mb-4 uppercase tracking-widest"
                         title={`${t('canvas.lastEdited')}: ${formatDate(
                           project.updatedAt || project.createdAt
                         )}`}
@@ -693,7 +706,7 @@ export const CanvasProjectsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-[10px] text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60 min-h-[1.25rem]">
+                  <div className="flex items-center gap-4 text-2xs text-neutral-500 font-mono mb-6 uppercase tracking-widest opacity-60 min-h-[1.25rem]">
                     {nodeCount > 0 && (
                       <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800">
                         {nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}
@@ -756,7 +769,7 @@ export const CanvasProjectsPage: React.FC = () => {
           <Button
             variant="ghost"
             onClick={() => setShowWorkflowLibrary(true)}
-            className="shrink-0 h-9 px-3 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-brand-cyan"
+            className="shrink-0 h-9 px-3 text-2xs font-bold uppercase tracking-widest text-neutral-500 hover:text-brand-cyan"
           >
             {t('canvas.community.viewAll')}
           </Button>

@@ -385,7 +385,7 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-muted border border-border rounded-lg text-muted-foreground hover:border-ring hover:text-foreground transition-colors duration-200"
+        className="p-2 bg-muted border border-border rounded-lg text-muted-foreground hover:border-border-hover hover:text-foreground transition-colors duration-200"
         aria-label={label}
         title={label}
       >
@@ -632,7 +632,7 @@ export const CommunityProfilePage: React.FC = () => {
                     <button
                       type="button"
                       key={mockup._id}
-                      className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:border-ring focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-lg transition-all duration-300 aspect-square"
+                      className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:border-border-hover focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:shadow-lg transition-all duration-300 aspect-square"
                       onClick={() => handleView(mockup)}
                     >
                       <img
@@ -692,7 +692,7 @@ export const CommunityProfilePage: React.FC = () => {
                 {workflows.map((workflow) => (
                   <GlassPanel
                     key={workflow._id}
-                    className="group overflow-hidden hover:border-ring transition-all duration-300 flex flex-col h-full"
+                    className="group overflow-hidden hover:border-border-hover transition-all duration-300 flex flex-col h-full"
                   >
                     <div className="aspect-video w-full bg-muted relative overflow-hidden">
                       {workflow.thumbnailUrl ? (
@@ -818,7 +818,7 @@ export const CommunityProfilePage: React.FC = () => {
                   <GlassPanel
                     asChild
                     key={preset._id || preset.id}
-                    className="group flex flex-col text-left h-full p-0 overflow-hidden hover:border-ring transition-all duration-300"
+                    className="group flex flex-col text-left h-full p-0 overflow-hidden hover:border-border-hover transition-all duration-300"
                   >
                     <button type="button" onClick={() => handlePresetClick(preset)}>
                       <div className="aspect-[3/2] w-full bg-muted relative overflow-hidden">
@@ -837,7 +837,7 @@ export const CommunityProfilePage: React.FC = () => {
                         <div className="absolute bottom-2 right-2">
                           <Badge
                             variant="secondary"
-                            className="bg-background/70 backdrop-blur-sm text-[10px] uppercase"
+                            className="bg-background/70 backdrop-blur-sm text-2xs uppercase"
                           >
                             {preset.presetType}
                           </Badge>

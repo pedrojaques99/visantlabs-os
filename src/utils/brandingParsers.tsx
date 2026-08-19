@@ -111,18 +111,18 @@ export const getSectionInfo = (title: string): { icon: React.ReactNode; color: s
     return { icon: <Lightbulb className="h-5 w-5" />, color: 'text-warning' };
   }
   if (lowerTitle.includes('tendência') || lowerTitle.includes('trend')) {
-    return { icon: <TrendingUp className="h-5 w-5" />, color: 'text-cyan-400' };
+    return { icon: <TrendingUp className="h-5 w-5" />, color: 'text-brand-cyan' };
   }
   if (lowerTitle.includes('demográfico') || lowerTitle.includes('demographic')) {
     return { icon: <MapPin className="h-5 w-5" />, color: 'text-pink-400' };
   }
   if (lowerTitle.includes('psicográfico') || lowerTitle.includes('psychographic')) {
-    return { icon: <Heart className="h-5 w-5" />, color: 'text-rose-400' };
+    return { icon: <Heart className="h-5 w-5" />, color: 'text-destructive' };
   }
   if (lowerTitle.includes('comportamento') || lowerTitle.includes('behavior')) {
     return { icon: <ShoppingBag className="h-5 w-5" />, color: 'text-orange-400' };
   }
-  return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-brand-cyan' };
+  return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-foreground' };
 };
 
 const extractBoldTitle = (line: string): string | null => {

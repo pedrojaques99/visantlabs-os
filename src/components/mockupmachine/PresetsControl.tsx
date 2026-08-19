@@ -178,7 +178,7 @@ export const PresetsControl: React.FC = () => {
               variant="brand"
               onClick={handleSave}
               disabled={isLoading || !presetName.trim()}
-              className="px-3 py-2 rounded-md bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 transition-colors disabled:opacity-50"
+              className="px-3 py-2 rounded-md bg-brand-cyan/20 text-foreground hover:bg-brand-cyan/30 transition-colors disabled:opacity-50"
             >
               <Check size={16} />
             </Button>

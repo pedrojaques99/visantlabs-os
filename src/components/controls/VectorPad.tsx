@@ -92,7 +92,7 @@ export const VectorPad = React.memo<VectorPadProps>(
     return (
       <div className={cn('inline-flex flex-col gap-1.5', className)}>
         {label && (
-          <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
+          <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
         )}
         <div
           ref={padRef}
@@ -124,7 +124,7 @@ export const VectorPad = React.memo<VectorPadProps>(
             style={{ left: `${nx * 100}%`, top: `${ny * 100}%` }}
           />
         </div>
-        <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
+        <span className="text-2xs font-mono text-neutral-400 tabular-nums">
           {value.x.toFixed(2)}, {value.y.toFixed(2)}
         </span>
       </div>

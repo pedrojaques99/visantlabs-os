@@ -39,7 +39,7 @@ const getActionColor = (type: DetectedAction['type']) => {
     case 'prompt':
       return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
     case 'mockup':
-      return 'text-brand-cyan border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
+      return 'text-foreground border-brand-cyan/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy':
       return 'text-warning border-warning/30 bg-warning/10 hover:bg-warning/20';
     case 'text':
@@ -74,8 +74,8 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
 
   return (
     <div className="mt-4 pt-3 border-t border-neutral-800 space-y-2.5 min-w-0">
-      <MicroTitle className="text-[10px] text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
-        <Diamond size={11} className="text-brand-cyan shrink-0" />
+      <MicroTitle className="text-2xs text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
+        <Diamond size={11} className="text-foreground shrink-0" />
         <span className="truncate">
           {t('canvasNodes.chatNode.detectedActions') || 'Ações Sugeridas'}
         </span>
@@ -91,7 +91,7 @@ export const ActionDetector: React.FC<ActionDetectorProps> = ({
               handleActionClick(action);
             }}
             className={cn(
-              'flex items-center gap-1.5 border rounded-md transition-[color,background-color,border-color,opacity] text-[10px] h-7 px-2',
+              'flex items-center gap-1.5 border rounded-md transition-[color,background-color,border-color,opacity] text-2xs h-7 px-2',
               getActionColor(action.type)
             )}
             title={action.description}

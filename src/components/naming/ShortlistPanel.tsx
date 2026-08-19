@@ -90,7 +90,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
 
   return (
     <div className="flex h-full flex-col">
-      <h2 className="mb-4 text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+      <h2 className="mb-4 text-2xs font-mono uppercase tracking-widest text-neutral-500">
         Shortlist {total > 0 && <span className="text-neutral-600">· {total}</span>}
       </h2>
 
@@ -106,7 +106,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 onClick={onShowFinalists}
-                className="mb-2 flex w-full items-center gap-2 rounded-lg border border-brand-cyan/20 bg-brand-cyan/[0.06] px-3 py-2 text-left text-xs text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
+                className="mb-2 flex w-full items-center gap-2 rounded-lg border border-brand-cyan/20 bg-brand-cyan/[0.06] px-3 py-2 text-left text-xs text-foreground hover:bg-brand-cyan/10 transition-colors"
               >
                 <Zap size={13} className="shrink-0" />
                 Seu gosto está claro — ver 3 finalistas?
@@ -174,7 +174,7 @@ export const ShortlistPanel: React.FC<ShortlistPanelProps> = ({
               <ArrowRight size={14} />
             </Button>
           )}
-          <p className="pt-1 text-center text-[10px] leading-relaxed text-neutral-600">
+          <p className="pt-1 text-center text-2xs leading-relaxed text-neutral-600">
             Domínio checado por RDAP; marca registrada, não. Paixão por nome só depois do INPI.
           </p>
         </div>
@@ -283,16 +283,16 @@ function ShortlistRow({
                 <p className="text-xs leading-relaxed text-neutral-400">{card.rationale}</p>
               )}
 
-              <span className="block text-[10px] uppercase tracking-wider text-neutral-600">
+              <span className="block text-2xs uppercase tracking-wider text-neutral-600">
                 {formatTag(card.territory)}
               </span>
 
               {card.availability?.status === 'partial' && (
                 <span
                   title={`Já registrado: ${card.availability.registered.join(', ')}`}
-                  className="inline-flex items-center gap-1 text-[10px] text-amber-400/80"
+                  className="inline-flex items-center gap-1 text-2xs text-warning/80"
                 >
-                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-amber-400/70" />
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-warning/70" />
                   {card.availability.registered.join(', ')} em uso
                 </span>
               )}
@@ -300,7 +300,7 @@ function ShortlistRow({
               {card.availability?.status === 'unknown' && (
                 <span
                   title="RDAP indisponível — não foi possível verificar o domínio"
-                  className="inline-flex items-center gap-1 text-[10px] text-neutral-500"
+                  className="inline-flex items-center gap-1 text-2xs text-neutral-500"
                 >
                   <Globe size={11} className="shrink-0" />
                   domínio não verificado
@@ -367,7 +367,7 @@ function ActionChip({
       title={title}
       aria-label={title}
       className={cn(
-        'inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-neutral-800 px-2 py-1 text-[10px] text-neutral-400 transition-colors',
+        'inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-neutral-800 px-2 py-1 text-2xs text-neutral-400 transition-colors',
         destructive
           ? 'hover:border-destructive/40 hover:text-destructive'
           : 'hover:border-neutral-700 hover:text-brand-cyan'

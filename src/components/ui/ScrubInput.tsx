@@ -149,7 +149,7 @@ const ScrubInput = React.memo<ScrubInputProps>(
         title={hint}
       >
         <span
-          className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none touch-none"
+          className="text-2xs font-mono text-neutral-500 uppercase tracking-widest cursor-ew-resize select-none truncate leading-none touch-none"
           onPointerDown={onScrubDown}
         >
           {icon && <span className="inline-flex mr-1 align-middle text-neutral-600">{icon}</span>}
@@ -164,12 +164,12 @@ const ScrubInput = React.memo<ScrubInputProps>(
               onChange={(e) => setDraft(e.target.value)}
               onBlur={commitEdit}
               onKeyDown={onKeyDown}
-              className="w-full bg-transparent text-[12px] font-mono text-white outline-none tabular-nums"
+              className="w-full bg-transparent text-xs font-mono text-white outline-none tabular-nums"
               autoFocus
             />
           ) : (
             <span
-              className="text-[12px] font-mono text-neutral-200 cursor-ew-resize select-none tabular-nums leading-none touch-none"
+              className="text-xs font-mono text-neutral-200 cursor-ew-resize select-none tabular-nums leading-none touch-none"
               onPointerDown={onScrubDown}
               onDoubleClick={startEdit}
             >

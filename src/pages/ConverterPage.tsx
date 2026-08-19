@@ -304,10 +304,10 @@ export const ConverterPage: React.FC = () => {
               className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
               <div className="flex items-center gap-1">
                 <FormatBadge from={item.inputFormat} to={outputFormat} />
-                <span className="text-[10px] font-mono text-neutral-600 tabular-nums">
+                <span className="text-2xs font-mono text-neutral-600 tabular-nums">
                   {formatBytes(item.originalSize)}
                 </span>
                 {item.status === 'done' && item.resultBlob && (
@@ -319,7 +319,7 @@ export const ConverterPage: React.FC = () => {
                       className="flex items-center gap-1"
                     >
                       <ArrowRight size={7} className="text-neutral-600" />
-                      <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
+                      <span className="text-2xs font-mono text-neutral-500 tabular-nums">
                         {formatBytes(item.resultBlob.size)}
                       </span>
                     </motion.span>
@@ -374,7 +374,7 @@ export const ConverterPage: React.FC = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-neutral-500">Quality</span>
-              <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
+              <span className="text-2xs font-mono text-neutral-500 tabular-nums">
                 {jpgQuality}%
               </span>
             </div>
@@ -402,7 +402,7 @@ export const ConverterPage: React.FC = () => {
               <Button
                 onClick={handleConvertAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -446,7 +446,7 @@ export const ConverterPage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneCount}/{items.length}
       </span>
@@ -565,7 +565,7 @@ export const ConverterPage: React.FC = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={transitions.fast}
-                      className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded"
+                      className="absolute top-2 right-2 text-2xs font-mono uppercase tracking-wider bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded"
                     >
                       {outputFormat.toUpperCase()}
                     </motion.span>
@@ -585,7 +585,7 @@ export const ConverterPage: React.FC = () => {
 function FormatBadge({ from, to }: { from: string; to: string }) {
   if (from === to) return null;
   return (
-    <span className="text-[10px] font-mono uppercase bg-neutral-800 text-neutral-400 px-1 py-px rounded">
+    <span className="text-2xs font-mono uppercase bg-neutral-800 text-neutral-400 px-1 py-px rounded">
       {from} <ArrowRight size={7} className="inline text-neutral-500" /> {to}
     </span>
   );

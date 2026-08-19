@@ -90,7 +90,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
     >
       <div className="space-y-0 py-1">
         {values.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">No voice values yet. Click + to add.</p>
+          <p className="text-2xs text-neutral-700 py-2">No voice values yet. Click + to add.</p>
         )}
         {values.map((v, i) => (
           <div
@@ -145,7 +145,7 @@ export const VoiceSection: React.FC<VoiceSectionProps> = ({ guideline, onUpdate,
           </Button>
         </div>
         {copies.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-1">
+          <p className="text-2xs text-neutral-700 py-1">
             Real copy the brand has shipped. The AI matches its register when writing new copy.
           </p>
         )}

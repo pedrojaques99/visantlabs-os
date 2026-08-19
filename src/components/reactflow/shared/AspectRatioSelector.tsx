@@ -71,7 +71,7 @@ const RatioTile: React.FC<{
       </span>
       <span
         className={cn(
-          'text-[10px] font-mono tabular-nums leading-none transition-colors',
+          'text-2xs font-mono tabular-nums leading-none transition-colors',
           selected ? 'text-brand-cyan' : 'text-neutral-500'
         )}
       >
@@ -141,7 +141,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             disabled && 'opacity-50 cursor-not-allowed'
           )}
         >
-          <span className="text-[11px] font-mono leading-none">•••</span>
+          <span className="text-2xs font-mono leading-none">•••</span>
         </NodeButton>
       </div>
 

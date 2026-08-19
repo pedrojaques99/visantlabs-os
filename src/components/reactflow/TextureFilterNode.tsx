@@ -234,7 +234,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
                   const preset = FILTER_PRESETS[name];
                   Object.entries(preset).forEach(([k, v]) => updateSetting(k, v));
                 }}
-                className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-colors bg-brand-cyan/5 text-brand-cyan/70 border-white/15 hover:bg-brand-cyan/15 hover:text-brand-cyan"
+                className="px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors bg-brand-cyan/5 text-brand-cyan/70 border-white/15 hover:bg-brand-cyan/15 hover:text-brand-cyan"
               >
                 {name}
               </button>
@@ -246,7 +246,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
             <button
               onClick={() => updateSetting('maskMode', !maskMode)}
               className={cn(
-                'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-colors',
+                'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors',
                 maskMode
                   ? 'bg-brand-cyan/20 text-brand-cyan border-white/20'
                   : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
@@ -260,7 +260,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
                   key={m.id}
                   onClick={() => updateSetting('blendMode', m.id)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-colors',
+                    'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors',
                     blendMode === m.id
                       ? 'bg-white/10 text-white border-white/20'
                       : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'
@@ -301,7 +301,7 @@ const TextureFilterNodeComponent: React.FC<NodeProps<Node<TextureFilterNodeData>
           <button
             onClick={() => updateSetting('tileMode', !tileMode)}
             className={cn(
-              'w-full px-2 py-1 rounded text-[10px] font-mono uppercase tracking-wider border-node transition-colors text-center',
+              'w-full px-2 py-1 rounded text-2xs font-mono uppercase tracking-wider border-node transition-colors text-center',
               tileMode
                 ? 'bg-white/10 text-white border-white/20'
                 : 'bg-neutral-800/50 text-neutral-500 border-neutral-700/30 hover:bg-neutral-800'

@@ -132,7 +132,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
     <div className="w-full h-full bg-neutral-900 flex flex-col relative">
       {/* Warning message when trying to close with pending changes */}
       {showCloseWarning && (
-        <div className="absolute top-2 left-2 right-2 z-50 px-3 py-2 bg-yellow-500/20 border border-yellow-500/50 rounded-md text-yellow-400 text-xs font-mono animate-pulse">
+        <div className="absolute top-2 left-2 right-2 z-50 px-3 py-2 bg-warning/20 border border-warning/50 rounded-md text-warning text-xs font-mono animate-pulse">
           Aplique ou descarte as mudanças antes de fechar
         </div>
       )}
@@ -146,7 +146,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
         <Button
           variant="destructive"
           onClick={onRemove}
-          className="w-full px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+          className="w-full px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-destructive"
           title="Remover campo (Delete)"
           aria-label="Remover campo"
         >
@@ -198,12 +198,14 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
                   updateLocal({ fontSize: Math.max(6, Math.min(144, value || 12)) });
                 }
               }}
-              className={`flex-1 text-sm font-mono ${fontSizeError ? 'border-red-500' : ''}`}
+              className={`flex-1 text-sm font-mono ${fontSizeError ? 'border-destructive' : ''}`}
               placeholder="12"
             />
             <span className="text-xs text-neutral-500 font-mono">pt</span>
           </div>
-          {fontSizeError && <p className="text-xs text-red-400 font-mono mt-1">{fontSizeError}</p>}
+          {fontSizeError && (
+            <p className="text-xs text-destructive font-mono mt-1">{fontSizeError}</p>
+          )}
         </div>
 
         {/* Bold */}
@@ -318,9 +320,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
                     updateLocal({ x: Math.max(0, value) });
                   }
                 }}
-                className={`text-sm mt-1 ${xError ? 'border-red-500' : ''}`}
+                className={`text-sm mt-1 ${xError ? 'border-destructive' : ''}`}
               />
-              {xError && <p className="text-xs text-red-400 font-mono mt-0.5">{xError}</p>}
+              {xError && <p className="text-xs text-destructive font-mono mt-0.5">{xError}</p>}
             </div>
             <div>
               <span className="text-xs text-neutral-500 font-mono">Y:</span>
@@ -341,9 +343,9 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
                     updateLocal({ y: Math.max(0, value) });
                   }
                 }}
-                className={`text-sm mt-1 ${yError ? 'border-red-500' : ''}`}
+                className={`text-sm mt-1 ${yError ? 'border-destructive' : ''}`}
               />
-              {yError && <p className="text-xs text-red-400 font-mono mt-0.5">{yError}</p>}
+              {yError && <p className="text-xs text-destructive font-mono mt-0.5">{yError}</p>}
             </div>
           </div>
         </div>
@@ -355,7 +357,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
           <Button
             variant="brand"
             onClick={handleApply}
-            className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-600/50"
+            className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-md text-foreground font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-neutral-600/50"
             title="Aplicar mudanças"
             aria-label="Aplicar mudanças"
           >

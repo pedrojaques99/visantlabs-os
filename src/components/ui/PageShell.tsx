@@ -132,14 +132,14 @@ export const PageShell: React.FC<PageShellProps> = ({
                         <React.Fragment key={`${seg.label}-${i}`}>
                           <BreadcrumbItem>
                             {isLast || !seg.to ? (
-                              <BreadcrumbPage className="text-neutral-200 text-[11px] sm:text-[10px] font-mono tracking-widest uppercase">
+                              <BreadcrumbPage className="text-neutral-200 text-2xs sm:text-2xs font-mono tracking-widest uppercase">
                                 {seg.label}
                               </BreadcrumbPage>
                             ) : (
                               <BreadcrumbLink asChild>
                                 <Link
                                   to={seg.to}
-                                  className="text-neutral-500 hover:text-neutral-200 transition-colors text-[11px] sm:text-[10px] font-mono tracking-widest uppercase"
+                                  className="text-neutral-500 hover:text-neutral-200 transition-colors text-2xs sm:text-2xs font-mono tracking-widest uppercase"
                                 >
                                   {seg.label}
                                 </Link>

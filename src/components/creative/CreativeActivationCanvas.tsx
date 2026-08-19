@@ -121,7 +121,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                         </div>
                       )}
                       {p.format && (
-                        <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono uppercase tracking-wider text-brand-cyan/90">
+                        <span className="absolute top-2 left-2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-2xs font-mono uppercase tracking-wider text-brand-cyan/90">
                           {p.format}
                         </span>
                       )}
@@ -162,7 +162,7 @@ export const CreativeActivationCanvas: React.FC = () => {
                       {s.label}
                       <ArrowRight
                         size={14}
-                        className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 text-brand-cyan transition-all"
+                        className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 text-foreground transition-all"
                       />
                     </p>
                     <p className="mt-0.5 text-xs text-neutral-500">{s.sub}</p>

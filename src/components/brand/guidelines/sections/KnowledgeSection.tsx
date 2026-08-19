@@ -232,9 +232,9 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
               <p className="text-xs text-neutral-300 font-medium">
                 Arraste arquivos ou clique para enviar
               </p>
-              <p className="text-[10px] text-neutral-500 font-mono mt-1">PDF, PNG, JPG, WEBP</p>
+              <p className="text-2xs text-neutral-500 font-mono mt-1">PDF, PNG, JPG, WEBP</p>
             </div>
-            <p className="text-[10px] text-neutral-600 max-w-[220px] text-center leading-relaxed">
+            <p className="text-2xs text-neutral-600 max-w-[220px] text-center leading-relaxed">
               Arquivos alimentam o motor de geração IA da marca — quanto mais contexto, melhor o
               output.
             </p>
@@ -263,7 +263,7 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                         {sourceIcon(file.source, 13)}
                       </div>
                       <span
-                        className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} ${colors.border} border`}
+                        className={`text-2xs font-mono uppercase px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} ${colors.border} border`}
                       >
                         {file.source}
                       </span>
@@ -294,13 +294,13 @@ export const KnowledgeSection: React.FC<KnowledgeSectionProps> = ({ guideline, s
                         style={{ width: `${barWidth}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-mono text-neutral-500 whitespace-nowrap">
+                    <span className="text-2xs font-mono text-neutral-500 whitespace-nowrap">
                       {file.vectorIds.length} vec
                     </span>
                   </div>
 
                   {/* Date */}
-                  <p className="text-[10px] text-neutral-600 font-mono">
+                  <p className="text-2xs text-neutral-600 font-mono">
                     {relativeDate(file.addedAt)}
                   </p>
                 </div>

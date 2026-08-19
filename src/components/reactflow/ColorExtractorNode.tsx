@@ -219,7 +219,7 @@ export const ColorExtractorNode = memo(
           <NodeLabel>
             {t('canvasNodes.imageNode.imageInput')}{' '}
             {connectedImage && (
-              <span className="text-[10px] text-neutral-500">({t('common.connected')})</span>
+              <span className="text-2xs text-neutral-500">({t('common.connected')})</span>
             )}
           </NodeLabel>
           {imageUrl ? (
@@ -289,7 +289,7 @@ export const ColorExtractorNode = memo(
                 <span className="font-semibold tracking-tight">
                   {t('canvasNodes.colorExtractorNode.extractColors')}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />1
                 </div>
               </div>

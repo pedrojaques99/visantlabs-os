@@ -294,7 +294,7 @@ export const DocsPage: React.FC = () => {
           {endpoints.map((ep, i) => (
             <div
               key={i}
-              className="bg-card border border-border rounded-xl p-6 hover:border-ring transition-colors"
+              className="bg-card border border-border rounded-xl p-6 hover:border-border-hover transition-colors"
             >
               <div className="flex items-center gap-3 mb-4">
                 {renderMethodBadge(ep.method)}
@@ -324,7 +324,7 @@ export const DocsPage: React.FC = () => {
                       <tbody className="divide-y divide-border">
                         {ep.parameters.map((p: any, idx: number) => (
                           <tr key={idx} className="bg-card">
-                            <td className="px-4 py-3 font-redhatmono text-brand-cyan">{p.name}</td>
+                            <td className="px-4 py-3 font-redhatmono text-foreground">{p.name}</td>
                             <td className="px-4 py-3">
                               <span className="bg-secondary px-2 py-1 rounded text-xs font-redhatmono text-muted-foreground">
                                 {p.schema?.type || 'string'}
@@ -405,10 +405,10 @@ export const DocsPage: React.FC = () => {
                           new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })
                         )
                       }
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5 transition-colors duration-200"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-secondary/60 text-xs font-redhatmono text-muted-foreground hover:border-border-hover hover:text-brand-cyan hover:bg-brand-cyan/5 transition-colors duration-200"
                     >
                       <span>Search</span>
-                      <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground">
+                      <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-2xs font-mono text-muted-foreground">
                         ⌘K
                       </kbd>
                     </button>
@@ -420,7 +420,7 @@ export const DocsPage: React.FC = () => {
                         'flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-redhatmono transition-colors duration-200 shrink-0',
                         copied
                           ? 'bg-success/10 border-success/40 text-success'
-                          : 'bg-secondary/60 border-border text-muted-foreground hover:border-ring hover:text-brand-cyan hover:bg-brand-cyan/5'
+                          : 'bg-secondary/60 border-border text-muted-foreground hover:border-border-hover hover:text-brand-cyan hover:bg-brand-cyan/5'
                       )}
                     >
                       {copied ? (
@@ -436,7 +436,7 @@ export const DocsPage: React.FC = () => {
                 {activeTab === 'overview' && (
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
-                      <Book className="h-8 w-8 text-brand-cyan" />
+                      <Book className="h-8 w-8 text-foreground" />
                       <div>
                         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
                           Visant Copilot Docs
@@ -452,9 +452,9 @@ export const DocsPage: React.FC = () => {
 
                 {/* Agent-first hint bar */}
                 <div className="mb-6 flex items-start gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md px-4 py-3">
-                  <FileText className="w-4 h-4 text-brand-cyan mt-0.5 shrink-0" />
+                  <FileText className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    <span className="text-brand-cyan font-medium">LLM / Agent tip —</span> use the{' '}
+                    <span className="text-foreground font-medium">LLM / Agent tip —</span> use the{' '}
                     <span className="font-medium text-foreground">Copy as Markdown</span> button
                     above to get the current section as clean, structured markdown. Paste it
                     directly into your agent's context window or system prompt for accurate API
@@ -466,9 +466,9 @@ export const DocsPage: React.FC = () => {
                   <TabsContent value="overview" className="space-y-6 bg-transparent mt-0">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <Link to="/docs/getting-started" className="block">
-                        <Card className="h-full cursor-pointer hover:border-ring transition-all hover:-translate-y-1">
+                        <Card className="h-full cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1">
                           <CardHeader>
-                            <Zap className="w-8 h-8 text-brand-cyan mb-2" />
+                            <Zap className="w-8 h-8 text-foreground mb-2" />
                             <CardTitle>Getting Started</CardTitle>
                           </CardHeader>
                           <CardContent>
@@ -481,11 +481,11 @@ export const DocsPage: React.FC = () => {
                       </Link>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('api')}
                       >
                         <CardHeader>
-                          <Server className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Server className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>REST API</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -496,11 +496,11 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('mcp')}
                       >
                         <CardHeader>
-                          <Terminal className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Terminal className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>MCP Tools</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -511,11 +511,11 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('plugin')}
                       >
                         <CardHeader>
-                          <Puzzle className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Puzzle className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>Figma Plugin</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -526,11 +526,11 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('agents')}
                       >
                         <CardHeader>
-                          <Bot className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Bot className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>For Agents</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -541,11 +541,11 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('brand-guidelines')}
                       >
                         <CardHeader>
-                          <Diamond className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Diamond className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>Brand Guidelines</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -557,11 +557,11 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('canvas-api')}
                       >
                         <CardHeader>
-                          <Workflow className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Workflow className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>Canvas API</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -573,11 +573,11 @@ export const DocsPage: React.FC = () => {
                       </Card>
 
                       <Card
-                        className="cursor-pointer hover:border-ring transition-all hover:-translate-y-1"
+                        className="cursor-pointer hover:border-border-hover transition-all hover:-translate-y-1"
                         onClick={() => setActiveTab('pricing')}
                       >
                         <CardHeader>
-                          <Coins className="w-8 h-8 text-brand-cyan mb-2" />
+                          <Coins className="w-8 h-8 text-foreground mb-2" />
                           <CardTitle>Pricing & Credits</CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -607,10 +607,10 @@ export const DocsPage: React.FC = () => {
                             <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">
                               HTTP Header
                             </div>
-                            <code className="text-brand-cyan font-redhatmono text-sm block">
+                            <code className="text-foreground font-redhatmono text-sm block">
                               Authorization: Bearer YOUR_JWT_TOKEN
                             </code>
-                            <code className="text-brand-cyan font-redhatmono text-sm block">
+                            <code className="text-foreground font-redhatmono text-sm block">
                               Authorization: Bearer visant_sk_xxxxxxxxxxxx
                             </code>
                           </div>
@@ -618,7 +618,7 @@ export const DocsPage: React.FC = () => {
                             For agents, create an API key from{' '}
                             <a
                               href="/settings/api-keys"
-                              className="text-brand-cyan hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               Settings → API Keys
                             </a>
@@ -626,7 +626,7 @@ export const DocsPage: React.FC = () => {
                             <Button
                               variant="ghost"
                               onClick={() => setActiveTab('agents')}
-                              className="text-brand-cyan hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               For Agents
                             </Button>{' '}
@@ -772,7 +772,7 @@ export const DocsPage: React.FC = () => {
                                   Go to{' '}
                                   <a
                                     href="/settings/api-keys"
-                                    className="text-brand-cyan underline"
+                                    className="text-foreground underline"
                                   >
                                     Settings → API Keys
                                   </a>{' '}
@@ -813,7 +813,7 @@ export const DocsPage: React.FC = () => {
                             },
                           ].map(({ n, title, desc }) => (
                             <div key={n} className="flex gap-3">
-                              <div className="w-6 h-6 rounded-full bg-brand-cyan/20 text-brand-cyan flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                              <div className="w-6 h-6 rounded-full bg-brand-cyan/20 text-foreground flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                                 {n}
                               </div>
                               <div>
@@ -991,7 +991,7 @@ const result = await client.callTool({
                             1. Go to{' '}
                             <a
                               href="/settings/api-keys"
-                              className="text-brand-cyan hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               Settings &rarr; API Keys
                             </a>{' '}
@@ -1046,8 +1046,8 @@ const result = await client.callTool({
                           >
                             <CardHeader className="border-b border-border/50 bg-secondary/20 pb-4">
                               <div className="flex items-center gap-3">
-                                <Code className="w-5 h-5 text-brand-cyan" />
-                                <h3 className="text-xl font-redhatmono font-semibold text-brand-cyan m-0">
+                                <Code className="w-5 h-5 text-foreground" />
+                                <h3 className="text-xl font-redhatmono font-semibold text-foreground m-0">
                                   {tool.name}
                                 </h3>
                               </div>
@@ -1080,7 +1080,7 @@ const result = await client.callTool({
                                       {Object.entries(tool.inputSchema?.properties || {}).map(
                                         ([name, prop]: [string, any], pIdx) => (
                                           <tr key={pIdx} className="bg-card">
-                                            <td className="px-4 py-3 font-redhatmono text-brand-cyan">
+                                            <td className="px-4 py-3 font-redhatmono text-foreground">
                                               {name}
                                             </td>
                                             <td className="px-4 py-3">
@@ -1139,7 +1139,7 @@ const result = await client.callTool({
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Puzzle className="h-8 w-8 text-brand-cyan" />
+                          <Puzzle className="h-8 w-8 text-foreground" />
                           <div>
                             <CardTitle className="text-2xl">
                               Figma Plugin — Visant Copilot
@@ -1157,7 +1157,7 @@ const result = await client.callTool({
                     <Card id="pl-install" className="scroll-mt-20">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Puzzle className="w-5 h-5 text-brand-cyan" /> Installation
+                          <Puzzle className="w-5 h-5 text-foreground" /> Installation
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -1184,7 +1184,7 @@ const result = await client.callTool({
                     <Card id="pl-chat" className="scroll-mt-20">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Terminal className="w-5 h-5 text-brand-cyan" /> AI Chat
+                          <Terminal className="w-5 h-5 text-foreground" /> AI Chat
                         </CardTitle>
                         <CardDescription>
                           Describe what you want in natural language — the AI creates, edits, and
@@ -1217,7 +1217,7 @@ const result = await client.callTool({
                             ],
                           ].map(([title, desc]) => (
                             <li key={title} className="flex items-start gap-3">
-                              <span className="bg-secondary text-brand-cyan p-1 rounded mt-0.5 shrink-0">
+                              <span className="bg-secondary text-foreground p-1 rounded mt-0.5 shrink-0">
                                 <Code className="w-4 h-4" />
                               </span>
                               <div>
@@ -1236,7 +1236,7 @@ const result = await client.callTool({
                     <Card id="pl-operations" className="scroll-mt-20">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Layers className="w-5 h-5 text-brand-cyan" /> Supported Operations (25+)
+                          <Layers className="w-5 h-5 text-foreground" /> Supported Operations (25+)
                         </CardTitle>
                         <CardDescription>
                           All operations use JSON format:{' '}
@@ -1325,7 +1325,7 @@ const result = await client.callTool({
                     <Card id="pl-brand" className="scroll-mt-20">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Diamond className="w-5 h-5 text-brand-cyan" /> Brand Guidelines
+                          <Diamond className="w-5 h-5 text-foreground" /> Brand Guidelines
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
@@ -1351,7 +1351,7 @@ const result = await client.callTool({
                     <Card id="pl-scan" className="scroll-mt-20">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Workflow className="w-5 h-5 text-brand-cyan" /> Smart Scan
+                          <Workflow className="w-5 h-5 text-foreground" /> Smart Scan
                         </CardTitle>
                         <CardDescription>
                           Automatic page-level context when the selection isn't enough.
@@ -1375,7 +1375,7 @@ const result = await client.callTool({
                     <Card id="pl-api" className="scroll-mt-20">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Server className="w-5 h-5 text-brand-cyan" /> Plugin API
+                          <Server className="w-5 h-5 text-foreground" /> Plugin API
                         </CardTitle>
                         <CardDescription>
                           For developers integrating with the plugin architecture.
@@ -1447,7 +1447,7 @@ const result = await client.callTool({
                     <Card id="fn-overview">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Layers className="w-5 h-5 text-brand-cyan" /> How It Works
+                          <Layers className="w-5 h-5 text-foreground" /> How It Works
                         </CardTitle>
                         <CardDescription>
                           The Plugin API is imperative (JavaScript), not declarative. This JSON spec
@@ -1490,7 +1490,7 @@ const result = await client.callTool({
                               key={n.type}
                               className="bg-card border border-border rounded-md p-3"
                             >
-                              <code className="text-brand-cyan font-redhatmono font-semibold text-sm">
+                              <code className="text-foreground font-redhatmono font-semibold text-sm">
                                 {n.type}
                               </code>
                               <p className="text-muted-foreground text-xs mt-1">{n.desc}</p>
@@ -1606,7 +1606,7 @@ const result = await client.callTool({
                                 ['children', 'NodeSpec[]', 'Nested nodes — FRAME only'],
                               ].map(([prop, type, notes]) => (
                                 <tr key={prop} className="bg-card">
-                                  <td className="px-4 py-2.5 font-redhatmono text-brand-cyan text-xs">
+                                  <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
                                     {prop}
                                   </td>
                                   <td className="px-4 py-2.5">
@@ -1735,7 +1735,7 @@ const result = await client.callTool({
                                 ],
                               ].map(([rule, detail]) => (
                                 <tr key={rule} className="bg-card">
-                                  <td className="px-4 py-3 font-redhatmono text-brand-cyan text-xs font-semibold">
+                                  <td className="px-4 py-3 font-redhatmono text-foreground text-xs font-semibold">
                                     {rule}
                                   </td>
                                   <td className="px-4 py-3 text-muted-foreground text-sm">
@@ -1778,7 +1778,7 @@ const result = await client.callTool({
                             },
                           ].map(({ fn, desc }) => (
                             <div key={fn} className="bg-card border border-border rounded-md p-4">
-                              <code className="text-brand-cyan font-redhatmono text-xs font-semibold block mb-2">
+                              <code className="text-foreground font-redhatmono text-xs font-semibold block mb-2">
                                 {fn}
                               </code>
                               <p className="text-muted-foreground text-sm">{desc}</p>
@@ -1867,7 +1867,7 @@ figma.ui.onmessage = async (msg) => {
                                   ['Caption text', 'FILL', 'HUG', 'Wraps to parent width'],
                                 ].map(([layer, w, h, note]) => (
                                   <tr key={layer} className="bg-card">
-                                    <td className="px-4 py-2.5 font-redhatmono text-brand-cyan text-xs">
+                                    <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
                                       {layer}
                                     </td>
                                     <td className="px-4 py-2.5 text-muted-foreground text-xs">
@@ -1935,7 +1935,7 @@ figma.ui.onmessage = async (msg) => {
                               ['plugin/src/code.ts', 'Figma sandbox — executes operations'],
                             ].map(([file, desc]) => (
                               <div key={file} className="flex gap-3 items-start">
-                                <code className="text-brand-cyan font-redhatmono text-xs shrink-0">
+                                <code className="text-foreground font-redhatmono text-xs shrink-0">
                                   {file}
                                 </code>
                                 <span className="text-muted-foreground text-xs">{desc}</span>
@@ -1960,7 +1960,7 @@ figma.ui.onmessage = async (msg) => {
                     <Card id="ca-overview">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Workflow className="w-5 h-5 text-brand-cyan" /> How It Works
+                          <Workflow className="w-5 h-5 text-foreground" /> How It Works
                         </CardTitle>
                         <CardDescription>
                           The canvas is a React Flow graph — a list of nodes and edges stored in a
@@ -1987,7 +1987,7 @@ figma.ui.onmessage = async (msg) => {
                             },
                           ].map(({ step, title, desc }) => (
                             <div key={step} className="bg-card border border-border rounded-md p-4">
-                              <div className="text-brand-cyan font-redhatmono text-xs uppercase mb-1">
+                              <div className="text-foreground font-redhatmono text-xs uppercase mb-1">
                                 Step {step}
                               </div>
                               <div className="font-medium text-foreground mb-1">{title}</div>
@@ -1999,7 +1999,7 @@ figma.ui.onmessage = async (msg) => {
                           <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">
                             Base URL
                           </div>
-                          <code className="text-brand-cyan font-redhatmono text-sm">
+                          <code className="text-foreground font-redhatmono text-sm">
                             https://api.visantlabs.com/api/canvas
                           </code>
                         </div>
@@ -2321,7 +2321,7 @@ Content-Type: application/json`}</pre>
                                 ],
                               ].map(([type, desc, fields]) => (
                                 <tr key={type} className="bg-card">
-                                  <td className="px-4 py-2.5 font-redhatmono text-brand-cyan text-xs">
+                                  <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
                                     {type}
                                   </td>
                                   <td className="px-4 py-2.5 text-muted-foreground text-xs">
@@ -2476,7 +2476,7 @@ Content-Type: application/json`}</pre>
                                 ],
                               ].map(([conn, src, tgt, effect]) => (
                                 <tr key={conn} className="bg-card">
-                                  <td className="px-4 py-2.5 font-redhatmono text-brand-cyan text-xs">
+                                  <td className="px-4 py-2.5 font-redhatmono text-foreground text-xs">
                                     {conn}
                                   </td>
                                   <td className="px-4 py-2.5 text-muted-foreground text-xs font-redhatmono">
@@ -2706,7 +2706,7 @@ Content-Type: application/json`}</pre>
                     <Card id="ca-agents">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <Diamond className="w-5 h-5 text-brand-cyan" /> Agent Integration
+                          <Diamond className="w-5 h-5 text-foreground" /> Agent Integration
                         </CardTitle>
                         <CardDescription>
                           Complete workflow examples for LLM agents and external tools interacting
@@ -2942,7 +2942,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                                   'endFrame',
                                 ].map((f) => (
                                   <li key={f} className="text-muted-foreground">
-                                    <span className="text-brand-cyan">−</span> {f}
+                                    <span className="text-foreground">−</span> {f}
                                   </li>
                                 ))}
                               </ul>
@@ -2967,7 +2967,7 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                                   'userMockups',
                                 ].map((f) => (
                                   <li key={f} className="text-muted-foreground">
-                                    <span className="text-brand-cyan">−</span> {f}
+                                    <span className="text-foreground">−</span> {f}
                                   </li>
                                 ))}
                               </ul>
@@ -3028,7 +3028,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                         </div>
 
                         <div className="bg-card border border-brand-cyan/20 rounded-md p-4">
-                          <p className="text-brand-cyan text-sm font-medium mb-2">
+                          <p className="text-foreground text-sm font-medium mb-2">
                             UI Entry Points
                           </p>
                           <ul className="space-y-1.5 text-sm text-muted-foreground">
@@ -3068,7 +3068,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Diamond className="h-8 w-8 text-brand-cyan" />
+                          <Diamond className="h-8 w-8 text-foreground" />
                           <div>
                             <CardTitle className="text-2xl">Brand Guidelines API</CardTitle>
                             <CardDescription>
@@ -3212,7 +3212,7 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                             <p className="text-muted-foreground">
                               # GET /api/brand-guidelines/:id/context?format=prompt&output=text
                             </p>
-                            <pre className="text-brand-cyan leading-relaxed">{`═══ BRAND: Visant ═══
+                            <pre className="text-foreground leading-relaxed">{`═══ BRAND: Visant ═══
 Tagline: "Design at the speed of thought"
 COLORS:
   Primary: #00E5CC (primary)
@@ -3229,7 +3229,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Bot className="h-8 w-8 text-brand-cyan" />
+                          <Bot className="h-8 w-8 text-foreground" />
                           <div>
                             <CardTitle className="text-2xl">For AI Agents</CardTitle>
                             <CardDescription>
@@ -3247,24 +3247,24 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                           </p>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-1">
+                              <p className="text-foreground font-semibold text-sm mb-1">
                                 Discovery
                               </p>
                               <div className="space-y-1.5">
                                 <p className="text-muted-foreground text-xs">
-                                  <code className="font-redhatmono bg-secondary px-1 rounded text-[10px]">
+                                  <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
                                     api.visantlabs.com/llms.txt
                                   </code>{' '}
                                   — Concise overview
                                 </p>
                                 <p className="text-muted-foreground text-xs">
-                                  <code className="font-redhatmono bg-secondary px-1 rounded text-[10px]">
+                                  <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
                                     api.visantlabs.com/llms-full.txt
                                   </code>{' '}
                                   — Full platform reference
                                 </p>
                                 <p className="text-muted-foreground text-xs">
-                                  <code className="font-redhatmono bg-secondary px-1 rounded text-[10px]">
+                                  <code className="font-redhatmono bg-secondary px-1 rounded text-2xs">
                                     api.visantlabs.com/api/docs/api/spec
                                   </code>{' '}
                                   — OpenAPI JSON
@@ -3272,7 +3272,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </div>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-1">
+                              <p className="text-foreground font-semibold text-sm mb-1">
                                 MCP Tools
                               </p>
                               <p className="text-muted-foreground text-xs">
@@ -3284,7 +3284,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </p>
                             </div>
                             <div className="bg-secondary/40 border border-border rounded-md p-4">
-                              <p className="text-brand-cyan font-semibold text-sm mb-1">REST API</p>
+                              <p className="text-foreground font-semibold text-sm mb-1">REST API</p>
                               <p className="text-muted-foreground text-xs">
                                 Full HTTP API with JSON responses for all platform features
                               </p>
@@ -3302,7 +3302,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             Agents authenticate using API keys. Create one from{' '}
                             <a
                               href="/settings/api-keys"
-                              className="text-brand-cyan hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               Settings → API Keys
                             </a>
@@ -3403,7 +3403,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                             See{' '}
                             <button
                               onClick={() => setActiveTab('mcp')}
-                              className="text-brand-cyan hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               MCP Tools tab
                             </button>{' '}
@@ -3498,7 +3498,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                                 key={step}
                                 className="flex items-start gap-3 bg-secondary/40 border border-border rounded-md p-3"
                               >
-                                <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">
+                                <span className="bg-brand-cyan/20 text-foreground text-xs font-bold px-2 py-1 rounded shrink-0">
                                   {step}
                                 </span>
                                 <div>
@@ -3517,7 +3517,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                     <Card className="bg-card border border-border">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <Coins className="h-8 w-8 text-brand-cyan" />
+                          <Coins className="h-8 w-8 text-foreground" />
                           <div>
                             <CardTitle className="text-2xl">Pricing & Credits</CardTitle>
                             <CardDescription>
@@ -3537,7 +3537,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               href="https://ai.google.dev/gemini-api/docs/pricing"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-brand-cyan hover:underline"
+                              className="text-foreground hover:underline"
                             >
                               Google's official pricing
                             </a>
@@ -3755,7 +3755,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               <tbody>
                                 {creditPackages.map((pkg, i) => (
                                   <tr key={i} className="border-t border-border">
-                                    <td className="p-3 font-medium text-brand-cyan">
+                                    <td className="p-3 font-medium text-foreground">
                                       {pkg.credits} credits
                                     </td>
                                     <td className="p-3 text-right font-redhatmono">
@@ -3806,7 +3806,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                           </p>
                           <div className="space-y-2 text-sm">
                             <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
-                              <span className="text-brand-cyan">1.</span>
+                              <span className="text-foreground">1.</span>
                               <span className="text-muted-foreground">
                                 <strong className="text-foreground">
                                   Derived from official sources
@@ -3815,7 +3815,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </span>
                             </div>
                             <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
-                              <span className="text-brand-cyan">2.</span>
+                              <span className="text-foreground">2.</span>
                               <span className="text-muted-foreground">
                                 <strong className="text-foreground">Open in our codebase</strong> —{' '}
                                 <code className="font-redhatmono bg-secondary px-1 rounded text-xs">
@@ -3828,7 +3828,7 @@ VOICE: Friendly but technical. Avoid jargon.`}</pre>
                               </span>
                             </div>
                             <div className="flex items-start gap-2 bg-secondary/40 border border-border rounded-md p-3">
-                              <span className="text-brand-cyan">3.</span>
+                              <span className="text-foreground">3.</span>
                               <span className="text-muted-foreground">
                                 <strong className="text-foreground">
                                   Updated when Google updates

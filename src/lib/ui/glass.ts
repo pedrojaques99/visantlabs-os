@@ -21,18 +21,19 @@ export const glassSurface = {
   // (shadows are dark in every theme). Hover uses `foreground/20` for a
   // theme-correct border lift.
   panel:
-    'border border-border bg-card/80 backdrop-blur-lg shadow-[inset_0_1px_0_oklch(from_var(--foreground)_l_c_h/6%),0_8px_24px_-8px_rgba(0,0,0,0.35)] transition-colors hover:border-ring',
+    'border border-border bg-card/80 backdrop-blur-lg shadow-[inset_0_1px_0_oklch(from_var(--foreground)_l_c_h/6%),0_8px_24px_-8px_rgba(0,0,0,0.35)] transition-colors hover:border-border-hover',
   panelSubtle:
-    'border border-border bg-card/70 backdrop-blur-md transition-colors hover:border-ring',
+    'border border-border bg-card/70 backdrop-blur-md transition-colors hover:border-border-hover',
   panelStrong:
-    'border border-border bg-card/90 backdrop-blur-xl shadow-[inset_0_1px_0_oklch(from_var(--foreground)_l_c_h/8%),0_12px_32px_-8px_rgba(0,0,0,0.40)] transition-colors hover:border-ring',
+    'border border-border bg-card/90 backdrop-blur-xl shadow-[inset_0_1px_0_oklch(from_var(--foreground)_l_c_h/8%),0_12px_32px_-8px_rgba(0,0,0,0.40)] transition-colors hover:border-border-hover',
 
   // ── Tile: interactive inner surface inside a panel (has hover, NO blur) ──
-  tile: 'border border-border bg-muted/40 transition-colors hover:border-ring hover:bg-muted/60',
+  tile: 'border border-border bg-muted/40 transition-colors hover:border-border-hover hover:bg-muted/60',
   // ── Surface: static inner surface / chip / input (NO hover, NO blur) ──
   surface: 'border border-border bg-muted/40',
   // ── Control: buttons / nav rows (readable fill, hover, NO blur) ──
-  control: 'border border-border bg-muted/50 transition-colors hover:border-ring hover:bg-accent',
+  control:
+    'border border-border bg-muted/50 transition-colors hover:border-border-hover hover:bg-accent',
   // ── Icon well: static, faint (NO hover, NO blur) ──
   icon: 'border border-border bg-muted/50',
 } as const;

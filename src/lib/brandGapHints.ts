@@ -24,6 +24,9 @@ export const BRAND_GAP_HINTS: Record<string, string> = {
   voice_donts: 'Impede a IA de escrever o que a marca não diz.',
   spacing: 'Layouts gerados respeitam teu ritmo de espaçamento.',
   radius: 'Cantos consistentes nos componentes gerados.',
+  shadow: 'Dá profundidade própria à marca em vez da sombra padrão de todo mundo.',
+  border: 'Define a espessura e o traço que a marca usa, não o do template.',
+  motion: 'A marca ganha ritmo próprio: o que anima rápido e o que anima devagar.',
   media: 'Referências reais afinam o que a IA produz.',
   public_or_figma: 'Conecta a marca ao Figma/link pra produzir em qualquer lugar.',
 };

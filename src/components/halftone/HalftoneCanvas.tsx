@@ -108,7 +108,7 @@ export const HalftoneCanvas = forwardRef<HalftoneCanvasHandle, HalftoneCanvasPro
     if (webglFailed) {
       return (
         <div className="w-full h-full flex items-center justify-center bg-neutral-950">
-          <p className="text-neutral-500 text-[10px] uppercase tracking-widest">
+          <p className="text-neutral-500 text-2xs uppercase tracking-widest">
             WebGL not supported — please use a modern browser
           </p>
         </div>

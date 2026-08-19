@@ -272,10 +272,10 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
       className="w-full text-left flex flex-col gap-[2px] py-[3px] transition-colors duration-100 disabled:cursor-not-allowed focus:outline-none overflow-hidden"
     >
       {/* Main row — single line, clips when narrower than 1/3 viewport */}
-      <div className="flex items-center font-mono text-[11px] tracking-wider whitespace-nowrap overflow-hidden">
+      <div className="flex items-center font-mono text-2xs tracking-wider whitespace-nowrap overflow-hidden">
         {/* Number */}
         <span
-          className={`w-6 shrink-0 text-[10px] transition-colors duration-100 ${
+          className={`w-6 shrink-0 text-2xs transition-colors duration-100 ${
             focused && !locked ? 'text-brand-cyan' : 'text-neutral-800'
           }`}
         >
@@ -324,7 +324,7 @@ const AppRow: React.FC<AppRowProps> = ({ app, num, focused, onSelect, onFocus })
 
       {/* Description — single line, never wraps (keeps rows compact) */}
       <div
-        className={`pl-9 pr-2 font-mono text-[10px] tracking-wide truncate max-w-[340px] transition-colors duration-100 ${
+        className={`pl-9 pr-2 font-mono text-2xs tracking-wide truncate max-w-[340px] transition-colors duration-100 ${
           locked ? 'text-neutral-800' : focused ? 'text-neutral-500' : 'text-neutral-700'
         }`}
         aria-hidden
@@ -359,7 +359,7 @@ const AppList: React.FC<AppListProps> = ({
 
   return (
     <div className="w-max">
-      <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-700 mb-3 select-none">
+      <p className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-700 mb-3 select-none">
         VISANT LABS®
       </p>
       <div
@@ -394,7 +394,7 @@ const AppList: React.FC<AppListProps> = ({
       >
         <button
           onClick={() => navigate('/apps')}
-          className="px-4 py-1.5 rounded-lg bg-white/5 border border-neutral-800 font-mono text-[10px] uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-colors"
+          className="px-4 py-1.5 rounded-lg bg-white/5 border border-neutral-800 font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/15 transition-colors"
           aria-label={t('home.ver_todos_os_apps')}
         >
           More Apps
@@ -403,28 +403,28 @@ const AppList: React.FC<AppListProps> = ({
         <div className="flex items-center gap-6">
           <button
             onClick={() => navigate('/about')}
-            className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+            className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
           >
             info
           </button>
           {!isMobile ? (
             <button
               onClick={() => navigate('/community')}
-              className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
             >
               community
             </button>
           ) : (
             <a
               href="mailto:contato@visant.co"
-              className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
             >
               contact
             </a>
           )}
           <button
             onClick={() => navigate('/docs')}
-            className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+            className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
           >
             docs
           </button>
@@ -513,9 +513,8 @@ export const HomePage: React.FC = () => {
     setShowAuthModal(true);
   };
 
-  // Cockpit como home logada (RCD §3.2), atrás de flag reversível. Reusa a rota
-  // /cockpit já testada em vez de duplicar o wiring do BrandCockpit; desligada,
-  // a home segue sendo o launcher TUI+3D abaixo.
+  // `/` logado cai em `/cockpit`, que é o Início de verdade (o acervo de
+  // marcas). O cockpit de trabalho é de UMA marca: `/cockpit/:brandId`.
   if (isAuthenticated === true && FEATURE_COCKPIT && FEATURE_COCKPIT_HOME) {
     return <Navigate to="/cockpit" replace />;
   }
@@ -588,12 +587,12 @@ export const HomePage: React.FC = () => {
                     exit={{ opacity: 0 }}
                     className="flex flex-col items-center gap-5 mt-4"
                   >
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none text-center">
+                    <p className="font-mono text-2xs uppercase tracking-widest text-neutral-500 select-none text-center">
                       brand context for your agent
                     </p>
                     <button
                       onClick={() => setShowAuthModal(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200"
+                      className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200"
                     >
                       <LogIn size={12} />
                       <span>{t('home.sign_in')}</span>
@@ -601,13 +600,13 @@ export const HomePage: React.FC = () => {
                     <div className="flex items-center gap-6 mt-2">
                       <button
                         onClick={() => navigate('/about')}
-                        className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.info')}
                       </button>
                       <a
                         href="mailto:contato@visant.co"
-                        className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                        className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
                       >
                         {t('home.contact')}
                       </a>
@@ -638,12 +637,12 @@ export const HomePage: React.FC = () => {
                       exit={{ opacity: 0 }}
                       className="flex flex-col gap-5"
                     >
-                      <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 select-none">
+                      <p className="font-mono text-2xs uppercase tracking-widest text-neutral-500 select-none">
                         brand context for your agent
                       </p>
                       <button
                         onClick={() => setShowAuthModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-[11px] uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
+                        className="flex items-center gap-2 px-5 py-2.5 border border-neutral-800 hover:border-neutral-600 rounded-sm font-mono text-2xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors duration-200 w-fit"
                       >
                         <LogIn size={12} />
                         <span>{t('home.sign_in_2')}</span>
@@ -651,13 +650,13 @@ export const HomePage: React.FC = () => {
                       <div className="flex items-center gap-6">
                         <button
                           onClick={() => navigate('/about')}
-                          className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                          className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
                         >
                           {t('home.info_2')}
                         </button>
                         <button
                           onClick={() => navigate('/community')}
-                          className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
+                          className="font-mono text-2xs uppercase tracking-widest text-neutral-700 hover:text-neutral-400 transition-colors"
                         >
                           {t('home.community')}
                         </button>
@@ -675,7 +674,7 @@ export const HomePage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="absolute bottom-6 font-mono text-[10px] text-neutral-800 tracking-widest uppercase select-none"
+            className="absolute bottom-6 font-mono text-2xs text-neutral-800 tracking-widest uppercase select-none"
             aria-hidden
           >
             ↑ ↓ navigate, enter select

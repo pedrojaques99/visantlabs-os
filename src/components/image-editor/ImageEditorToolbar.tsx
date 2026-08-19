@@ -95,7 +95,7 @@ export const ImageEditorToolbar: React.FC = () => {
           {/* Brush size */}
           {(activeTool === 'brush' || activeTool === 'eraser') && (
             <div className="flex items-center gap-2 px-1">
-              <span className="text-[10px] text-neutral-500 font-mono w-4 text-right">
+              <span className="text-2xs text-neutral-500 font-mono w-4 text-right">
                 {brushSize}
               </span>
               <input
@@ -116,7 +116,7 @@ export const ImageEditorToolbar: React.FC = () => {
             onClick={undoMask}
             disabled={maskOperations.length === 0}
             className={cn(
-              'px-2 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-colors',
+              'px-2 py-1 rounded-lg text-2xs font-mono uppercase tracking-wider transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
               'disabled:opacity-30'
             )}
@@ -127,7 +127,7 @@ export const ImageEditorToolbar: React.FC = () => {
             onClick={clearMask}
             disabled={maskOperations.length === 0}
             className={cn(
-              'px-2 py-1 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-colors',
+              'px-2 py-1 rounded-lg text-2xs font-mono uppercase tracking-wider transition-colors',
               IMAGE_EDITOR.toolbar.inactiveTool,
               'disabled:opacity-30'
             )}

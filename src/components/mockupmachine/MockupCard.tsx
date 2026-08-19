@@ -300,7 +300,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                   >
                     <RefreshCw size={14} className={isRedrawing ? 'animate-spin' : ''} />
                     {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                      <span className="text-[10px] font-bold text-brand-cyan">
+                      <span className="text-2xs font-bold text-foreground">
                         {creditsPerOperation}
                       </span>
                     )}
@@ -326,12 +326,12 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(
                       className={`h-8 px-2 rounded-md flex items-center gap-1.5 transition-[color,background-color,border-color,opacity] min-w-0 ${
                         editButtonsDisabled || isRedrawing
                           ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                          : 'text-brand-cyan hover:bg-brand-cyan/20'
+                          : 'text-foreground hover:bg-brand-cyan/20'
                       }`}
                     >
                       <Pencil size={14} />
                       {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                        <span className="text-[10px] font-bold text-brand-cyan">
+                        <span className="text-2xs font-bold text-foreground">
                           {creditsPerOperation}
                         </span>
                       )}

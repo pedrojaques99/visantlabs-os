@@ -75,7 +75,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
               }`}
             >
               BRANDING MACHINE®{' '}
-              <MicroTitle as="span" className="text-brand-cyan">
+              <MicroTitle as="span" className="text-foreground">
                 v1.0
               </MicroTitle>
             </h1>

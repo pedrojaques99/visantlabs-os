@@ -117,7 +117,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({
         {/* Left: saved status */}
         <div className="flex items-center gap-2">
           <Check size={12} className="text-success/60" />
-          <span className="text-[11px] text-neutral-600">Saved</span>
+          <span className="text-2xs text-neutral-600">Saved</span>
         </div>
 
         {/* Right: Review + Export */}
@@ -154,7 +154,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({
                     <div className="px-3 pt-2 pb-1">
                       <span
                         className={cn(
-                          'text-[10px] font-medium',
+                          'text-2xs font-medium',
                           group === 'AI' ? 'text-brand-cyan/60' : 'text-neutral-600'
                         )}
                       >
@@ -181,7 +181,7 @@ export const GuidelineExportBar: React.FC<GuidelineExportBarProps> = ({
                             )}
                           >
                             <Icon size={13} className="shrink-0" />
-                            <span className="text-[11px] font-medium">{item.label}</span>
+                            <span className="text-2xs font-medium">{item.label}</span>
                           </button>
                         );
                       })}

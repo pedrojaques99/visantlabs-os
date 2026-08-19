@@ -52,7 +52,7 @@ export function LabsPage() {
                       {tool.icon}
                     </div>
                     {!isLive && (
-                      <span className="text-[10px] font-mono uppercase text-muted-foreground bg-neutral-800 px-2 py-0.5 rounded">
+                      <span className="text-2xs font-mono uppercase text-muted-foreground bg-neutral-800 px-2 py-0.5 rounded">
                         soon
                       </span>
                     )}

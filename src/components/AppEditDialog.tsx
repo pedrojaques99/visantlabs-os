@@ -219,13 +219,13 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
               />
             </div>
 
-            <div className="space-y-2 text-[10px] font-mono flex items-center gap-4">
+            <div className="space-y-2 text-2xs font-mono flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.isExternal}
                   onChange={(e) => setFormData({ ...formData, isExternal: e.target.checked })}
-                  className="rounded border-border bg-muted text-brand-cyan"
+                  className="rounded border-border bg-muted text-foreground"
                 />
                 EXTERNAL LINK
               </label>
@@ -234,7 +234,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                   type="checkbox"
                   checked={formData.free}
                   onChange={(e) => setFormData({ ...formData, free: e.target.checked })}
-                  className="rounded border-border bg-muted text-brand-cyan"
+                  className="rounded border-border bg-muted text-foreground"
                 />
                 FREE TOOL
               </label>
@@ -323,7 +323,7 @@ export const AppEditDialog: React.FC<AppEditDialogProps> = ({ app, isOpen, onClo
                     onClick={() => setFormData({ ...formData, thumbnail: '' })}
                     className="absolute top-1 right-1 bg-black/60 px-2 py-0.5 rounded-full text-destructive hover:bg-black/80 transition-colors"
                   >
-                    <span className="text-[10px] font-bold">REMOVE</span>
+                    <span className="text-2xs font-bold">REMOVE</span>
                   </button>
                 </div>
               )}

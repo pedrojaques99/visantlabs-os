@@ -30,7 +30,7 @@ const FILTER_PRESET_ITEMS = Object.keys(FILTER_PRESETS).map((name) => ({ name })
 const ResetBtn: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="text-[10px] text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider"
+    className="text-2xs text-neutral-700 hover:text-neutral-400 transition-colors uppercase tracking-wider"
   >
     Reset
   </button>
@@ -71,7 +71,7 @@ export const TextureFilterControls: React.FC<TextureFilterControlsProps> = React
             />
             <label className="flex items-center gap-2 cursor-pointer text-neutral-500 hover:text-neutral-300 transition-colors">
               <UploadIcon size={12} />
-              <span className="text-[10px] uppercase tracking-widest">Custom texture</span>
+              <span className="text-2xs uppercase tracking-widest">Custom texture</span>
               <input
                 type="file"
                 accept="image/*,.svg"

@@ -396,7 +396,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
           <Button
             variant="brand"
             onClick={handleCreate}
-            className="p-2 rounded-md bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-brand-cyan/30 transition-colors"
+            className="p-2 rounded-md bg-brand-cyan/20 text-foreground hover:bg-brand-cyan/30 border border-brand-cyan/30 transition-colors"
             title={t('communityPresets.createNew')}
           >
             <Plus size={16} />
@@ -448,7 +448,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             <GlitchLoader size={24} color="brand-cyan" />
           </div>
         ) : error ? (
-          <div className="p-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
+          <div className="p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs text-center">
             {error}
           </div>
         ) : filteredPresets.length === 0 ? (

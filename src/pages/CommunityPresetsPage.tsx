@@ -154,14 +154,14 @@ const PresetDetailModal: React.FC<{
               size="sm"
               onClick={onToggleLike}
               aria-pressed={isLiked}
-              className="gap-1.5 text-[11px] font-mono"
+              className="gap-1.5 text-2xs font-mono"
             >
               <Heart size={12} className={isLiked ? 'fill-current text-foreground' : ''} />
               {likesCount > 0 && likesCount}
             </Button>
           )}
           {isOwner && onEdit && (
-            <Button variant="surface" size="sm" onClick={onEdit} className="text-[11px] font-mono">
+            <Button variant="surface" size="sm" onClick={onEdit} className="text-2xs font-mono">
               {t('communityPresets.edit')}
             </Button>
           )}
@@ -206,7 +206,7 @@ const PresetDetailModal: React.FC<{
           <div className="flex flex-wrap gap-1.5">
             <span
               className={cn(
-                'text-[10px] font-mono px-2 py-1 rounded-lg border bg-muted/40 border-border',
+                'text-2xs font-mono px-2 py-1 rounded-lg border bg-muted/40 border-border',
                 config.color
               )}
             >
@@ -215,7 +215,7 @@ const PresetDetailModal: React.FC<{
             {migrated.aspectRatio && (
               <span
                 className={cn(
-                  'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                  'text-2xs font-mono px-2 py-1 rounded-lg text-muted-foreground',
                   glassSurface.control
                 )}
               >
@@ -225,7 +225,7 @@ const PresetDetailModal: React.FC<{
             {migrated.difficulty && (
               <span
                 className={cn(
-                  'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                  'text-2xs font-mono px-2 py-1 rounded-lg text-muted-foreground',
                   glassSurface.control
                 )}
               >
@@ -237,12 +237,10 @@ const PresetDetailModal: React.FC<{
           {/* Prompt */}
           <div className="bg-muted/40 border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-muted-foreground">
-                {t('community.promptLabel')}
-              </span>
+              <span className="text-2xs text-muted-foreground">{t('community.promptLabel')}</span>
               <button
                 onClick={copyPrompt}
-                className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 {copied ? (
                   <span className="text-success">{t('community.presets.copied')}</span>
@@ -263,7 +261,7 @@ const PresetDetailModal: React.FC<{
                 <span
                   key={tag}
                   className={cn(
-                    'text-[10px] font-mono px-2 py-1 rounded-lg text-muted-foreground',
+                    'text-2xs font-mono px-2 py-1 rounded-lg text-muted-foreground',
                     glassSurface.control
                   )}
                 >
@@ -803,7 +801,7 @@ export const CommunityPresetsPage: React.FC = () => {
           />
 
           {/* Count */}
-          <span className="text-[11px] font-mono text-muted-foreground shrink-0">
+          <span className="text-2xs font-mono text-muted-foreground shrink-0">
             {sorted.length === 1
               ? t('communityPresets.countOne', { count: sorted.length })
               : t('communityPresets.countOther', { count: sorted.length })}
@@ -871,7 +869,7 @@ export const CommunityPresetsPage: React.FC = () => {
               <Layers size={28} strokeWidth={1} className="text-muted-foreground" />
             </div>
             <div className="text-center space-y-2">
-              <p className="text-[10px] tracking-widest text-muted-foreground">
+              <p className="text-2xs tracking-widest text-muted-foreground">
                 {searchQuery
                   ? t('communityPresets.noResultsFor', { query: searchQuery })
                   : t('communityPresets.noPresets')}
@@ -879,7 +877,7 @@ export const CommunityPresetsPage: React.FC = () => {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                  className="font-mono text-2xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
                 >
                   {t('communityPresets.clearSearch')}
                 </button>

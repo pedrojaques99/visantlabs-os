@@ -332,10 +332,17 @@ const HomeRoute: React.FC = () => {
     return null;
   }
 
-  if (FEATURE_COCKPIT && activeBrand?.id && !isAllBrands) {
-    return <BrandCockpit />;
-  }
-  return <Navigate to="/brand-guidelines" replace />;
+  // O cockpit é DE UMA MARCA, e a marca vive na URL. `/cockpit` sem id é só a
+  // porta de entrada: resolve a marca ativa e manda pra `/cockpit/:brandId`.
+  // Assim o link é compartilhável, o histórico do browser volta pra marca certa
+  // e duas abas em marcas diferentes param de brigar pelo mesmo localStorage.
+  // `/cockpit` SEM id é o Início: o acervo de marcas. O cockpit de trabalho é de
+  // UMA marca e mora em `/cockpit/:brandId` — o card do grid leva pra lá.
+  //
+  // Renderiza o grid em vez de redirecionar pra `/brand-guidelines`: a URL do
+  // Início precisa ser a do item do rail, senão o destaque e o breadcrumb
+  // apontam pra um lugar que a barra de endereço desmente.
+  return <BrandGuidelinesPage />;
 };
 
 const App: React.FC = () => {
@@ -350,6 +357,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/cockpit" element={<HomeRoute />} />
+                    <Route path="/cockpit/:brandId" element={<BrandCockpit />} />
                     <Route path="/mockupmachine" element={<MockupMachinePage />} />
                     <Route path="/pricing" element={<PricingPage />} />
                     <Route path="/profile" element={<ProfilePage />} />

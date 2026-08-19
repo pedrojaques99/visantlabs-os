@@ -299,7 +299,7 @@ export const ChatSidebar = ({
               onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
               className={cn(
                 'p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95',
-                showSystemPromptEditor && 'border-brand-cyan/50 text-brand-cyan bg-brand-cyan/10'
+                showSystemPromptEditor && 'border-brand-cyan/50 text-foreground bg-brand-cyan/10'
               )}
               title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
             >
@@ -328,7 +328,7 @@ export const ChatSidebar = ({
                 <Button
                   variant="brand"
                   onClick={handleSaveSystemPrompt}
-                  className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-colors"
+                  className="text-2xs px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-foreground hover:bg-brand-cyan/30 transition-colors"
                 >
                   {t('common.save') || 'Save'}
                 </Button>
@@ -458,9 +458,9 @@ export const ChatSidebar = ({
                   </div>
                 )}
                 {connectedStrategyData && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                    <Target size={11} className="text-amber-400" />
-                    <span className="text-xs text-amber-400 font-bold">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-warning/10 border border-warning/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <Target size={11} className="text-warning" />
+                    <span className="text-xs text-warning font-bold">
                       {strategySections.length}
                     </span>
                   </div>
@@ -471,7 +471,7 @@ export const ChatSidebar = ({
                   variant="brand"
                   onClick={handleSuggestMockups}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-2xs text-brand-cyan transition-all disabled:opacity-50 tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                 >
                   <Diamond size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
@@ -505,7 +505,7 @@ export const ChatSidebar = ({
 
                 <div className="flex flex-col gap-2">
                   {connectedText && (
-                    <div className="text-[10px] text-neutral-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
+                    <div className="text-2xs text-neutral-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
                       <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
                       {connectedText}
                     </div>
@@ -515,7 +515,7 @@ export const ChatSidebar = ({
                       {strategySections.map((s, i) => (
                         <span
                           key={i}
-                          className="text-[10px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm"
+                          className="text-2xs px-2 py-1 bg-warning/10 text-warning border border-warning/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm"
                         >
                           {s}
                         </span>

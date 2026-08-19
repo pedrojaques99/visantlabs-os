@@ -152,7 +152,7 @@ export const GradientEditor: React.FC<GradientEditorProps> = ({
       {activeStop && (
         <div className="space-y-2 rounded-md border border-neutral-800/60 p-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+            <span className="text-2xs uppercase tracking-widest text-neutral-500">
               Stop {sorted.indexOf(activeStop) + 1} / {stops.length}
             </span>
             <div className="flex items-center gap-1">
@@ -186,7 +186,7 @@ export const GradientEditor: React.FC<GradientEditorProps> = ({
                 type="button"
                 onClick={deleteActive}
                 title="Remove stop"
-                className="p-1 text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-30"
+                className="p-1 text-neutral-500 hover:text-destructive transition-colors disabled:opacity-30"
                 disabled={stops.length <= 2}
               >
                 <X size={13} />

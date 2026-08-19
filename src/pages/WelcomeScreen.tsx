@@ -472,7 +472,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
 
           <MicroTitle
             as="span"
-            className="text-[10px] md:text-xs opacity-60 hover:opacity-100 transition-opacity"
+            className="text-2xs md:text-xs opacity-60 hover:opacity-100 transition-opacity"
           >
             {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
           </MicroTitle>
@@ -480,13 +480,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           {brandGuidelines.length > 0 && (
             <Link
               to="/brand-guidelines"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card hover:bg-muted hover:border-ring transition-all duration-200 group"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card hover:bg-muted hover:border-border-hover transition-all duration-200 group"
             >
               <Gem
                 size={14}
-                className="text-brand-cyan group-hover:scale-110 transition-transform"
+                className="text-foreground group-hover:scale-110 transition-transform"
               />
-              <span className="text-[11px] font-mono text-muted-foreground group-hover:text-foreground transition-colors">
+              <span className="text-2xs font-mono text-muted-foreground group-hover:text-foreground transition-colors">
                 {t('welcome.openBrandGuideline') || 'Abrir Brand Guideline'}
               </span>
               <ArrowRight

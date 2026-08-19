@@ -116,13 +116,13 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
         ) : (
           <div className="flex flex-col items-center gap-2 opacity-30">
             <Layers className="w-8 h-8 text-neutral-500" />
-            <span className="text-[10px] text-neutral-600 uppercase tracking-widest">preview</span>
+            <span className="text-2xs text-neutral-600 uppercase tracking-widest">preview</span>
           </div>
         )}
         <div className="absolute top-2 left-2">
           <span
             className={cn(
-              'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-neutral-900/80 backdrop-blur-sm',
+              'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-mono uppercase tracking-wider bg-neutral-900/80 backdrop-blur-sm',
               cat.color
             )}
           >
@@ -174,7 +174,7 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
           </h3>
           {miniApp.author?.name && (
             <span
-              className="text-[10px] text-neutral-500 truncate max-w-[80px]"
+              className="text-2xs text-neutral-500 truncate max-w-[80px]"
               title={miniApp.author.name}
             >
               {miniApp.author.name}
@@ -182,30 +182,30 @@ export const MiniAppCard: React.FC<MiniAppCardProps> = ({
           )}
         </div>
         {miniApp.description && (
-          <p className="text-[11px] text-neutral-500 line-clamp-2">{miniApp.description}</p>
+          <p className="text-2xs text-neutral-500 line-clamp-2">{miniApp.description}</p>
         )}
 
         {/* Footer */}
         <div className="flex items-center gap-3 pt-1">
           <span
             className={cn(
-              'inline-flex items-center gap-1 text-[10px]',
+              'inline-flex items-center gap-1 text-2xs',
               liked ? 'text-destructive' : 'text-neutral-500'
             )}
           >
             <Heart className="w-3 h-3" fill={liked ? 'currentColor' : 'none'} /> {likeCount}
           </span>
-          <span className="inline-flex items-center gap-1 text-[10px] text-neutral-500">
+          <span className="inline-flex items-center gap-1 text-2xs text-neutral-500">
             <GitFork className="w-3 h-3" /> {miniApp.forksCount}
           </span>
-          <span className="inline-flex items-center gap-1 text-[10px] text-neutral-500">
+          <span className="inline-flex items-center gap-1 text-2xs text-neutral-500">
             <Eye className="w-3 h-3" /> {miniApp.viewsCount}
           </span>
           <div className="flex-1" />
           {miniApp.tags?.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="text-[10px] font-mono text-neutral-600 bg-neutral-800/50 px-1.5 py-0.5 rounded"
+              className="text-2xs font-mono text-neutral-600 bg-neutral-800/50 px-1.5 py-0.5 rounded"
             >
               {tag}
             </span>

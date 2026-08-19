@@ -88,7 +88,7 @@ export function GeneratingImageCard({
             <button
               type="button"
               onClick={onCancel}
-              className="relative z-10 mt-1 rounded-lg border border-neutral-700 px-3 py-1 font-mono text-[10px] text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300"
+              className="relative z-10 mt-1 rounded-lg border border-neutral-700 px-3 py-1 font-mono text-2xs text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300"
             >
               Cancel
             </button>

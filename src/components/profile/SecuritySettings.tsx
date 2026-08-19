@@ -177,7 +177,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                 className="w-[200px] h-[200px]"
               />
             </div>
-            <p className="text-[10px] text-neutral-600 font-mono break-all">
+            <p className="text-2xs text-neutral-600 font-mono break-all">
               Chave manual: {setupData.secret}
             </p>
             <div className="flex flex-wrap items-center gap-2">
@@ -242,7 +242,7 @@ export const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                   <p className="text-xs font-mono text-neutral-300 truncate">
                     {parseUserAgent(session.userAgent)}
                   </p>
-                  <p className="text-[10px] text-neutral-600 font-mono truncate">
+                  <p className="text-2xs text-neutral-600 font-mono truncate">
                     {session.ip || '—'} · {formatDateTime(session.lastUsed)}
                   </p>
                 </div>

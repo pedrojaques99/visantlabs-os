@@ -182,7 +182,7 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(
     if (webglFailed) {
       return (
         <div className="w-full h-full flex items-center justify-center bg-neutral-950">
-          <p className="text-neutral-500 text-[10px] uppercase tracking-widest">
+          <p className="text-neutral-500 text-2xs uppercase tracking-widest">
             WebGL not supported — please use a modern browser
           </p>
         </div>
@@ -205,7 +205,7 @@ export const RisoCanvas = forwardRef<RisoCanvasHandle, RisoCanvasProps>(
           <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40 pointer-events-none">
             <div className="flex items-center gap-2 text-neutral-300">
               <Loader2 size={16} className="animate-spin" />
-              <span className="text-[10px] uppercase tracking-widest">Analyzing colors...</span>
+              <span className="text-2xs uppercase tracking-widest">Analyzing colors...</span>
             </div>
           </div>
         )}

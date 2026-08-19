@@ -190,13 +190,13 @@ export const Header: React.FC<HeaderProps> = ({
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
           <span className="text-xs md:text-sm text-muted-foreground uppercase">Visant Labs®</span>
-          <span className="text-[10px] font-mono text-muted-foreground">v1.1</span>
+          <span className="text-2xs font-mono text-muted-foreground">v1.1</span>
         </div>
       </Button>
       <div className="flex items-center gap-1.5 md:gap-4">
         {/* Pricing button hidden */}
         {/* <Button variant="ghost"           onClick={onPricingClick}
-          className="hidden md:block text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
+          className="hidden md:block text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
         >
           {t('header.pricing')}
         </Button> */}
@@ -208,7 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
               window.location.href = '/';
             }
           }}
-          className="p-1.5 md:px-3 md:py-1.5 text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-ring cursor-pointer"
+          className="p-1.5 md:px-3 md:py-1.5 text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-border-hover cursor-pointer"
           title="Mockup Machine"
           aria-label="Go to Mockup Machine"
         >
@@ -220,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={handleNewMockupClick}
             variant="outline"
             size="sm"
-            className="text-[10px] md:text-xs font-mono text-muted-foreground hover:text-brand-cyan border-border hover:border-ring hover:bg-accent"
+            className="text-2xs md:text-xs font-mono text-muted-foreground hover:text-brand-cyan border-border hover:border-border-hover hover:bg-accent"
             title="New Mockup"
             aria-label="Create new mockup"
           >
@@ -235,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-ring hover:bg-accent cursor-pointer"
+          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-2xs md:text-xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-border-hover hover:bg-accent cursor-pointer"
           title="Explore Mockups"
           aria-label="Explore mockups"
         >
@@ -265,7 +265,7 @@ export const Header: React.FC<HeaderProps> = ({
               const popStateEvent = new PopStateEvent('popstate', { state: {} });
               window.dispatchEvent(popStateEvent);
             }}
-            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-ring hover:bg-accent cursor-pointer"
+            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-2xs md:text-xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors rounded border border-border hover:border-border-hover hover:bg-accent cursor-pointer"
             title="About"
             aria-label="About"
           >
@@ -277,7 +277,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/branding-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
+          className="hidden md:block text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
         >
           Branding
         </Button> */}
@@ -285,7 +285,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* <Button variant="ghost"           onClick={() => {
             window.location.href = '/budget-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
+          className="hidden md:block text-2xs md:text-xs text-muted-foreground hover:text-foreground transition-colors  uppercase"
         >
           Budget
         </Button> */}
@@ -293,7 +293,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Button
             variant="ghost"
             onClick={() => setShowRegisterModal(true)}
-            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-border hover:border-ring hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
+            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-foreground rounded-md border border-border hover:border-border-hover hover:bg-brand-cyan/30 text-2xs md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
             <span className="hidden sm:inline">{t('header.register')}</span>
@@ -309,7 +309,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Heart size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {savedCount !== null && savedCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-[10px] md:text-[10px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-2xs md:text-2xs font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {savedCount > 99 ? '99+' : savedCount}
               </span>
             )}
@@ -324,7 +324,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <FilePenLine size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {brandingsCount !== null && brandingsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-[10px] md:text-[10px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-muted text-muted-foreground text-2xs md:text-2xs font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {brandingsCount > 99 ? '99+' : brandingsCount}
               </span>
             )}
@@ -336,7 +336,7 @@ export const Header: React.FC<HeaderProps> = ({
             toggleTheme();
             window.location.reload();
           }}
-          className="flex items-center justify-center p-1.5 md:px-3 md:py-1.5 text-[11px] md:text-xs font-mono text-muted-foreground hover:text-foreground transition-colors rounded border border-border hover:border-ring cursor-pointer"
+          className="flex items-center justify-center p-1.5 md:px-3 md:py-1.5 text-2xs md:text-xs font-mono text-muted-foreground hover:text-foreground transition-colors rounded border border-border hover:border-border-hover cursor-pointer"
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >

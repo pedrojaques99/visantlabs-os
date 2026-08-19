@@ -79,12 +79,12 @@ function getEmptySections(g: BrandGuideline): string[] {
 
 function renderPreview(key: string, value: any): React.ReactNode {
   if (typeof value === 'string')
-    return <p className="text-[11px] text-neutral-300 whitespace-pre-wrap">{value}</p>;
+    return <p className="text-2xs text-neutral-300 whitespace-pre-wrap">{value}</p>;
   if (Array.isArray(value)) {
     return (
       <ul className="space-y-1">
         {value.map((item, i) => (
-          <li key={i} className="text-[11px] text-neutral-300">
+          <li key={i} className="text-2xs text-neutral-300">
             {typeof item === 'string'
               ? `• ${item}`
               : `• ${item.value || item.name || item.title || JSON.stringify(item)}`}
@@ -97,7 +97,7 @@ function renderPreview(key: string, value: any): React.ReactNode {
     return (
       <div className="space-y-1">
         {Object.entries(value).map(([k, v]) => (
-          <div key={k} className="text-[11px]">
+          <div key={k} className="text-2xs">
             <span className="text-neutral-500 font-mono">{k}:</span>{' '}
             <span className="text-neutral-300">
               {typeof v === 'string' ? v : JSON.stringify(v)}
@@ -107,7 +107,7 @@ function renderPreview(key: string, value: any): React.ReactNode {
       </div>
     );
   }
-  return <p className="text-[11px] text-neutral-400">{JSON.stringify(value)}</p>;
+  return <p className="text-2xs text-neutral-400">{JSON.stringify(value)}</p>;
 }
 
 export const BrandAiPopulateDialog: React.FC<Props> = ({
@@ -257,7 +257,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               AI Generate
             </DialogTitle>
           </div>
-          <DialogDescription className="text-[11px] text-neutral-500">
+          <DialogDescription className="text-2xs text-neutral-500">
             Selecione os campos vazios para preencher com IA. Revise antes de aplicar.
           </DialogDescription>
         </DialogHeader>
@@ -268,11 +268,11 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={toggleAll}
-                  className="text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors"
+                  className="text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300 transition-colors"
                 >
                   {selected.size === emptySections.length ? 'Desmarcar tudo' : 'Selecionar tudo'}
                 </button>
-                <span className="text-[10px] font-mono text-neutral-600">
+                <span className="text-2xs font-mono text-neutral-600">
                   {selected.size}/{emptySections.length}
                 </span>
               </div>
@@ -283,7 +283,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                   if (available.length === 0) return null;
                   return (
                     <div key={group}>
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2">
+                      <p className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2">
                         {group}
                       </p>
                       <div className="space-y-1">
@@ -333,7 +333,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
           {loading && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-[11px] text-neutral-500 uppercase tracking-widest">
+              <p className="text-2xs text-neutral-500 uppercase tracking-widest">
                 Gerando conteúdo…
               </p>
             </div>
@@ -369,7 +369,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
                         <button
                           onClick={() => toggleExclude(key)}
                           className={cn(
-                            'text-[10px] uppercase tracking-widest transition-colors',
+                            'text-2xs uppercase tracking-widest transition-colors',
                             isExcluded
                               ? 'text-neutral-600 hover:text-success'
                               : 'text-neutral-500 hover:text-destructive'
@@ -387,7 +387,7 @@ export const BrandAiPopulateDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between mt-4">
                 <button
                   onClick={() => setPatch(null)}
-                  className="text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                 >
                   ← Voltar
                 </button>

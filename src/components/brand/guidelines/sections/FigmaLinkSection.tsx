@@ -173,7 +173,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
           {/* Linked state */}
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1">
+              <p className="text-2xs text-neutral-500 uppercase tracking-wider mb-1">
                 Arquivo Linkado
               </p>
               <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
                 size="sm"
                 onClick={handleImportClick}
                 disabled={isPreviewing}
-                className="h-8 px-4 text-[10px] gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-brand-cyan hover:text-black border border-brand-cyan/30 transition-[color,background-color,border-color,box-shadow] font-bold shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 10%)] hover:shadow-[0_0_20px_oklch(from var(--brand-cyan) l c h / 20%)]"
+                className="h-8 px-4 text-2xs gap-1.5 bg-brand-cyan/20 hover:bg-brand-cyan text-foreground hover:text-black border border-brand-cyan/30 transition-[color,background-color,border-color,box-shadow] font-bold shadow-[0_0_15px_oklch(from var(--brand-cyan) l c h / 10%)] hover:shadow-[0_0_20px_oklch(from var(--brand-cyan) l c h / 20%)]"
               >
                 {isPreviewing ? <GlitchLoader size={12} /> : <Figma size={12} />}
                 Importar do Figma
@@ -221,7 +221,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
 
           {/* Sync status */}
           {guideline.figmaSyncedAt && (
-            <div className="flex items-center gap-2 text-[10px] text-neutral-500">
+            <div className="flex items-center gap-2 text-2xs text-neutral-500">
               <RefreshCw size={10} className="text-success" />
               <span>Sync: {formatSyncTime(guideline.figmaSyncedAt)}</span>
             </div>
@@ -233,7 +233,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
             size="sm"
             onClick={handleUnlink}
             disabled={isUnlinking}
-            className="h-7 px-2 text-[10px] text-neutral-500 hover:text-destructive hover:bg-destructive/10"
+            className="h-7 px-2 text-2xs text-neutral-500 hover:text-destructive hover:bg-destructive/10"
           >
             {isUnlinking ? (
               <GlitchLoader size={10} className="mr-1" />
@@ -246,7 +246,7 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
       ) : (
         <div className="space-y-3">
           {/* Unlinked state */}
-          <p className="text-[10px] text-neutral-500">
+          <p className="text-2xs text-neutral-500">
             Conecte um arquivo Figma para sincronizar cores, tipografia e tokens automaticamente.
           </p>
 
@@ -262,13 +262,13 @@ export const FigmaLinkSection: React.FC<FigmaLinkSectionProps> = ({
               onClick={handleLink}
               disabled={!figmaUrl.trim() || isLinking}
               size="sm"
-              className="h-8 px-3 shrink-0 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 border border-brand-cyan/20"
+              className="h-8 px-3 shrink-0 bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20 border border-brand-cyan/20"
             >
               {isLinking ? <GlitchLoader size={12} /> : <Link2 size={12} />}
             </Button>
           </div>
 
-          <p className="text-[10px] text-neutral-600">
+          <p className="text-2xs text-neutral-600">
             O sync acontece automaticamente quando você abre o arquivo no plugin Figma.
           </p>
         </div>

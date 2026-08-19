@@ -201,7 +201,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
     >
       <div className="space-y-1.5 py-1">
         {local.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">No colors yet. Click + to add.</p>
+          <p className="text-2xs text-neutral-700 py-2">No colors yet. Click + to add.</p>
         )}
         {local.map((c, i) => (
           <div key={i} className="flex items-center gap-3 group/color">
@@ -227,7 +227,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
             />
             {/* Hex */}
             <span
-              className="text-[10px] font-mono text-neutral-500 w-16 text-right cursor-pointer hover:text-neutral-300 transition-colors"
+              className="text-2xs font-mono text-neutral-500 w-16 text-right cursor-pointer hover:text-neutral-300 transition-colors"
               onClick={() => {
                 copyToClipboard(c.hex);
                 toast.success(`Copied ${c.hex}`);
@@ -237,7 +237,7 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
               {c.hex}
             </span>
             {/* CMYK */}
-            <span className="text-[10px] font-mono text-neutral-700 w-28 text-right hidden sm:block">
+            <span className="text-2xs font-mono text-neutral-700 w-28 text-right hidden sm:block">
               {(() => {
                 try {
                   const cm = c.cmyk || hexToCmyk(c.hex);
@@ -295,14 +295,14 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
                     className="w-5 h-5 rounded border border-white/10 shrink-0"
                     style={{ backgroundColor: pair.bg }}
                   />
-                  <span className="text-[10px] font-mono text-neutral-400 flex-1 truncate">
+                  <span className="text-2xs font-mono text-neutral-400 flex-1 truncate">
                     {pair.fgName} / {pair.bgName}
                   </span>
-                  <span className="text-[10px] font-mono text-neutral-300 tabular-nums">
+                  <span className="text-2xs font-mono text-neutral-300 tabular-nums">
                     {pair.ratio.toFixed(2)}:1
                   </span>
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    className={`text-2xs font-bold px-1.5 py-0.5 rounded ${
                       pair.wcagAAA
                         ? 'bg-success/20 text-success'
                         : pair.wcagAA

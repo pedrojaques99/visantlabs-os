@@ -17,7 +17,7 @@ interface Props {
 export function MultiInputPanel({ config, description, onChange, disabled }: Props) {
   return (
     <div className="space-y-1.5">
-      <p className="text-[10px] text-neutral-500 uppercase tracking-wider">
+      <p className="text-2xs text-neutral-500 uppercase tracking-wider">
         {config.inputCount} image{config.inputCount > 1 ? 's' : ''} expected
       </p>
       <textarea
@@ -26,7 +26,7 @@ export function MultiInputPanel({ config, description, onChange, disabled }: Pro
         disabled={disabled}
         placeholder={PLACEHOLDERS[config.behavior] ?? 'Describe the operation...'}
         rows={2}
-        className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors disabled:opacity-40"
+        className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-2xs font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors disabled:opacity-40"
       />
     </div>
   );

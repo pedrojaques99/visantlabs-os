@@ -478,7 +478,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   return (
     <div className={cn('flex flex-col gap-1.5', variant === 'node' && 'min-w-[140px]', className)}>
       {variant === 'node' && (
-        <label className="text-[10px] text-neutral-400 font-mono mb-1.5 block tracking-tight">
+        <label className="text-2xs text-neutral-400 font-mono mb-1.5 block tracking-tight">
           {t('canvasNodes.promptNode.model') || 'MODEL'}
         </label>
       )}
@@ -496,7 +496,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
               e.stopPropagation();
               setShowAllModels(!showAllModels);
             }}
-            className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+            className="w-full px-2 py-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors text-center"
           >
             {showAllModels ? 'Show less' : 'Show all models'}
           </button>

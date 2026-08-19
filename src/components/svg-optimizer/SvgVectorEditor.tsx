@@ -663,7 +663,7 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
           <Spline size={12} />
         </ToolBtn>
         <ToolBtn active={showAnchors} onClick={() => setShowAnchors(!showAnchors)} title="Anchors">
-          <span className="text-[10px] font-mono font-bold">A</span>
+          <span className="text-2xs font-mono font-bold">A</span>
         </ToolBtn>
         <ToolBtn active={showHandles} onClick={() => setShowHandles(!showHandles)} title="Handles">
           <Circle size={10} />
@@ -688,7 +688,7 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
         <ToolBtn onClick={() => setZoom((z) => Math.max(0.1, z * 0.8))} title="Zoom out">
           <ZoomOut size={12} />
         </ToolBtn>
-        <span className="text-[10px] font-mono text-neutral-500 w-8 text-center">
+        <span className="text-2xs font-mono text-neutral-500 w-8 text-center">
           {Math.round(zoom * 100)}%
         </span>
         <ToolBtn onClick={() => setZoom((z) => Math.min(20, z * 1.25))} title="Zoom in">
@@ -707,12 +707,12 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
 
         <div className="flex-1" />
         {selectedIndices.size > 0 && (
-          <span className="text-[10px] font-mono text-brand-cyan">
+          <span className="text-2xs font-mono text-foreground">
             {selectedIndices.size} selected
           </span>
         )}
         {deletedIndices.size > 0 && (
-          <span className="text-[10px] font-mono text-warning ml-2">
+          <span className="text-2xs font-mono text-warning ml-2">
             {deletedIndices.size} removed
           </span>
         )}
@@ -738,7 +738,7 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
       {/* Apply bar */}
       {deletedIndices.size > 0 && (
         <div className="flex items-center gap-2 p-2 border-t border-neutral-800 bg-neutral-950/80">
-          <span className="text-[10px] font-mono text-neutral-400">
+          <span className="text-2xs font-mono text-neutral-400">
             {deletedIndices.size} element{deletedIndices.size > 1 ? 's' : ''} removed
           </span>
           <div className="flex-1" />
@@ -747,13 +747,13 @@ export const SvgVectorEditor: React.FC<Props> = ({ svgString, onSvgChange, class
               setDeletedIndices(new Set());
               setUndoStack([]);
             }}
-            className="text-[10px] font-mono text-neutral-500 hover:text-neutral-300 uppercase tracking-wider px-2 py-1"
+            className="text-2xs font-mono text-neutral-500 hover:text-neutral-300 uppercase tracking-wider px-2 py-1"
           >
             Discard
           </button>
           <button
             onClick={applyChanges}
-            className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 uppercase tracking-widest px-3 py-1 rounded"
+            className="text-2xs font-mono text-foreground bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 uppercase tracking-widest px-3 py-1 rounded"
           >
             Apply cleanup
           </button>

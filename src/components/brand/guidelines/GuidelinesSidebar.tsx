@@ -218,21 +218,21 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                       className="w-full h-full object-cover opacity-60 group-hover/item:opacity-100 transition-opacity"
                     />
                   ) : (
-                    <span className="text-[10px] font-bold opacity-30">{initials}</span>
+                    <span className="text-2xs font-bold opacity-30">{initials}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <span className="truncate block font-medium">{brandName}</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     {g.folder && (
-                      <span className="text-[10px] text-neutral-600 flex items-center gap-1">
+                      <span className="text-2xs text-neutral-600 flex items-center gap-1">
                         <Folder size={8} />
                         {g.folder}
                       </span>
                     )}
                     {(g as any).isPublic && (g as any).publicViews > 0 && (
                       <span
-                        className="text-[10px] text-neutral-600 flex items-center gap-0.5"
+                        className="text-2xs text-neutral-600 flex items-center gap-0.5"
                         title="Public page views"
                       >
                         <Eye size={8} />
@@ -332,10 +332,10 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
           {filtered.length === 0 && searchQuery && (
             <div className="px-3 py-6 text-center">
-              <p className="text-[11px] text-neutral-600">No results for "{searchQuery}"</p>
+              <p className="text-2xs text-neutral-600">No results for "{searchQuery}"</p>
               <button
                 onClick={() => setSearchQuery('')}
-                className="mt-2 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+                className="mt-2 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
               >
                 Clear
               </button>
@@ -356,10 +356,10 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
       {selectedId && recentProjects.length > 0 && (
         <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
           <div className="flex items-center justify-between px-1">
-            <p className="text-[11px] font-medium text-neutral-600">Recent</p>
+            <p className="text-2xs font-medium text-neutral-600">Recent</p>
             <Link
               to={`/create?brandId=${selectedId}`}
-              className="text-[11px] text-neutral-700 hover:text-neutral-400 transition-colors"
+              className="text-2xs text-neutral-700 hover:text-neutral-400 transition-colors"
             >
               + New
             </Link>
@@ -384,7 +384,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
       <div className="mt-auto space-y-4 pt-4 pb-2">
         <div className="px-1 border-t border-white/[0.03] pt-4 space-y-2">
-          <p className="text-[11px] font-medium text-neutral-700">Sync from Branding Machine</p>
+          <p className="text-2xs font-medium text-neutral-700">Sync from Branding Machine</p>
           <Button
             variant="subtle"
             onClick={() => {
@@ -398,7 +398,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
           </Button>
         </div>
         <div className="px-1 border-t border-white/[0.03] pt-3">
-          <div className="flex items-center gap-2 text-[11px] text-neutral-600 px-1">
+          <div className="flex items-center gap-2 text-2xs text-neutral-600 px-1">
             <Settings size={11} className="opacity-60" />
             Settings
           </div>

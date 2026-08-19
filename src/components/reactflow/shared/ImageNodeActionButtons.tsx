@@ -168,7 +168,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             }
           }}
           disabled={isSaving}
-          className={cn('p-1', isLiked && !isSaving && 'text-brand-cyan bg-brand-cyan/10')}
+          className={cn('p-1', isLiked && !isSaving && 'text-foreground bg-brand-cyan/10')}
           title={
             isLiked
               ? t(`${translationKeyPrefix}.removeFromFavorites`) || 'Remove from favorites'

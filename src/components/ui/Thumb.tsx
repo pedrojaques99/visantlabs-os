@@ -39,7 +39,7 @@ export const Thumb: React.FC<ThumbProps> = ({
         aria-label={fallbackLabel || (typeof alt === 'string' ? alt : undefined)}
       >
         <Icon className="w-6 h-6 opacity-60" strokeWidth={1.5} />
-        {fallbackLabel && <span className="text-[10px] font-mono">{fallbackLabel}</span>}
+        {fallbackLabel && <span className="text-2xs font-mono">{fallbackLabel}</span>}
       </div>
     );
   }

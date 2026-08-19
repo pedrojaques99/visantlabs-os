@@ -46,7 +46,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
                   <h3 className="text-sm font-bold text-white uppercase tracking-[0.1em]">
                     {title}
                   </h3>
-                  <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                  <p className="text-2xs font-mono text-neutral-500 uppercase tracking-widest">
                     {subtitle}
                   </p>
                 </div>
@@ -75,7 +75,7 @@ export const ExtractionOverlay: React.FC<ExtractionOverlayProps> = ({
                   </div>
                 </div>
 
-                <p className="text-center text-[10px] text-neutral-600 font-mono uppercase tracking-tighter">
+                <p className="text-center text-2xs text-neutral-600 font-mono uppercase tracking-tighter">
                   Do not close this tab // Connection must remain active
                 </p>
               </div>

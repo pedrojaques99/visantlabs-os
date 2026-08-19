@@ -416,9 +416,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         aria-label={tool.label}
       >
         <span className="flex-shrink-0">{tool.icon}</span>
-        <span className="text-[11px] font-medium whitespace-nowrap tracking-wide">
-          {tool.label}
-        </span>
+        <span className="text-2xs font-medium whitespace-nowrap tracking-wide">{tool.label}</span>
       </button>
     </Tooltip>
   );
@@ -456,7 +454,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           )}
         >
           <h2
-            className="text-[11px] font-semibold tracking-wide px-3 py-2"
+            className="text-2xs font-semibold tracking-wide px-3 py-2"
             style={{ color: textColors.primary }}
           >
             {t('canvasToolbar.title')}
@@ -509,7 +507,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className={cn(
                     'w-full flex items-center gap-1.5 px-2 py-1 mt-1 rounded',
-                    'text-[10px] font-medium uppercase tracking-widest',
+                    'text-2xs font-medium uppercase tracking-widest',
                     'transition-colors duration-100',
                     isLight ? 'hover:bg-neutral-200/40' : 'hover:bg-white/[0.04]'
                   )}
@@ -524,7 +522,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                   />
                   {t('canvasToolbar.categories.advanced') || 'Advanced'}
                   <span
-                    className="ml-auto text-[9px] tabular-nums"
+                    className="ml-auto text-3xs tabular-nums"
                     style={{ color: textColors.subtle }}
                   >
                     {advancedTools.length}

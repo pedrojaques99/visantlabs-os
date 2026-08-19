@@ -162,7 +162,7 @@ export const MockupOutputConfig: React.FC = () => {
           <div className="w-6 h-6 rounded-md bg-neutral-900 border border-neutral-800/50 flex items-center justify-center">
             <SlidersHorizontal size={11} className="text-neutral-500" />
           </div>
-          <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+          <span className="text-2xs uppercase tracking-widest text-neutral-500">
             {t('mockup.aiSettings') || 'Output Config'}
           </span>
         </div>
@@ -188,7 +188,7 @@ export const MockupOutputConfig: React.FC = () => {
       {isCompareMode && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+            <span className="text-2xs uppercase tracking-widest text-neutral-500">
               {compareModels.length}/6 models
             </span>
           </div>
@@ -201,7 +201,7 @@ export const MockupOutputConfig: React.FC = () => {
                   type="button"
                   onClick={() => toggleCompareModel(model.id)}
                   className={`
-                    inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-mono
+                    inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-2xs font-mono
                     border transition-colors duration-150 cursor-pointer
                     ${
                       isSelected

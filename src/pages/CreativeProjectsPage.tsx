@@ -166,7 +166,7 @@ export const CreativeProjectsPage: React.FC = () => {
       <Button
         variant="brand"
         onClick={handleCreateNew}
-        className="h-10 px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
+        className="h-10 px-6 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-bold uppercase tracking-widest text-2xs rounded-md transition-all duration-300 hover:scale-[1.02] flex items-center gap-2"
       >
         <Plus className="h-4 w-4" />
         New Creative
@@ -291,7 +291,7 @@ export const CreativeProjectsPage: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       fallbackLabel={t('common.unavailable') || 'unavailable'}
                     />
-                    <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                    <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-white/10 text-2xs font-mono text-muted-foreground uppercase tracking-wider">
                       {project.format}
                     </div>
                   </div>
@@ -323,14 +323,14 @@ export const CreativeProjectsPage: React.FC = () => {
                         )}
                       </div>
                       <div
-                        className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono mb-4 uppercase tracking-widest"
+                        className="flex items-center gap-2 text-2xs text-neutral-500 font-mono mb-4 uppercase tracking-widest"
                         title={`Last edited: ${formatDate(project.updatedAt || project.createdAt)}`}
                       >
                         <Calendar className="h-3 w-3" />
                         <span>{formatDate(project.updatedAt || project.createdAt)}</span>
                       </div>
                       {project.prompt && (
-                        <p className="text-[11px] text-neutral-500 font-mono line-clamp-2 mb-5 leading-relaxed opacity-60">
+                        <p className="text-2xs text-neutral-500 font-mono line-clamp-2 mb-5 leading-relaxed opacity-60">
                           {project.prompt}
                         </p>
                       )}

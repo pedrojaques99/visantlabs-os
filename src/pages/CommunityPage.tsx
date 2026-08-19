@@ -489,7 +489,7 @@ export const CommunityPage: React.FC = () => {
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border backdrop-blur-md">
                   <div className="w-1.5 h-1.5 rounded-full bg-success" />
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     {t('community.activeBadge')}
                   </span>
                 </div>
@@ -564,7 +564,7 @@ export const CommunityPage: React.FC = () => {
                 {(isLoading || globalCommunityStats.totalUsers > 0) && (
                   <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                      <span className="text-2xs font-medium text-muted-foreground font-manrope">
                         {t('community.membros')}
                       </span>
                       <TrendingUp
@@ -581,7 +581,7 @@ export const CommunityPage: React.FC = () => {
                 {(isLoading || globalCommunityStats.totalPresets > 0) && (
                   <GlassPanel padding="sm" className={cn('group', glassSurface.control)}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                      <span className="text-2xs font-medium text-muted-foreground font-manrope">
                         {t('community.criaes')}
                       </span>
                       <Diamond
@@ -601,7 +601,7 @@ export const CommunityPage: React.FC = () => {
                     className={cn('hidden sm:flex group', glassSurface.control)}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-medium text-muted-foreground font-manrope">
+                      <span className="text-2xs font-medium text-muted-foreground font-manrope">
                         {t('community.publicado')}
                       </span>
                       <ImageIcon
@@ -665,7 +665,7 @@ export const CommunityPage: React.FC = () => {
                     <GlassPanel
                       asChild
                       key={category.type}
-                      className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden bg-muted/40"
+                      className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-border-hover transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden bg-muted/40"
                     >
                       <Link to={`/community/presets?type=${category.type}`}>
                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)] scale-150">
@@ -683,7 +683,7 @@ export const CommunityPage: React.FC = () => {
                             <span className="text-2xl font-bold font-mono text-foreground whitespace-nowrap group-hover:text-foreground transition-colors">
                               <CountUp value={category.count} />
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-2xs text-muted-foreground">
                               {t('common.presets')}
                             </span>
                           </div>
@@ -777,7 +777,7 @@ export const CommunityPage: React.FC = () => {
                       <GlassPanel
                         asChild
                         key={workflow._id}
-                        className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-ring transition-all hover:-translate-y-1 active:translate-y-0 text-left"
+                        className="group relative rounded-2xl p-6 flex flex-col h-full hover:border-border-hover transition-all hover:-translate-y-1 active:translate-y-0 text-left"
                       >
                         {/* Abre ESTE workflow. Antes ia pra `/canvas` cru: o usuário
                             clicava num workflow específico e caía num canvas vazio. */}
@@ -808,19 +808,19 @@ export const CommunityPage: React.FC = () => {
                           <div className="flex items-center gap-2 pt-3 border-t border-border">
                             <span
                               className={cn(
-                                'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
+                                'px-2 py-0.5 rounded border font-mono text-2xs flex-shrink-0',
                                 categoryConfig.badgeClass
                               )}
                             >
                               {categoryConfig.label}
                             </span>
-                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0">
+                            <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-2xs flex-shrink-0">
                               {t('community.nodesCount', {
                                 count: Array.isArray(workflow.nodes) ? workflow.nodes.length : 0,
                               })}
                             </span>
                             {workflow.likesCount > 0 && (
-                              <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-[10px] flex-shrink-0 inline-flex items-center gap-1">
+                              <span className="px-2 py-0.5 bg-muted rounded border border-border text-muted-foreground font-mono text-2xs flex-shrink-0 inline-flex items-center gap-1">
                                 <Heart size={10} className="fill-current" />
                                 {workflow.likesCount}
                               </span>
@@ -912,7 +912,7 @@ export const CommunityPage: React.FC = () => {
                     <GlassPanel
                       asChild
                       key={mockup._id}
-                      className="group relative aspect-square rounded-2xl overflow-hidden hover:border-ring transition-all hover:shadow-2xl"
+                      className="group relative aspect-square rounded-2xl overflow-hidden hover:border-border-hover transition-all hover:shadow-2xl"
                     >
                       <Link to="/mockups" className="block w-full h-full">
                         {mockup.imageUrl || mockup.imageBase64 ? (
@@ -938,7 +938,7 @@ export const CommunityPage: React.FC = () => {
                               prometia "usar como referência", que ele nunca fez. */}
                           <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                             <ArrowRight size={10} className="text-neutral-400" />
-                            <span className="text-[11px] text-neutral-300">
+                            <span className="text-2xs text-neutral-300">
                               {t('community.viewFullGallery')}
                             </span>
                           </div>

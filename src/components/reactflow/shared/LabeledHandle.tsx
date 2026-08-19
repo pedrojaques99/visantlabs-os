@@ -74,7 +74,7 @@ export const LabeledHandle: React.FC<LabeledHandleProps> = ({
       {label && (
         <div
           className={cn(
-            'handle-label absolute text-[10px] font-mono text-neutral-400 whitespace-nowrap pointer-events-none z-50',
+            'handle-label absolute text-2xs font-mono text-neutral-400 whitespace-nowrap pointer-events-none z-50',
             'opacity-0 transition-opacity duration-200',
             'bg-neutral-900/90 px-1.5 py-0.5 rounded border-node border-neutral-700/50',
             isLeft && 'right-full mr-2',

@@ -260,7 +260,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                   <p className="text-4xl font-bold text-white font-mono tracking-tight">
                     {totalCreditsAvailable}
                   </p>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/10">
+                  <span className="text-2xs font-mono uppercase tracking-widest text-neutral-400 bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/10">
                     {t('credits.active')}
                   </span>
                 </div>
@@ -283,7 +283,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         <HardDrive size={10} className="text-neutral-500" />
                         <MicroTitle as="p">{t('credits.storage')}</MicroTitle>
                       </span>
-                      <p className="text-[10px] text-neutral-400 font-mono">
+                      <p className="text-2xs text-neutral-400 font-mono">
                         {storageUsage.percentage.toFixed(0)}%
                       </p>
                     </div>
@@ -293,7 +293,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-neutral-500 font-mono">
+                    <p className="text-2xs text-neutral-500 font-mono">
                       {storageUsage.formatted.used} / {storageUsage.formatted.limit}
                     </p>
                   </div>

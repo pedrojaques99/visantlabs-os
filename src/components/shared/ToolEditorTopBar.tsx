@@ -58,7 +58,7 @@ export const ToolEditorTopBar: React.FC<ToolEditorTopBarProps> = ({
               <ChevronLeft size={16} />
             </Button>
           </Tooltip>
-          <MicroTitle className="text-[10px] text-neutral-600 st ml-1">{title}</MicroTitle>
+          <MicroTitle className="text-2xs text-neutral-600 st ml-1">{title}</MicroTitle>
           {extraLeft}
         </>
       }

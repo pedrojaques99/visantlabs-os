@@ -224,7 +224,7 @@ export function createGenericPresetNode<
                   `Select ${config.title.toLowerCase()}`}
               </div>
               {selectedPreset?.description && (
-                <div className="text-[10px] font-mono text-neutral-500 truncate">
+                <div className="text-2xs font-mono text-neutral-500 truncate">
                   {selectedPreset.description}
                 </div>
               )}
@@ -280,7 +280,7 @@ export function createGenericPresetNode<
                 <span className="font-semibold tracking-tight">
                   {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />
                   {getCreditsRequired('mockup')}
                 </div>

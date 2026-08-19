@@ -34,3 +34,13 @@ export const FEATURE_COCKPIT_HOME = readFlag(import.meta.env.VITE_FEATURE_COCKPI
 
 /** Gate da higiene de funil nas free tools (Fase 5): banner "conecte sua marca" + save-to-brand. */
 export const FEATURE_FUNNEL_BANNER = readFlag(import.meta.env.VITE_FEATURE_FUNNEL_BANNER);
+
+/**
+ * Gate das superfícies em alphatest (`/create` e `/campaigns`). Desligado, elas
+ * somem da TELA PRINCIPAL — cockpit e rail — mas as ROTAS continuam de pé: quem
+ * tem o link entra e testa. Esconder ≠ remover.
+ *
+ * Regra herdada do `readFlag`: liga em dev, desliga em produção, e a env
+ * `VITE_FEATURE_ALPHA_TOOLS` vence sempre.
+ */
+export const FEATURE_ALPHA_TOOLS = readFlag(import.meta.env.VITE_FEATURE_ALPHA_TOOLS);

@@ -248,7 +248,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     }`}
                   >
                     A4
-                    <div className="text-[10px] text-neutral-500 mt-0.5">595px</div>
+                    <div className="text-2xs text-neutral-500 mt-0.5">595px</div>
                   </Button>
                   <Button
                     variant="ghost"
@@ -261,7 +261,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     }`}
                   >
                     A3
-                    <div className="text-[10px] text-neutral-500 mt-0.5">842px</div>
+                    <div className="text-2xs text-neutral-500 mt-0.5">842px</div>
                   </Button>
                   <Button
                     variant="ghost"
@@ -274,7 +274,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     }`}
                   >
                     Letter
-                    <div className="text-[10px] text-neutral-500 mt-0.5">612px</div>
+                    <div className="text-2xs text-neutral-500 mt-0.5">612px</div>
                   </Button>
                   <Button
                     variant="ghost"
@@ -287,7 +287,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     }`}
                   >
                     Custom
-                    <div className="text-[10px] text-neutral-500 mt-0.5">800px</div>
+                    <div className="text-2xs text-neutral-500 mt-0.5">800px</div>
                   </Button>
                 </div>
                 {/* Custom width input if not a standard format */}
@@ -334,7 +334,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                       <Button
                         variant="ghost"
                         onClick={() => handleContentHeightChange(0)}
-                        className="px-2 py-1 text-xs text-red-400 hover:text-red-300"
+                        className="px-2 py-1 text-xs text-destructive hover:text-destructive"
                         title="Remover altura fixa"
                       >
                         Auto
@@ -377,7 +377,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 <Button
                   variant="ghost"
                   onClick={() => setShowSaveModal(true)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-600/30 rounded-md text-brand-cyan text-sm font-mono transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-neutral-600/30 rounded-md text-foreground text-sm font-mono transition-colors"
                 >
                   <Save size={16} />
                   Salvar como Template
@@ -481,7 +481,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                       <Button
                         variant="ghost"
                         onClick={(e) => deleteTemplate(template.id, e)}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 p-1 text-destructive hover:text-destructive transition-opacity"
                         title="Remover template"
                       >
                         <Trash2 size={16} />

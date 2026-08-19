@@ -162,7 +162,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                 {showDivider && (
                   <div className="pt-3 mt-2 border-t border-sidebar-border/50">
                     {externalGroupLabel && (
-                      <h3 className="text-[10px] font-semibold font-mono text-neutral-500 uppercase tracking-wider px-2 pt-2 pb-1">
+                      <h3 className="text-2xs font-semibold font-mono text-neutral-500 uppercase tracking-wider px-2 pt-2 pb-1">
                         {externalGroupLabel}
                       </h3>
                     )}

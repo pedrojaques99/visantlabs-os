@@ -327,7 +327,7 @@ export const OgImagePage: React.FC = () => {
 
   const panel = (
     <div className="space-y-5">
-      <h2 className="text-[11px] font-medium text-neutral-500">Settings</h2>
+      <h2 className="text-2xs font-medium text-neutral-500">Settings</h2>
 
       {/* Brand select */}
       <BrandToolSelect value={brandId} onChange={setBrandId} />
@@ -348,7 +348,7 @@ export const OgImagePage: React.FC = () => {
               <TemplateThumbnail id={tpl.id} active={template === tpl.id} />
               <span
                 className={cn(
-                  'text-[10px] font-medium',
+                  'text-2xs font-medium',
                   template === tpl.id
                     ? 'text-brand-cyan'
                     : 'text-neutral-600 group-hover:text-neutral-400'
@@ -399,7 +399,7 @@ export const OgImagePage: React.FC = () => {
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Logo</label>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors">
             <Upload size={10} />
             Upload
             <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -422,7 +422,7 @@ export const OgImagePage: React.FC = () => {
             Background Image
           </label>
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors">
+            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors">
               <Upload size={10} />
               Upload
               <input type="file" accept="image/*" className="hidden" onChange={handleBgUpload} />
@@ -475,7 +475,7 @@ export const OgImagePage: React.FC = () => {
     <div className="flex items-center gap-3">
       <button
         onClick={handleDownload}
-        className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+        className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
       >
         <Download className="w-3.5 h-3.5" />
         Download PNG
@@ -483,7 +483,7 @@ export const OgImagePage: React.FC = () => {
       <span className="text-neutral-700 select-none">·</span>
       <button
         onClick={handleCopy}
-        className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+        className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
       >
         <Copy className="w-3.5 h-3.5" />
         Copy Image
@@ -491,14 +491,14 @@ export const OgImagePage: React.FC = () => {
       <span className="text-neutral-700 select-none">·</span>
       <button
         onClick={handleCopyMeta}
-        className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+        className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
       >
         <Code className="w-3.5 h-3.5" />
         Copy Meta Tags
       </button>
     </div>
   ) : (
-    <span className="text-[10px] uppercase tracking-widest text-neutral-600">
+    <span className="text-2xs uppercase tracking-widest text-neutral-600">
       Configure your OG image
     </span>
   );
@@ -541,7 +541,7 @@ export const OgImagePage: React.FC = () => {
             Preview
           </div>
         )}
-        <span className="absolute bottom-2 right-2 text-[10px] font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
+        <span className="absolute bottom-2 right-2 text-2xs font-mono text-neutral-500 bg-neutral-950/80 px-2 py-0.5 rounded">
           {width} x {height}
         </span>
       </motion.div>
@@ -571,12 +571,12 @@ function ColorInput({
         className="w-6 h-6 rounded border border-neutral-700 bg-transparent cursor-pointer p-0"
       />
       <div className="flex flex-col">
-        <span className="text-[10px] font-medium text-neutral-500">{label}</span>
+        <span className="text-2xs font-medium text-neutral-500">{label}</span>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-[72px] bg-transparent text-[10px] font-mono text-neutral-400 border-none outline-none p-0"
+          className="w-[72px] bg-transparent text-2xs font-mono text-neutral-400 border-none outline-none p-0"
         />
       </div>
     </div>

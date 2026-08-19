@@ -29,7 +29,7 @@ export function renderInline(text: string): ReactNode[] {
       parts.push(
         <code
           key={key++}
-          className="px-1 py-0.5 rounded bg-background/60 border border-border/30 text-[10px] font-mono"
+          className="px-1 py-0.5 rounded bg-background/60 border border-border/30 text-2xs font-mono"
         >
           {match[6]}
         </code>
@@ -41,7 +41,7 @@ export function renderInline(text: string): ReactNode[] {
           href={match[9]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-brand-cyan hover:underline"
+          className="text-foreground hover:underline"
         >
           {match[8]}
         </a>
@@ -79,7 +79,7 @@ export function renderMarkdownBlocks(text: string): ReactNode[] {
       elements.push(
         <pre
           key={bi}
-          className="mt-1.5 mb-1 p-2 rounded bg-background/60 border border-border/40 text-[10px] font-mono overflow-x-auto whitespace-pre-wrap"
+          className="mt-1.5 mb-1 p-2 rounded bg-background/60 border border-border/40 text-2xs font-mono overflow-x-auto whitespace-pre-wrap"
         >
           {code}
         </pre>

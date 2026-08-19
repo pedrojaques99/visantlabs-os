@@ -215,7 +215,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             variant="outline"
             onClick={handleGoogleAuth}
             disabled={isGoogleLoading}
-            className="w-full flex items-center justify-center gap-2 mb-4 font-mono select-none border-border hover:border-ring bg-muted hover:bg-accent text-muted-foreground hover:text-foreground"
+            className="w-full flex items-center justify-center gap-2 mb-4 font-mono select-none border-border hover:border-border-hover bg-muted hover:bg-accent text-muted-foreground hover:text-foreground"
           >
             {isGoogleLoading ? (
               <>
@@ -290,7 +290,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 variant="ghost"
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
+                className="text-xs text-foreground hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
               >
                 {t('auth.forgotPassword')}
               </Button>
@@ -316,7 +316,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Diz POR QUE o botão está desabilitado (captcha pendente) — senão o
               usuário preenche tudo, vê o botão morto e desiste sem entender. */}
           {isSignUp && captchaEnabled && !captchaToken && !authError && (
-            <p className="text-center text-[11px] text-muted-foreground font-mono">
+            <p className="text-center text-2xs text-muted-foreground font-mono">
               {t('auth.completeCaptchaHint') || 'Complete a verificação acima para continuar'}
             </p>
           )}
@@ -368,7 +368,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {t('auth.bySigningUp')}{' '}
               <Link
                 to="/terms"
-                className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                className="text-foreground hover:text-brand-cyan/80 underline"
                 onClick={(e) => {
                   e.preventDefault();
                   window.history.pushState({}, '', '/terms');
@@ -380,7 +380,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {t('auth.and')}{' '}
               <Link
                 to="/privacy"
-                className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                className="text-foreground hover:text-brand-cyan/80 underline"
                 onClick={(e) => {
                   e.preventDefault();
                   window.history.pushState({}, '', '/privacy');

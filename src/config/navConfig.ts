@@ -12,6 +12,7 @@
  * um tipo). Tudo são dados + funções puras de `(pathname | NavCtx)`. A UI
  * (AppSidebar/AppShell) consome; nenhum componente decide navegação por conta.
  */
+import { FEATURE_ALPHA_TOOLS } from '@/config/featureFlags';
 import type { LucideIcon } from '@/lib/ui/icons';
 import {
   Home,
@@ -260,7 +261,7 @@ export function isBrandFilteredList(pathname: string): boolean {
 
 /** Qual seção de nível 1 fica ativa para a rota (null = app sem destaque). */
 function sectionFor(p: string): SectionId | null {
-  if (p === '/cockpit') return 'cockpit';
+  if (p === '/cockpit' || p.startsWith('/cockpit/')) return 'cockpit';
   if (p === '/copilot') return 'copilot';
   if (p === '/canvas' || p.startsWith('/canvas/')) return 'canvas';
   if (p === '/apps') return 'apps';
@@ -334,7 +335,11 @@ export function isBrandContext(pathname: string): boolean {
   // O grid/biblioteca de marcas (e a view unificada ?id=) é GESTÃO, não produção
   // — sem chip de marca. Mesmo agora que a seção dele é 'cockpit' (Início), o
   // grid não opera "para" uma marca. Ver plano HOME-ADAPTIVE-IA.
-  if (p === '/brand-guidelines' || p.startsWith('/brand-guidelines/')) return false;
+  // Sem chip de marca no ACERVO: `/cockpit` (Início) e `/brand-guidelines`
+  // mostram a LISTA, e ali você não está DENTRO de marca nenhuma. Já
+  // `/cockpit/:brandId` é o cockpit de trabalho de uma marca, e lá o chip vale.
+  if (p === '/cockpit' || p === '/brand-guidelines' || p.startsWith('/brand-guidelines/'))
+    return false;
   const section = classifyRoute(p).section;
   if (section && BRAND_MANAGEMENT_SECTIONS.has(section)) return false;
   return true;
@@ -381,12 +386,18 @@ const profileNav = (): ContextNavItem[] => [
  * L1 e FIXADOS), renderizado direto pelo AppSidebar. Highlight por pathname.
  */
 export const LIBRARY_ITEMS: ContextNavItem[] = [
-  {
-    id: 'creative-projects',
-    labelKey: 'nav.library.creativeProjects',
-    to: '/create/projects',
-    icon: Shapes,
-  },
+  // `Meus Criativos` aponta pra /create/projects, e /create está em alphatest.
+  // Fora do flag ele some do rail; a ROTA continua de pé pra quem tem o link.
+  ...(FEATURE_ALPHA_TOOLS
+    ? [
+        {
+          id: 'creative-projects',
+          labelKey: 'nav.library.creativeProjects',
+          to: '/create/projects',
+          icon: Shapes,
+        } as ContextNavItem,
+      ]
+    : []),
   { id: 'my-outputs', labelKey: 'nav.library.myOutputs', to: '/my-outputs', icon: Images },
   { id: 'references', labelKey: 'nav.library.references', to: '/references', icon: Library },
   { id: 'community', labelKey: 'nav.library.community', to: '/community', icon: Users },

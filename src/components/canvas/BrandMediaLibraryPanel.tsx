@@ -167,7 +167,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
             <LayoutGrid className="text-neutral-600" size={20} />
           </div>
           <p className="text-xs font-medium text-neutral-500">No Brand Selected</p>
-          <p className="text-[10px] text-neutral-700 mt-1">Select a brand or browse References.</p>
+          <p className="text-2xs text-neutral-700 mt-1">Select a brand or browse References.</p>
         </div>
       </div>
     );
@@ -202,7 +202,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   ? refSearch.setQuery(e.target.value)
                   : setSearchQuery(e.target.value)
               }
-              className="w-full bg-neutral-900/50 border border-white/5 rounded-md pl-7 pr-2 py-1 text-[10px] text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 font-mono"
+              className="w-full bg-neutral-900/50 border border-white/5 rounded-md pl-7 pr-2 py-1 text-2xs text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 font-mono"
             />
           </div>
           <div className="flex items-center border border-white/5 rounded-md bg-neutral-900/30">
@@ -301,7 +301,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         className="w-10 h-10 rounded-lg border border-white/10 group-hover:scale-110 transition-transform shadow"
                         style={{ backgroundColor: color.hex }}
                       />
-                      <span className="text-[9px] font-mono text-neutral-600">{color.hex}</span>
+                      <span className="text-3xs font-mono text-neutral-600">{color.hex}</span>
                       <div
                         className={cn(
                           'absolute top-0.5 right-0.5 flex flex-col gap-0.5',
@@ -344,7 +344,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   {refSearch.activeFilterCount > 0 && (
                     <button
                       onClick={refSearch.clearFilters}
-                      className="text-[9px] text-brand-cyan/60 hover:text-brand-cyan flex items-center gap-0.5"
+                      className="text-3xs text-brand-cyan/60 hover:text-brand-cyan flex items-center gap-0.5"
                     >
                       <X size={8} /> Clear
                     </button>
@@ -361,7 +361,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                         <button
                           onClick={() => setExpandedDim(isExp ? null : key)}
                           className={cn(
-                            'px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider border transition-[color,background-color,border-color,box-shadow]',
+                            'px-2 py-0.5 rounded-full text-3xs font-mono uppercase tracking-wider border transition-[color,background-color,border-color,box-shadow]',
                             activeValue
                               ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
                               : 'bg-neutral-900/60 border-neutral-800 text-neutral-500 hover:text-white'
@@ -379,7 +379,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                   setExpandedDim(null);
                                 }}
                                 className={cn(
-                                  'block w-full text-left px-2 py-1 text-[10px] rounded transition-colors',
+                                  'block w-full text-left px-2 py-1 text-2xs rounded transition-colors',
                                   refSearch.dimFilters[key] === v
                                     ? 'bg-brand-cyan/10 text-brand-cyan'
                                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
@@ -455,7 +455,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-mono font-bold text-neutral-400 truncate">
+                              <p className="text-2xs font-mono font-bold text-neutral-400 truncate">
                                 {ref.name}
                               </p>
                               <div className="flex gap-0.5 mt-0.5">
@@ -465,7 +465,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                 ].map((tag) => (
                                   <span
                                     key={tag}
-                                    className="text-[7px] px-1 py-0.5 rounded bg-white/10 text-white/60"
+                                    className="text-3xs px-1 py-0.5 rounded bg-white/10 text-white/60"
                                   >
                                     {tag}
                                   </span>
@@ -475,7 +475,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                             {isRecommended && (
                               <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
                                 <Zap size={7} />
-                                <span className="text-[7px] font-bold uppercase tracking-wider">
+                                <span className="text-3xs font-bold uppercase tracking-wider">
                                   Match
                                 </span>
                               </div>
@@ -488,7 +488,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                 }}
                                 disabled={sanitizingIds.has(ref.id)}
                                 className={cn(
-                                  'p-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 disabled:opacity-50',
+                                  'p-1 rounded bg-warning/10 text-warning hover:bg-warning/20 disabled:opacity-50',
                                   hoverReveal
                                 )}
                                 title="Sanitizar — remover branding do studio"
@@ -536,7 +536,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                           {isRecommended && (
                             <div className="absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-neutral-800 text-neutral-200">
                               <Zap size={7} />
-                              <span className="text-[7px] font-bold uppercase tracking-wider">
+                              <span className="text-3xs font-bold uppercase tracking-wider">
                                 Match
                               </span>
                             </div>
@@ -547,7 +547,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               hoverReveal
                             )}
                           >
-                            <p className="text-[9px] font-medium text-white truncate">{ref.name}</p>
+                            <p className="text-3xs font-medium text-white truncate">{ref.name}</p>
                             <div className="flex gap-0.5 mt-0.5">
                               {[
                                 ...(ref.dimensions.mockup_type || []).slice(0, 1),
@@ -555,7 +555,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                               ].map((tag) => (
                                 <span
                                   key={tag}
-                                  className="text-[7px] px-1 py-0.5 rounded bg-white/10 text-white/60"
+                                  className="text-3xs px-1 py-0.5 rounded bg-white/10 text-white/60"
                                 >
                                   {tag}
                                 </span>
@@ -578,7 +578,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                                   handleSanitize(ref);
                                 }}
                                 disabled={sanitizingIds.has(ref.id)}
-                                className="w-4 h-4 rounded-full bg-amber-500/80 flex items-center justify-center hover:bg-amber-400 transition-colors disabled:opacity-50"
+                                className="w-4 h-4 rounded-full bg-warning/80 flex items-center justify-center hover:bg-warning transition-colors disabled:opacity-50"
                                 title="Sanitizar — remover branding do studio"
                               >
                                 {sanitizingIds.has(ref.id) ? (
@@ -598,7 +598,7 @@ export const BrandMediaLibraryPanel: React.FC<BrandMediaLibraryPanelProps> = ({
                   <button
                     onClick={() => refSearch.loadMore()}
                     disabled={refSearch.isLoading}
-                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-[10px] text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+                    className="w-full mt-2 py-2 rounded-md border border-neutral-700/30 bg-neutral-900/40 text-2xs text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 transition-[color,background-color,border-color,opacity] disabled:opacity-50"
                   >
                     {refSearch.isLoading ? (
                       <GlitchLoader size={10} className="mx-auto" />
@@ -658,8 +658,8 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
           <Thumb src={url} alt={label} className="w-full h-full object-contain" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-mono font-bold text-neutral-400 truncate">{label}</p>
-          <p className="text-[9px] font-mono text-neutral-600">
+          <p className="text-2xs font-mono font-bold text-neutral-400 truncate">{label}</p>
+          <p className="text-3xs font-mono text-neutral-600">
             {type === 'logo' ? 'Logo' : 'Image'}
           </p>
         </div>
@@ -670,7 +670,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
               onAdd();
             }}
             className={cn(
-              'p-1 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20',
+              'p-1 rounded bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20',
               hoverReveal
             )}
           >
@@ -714,7 +714,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ url, label, type, viewMode, onCli
           </button>
         )}
       </div>
-      <p className="text-[9px] font-mono text-neutral-500 truncate text-center">{label}</p>
+      <p className="text-3xs font-mono text-neutral-500 truncate text-center">{label}</p>
     </div>
   );
 };

@@ -67,7 +67,7 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
     >
       <div className="space-y-3 py-1">
         {pillars.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">
+          <p className="text-2xs text-neutral-700 py-2">
             Nenhum pilar definido. Click + para adicionar.
           </p>
         )}
@@ -76,7 +76,7 @@ export const PillarsSection: React.FC<PillarsSectionProps> = ({ guideline, onUpd
             key={i}
             className="group/pillar flex items-start gap-3 border-b border-neutral-800 last:border-0 pb-3 last:pb-0"
           >
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/5 text-neutral-500 text-[10px] font-bold shrink-0 mt-0.5">
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/5 text-neutral-500 text-2xs font-bold shrink-0 mt-0.5">
               {i + 1}
             </div>
             <div className="flex-1 space-y-1.5">

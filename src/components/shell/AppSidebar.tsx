@@ -212,7 +212,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
             </div>
           ) : (
             <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-              <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+              <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
                 {t('nav.library.title')}
               </div>
               <nav className="space-y-0.5">
@@ -224,7 +224,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                       key={i.id}
                       onClick={() => go(i.to)}
                       className={cn(
-                        'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                        'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                         active
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
                           : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -265,7 +265,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
               </div>
             ) : (
               <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-                <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
                   {t('nav.pinned')}
                 </div>
                 <nav className="space-y-0.5">
@@ -277,7 +277,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                         <button
                           onClick={() => go(p.to)}
                           className={cn(
-                            'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                            'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                             active
                               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -321,7 +321,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
               </div>
             ) : (
               <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-                <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+                <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
                   {t('nav.recent')}
                 </div>
                 <nav className="space-y-0.5">
@@ -334,7 +334,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                         <button
                           onClick={() => openBrand(b.id!)}
                           className={cn(
-                            'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                            'flex-1 min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                             active
                               ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
                               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -373,7 +373,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
           {/* Nível 2 — contexto da seção atual (escondido quando colapsado) */}
           {!collapsed && contextItems.length > 0 && (
             <div className="px-2 pt-2 mt-1 border-t border-sidebar-border">
-              <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50">
+              <div className="px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50">
                 {t('nav.context')}
               </div>
               {/* Cap + scroll: seções com muitos itens (categorias da comunidade)
@@ -387,7 +387,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                       key={i.id}
                       onClick={() => go(i.to)}
                       className={cn(
-                        'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                        'w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                         active
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                           : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -439,7 +439,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ variant = 'desktop', onN
                   onClick={() => go(i.to)}
                   title={collapsed ? t(i.labelKey) : undefined}
                   className={cn(
-                    'flex items-center rounded-md text-[13px] transition-colors',
+                    'flex items-center rounded-md text-sm transition-colors',
                     collapsed ? 'h-9 w-9 justify-center' : 'w-full gap-2.5 px-2.5 py-1.5',
                     active
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'

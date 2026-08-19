@@ -185,7 +185,7 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(
               <div key={index} className="relative min-w-0 w-full">
                 {compareLabel && (
                   <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-                    <span className="text-[10px] font-mono text-neutral-300 tracking-wide">
+                    <span className="text-2xs font-mono text-neutral-300 tracking-wide">
                       {compareLabel}
                     </span>
                   </div>

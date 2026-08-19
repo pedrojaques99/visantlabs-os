@@ -377,7 +377,7 @@ export const SceneTab: React.FC = React.memo(() => {
             )}
           >
             <Upload size={20} className="text-neutral-500" />
-            <span className="text-[10px] uppercase tracking-wider text-neutral-500 text-center">
+            <span className="text-2xs uppercase tracking-wider text-neutral-500 text-center">
               {store.fileName || (isMobile ? t('mobile.tapToUpload') : 'Drop GLB / GLTF')}
             </span>
             <input
@@ -409,7 +409,7 @@ export const SceneTab: React.FC = React.memo(() => {
             />
             <span
               className={cn(
-                'text-[10px] uppercase tracking-wider transition-colors text-center',
+                'text-2xs uppercase tracking-wider transition-colors text-center',
                 isDragging ? 'text-white' : 'text-neutral-500'
               )}
             >
@@ -470,7 +470,7 @@ export const SceneTab: React.FC = React.memo(() => {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-[10px] relative"
+              className="h-7 px-2 text-2xs relative"
               disabled={!sceneName.trim()}
               aria-label="Save scene"
               onClick={async () => {
@@ -497,7 +497,7 @@ export const SceneTab: React.FC = React.memo(() => {
             </Button>
           </div>
           {scenesLoading && (
-            <div className="text-[10px] text-neutral-600 text-center py-2">Loading scenes...</div>
+            <div className="text-2xs text-neutral-600 text-center py-2">Loading scenes...</div>
           )}
           {savedScenes.length > 0 && (
             <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
@@ -510,7 +510,7 @@ export const SceneTab: React.FC = React.memo(() => {
                       else toast.error('Failed to load scene');
                     }}
                     aria-label="Load scene"
-                    className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
+                    className="flex-1 flex items-center gap-2 text-left px-2 py-1 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors"
                   >
                     {scene.thumbnail ? (
                       <img
@@ -531,7 +531,7 @@ export const SceneTab: React.FC = React.memo(() => {
                       toast.success('Scene deleted');
                     }}
                     aria-label="Delete scene"
-                    className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-red-400 transition-[color,background-color,border-color,opacity]"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-destructive transition-[color,background-color,border-color,opacity]"
                   >
                     <Trash2 size={10} />
                   </button>
@@ -551,7 +551,7 @@ export const SceneTab: React.FC = React.memo(() => {
           label="SVG Refine"
           defaultOpen
           badge={
-            <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-3xs font-mono text-warning bg-warning/10 px-1.5 py-0.5 rounded">
               trace
             </span>
           }
@@ -651,7 +651,7 @@ export const SceneTab: React.FC = React.memo(() => {
         icon={<Link size={13} />}
         badge={
           store.showChain ? (
-            <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-3xs font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
               on
             </span>
           ) : undefined
@@ -750,7 +750,7 @@ export const SceneTab: React.FC = React.memo(() => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full text-[10px] uppercase tracking-wider h-8"
+              className="w-full text-2xs uppercase tracking-wider h-8"
               disabled={isRetracing}
               onClick={handleRetrace}
             >
@@ -968,19 +968,19 @@ const CommunityGallery: React.FC = React.memo(() => {
       icon={<Globe size={13} />}
       badge={
         scenes.length > 0 ? (
-          <span className="text-[9px] font-mono text-neutral-600">{scenes.length}</span>
+          <span className="text-3xs font-mono text-neutral-600">{scenes.length}</span>
         ) : undefined
       }
     >
       {!loaded ? (
         <button
           onClick={load}
-          className="w-full px-2 py-2 rounded text-[10px] uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
+          className="w-full px-2 py-2 rounded text-2xs uppercase tracking-wider bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-neutral-200 transition-colors border border-dashed border-white/10"
         >
           {loading ? <GlitchLoader size={12} /> : 'Browse public scenes'}
         </button>
       ) : scenes.length === 0 ? (
-        <p className="text-center text-neutral-600 text-[10px] py-3">No public scenes yet</p>
+        <p className="text-center text-neutral-600 text-2xs py-3">No public scenes yet</p>
       ) : (
         <div className="space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700">
           {scenes.map((scene) => (
@@ -988,7 +988,7 @@ const CommunityGallery: React.FC = React.memo(() => {
               <button
                 onClick={() => handleFork(scene.id)}
                 disabled={forking === scene.id}
-                className="flex-1 flex items-center gap-2 text-left px-2 py-1.5 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center gap-2 text-left px-2 py-1.5 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50"
               >
                 {scene.thumbnailUrl ? (
                   <img
@@ -1004,9 +1004,9 @@ const CommunityGallery: React.FC = React.memo(() => {
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <span className="block truncate text-[10px]">{scene.name}</span>
+                  <span className="block truncate text-2xs">{scene.name}</span>
                   {scene.user?.name && (
-                    <span className="block truncate text-[8px] text-neutral-600">
+                    <span className="block truncate text-3xs text-neutral-600">
                       {scene.user.name}
                     </span>
                   )}

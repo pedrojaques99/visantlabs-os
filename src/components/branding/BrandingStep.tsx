@@ -74,7 +74,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               <ul key={elements.length} className="mb-6 space-y-2 list-none">
                 {listItems.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-3">
-                    <span className="text-brand-cyan mt-1.5 flex-shrink-0">•</span>
+                    <span className="text-foreground mt-1.5 flex-shrink-0">•</span>
                     <span className="text-foreground normal-case leading-relaxed">
                       {parseInlineMarkdown(item.trim())}
                     </span>
@@ -191,7 +191,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
         <ul className="space-y-2">
           {content.map((item, index) => (
             <li key={index} className="flex items-start gap-2 animate-fade-in">
-              <span className="text-brand-cyan mt-1">•</span>
+              <span className="text-foreground mt-1">•</span>
               <span className="text-foreground">{item}</span>
             </li>
           ))}
@@ -206,7 +206,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {content.strengths && (
               <div>
-                <h4 className="font-semibold text-green-400 mb-2">{t('branding.strengths')}</h4>
+                <h4 className="font-semibold text-success mb-2">{t('branding.strengths')}</h4>
                 <ul className="space-y-1">
                   {content.strengths.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">
@@ -218,7 +218,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
             )}
             {content.weaknesses && (
               <div>
-                <h4 className="font-semibold text-red-400 mb-2">{t('branding.weaknesses')}</h4>
+                <h4 className="font-semibold text-destructive mb-2">{t('branding.weaknesses')}</h4>
                 <ul className="space-y-1">
                   {content.weaknesses.map((item: string, index: number) => (
                     <li key={index} className="text-sm text-foreground">

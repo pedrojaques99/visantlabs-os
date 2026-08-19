@@ -96,7 +96,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
     }, t('cockpit.changeLogoDialog.primarySet'));
 
   const gridCls = 'grid grid-cols-3 sm:grid-cols-5 gap-2';
-  const labelCls = 'text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2';
+  const labelCls = 'text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -161,7 +161,7 @@ export const ChangeLogoDialog: React.FC<ChangeLogoDialogProps> = ({
                     {l.variant === 'primary' && (
                       <Gem
                         size={11}
-                        className="absolute top-1 left-1 text-brand-cyan fill-brand-cyan"
+                        className="absolute top-1 left-1 text-foreground fill-brand-cyan"
                       />
                     )}
                   </button>

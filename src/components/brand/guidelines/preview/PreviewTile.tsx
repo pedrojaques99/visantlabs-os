@@ -79,7 +79,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
 
   const Mock = item.Component;
 
-  const label = 'text-[10px] uppercase tracking-widest text-[var(--brand-text)]/40';
+  const label = 'text-2xs uppercase tracking-widest text-[var(--brand-text)]/40';
   const input =
     'w-full rounded-lg border border-[var(--brand-text)]/12 bg-transparent px-3 py-2 text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-text)]/30 focus:border-[var(--accent)]/50 focus:outline-none transition-colors';
 
@@ -212,7 +212,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
                       <button
                         type="button"
                         onClick={() => setVariant((v) => v + 1)}
-                        className="flex items-center gap-1.5 rounded-lg border border-[var(--brand-text)]/15 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/55 transition-colors hover:bg-[var(--brand-text)]/5 hover:text-[var(--brand-text)]"
+                        className="flex items-center gap-1.5 rounded-lg border border-[var(--brand-text)]/15 px-2.5 py-1 text-2xs font-mono uppercase tracking-widest text-[var(--brand-text)]/55 transition-colors hover:bg-[var(--brand-text)]/5 hover:text-[var(--brand-text)]"
                       >
                         {swatches}
                         <Shuffle size={11} /> {idx + 1}/{combos.length}
@@ -256,7 +256,7 @@ export const PreviewTile: React.FC<{ item: TileItem; tokens: MockTokens; brandNa
                       <button
                         type="button"
                         onClick={() => setOverrides({})}
-                        className="flex items-center gap-1.5 self-start rounded-lg px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest text-[var(--brand-text)]/40 transition-colors hover:text-[var(--brand-text)]/80"
+                        className="flex items-center gap-1.5 self-start rounded-lg px-2.5 py-1 text-2xs font-mono uppercase tracking-widest text-[var(--brand-text)]/40 transition-colors hover:text-[var(--brand-text)]/80"
                       >
                         <RotateCcw size={11} /> Resetar textos
                       </button>

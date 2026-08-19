@@ -87,11 +87,11 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
       <div className="space-y-1.5 py-1">
         {items.length === 0 && (
           <div className="space-y-2">
-            <p className="text-[11px] text-neutral-700">No shadows yet.</p>
+            <p className="text-2xs text-neutral-700">No shadows yet.</p>
             <button
               type="button"
               onClick={seedDefaults}
-              className="text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
+              className="text-2xs font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
             >
               Seed defaults
             </button>
@@ -114,7 +114,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                 className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700"
                 placeholder="Shadow name"
               />
-              <span className="text-[10px] font-mono text-neutral-700 truncate max-w-[80px] hidden sm:block">
+              <span className="text-2xs font-mono text-neutral-700 truncate max-w-[80px] hidden sm:block">
                 {buildShadowCss(s)}
               </span>
               <Button
@@ -137,7 +137,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                       type="button"
                       onClick={() => update(si, { type: t })}
                       className={cn(
-                        'flex-1 h-6 rounded border text-[10px] uppercase transition-[color,background-color,border-color,box-shadow]',
+                        'flex-1 h-6 rounded border text-2xs uppercase transition-[color,background-color,border-color,box-shadow]',
                         s.type === t
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -155,12 +155,12 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                     { label: 'Spread', field: 'spread' as const },
                   ].map(({ label, field }) => (
                     <div key={field} className="space-y-0.5">
-                      <MicroTitle className="text-neutral-700 text-[10px]">{label}</MicroTitle>
+                      <MicroTitle className="text-neutral-700 text-2xs">{label}</MicroTitle>
                       <Input
                         type="number"
                         value={s[field]}
                         onChange={(e) => update(si, { [field]: Number(e.target.value) })}
-                        className="h-6 border-neutral-800 text-[10px] font-mono text-center"
+                        className="h-6 border-neutral-800 text-2xs font-mono text-center"
                       />
                     </div>
                   ))}
@@ -178,7 +178,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-600 w-14">{s.color}</span>
+                  <span className="text-2xs font-mono text-neutral-600 w-14">{s.color}</span>
                   <input
                     type="range"
                     min={0}
@@ -188,7 +188,7 @@ export const ShadowSection: React.FC<ShadowSectionProps> = ({ guideline, onUpdat
                     onChange={(e) => update(si, { opacity: Number(e.target.value) })}
                     className="flex-1 h-1 accent-white"
                   />
-                  <span className="text-[10px] font-mono text-neutral-600 w-8 text-right">
+                  <span className="text-2xs font-mono text-neutral-600 w-8 text-right">
                     {Math.round(s.opacity * 100)}%
                   </span>
                 </div>

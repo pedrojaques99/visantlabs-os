@@ -26,7 +26,7 @@ export const OverlayLabel: React.FC<OverlayLabelProps> = ({
 }) => (
   <div
     className={cn(
-      'absolute z-10 px-2 py-0.5 rounded bg-black/60 text-[10px] font-mono uppercase tracking-widest text-neutral-300 pointer-events-none',
+      'absolute z-10 px-2 py-0.5 rounded bg-black/60 text-2xs font-mono uppercase tracking-widest text-neutral-300 pointer-events-none',
       positionStyles[position],
       className
     )}

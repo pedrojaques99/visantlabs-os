@@ -632,10 +632,10 @@ function MoodboardStudio() {
             >
               <Upload size={28} className="text-neutral-600" strokeWidth={1} />
               <div className="text-center">
-                <p className="text-[10px] uppercase tracking-[0.4em] font-medium text-neutral-500">
+                <p className="text-2xs uppercase tracking-[0.4em] font-medium text-neutral-500">
                   {t('moodboard.studio.upload_or_drop_moodboard')}
                 </p>
-                <p className="text-[10px] text-neutral-700 uppercase tracking-[0.2em] mt-2">
+                <p className="text-2xs text-neutral-700 uppercase tracking-[0.2em] mt-2">
                   {t('moodboard.studio.single_image_for_ai_grid_detectio')}
                 </p>
               </div>
@@ -728,7 +728,7 @@ function MoodboardStudio() {
                 >
                   <Zap size={13} className="mr-1.5" />
                   Regenerar todos
-                  <span className="ml-1.5 text-[10px] opacity-60">
+                  <span className="ml-1.5 text-2xs opacity-60">
                     {getCreditsRequired(batchRegenModel, undefined, batchRegenProvider) *
                       croppedImages.filter((c) => c.url).length}
                     cr
@@ -892,7 +892,7 @@ function MoodboardStudio() {
             className="fixed bottom-24 right-6 z-40 bg-neutral-950/90 backdrop-blur-xl border border-border px-4 py-3 rounded-2xl flex items-center gap-3 shadow-2xl"
           >
             <GlitchLoader size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400">
               {t('moodboard.studio.ai_analyzing')}
             </span>
           </motion.div>

@@ -174,8 +174,8 @@ class RendererErrorBoundary extends React.Component<
       return (
         <div className="h-full flex flex-col items-center justify-center gap-3 text-neutral-500">
           <AlertTriangle className="w-6 h-6 text-warning/60" />
-          <p className="text-[11px] font-mono">Render error — try regenerating</p>
-          <p className="text-[10px] text-neutral-600 max-w-sm text-center">
+          <p className="text-2xs font-mono">Render error — try regenerating</p>
+          <p className="text-2xs text-neutral-600 max-w-sm text-center">
             {this.state.error.message}
           </p>
         </div>
@@ -243,14 +243,14 @@ const SpecEditor: React.FC<{ spec: Spec; onUpdate: (s: Spec) => void }> = ({ spe
   return (
     <div className="h-full flex flex-col">
       {error && (
-        <div className="shrink-0 px-3 py-1.5 text-[10px] font-mono text-warning bg-warning/5 border-b border-warning/10">
+        <div className="shrink-0 px-3 py-1.5 text-2xs font-mono text-warning bg-warning/5 border-b border-warning/10">
           {error}
         </div>
       )}
       <textarea
         value={text}
         onChange={(e) => handleChange(e.target.value)}
-        className="flex-1 w-full p-4 text-[11px] font-mono text-neutral-400 bg-transparent resize-none focus:outline-none leading-relaxed"
+        className="flex-1 w-full p-4 text-2xs font-mono text-neutral-400 bg-transparent resize-none focus:outline-none leading-relaxed"
         spellCheck={false}
       />
     </div>
@@ -289,8 +289,8 @@ const SuggestionPills: React.FC<{
   const items = count ? suggestions.slice(0, count) : suggestions;
   const cls =
     size === 'sm'
-      ? 'px-2 py-1 text-[10px] border-neutral-800/60 text-neutral-600 hover:border-neutral-700 hover:text-neutral-300'
-      : 'px-3 py-1.5 text-[12px] border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.03]';
+      ? 'px-2 py-1 text-2xs border-neutral-800/60 text-neutral-600 hover:border-neutral-700 hover:text-neutral-300'
+      : 'px-3 py-1.5 text-xs border-neutral-800/60 text-neutral-500 hover:border-neutral-600 hover:text-neutral-200 hover:bg-white/[0.03]';
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {items.map((s) => (
@@ -322,7 +322,7 @@ const ChatMessages: React.FC<{
       <div
         key={i}
         className={cn(
-          'text-[12px] leading-relaxed',
+          'text-xs leading-relaxed',
           msg.role === 'user' ? 'text-neutral-400' : 'text-neutral-300'
         )}
       >
@@ -348,7 +348,7 @@ const ChatMessages: React.FC<{
             const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
             if (lastUserMsg) onRetry(lastUserMsg.content);
           }}
-          className="flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
+          className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors mt-1"
         >
           <RefreshCw size={10} />
           Retry
@@ -364,9 +364,9 @@ const GeneratingState: React.FC<{ message: string; elapsed?: number }> = ({ mess
     <div className="text-center space-y-6">
       <PremiumGlitchLoader />
       <div className="space-y-1">
-        {message && <p className="text-[11px] text-neutral-600 font-mono">{message}</p>}
+        {message && <p className="text-2xs text-neutral-600 font-mono">{message}</p>}
         {elapsed != null && elapsed > 0 && (
-          <p className="text-[10px] text-neutral-700 font-mono">{elapsed}s</p>
+          <p className="text-2xs text-neutral-700 font-mono">{elapsed}s</p>
         )}
       </div>
     </div>
@@ -388,10 +388,10 @@ const SidebarDisclosure: React.FC<{
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.03] transition-colors"
       >
-        <span className="text-[11px] font-medium text-neutral-500">{label}</span>
+        <span className="text-2xs font-medium text-neutral-500">{label}</span>
         <div className="flex items-center gap-1.5">
           {badge && (
-            <span className="text-[10px] font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
+            <span className="text-2xs font-mono text-neutral-700 bg-neutral-800/50 px-1.5 py-0.5 rounded-full">
               {badge}
             </span>
           )}
@@ -849,7 +849,7 @@ export const PlaygroundPage: React.FC = () => {
       {attachedFiles.map((file, i) => (
         <div
           key={`${file.name}-${i}`}
-          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-neutral-400 group/chip"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-2xs text-neutral-400 group/chip"
         >
           {file.type.startsWith('image/') ? (
             <ImageIcon size={12} className="text-neutral-400" />
@@ -917,14 +917,14 @@ export const PlaygroundPage: React.FC = () => {
         <Tooltip
           content={
             <span>
-              New miniapp <kbd className="ml-1 text-[10px] opacity-60">⌘N</kbd>
+              New miniapp <kbd className="ml-1 text-2xs opacity-60">⌘N</kbd>
             </span>
           }
           position="right"
         >
           <button
             onClick={handleNewSession}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-neutral-300 hover:bg-white/5 hover:text-neutral-100 transition-colors"
           >
             <Plus size={14} className="opacity-50" />
             <span>New miniapp</span>
@@ -970,7 +970,7 @@ export const PlaygroundPage: React.FC = () => {
               <SidebarSkeleton />
             ) : myMiniApps.length === 0 ? (
               <div className="px-3 py-3 text-center">
-                <p className="text-[11px] text-neutral-600">No miniapps yet</p>
+                <p className="text-2xs text-neutral-600">No miniapps yet</p>
               </div>
             ) : (
               <div className="space-y-px">
@@ -982,7 +982,7 @@ export const PlaygroundPage: React.FC = () => {
                     tabIndex={0}
                     onKeyDown={(e) => e.key === 'Enter' && handleLoadMiniApp(app)}
                     className={cn(
-                      'w-full text-left px-3 py-2 rounded-lg text-[13px] transition-colors group cursor-pointer',
+                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors group cursor-pointer',
                       miniAppId === app.id
                         ? 'bg-white/8 text-neutral-100'
                         : 'text-neutral-400 hover:bg-white/[0.03] hover:text-neutral-200'
@@ -1001,7 +1001,7 @@ export const PlaygroundPage: React.FC = () => {
                       </button>
                     </div>
                     {app.updatedAt && (
-                      <span className="text-[10px] text-neutral-600 mt-0.5 block">
+                      <span className="text-2xs text-neutral-600 mt-0.5 block">
                         {relativeTime(app.updatedAt)}
                       </span>
                     )}
@@ -1080,7 +1080,7 @@ export const PlaygroundPage: React.FC = () => {
           <Tooltip
             content={
               <span>
-                Exit fullscreen <kbd className="ml-1 text-[10px] opacity-60">Esc</kbd>
+                Exit fullscreen <kbd className="ml-1 text-2xs opacity-60">Esc</kbd>
               </span>
             }
             position="bottom"
@@ -1092,7 +1092,7 @@ export const PlaygroundPage: React.FC = () => {
               className="gap-1.5 text-neutral-400 hover:text-neutral-200"
             >
               <Minimize2 className="w-3 h-3" />
-              <span className="text-[10px]">Exit</span>
+              <span className="text-2xs">Exit</span>
             </Button>
           </Tooltip>
         </div>
@@ -1117,7 +1117,7 @@ export const PlaygroundPage: React.FC = () => {
             <PanelLeftOpen className="w-4 h-4" />
           )}
         </button>
-        {appTitle && <span className="ml-3 text-[13px] text-neutral-300 truncate">{appTitle}</span>}
+        {appTitle && <span className="ml-3 text-sm text-neutral-300 truncate">{appTitle}</span>}
         <div className="flex-1" />
         {spec && (
           <div className="flex items-center gap-1">
@@ -1144,7 +1144,7 @@ export const PlaygroundPage: React.FC = () => {
             <Tooltip
               content={
                 <span>
-                  Save <kbd className="ml-1 text-[10px] opacity-60">⌘S</kbd>
+                  Save <kbd className="ml-1 text-2xs opacity-60">⌘S</kbd>
                 </span>
               }
               position="bottom"
@@ -1187,14 +1187,14 @@ export const PlaygroundPage: React.FC = () => {
                   </Tooltip>
                 )}
                 {isPublished && (
-                  <span className="text-[10px] font-mono text-success/60 px-1">Published</span>
+                  <span className="text-2xs font-mono text-success/60 px-1">Published</span>
                 )}
               </>
             )}
             <Tooltip
               content={
                 <span>
-                  Fullscreen <kbd className="ml-1 text-[10px] opacity-60">F</kbd>
+                  Fullscreen <kbd className="ml-1 text-2xs opacity-60">F</kbd>
                 </span>
               }
               position="bottom"
@@ -1244,14 +1244,14 @@ export const PlaygroundPage: React.FC = () => {
                   <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight">
                     {greeting}
                   </h1>
-                  <p className="text-[13px] text-neutral-500">What would you like to build?</p>
+                  <p className="text-sm text-neutral-500">What would you like to build?</p>
                 </div>
                 <GlassPanel className="p-3">{inputBar}</GlassPanel>
                 <SuggestionPills suggestions={SUGGESTIONS} onSelect={handleGenerate} />
                 <div className="text-center">
                   <button
                     onClick={() => navigate('/playground/explore')}
-                    className="text-[12px] text-neutral-600 hover:text-neutral-400 transition-colors"
+                    className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors"
                   >
                     explore community miniapps →
                   </button>
@@ -1352,7 +1352,7 @@ export const PlaygroundPage: React.FC = () => {
           <PanelLeftOpen className="w-3.5 h-3.5" />
         )}
       </button>
-      {appTitle && <span className="text-[12px] text-neutral-400 truncate">{appTitle}</span>}
+      {appTitle && <span className="text-xs text-neutral-400 truncate">{appTitle}</span>}
       <div className="flex-1" />
       <div className="flex items-center gap-1">
         {spec && (
@@ -1423,7 +1423,7 @@ export const PlaygroundPage: React.FC = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                'px-3 py-1.5 text-[11px] font-medium transition-colors border-b -mb-px',
+                'px-3 py-1.5 text-2xs font-medium transition-colors border-b -mb-px',
                 activeTab === tab
                   ? 'text-neutral-200 border-brand-cyan'
                   : 'text-neutral-600 border-transparent hover:text-neutral-400'
@@ -1436,7 +1436,7 @@ export const PlaygroundPage: React.FC = () => {
             </button>
           ))}
           <div className="flex-1" />
-          <span className="text-[10px] font-mono text-neutral-700">
+          <span className="text-2xs font-mono text-neutral-700">
             {Object.keys(spec.elements || {}).length} elements
           </span>
         </div>
@@ -1452,7 +1452,7 @@ export const PlaygroundPage: React.FC = () => {
               transition={FADE_TRANSITION}
               className="h-full flex items-center justify-center"
             >
-              <p className="text-[12px] text-neutral-600">Your miniapp preview will appear here</p>
+              <p className="text-xs text-neutral-600">Your miniapp preview will appear here</p>
             </motion.div>
           ) : isGenerating && !spec ? (
             <motion.div

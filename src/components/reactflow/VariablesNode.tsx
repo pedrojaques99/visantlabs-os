@@ -51,8 +51,8 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[260px]">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
-        <Braces size={13} className="text-brand-cyan" />
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-white/70">
+        <Braces size={13} className="text-foreground" />
+        <span className="text-2xs font-semibold uppercase tracking-widest text-white/70">
           Variables
         </span>
       </div>
@@ -60,7 +60,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
       {/* Variable rows */}
       <div className="flex flex-col gap-1 px-3 py-2">
         {variables.length === 0 && (
-          <p className="text-[10px] text-white/30 text-center py-2">
+          <p className="text-2xs text-white/30 text-center py-2">
             No variables yet — click + to add
           </p>
         )}
@@ -69,17 +69,17 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
             <input
               className={cn(
                 'flex-1 min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
-                'text-[11px] text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
+                'text-2xs text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
               )}
               placeholder="name"
               value={v.key}
               onChange={(e) => handleKeyChange(idx, e.target.value)}
             />
-            <span className="text-white/30 text-[11px] shrink-0">=</span>
+            <span className="text-white/30 text-2xs shrink-0">=</span>
             <input
               className={cn(
                 'flex-[2] min-w-0 bg-white/5 border-node border-white/10 rounded px-2 py-1',
-                'text-[11px] text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
+                'text-2xs text-white placeholder:text-white/30 focus:outline-none focus:border-neutral-600'
               )}
               placeholder="value"
               value={v.value}
@@ -97,7 +97,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
 
       {/* Add row */}
       <div className="px-3 pb-2">
-        <NodeButton onClick={handleAdd} className="w-full gap-1 text-[10px]">
+        <NodeButton onClick={handleAdd} className="w-full gap-1 text-2xs">
           <Plus size={11} />
           Add variable
         </NodeButton>
@@ -105,7 +105,7 @@ export const VariablesNode = memo(({ data, selected, id, dragging }: NodeProps<a
 
       {/* Hint */}
       <div className="px-3 pb-2">
-        <p className="text-[10px] text-white/25 leading-tight">
+        <p className="text-2xs text-white/25 leading-tight">
           Use <span className="text-brand-cyan/60 font-mono">{`{{name}}`}</span> in any prompt to
           insert a value
         </p>

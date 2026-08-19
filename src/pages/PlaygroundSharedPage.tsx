@@ -129,12 +129,12 @@ export const PlaygroundSharedPage: React.FC = () => {
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-[13px] font-semibold text-neutral-200 truncate">{miniApp.title}</h1>
+          <h1 className="text-sm font-semibold text-neutral-200 truncate">{miniApp.title}</h1>
           {miniApp.author?.name && (
-            <span className="text-[10px] text-neutral-600">by {miniApp.author.name}</span>
+            <span className="text-2xs text-neutral-600">by {miniApp.author.name}</span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-neutral-600">
+        <div className="flex items-center gap-3 text-2xs text-neutral-600">
           <span className="inline-flex items-center gap-1">
             <Eye className="w-3 h-3" /> {miniApp.viewsCount}
           </span>

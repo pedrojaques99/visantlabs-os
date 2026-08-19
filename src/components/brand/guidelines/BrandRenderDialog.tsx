@@ -136,7 +136,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
               Render on-brand
             </DialogTitle>
           </div>
-          <DialogDescription className="text-[11px] text-neutral-500">
+          <DialogDescription className="text-2xs text-neutral-500">
             Cores, fontes, logo e foto da marca — renderizado full-web, sem Figma.
           </DialogDescription>
         </DialogHeader>
@@ -146,14 +146,14 @@ export const BrandRenderDialog: React.FC<Props> = ({
             <div className="space-y-4">
               {presets.length > 1 && (
                 <div className="space-y-1.5">
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-500">Template</p>
+                  <p className="text-2xs uppercase tracking-widest text-neutral-500">Template</p>
                   <div className="flex flex-wrap gap-1.5">
                     {presets.map((p) => (
                       <button
                         key={p.id}
                         onClick={() => setTemplate(p.id)}
                         className={cn(
-                          'px-2.5 py-1 rounded-lg text-[11px] border transition-colors',
+                          'px-2.5 py-1 rounded-lg text-2xs border transition-colors',
                           template === p.id
                             ? 'border-violet-500/40 bg-violet-500/10 text-violet-200'
                             : 'border-neutral-800 text-neutral-400 hover:bg-white/5'
@@ -189,7 +189,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
                 placeholder="Brief da foto (vibe — opcional)"
                 className="text-sm"
               />
-              <label className="flex items-center gap-2 text-[12px] text-neutral-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={halftone}
@@ -212,9 +212,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
           {view === 'rendering' && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-[11px] text-neutral-500 uppercase tracking-widest">
-                Renderizando…
-              </p>
+              <p className="text-2xs text-neutral-500 uppercase tracking-widest">Renderizando…</p>
             </div>
           )}
 
@@ -226,7 +224,7 @@ export const BrandRenderDialog: React.FC<Props> = ({
               <div className="flex items-center justify-between">
                 <button
                   onClick={reset}
-                  className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                  className="flex items-center gap-1.5 text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                 >
                   <RotateCcw size={10} /> Outro
                 </button>

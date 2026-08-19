@@ -84,7 +84,7 @@ export const TypographySection: React.FC<TypographySectionProps> = ({
     >
       <div className="space-y-3 py-1">
         {local.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">No fonts yet. Click + to add.</p>
+          <p className="text-2xs text-neutral-700 py-2">No fonts yet. Click + to add.</p>
         )}
         {local.map((f, i) => (
           <div

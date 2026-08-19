@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { RefreshCw, Copy, Loader2, Layout, ArrowUpRight, ArrowRight } from '@/lib/ui/icons';
 import { BrandRenderDialog } from '@/components/brand/guidelines/BrandRenderDialog';
 import { GlassPanel } from '@/components/ui/GlassPanel';
-import { MicroTitle } from '@/components/ui/MicroTitle';
 import { cn } from '@/lib/utils';
 import { useBrandSuggestions, SUGGESTION_KIND_META } from '@/hooks/useBrandSuggestions';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -59,9 +58,15 @@ interface Props {
   isShared: boolean;
   /** Seed the mockup generator with a suggestion's prompt and open it. */
   onGenerate: (prompt: string) => void;
-  /** Optional: mostra um card "Mockup" persistente no topo de "Make something"
-   *  (usado no cockpit — mockup é ação de produção importante). */
+  /** Optional: card "Mockup" persistente entre os starters (usado no cockpit).
+   *  Entra como célula IGUAL às outras: mockup é suporte, não herói. */
   onMockup?: () => void;
+  /** Optional (cockpit): o que o agente enxerga da marca hoje. Preenche o card
+   *  de contexto com ESTADO em vez de repetir o convite. */
+  contextStats?: Array<{ labelKey: string; value: number }>;
+  /** Optional: the brand's real colors, most-used first — rendered as a dot
+   *  strip inside the context card (moved here from the hero, which repeated it). */
+  paletteColors?: Array<{ hex: string; name?: string }>;
   /** Existing connect handler (mints MCP connect link, or prompts to share first). */
   onConnect: () => void;
   connecting?: boolean;
@@ -107,14 +112,12 @@ const IdeaCard: React.FC<{
       onClick={onPrimary}
       className="w-full min-h-[104px] flex flex-col text-left rounded-xl border border-[var(--brand-text)]/10 bg-transparent p-5 pr-11 hover:border-[var(--brand-text)]/25 hover:bg-[var(--brand-text)]/[0.02] transition-colors"
     >
-      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--brand-text)]/35">
-        {kicker}
-      </span>
-      <span className="mt-2 text-[15px] font-medium tracking-tight leading-snug text-[var(--brand-text)]">
+      <span className="text-xs text-[var(--brand-text)]/40">{kicker}</span>
+      <span className="mt-1.5 text-[0.9375rem] font-medium tracking-tight leading-snug text-[var(--brand-text)]">
         {title}
       </span>
       {body && (
-        <span className="mt-1.5 text-[12px] leading-relaxed text-[var(--brand-text)]/45 line-clamp-2">
+        <span className="mt-1.5 text-xs leading-relaxed text-[var(--brand-text)]/45 line-clamp-2">
           {body}
         </span>
       )}
@@ -132,7 +135,35 @@ const IdeaCard: React.FC<{
   </div>
 );
 
-// Official assistant marks (reuse the same assets as the public connect page).
+// Same cell size/shape as IdeaCard, but styled as an action (dashed border, no
+// kicker) — the 4th grid slot that triggers a fresh AI generation instead of
+// linking to a static starter.
+const GenerateIdeaCard: React.FC<{ label: string; loading?: boolean; onPrimary: () => void }> = ({
+  label,
+  loading,
+  onPrimary,
+}) => (
+  <button
+    onClick={onPrimary}
+    disabled={loading}
+    className="group w-full min-h-[104px] flex flex-col items-start justify-center text-left rounded-xl border border-dashed border-[var(--brand-text)]/20 bg-[var(--brand-text)]/[0.02] p-5 hover:border-[var(--brand-text)]/40 hover:bg-[var(--brand-text)]/[0.04] transition-colors disabled:opacity-50"
+  >
+    <span className="flex items-center gap-1.5 text-[0.9375rem] font-medium tracking-tight text-[var(--brand-text)]">
+      {label}
+      {loading ? (
+        <Loader2 size={14} className="animate-spin" />
+      ) : (
+        <ArrowRight
+          size={14}
+          className="transition-transform group-hover:translate-x-0.5"
+        />
+      )}
+    </span>
+  </button>
+);
+
+// Marcas oficiais dos assistentes. Não são ícones de interface: são logotipos
+// de terceiro, então saem de arquivo em /models e não da biblioteca de ícones.
 const ASSISTANTS: Array<{ id: string; label: string; node: React.ReactNode }> = [
   {
     id: 'claude',
@@ -142,15 +173,16 @@ const ASSISTANTS: Array<{ id: string; label: string; node: React.ReactNode }> = 
   {
     id: 'openai',
     label: 'ChatGPT',
-    node: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#10A37F]" fill="currentColor" aria-hidden>
-        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
-      </svg>
-    ),
+    node: <img src="/models/openai.svg" alt="ChatGPT" className="w-5 h-5" />,
   },
   {
     id: 'cursor',
     label: 'Cursor',
+    // EXCEÇÃO ao ruido-scan/icone-desenhado-a-mao: a marca do Cursor é
+    // monocromática e precisa seguir `--brand-text` pra não sumir no tema da
+    // marca ativa. Como <img> ela perderia `currentColor` e viraria uma cor
+    // fixa que some em metade das marcas. As outras duas têm cor própria e
+    // por isso saem de arquivo.
     node: (
       <svg
         viewBox="0 0 24 24"
@@ -169,6 +201,8 @@ export const BrandInteractivePanel: React.FC<Props> = ({
   isShared,
   onGenerate,
   onMockup,
+  contextStats,
+  paletteColors,
   onConnect,
   connecting,
   fullWidth,
@@ -268,11 +302,11 @@ export const BrandInteractivePanel: React.FC<Props> = ({
       >
         <div className="flex items-baseline justify-between gap-4 mb-8">
           <div className="flex items-baseline gap-3 min-w-0">
-            <MicroTitle className="text-[var(--brand-text)]/50">
+            <span className="text-sm font-medium tracking-tight text-[var(--brand-text)]">
               {t('brandPanel.makeSomething')}
-            </MicroTitle>
+            </span>
             {seasonal && (
-              <span className="hidden sm:inline truncate text-[10px] uppercase tracking-widest text-[var(--brand-text)]/30">
+              <span className="hidden sm:inline truncate text-xs text-[var(--brand-text)]/35">
                 {seasonal.label} · {t('brandPanel.daysOut', { n: seasonal.daysAway })}
               </span>
             )}
@@ -281,7 +315,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             <button
               onClick={() => load(true)}
               disabled={loading || refreshing}
-              className="flex items-center gap-1.5 shrink-0 text-[10px] uppercase tracking-widest text-[var(--brand-text)]/35 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 shrink-0 text-xs text-[var(--brand-text)]/40 hover:text-[var(--brand-text)]/80 transition-colors disabled:opacity-40"
               aria-label={t('brandPanel.refreshAria')}
             >
               <RefreshCw size={11} className={refreshing ? 'animate-spin' : ''} />
@@ -289,18 +323,6 @@ export const BrandInteractivePanel: React.FC<Props> = ({
             </button>
           )}
         </div>
-
-        {/* Mockup — starter de produção persistente (não sazonal). Só aparece
-            quando o host passa onMockup (cockpit); a view pública não usa. */}
-        {onMockup && (
-          <div className="mb-3">
-            <IdeaCard
-              kicker={t('brandPanel.kind.mockup')}
-              title={t('brandPanel.mockupTitle')}
-              onPrimary={onMockup}
-            />
-          </div>
-        )}
 
         {loading || refreshing ? (
           // Skeletons while generating — reads as intent, never "stuck".
@@ -316,8 +338,22 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           // Default: obvious, always-on-brand starters — zero model spend. Tailored,
           // seasonal ideas are generated only when the owner explicitly asks.
           <div className="space-y-4">
+            {/* 4 células fechadas: mockup (se houver) + starters cobrem 3, a 4a
+                é sempre o CTA de gerar ideia sob medida — no mesmo tamanho, não
+                mais um botão largo separado embaixo. */}
             <div className="grid sm:grid-cols-2 gap-3">
-              {STATIC_STARTERS.map((s, i) => (
+              {/* Mockup entra como célula IGUAL às outras. Era uma faixa larga
+                  sozinha no topo, o maior elemento do painel — hierarquia que
+                  contrariava o próprio plano (mockup é suporte, e é a dor com
+                  evidência mais fraca). Só o cockpit passa `onMockup`. */}
+              {onMockup && (
+                <IdeaCard
+                  kicker={t('brandPanel.kind.mockup')}
+                  title={t('brandPanel.mockupTitle')}
+                  onPrimary={onMockup}
+                />
+              )}
+              {STATIC_STARTERS.slice(0, onMockup ? 2 : 3).map((s, i) => (
                 <IdeaCard
                   key={i}
                   kicker={t(s.labelKey)}
@@ -325,33 +361,34 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                   onPrimary={() => onGenerate(s.prompt)}
                 />
               ))}
+              <GenerateIdeaCard
+                label={
+                  seasonal
+                    ? t('brandPanel.generateFor', { label: seasonal.label })
+                    : t('brandPanel.generateTailored')
+                }
+                loading={refreshing}
+                onPrimary={() => load(true)}
+              />
             </div>
             {/* O erro das ideias ao vivo PRECISA aparecer: sem isto uma falha real
                 fica indistinguível de "ainda não gerei ideias" — os starters
                 estáticos escondiam a quebra (silent-empty). */}
             {error && (
-              <p role="status" className="text-[11px] leading-relaxed text-[var(--brand-text)]/45">
+              <p role="status" className="text-xs leading-relaxed text-[var(--brand-text)]/45">
                 {t('brandPanel.ideasError', { message: error })}
               </p>
             )}
-            <button
-              onClick={() => load(true)}
-              disabled={refreshing}
-              className={cn(primaryBtn, 'h-9 px-4 w-full sm:w-auto justify-center')}
-            >
-              <span>
-                {seasonal
-                  ? t('brandPanel.generateFor', { label: seasonal.label })
-                  : t('brandPanel.generateTailored')}
-              </span>
-              <ArrowRight
-                size={13}
-                className="transition-transform group-hover/btn:translate-x-0.5"
-              />
-            </button>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-3">
+            {onMockup && (
+              <IdeaCard
+                kicker={t('brandPanel.kind.mockup')}
+                title={t('brandPanel.mockupTitle')}
+                onPrimary={onMockup}
+              />
+            )}
             {suggestions.map((s, i) => {
               const meta = KIND_META[s.kind] || KIND_META.mockup;
               const isInline = meta.mode === 'inline';
@@ -369,7 +406,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
                           e.stopPropagation();
                           setRenderInitial({
                             h1: s.title,
-                            brief: `${s.title} — ${s.rationale}`,
+                            brief: `${s.title}. ${s.rationale}`,
                             template: 'Post/Launch',
                           });
                           setRenderOpen(true);
@@ -405,9 +442,9 @@ export const BrandInteractivePanel: React.FC<Props> = ({
         padding="lg"
         className="bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/10 flex flex-col"
       >
-        <MicroTitle className="text-[var(--brand-text)]/50 mb-6">
+        <span className="mb-6 block text-sm font-medium tracking-tight text-[var(--brand-text)]">
           {t('brandPanel.liveAiContext')}
-        </MicroTitle>
+        </span>
 
         {/* The assistants this brand plugs into — real marks, no chrome. */}
         <div className="flex items-center gap-2 mb-6">
@@ -422,15 +459,49 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           ))}
         </div>
 
-        <p className="text-[13px] text-[var(--brand-text)]/50 leading-relaxed mb-6 max-w-xs">
+        <p className="text-sm text-[var(--brand-text)]/50 leading-relaxed mb-6 max-w-xs">
           {t('brandPanel.assistantsBlurb')}
         </p>
+
+        {/* O que o agente enxerga HOJE. Este card é uma coluna só ao lado de um
+            painel de duas, então o `mt-auto` abaixo abria um vão vertical morto
+            de ~150px no meio da tela — bem no elemento que carrega a tese do
+            produto. Estado ocupa o espaço; convite repetido não. */}
+        {contextStats && contextStats.length > 0 && (
+          <div className="mb-6 grid grid-cols-2 gap-x-4 gap-y-3">
+            {contextStats.map((s) => (
+              <div key={s.labelKey} className="flex flex-col">
+                <span className="text-lg font-medium tabular-nums leading-none text-[var(--brand-text)]/80">
+                  {s.value}
+                </span>
+                <span className="mt-1 text-xs text-[var(--brand-text)]/40">{t(s.labelKey)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {paletteColors && paletteColors.length > 0 && (
+          <div
+            className="flex items-center gap-1.5 mb-6"
+            role="img"
+            aria-label={t('cockpit.hero.palette')}
+          >
+            {paletteColors.map((c) => (
+              <span
+                key={c.hex}
+                title={c.name || c.hex}
+                className="w-4 h-4 rounded-full border border-[var(--brand-text)]/15 shrink-0"
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onConnect}
             disabled={connecting}
-            className={cn(primaryBtn, 'h-10 px-4 justify-between')}
+            className={cn(isShared ? ghostBtn : primaryBtn, 'h-10 px-4 justify-between')}
           >
             <span>{isShared ? t('brandPanel.connect') : t('brandPanel.shareConnect')}</span>
             {connecting ? (
@@ -476,7 +547,7 @@ export const BrandInteractivePanel: React.FC<Props> = ({
           </div>
         </div>
         {!aiConfigured && (
-          <p className="text-[10px] text-[var(--brand-text)]/40 mt-5 leading-relaxed">
+          <p className="text-xs text-[var(--brand-text)]/40 mt-5 leading-relaxed">
             {t('brandPanel.notConfigured')}
           </p>
         )}

@@ -33,7 +33,7 @@ export const ApplyBrandButton: React.FC<{
       onClick={() => onApply(presets)}
       title={presets.join(' · ')}
       className={cn(
-        'flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-neutral-500 hover:text-foreground transition-colors',
+        'flex items-center gap-1.5 text-2xs uppercase tracking-wider text-neutral-500 hover:text-foreground transition-colors',
         className
       )}
     >
@@ -67,7 +67,7 @@ export const BrandSwatchRow: React.FC<{
   if (!presets.length) return null;
   return (
     <div className={cn('space-y-1', className)}>
-      <span className="text-[9px] uppercase tracking-widest text-neutral-600">
+      <span className="text-3xs uppercase tracking-widest text-neutral-600">
         {t('common.brand')}
       </span>
       <div className="flex gap-1.5 flex-wrap">

@@ -70,7 +70,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
               </button>
             ))}
           </div>
-          <span className="text-[10px] text-neutral-500 pl-0.5">
+          <span className="text-2xs text-neutral-500 pl-0.5">
             {MODES.find((m) => m.id === activeMode)?.desc}
           </span>
         </div>
@@ -117,7 +117,7 @@ export const ImageEditorActionPanel: React.FC<Props> = ({ imageUrl, imageWidth, 
         disabled={!canGenerate || isGenerating}
         className={cn(
           'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-[color,background-color,border-color,opacity]',
-          'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30',
+          'bg-brand-cyan/20 text-foreground border border-brand-cyan/30',
           'hover:bg-brand-cyan/30 hover:border-neutral-700',
           'disabled:opacity-30 disabled:cursor-not-allowed',
           isGenerating && 'animate-pulse'

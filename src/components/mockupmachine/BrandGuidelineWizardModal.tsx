@@ -843,7 +843,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                   >
                     <span
                       className={cn(
-                        'flex items-center justify-center w-5 h-5 rounded-full border text-[10px] transition-colors',
+                        'flex items-center justify-center w-5 h-5 rounded-full border text-2xs transition-colors',
                         step === s.n
                           ? 'border-brand-cyan text-brand-cyan'
                           : 'border-neutral-700 text-neutral-600'

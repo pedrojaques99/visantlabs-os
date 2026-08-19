@@ -587,7 +587,7 @@ export const BudgetMachinePage: React.FC = () => {
         onClick={handleSave}
         disabled={isSaving}
         variant="ghost"
-        className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+        className="h-9 px-4 gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
       >
         <Save size={14} />
         {isSaving ? t('budget.saving') : t('budget.save')}
@@ -597,7 +597,7 @@ export const BudgetMachinePage: React.FC = () => {
           <Button
             onClick={handleGeneratePDF}
             variant="ghost"
-            className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+            className="h-9 px-4 gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
           >
             <Download size={14} />
             {t('budget.generatePDF')}
@@ -605,7 +605,7 @@ export const BudgetMachinePage: React.FC = () => {
           <Button
             onClick={handleShare}
             variant="ghost"
-            className="h-9 px-4 gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
+            className="h-9 px-4 gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:text-brand-cyan hover:bg-brand-cyan/5"
           >
             {linkCopied ? <Check size={14} /> : <Share2 size={14} />}
             {linkCopied ? 'Copied!' : t('budget.share')}
@@ -812,7 +812,7 @@ export const BudgetMachinePage: React.FC = () => {
                           setLinkCopied(true);
                           setTimeout(() => setLinkCopied(false), 2000);
                         }}
-                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/50 rounded-md text-foreground font-mono text-sm transition-colors flex items-center justify-center gap-2"
                       >
                         <Copy size={16} />
                         <span className="sm:hidden">{t('budget.machine.copiar')}</span>

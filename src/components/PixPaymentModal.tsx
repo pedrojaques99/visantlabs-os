@@ -336,7 +336,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               </div>
               <MicroTitle className="text-neutral-500">{t('pix.credits') || 'CRÉDITOS'}</MicroTitle>
 
-              <div className="mt-4 flex items-center gap-2 text-[10px] sm:text-[11px] text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
+              <div className="mt-4 flex items-center gap-2 text-2xs sm:text-2xs text-neutral-600 uppercase tracking-widest border-t border-neutral-800 pt-4 w-full justify-center">
                 <span>REPASSE_TRANSPARENTE</span>
                 <span className="w-1 h-1 bg-neutral-800 rounded-full" />
                 <span className="text-neutral-500">$0.067 Google + $0.013 Visant</span>
@@ -443,7 +443,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                           title={t('pix.showQrCode') || 'Mostrar QR Code'}
                           aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
                         >
-                          <QrCode size={20} className="text-brand-cyan" />
+                          <QrCode size={20} className="text-foreground" />
                         </Button>
                       )}
                     </>
@@ -527,7 +527,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                           </>
                         ) : (
                           <>
-                            <Copy size={18} className="text-brand-cyan" />
+                            <Copy size={18} className="text-foreground" />
                             <span className="text-sm text-neutral-300 font-mono">
                               {t('pix.copy') || 'Copiar código PIX'}
                             </span>

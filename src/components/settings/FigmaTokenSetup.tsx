@@ -121,7 +121,7 @@ export const FigmaTokenSetup: React.FC = () => {
             href="https://figma.com/developers/api#access"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[10px] text-neutral-500 hover:text-brand-cyan font-mono transition-colors"
+            className="inline-flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-brand-cyan font-mono transition-colors"
           >
             Como criar um token de acesso? <ExternalLink size={10} />
           </a>
@@ -136,7 +136,7 @@ export const FigmaTokenSetup: React.FC = () => {
               <p className="text-sm font-bold text-neutral-200">
                 {figmaUser ? `@${figmaUser.handle}` : 'Conta Vinculada'}
               </p>
-              <p className="text-[10px] text-neutral-500 font-mono">API REST Ativa</p>
+              <p className="text-2xs text-neutral-500 font-mono">API REST Ativa</p>
             </div>
           </div>
           <Button

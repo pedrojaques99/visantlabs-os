@@ -72,12 +72,12 @@ export const BrandFunnelBanner: React.FC<BrandFunnelBannerProps> = ({ toolId, cl
       data-vsn-component="BrandFunnelBanner"
     >
       <Compass size={13} className="text-muted-foreground shrink-0" />
-      <span className="font-mono text-[11px] text-neutral-300 truncate">
+      <span className="font-mono text-2xs text-neutral-300 truncate">
         {t('funnel.banner.message')}
       </span>
       <button
         onClick={handleCta}
-        className="shrink-0 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-200 transition-colors"
+        className="shrink-0 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 font-mono text-2xs uppercase tracking-widest text-neutral-200 transition-colors"
       >
         {t('funnel.banner.cta')}
       </button>

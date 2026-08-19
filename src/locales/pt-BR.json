@@ -647,12 +647,12 @@
     "saveFailed": "A imagem foi gerada mas não deu pra salvar na sua biblioteca — baixe antes de fechar."
   },
   "nav": {
-    "context": "CONTEXTO",
+    "context": "Contexto",
     "allBrands": "Todas as marcas",
     "filterThisBrand": "Mostrar só esta marca",
     "showAll": "Mostrar todas as marcas",
-    "recent": "RECENTES",
-    "pinned": "FIXADOS",
+    "recent": "Recentes",
+    "pinned": "Fixados",
     "unpin": "Desafixar",
     "pin": "Fixar no menu",
     "settings": "Configurações",
@@ -695,7 +695,7 @@
     },
     "library": {
       "label": "Biblioteca",
-      "title": "BIBLIOTECA",
+      "title": "Biblioteca",
       "creativeProjects": "Meus Criativos",
       "myOutputs": "Meus Mockups",
       "references": "Referências",
@@ -734,7 +734,7 @@
       "text": "Agência brasileira independente. Laboratório de experimentos criando soluções personalizadas para designers gráficos e empreendedores.",
       "title": "Sobre a Visant"
     },
-    "exploreApps": "EXPLORAR APPS",
+    "exploreApps": "Explorar apps",
     "founders": {
       "pedroJaques": "Pedro Jaques",
       "pedroXavier": "Pedro Xavier",
@@ -744,7 +744,7 @@
       "alt": "Visant Labs",
       "url": "/og-image.png"
     },
-    "labsApps": "LABS APPS //",
+    "labsApps": "Labs apps //",
     "links": {
       "alphaTests": "Alpha Tests",
       "portfolio": "Portfólio da Agência",
@@ -796,7 +796,7 @@
     "designSystem": "Design System",
     "directOrigin": "Origem direta",
     "doLogin": "Fazer Login",
-    "estimated": "ESTIMADO",
+    "estimated": "Estimado",
     "estimatedCost": "Custo Estimado",
     "failedToLoadData": "Não foi possível carregar os dados.",
     "financial": "Financeiro",
@@ -1068,7 +1068,7 @@
       "description": "Transforme imagens em arte ASCII interativa",
       "name": "Image ASCII Vortex"
     },
-    "audioTools": "AUDIO TOOLS //",
+    "audioTools": "Audio tools //",
     "badge": {
       "audio": "Áudio",
       "beta": "Beta",
@@ -1091,7 +1091,7 @@
       "description": "Crie estratégias completas de branding",
       "name": "Branding Machine"
     },
-    "brandingTools": "DESIGN TOOLS //",
+    "brandingTools": "Design tools //",
     "budgetMachine": {
       "description": "Crie e gerencie orçamentos profissionais",
       "name": "Budget Machine"
@@ -1108,7 +1108,7 @@
       "description": "Seu assistente agêntico de marca, gere mockups editáveis, planeje campanhas e crie no Figma com a sua marca como contexto",
       "name": "Brand Copilot"
     },
-    "effectsTools": "EFFECTS TOOLS //",
+    "effectsTools": "Effects tools //",
     "ellipseAudio": {
       "description": "Analisador de espectro de áudio circular",
       "name": "Ellipse Audio Freq"
@@ -1150,7 +1150,7 @@
     "seoKeywords": "apps, aplicativos, ferramentas criativas, mockup, branding, budget, canvas",
     "searchPlaceholder": "Buscar apps...",
     "seoTitle": "Aplicativos Criativos",
-    "subscribeNow": "ASSINAR AGORA",
+    "subscribeNow": "Assinar agora",
     "subtitle": "Escolha um app pra começar",
     "title": "Aplicativos",
     "vsnLabs": {
@@ -1356,11 +1356,11 @@
     "resetting": "Redefinindo...",
     "sendResetLink": "Enviar Link de Recuperação",
     "sending": "Enviando...",
-    "signIn": "ENTRAR",
+    "signIn": "Entrar",
     "signInRequired": "Por favor, entre para gerar mockups.",
     "signInWithEmail": "Entrar com Email",
     "signInWithGoogle": "Entrar com Google",
-    "signUp": "CRIAR CONTA",
+    "signUp": "Criar conta",
     "signUpWithGoogle": "Cadastrar com Google",
     "signedInSuccess": "Login realizado com sucesso!",
     "signingIn": "Entrando...",
@@ -1531,7 +1531,7 @@
       "createNew": "Criar Novo",
       "deleted": "Projeto excluído com sucesso",
       "emptyDescription": "Crie seu primeiro projeto de branding para vê-lo aqui.",
-      "emptyTitle": "NENHUM PROJETO AINDA",
+      "emptyTitle": "Nenhum projeto ainda",
       "errors": {
         "failedToDelete": "Falha ao excluir projeto",
         "failedToLoad": "Falha ao carregar projetos de branding",
@@ -1693,7 +1693,7 @@
     "downloadPDF": "Baixar PDF",
     "duplicate": "Duplicar",
     "emptyDescription": "Crie seu primeiro orçamento para vê-lo aqui.",
-    "emptyTitle": "NENHUM ORÇAMENTO AINDA",
+    "emptyTitle": "Nenhum orçamento ainda",
     "endDate": "Data de Término",
     "errors": {
       "failedToCopyLink": "Falha ao copiar link",
@@ -1757,7 +1757,7 @@
       "color": "#000000",
       "deliverableDescription": "Descrição breve...",
       "deliverableName": "Ex: Design de Website",
-      "finalCTAText": "VAMOS CONSTRUIR ALGO GRANDE JUNTOS?",
+      "finalCTAText": "Vamos construir algo grande juntos?",
       "giftDescription": "Descrição do brinde",
       "giftImageUrl": "https://...",
       "giftTitle": "Título do brinde",
@@ -2283,8 +2283,8 @@
       "copyFailed": "Falha ao copiar mensagem",
       "copyMessage": "Copiar mensagem",
       "createNode": "Criar Node",
-      "detectedActions": "AÇÕES DETECTADAS",
-      "detectedMockups": "MOCKUPS DETECTADOS",
+      "detectedActions": "Ações detectadas",
+      "detectedMockups": "Mockups detectados",
       "image": "imagem",
       "images": "Imagens",
       "imagesPlural": "imagens",
@@ -2596,7 +2596,7 @@
         "mockupIdeas": "Ideias de Mockup",
         "persona": "Persona",
         "references": "Referências",
-        "swot": "SWOT",
+        "swot": "Swot",
         "visualElements": "Elementos Visuais"
       },
       "selectExistingProject": "Selecionar Projeto Existente",
@@ -2838,20 +2838,6 @@
       "manageBrands": "Gerenciar marcas…",
       "placeholder": "Selecionar marca"
     },
-    "work": {
-      "campaign": "Campanha",
-      "creative": "Criativo",
-      "ctaCampaign": "Criar campanha",
-      "ctaCopilot": "Abrir Copilot",
-      "ctaCreative": "Criar criativo",
-      "ctaMockups": "Gerar kit de mockups",
-      "empty": "Nada em andamento ainda, comece algo novo.",
-      "emptySubtitle": "Sua marca já está pronta pra trabalhar. Escolha por onde começar:",
-      "emptyTitle": "Comece o primeiro trabalho da marca",
-      "new": "Novo",
-      "title": "Em andamento",
-      "loadError": "Não foi possível carregar seu trabalho em andamento. Tente de novo."
-    },
     "surprise": {
       "title": "Mockups grátis",
       "surpriseMe": "Surpreenda-me",
@@ -2875,10 +2861,19 @@
       "updated": "Logo atualizado",
       "primarySet": "Logo principal definido",
       "failed": "Falha ao trocar o logo"
+    },
+    "voice": {
+      "noLogo": "A {brand} ainda não tem logo. Sem ele nada sai parecido com a marca.",
+      "noPieces": "A {brand} ainda não produziu nada aqui.",
+      "seasonal": "{label} em {days} dias. A {brand} ainda não tem peça pra isso.",
+      "notConnected": "A {brand} está pronta e ainda não está ligada em nenhum assistente.",
+      "idle": "Faz {days} dias que a {brand} não recebe peça nova.",
+      "gap": "O que falta na {brand} agora: {gap}.",
+      "neutral": "{count} peças feitas com a {brand}."
     }
   },
   "common": {
-    "add": "ADICIONAR",
+    "add": "Adicionar",
     "backToHome": "Voltar ao início",
     "analysing": "Analisando...",
     "authenticationRequired": "Autenticação necessária",
@@ -2961,7 +2956,7 @@
     "videoTooLarge": "Vídeo muito grande. Tamanho máximo é {maxSize}MB.",
     "videoUploadedSuccess": "Vídeo enviado com sucesso!",
     "addColor": "Adicionar Cor",
-    "fileFound": "ARQUIVO ENCONTRADO",
+    "fileFound": "Arquivo encontrado",
     "invalidFile": "Arquivo inválido",
     "localSource": "Fonte Local",
     "localUpload": "Upload Local",
@@ -3400,7 +3395,7 @@
     "renews": "Renova em {date}",
     "resets": "Reseta em {date}",
     "storage": "Armazenamento",
-    "title": "CRÉDITOS",
+    "title": "Créditos",
     "used": "Gastos",
     "noSubscription": "Sem assinatura"
   },
@@ -3410,7 +3405,7 @@
     "note": "Créditos nunca expiram e podem ser usados a qualquer momento",
     "purchaseSuccess": "Créditos adicionados à sua conta",
     "subtitle": "Escolha o pacote pelo volume que você gera",
-    "title": "COMPRAR CRÉDITOS",
+    "title": "Comprar créditos",
     "viewPlans": "Ver planos de assinatura"
   },
   "designSystem": {
@@ -3765,8 +3760,8 @@
     "portuguese": "Português",
     "privacyPolicy": "Política de Privacidade",
     "refund": "Reembolso",
-    "rightsReserved": "TODOS OS DIREITOS RESERVADOS © VSN LABS®",
-    "rightsReservedShort": "© VSN LABS®",
+    "rightsReserved": "Todos os direitos reservados © vsn labs®",
+    "rightsReservedShort": "© Vsn labs®",
     "terms": "Termos",
     "usage": "Uso"
   },
@@ -3849,24 +3844,24 @@
     "addCustomTag": "Adicionar tag personalizada...",
     "addImage": "Adicionar Imagem",
     "addMore": "Adicionar Mais",
-    "addMoreReferences": "ADD_REFERÊNCIA",
+    "addMoreReferences": "Add_referência",
     "addReferenceImage": "Adicionar imagem de referência ({count}/3)",
-    "additionalPrompt": "PROMPT ADICIONAL (DEVE TER...)",
+    "additionalPrompt": "Prompt adicional (deve ter...)",
     "additionalPromptPlaceholder": "ex.: em uma mesa de madeira, sombras suaves",
     "advancedOptions": "Opções avançadas",
     "aiSettings": "Ajustes de IA",
-    "brandContext": "SUA MARCA & DESIGN",
+    "brandContext": "Sua marca & design",
     "essentialModeFootnote": "Essential mode usa presets otimizados para velocidade e qualidade profissional.",
-    "generateResults": "GERAR MOCKUPS",
+    "generateResults": "Gerar mockups",
     "selectVibe": "Selecione um estilo antes de gerar.",
     "selectVibeHint": "Selecione um estilo acima para gerar",
-    "switchToExpert": "MODO EXPERT",
-    "vibeSelect": "ESCOLHA O ESTILO (VIBE)",
-    "scenarioDetails": "DETALHES DO CENÁRIO",
+    "switchToExpert": "Modo expert",
+    "vibeSelect": "Escolha o estilo (vibe)",
+    "scenarioDetails": "Detalhes do cenário",
     "scenarioPlaceholder": "Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...",
-    "aiSuggested": "SUGERIDAS PELA IA:",
-    "aiSuggestions": "SUGESTÕES DA IA:",
-    "allCategories": "TODAS_CATEGORIAS",
+    "aiSuggested": "Sugeridas pela IA:",
+    "aiSuggestions": "Sugestões da IA:",
+    "allCategories": "Todas_categorias",
     "analysisStatusMessages": [
       "escaneando cores e contrastes",
       "identificando estilo visual",
@@ -3875,11 +3870,11 @@
       "analisando projeto",
       "burilando prompt"
     ],
-    "analyzeImage": "ANALISAR PROJETO",
+    "analyzeImage": "Analisar projeto",
     "analyzeProject": "Analisar Projeto",
-    "analyzing": "ANALISANDO...",
-    "analyzingImage": "ANALISANDO PROJETO...",
-    "aspectRatio": "PROPORÇÃO_",
+    "analyzing": "Analisando...",
+    "analyzingImage": "Analisando projeto...",
+    "aspectRatio": "Proporção_",
     "aspectRatioLabel": "Proporção",
     "aspectRatioAutoTooltip": "Determinado automaticamente para o Standard (HD)",
     "aspectRatioLandscape": "Paisagem",
@@ -3890,12 +3885,12 @@
     "aspectRatioPortrait45": "Retrato",
     "aspectRatioSquare": "Quadrado",
     "aspectRatioStandard": "Padrão",
-    "aspectRatioTitle": "PROPORÇÃO_",
+    "aspectRatioTitle": "Proporção_",
     "aspectRatioUltrawide": "Ultrawide",
     "aspectRatioValue": "Proporção {ratio}",
     "aspectRatioWidescreen": "Widescreen",
     "autoAspectRatioDescription": "A proporção é determinada automaticamente pela imagem de entrada.",
-    "autoAspectRatioTitle": "PROPORÇÃO_AUTOMÁTICA_",
+    "autoAspectRatioTitle": "Proporção_automática_",
     "autoGenerate": "Auto Gerar",
     "autoGenerateActive": "Imagens serão geradas instantaneamente.",
     "autoGenerateDescription": "Gera automaticamente após criar o prompt",
@@ -3929,7 +3924,7 @@
     "brandWizardPdfSelected": "PDF Selecionado:",
     "brandWizardErrorPdf": "Falha ao processar arquivo PDF",
     "brandWizardImagesLabel": "Imagens da Marca",
-    "brandWizardImagesPlaceholderShort": "IMAGENS",
+    "brandWizardImagesPlaceholderShort": "Imagens",
     "brandWizardPdfPlaceholderShort": "PDF",
     "brandWizardExtractionHint": "extração essencialista de estratégia, arquétipos e tokens.",
     "brandWizardUrlHint": "Cores, tipografia e detalhes da marca serão extraídos automaticamente.",
@@ -3959,11 +3954,11 @@
     "brandWizardReadingFiles": "Lendo materiais…",
     "brandWizardReadingFig": "Lendo arquivo .fig…",
     "brandWizardImportingFigma": "Importando tokens do Figma…",
-    "branding": "IDENTIDADE_",
+    "branding": "Identidade_",
     "brandingComment": "Selecione tags que descrevem o estilo da sua marca (máx. 3).",
-    "cameraAngle": "ÂNGULO_DA_CÂMERA_",
+    "cameraAngle": "Ângulo_da_câmera_",
     "capacityUsed": "{percentage}% da capacidade do projeto utilizada",
-    "categories": "TIPOS DE MOCKUPS_",
+    "categories": "Tipos de mockups_",
     "categoriesComment": "Escolha um tipo de mockup para aplicar seu design.",
     "categoryGroups": {
       "apparel": "vestuário",
@@ -3975,17 +3970,17 @@
       "signage": "sinalização",
       "stationery": "papelaria"
     },
-    "clearAll": "LIMPAR TUDO",
+    "clearAll": "Limpar tudo",
     "clickToChange": "Clique para alterar",
     "clickToChangeReference": "Clique para alterar a referência",
     "clickToUploadReference": "Clique para enviar referência",
     "closeSidebar": "Fechar barra lateral",
-    "colorPalette": "PALETA DE CORES_",
+    "colorPalette": "Paleta de cores_",
     "colorPaletteComment": "Selecione as cores do seu design ou adicione cores hex personalizadas (máx 5).",
-    "colorPaletteSection": "PALETA DE CORES_",
+    "colorPaletteSection": "Paleta de cores_",
     "colorsSelected": "cores selecionadas",
     "confirmDeletePreset": "Tem certeza que deseja excluir este preset?",
-    "continue": "CONTINUAR",
+    "continue": "Continuar",
     "create": "Criar",
     "createNewBrandGuideline": "Criar Novo Brand Guideline",
     "creditUnitPlural": "créditos",
@@ -3998,7 +3993,7 @@
     "customStylePlaceholder": "Digite o estilo...",
     "customTagLabel": "Personalizado",
     "deletePreset": "Excluir Preset",
-    "designType": "1. TIPO_DESIGN_",
+    "designType": "1. Tipo_design_",
     "typography": {
       "role": "Rótulo / Papel",
       "family": "Família da Fonte",
@@ -4022,40 +4017,40 @@
     "enhanceTexture": "Realçar textura",
     "errorCreateBrandGuideline": "Falha ao criar Brand Guideline",
     "errorLoadBrandGuidelines": "Falha ao carregar Brand Guidelines",
-    "files": "ARQUIVOS_",
+    "files": "Arquivos_",
     "filesLoaded": "{count} Arquivo(s) carregados",
     "floatingGeneratePrompt": "Gerar Prompt",
-    "floatingSurpriseMe": "SURPRISE-ME",
+    "floatingSurpriseMe": "Surprise-me",
     "generateContextualText": "Gerar texto placeholder",
-    "generateOutputs": "GERAR RESULTADOS",
+    "generateOutputs": "Gerar resultados",
     "generateOutputsShortcut": "Pressione Ctrl/Cmd + Enter para gerar resultados",
-    "generatePrompt": "GERAR PROMPT",
+    "generatePrompt": "Gerar prompt",
     "generatePromptShortcut": "Pressione Ctrl/Cmd + Enter para gerar um prompt",
-    "generateSmartPrompt": "GERAR PROMPT INTELIGENTE",
+    "generateSmartPrompt": "Gerar prompt inteligente",
     "generateSmartPromptTooltip": "Gerar um prompt inteligente",
-    "generatingOutputs": "GERANDO RESULTADOS...",
-    "generatingOutputsShort": "GERANDO",
-    "generatingPrompt": "GERANDO PROMPT...",
-    "generatingPromptShort": "PROMPT...",
-    "generationConfig": "CUSTOMIZE SEU MOCKUP",
-    "identity": "IDENTIDADE",
+    "generatingOutputs": "Gerando resultados...",
+    "generatingOutputsShort": "Gerando",
+    "generatingPrompt": "Gerando prompt...",
+    "generatingPromptShort": "Prompt...",
+    "generationConfig": "Customize seu mockup",
+    "identity": "Identidade",
     "imageFormatTip": "Dica: As imagens geradas utilizam o mesmo tamanho e proporção da imagem enviada. Experimente já enviar uma imagem com o formato desejado.",
     "inPool": "no pool",
     "includeHumanInteraction": "Incluir interação humana",
-    "input": "INPUT_",
-    "instructions": "INSTRUÇÕES_",
+    "input": "Input_",
+    "instructions": "Instruções_",
     "instructionsPlaceholder": "Digite instruções específicas da sua marca (ex: 'produtora de audiovisual', 'marca orgânica', 'marca esportiva de luxo')...",
     "insufficientCredits": "Créditos insuficientes para gerar",
     "itsALayout": "É um Layout",
     "itsALogo": "É um Logo",
-    "lightingMood": "ILUMINAÇÃO_",
+    "lightingMood": "Iluminação_",
     "loadPreset": "Carregar Preset",
     "loadingImage": "Carregando imagem...",
-    "location": "LOCALIZAÇÃO_",
-    "mainFile": "ARQUIVO_PRINCIPAL",
-    "mainImageLabel": "DESIGN",
-    "material": "MATERIAL_",
-    "materialCategory": "MATERIAL",
+    "location": "Localização_",
+    "mainFile": "Arquivo_principal",
+    "mainImageLabel": "Design",
+    "material": "Material_",
+    "materialCategory": "Material",
     "maxReferenceImages": "Limite de 3 imagens de referência atingido",
     "mediaKit": {
       "title": "Media Kit",
@@ -4079,7 +4074,7 @@
       "nearDuplicate": "Parecida com \"{label}\", adicionada mesmo assim",
       "anExistingAsset": "um asset existente"
     },
-    "modelSelection": "0. MODELO_",
+    "modelSelection": "0. Modelo_",
     "modelSelectionDescription": "Escolha o modelo de IA para a geração.",
     "models": {
       "gemini-2.5-flash-image": {
@@ -4096,7 +4091,7 @@
         "version": "4K"
       }
     },
-    "negativePrompt": "PROMPT NEGATIVO (EVITAR...)",
+    "negativePrompt": "Prompt negativo (evitar...)",
     "negativePromptPlaceholder": "ex.: texto, pessoas, marcas d'água, embaçado",
     "newAngles": "Novos Ângulos",
     "newBrandGuideline": "Novo Brand Guideline",
@@ -4104,21 +4099,21 @@
     "noInstructions": "Clique para adicionar instruções específicas para seu projeto...",
     "noPresets": "Nenhum preset salvo ainda",
     "none": "Nenhum",
-    "numberOfImages": "NÚMERO DE IMAGENS",
+    "numberOfImages": "Número de imagens",
     "openSidebar": "Abrir barra lateral",
     "openSidebarTooltip": "Abrir painel de controles",
     "orAddCustomCategory": "Ou adicione uma categoria personalizada...",
     "orAddCustomStyle": "Ou adicione um estilo personalizado...",
-    "otherAspectRatio": "OUTROS",
-    "outputConfig": "CONFIG_",
-    "outputsShort": "GERAR",
+    "otherAspectRatio": "Outros",
+    "outputConfig": "Config_",
+    "outputsShort": "Gerar",
     "presetDeleted": "Preset excluído com sucesso!",
     "presetName": "Nome do Preset",
     "presetNamePlaceholder": "Ex: Minimalista Dark",
     "presetSaved": "Preset salvo com sucesso!",
-    "prompt": "PROMPT_",
+    "prompt": "Prompt_",
     "promptPlaceholder": "Descreva o mockup que você quer criar...",
-    "promptShort": "PROMPT",
+    "promptShort": "Prompt",
     "promptStatusMessages": [
       "entendendo seu design",
       "buscando as melhores soluções visuais",
@@ -4129,15 +4124,15 @@
     "promptSynced": "Sincronizado",
     "promptOutOfSync": "Desatualizado",
     "redrawTooltip": "Re-desenhar (Gerar uma nova variação)",
-    "referenceAreaLabel": "REFERÊNCIA",
+    "referenceAreaLabel": "Referência",
     "referenceImageAlt": "Imagem de referência",
     "referenceImages": "Imagens de Referência",
     "referenceImagesLabel": "IMAGENS DE REFERÊNCIA ({count}/3)",
     "referenceLabel": "Referência {order}",
     "referenceOnly": "Somente referência",
-    "refine": "REFINAR_",
+    "refine": "Refinar_",
     "refresh": "Atualizar",
-    "regenerate": "REGENERAR",
+    "regenerate": "Regenerar",
     "regenerateTooltip": "Regenerar resultados usando o prompt atual",
     "regenerating": "Regenerando...",
     "reimagineTooltip": "Gerar outra versão",
@@ -4146,7 +4141,7 @@
     "removeText": "Remover texto",
     "replace": "Substituir",
     "replaceImage": "Substituir imagem",
-    "resolution4kOnly": "RESOLUÇÃO_",
+    "resolution4kOnly": "Resolução_",
     "resolutionLabel": "Resolução",
     "saveAsPreset": "Salvar como Preset",
     "savePoolAsPreset": "Salvar Pool como Preset",
@@ -4155,26 +4150,26 @@
     "selectBrandGuideline": "Selecionar um Brand Guideline...",
     "selectModel": "Selecionar modelo",
     "selectOption": "Selecione...",
-    "selected": "SELECIONADO",
+    "selected": "Selecionado",
     "searchBrand": "Buscar marca...",
-    "segmentTitle": "SEGMENTO",
+    "segmentTitle": "Segmento",
     "noResults": "Nenhuma marca encontrada",
-    "optional": "OPCIONAL",
-    "selectBrandTitle": "SELECIONAR DNA DA MARCA",
+    "optional": "Opcional",
+    "selectBrandTitle": "Selecionar dna da marca",
     "selectBrandDescription": "Escolha um guia de marca para contextualizar suas gerações.",
-    "brandButton": "MARCA",
+    "brandButton": "Marca",
     "segmentDescription": "Escolha um segmento para contextualizar suas gerações.",
     "seoDescription": "Crie mockups realistas em segundos. Envie seu design, escolha um estilo e deixe nossa IA fazer o resto.",
     "seoKeywords": "mockup, ia, gerador de mockup, design, branding, apresentação",
     "seoTitle": "Mockup Machine, Seus Designs em Produtos Reais",
     "setup": "Configuração",
-    "setupAndAnalysis": "CONFIGURAÇÃO & ANÁLISE",
+    "setupAndAnalysis": "Configuração & análise",
     "setupStepContinue": "Continuar",
     "setupStepDesignType": "Tipo de design",
     "setupStepUpload": "Upload",
     "setupSteps": "Etapas do setup",
     "showSidebar": "Mostrar barra lateral",
-    "simplify": "SIMPLIFICAR",
+    "simplify": "Simplificar",
     "simplifyTooltip": "Simplificar para um prompt básico",
     "skeletonStatusMessages": [
       "renderizando conceitos...",
@@ -4187,9 +4182,9 @@
     "skipToContent": "Pular para o conteúdo principal",
     "startOver": "Começar de Novo",
     "successBrandGuidelineCreated": "Brand Guideline criado com sucesso",
-    "suggest": "SUGERIR",
+    "suggest": "Sugerir",
     "suggestTooltip": "Sugerir variações de prompt",
-    "suggestedColors": "CORES SUGERIDAS",
+    "suggestedColors": "Cores sugeridas",
     "surpriseMe": "Me Surpreenda!",
     "surpriseMeAgain": "Clique novamente para tags diferentes",
     "surpriseMeMode": "Modo Diretor",
@@ -4202,12 +4197,12 @@
     "surpriseMeTooltip": "Seleciona aleatoriamente branding, categorias e estilos para inspiração rápida!",
     "tagAlreadyExists": "Tag já existe",
     "transparentBackground": "Isolar logotipo",
-    "typeLayout": "LAYOUT",
-    "typeLogo": "LOGO",
-    "uploadMainFile": "ENVIAR_ARQUIVO_PRINCIPAL",
+    "typeLayout": "Layout",
+    "typeLogo": "Logo",
+    "uploadMainFile": "Enviar_arquivo_principal",
     "uploadRequired": "Upload necessário",
     "uploadedDesignAlt": "Design enviado",
-    "visualEffects": "EFEITOS_VISUAIS_",
+    "visualEffects": "Efeitos_visuais_",
     "openMediaLibrary": "Abrir biblioteca de mídia",
     "suggested": "Suggested",
     "angle": "Angle",
@@ -4236,14 +4231,16 @@
     "cannotConnectServer": "Não foi possível conectar ao servidor. Por favor, verifique sua conexão e tente novamente.",
     "generateBlankMockups": "Gere mockups vazios para vê-los aqui.",
     "loadingMockups": "Carregando mockups...",
-    "noMatchesFound": "NENHUM RESULTADO ENCONTRADO",
-    "noMockupsYet": "AINDA NÃO HÁ MOCKUPS",
+    "noMatchesFound": "Nenhum resultado encontrado",
+    "noMockupsYet": "Ainda não há mockups",
     "retry": "Tentar novamente",
     "searchPlaceholder": "Buscar...",
     "tryAdjustingSearch": "Tente ajustar sua busca ou filtro.",
     "loadFailed": "Não foi possível carregar os mockups. Tente de novo."
   },
   "myOutputs": {
+    "noResultsForBrand": "Nenhum resultado para essa marca.",
+    "otherBrands": "De outras marcas",
     "seoDescription": "Visualize e gerencie seus outputs gerados.",
     "seoTitle": "Salvos"
   },
@@ -4284,7 +4281,7 @@
     "taxId": "CPF ou CNPJ *",
     "taxIdPlaceholder": "Digite seu CPF ou CNPJ",
     "taxIdRequired": "Necessário para processar o pagamento PIX",
-    "title": "PIX",
+    "title": "Pix",
     "waiting": "Aguardando pagamento...",
     "paymentExpired": "Pagamento expirado"
   },
@@ -4295,8 +4292,8 @@
     "creditsNote": "Créditos nunca expiram e podem ser usados a qualquer momento",
     "creditsPerInterval": "{credits} créditos por {interval}",
     "creditsSubtitle": "Compre pacotes de créditos sem assinatura",
-    "currentPlan": "PLANO ATUAL",
-    "free": "GRÁTIS",
+    "currentPlan": "Plano atual",
+    "free": "Grátis",
     "freePlanFeatures": {
       "feature1": "3 gerações de mockup por mês",
       "feature2": "Recursos básicos",
@@ -4307,15 +4304,15 @@
     "oneTimePayment": "Pagamento único",
     "perMonth": "/mês",
     "perYear": "/ano",
-    "popular": "POPULAR",
-    "premium": "PREMIUM",
+    "popular": "Popular",
+    "premium": "Premium",
     "premiumPlanFeatures": {
       "feature1": "{credits} gerações de mockup por mês",
       "feature2": "Prompts ilimitados",
       "feature3": "Todos os recursos premium",
       "feature4": "Cancele a qualquer momento"
     },
-    "subscribe": "ASSINAR",
+    "subscribe": "Assinar",
     "subtitle": "Escolha o plano pelo volume que seu time usa",
     "tabs": {
       "credits": "Créditos",
@@ -4340,7 +4337,7 @@
       "label": "BYOK Pronto",
       "description": "Ideal para desenvolvedores e power users que preferem usar a própria chave de API."
     },
-    "title": "PREÇOS",
+    "title": "Preços",
     "yearly": "Anual",
     "yearlyDiscount": "-16%",
     "storage": {
@@ -4403,12 +4400,12 @@
       "agreement": "Ao usar o Visant Labs, você concorda com esta Política de Privacidade.",
       "changesToPolicy": {
         "note": "Podemos atualizar esta política periodicamente. Alterações substanciais serão comunicadas por e-mail ou dentro do aplicativo.",
-        "title": "8. ALTERAÇÕES NESTA POLÍTICA"
+        "title": "8. Alterações nesta política"
       },
       "contact": {
         "company": "Visant Labs ®",
         "support": "E-mail de suporte: contato@visant.co",
-        "title": "9. CONTATO"
+        "title": "9. Contato"
       },
       "cookiesAndTracking": {
         "googleAnalytics": {
@@ -4432,7 +4429,7 @@
         "intro": "Usamos cookies para:",
         "items": ["Autenticação", "Preferências de interface", "Métricas internas"],
         "noAdvertising": "Não usamos cookies de publicidade ou pixels de rastreamento para fins de marketing.",
-        "title": "6. COOKIES E TECNOLOGIAS DE RASTREAMENTO"
+        "title": "6. Cookies e tecnologias de rastreamento"
       },
       "dataRetention": {
         "apiKeys": {
@@ -4474,7 +4471,7 @@
           "note": "Nota: Alguns dados podem ser retidos por até 90 dias após a exclusão para fins de segurança, prevenção de fraudes ou conformidade legal, mas não serão usados para qualquer outro propósito durante este período. As chaves de API são uma exceção e são excluídas imediatamente sem período de retenção.",
           "title": "7.4 Solicitação de Exclusão de Dados"
         },
-        "title": "7. RETENÇÃO E EXCLUSÃO DE DADOS"
+        "title": "7. Retenção e exclusão de dados"
       },
       "dataSharing": {
         "apiKeySharing": {
@@ -4516,7 +4513,7 @@
           "note": "Compartilhamos apenas o mínimo necessário para a operação do serviço. Os dados de análise compartilhados com o Google Analytics são anonimizados e não incluem informações pessoalmente identificáveis.",
           "title": "3.1 Provedores de Serviços"
         },
-        "title": "3. COMPARTILHAMENTO DE DADOS"
+        "title": "3. Compartilhamento de dados"
       },
       "howWeUseData": {
         "aiTraining": {
@@ -4554,7 +4551,7 @@
           "Prevenir uso abusivo ou fraudulento",
           "Cumprir obrigações legais"
         ],
-        "title": "2. COMO USAMOS SEUS DADOS"
+        "title": "2. Como usamos seus dados"
       },
       "informationWeCollect": {
         "accountInfo": {
@@ -4604,7 +4601,7 @@
           "items": ["Endereço IP", "Tipo de dispositivo", "Navegador", "Preferências de idioma"],
           "title": "1.4 Dados Técnicos"
         },
-        "title": "1. INFORMAÇÕES QUE COLETAMOS",
+        "title": "1. Informações que coletamos",
         "usageData": {
           "items": [
             "Número de imagens geradas",
@@ -4649,7 +4646,7 @@
           "Tokens OAuth são tratados com segurança e nunca armazenados em texto simples.",
           "Todas as conexões de banco de dados usam canais criptografados (TLS/SSL)."
         ],
-        "title": "4. ARMAZENAMENTO E SEGURANÇA"
+        "title": "4. Armazenamento e segurança"
       },
       "yourRights": {
         "contact": "Para exercer seus direitos, entre em contato com o suporte da Visant Labs.",
@@ -4661,7 +4658,7 @@
           "Exportar seus dados",
           "Revogar consentimentos"
         ],
-        "title": "5. SEUS DIREITOS"
+        "title": "5. Seus direitos"
       }
     },
     "title": "Política de Privacidade, Visant Labs",
@@ -4706,7 +4703,7 @@
     "seoDescription": "Gerencie seu perfil e configurações",
     "subscription": "Assinatura",
     "subscriptionDescription": "Gerencie sua assinatura, cobranças e métodos de pagamento",
-    "totalCreditsUsed": "USADOS",
+    "totalCreditsUsed": "Usados",
     "updateError": "Falha ao atualizar perfil",
     "uploadFailed": "Falha no envio",
     "uploadPicture": "Clique para enviar foto",
@@ -4729,7 +4726,7 @@
       "deleting": "Excluindo...",
       "success": "Conta excluída com sucesso.",
       "error": "Erro ao excluir conta.",
-      "confirmWord": "EXCLUIR"
+      "confirmWord": "Excluir"
     },
     "invalidImageType": "Escolha um arquivo de imagem",
     "imageTooLarge": "A imagem precisa ter menos de 5MB",
@@ -4745,14 +4742,14 @@
     "copy": "Copiar",
     "copyFailed": "Falha ao copiar link",
     "description": "Compartilhe seu link e ganhe créditos bônus quando amigos entrarem.",
-    "friendsReferred": "AMIGOS INDICADOS",
+    "friendsReferred": "Amigos indicados",
     "generating": "Gerando código...",
     "generatingCode": "Gerando link de indicação...",
     "linkCopied": "Link de indicação copiado!",
     "noCode": "Código de indicação não disponível",
-    "title": "INDICAÇÃO",
-    "totalEarned": "TOTAL DE CRÉDITOS GANHOS",
-    "yourLink": "SEU LINK DE INDICAÇÃO"
+    "title": "Indicação",
+    "totalEarned": "Total de créditos ganhos",
+    "yourLink": "Seu link de indicação"
   },
   "refund": {
     "lastUpdated": "Última atualização: {date}",
@@ -4927,12 +4924,12 @@
     },
     "shaderType": "Tipo de Shader",
     "shaderTypes": {
-      "ascii": "ASCII",
+      "ascii": "Ascii",
       "dither": "Dither",
       "duotone": "Duotone",
       "halftone": "Halftone",
       "matrixDither": "Matrix Dither",
-      "vhs": "VHS"
+      "vhs": "Vhs"
     },
     "title": "Controles de Shader",
     "tooltips": {
@@ -4984,7 +4981,7 @@
     "tierFeatures": "Recursos do nível {tier}",
     "upgrade": "Fazer Upgrade",
     "upgradeTo": "FAZER UPGRADE PARA {tier}",
-    "upgradeToPremium": "FAZER UPGRADE PARA PREMIUM",
+    "upgradeToPremium": "Fazer upgrade para premium",
     "portalError": "Não foi possível abrir o portal de assinatura. Tente de novo."
   },
   "subscriptionStatus": {
@@ -5001,7 +4998,7 @@
     "resets": "Reseta em {date}"
   },
   "support": {
-    "button": "SAC",
+    "button": "Sac",
     "contactType": "Tipo de contato",
     "customerService": "Atendimento ao Cliente",
     "email": "Email",
@@ -5712,7 +5709,7 @@
     "tryMockupMachineNow": "Experimente o Mockup Machine Agora"
   },
   "welcome": {
-    "blankMockup": "MOCKUP VAZIO",
+    "blankMockup": "Mockup vazio",
     "brand": "visant labs®",
     "by": "por",
     "exploreMockups": "Explorar",
@@ -5722,8 +5719,8 @@
     "pasteTip": "Dica: Você pode dar ctrl+v para colar imagens",
     "pasteTipSmall": "ou ctrl + v para colar",
     "sendImage": "Enviar imagem",
-    "title": "MOCKUP MACHINE®",
-    "uploadImage": "ENVIAR IMAGEM",
+    "title": "Mockup machine®",
+    "uploadImage": "Enviar imagem",
     "uploadLogo": "Envie seu logo ou layout",
     "version": "v1.0",
     "viewAllApps": "Ver Todos os Apps",
@@ -5841,7 +5838,7 @@
     "galeria_da_comunidade": "Galeria da comunidade"
   },
   "studio3d": {
-    "title": "3D STUDIO",
+    "title": "3D Studio",
     "loadingEngine": "Carregando Motor 3D...",
     "backToApps": "Voltar aos apps",
     "resetScene": "Resetar cena",
@@ -5868,7 +5865,7 @@
       "shader": "Shader"
     },
     "input": {
-      "title": "ENTRADA",
+      "title": "Entrada",
       "svgPng": "SVG / PNG",
       "text": "Texto",
       "dropZone": "Clique ou arraste SVG / PNG",
@@ -5882,7 +5879,7 @@
       "processFailed": "Falha ao processar imagem"
     },
     "geometry": {
-      "title": "GEOMETRIA",
+      "title": "Geometria",
       "shapeType": "Formato do Logo",
       "shapeStandard": "Padrão Extrudado",
       "shapeCoin": "Moeda Cunhada",
@@ -5924,10 +5921,10 @@
       "qualityHigh": "Qualidade"
     },
     "scenePresets": {
-      "title": "PRESETS DE CENA"
+      "title": "Presets de cena"
     },
     "material": {
-      "title": "MATERIAL",
+      "title": "Material",
       "categories": {
         "basic": "Básico",
         "metals": "Metais",
@@ -5937,10 +5934,10 @@
       }
     },
     "color": {
-      "title": "COR"
+      "title": "Cor"
     },
     "texture": {
-      "title": "TEXTURA",
+      "title": "Textura",
       "upload": "Enviar Imagem",
       "opacity": "Opacidade",
       "repeat": "Repetir",
@@ -5948,21 +5945,21 @@
       "remove": "Remover"
     },
     "properties": {
-      "title": "PROPRIEDADES",
+      "title": "Propriedades",
       "metalness": "Metalicidade",
       "roughness": "Rugosidade",
       "opacity": "Opacidade",
       "wireframe": "Wireframe"
     },
     "lighting": {
-      "title": "ILUMINAÇÃO",
+      "title": "Iluminação",
       "keyLight": "Luz Principal",
       "ambient": "Ambiente",
       "shadows": "Sombras",
       "grid": "Grade"
     },
     "camera": {
-      "title": "CÂMERA",
+      "title": "Câmera",
       "front": "Frente",
       "top": "Topo",
       "right": "Direita",
@@ -5972,7 +5969,7 @@
       "fov": "Campo de Visão"
     },
     "background": {
-      "title": "FUNDO",
+      "title": "Fundo",
       "transparent": "Transparente",
       "types": {
         "solid": "Sólido",
@@ -5984,8 +5981,8 @@
       "color2": "Cor 2"
     },
     "animation": {
-      "type": "TIPO",
-      "controls": "CONTROLES",
+      "type": "Tipo",
+      "controls": "Controles",
       "speed": "Velocidade",
       "easing": "Interpolação",
       "easings": {
@@ -6030,18 +6027,18 @@
       "removeCustom": "Remover HDRI customizado"
     },
     "panels": {
-      "surface": "SUPERFÍCIE",
+      "surface": "Superfície",
       "texturePbr": "Textura & PBR",
-      "rendering": "RENDERIZAÇÃO",
+      "rendering": "Renderização",
       "environment": "Ambiente",
-      "hdri": "HDRI",
+      "hdri": "Hdri",
       "atmosphere": "Atmosfera",
       "fog": "Neblina",
       "sceneOptions": "Opções da Cena",
       "groundPlane": "Plano de Chão",
       "perspective": "Perspectiva",
       "orthographic": "Ortográfica",
-      "postProcessing": "PÓS-PROCESSAMENTO",
+      "postProcessing": "Pós-processamento",
       "ambientOcclusion": "Oclusão Ambiental",
       "bloom": "Bloom",
       "chromaticAberration": "Aberração Cromática",
@@ -6050,8 +6047,8 @@
       "vignette": "Vinheta",
       "colorGrading": "Graduação de Cor",
       "shaderFx": "Shader FX",
-      "physics": "FÍSICA",
-      "controls": "CONTROLES",
+      "physics": "Física",
+      "controls": "Controles",
       "lightPositions": "Posições de Luz",
       "toneMapping": "Mapeamento Tonal"
     },
@@ -6066,7 +6063,7 @@
     "dropHere": "Solte o arquivo aqui"
   },
   "imagelab": {
-    "title": "IMAGE LAB",
+    "title": "Image lab",
     "documentTitle": "Image Lab, Visant",
     "dropPrompt": "Solte ou cole uma imagem ou vídeo para começar",
     "selectAreaFirst": "Selecione uma área na imagem antes de editar",
@@ -6240,8 +6237,8 @@
         "decrypting_brand_assets": "Decrypting Brand Assets",
         "downloaded_as_css": "Baixado em CSS",
         "downloaded_as_json": "Baixado em JSON",
-        "edit_mode": "EDITAR",
-        "viewing_mode": "VER",
+        "edit_mode": "Editar",
+        "viewing_mode": "Ver",
         "edit_section": "Editar seção",
         "open_full_editor": "Abrir editor completo →",
         "editing_section": "Editando",
@@ -6321,7 +6318,7 @@
   },
   "contentStudio": {
     "title": "Content Studio",
-    "beta": "BETA",
+    "beta": "Beta",
     "campaignBrief": "Brief da Campanha",
     "briefPlaceholder": "Descreva sua campanha... ex: 'Lançamento coleção verão, cores vibrantes, lifestyle praia, público millennial'",
     "brandGuideline": "Brand Guideline",
@@ -6520,7 +6517,10 @@
     "spacing": "Spacing tokens",
     "radius": "Radius tokens",
     "media": "Media kit ou knowledge",
-    "public_or_figma": "Compartilhamento ou Figma vinculado"
+    "public_or_figma": "Compartilhamento ou Figma vinculado",
+    "shadow": "Sombra da marca",
+    "border": "Borda da marca",
+    "motion": "Motion da marca"
   },
   "pipeline": {
     "sendTo": "Enviar para",
@@ -6572,7 +6572,13 @@
       "campaignAd": "Anúncio de campanha"
     },
     "connectFirst": "Publique a marca antes de conectar",
-    "connectFailed": "Não foi possível gerar o link de conexão"
+    "connectFailed": "Não foi possível gerar o link de conexão",
+    "stats": {
+      "colors": "Cores",
+      "fonts": "Fontes",
+      "logos": "Logos",
+      "assets": "Assets"
+    }
   },
   "campaigns": {
     "title": "Campanhas",

@@ -45,7 +45,7 @@ const Item: React.FC<{
       if (!disabled) onClick();
     }}
     disabled={disabled}
-    className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[11px] font-mono transition-colors ${
+    className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-2xs font-mono transition-colors ${
       disabled
         ? 'text-neutral-600 cursor-not-allowed'
         : danger
@@ -55,7 +55,7 @@ const Item: React.FC<{
   >
     <span className="w-3.5 flex justify-center opacity-70">{icon}</span>
     <span className="flex-1">{label}</span>
-    {shortcut && <span className="text-[10px] text-neutral-600">{shortcut}</span>}
+    {shortcut && <span className="text-2xs text-neutral-600">{shortcut}</span>}
   </button>
 );
 

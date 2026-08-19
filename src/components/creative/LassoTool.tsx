@@ -177,7 +177,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
             />
             {/* Selection border */}
             <div
-              className="absolute border-2 border-brand-cyan rounded-sm shadow-[0_0_20px_rgba(0,229,255,0.15)]"
+              className="absolute border-2 border-border rounded-sm shadow-[0_0_20px_rgba(0,229,255,0.15)]"
               style={{
                 left: selRect.left,
                 top: selRect.top,
@@ -197,7 +197,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 />
               ))}
               {/* Size label */}
-              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neutral-900/90 border border-white/10 rounded text-[10px] font-mono text-neutral-400 whitespace-nowrap">
+              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-neutral-900/90 border border-white/10 rounded text-2xs font-mono text-neutral-400 whitespace-nowrap">
                 {Math.round(selRect.width)}x{Math.round(selRect.height)}px
               </div>
             </div>
@@ -220,7 +220,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Diamond size={14} className="text-neutral-400" />
-                <span className="text-[11px] font-bold uppercase tracking-widest text-white">
+                <span className="text-2xs font-bold uppercase tracking-widest text-white">
                   Editar Região
                 </span>
               </div>
@@ -243,10 +243,10 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                     size={18}
                     className="text-neutral-400 group-hover:text-brand-cyan transition-colors"
                   />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
+                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Nova Layer
                   </span>
-                  <span className="text-[10px] text-neutral-600 text-center">Cria por cima</span>
+                  <span className="text-2xs text-neutral-600 text-center">Cria por cima</span>
                 </button>
                 <button
                   onClick={() => setActionMode('edit')}
@@ -256,10 +256,10 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                     size={18}
                     className="text-neutral-400 group-hover:text-brand-cyan transition-colors"
                   />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
+                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400 group-hover:text-white">
                     Editar com IA
                   </span>
-                  <span className="text-[10px] text-neutral-600 text-center">Altera a área</span>
+                  <span className="text-2xs text-neutral-600 text-center">Altera a área</span>
                 </button>
               </div>
             )}
@@ -270,11 +270,11 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActionMode(null)}
-                    className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
+                    className="text-2xs font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
                   >
                     ← Voltar
                   </button>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">
+                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-300">
                     {actionMode === 'layer' ? 'Nova Layer' : 'Editar Área'}
                   </span>
                 </div>
@@ -292,7 +292,7 @@ export const LassoTool: React.FC<Props> = ({ canvasWidth, canvasHeight }) => {
                   variant="brand"
                   onClick={handleGenerate}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="w-full py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+                  className="w-full py-2.5 text-2xs font-bold uppercase tracking-widest flex items-center justify-center gap-2"
                 >
                   {isGenerating ? (
                     <GlitchLoader size={14} />

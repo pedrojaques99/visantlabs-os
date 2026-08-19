@@ -37,10 +37,10 @@ const Demo: React.FC<{
   <GlassPanel className="p-5 space-y-4">
     <div className="flex items-baseline justify-between gap-3">
       <h3 className="text-sm font-medium text-neutral-100">{title}</h3>
-      <code className="text-[10px] font-mono text-neutral-500">{code}</code>
+      <code className="text-2xs font-mono text-neutral-500">{code}</code>
     </div>
     <div className="flex flex-wrap items-start gap-6">{children}</div>
-    {note && <p className="text-[11px] text-neutral-500 leading-relaxed">{note}</p>}
+    {note && <p className="text-2xs text-neutral-500 leading-relaxed">{note}</p>}
   </GlassPanel>
 );
 
@@ -87,7 +87,7 @@ export function ControlsCatalogPage() {
               onChange={(v) => setInterp(v as CurveInterpolation)}
               size="sm"
             />
-            <p className="text-[11px] text-neutral-500">{curve.length} points</p>
+            <p className="text-2xs text-neutral-500">{curve.length} points</p>
           </div>
         </Demo>
 

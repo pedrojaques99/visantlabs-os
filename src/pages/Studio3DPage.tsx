@@ -744,7 +744,7 @@ export const Studio3DPage: React.FC = () => {
           >
             <Undo2 size={isMobile ? 18 : 15} />
             {undoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[10px] font-mono text-neutral-400 px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-2xs font-mono text-neutral-400 px-0.5">
                 {undoCount}
               </span>
             )}
@@ -760,7 +760,7 @@ export const Studio3DPage: React.FC = () => {
           >
             <Redo2 size={isMobile ? 18 : 15} />
             {redoCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-[10px] font-mono text-neutral-400 px-0.5">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-white/10 text-2xs font-mono text-neutral-400 px-0.5">
                 {redoCount}
               </span>
             )}
@@ -875,7 +875,7 @@ export const Studio3DPage: React.FC = () => {
                       key={item.label}
                       onClick={item.toggle}
                       className={cn(
-                        'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors',
+                        'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors',
                         item.active
                           ? 'text-white bg-white/10'
                           : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
@@ -912,7 +912,7 @@ export const Studio3DPage: React.FC = () => {
         <Suspense
           fallback={
             <div className="w-full h-full flex items-center justify-center bg-neutral-950">
-              <span className="text-[10px] uppercase tracking-widest text-neutral-600 animate-pulse">
+              <span className="text-2xs uppercase tracking-widest text-neutral-600 animate-pulse">
                 {t('studio3d.loadingEngine')}
               </span>
             </div>
@@ -947,7 +947,7 @@ export const Studio3DPage: React.FC = () => {
                   <X size={14} />
                 </button>
               </div>
-              <div className="space-y-1 text-[11px]">
+              <div className="space-y-1 text-2xs">
                 {[
                   ['1 / 3 / 7 / 9', 'Front / Right / Top / Back'],
                   ['5', 'Isometric view'],
@@ -969,7 +969,7 @@ export const Studio3DPage: React.FC = () => {
                     key={key}
                     className="flex items-center justify-between py-1 border-b border-neutral-800 last:border-0"
                   >
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-mono text-[10px]">
+                    <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-neutral-300 font-mono text-2xs">
                       {key}
                     </kbd>
                     <span className="text-neutral-400">{desc}</span>
@@ -1078,7 +1078,7 @@ export const Studio3DPage: React.FC = () => {
               {autoRenderState !== 'done' &&
                 autoRenderState !== 'error' &&
                 autoRenderStartTime > 0 && (
-                  <p className="text-[10px] font-mono text-neutral-500">
+                  <p className="text-2xs font-mono text-neutral-500">
                     {autoRender?.toUpperCase()}:{' '}
                     {Math.round((Date.now() - autoRenderStartTime) / 1000)}s elapsed
                   </p>

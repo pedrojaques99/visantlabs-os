@@ -215,7 +215,7 @@ export const UpscalePage: React.FC = () => {
               className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
               <StatusBadge status={item.status} />
             </div>
             <button
@@ -266,7 +266,7 @@ export const UpscalePage: React.FC = () => {
               <Diamond size={10} className="text-neutral-500" />
               <span className="text-xs font-medium text-neutral-500">Sharpening</span>
             </div>
-            <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
+            <span className="text-2xs font-mono text-neutral-500 tabular-nums">
               {Math.round(sharpening * 100)}%
             </span>
           </div>
@@ -293,7 +293,7 @@ export const UpscalePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -336,7 +336,7 @@ export const UpscalePage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneCount}/{items.length}
       </span>

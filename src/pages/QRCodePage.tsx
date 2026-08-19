@@ -77,7 +77,7 @@ export const QRCodePage: React.FC = () => {
 
   const panel = (
     <div className="space-y-6">
-      <h2 className="text-[11px] font-medium text-neutral-500">Settings</h2>
+      <h2 className="text-2xs font-medium text-neutral-500">Settings</h2>
 
       <div>
         <label className="block text-xs font-medium text-neutral-300 mb-2">Text or URL</label>
@@ -161,13 +161,13 @@ export const QRCodePage: React.FC = () => {
   const statusBar = hasText ? (
     <button
       onClick={handleDownload}
-      className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+      className="flex items-center gap-2 text-2xs font-medium uppercase tracking-widest text-foreground hover:text-brand-cyan/80 transition-colors"
     >
       <Download className="w-3.5 h-3.5" />
       Download PNG
     </button>
   ) : (
-    <span className="text-[10px] uppercase tracking-widest text-neutral-600">
+    <span className="text-2xs uppercase tracking-widest text-neutral-600">
       Enter text to generate
     </span>
   );

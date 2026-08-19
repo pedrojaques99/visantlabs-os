@@ -679,7 +679,7 @@ export const SmartAnalyzerPage: React.FC = () => {
       ambience: 'bg-success/20 text-success border-success/30',
       luminance: 'bg-warning/20 text-warning border-warning/30',
       '3d': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-      aesthetics: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+      aesthetics: 'bg-destructive/20 text-destructive border-destructive/30',
       themes: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
     };
     return colors[category] || 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30';
@@ -688,7 +688,7 @@ export const SmartAnalyzerPage: React.FC = () => {
   const adminActions = (
     <div className="flex items-center gap-4">
       <div className="flex flex-col items-end mr-4">
-        <span className="text-[10px] text-neutral-500">System Access</span>
+        <span className="text-2xs text-neutral-500">System Access</span>
         <span className="text-xs font-mono text-white">ADMINISTRATOR</span>
       </div>
       {step !== 'idle' && (
@@ -763,7 +763,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="mt-12 flex items-center gap-2 text-[10px] font-mono tracking-widest text-neutral-600 uppercase border border-neutral-800 px-4 py-1.5 rounded-full">
+                <div className="mt-12 flex items-center gap-2 text-2xs font-mono tracking-widest text-neutral-600 uppercase border border-neutral-800 px-4 py-1.5 rounded-full">
                   <Cpu size={10} />
                   System Ready
                 </div>
@@ -825,7 +825,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             ? 'Visual Variations Suite'
                             : 'Generated Visual Synthesis'}
                         </h4>
-                        <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
+                        <span className="text-2xs font-mono text-neutral-600 uppercase tracking-widest">
                           {generatedVariations.length > 0
                             ? `${generatedVariations.length} Scenarios`
                             : '8K • Photorealistic'}{' '}
@@ -909,19 +909,19 @@ export const SmartAnalyzerPage: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <span
                             className={cn(
-                              'text-[10px] font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg border',
+                              'text-2xs font-mono uppercase tracking-widest px-3 py-1.5 rounded-lg border',
                               getCategoryColor(result.category)
                             )}
                           >
                             {result.category}
                           </span>
                           {result.confidence != null && (
-                            <span className="text-[10px] font-mono text-neutral-600">
+                            <span className="text-2xs font-mono text-neutral-600">
                               {Math.round(result.confidence * 100)}%
                             </span>
                           )}
                           {result.name && (
-                            <span className="text-[10px] font-mono text-neutral-600 truncate max-w-[200px]">
+                            <span className="text-2xs font-mono text-neutral-600 truncate max-w-[200px]">
                               {result.name}
                             </span>
                           )}
@@ -932,7 +932,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                             onClick={() => setIsEditingPrompt(!isEditingPrompt)}
                             variant="ghost"
                             className={cn(
-                              'h-8 px-3 rounded-lg text-[10px] font-mono uppercase tracking-widest transition-colors',
+                              'h-8 px-3 rounded-lg text-2xs font-mono uppercase tracking-widest transition-colors',
                               isEditingPrompt
                                 ? 'bg-brand-cyan text-black'
                                 : 'text-neutral-500 hover:text-white'
@@ -1040,7 +1040,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               key={s}
                               onClick={() => toggleSuggestion(s)}
                               className={cn(
-                                'px-4 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all border outline-none active:scale-95',
+                                'px-4 py-2.5 rounded-xl text-2xs font-mono uppercase tracking-widest transition-all border outline-none active:scale-95',
                                 activeSuggestions.includes(s)
                                   ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_20px_rgba(34,211,238,0.1)]'
                                   : 'bg-neutral-900/30 border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-300'
@@ -1056,7 +1056,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                           <div className="relative group/input flex items-center min-w-[200px]">
                             <Input
                               placeholder="Custom..."
-                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-[10px] font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-colors"
+                              className="h-[42px] px-5 pl-10 bg-neutral-950 border-neutral-800/80 rounded-xl text-2xs font-mono uppercase tracking-widest placeholder:text-neutral-700 focus:border-neutral-600 transition-colors"
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   const val = e.currentTarget.value.trim();
@@ -1080,7 +1080,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                                 setActiveSuggestions([]);
                                 setEditedPrompt('');
                               }}
-                              className="h-10 px-4 text-[10px] font-mono uppercase tracking-[0.1em] text-neutral-600 hover:text-white"
+                              className="h-10 px-4 text-2xs font-mono uppercase tracking-[0.1em] text-neutral-600 hover:text-white"
                             >
                               <RefreshCw size={10} className="mr-2" />
                               Reset
@@ -1113,7 +1113,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                         onClick={() => fileInputRef.current?.click()}
                         className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/source:opacity-100 transition-opacity"
                       >
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-white/80 bg-black/40 px-4 py-2 rounded-lg border border-white/10">
+                        <span className="text-2xs font-mono uppercase tracking-widest text-white/80 bg-black/40 px-4 py-2 rounded-lg border border-white/10">
                           Analyze Another
                         </span>
                       </button>
@@ -1130,7 +1130,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                         {result.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="text-[10px] font-mono px-3 py-2 rounded-xl bg-neutral-900/50 border border-white/10 text-neutral-500 transition-colors hover:text-white hover:border-neutral-700"
+                            className="text-2xs font-mono px-3 py-2 rounded-xl bg-neutral-900/50 border border-white/10 text-neutral-500 transition-colors hover:text-white hover:border-neutral-700"
                           >
                             {tag}
                           </span>
@@ -1158,7 +1158,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                               <span className="text-xs text-neutral-300 block mb-0.5">
                                 {c.name}
                               </span>
-                              <span className="text-[10px] text-neutral-600 font-mono uppercase tracking-tighter">
+                              <span className="text-2xs text-neutral-600 font-mono uppercase tracking-tighter">
                                 {c.hex}
                               </span>
                             </div>
@@ -1206,7 +1206,7 @@ export const SmartAnalyzerPage: React.FC = () => {
                   {publishTags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-2 bg-neutral-900 text-neutral-300 px-3 py-1.5 rounded-lg text-[11px] font-mono border border-neutral-800"
+                      className="flex items-center gap-2 bg-neutral-900 text-neutral-300 px-3 py-1.5 rounded-lg text-2xs font-mono border border-neutral-800"
                     >
                       {tag}
                       <button
@@ -1276,7 +1276,7 @@ export const SmartAnalyzerPage: React.FC = () => {
               <X size={20} />
             </Button>
 
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 text-[10px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 text-2xs font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
               Presione ESC para sair
             </div>
           </div>

@@ -188,7 +188,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 variant="brand"
                 onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
-                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 text-brand-cyan"
+                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 text-foreground"
               >
                 {isSavingPreset ? (
                   <GlitchLoader size={16} />
@@ -221,7 +221,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
       ) : customPdfUrl ? (
         <div className="relative p-4 border border-neutral-800 rounded-xl bg-neutral-950/20">
           <div className="flex items-center gap-3">
-            <FileText className="h-8 w-8 text-brand-cyan flex-shrink-0" />
+            <FileText className="h-8 w-8 text-foreground flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-mono text-neutral-300">PDF customizado carregado</p>
               <p className="text-xs text-neutral-500 mt-1 truncate">
@@ -253,7 +253,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               <Button
                 variant="destructive"
                 onClick={handleRemovePdf}
-                className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors font-mono text-sm whitespace-nowrap"
+                className="px-4 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive transition-colors font-mono text-sm whitespace-nowrap"
                 title="Remover PDF"
               >
                 <X size={16} className="inline mr-1" />

@@ -451,7 +451,7 @@ export const AdminProductsPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-neutral-100 flex items-center gap-3">
-                <Package className="text-brand-cyan h-8 w-8" />
+                <Package className="text-foreground h-8 w-8" />
                 Gestão de Produtos
               </h1>
               <p className="text-neutral-500 mt-1">
@@ -556,7 +556,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b border-white/10">
                       <span className="text-neutral-500">{t('admin.products.crditos')}</span>
-                      <span className="text-brand-cyan font-mono tabular-nums">
+                      <span className="text-foreground font-mono tabular-nums">
                         {product.credits}
                       </span>
                     </div>
@@ -565,12 +565,12 @@ export const AdminProductsPage: React.FC = () => {
                     {product.type === 'subscription_plan' &&
                       product.metadata?.unlimitedResolutions?.length > 0 && (
                         <div className="flex items-center gap-2 py-2 px-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md">
-                          <span className="text-brand-cyan text-lg">∞</span>
+                          <span className="text-foreground text-lg">∞</span>
                           <div className="flex-1">
-                            <span className="text-[10px] text-brand-cyan font-bold uppercase">
+                            <span className="text-2xs text-foreground font-bold uppercase">
                               {t('admin.products.unlimited')}
                             </span>
-                            <p className="text-[10px] text-neutral-400">
+                            <p className="text-2xs text-neutral-400">
                               {product.metadata.unlimitedModels?.length > 0 && 'NB2 '}
                               até{' '}
                               {
@@ -593,7 +593,7 @@ export const AdminProductsPage: React.FC = () => {
                               product.stripeProductId ? 'text-success' : 'text-neutral-700'
                             )}
                           />
-                          <span className="text-[10px] truncate max-w-full font-mono">
+                          <span className="text-2xs truncate max-w-full font-mono">
                             {product.stripeProductId || 'N/A'}
                           </span>
                         </div>
@@ -609,7 +609,7 @@ export const AdminProductsPage: React.FC = () => {
                               product.paymentLinkBRL ? 'text-brand-cyan' : 'text-neutral-700'
                             )}
                           />
-                          <span className="text-[10px]">
+                          <span className="text-2xs">
                             {product.paymentLinkBRL ? 'Configurado' : 'Aguardando'}
                           </span>
                         </div>
@@ -757,7 +757,7 @@ export const AdminProductsPage: React.FC = () => {
 
                     {/* Unlimited Settings */}
                     <div className="md:col-span-2 p-4 bg-neutral-900/50 border border-neutral-800 rounded-lg space-y-4">
-                      <h4 className="text-sm font-bold text-brand-cyan flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                         <span className="text-lg">∞</span> Configuração de Unlimited
                       </h4>
                       <p className="text-xs text-neutral-500">
@@ -845,7 +845,7 @@ export const AdminProductsPage: React.FC = () => {
                             );
                           })}
                         </div>
-                        <p className="text-[10px] text-neutral-600">
+                        <p className="text-2xs text-neutral-600">
                           Marque as resoluções que não consomem créditos para assinantes deste
                           plano.
                         </p>
@@ -1391,7 +1391,7 @@ export const AdminProductsPage: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })
                     }
-                    className="bg-neutral-900 border-neutral-800 text-brand-cyan font-bold"
+                    className="bg-neutral-900 border-neutral-800 text-foreground font-bold"
                   />
                 </div>
                 <div className="space-y-2">
@@ -1438,7 +1438,7 @@ export const AdminProductsPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h3 className="text-sm font-bold text-neutral-400 flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-brand-cyan" />
+                    <CheckCircle2 className="h-4 w-4 text-foreground" />
                     Plataformas & IDs
                   </h3>
                   <div className="space-y-3">
@@ -1486,7 +1486,7 @@ export const AdminProductsPage: React.FC = () => {
 
                 <div className="space-y-4">
                   <h3 className="text-sm font-bold text-neutral-400 flex items-center gap-2">
-                    <Link2 className="h-4 w-4 text-brand-cyan" />
+                    <Link2 className="h-4 w-4 text-foreground" />
                     Checkout Links
                   </h3>
                   <div className="space-y-3">

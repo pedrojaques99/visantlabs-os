@@ -621,7 +621,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
             <FileText size={12} />
             <span className="text-xs font-mono">{t('canvasNodes.mockupNode.editPrompt')}</span>
             {customPrompt && customPrompt.trim() && (
-              <span className="text-[10px] text-muted-foreground">(custom)</span>
+              <span className="text-2xs text-muted-foreground">(custom)</span>
             )}
           </div>
           <ChevronRight
@@ -645,7 +645,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
             className="text-xs nodrag nopan"
             rows={1}
           />
-          <p className="text-[10px] font-mono text-neutral-500 mt-1">
+          <p className="text-2xs font-mono text-neutral-500 mt-1">
             {customPrompt && customPrompt.trim()
               ? t('canvasNodes.mockupNode.customPromptOverride')
               : t('canvasNodes.mockupNode.editPromptHint')}
@@ -676,7 +676,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
               {t('canvasNodes.mockupNode.advancedControls')}
             </span>
             {(selectedColors.length > 0 || withHuman) && (
-              <span className="text-[10px] text-brand-cyan">
+              <span className="text-2xs text-foreground">
                 ({selectedColors.length}{' '}
                 {selectedColors.length !== 1
                   ? t('canvasNodes.mockupNode.colorsPlural')
@@ -804,7 +804,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
                         className="w-2.5 h-2.5 rounded-md border-node border-white/10"
                         style={{ backgroundColor: color }}
                       ></span>
-                      <span className="font-mono text-[10px]">{color}</span>
+                      <span className="font-mono text-2xs">{color}</span>
                       <NodeButton
                         variant="ghost"
                         size="xs"
@@ -919,7 +919,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({
               <span className="font-semibold tracking-tight">
                 {t('canvasNodes.mockupNode.generateMockup')}
               </span>
-              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                 <Diamond size={10} className="opacity-50 fill-current" />
                 {getCreditsRequired(model, resolution)}
               </div>

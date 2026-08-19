@@ -235,8 +235,8 @@ const ArchetypeCard: React.FC<{
                         onClick={() => handleRemoveExample(index)}
                         className={`px-3 py-2 rounded-md text-sm transition-colors ${
                           theme === 'dark'
-                            ? 'bg-red-900/30 hover:bg-red-900/50 text-red-400'
-                            : 'bg-red-50 hover:bg-red-100 text-red-600'
+                            ? 'bg-destructive/30 hover:bg-destructive/50 text-destructive'
+                            : 'bg-destructive hover:bg-destructive text-destructive'
                         }`}
                       >
                         Remover

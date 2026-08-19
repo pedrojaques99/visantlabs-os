@@ -95,7 +95,7 @@ export const UsageDashboard: React.FC<{ enabled?: boolean }> = ({ enabled = true
     {
       label: 'Total API Calls',
       value: stats?.totalRecords ?? 0,
-      icon: <Activity size={18} className="text-brand-cyan" />,
+      icon: <Activity size={18} className="text-foreground" />,
     },
     {
       label: 'Total Credits Used',

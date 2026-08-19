@@ -174,7 +174,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                     >
                       <p
                         className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${
-                          theme === 'dark' ? 'text-cyan-300' : 'text-cyan-600'
+                          theme === 'dark' ? 'text-brand-cyan' : 'text-brand-cyan'
                         }`}
                       >
                         {step.number}

@@ -237,7 +237,7 @@ export const ColorPalettePage: React.FC = () => {
                   alt={fileName}
                   className="w-32 h-32 rounded-lg object-cover border border-neutral-800 bg-neutral-950"
                 />
-                <p className="text-[10px] font-mono text-neutral-500 mt-1 truncate max-w-[128px]">
+                <p className="text-2xs font-mono text-neutral-500 mt-1 truncate max-w-[128px]">
                   {fileName}
                 </p>
               </div>
@@ -286,7 +286,7 @@ export const ColorPalettePage: React.FC = () => {
                             />
                           )}
                         </div>
-                        <span className="text-[10px] font-mono text-neutral-400 uppercase">
+                        <span className="text-2xs font-mono text-neutral-400 uppercase">
                           {color.hex}
                         </span>
                       </div>
@@ -302,14 +302,14 @@ export const ColorPalettePage: React.FC = () => {
                               if (e.key === 'Enter') handleAddColor();
                               if (e.key === 'Escape') setAddingColor(false);
                             }}
-                            className="w-[72px] h-7 text-[10px] font-mono text-center bg-transparent border-neutral-700 px-1"
+                            className="w-[72px] h-7 text-2xs font-mono text-center bg-transparent border-neutral-700 px-1"
                             maxLength={7}
                             autoFocus
                           />
                         </div>
                         <button
                           onClick={handleAddColor}
-                          className="text-[10px] font-mono text-brand-cyan hover:underline"
+                          className="text-2xs font-mono text-foreground hover:underline"
                         >
                           add
                         </button>
@@ -342,7 +342,7 @@ export const ColorPalettePage: React.FC = () => {
                   disabled={isExtracting}
                   className="flex-1 max-w-[200px] h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer accent-brand-cyan"
                 />
-                <span className="text-[10px] font-mono text-neutral-500 w-6 text-right">
+                <span className="text-2xs font-mono text-neutral-500 w-6 text-right">
                   {maxColors}
                 </span>
               </div>
@@ -352,7 +352,7 @@ export const ColorPalettePage: React.FC = () => {
                 <Button
                   onClick={() => runExtraction(false)}
                   disabled={isExtracting}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
                 >
                   <RefreshCw size={14} />
                   <span className="ml-2">Re-extract</span>
@@ -360,7 +360,7 @@ export const ColorPalettePage: React.FC = () => {
                 <Button
                   onClick={() => runExtraction(true)}
                   disabled={isExtracting}
-                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                  className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
                 >
                   <Shuffle size={14} />
                   <span className="ml-2">Randomize</span>
@@ -441,7 +441,7 @@ export const ColorPalettePage: React.FC = () => {
                               return (
                                 <td
                                   key={ci}
-                                  className="w-14 h-8 text-center text-[10px] font-mono text-neutral-700"
+                                  className="w-14 h-8 text-center text-2xs font-mono text-neutral-700"
                                 >
                                   -
                                 </td>
@@ -450,15 +450,15 @@ export const ColorPalettePage: React.FC = () => {
                             const ratio = getContrastRatioPublic(row.hex, col.hex);
                             const wcag = checkWCAGCompliance(ratio);
                             const bg = wcag.normalAA
-                              ? 'bg-emerald-950/40'
+                              ? 'bg-success/40'
                               : wcag.largeAA
-                                ? 'bg-yellow-950/40'
-                                : 'bg-red-950/30';
+                                ? 'bg-warning/40'
+                                : 'bg-destructive/30';
                             return (
                               <td
                                 key={ci}
                                 className={cn(
-                                  'w-14 h-8 text-center text-[10px] font-mono rounded',
+                                  'w-14 h-8 text-center text-2xs font-mono rounded',
                                   bg
                                 )}
                                 title={

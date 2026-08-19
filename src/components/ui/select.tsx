@@ -215,7 +215,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                 onMouseEnter={() => setFocusedIndex(index)}
                 className={cn(
                   'px-2 py-1.5 cursor-pointer',
-                  'text-[11px] font-medium relative',
+                  'text-2xs font-medium relative',
                   'transition-all duration-150',
                   'flex items-center justify-start gap-2',
                   'border-l-2 border-transparent',
@@ -241,13 +241,13 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   <span className={cn('truncate', option.description && 'flex flex-col')}>
                     <span className="truncate">{option.label}</span>
                     {option.description && (
-                      <span className="text-[10px] text-neutral-500 truncate font-normal leading-tight">
+                      <span className="text-2xs text-neutral-500 truncate font-normal leading-tight">
                         {option.description}
                       </span>
                     )}
                   </span>
                   {option.badge && (
-                    <span className="flex-shrink-0 px-1 py-px rounded text-[10px] font-medium uppercase tracking-wider leading-none text-neutral-500">
+                    <span className="flex-shrink-0 px-1 py-px rounded text-2xs font-medium uppercase tracking-wider leading-none text-neutral-500">
                       {option.badge === 'popular' ? 'top' : option.badge}
                     </span>
                   )}
@@ -295,7 +295,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               )}
             </span>
             {selectedOption?.badge && (
-              <span className="flex-shrink-0 px-1 py-px rounded text-[10px] font-medium uppercase tracking-wider leading-none text-neutral-500">
+              <span className="flex-shrink-0 px-1 py-px rounded text-2xs font-medium uppercase tracking-wider leading-none text-neutral-500">
                 {selectedOption.badge === 'popular' ? 'top' : selectedOption.badge}
               </span>
             )}

@@ -588,7 +588,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   'text-sm',
                   isAnalyzing
                     ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-400 cursor-not-allowed'
-                    : 'bg-brand-cyan/10 border-neutral-600/30 text-brand-cyan hover:bg-brand-cyan/20'
+                    : 'bg-brand-cyan/10 border-neutral-600/30 text-foreground hover:bg-brand-cyan/20'
                 )}
               >
                 {isAnalyzing ? (

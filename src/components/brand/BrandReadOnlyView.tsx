@@ -280,7 +280,7 @@ interface SectionCommonProps {
 }
 
 const CompactSectionHeader: React.FC<{ label: string }> = ({ label }) => (
-  <MicroTitle className="text-[10px] text-neutral-600">{label}</MicroTitle>
+  <MicroTitle className="text-2xs text-neutral-600">{label}</MicroTitle>
 );
 
 const FullSectionHeader: React.FC<{ label: string; className?: string }> = ({
@@ -302,7 +302,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Identity" />
         {identity.tagline && (
-          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-300">
+          <p className="text-2xs font-bold uppercase tracking-wider text-neutral-300">
             {identity.tagline}
           </p>
         )}
@@ -341,7 +341,7 @@ export const BrandIdentityView: React.FC<SectionCommonProps> = ({
             <div className="space-y-8">
               {(editable || identity.tagline) && (
                 <div className="space-y-2">
-                  <span className="text-[10px] text-[var(--brand-text)]/50 uppercase tracking-widest">
+                  <span className="text-2xs text-[var(--brand-text)]/50 uppercase tracking-widest">
                     Brand Tagline
                   </span>
                   <InlineEditable
@@ -738,7 +738,7 @@ export const BrandArchetypesView: React.FC<SectionCommonProps> = ({ guideline, c
             <div key={i} className="text-xs">
               <span className="font-bold text-neutral-300 uppercase tracking-wide">{a.name}</span>
               {a.description && (
-                <p className="text-[11px] text-neutral-500 leading-snug mt-0.5 line-clamp-2">
+                <p className="text-2xs text-neutral-500 leading-snug mt-0.5 line-clamp-2">
                   {a.description}
                 </p>
               )}
@@ -811,12 +811,12 @@ const ArchetypesInteractive: React.FC<{
               <div className="space-y-1">
                 <h4 className="text-2xl font-bold tracking-tight opacity-90">{arch.name}</h4>
                 {arch.role && (
-                  <span className="block text-[10px] uppercase tracking-widest opacity-40">
+                  <span className="block text-2xs uppercase tracking-widest opacity-40">
                     {arch.role}
                   </span>
                 )}
               </div>
-              <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest opacity-40 group-hover:opacity-70 transition-opacity">
+              <span className="flex items-center gap-1.5 text-2xs uppercase tracking-widest opacity-40 group-hover:opacity-70 transition-opacity">
                 <MousePointerClick size={11} aria-hidden="true" />
                 {isActive ? 'Hide' : 'Details'}
               </span>
@@ -851,7 +851,7 @@ const ArchetypesInteractive: React.FC<{
                     {active.examples.map((ex, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-[10px] font-bold uppercase tracking-widest opacity-60"
+                        className="px-3 py-1 rounded-full border border-[var(--brand-text)]/10 bg-[var(--brand-text)]/5 text-2xs font-bold uppercase tracking-widest opacity-60"
                       >
                         {ex}
                       </span>
@@ -887,7 +887,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                   {p.traits.slice(0, 4).map((t, idx) => (
                     <span
                       key={idx}
-                      className="px-1.5 py-0.5 rounded-full border border-white/10 bg-white/5 text-[9px] font-mono uppercase text-neutral-500"
+                      className="px-1.5 py-0.5 rounded-full border border-white/10 bg-white/5 text-3xs font-mono uppercase text-neutral-500"
                     >
                       {t}
                     </span>
@@ -930,7 +930,7 @@ export const BrandPersonasView: React.FC<SectionCommonProps> = ({ guideline, com
                   />
                 </div>
                 {persona.imageAttribution?.author && (
-                  <p className="text-[10px] font-mono opacity-30 text-center">
+                  <p className="text-2xs font-mono opacity-30 text-center">
                     Photo:{' '}
                     {persona.imageAttribution.authorUrl ? (
                       <a
@@ -1047,14 +1047,14 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
             <div key={i} className="text-xs">
               <span className="font-bold text-neutral-300 uppercase tracking-wide">{v.title}</span>
               {v.description && (
-                <p className="text-[11px] text-neutral-500 leading-snug mt-0.5 line-clamp-2">
+                <p className="text-2xs text-neutral-500 leading-snug mt-0.5 line-clamp-2">
                   {v.description}
                 </p>
               )}
             </div>
           ))}
           {copyExamples.map((c, i) => (
-            <p key={`copy-${i}`} className="text-[11px] text-neutral-500 leading-snug italic">
+            <p key={`copy-${i}`} className="text-2xs text-neutral-500 leading-snug italic">
               "{c.text}"
             </p>
           ))}
@@ -1107,7 +1107,7 @@ export const BrandVoiceValuesView: React.FC<SectionCommonProps> = ({ guideline, 
                 className="p-6 rounded-[24px] border bg-[var(--brand-surface)]/20 border-[var(--brand-text)]/5"
               >
                 {c.type && (
-                  <span className="text-[10px] uppercase tracking-wider opacity-30">{c.type}</span>
+                  <span className="text-2xs uppercase tracking-wider opacity-30">{c.type}</span>
                 )}
                 <p className="text-lg font-medium leading-snug opacity-80 mt-1">"{c.text}"</p>
               </div>
@@ -1192,12 +1192,12 @@ const ColorUsagePalette: React.FC<{
               <span
                 className={cn(
                   'font-bold uppercase tracking-tight text-white/95 truncate drop-shadow',
-                  big ? 'text-sm' : 'text-[11px]'
+                  big ? 'text-sm' : 'text-2xs'
                 )}
               >
                 {color.name || 'Untitled'}
               </span>
-              <span className="text-[10px] font-mono uppercase text-white/60 flex items-center gap-1.5">
+              <span className="text-2xs font-mono uppercase text-white/60 flex items-center gap-1.5">
                 {color.hex}
                 <span className="opacity-70 can-hover:opacity-0 can-hover:group-hover:opacity-100 transition-opacity">
                   · copy
@@ -1296,14 +1296,14 @@ export const BrandColorsView: React.FC<BrandColorsViewProps> = ({
                   <div className="absolute inset-0" style={{ backgroundColor: color.hex }} />
                   <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-[2px]">
-                    <span className="text-[10px] font-mono text-white opacity-60">COPY HEX</span>
+                    <span className="text-2xs font-mono text-white opacity-60">COPY HEX</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-xs font-bold truncate uppercase tracking-tight opacity-90">
                     {color.name || 'Untitled'}
                   </p>
-                  <span className="text-[10px] font-mono opacity-40 uppercase flex items-center gap-2">
+                  <span className="text-2xs font-mono opacity-40 uppercase flex items-center gap-2">
                     {color.hex}
                     {color.role && (
                       <>
@@ -1339,7 +1339,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
               >
                 {t.family}
               </span>
-              <span className="text-[9px] uppercase text-neutral-600 tracking-widest shrink-0">
+              <span className="text-3xs uppercase text-neutral-600 tracking-widest shrink-0">
                 {t.role}
               </span>
             </div>
@@ -1375,7 +1375,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
               </div>
               <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-4">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-mono uppercase font-black tracking-widest border bg-[var(--brand-text)]/5 text-[var(--brand-text)] border-[var(--brand-text)]/10">
+                  <span className="px-3 py-1 rounded-full text-2xs font-mono uppercase font-black tracking-widest border bg-[var(--brand-text)]/5 text-[var(--brand-text)] border-[var(--brand-text)]/10">
                     {font.role}
                   </span>
                   <span className="text-xs font-mono font-medium opacity-40">{font.family}</span>
@@ -1392,7 +1392,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
                       propagates into generation. */}
                   {font.style && (
                     <div className="space-y-1">
-                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-30">
+                      <span className="text-2xs uppercase tracking-widest font-bold opacity-30">
                         Style
                       </span>
                       <p className="text-sm font-bold opacity-70">{font.style}</p>
@@ -1400,7 +1400,7 @@ export const BrandTypographyView: React.FC<SectionCommonProps> = ({ guideline, c
                   )}
                   {font.size && (
                     <div className="space-y-1">
-                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-30">
+                      <span className="text-2xs uppercase tracking-widest font-bold opacity-30">
                         Base Size
                       </span>
                       <p className="text-sm font-bold opacity-70">{font.size}PX</p>
@@ -1520,7 +1520,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                 className="w-full h-full object-contain p-2"
                 loading="lazy"
               />
-              <span className="absolute bottom-0 left-0 right-0 text-[9px] text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
+              <span className="absolute bottom-0 left-0 right-0 text-3xs text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
                 {logo.variant}
               </span>
             </button>
@@ -1545,7 +1545,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="text-[10px] font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
+              className="text-2xs font-mono opacity-40 hover:opacity-100 hover:text-[var(--accent)] gap-2"
               onClick={() => onBatchDownload(visible)}
             >
               <Download size={12} />
@@ -1581,7 +1581,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                   <div className="absolute inset-x-0 bottom-0 p-3 opacity-100 translate-y-0 can-hover:opacity-0 can-hover:translate-y-2 can-hover:group-hover:opacity-100 can-hover:group-hover:translate-y-0 transition-all duration-300">
                     {onAssetClick ? (
                       <Button
-                        className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
+                        className="w-full h-10 rounded-xl text-2xs font-bold uppercase tracking-wider gap-2 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
                         onClick={() => handleClick(logo)}
                       >
                         <MousePointerClick size={14} /> Use
@@ -1590,7 +1590,7 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                       <div className="flex items-center gap-1.5">
                         <Button
                           title="Download"
-                          className="flex-1 h-9 rounded-xl text-[10px] font-bold uppercase tracking-wider gap-1.5 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
+                          className="flex-1 h-9 rounded-xl text-2xs font-bold uppercase tracking-wider gap-1.5 shadow-lg transition-all bg-[var(--accent)] text-[var(--accent-text)] hover:scale-[1.02]"
                           onClick={() => handleDownload(logo)}
                         >
                           <Download size={13} /> Download
@@ -1618,10 +1618,10 @@ export const BrandLogosView: React.FC<BrandLogosViewProps> = ({
                   </div>
                 </div>
                 <div className="px-2">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-90">
+                  <p className="text-2xs font-bold uppercase tracking-[0.1em] opacity-90">
                     {logo.label || 'Untitled Asset'}
                   </p>
-                  <p className="text-[10px] uppercase tracking-widest mt-1 opacity-40">
+                  <p className="text-2xs uppercase tracking-widest mt-1 opacity-40">
                     {logo.variant} Variant
                   </p>
                 </div>
@@ -1656,7 +1656,7 @@ const AssetTagChips: React.FC<{ analysis?: { dimensions?: Record<string, string[
       {tags.map((t, i) => (
         <span
           key={i}
-          className="px-1.5 py-0.5 rounded-full bg-white/15 backdrop-blur-sm text-[9px] font-mono uppercase tracking-wide text-white/80"
+          className="px-1.5 py-0.5 rounded-full bg-white/15 backdrop-blur-sm text-3xs font-mono uppercase tracking-wide text-white/80"
         >
           {t}
         </span>
@@ -1722,7 +1722,7 @@ const BrandMediaCard: React.FC<{
             {item.label || 'Production File'}
           </p>
           <AssetTagChips analysis={item.analysis} />
-          <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">
+          <span className="text-3xs font-mono text-white/40 uppercase tracking-widest">
             Asset // {String(index + 1).padStart(2, '0')}
           </span>
         </div>
@@ -1853,7 +1853,7 @@ export const BrandMediaView: React.FC<BrandMediaViewProps> = ({
           <div className="flex justify-center">
             <Button variant="subtle" onClick={() => setExpanded(true)} className="gap-2">
               Ver toda a galeria
-              <span className="text-[10px] font-mono opacity-50">+{hidden}</span>
+              <span className="text-2xs font-mono opacity-50">+{hidden}</span>
             </Button>
           </div>
         )}
@@ -1890,13 +1890,13 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
       <div className="flex flex-col gap-2 pt-4 mt-4 border-t border-white/5">
         <CompactSectionHeader label="Guidelines" />
         {g.voice && (
-          <p className="text-[11px] text-neutral-400 italic leading-snug mb-2">"{g.voice}"</p>
+          <p className="text-2xs text-neutral-400 italic leading-snug mb-2">"{g.voice}"</p>
         )}
         {g.dos && g.dos.length > 0 && (
           <ul className="space-y-1 mb-2">
             {g.dos.slice(0, 5).map((item, i) => (
-              <li key={i} className="flex gap-2 text-[11px] text-neutral-400">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shrink-0" />
+              <li key={i} className="flex gap-2 text-2xs text-neutral-400">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-success shrink-0" />
                 <span className="leading-snug">{item}</span>
               </li>
             ))}
@@ -1905,8 +1905,8 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         {g.donts && g.donts.length > 0 && (
           <ul className="space-y-1">
             {g.donts.slice(0, 5).map((item, i) => (
-              <li key={i} className="flex gap-2 text-[11px] text-neutral-400">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shrink-0" />
+              <li key={i} className="flex gap-2 text-2xs text-neutral-400">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-destructive shrink-0" />
                 <span className="leading-snug">{item}</span>
               </li>
             ))}
@@ -1939,11 +1939,11 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {g.dos && g.dos.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-green-500/60 pt-12">Do</MicroTitle>
+              <MicroTitle className="text-success/60 pt-12">Do</MicroTitle>
               <ul className="space-y-4">
                 {g.dos.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
-                    <div className="mt-1.5 w-1 h-1 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
+                    <div className="mt-1.5 w-1 h-1 rounded-full bg-success shadow-[0_0_10px_rgba(34,197,94,0.3)]" />
                     <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
                       {item}
                     </span>
@@ -1954,11 +1954,11 @@ export const BrandGuidelinesView: React.FC<SectionCommonProps> = ({ guideline, c
           )}
           {g.donts && g.donts.length > 0 && (
             <div className="space-y-6">
-              <MicroTitle className="text-red-500/60 pt-12">Don't</MicroTitle>
+              <MicroTitle className="text-destructive/60 pt-12">Don't</MicroTitle>
               <ul className="space-y-4">
                 {g.donts.map((item, i) => (
                   <li key={i} className="flex gap-4 group">
-                    <div className="mt-1.5 w-1 h-1 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
+                    <div className="mt-1.5 w-1 h-1 rounded-full bg-destructive shadow-[0_0_10px_rgba(239,68,68,0.3)]" />
                     <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
                       {item}
                     </span>

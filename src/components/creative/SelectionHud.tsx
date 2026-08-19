@@ -30,7 +30,7 @@ const Field: React.FC<{
     else setDraft(value.toFixed(0));
   };
   return (
-    <label className="flex items-center gap-1 text-[10px] font-mono">
+    <label className="flex items-center gap-1 text-2xs font-mono">
       <span className="text-neutral-500">{label}</span>
       <input
         type="number"

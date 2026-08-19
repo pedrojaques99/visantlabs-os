@@ -53,7 +53,7 @@ export const AnchorGrid = React.memo<AnchorGridProps>(
   ({ value, onChange, label, size = 92, className }) => (
     <div className={cn('inline-flex flex-col gap-1.5', className)}>
       {label && (
-        <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
+        <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
       )}
       <div
         role="radiogroup"

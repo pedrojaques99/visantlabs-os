@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Button } from '@/components/ui/button';
 
 const nodeButtonVariants = cva(
-  'rounded-md text-[13px] font-mono transition-[color,background-color,border-color,box-shadow,opacity,filter] flex items-center justify-center gap-3 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 nodrag nopan backdrop-blur-sm shadow-sm hover:shadow-md',
+  'rounded-md text-sm font-mono transition-[color,background-color,border-color,box-shadow,opacity,filter] flex items-center justify-center gap-3 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 nodrag nopan backdrop-blur-sm shadow-sm hover:shadow-md',
   {
     variants: {
       variant: {
@@ -14,7 +14,7 @@ const nodeButtonVariants = cva(
           'bg-foreground/10 hover:bg-foreground/20 border border-neutral-800 text-foreground focus:border-neutral-600',
         // Canvas identity accent. Uses `[var(--brand-cyan)]` and NOT the
         // `brand-cyan` utility on purpose: index.css has unconditional
-        // `.node-container [class*='border-brand-cyan']` / `[class*='text-brand-cyan']`
+        // `.node-container [class*='border-border']` / `[class*='text-foreground']`
         // rules that match the `hover:` variants too, forcing the button to
         // `--foreground` + `opacity: .7` at REST. The var form resolves to the
         // same token (per-brand overridden inside nodes) without the trap.

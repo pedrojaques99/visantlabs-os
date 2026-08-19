@@ -63,7 +63,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   imagen: 'bg-purple-500/10 text-purple-400',
   seedream: 'bg-orange-500/10 text-orange-400',
   ideogram: 'bg-pink-500/10 text-pink-400',
-  reve: 'bg-cyan-500/10 text-cyan-400',
+  reve: 'bg-brand-cyan/10 text-brand-cyan',
 };
 
 // ─── Run Tab ─────────────────────────────────────────────────────────────────
@@ -289,7 +289,7 @@ const RunBenchmark: React.FC = () => {
               onClick={() => selectTier(tier)}
               disabled={isStreaming}
               className={cn(
-                'px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-wider transition-[color,background-color,border-color,opacity]',
+                'px-3 py-1.5 rounded-full border text-2xs font-mono uppercase tracking-wider transition-[color,background-color,border-color,opacity]',
                 cfg.color,
                 'hover:bg-white/5 disabled:opacity-40'
               )}
@@ -306,7 +306,7 @@ const RunBenchmark: React.FC = () => {
           <MicroTitle>
             Models ({selectedModels.size}/{maxModels})
           </MicroTitle>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-2xs">
             {totalCredits} credits total
           </Badge>
         </div>
@@ -319,10 +319,10 @@ const RunBenchmark: React.FC = () => {
             return (
               <div key={tier}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={cn('text-[10px] font-medium', cfg.color.split(' ')[0])}>
+                  <span className={cn('text-2xs font-medium', cfg.color.split(' ')[0])}>
                     {cfg.label}
                   </span>
-                  <span className="text-[10px] text-white/20">{cfg.description}</span>
+                  <span className="text-2xs text-white/20">{cfg.description}</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {tierModels.map((model) => {
@@ -352,24 +352,22 @@ const RunBenchmark: React.FC = () => {
                           </span>
                           <span
                             className={cn(
-                              'text-[10px] px-1.5 py-0.5 rounded-full',
+                              'text-2xs px-1.5 py-0.5 rounded-full',
                               PROVIDER_COLORS[model.provider] || 'bg-white/5 text-white/40'
                             )}
                           >
                             {model.provider}
                           </span>
                         </div>
-                        <span className="text-[10px] text-white/30 line-clamp-1">
+                        <span className="text-2xs text-white/30 line-clamp-1">
                           {model.description}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-white/20">
-                            {model.creditsCost1K} cr
-                          </span>
+                          <span className="text-2xs text-white/20">{model.creditsCost1K} cr</span>
                           {!model.available && (
-                            <span className="text-[10px] text-destructive/50">no key</span>
+                            <span className="text-2xs text-destructive/50">no key</span>
                           )}
-                          <span className="text-[10px] text-white/15">{model.released}</span>
+                          <span className="text-2xs text-white/15">{model.released}</span>
                         </div>
                       </button>
                     );
@@ -428,7 +426,7 @@ const RunBenchmark: React.FC = () => {
       {/* Run Button */}
       {!isStreaming && !streamingResults.length && (
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[10px] text-white/30">
+          <div className="flex items-center gap-2 text-2xs text-white/30">
             <CreditCard className="w-3.5 h-3.5" />
             <span>Vote after to get 50% credits back</span>
           </div>
@@ -460,7 +458,7 @@ const RunBenchmark: React.FC = () => {
                     Generating {streamingResults.length}/{selectedModels.size}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-white/30">
+                <div className="flex items-center gap-2 text-2xs text-white/30">
                   <Timer className="w-3 h-3" />
                   {Array.from(generatingModels).map((m) => {
                     const meta = models.find((mm) => mm.id === m);
@@ -512,7 +510,7 @@ const RunBenchmark: React.FC = () => {
                       className={cn(
                         'overflow-hidden transition-colors',
                         isWinner && 'ring-1 ring-warning/30',
-                        result.isNew && 'ring-1 ring-cyan-400/40'
+                        result.isNew && 'ring-1 ring-brand-cyan/40'
                       )}
                     >
                       {hasImage ? (
@@ -530,7 +528,7 @@ const RunBenchmark: React.FC = () => {
                           />
                           {isWinner && (
                             <div className="absolute top-2 left-2">
-                              <Badge className="bg-warning/90 text-black text-[10px] gap-1">
+                              <Badge className="bg-warning/90 text-black text-2xs gap-1">
                                 <Crown className="w-3 h-3" /> Winner
                               </Badge>
                             </div>
@@ -556,7 +554,7 @@ const RunBenchmark: React.FC = () => {
                             />
                             <p
                               className={cn(
-                                'text-[10px] line-clamp-3',
+                                'text-2xs line-clamp-3',
                                 result.generationSucceeded
                                   ? 'text-warning/60'
                                   : 'text-destructive/60'
@@ -573,7 +571,7 @@ const RunBenchmark: React.FC = () => {
                           <span className="text-xs font-medium text-white/80">{result.label}</span>
                           <span
                             className={cn(
-                              'text-[10px] px-1.5 py-0.5 rounded-full',
+                              'text-2xs px-1.5 py-0.5 rounded-full',
                               PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
                             )}
                           >
@@ -581,11 +579,11 @@ const RunBenchmark: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-white/30 flex items-center gap-1">
+                          <span className="text-2xs text-white/30 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : '—'}
                           </span>
-                          <span className="text-[10px] text-white/30">{result.creditsCost} cr</span>
+                          <span className="text-2xs text-white/30">{result.creditsCost} cr</span>
                         </div>
 
                         {streamComplete && !hasVoted && hasImage && !isWinner && (
@@ -608,7 +606,7 @@ const RunBenchmark: React.FC = () => {
 
           {/* Vote CTA */}
           {streamComplete && !hasVoted && (
-            <div className="text-center text-[10px] text-white/30">
+            <div className="text-center text-2xs text-white/30">
               <Zap className="w-3.5 h-3.5 inline mr-1" />
               Vote for the best result to get 50% of your credits back (
               {Math.floor(totalCharged / 2)} cr)
@@ -618,7 +616,7 @@ const RunBenchmark: React.FC = () => {
           {/* Credits summary */}
           {creditsRefunded > 0 && (
             <div className="text-center">
-              <Badge variant="outline" className="text-success border-success/20 text-[10px]">
+              <Badge variant="outline" className="text-success border-success/20 text-2xs">
                 {creditsRefunded} credits refunded
               </Badge>
             </div>
@@ -774,24 +772,22 @@ const BenchmarkGallery: React.FC = () => {
                 <p className="text-xs text-white/70 line-clamp-1 mb-1">{item.prompt}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-white/30">{item.models.length} models</span>
+                    <span className="text-2xs text-white/30">{item.models.length} models</span>
                     {item.voted && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] text-success/60 border-success/20"
+                        className="text-2xs text-success/60 border-success/20"
                       >
                         voted
                       </Badge>
                     )}
                   </div>
-                  <span className="flex items-center gap-0.5 text-[10px] text-white/20">
+                  <span className="flex items-center gap-0.5 text-2xs text-white/20">
                     <Eye className="w-3 h-3" /> {item.viewCount}
                   </span>
                 </div>
                 {item.user && (
-                  <p className="text-[10px] text-white/20 mt-1">
-                    by {item.user.name || 'anonymous'}
-                  </p>
+                  <p className="text-2xs text-white/20 mt-1">by {item.user.name || 'anonymous'}</p>
                 )}
               </div>
             </GlassPanel>
@@ -845,7 +841,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
             <MicroTitle className="mb-1">Benchmark Results</MicroTitle>
             <p className="text-sm text-white/60 max-w-lg line-clamp-2">{benchmark.prompt}</p>
           </div>
-          <div className="flex items-center gap-3 text-[10px] text-white/40">
+          <div className="flex items-center gap-3 text-2xs text-white/40">
             <span className="flex items-center gap-1">
               <Eye className="w-3 h-3" /> {benchmark.viewCount}
             </span>
@@ -853,7 +849,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
               <CreditCard className="w-3 h-3" /> {benchmark.totalCreditsCharged} cr
             </span>
             {benchmark.creditsRefunded > 0 && (
-              <Badge variant="outline" className="text-success border-success/20 text-[10px]">
+              <Badge variant="outline" className="text-success border-success/20 text-2xs">
                 -{benchmark.creditsRefunded} refunded
               </Badge>
             )}
@@ -887,7 +883,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
                 />
                 {isWinner && (
                   <div className="absolute top-2 left-2">
-                    <Badge className="bg-warning/90 text-black text-[10px] gap-1">
+                    <Badge className="bg-warning/90 text-black text-2xs gap-1">
                       <Crown className="w-3 h-3" /> Winner
                     </Badge>
                   </div>
@@ -900,7 +896,7 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
                   </span>
                   <span
                     className={cn(
-                      'text-[10px] px-1.5 py-0.5 rounded-full',
+                      'text-2xs px-1.5 py-0.5 rounded-full',
                       PROVIDER_COLORS[result.provider] || 'bg-white/5 text-white/40'
                     )}
                   >
@@ -908,11 +904,11 @@ const ViewBenchmark: React.FC<{ benchmark: BenchmarkItem; modelLabels?: Map<stri
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-white/30 flex items-center gap-1">
+                  <span className="text-2xs text-white/30 flex items-center gap-1">
                     <Clock className="w-3 h-3" />{' '}
                     {result.durationMs ? `${(result.durationMs / 1000).toFixed(1)}s` : '—'}
                   </span>
-                  <span className="text-[10px] text-white/30">{result.creditsCost} cr</span>
+                  <span className="text-2xs text-white/30">{result.creditsCost} cr</span>
                 </div>
               </div>
             </GlassPanel>

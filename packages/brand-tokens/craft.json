@@ -1,13 +1,21 @@
 {
-  "_comment": "Layer 2 — the INVARIANT craft skeleton. Brand-agnostic on purpose: these encode throughput/hierarchy/a11y, which do not change per brand. The engine NEVER derives these; it only fills the color-coupled slots (--shadow hue, --brand for focus). See docs/PLAN-VISANT-LAYER2-CRAFT.md in visant-board.",
+  "_comment": "Layer 2 — esqueleto de craft. CORREÇÃO 2026-08-18: isto é o DEFAULT, não um dogma. A invariância vale DENTRO de uma marca (nada na marca pode desviar do padrão dela), não ENTRE marcas. Cada marca tem personalidade e pode ter raio, sombra, borda e motion próprios: os campos existem na guideline (tokens.spacing, tokens.radius, shadows, borders, motion), o editor existe (TokensSection, ShadowSection, BorderSection, MotionSection) e o brand-token-compiler JÁ emite todos. O que a Layer 2 proíbe é DERIVAR o esqueleto automaticamente a partir da marca: palpite de máquina repetido em 50 clientes converge pra média, e a média é o genérico. Marca sem craft preenchido cai neste default. O chrome do visantlabs-os usa o craft da VISANT, porque a Visant também é uma marca.",
   "radius": {
-    "control": "0.5rem",
-    "surface": "0.875rem",
+    "control": "0.375rem",
+    "surface": "0.625rem",
     "pill": "9999px"
   },
   "density": {
-    "comfortable": { "pad-card": "1.25rem", "control-h": "2.25rem", "gap-zone": "1rem" },
-    "compact": { "pad-card": "0.875rem", "control-h": "2rem", "gap-zone": "0.75rem" }
+    "comfortable": {
+      "pad-card": "1.25rem",
+      "control-h": "2.25rem",
+      "gap-zone": "1rem"
+    },
+    "compact": {
+      "pad-card": "0.875rem",
+      "control-h": "2rem",
+      "gap-zone": "0.75rem"
+    }
   },
   "elevation": {
     "flat": "none",
@@ -15,7 +23,7 @@
     "overlay": "0 2px 6px hsl(var(--shadow) / 0.12), 0 12px 32px hsl(var(--shadow) / 0.14)",
     "modal": "0 8px 40px hsl(var(--shadow) / 0.22)"
   },
-  "focus": "0 0 0 2px var(--background), 0 0 0 4px var(--brand)",
+  "focus": "0 0 0 2px var(--background), 0 0 0 4px var(--foreground)",
   "motion": {
     "ease-out": "cubic-bezier(0.23, 1, 0.32, 1)",
     "ease-in-out": "cubic-bezier(0.77, 0, 0.175, 1)",
@@ -24,5 +32,6 @@
     "dur-fast": "160ms",
     "dur-base": "200ms",
     "dur-slow": "300ms"
-  }
+  },
+  "_comment_focus": "Foco NEUTRO por decisão (2026-08-18): anel na cor de texto, não no accent. Accent de marca clara reprova contraste contra fundo claro; foreground nunca reprova."
 }

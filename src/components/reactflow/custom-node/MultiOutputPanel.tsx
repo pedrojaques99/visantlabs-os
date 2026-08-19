@@ -14,13 +14,13 @@ export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props)
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-medium text-neutral-500 tracking-wider">
+      <p className="text-2xs font-medium text-neutral-500 tracking-wider">
         {isSinglePrompt ? 'Prompt' : `Prompts (${config.outputCount})`}
       </p>
       {(isSinglePrompt ? [prompts[0] ?? ''] : prompts).map((prompt, i) => (
         <div key={i} className="space-y-0.5">
           {config.behavior === 'model-comparison' && config.models?.[i] && (
-            <p className="text-[10px] font-mono text-neutral-500 tracking-wide pl-0.5">
+            <p className="text-2xs font-mono text-neutral-500 tracking-wide pl-0.5">
               {config.models[i]}
             </p>
           )}
@@ -30,7 +30,7 @@ export function MultiOutputPanel({ config, prompts, onChange, disabled }: Props)
             disabled={disabled}
             placeholder={isSinglePrompt ? 'Prompt...' : `Prompt ${i + 1}...`}
             rows={2}
-            className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors disabled:opacity-40"
+            className="nodrag nopan w-full resize-none rounded-md border-node border-neutral-800 bg-neutral-950 px-2.5 py-1.5 text-2xs font-mono text-neutral-200 placeholder:text-neutral-600 focus:border-neutral-600 focus:outline-none transition-colors disabled:opacity-40"
           />
         </div>
       ))}

@@ -143,7 +143,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 space-y-6">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-cyan/20 rounded-md mb-4">
-              <FileText className="h-10 w-10 text-brand-cyan" />
+              <FileText className="h-10 w-10 text-foreground" />
             </div>
             <h2 className="text-2xl font-bold text-neutral-200 mb-2 font-mono">Layout Custom</h2>
             <p className="text-sm text-neutral-400 font-mono">
@@ -180,7 +180,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                     variant="brand"
                     onClick={handleSavePreset}
                     disabled={isSavingPreset || !presetName.trim()}
-                    className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 text-brand-cyan"
+                    className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 text-foreground"
                   >
                     {isSavingPreset ? (
                       <GlitchLoader size={16} />
@@ -230,7 +230,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="border border-neutral-600/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan font-mono"
+                  className="border border-neutral-600/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground font-mono"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Selecionar PDF

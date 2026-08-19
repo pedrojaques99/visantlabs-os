@@ -155,14 +155,14 @@ export const ExpandHandles: React.FC<Props> = ({ imageWidth, imageHeight, zoom, 
       {/* Dimension label */}
       {hasExpansion && (
         <div
-          className="absolute z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-900/80 text-[10px] font-mono text-neutral-400 pointer-events-none"
+          className="absolute z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-900/80 text-2xs font-mono text-neutral-400 pointer-events-none"
           style={{
             left: imgLeft + imgW / 2 - 60,
             top: imgTop - t - 24,
           }}
         >
           {imageWidth}×{imageHeight}
-          <span className="text-brand-cyan">→</span>
+          <span className="text-foreground">→</span>
           {imageWidth + expandEdges.left + expandEdges.right}×
           {imageHeight + expandEdges.top + expandEdges.bottom}
         </div>

@@ -405,7 +405,7 @@ export const AdminPresetsPage: React.FC = () => {
             row={row}
             field="prompt"
             type="textarea"
-            className="font-mono text-[10px] text-neutral-500 line-clamp-2"
+            className="font-mono text-2xs text-neutral-500 line-clamp-2"
             onSave={handleInlineSave}
           />
         ),
@@ -457,7 +457,7 @@ export const AdminPresetsPage: React.FC = () => {
           return (
             <Badge
               variant="secondary"
-              className="text-[10px] h-5 bg-neutral-800 text-neutral-400 hover:bg-neutral-700"
+              className="text-2xs h-5 bg-neutral-800 text-neutral-400 hover:bg-neutral-700"
             >
               {model.includes('flash') ? 'HD' : '4K'}
             </Badge>
@@ -1533,7 +1533,7 @@ export const AdminPresetsPage: React.FC = () => {
                 </div>
                 <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-foreground" />
                     <div>
                       <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
                         {t('adminPresets.title') || 'Administração de Presets'}
@@ -1597,7 +1597,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant="brand"
                     onClick={handlePopulateFromDefaults}
                     disabled={isLoading}
-                    className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
+                    className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border border-brand-cyan/30 h-9"
                   >
                     <Layers className="h-4 w-4 mr-2" />
                     Popular Mockups Padrão
@@ -1606,7 +1606,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant="brand"
                     onClick={handleOpenBatchModal}
                     disabled={isLoading}
-                    className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
+                    className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border border-brand-cyan/30 h-9"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Batch Upload
@@ -1619,7 +1619,7 @@ export const AdminPresetsPage: React.FC = () => {
                   variant="brand"
                   onClick={handlePopulateFromTags}
                   disabled={isLoading}
-                  className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
+                  className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground border border-brand-cyan/30 h-9"
                 >
                   <Layers className="h-4 w-4 mr-2" />
                   {t('adminPresets.populateDefaults') || 'Popular Padrões'}
@@ -2113,7 +2113,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   setTagInput('');
                                 }
                               }}
-                              className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
+                              className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/30 rounded-md text-foreground font-mono text-sm transition-colors"
                             >
                               Adicionar
                             </Button>

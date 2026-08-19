@@ -143,7 +143,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
         <Button
           variant="outline"
           size="sm"
-          className="h-7 px-2 text-[10px]"
+          className="h-7 px-2 text-2xs"
           disabled={!name.trim()}
           aria-label="Save preset"
           onClick={handleSave}
@@ -154,7 +154,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
 
       {/* Empty state hint */}
       {presets.length === 0 && !loading && (
-        <p className="text-[10px] text-neutral-600 text-center py-0.5">
+        <p className="text-2xs text-neutral-600 text-center py-0.5">
           Name your settings and save for quick recall
         </p>
       )}
@@ -164,7 +164,7 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
         <>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1.5 w-full text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors"
+            className="flex items-center gap-1.5 w-full text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <ChevronDown
               size={10}
@@ -185,13 +185,13 @@ export const ImageLabSavePreset: React.FC = React.memo(() => {
                       applyPreset(p);
                       toast.success(`Loaded "${p.name}"`);
                     }}
-                    className="flex-1 flex items-center gap-1.5 text-left px-1.5 py-1 rounded text-[10px] text-neutral-400 hover:bg-white/5 hover:text-white transition-colors min-w-0"
+                    className="flex-1 flex items-center gap-1.5 text-left px-1.5 py-1 rounded text-2xs text-neutral-400 hover:bg-white/5 hover:text-white transition-colors min-w-0"
                   >
                     <span className="truncate">{p.name}</span>
                     <span
                       className={cn(
-                        'text-[10px] uppercase shrink-0',
-                        p.data?.mode === 'halftone' && 'text-cyan-600',
+                        'text-2xs uppercase shrink-0',
+                        p.data?.mode === 'halftone' && 'text-brand-cyan',
                         p.data?.mode === 'texture' && 'text-purple-600',
                         p.data?.mode === 'riso' && 'text-warning',
                         p.data?.mode === 'shaders' && 'text-success'

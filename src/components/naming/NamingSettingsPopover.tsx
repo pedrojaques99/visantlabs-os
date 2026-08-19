@@ -123,7 +123,7 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
                       className="justify-between"
                     >
                       <span>{r.label}</span>
-                      <span className="text-[10px] text-neutral-600">{r.desc}</span>
+                      <span className="text-2xs text-neutral-600">{r.desc}</span>
                     </Chip>
                   ))}
                 </div>
@@ -185,7 +185,7 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
                       className="justify-between"
                     >
                       <span>{f.label}</span>
-                      <span className="text-[10px] text-neutral-600">{f.desc}</span>
+                      <span className="text-2xs text-neutral-600">{f.desc}</span>
                     </Chip>
                   ))}
                 </div>
@@ -225,8 +225,8 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
                     onRegenerate();
                   }}
                   className={cn(
-                    'flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] transition-colors',
-                    'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20',
+                    'flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-2xs transition-colors',
+                    'border-brand-cyan/40 bg-brand-cyan/10 text-foreground hover:bg-brand-cyan/20',
                     regenerating && 'pointer-events-none opacity-50'
                   )}
                 >
@@ -238,7 +238,7 @@ export const NamingSettingsPopover: React.FC<NamingSettingsPopoverProps> = ({
               <button
                 type="button"
                 onClick={onReset}
-                className="flex items-center justify-center gap-1.5 pt-1 text-[10px] text-neutral-600 transition-colors hover:text-neutral-400"
+                className="flex items-center justify-center gap-1.5 pt-1 text-2xs text-neutral-600 transition-colors hover:text-neutral-400"
               >
                 <RotateCcw size={11} />
                 restaurar padrão
@@ -264,7 +264,7 @@ function Group({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+      <span className="text-2xs uppercase tracking-widest text-neutral-500">
         {label}
         {hint && <span className="ml-1.5 text-neutral-700">· {hint}</span>}
       </span>
@@ -291,7 +291,7 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] transition-colors',
+        'flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-2xs transition-colors',
         active
           ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
           : 'border-neutral-800 text-neutral-400 hover:border-white/10 hover:text-neutral-200',

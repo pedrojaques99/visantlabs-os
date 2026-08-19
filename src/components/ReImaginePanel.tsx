@@ -52,7 +52,7 @@ export const ReImaginePanel: React.FC<ReImaginePanelProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-brand-cyan/20 rounded-md">
-              <Pencil size={20} className="text-brand-cyan" />
+              <Pencil size={20} className="text-foreground" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-neutral-200">Re-imagine</h3>

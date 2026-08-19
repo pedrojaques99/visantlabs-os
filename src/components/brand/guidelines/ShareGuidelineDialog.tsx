@@ -178,10 +178,10 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
               <Share2 size={17} className="text-neutral-300" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-[15px] font-semibold text-neutral-100 tracking-tight">
+              <h2 className="text-base font-semibold text-neutral-100 tracking-tight">
                 Share Brand Guidelines
               </h2>
-              <p className="text-[12px] text-neutral-500 truncate">
+              <p className="text-xs text-neutral-500 truncate">
                 {guideline.identity?.name || 'Brand Kit'}
               </p>
             </div>
@@ -210,13 +210,13 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                 <div className="min-w-0">
                   <p
                     className={cn(
-                      'text-[13px] font-medium',
+                      'text-sm font-medium',
                       isPublic ? 'text-neutral-100' : 'text-neutral-400'
                     )}
                   >
                     {isPublic ? 'Public' : 'Private'}
                   </p>
-                  <p className="text-[11px] text-neutral-500">
+                  <p className="text-2xs text-neutral-500">
                     {isPublic ? 'Anyone with the link can view' : 'Only you and collaborators'}
                   </p>
                 </div>
@@ -240,7 +240,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                 >
                   <div className="flex-1 min-w-0 flex items-center gap-2 h-10 px-3 rounded-xl bg-neutral-900/60 border border-white/8">
                     <Globe size={13} className="text-neutral-500 shrink-0" />
-                    <span className="text-[12px] font-mono text-neutral-400 truncate">
+                    <span className="text-xs font-mono text-neutral-400 truncate">
                       {shareUrl.replace(/^https?:\/\//, '')}
                     </span>
                   </div>
@@ -262,7 +262,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                     onClick={handleOpen}
                     size="sm"
                     aria-label="Open public page"
-                    className="h-10 px-3.5 rounded-xl gap-1.5 bg-brand-cyan/15 border border-brand-cyan/25 text-brand-cyan hover:bg-brand-cyan/25 shrink-0"
+                    className="h-10 px-3.5 rounded-xl gap-1.5 bg-brand-cyan/15 border border-brand-cyan/25 text-foreground hover:bg-brand-cyan/25 shrink-0"
                   >
                     <ExternalLink size={14} /> Open
                   </Button>
@@ -274,13 +274,13 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
           {/* Invite collaborators */}
           <motion.div variants={item} className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+              <p className="text-2xs uppercase tracking-widest text-neutral-500 flex items-center gap-2">
                 <UserPlus size={12} />
                 Invite to collaborate
               </p>
               {/* Seats do plano — só quando o backend manda seatQuota no detalhe. */}
               {guideline.seatQuota && guideline.seatQuota.max != null && (
-                <span className="text-[10px] uppercase tracking-widest text-neutral-600">
+                <span className="text-2xs uppercase tracking-widest text-neutral-600">
                   {t('cockpit.seats.usage', {
                     used: guideline.seatQuota.used,
                     max: guideline.seatQuota.max,
@@ -295,13 +295,13 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
-                className="flex-1 h-10 bg-neutral-900/50 border-white/8 text-[13px] text-neutral-200 placeholder:text-neutral-600 rounded-xl"
+                className="flex-1 h-10 bg-neutral-900/50 border-white/8 text-sm text-neutral-200 placeholder:text-neutral-600 rounded-xl"
               />
               <div className="relative shrink-0">
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as 'editor' | 'viewer')}
-                  className="h-10 appearance-none bg-neutral-900/50 border border-white/8 text-[12px] text-neutral-400 rounded-xl pl-3 pr-8 cursor-pointer focus:outline-none focus:border-white/20"
+                  className="h-10 appearance-none bg-neutral-900/50 border border-white/8 text-xs text-neutral-400 rounded-xl pl-3 pr-8 cursor-pointer focus:outline-none focus:border-white/20"
                 >
                   <option value="editor">Editor</option>
                   <option value="viewer">Viewer</option>
@@ -314,7 +314,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
               <Button
                 onClick={handleInvite}
                 disabled={inviting || !inviteEmail.trim()}
-                className="h-10 px-4 rounded-xl bg-brand-cyan/15 border border-brand-cyan/25 text-brand-cyan hover:bg-brand-cyan/25 disabled:opacity-40 shrink-0"
+                className="h-10 px-4 rounded-xl bg-brand-cyan/15 border border-brand-cyan/25 text-foreground hover:bg-brand-cyan/25 disabled:opacity-40 shrink-0"
               >
                 {inviting ? <GlitchLoader size={14} /> : 'Invite'}
               </Button>
@@ -346,19 +346,17 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
                         />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-neutral-800 flex items-center justify-center shrink-0">
-                          <span className="text-[11px] text-neutral-400 uppercase font-medium">
+                          <span className="text-2xs text-neutral-400 uppercase font-medium">
                             {(c.name || c.email).charAt(0)}
                           </span>
                         </div>
                       )}
-                      <span className="text-[13px] text-neutral-300 truncate">
-                        {c.name || c.email}
-                      </span>
+                      <span className="text-sm text-neutral-300 truncate">{c.name || c.email}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span
                         className={cn(
-                          'text-[10px] font-mono px-2 py-0.5 rounded-md',
+                          'text-2xs font-mono px-2 py-0.5 rounded-md',
                           c.role === 'editor'
                             ? 'bg-white/10 text-neutral-300'
                             : 'bg-white/5 text-neutral-500'
@@ -385,7 +383,7 @@ export const ShareGuidelineDialog: React.FC<ShareGuidelineDialogProps> = ({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="h-9 px-4 text-[13px] text-neutral-500 hover:text-neutral-200"
+              className="h-9 px-4 text-sm text-neutral-500 hover:text-neutral-200"
             >
               Close
             </Button>

@@ -91,7 +91,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <Button
             variant="brand"
             onClick={addProjectDetailSection}
-            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addSection') || 'Adicionar Seção'}
@@ -131,7 +131,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                         <Button
                           variant="ghost"
                           onClick={() => addParagraph(sectionIndex)}
-                          className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded text-brand-cyan font-mono text-xs transition-colors duration-300 flex items-center gap-1"
+                          className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded text-foreground font-mono text-xs transition-colors duration-300 flex items-center gap-1"
                         >
                           <Plus size={12} />
                           {t('budget.addParagraph') || 'Parágrafo'}
@@ -152,7 +152,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                             <Button
                               variant="ghost"
                               onClick={() => removeParagraph(sectionIndex, paragraphIndex)}
-                              className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors h-fit"
+                              className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors h-fit"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -164,7 +164,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => removeProjectDetailSection(sectionIndex)}
-                    className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                     title={t('budget.removeSection') || 'Remover seção'}
                   >
                     <Trash2 size={18} />
@@ -185,7 +185,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           <Button
             variant="brand"
             onClick={addInfoBox}
-            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addInfoBox') || 'Adicionar Caixa'}
@@ -232,7 +232,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => removeInfoBox(index)}
-                    className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                     title={t('budget.removeInfoBox') || 'Remover caixa'}
                   >
                     <Trash2 size={18} />

@@ -43,9 +43,9 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       case 'available':
         return 'border-neutral-700 bg-neutral-950/20 hover:bg-neutral-950/70 text-neutral-400';
       case 'added':
-        return 'border-neutral-600/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan';
+        return 'border-neutral-600/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground';
       case 'positioned':
-        return 'border-green-500/50 bg-green-500/10 hover:bg-green-500/20 text-green-400';
+        return 'border-success/50 bg-success/10 hover:bg-success/20 text-success';
       default:
         return 'border-neutral-700 bg-neutral-950/20 text-neutral-400';
     }
@@ -54,9 +54,9 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
   const getStatusIcon = () => {
     switch (status) {
       case 'positioned':
-        return <CheckCircle2 size={16} className="text-green-400" />;
+        return <CheckCircle2 size={16} className="text-success" />;
       case 'added':
-        return <Circle size={16} className="text-brand-cyan" />;
+        return <Circle size={16} className="text-foreground" />;
       default:
         return null;
     }
@@ -79,12 +79,12 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       {icon && <div className="text-2xl">{icon}</div>}
       <span className="text-xs font-mono text-center font-medium">{label}</span>
       {instanceCount > 0 && (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-brand-cyan/20 text-brand-cyan border border-neutral-600/30">
+        <span className="text-2xs font-mono px-2 py-0.5 rounded-md bg-brand-cyan/20 text-foreground border border-neutral-600/30">
           {instanceCount} {instanceCount === 1 ? 'instância' : 'instâncias'}
         </span>
       )}
       {mapping && !instanceCount && (
-        <span className="text-[10px] font-mono opacity-60">
+        <span className="text-2xs font-mono opacity-60">
           {mapping.page ? `Página ${mapping.page}` : 'Clique para adicionar'}
         </span>
       )}

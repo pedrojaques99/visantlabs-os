@@ -49,7 +49,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
               theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
             }`}
           >
-            <Coins className="h-3.5 w-3.5 text-brand-cyan" />
+            <Coins className="h-3.5 w-3.5 text-foreground" />
             <span>
               {creditsRequired} {creditsRequired === 1 ? 'credit' : 'credits'}
             </span>

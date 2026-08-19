@@ -39,7 +39,7 @@ export const DemoBrandBanner: React.FC<DemoBrandBannerProps> = ({ brandId, onCta
       data-vsn-component="DemoBrandBanner"
     >
       <Compass size={13} className="text-warning shrink-0" />
-      <span className="font-mono text-[11px] text-neutral-300 truncate">
+      <span className="font-mono text-2xs text-neutral-300 truncate">
         {t('onboarding.demoBanner.label')}
         <span className="hidden sm:inline text-neutral-500">
           {' '}
@@ -48,7 +48,7 @@ export const DemoBrandBanner: React.FC<DemoBrandBannerProps> = ({ brandId, onCta
       </span>
       <button
         onClick={onCta ?? (() => navigate('/brand-guidelines'))}
-        className="shrink-0 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-neutral-200 transition-colors"
+        className="shrink-0 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1 font-mono text-2xs uppercase tracking-widest text-neutral-200 transition-colors"
       >
         {t('onboarding.demoBanner.cta')}
       </button>

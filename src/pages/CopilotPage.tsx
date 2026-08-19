@@ -51,7 +51,7 @@ const CopilotLockedPreview: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-neutral-400 uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1.5 text-2xs font-medium px-2.5 py-1 rounded-full bg-white/5 border border-neutral-800 text-neutral-400 uppercase tracking-wider">
             <Lock size={10} />
             {t('copilot.locked.badge')}
           </span>

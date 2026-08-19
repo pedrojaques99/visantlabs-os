@@ -76,10 +76,10 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
             {t('pricing.yearly') || 'Anual'}
             <span
               className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase ',
+                'text-2xs px-1.5 py-0.5 rounded-full font-bold uppercase ',
                 billingCycle === 'yearly'
                   ? 'bg-neutral-950/20 text-black'
-                  : 'bg-brand-cyan/20 text-brand-cyan'
+                  : 'bg-brand-cyan/20 text-foreground'
               )}
             >
               {t('pricing.yearlyDiscount') || '-16%'}
@@ -111,7 +111,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                 <CardHeader className="text-center pb-2 relative z-10">
                   {plan.displayOrder === 1 && (
                     <div className="absolute -top-1 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full">
+                      <Badge className="bg-brand-cyan text-black font-bold text-2xs uppercase tracking-widest px-3 py-0.5 rounded-full">
                         {t('pricing.popular') || 'Popular'}
                       </Badge>
                     </div>
@@ -139,7 +139,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                           : t('pricing.perMonth')}
                       </span>
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 mt-2 uppercase ">
+                    <div className="flex items-center justify-center gap-1.5 text-2xs text-neutral-400 mt-2 uppercase ">
                       <Pickaxe size={12} className="text-neutral-500" />
                       <span>
                         {plan.credits} {t('pricing.creditsLabel')}
@@ -149,7 +149,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                     {(() => {
                       const estimate = getCreditsEstimate(plan.credits || 0);
                       return (
-                        <div className="flex items-center justify-center gap-3 mt-2 text-[10px] text-neutral-500">
+                        <div className="flex items-center justify-center gap-3 mt-2 text-2xs text-neutral-500">
                           <div className="flex items-center gap-1">
                             <Image size={10} className="text-neutral-500" />
                             <span>~{estimate.imagesHD} HD</span>

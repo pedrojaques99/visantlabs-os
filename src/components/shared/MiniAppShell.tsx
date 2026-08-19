@@ -141,7 +141,7 @@ export const MiniAppShell: React.FC<MiniAppShellProps> = ({
                 </Button>
               </Tooltip>
               {Icon && <Icon size={14} className="text-muted-foreground ml-0.5" />}
-              <MicroTitle className="text-[10px] text-neutral-500 ml-1.5">{title}</MicroTitle>
+              <MicroTitle className="text-2xs text-neutral-500 ml-1.5">{title}</MicroTitle>
             </>
           )
         }

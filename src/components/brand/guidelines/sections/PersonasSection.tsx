@@ -69,13 +69,13 @@ const Avatar: React.FC<{
       <DropdownMenuContent align="start" className="w-52 p-1">
         {/* Gender — steers auto-resolved stock portraits */}
         <div className="flex items-center justify-between px-2 py-1.5">
-          <span className="text-[10px] uppercase tracking-wide text-neutral-600">Stock gender</span>
+          <span className="text-2xs uppercase tracking-wide text-neutral-600">Stock gender</span>
           <div className="flex gap-1">
             {GENDERS.map((g) => (
               <button
                 key={g.value}
                 onClick={() => onSetGender(g.value)}
-                className={`w-6 h-6 rounded text-[10px] font-bold transition-colors ${
+                className={`w-6 h-6 rounded text-2xs font-bold transition-colors ${
                   persona.gender === g.value
                     ? 'bg-white/15 text-neutral-100'
                     : 'bg-white/[0.03] text-neutral-500 hover:text-neutral-300'
@@ -105,7 +105,7 @@ const Avatar: React.FC<{
             ))}
           </div>
         ) : (
-          <p className="text-[10px] text-neutral-600 px-2 py-1.5">
+          <p className="text-2xs text-neutral-600 px-2 py-1.5">
             No media yet. Add images in the Logotipo tab.
           </p>
         )}
@@ -212,7 +212,7 @@ export const PersonasSection: React.FC<PersonasSectionProps> = ({ guideline, onU
     >
       <div className="space-y-0 py-1">
         {personas.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">No personas yet. Click + to add.</p>
+          <p className="text-2xs text-neutral-700 py-2">No personas yet. Click + to add.</p>
         )}
         {personas.map((p, i) => (
           <div

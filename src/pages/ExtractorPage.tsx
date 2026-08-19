@@ -128,11 +128,11 @@ const ImageCard = memo<ImageCardProps>(
           {/* Technical Badges */}
           <div className="absolute top-3 left-3 z-10 flex gap-1.5">
             {isHD && (
-              <div className="bg-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
+              <div className="bg-white/90 text-2xs font-bold px-1.5 py-0.5 rounded text-black uppercase tracking-tighter">
                 ULTRA HD
               </div>
             )}
-            <div className="bg-black/40 backdrop-blur-sm text-white/50 text-[10px] font-medium px-1.5 py-0.5 rounded border border-neutral-800 uppercase">
+            <div className="bg-black/40 backdrop-blur-sm text-white/50 text-2xs font-medium px-1.5 py-0.5 rounded border border-neutral-800 uppercase">
               {img.width}×{img.height}
             </div>
           </div>
@@ -161,7 +161,7 @@ const ImageCard = memo<ImageCardProps>(
           {/* Subtle Hover Overlay */}
           {!batchSelecting && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] duration-300 flex flex-col justify-end p-4">
-              <h4 className="text-white font-medium text-[10px] line-clamp-1 mb-3 opacity-90 uppercase tracking-tight">
+              <h4 className="text-white font-medium text-2xs line-clamp-1 mb-3 opacity-90 uppercase tracking-tight">
                 {img.title || 'asset_stream'}
               </h4>
               <div className="flex gap-1.5">
@@ -716,7 +716,7 @@ export default function ExtractorPage() {
                   )}
                 >
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">
+                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
                       Grid Zoom ({columns})
                     </label>
                     <div className="px-1 pt-2 pb-1">
@@ -733,7 +733,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">
+                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
                       Resolution
                     </label>
                     <div className="flex gap-1">
@@ -741,7 +741,7 @@ export default function ExtractorPage() {
                         <button
                           key={s}
                           onClick={() => setDesignerParams({ ...designerParams, size: s })}
-                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
+                          className={`flex-1 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-colors border ${
                             designerParams.size === s
                               ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600'
@@ -754,7 +754,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">
+                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
                       {t('extractor.content_type')}
                     </label>
                     <div className="flex gap-1 flex-wrap">
@@ -778,7 +778,7 @@ export default function ExtractorPage() {
                           onClick={() =>
                             setDesignerParams({ ...designerParams, contentMode: value })
                           }
-                          className={`flex-none px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
+                          className={`flex-none px-3 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-colors border ${
                             designerParams.contentMode === value
                               ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan'
                               : 'bg-transparent border-neutral-800 text-neutral-600 hover:text-neutral-400'
@@ -791,7 +791,7 @@ export default function ExtractorPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest pl-1">
+                    <label className="text-2xs font-bold text-neutral-500 uppercase tracking-widest pl-1">
                       {t('extractor.format')}
                     </label>
                     <div className="flex gap-1">
@@ -799,7 +799,7 @@ export default function ExtractorPage() {
                         <button
                           key={a}
                           onClick={() => setDesignerParams({ ...designerParams, aspect: a })}
-                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${
+                          className={`flex-1 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-colors border ${
                             designerParams.aspect === a
                               ? 'bg-white/10 border-white/20 text-white'
                               : 'bg-transparent border-neutral-800 text-neutral-600'
@@ -823,7 +823,7 @@ export default function ExtractorPage() {
                   className="flex items-center gap-2 text-destructive/80 bg-destructive/5 px-4 py-2 rounded-xl self-start border border-destructive/10"
                 >
                   <AlertCircle size={14} />
-                  <span className="text-[10px] font-medium uppercase tracking-wider">{error}</span>
+                  <span className="text-2xs font-medium uppercase tracking-wider">{error}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -839,7 +839,7 @@ export default function ExtractorPage() {
                 <h2 className="text-xs font-medium tracking-tight text-neutral-400 uppercase">
                   {images.length} assets identified
                 </h2>
-                <div className="text-[10px] text-neutral-600 uppercase tracking-widest border-l border-neutral-800 pl-3">
+                <div className="text-2xs text-neutral-600 uppercase tracking-widest border-l border-neutral-800 pl-3">
                   HD_SORT_ACTIVE
                 </div>
               </div>
@@ -850,7 +850,7 @@ export default function ExtractorPage() {
                     setSelectedImages(new Set());
                   }}
                   className={`
-                    px-4 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-wider transition-colors border
+                    px-4 py-1.5 rounded-lg text-2xs font-medium uppercase tracking-wider transition-colors border
                     ${
                       batchSelecting
                         ? 'bg-white/10 border-white/20 text-white'
@@ -863,7 +863,7 @@ export default function ExtractorPage() {
                 <button
                   onClick={handleDownloadAll}
                   className="
-                    px-4 py-1.5 bg-white text-black text-[10px] font-bold uppercase tracking-wider rounded-lg 
+                    px-4 py-1.5 bg-white text-black text-2xs font-bold uppercase tracking-wider rounded-lg 
                     hover:bg-neutral-200 transition-colors flex items-center gap-1.5
                   "
                 >

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Box, LayoutGrid, Layers, Megaphone, Pencil, Zap } from '@/lib/ui/icons';
 import type { LucideIcon } from '@/lib/ui/icons';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { FEATURE_ALPHA_TOOLS } from '@/config/featureFlags';
 import { cn } from '@/lib/utils';
 
 /**
@@ -78,6 +79,17 @@ const SLIDES: CreateSlide[] = [
   },
 ];
 
+/**
+ * Slides em alphatest (/create e /campaigns). Esta vitrine roda na página
+ * PÚBLICA da marca, então um cliente do dono vê o convite: anunciar tool em
+ * alfa aqui é pior que no cockpit, não melhor.
+ */
+const ALPHA_SLIDES = new Set(['create', 'campaigns']);
+
+const VISIBLE_SLIDES: CreateSlide[] = FEATURE_ALPHA_TOOLS
+  ? SLIDES
+  : SLIDES.filter((s) => !ALPHA_SLIDES.has(s.id));
+
 const ADVANCE_MS = 4800;
 
 export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string }> = ({
@@ -87,14 +99,14 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const slide = SLIDES[index];
+  const slide = VISIBLE_SLIDES[index];
 
   // Auto-advance, paused on hover/focus.
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
     if (paused) return;
     timer.current = setInterval(() => {
-      setIndex((i) => (i + 1) % SLIDES.length);
+      setIndex((i) => (i + 1) % VISIBLE_SLIDES.length);
     }, ADVANCE_MS);
     return () => {
       if (timer.current) clearInterval(timer.current);
@@ -190,7 +202,7 @@ export const BrandCreateShowcase: React.FC<{ brandId: string; className?: string
 
         {/* Dots */}
         <div className="absolute bottom-5 right-5 flex items-center gap-1.5">
-          {SLIDES.map((s, i) => (
+          {VISIBLE_SLIDES.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setIndex(i)}

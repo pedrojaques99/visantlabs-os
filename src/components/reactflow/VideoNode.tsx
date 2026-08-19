@@ -538,7 +538,7 @@ export const VideoNode = memo(
           <NodeLabel>{t('canvasNodes.videoNode.prompt') || 'Prompt'}</NodeLabel>
 
           {hasTextConnection && (
-            <div className="mb-1.5 text-[10px] font-mono text-brand-cyan/70 flex items-center gap-1">
+            <div className="mb-1.5 text-2xs font-mono text-brand-cyan/70 flex items-center gap-1">
               <span>*</span>
               <span>
                 {t('canvasNodes.videoNode.connectedToTextNode') || 'Connected to TextNode'}
@@ -568,7 +568,7 @@ export const VideoNode = memo(
 
         {nodeData.connectedVideo && (
           <div className="node-margin bg-neutral-900/50 border-node border-neutral-800 rounded p-2 flex items-center gap-2">
-            <VideoIcon size={14} className="text-brand-cyan" />
+            <VideoIcon size={14} className="text-foreground" />
             <span className="text-xs text-neutral-400">
               {t('canvasNodes.videoNode.videoInputConnected') || 'Video Input Connected'}
             </span>
@@ -629,7 +629,7 @@ export const VideoNode = memo(
                         e.stopPropagation();
                         setShowOlderVideoModels(!showOlderVideoModels);
                       }}
-                      className="w-full px-2 py-1.5 text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors text-center"
+                      className="w-full px-2 py-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors text-center"
                     >
                       {showOlderVideoModels ? 'Hide older models' : 'Show older models'}
                     </button>
@@ -654,7 +654,7 @@ export const VideoNode = memo(
                   disabled={isLoading}
                 />
                 {modelCaps?.resolutionByMode[klingMode] && (
-                  <span className="text-[10px] text-neutral-500 font-mono mt-0.5 block">
+                  <span className="text-2xs text-neutral-500 font-mono mt-0.5 block">
                     Output: {modelCaps.resolutionByMode[klingMode]}
                   </span>
                 )}
@@ -767,7 +767,7 @@ export const VideoNode = memo(
                   disabled={isLoading}
                   className="w-full accent-brand-cyan"
                 />
-                <div className="flex justify-between text-[10px] text-neutral-600 font-mono">
+                <div className="flex justify-between text-2xs text-neutral-600 font-mono">
                   <span>Free</span>
                   <span>Strict</span>
                 </div>
@@ -835,7 +835,7 @@ export const VideoNode = memo(
                 <span className="font-semibold tracking-tight">
                   {t('canvasNodes.videoNode.generateVideo') || 'Generate Video'}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />
                   {creditsRequired}
                 </div>

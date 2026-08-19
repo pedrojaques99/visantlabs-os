@@ -48,9 +48,7 @@ const Timer: React.FC<{ startTime: number }> = ({ startTime }) => {
     return () => clearInterval(i);
   }, [startTime]);
   return (
-    <span className="font-mono text-[10px] tabular-nums text-neutral-600">
-      {elapsed.toFixed(1)}s
-    </span>
+    <span className="font-mono text-2xs tabular-nums text-neutral-600">{elapsed.toFixed(1)}s</span>
   );
 };
 
@@ -105,7 +103,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                 />
                 {crop.regeneratedUrl && (
                   <div className="absolute bottom-0 inset-x-0 bg-black/80 backdrop-blur-sm p-2 flex items-center justify-between gap-2 z-20">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
+                    <span className="text-2xs font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1">
                       <Zap size={9} />
                       AI Result
                     </span>
@@ -167,7 +165,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                   <div className="w-12 h-12 rounded-full bg-neutral-800 border border-dashed border-border/70 flex items-center justify-center group-hover/upload:scale-110 transition-transform">
                     <Play size={18} className="text-neutral-500 rotate-90" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">
+                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-600">
                     Click to add image
                   </span>
                 </div>
@@ -190,7 +188,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
             {crop.isUpscaling && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
                 <GlitchLoader size={20} />
-                <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-400">
+                <span className="text-2xs uppercase tracking-[0.3em] font-bold text-neutral-400">
                   Upscaling
                 </span>
                 {crop.upscaleStartTime && <Timer startTime={crop.upscaleStartTime} />}
@@ -200,7 +198,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
             {crop.isAnimating && (
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
                 <GlitchLoader size={20} />
-                <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-neutral-400">
+                <span className="text-2xs uppercase tracking-[0.3em] font-bold text-neutral-400">
                   Animating
                 </span>
                 {crop.animationStartTime && <Timer startTime={crop.animationStartTime} />}
@@ -228,7 +226,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
           <div className="flex-1 p-5 flex flex-col justify-between gap-4">
             <div className="space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-neutral-600 uppercase tracking-[0.2em]">
+                <span className="text-2xs text-neutral-600 uppercase tracking-[0.2em]">
                   ITEM #{index + 1}
                 </span>
                 <div className="flex gap-1.5">
@@ -236,7 +234,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                     <button
                       onClick={() => onUpscale(crop.id)}
                       title="Upscale to 4K"
-                      className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
+                      className="p-2 rounded-lg bg-neutral-800/50 border border-border/70 text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors text-2xs font-bold uppercase tracking-widest flex items-center gap-1"
                     >
                       <Maximize2 size={13} strokeWidth={1.5} /> 4K
                     </button>
@@ -261,7 +259,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5">
                       <Film size={11} className="text-neutral-600" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">
+                      <span className="text-2xs font-bold uppercase tracking-widest text-neutral-600">
                         Remotion Direction
                       </span>
                     </div>
@@ -272,7 +270,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                         <button
                           key={p}
                           onClick={() => onRemotionAnimate(crop.upscaledUrl || crop.url, p)}
-                          className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-[10px] font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-colors capitalize"
+                          className="px-2.5 py-1 rounded-lg border border-border bg-neutral-900/50 text-2xs font-medium text-neutral-400 hover:bg-white hover:text-black hover:border-white transition-colors capitalize"
                         >
                           {p.replace('-', ' ')}
                         </button>
@@ -283,7 +281,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                   <div className="space-y-2">
                     <div className="flex items-center gap-1.5">
                       <Video size={11} className="text-neutral-600" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">
+                      <span className="text-2xs font-bold uppercase tracking-widest text-neutral-600">
                         Veo 3 Animation
                       </span>
                     </div>
@@ -293,13 +291,13 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="Animation prompt..."
-                        className="flex-1 bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-lg px-3 py-2 text-[10px] text-white placeholder:text-neutral-700 outline-none transition-[color,background-color,border-color,opacity]"
+                        className="flex-1 bg-neutral-900/50 border border-border focus:border-neutral-600 rounded-lg px-3 py-2 text-2xs text-white placeholder:text-neutral-700 outline-none transition-[color,background-color,border-color,opacity]"
                         onKeyDown={(e) => e.key === 'Enter' && handleAnimate()}
                       />
                       <button
                         onClick={handleAnimate}
                         disabled={!prompt.trim() || !crop.url || crop.isAnimating}
-                        className="px-3 py-2 rounded-lg bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-[color,background-color,border-color,opacity] disabled:opacity-30"
+                        className="px-3 py-2 rounded-lg bg-white text-black text-2xs font-bold uppercase tracking-widest hover:opacity-90 transition-[color,background-color,border-color,opacity] disabled:opacity-30"
                       >
                         <Video size={13} />
                       </button>
@@ -310,7 +308,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <Zap size={11} className="text-neutral-600" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600">
+                        <span className="text-2xs font-bold uppercase tracking-widest text-neutral-600">
                           Regenerate with AI
                         </span>
                       </div>
@@ -328,7 +326,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
                         <button
                           onClick={() => onRegenerate(crop.id, regenModel, regenProvider)}
                           disabled={!crop.url || isRegenerating}
-                          className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-[10px] font-bold uppercase tracking-widest transition-[color,background-color,border-color,opacity] disabled:opacity-30 flex items-center gap-1.5 shrink-0"
+                          className="px-3 py-2 rounded-lg bg-neutral-800 border border-border text-neutral-300 hover:bg-white hover:text-black text-2xs font-bold uppercase tracking-widest transition-[color,background-color,border-color,opacity] disabled:opacity-30 flex items-center gap-1.5 shrink-0"
                         >
                           {isRegenerating ? <GlitchLoader size={13} /> : <Zap size={13} />}
                         </button>
@@ -342,7 +340,7 @@ export const BentoItem: React.FC<BentoItemProps> = React.memo(
             {crop.upscaledUrl && (
               <div className="flex items-center gap-2 pt-3 border-t border-border">
                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                <span className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
+                <span className="text-2xs font-bold tracking-widest text-neutral-500 uppercase">
                   4K Ready
                 </span>
               </div>

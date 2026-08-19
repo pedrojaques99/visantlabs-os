@@ -86,7 +86,7 @@ const FormatBadge: React.FC<{ url: string; className?: string }> = ({ url, class
   return (
     <span
       className={cn(
-        'absolute text-[10px] font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10',
+        'absolute text-2xs font-mono font-bold uppercase tracking-wider px-1 py-px rounded z-10',
         isSvg
           ? 'bg-white/15 text-neutral-200 border border-white/20'
           : 'bg-white/10 text-neutral-400 border border-white/10',
@@ -360,7 +360,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && !readOnly && (
         <div className="sticky top-0 z-20 flex items-center justify-between p-2 mb-2 bg-muted/40 border border-ring rounded-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-          <span className="text-[10px] text-foreground font-bold px-2 uppercase tabular-nums">
+          <span className="text-2xs text-foreground font-bold px-2 uppercase tabular-nums">
             {selectedIds.size} SELECTED
           </span>
           <div className="flex gap-2">
@@ -369,7 +369,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={handleRenamePrompt}
-                className="text-[10px] font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
+                className="text-2xs font-mono h-7 bg-black/40 border-brand-cyan/30 text-white hover:bg-brand-cyan/20"
               >
                 <svg
                   width="10"
@@ -392,7 +392,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="text-[10px] font-mono hover:bg-white/5 h-7"
+              className="text-2xs font-mono hover:bg-white/5 h-7"
             >
               Cancel
             </Button>
@@ -401,7 +401,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
               size="sm"
               onClick={handleBulkDelete}
               disabled={isBulkDeleting}
-              className="text-[10px] h-7 bg-destructive hover:bg-destructive font-mono"
+              className="text-2xs h-7 bg-destructive hover:bg-destructive font-mono"
             >
               {isBulkDeleting ? <GlitchLoader size={10} /> : <Trash2 size={10} />}
               <span className="ml-2 uppercase">Delete</span>
@@ -414,14 +414,14 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
       {(logos.length > 0 || !readOnly || uploadingFiles.some((f) => f.type === 'logo')) && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <MicroTitle className="text-[10px] ">{t('mockup.mediaKit.logos')}</MicroTitle>
+            <MicroTitle className="text-2xs ">{t('mockup.mediaKit.logos')}</MicroTitle>
             {!readOnly && (
               <Button
                 variant="ghost"
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
                 disabled={isUploading}
-                className="text-[10px] font-mono text-neutral-600 hover:text-brand-cyan transition-colors flex items-center gap-1 disabled:opacity-50"
+                className="text-2xs font-mono text-neutral-600 hover:text-brand-cyan transition-colors flex items-center gap-1 disabled:opacity-50"
               >
                 <Plus size={10} />
                 {t('mockup.mediaKit.addLogo')}
@@ -448,7 +448,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
               ))}
             </div>
           ) : (
-            <MicroTitle className="text-[10px] text-neutral-700 ">
+            <MicroTitle className="text-2xs text-neutral-700 ">
               {t('mockup.mediaKit.noLogos')}
             </MicroTitle>
           )}
@@ -458,7 +458,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
       {/* Media Section */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] ">{t('mockup.mediaKit.title')}</span>
+          <span className="text-2xs ">{t('mockup.mediaKit.title')}</span>
         </div>
 
         <div
@@ -506,12 +506,12 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         {(item.label || item.category) && (
                           <span
                             className={cn(
-                              'absolute bottom-0 left-0 right-0 text-[10px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1',
+                              'absolute bottom-0 left-0 right-0 text-2xs font-mono text-neutral-500 text-center py-0.5 bg-black/60 truncate px-1 flex items-center justify-center gap-1',
                               isSelected && 'bg-brand-cyan text-black font-bold'
                             )}
                           >
                             {item.category && !isSelected && (
-                              <span className="text-[10px] uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
+                              <span className="text-2xs uppercase tracking-wider text-neutral-600 bg-white/5 px-1 rounded">
                                 {item.category}
                               </span>
                             )}
@@ -522,7 +522,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-black/20">
                         <FileText size={20} className="text-neutral-500 mb-1" />
-                        <span className="text-[10px] font-mono text-neutral-400 text-center px-2 truncate w-full">
+                        <span className="text-2xs font-mono text-neutral-400 text-center px-2 truncate w-full">
                           {item.label || 'PDF Document'}
                         </span>
                       </div>
@@ -539,7 +539,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                           }}
                           onClick={(e) => e.stopPropagation()}
                           className={cn(
-                            'h-5 pl-1 pr-4 rounded text-[10px] uppercase tracking-wider appearance-none cursor-pointer',
+                            'h-5 pl-1 pr-4 rounded text-2xs uppercase tracking-wider appearance-none cursor-pointer',
                             'bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300',
                             'hover:border-white/20 focus:border-neutral-600 focus:outline-none transition-colors',
                             !item.category && 'text-neutral-600'
@@ -570,7 +570,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     {isSelected && (
                       <div
                         className={cn(
-                          'absolute top-1 left-1 w-4 h-4 rounded-full border border-brand-cyan bg-brand-cyan flex items-center justify-center shadow-lg'
+                          'absolute top-1 left-1 w-4 h-4 rounded-full border border-border bg-brand-cyan flex items-center justify-center shadow-lg'
                         )}
                       >
                         <Check size={10} className="text-black" strokeWidth={4} />
@@ -581,7 +581,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
               })}
             </div>
           ) : (
-            <p className="text-[10px] font-mono text-neutral-700 p-3 text-center">
+            <p className="text-2xs font-mono text-neutral-700 p-3 text-center">
               {t('mockup.mediaKit.noMedia')}
             </p>
           )}
@@ -637,7 +637,7 @@ const LogoTile: React.FC<LogoTileProps> = ({
 
       <span
         className={cn(
-          'absolute bottom-0 left-0 right-0 text-[10px] text-neutral-300 text-center py-0.5 bg-black/60 uppercase',
+          'absolute bottom-0 left-0 right-0 text-2xs text-neutral-300 text-center py-0.5 bg-black/60 uppercase',
           isSelected && 'bg-brand-cyan text-black font-bold'
         )}
       >

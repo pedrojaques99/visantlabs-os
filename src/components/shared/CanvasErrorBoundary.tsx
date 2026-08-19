@@ -32,10 +32,10 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
               <AlertTriangle size={20} className="text-destructive" />
             </div>
             <div>
-              <p className="text-[11px] text-neutral-400 uppercase tracking-widest">
+              <p className="text-2xs text-neutral-400 uppercase tracking-widest">
                 {this.props.fallbackMessage || 'Rendering engine crashed'}
               </p>
-              <p className="text-[10px] text-neutral-600 mt-1">
+              <p className="text-2xs text-neutral-600 mt-1">
                 {this.state.error?.message || 'An unexpected error occurred'}
               </p>
             </div>
@@ -46,7 +46,7 @@ export class CanvasErrorBoundary extends React.Component<Props, State> {
               className="text-neutral-500 gap-1.5"
             >
               <RotateCcw size={12} />
-              <span className="text-[10px] uppercase tracking-widest">Retry</span>
+              <span className="text-2xs uppercase tracking-widest">Retry</span>
             </Button>
           </div>
         </div>

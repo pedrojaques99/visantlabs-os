@@ -138,13 +138,13 @@ const BentoCard = ({
           <div className="p-1.5 rounded-md bg-white/[0.01] text-neutral-700 group-hover:text-neutral-500 transition-colors">
             <Icon size={12} strokeWidth={1.5} />
           </div>
-          <span className="text-[8px] uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
+          <span className="text-3xs uppercase tracking-[0.2em] text-neutral-700 group-hover:text-neutral-600 transition-colors">
             {format.label}
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-[8px] font-mono text-neutral-800 transition-colors">
+          <span className="text-3xs font-mono text-neutral-800 transition-colors">
             {dimsLabel(format.id)}
           </span>
           <div className="relative" ref={menuRef}>
@@ -160,7 +160,7 @@ const BentoCard = ({
                   <button
                     key={f.id}
                     onClick={() => handleExport(f.id)}
-                    className="w-full text-left px-3 py-1.5 text-[9px] font-mono uppercase tracking-widest text-neutral-500 hover:text-white hover:bg-white/[0.06] transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-3xs font-mono uppercase tracking-widest text-neutral-500 hover:text-white hover:bg-white/[0.06] transition-colors"
                   >
                     {f.label}
                   </button>

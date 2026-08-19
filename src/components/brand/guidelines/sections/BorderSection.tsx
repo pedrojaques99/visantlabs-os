@@ -93,11 +93,11 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
       <div className="space-y-1.5 py-1">
         {items.length === 0 && (
           <div className="space-y-2">
-            <p className="text-[11px] text-neutral-700">No borders yet.</p>
+            <p className="text-2xs text-neutral-700">No borders yet.</p>
             <button
               type="button"
               onClick={seedDefaults}
-              className="text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
+              className="text-2xs font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
             >
               Seed defaults
             </button>
@@ -120,7 +120,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                 className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700"
                 placeholder="Border name"
               />
-              <span className="text-[10px] font-mono text-neutral-700">
+              <span className="text-2xs font-mono text-neutral-700">
                 {b.width}px {b.style}
               </span>
               <Button
@@ -143,7 +143,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       type="button"
                       onClick={() => update(bi, { style: s })}
                       className={cn(
-                        'flex-1 h-6 rounded border text-[10px] uppercase transition-colors',
+                        'flex-1 h-6 rounded border text-2xs uppercase transition-colors',
                         b.style === s
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -167,18 +167,18 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                     />
                   </div>
                   <div className="space-y-0.5 w-16">
-                    <MicroTitle className="text-neutral-700 text-[10px]">Width</MicroTitle>
+                    <MicroTitle className="text-neutral-700 text-2xs">Width</MicroTitle>
                     <Input
                       type="number"
                       step="0.5"
                       min="0.5"
                       value={b.width}
                       onChange={(e) => update(bi, { width: Number(e.target.value) })}
-                      className="h-6 border-neutral-800 text-[10px] font-mono text-center"
+                      className="h-6 border-neutral-800 text-2xs font-mono text-center"
                     />
                   </div>
                   <div className="flex-1 space-y-0.5">
-                    <MicroTitle className="text-neutral-700 text-[10px]">Opacity</MicroTitle>
+                    <MicroTitle className="text-neutral-700 text-2xs">Opacity</MicroTitle>
                     <input
                       type="range"
                       min={0}
@@ -189,7 +189,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       className="w-full h-1 accent-white"
                     />
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-600 w-8 text-right">
+                  <span className="text-2xs font-mono text-neutral-600 w-8 text-right">
                     {Math.round(b.opacity * 100)}%
                   </span>
                 </div>
@@ -200,7 +200,7 @@ export const BorderSection: React.FC<BorderSectionProps> = ({ guideline, onUpdat
                       type="button"
                       onClick={() => update(bi, { role: r })}
                       className={cn(
-                        'px-2 h-5 rounded border text-[10px] font-mono transition-colors',
+                        'px-2 h-5 rounded border text-2xs font-mono transition-colors',
                         b.role === r
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'

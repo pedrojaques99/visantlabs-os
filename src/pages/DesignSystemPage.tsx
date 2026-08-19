@@ -100,7 +100,7 @@ const ColorSwatch: React.FC<{
               title="Copy CSS variable"
             >
               {copied ? (
-                <Check className="w-3 h-3 text-brand-cyan" />
+                <Check className="w-3 h-3 text-foreground" />
               ) : (
                 <Copy className="w-3 h-3 text-neutral-400" />
               )}
@@ -108,7 +108,7 @@ const ColorSwatch: React.FC<{
           </div>
           <p className="font-mono text-xs text-neutral-500 mb-1 break-all">{variable}</p>
           {resolvedValue && (
-            <p className="font-mono text-[10px] text-neutral-600 mb-1 break-all">{resolvedValue}</p>
+            <p className="font-mono text-2xs text-neutral-600 mb-1 break-all">{resolvedValue}</p>
           )}
           {description && <p className="text-sm text-neutral-400 font-mono">{description}</p>}
         </div>
@@ -127,7 +127,7 @@ const SpacingExample: React.FC<{
     <div className="flex-1">
       <div className="h-8 bg-neutral-800/50 rounded-lg flex items-center">
         <div
-          className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan rounded-lg"
+          className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-foreground rounded-lg"
           style={{ width: `${px}px`, minWidth: '20px' }}
         >
           {px}px
@@ -145,7 +145,7 @@ const CssTokenRow: React.FC<{
 }> = ({ variable, resolvedValue, description }) => (
   <div className="flex items-center justify-between py-2 border-b border-neutral-800/30 last:border-0">
     <div>
-      <span className="font-mono text-xs text-brand-cyan">{variable}</span>
+      <span className="font-mono text-xs text-foreground">{variable}</span>
       {description && (
         <span className="ml-3 text-xs text-neutral-500 font-mono">{description}</span>
       )}
@@ -641,7 +641,7 @@ export const DesignSystemPage: React.FC = () => {
                             onClick={() => setActiveTab('typography')}
                           >
                             <CardHeader>
-                              <Type className="w-8 h-8 text-brand-cyan mb-2" />
+                              <Type className="w-8 h-8 text-foreground mb-2" />
                               <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
                                 {t('designSystem.tabs.typography')}
                               </CardTitle>
@@ -658,7 +658,7 @@ export const DesignSystemPage: React.FC = () => {
                             onClick={() => setActiveTab('components')}
                           >
                             <CardHeader>
-                              <Box className="w-8 h-8 text-brand-cyan mb-2" />
+                              <Box className="w-8 h-8 text-foreground mb-2" />
                               <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
                                 {t('designSystem.tabs.components')}
                               </CardTitle>
@@ -675,7 +675,7 @@ export const DesignSystemPage: React.FC = () => {
                             onClick={() => setActiveTab('spacing')}
                           >
                             <CardHeader>
-                              <LayoutGrid className="w-8 h-8 text-brand-cyan mb-2" />
+                              <LayoutGrid className="w-8 h-8 text-foreground mb-2" />
                               <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
                                 {t('designSystem.tabs.spacing')}
                               </CardTitle>
@@ -690,7 +690,7 @@ export const DesignSystemPage: React.FC = () => {
                           <Link to="/design-system/controls" className="block">
                             <Card className="cursor-pointer hover:border-white/10 hover:bg-neutral-800/30 hover:shadow-lg transition-[color,background-color,border-color,box-shadow] duration-200 group h-full">
                               <CardHeader>
-                                <Sliders className="w-8 h-8 text-brand-cyan mb-2" />
+                                <Sliders className="w-8 h-8 text-foreground mb-2" />
                                 <CardTitle className="text-lg group-hover:text-neutral-200 transition-colors">
                                   Controls
                                 </CardTitle>
@@ -879,7 +879,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <h3 className="font-semibold text-neutral-200 mb-1">{font.name}</h3>
                                 <p className="text-sm text-neutral-400">{font.description}</p>
                               </div>
-                              <span className="font-mono text-[10px] text-neutral-600 bg-neutral-800/50 px-2 py-1 rounded">
+                              <span className="font-mono text-2xs text-neutral-600 bg-neutral-800/50 px-2 py-1 rounded">
                                 {font.className}
                               </span>
                             </div>
@@ -890,7 +890,7 @@ export const DesignSystemPage: React.FC = () => {
                             <p className={cn('text-lg mt-2', font.className)}>
                               0123456789 !@#$%^&*()
                             </p>
-                            <p className="font-mono text-[10px] text-neutral-600 mt-3">
+                            <p className="font-mono text-2xs text-neutral-600 mt-3">
                               {font.fontFamily}
                             </p>
                           </div>
@@ -1024,9 +1024,7 @@ export const DesignSystemPage: React.FC = () => {
                               key={label}
                               className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md"
                             >
-                              <div className="text-[10px] font-mono text-neutral-500 mb-2">
-                                {note}
-                              </div>
+                              <div className="text-2xs font-mono text-neutral-500 mb-2">{note}</div>
                               <Button variant={variant} size="sm" className="w-full">
                                 {label}
                               </Button>
@@ -1809,7 +1807,7 @@ export const DesignSystemPage: React.FC = () => {
                             Used in Branding and Categories sections
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            <Badge className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 shadow-sm shadow-brand-cyan/10">
+                            <Badge className="cursor-pointer bg-brand-cyan/20 text-foreground border-brand-cyan/30 shadow-sm shadow-brand-cyan/10">
                               Selected Tag
                             </Badge>
                             <Badge
@@ -2087,7 +2085,7 @@ export const DesignSystemPage: React.FC = () => {
                           </p>
                         </GlassPanel>
                         <GlassPanel padding="lg" className="max-w-md border-brand-cyan/20">
-                          <p className="text-sm font-mono text-brand-cyan text-center">
+                          <p className="text-sm font-mono text-foreground text-center">
                             Large padded panel
                           </p>
                         </GlassPanel>
@@ -2153,21 +2151,21 @@ export const DesignSystemPage: React.FC = () => {
                             </h4>
                             <ul className="text-xs text-neutral-500 font-mono space-y-2 list-disc list-inside">
                               <li>
-                                Use <code className="text-brand-cyan">MicroTitle</code> for section
+                                Use <code className="text-foreground">MicroTitle</code> for section
                                 headers (uppercase, ).
                               </li>
                               <li>
                                 Wrap configuration inputs in a{' '}
-                                <code className="text-brand-cyan">GlassPanel</code> for visual
+                                <code className="text-foreground">GlassPanel</code> for visual
                                 depth.
                               </li>
                               <li>
                                 Place the primary action in a{' '}
-                                <code className="text-brand-cyan">PremiumButton</code> at the
+                                <code className="text-foreground">PremiumButton</code> at the
                                 bottom, preferably sticky.
                               </li>
                               <li>
-                                Maintain consistent <code className="text-brand-cyan">gap-8</code>{' '}
+                                Maintain consistent <code className="text-foreground">gap-8</code>{' '}
                                 between major sections.
                               </li>
                             </ul>
@@ -2179,7 +2177,7 @@ export const DesignSystemPage: React.FC = () => {
                               padding="md"
                               className="flex-1 min-h-[100px] flex items-center justify-center border-dashed border-white/10"
                             >
-                              <span className="text-[10px] font-mono text-neutral-600">
+                              <span className="text-2xs font-mono text-neutral-600">
                                 CONFIGURATION AREA
                               </span>
                             </GlassPanel>
@@ -2196,7 +2194,7 @@ export const DesignSystemPage: React.FC = () => {
                             Real-world Example (Mockup Machine)
                           </h4>
                           <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-md overflow-x-auto">
-                            <pre className="text-[10px] font-mono text-neutral-400">
+                            <pre className="text-2xs font-mono text-neutral-400">
                               {`/* Simplified Structure */
 <div className="flex flex-col h-full gap-8">
   <div className="flex-1 min-h-0 flex flex-col gap-4">

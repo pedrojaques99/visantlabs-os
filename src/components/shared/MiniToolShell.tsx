@@ -69,14 +69,14 @@ export const MiniToolShell: React.FC<MiniToolShellProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
-            <Icon size={16} className="text-brand-cyan" />
+            <Icon size={16} className="text-foreground" />
             <h1 className="text-sm font-bold uppercase tracking-widest text-neutral-200">
               {title}
             </h1>
             <AnimatePresence>
               {countLabel && (
                 <motion.span
-                  className="text-[10px] font-mono text-neutral-500 ml-2"
+                  className="text-2xs font-mono text-neutral-500 ml-2"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
