@@ -53,6 +53,7 @@ const RULES = [
     budget: 0,
     why: 'text-[13px] é uma escala de uma tela só. Use a escala do Tailwind (text-xs..text-2xl) pra que duas telas concordem.',
     test: (line) => /text-\[\d+px\]/.test(line),
+    each: /text-\[\d+px\]/g,
   },
   {
     id: 'peso-pesado',
@@ -60,6 +61,7 @@ const RULES = [
     budget: 3,
     why: 'Com semibold e bold em tudo, nada tem ênfase. Chrome de produto vive em regular e medium; bold é reservado.',
     test: (line) => /font-(bold|semibold|black)\b/.test(line),
+    each: /font-(bold|semibold|black)\b/g,
   },
   {
     id: 'raio-sortido',
@@ -146,7 +148,15 @@ function scanFile(file) {
       continue;
     }
     let n = 0;
-    for (const line of lines) if (isCode(line) && rule.test(line)) n++;
+    for (const line of lines) {
+      if (!isCode(line) || !rule.test(line)) continue;
+      /* Conta OCORRÊNCIA, não linha, quando a regra sabe se contar.
+         Contar linha deixa a catraca sensível a reflow do prettier: duas
+         classes iguais que ele junta numa linha viram -1, e uma que ele quebra
+         em duas vira +1, sem nada ter mudado de verdade. Catraca que acusa
+         regressão fantasma é catraca que a pessoa desliga. */
+      n += rule.each ? (line.match(rule.each) || []).length : 1;
+    }
     counts[rule.id] = n;
   }
   return counts;
