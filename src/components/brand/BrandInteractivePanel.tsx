@@ -153,10 +153,7 @@ const GenerateIdeaCard: React.FC<{ label: string; loading?: boolean; onPrimary: 
       {loading ? (
         <Loader2 size={14} className="animate-spin" />
       ) : (
-        <ArrowRight
-          size={14}
-          className="transition-transform group-hover:translate-x-0.5"
-        />
+        <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
       )}
     </span>
   </button>
