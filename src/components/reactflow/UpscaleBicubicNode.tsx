@@ -464,7 +464,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           title={t('canvasNodes.upscaleNode.title') || 'Upscale'}
           selected={selected}
         >
-          <span className="text-[10px] text-neutral-500 font-mono uppercase bg-neutral-900/40 px-2 py-0.5 rounded-md border-node border-neutral-800">
+          <span className="text-2xs text-neutral-500 font-mono uppercase bg-neutral-900/40 px-2 py-0.5 rounded-md border-node border-neutral-800">
             {scaleFactor}x
           </span>
         </NodeHeader>
@@ -474,10 +474,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Diamond size={12} className="text-brand-cyan" />
-                <span className="text-[10px] text-neutral-400 uppercase ">Sharpening</span>
+                <Diamond size={12} className="text-foreground" />
+                <span className="text-2xs text-neutral-400 uppercase ">Sharpening</span>
               </div>
-              <span className="text-[10px] font-mono text-neutral-500">
+              <span className="text-2xs font-mono text-neutral-500">
                 {Math.round(localSharpening * 100)}%
               </span>
             </div>
@@ -496,7 +496,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
           {/* Status/Info */}
           {!isLoading && hasConnectedImage && !hasResult ? (
-            <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase  backdrop-blur-sm">
+            <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-2xs font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase  backdrop-blur-sm">
               <Maximize2 size={14} />
               Ready to upscale
             </div>
@@ -513,11 +513,11 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
           {!hasConnectedImage ? (
             <div className="w-full space-y-3">
-              <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase  backdrop-blur-sm">
+              <div className="w-full px-2 py-3 bg-neutral-900/40 border-node border-neutral-700/30 rounded-md text-2xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase  backdrop-blur-sm">
                 <Maximize2 size={14} />
                 Connect an image or video
               </div>
-              <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,filter] uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
+              <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border-node border-neutral-800 hover:border-neutral-700 rounded-md text-2xs font-mono font-bold text-foreground flex items-center justify-center gap-2 cursor-pointer transition-[color,background-color,border-color,box-shadow,opacity,filter] uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
                 <Upload size={14} />
                 Upload Image
                 <Input

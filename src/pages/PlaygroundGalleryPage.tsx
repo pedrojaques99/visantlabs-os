@@ -78,9 +78,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-neutral-200">Explore MiniApps</h1>
-            <p className="text-[11px] text-neutral-500 mt-1">
-              {total} apps created by the community
-            </p>
+            <p className="text-2xs text-neutral-500 mt-1">{total} apps created by the community</p>
           </div>
           <Button variant="brand" size="sm" onClick={() => navigate('/playground')}>
             <Plus className="w-3.5 h-3.5 mr-1.5" /> Create
@@ -121,7 +119,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
                   key={cat}
                   onClick={() => setCategory(cat)}
                   className={cn(
-                    'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider transition-colors',
+                    'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-2xs font-mono uppercase tracking-wider transition-colors',
                     category === cat
                       ? 'bg-white/10 text-neutral-200 border border-white/20'
                       : 'text-neutral-500 border border-transparent hover:text-neutral-300 hover:border-neutral-800'
@@ -138,7 +136,7 @@ export const PlaygroundGalleryPage: React.FC = () => {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="text-[11px] bg-neutral-900/50 border border-neutral-800 rounded-lg px-2.5 py-2 text-neutral-400 focus:outline-none"
+            className="text-2xs bg-neutral-900/50 border border-neutral-800 rounded-lg px-2.5 py-2 text-neutral-400 focus:outline-none"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

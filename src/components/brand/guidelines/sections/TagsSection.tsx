@@ -115,9 +115,7 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
     >
       <div className="space-y-3 py-1">
         {categories.length === 0 && !addingCat && (
-          <p className="text-[11px] text-neutral-700 py-1">
-            No tags yet. Click + to add a category.
-          </p>
+          <p className="text-2xs text-neutral-700 py-1">No tags yet. Click + to add a category.</p>
         )}
 
         {categories.map((cat) => (

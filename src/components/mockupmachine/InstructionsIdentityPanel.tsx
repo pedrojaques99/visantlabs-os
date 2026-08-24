@@ -63,9 +63,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
               {t('mockup.instructions')} / {t('mockup.identity')}
             </MicroTitle>
             {!isInstructionsExpanded && (instructions || ctxSelectedBrandingTags.length > 0) && (
-              <span className="text-[10px] font-mono truncate max-w-[200px]">
+              <span className="text-2xs font-mono truncate max-w-[200px]">
                 {instructions && (
-                  <span className="text-brand-cyan">
+                  <span className="text-foreground">
                     {instructions.substring(0, 30)}
                     {instructions.length > 30 ? '...' : ''}
                   </span>

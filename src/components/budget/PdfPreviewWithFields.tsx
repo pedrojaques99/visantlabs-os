@@ -881,7 +881,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {pendingFieldPosition && editable && (
           <div className="sticky top-0 z-40 mb-4">
             <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-              <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
+              <p className="text-sm font-mono text-foreground flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo
                 aqui.
@@ -889,7 +889,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => setPendingFieldPosition(null)}
-                className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
+                className="p-1.5 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive transition-colors"
                 title="Cancelar"
               >
                 <XCircle size={16} />
@@ -902,7 +902,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {isPositioningMode && editable && positioningFieldId && (
           <div className="sticky top-0 z-40 mb-4">
             <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-              <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
+              <p className="text-sm font-mono text-foreground flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Clique no PDF para posicionar:{' '}
                 {AVAILABLE_FIELDS.find((f) => f.id === positioningFieldId)?.label ||
@@ -921,7 +921,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                       setInternalSelectedFieldId(null);
                     }
                   }}
-                  className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
+                  className="p-1.5 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-md text-destructive transition-colors"
                   title="Cancelar"
                 >
                   <XCircle size={16} />
@@ -938,7 +938,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                       setInternalSelectedFieldId(positioningFieldId);
                     }
                   }}
-                  className="p-1.5 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-md text-green-400 transition-colors"
+                  className="p-1.5 bg-success/20 hover:bg-success/30 border border-success/50 rounded-md text-success transition-colors"
                   title="Aceitar"
                 >
                   <Check size={16} />
@@ -1039,7 +1039,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<div className="text-neutral-600">Carregando PDF...</div>}
-            error={<div className="text-red-600">Erro ao carregar PDF</div>}
+            error={<div className="text-destructive">Erro ao carregar PDF</div>}
           >
             {numPages > 0 &&
               Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
@@ -1465,7 +1465,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
             e.stopPropagation();
             onDelete();
           }}
-          className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 border border-red-600 rounded-md text-white transition-colors z-50 focus:outline-none focus:ring-2 focus:ring-red-400"
+          className="absolute -top-2 -right-2 p-1 bg-destructive hover:bg-destructive border border-destructive rounded-md text-white transition-colors z-50 focus:outline-none focus:ring-2 focus:ring-destructive"
           title="Deletar campo (Delete)"
           aria-label={`Deletar campo ${fieldLabel}`}
         >

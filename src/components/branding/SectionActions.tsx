@@ -75,7 +75,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               onSave();
             }}
             disabled={isSaving}
-            className="h-7 w-7 px-2 hover:bg-brand-cyan/20 rounded-md flex items-center justify-center text-brand-cyan hover:bg-brand-cyan/30 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity]"
+            className="h-7 w-7 px-2 hover:bg-brand-cyan/20 rounded-md flex items-center justify-center text-foreground hover:bg-brand-cyan/30 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-[color,background-color,border-color,opacity]"
           >
             <Check className="h-4 w-4" />
           </Button>
@@ -87,10 +87,10 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               e.stopPropagation();
               onEdit(); // Toggle edit mode off (dismiss)
             }}
-            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
+            className={`h-7 w-7 px-2 hover:bg-destructive/20 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
               theme === 'dark'
-                ? 'text-neutral-400 hover:text-red-400'
-                : 'text-neutral-600 hover:text-red-500'
+                ? 'text-neutral-400 hover:text-destructive'
+                : 'text-neutral-600 hover:text-destructive'
             }`}
           >
             <X className="h-4 w-4" />

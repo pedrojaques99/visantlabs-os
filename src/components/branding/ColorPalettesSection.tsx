@@ -96,7 +96,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => handleRemovePalette(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${
+                className={`absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive ${
                   theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}
                 title="Remover paleta"
@@ -154,7 +154,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                       <Button
                         variant="ghost"
                         onClick={() => handleRemoveColor(index, colorIndex)}
-                        className={`w-full p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 text-xs ${
+                        className={`w-full p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive text-xs ${
                           theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                         }`}
                         title="Remover cor"
@@ -247,7 +247,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               window.dispatchEvent(new CustomEvent('mockup:openColorPicker'));
             }
           }}
-          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-mono transition-colors ${
+          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-2xs font-mono transition-colors ${
             theme === 'dark'
               ? 'border-neutral-700/60 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan'
               : 'border-neutral-400/60 text-neutral-600 hover:border-brand-cyan/60 hover:text-brand-cyan'

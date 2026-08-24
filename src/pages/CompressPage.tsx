@@ -228,7 +228,7 @@ export const CompressPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -261,13 +261,13 @@ export const CompressPage: React.FC = () => {
               className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
               <div className="flex items-center gap-1">
                 <StatusBadge status={item.status} />
                 <AnimatePresence>
                   {item.status === 'done' && item.originalSize > 0 && (
                     <motion.span
-                      className="text-[10px] font-mono text-success tabular-nums"
+                      className="text-2xs font-mono text-success tabular-nums"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
@@ -306,7 +306,7 @@ export const CompressPage: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-neutral-500">Quality</span>
-            <span className="text-[10px] font-mono text-neutral-500 tabular-nums">{quality}%</span>
+            <span className="text-2xs font-mono text-neutral-500 tabular-nums">{quality}%</span>
           </div>
           <input
             type="range"
@@ -375,7 +375,7 @@ export const CompressPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -420,7 +420,7 @@ export const CompressPage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneCount}/{items.length}
       </span>
@@ -546,15 +546,15 @@ export const CompressPage: React.FC = () => {
                       exit={{ opacity: 0, y: -8 }}
                       transition={transitions.base}
                     >
-                      <span className="text-[10px] font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded tabular-nums">
+                      <span className="text-2xs font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded tabular-nums">
                         {formatBytes(previewItem.originalSize)}
                       </span>
-                      <span className="text-[10px] font-mono text-neutral-500">→</span>
-                      <span className="text-[10px] font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded tabular-nums">
+                      <span className="text-2xs font-mono text-neutral-500">→</span>
+                      <span className="text-2xs font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded tabular-nums">
                         {formatBytes(previewItem.compressedSize)}
                       </span>
                       {previewItem.originalSize > 0 && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider bg-success/20 text-success px-2 py-0.5 rounded tabular-nums">
+                        <span className="text-2xs font-mono uppercase tracking-wider bg-success/20 text-success px-2 py-0.5 rounded tabular-nums">
                           -
                           {Math.round(
                             ((previewItem.originalSize - previewItem.compressedSize) /

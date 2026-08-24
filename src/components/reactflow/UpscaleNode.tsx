@@ -219,7 +219,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(
                 <span className="font-semibold tracking-tight">
                   {t('canvasNodes.upscaleNode.upscale') || 'Upscale'}
                 </span>
-                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-[10px] text-foreground/80">
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full bg-black/20 text-2xs text-foreground/80">
                   <Diamond size={10} className="opacity-50 fill-current" />
                   {creditsRequired}
                 </div>

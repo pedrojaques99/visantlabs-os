@@ -108,7 +108,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
               <MicroTitle as="span">{title}</MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTags.length > 0) && (
-              <MicroTitle className="text-[10px] truncate max-w-[200px]">
+              <MicroTitle className="text-2xs truncate max-w-[200px]">
                 {hasSelection && <span className="text-foreground">{selectionSummary}</span>}
                 {hasSelection && poolTags.length > 0 && (
                   <span className="text-neutral-500"> · </span>
@@ -449,7 +449,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
               </MicroTitle>
               {!isSectionExpanded && hasSectionSelection && (
-                <span className="text-[10px] truncate max-w-[200px]">
+                <span className="text-2xs truncate max-w-[200px]">
                   <span className="text-foreground">{sectionSelectionSummary}</span>
                 </span>
               )}
@@ -492,7 +492,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
             {/* Comment */}
             {!isComplete && (
               <div className="mb-2 px-1 mt-4">
-                <p className="text-[10px] tracking-tighter">{t('mockup.categoriesComment')}</p>
+                <p className="text-2xs tracking-tighter">{t('mockup.categoriesComment')}</p>
               </div>
             )}
 
@@ -551,9 +551,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         (hasFinalSelection ||
                           finalPoolTags.length > 0 ||
                           customSelectedTags.length > 0) && (
-                          <span className="text-[10px] font-mono truncate max-w-[200px]">
+                          <span className="text-2xs font-mono truncate max-w-[200px]">
                             {hasFinalSelection && (
-                              <span className="text-brand-cyan">
+                              <span className="text-foreground">
                                 {finalSelectedTags.map((tag) => translateTag(tag)).join(', ')}
                               </span>
                             )}
@@ -607,13 +607,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       )}
                     >
                       <div className="flex items-center gap-1.5 mb-2">
-                        <MicroTitle as="span" className="text-[10px]">
+                        <MicroTitle as="span" className="text-2xs">
                           {t('mockup.customCategories') || 'CUSTOM'}
                         </MicroTitle>
                         {customSelectedTags.length > 0 && (
                           <span
                             className={cn(
-                              'text-[10px] font-mono',
+                              'text-2xs font-mono',
                               theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >
@@ -644,7 +644,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                             onBlur={handleBlur}
                             placeholder={t('mockup.customCategoryPlaceholder')}
                             className={cn(
-                              'px-3 py-1 text-[10px] h-7 transition-colors duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
+                              'px-3 py-1 text-2xs h-7 transition-colors duration-200 focus:ring-0 w-[160px] font-mono rounded-full border animate-in fade-in',
                               theme === 'dark'
                                 ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-neutral-600'
                                 : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-neutral-600'
@@ -664,7 +664,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         {customSelectedTags.length === 0 && !isEditingCustom && (
                           <span
                             className={cn(
-                              'text-[10px] font-mono ml-1',
+                              'text-2xs font-mono ml-1',
                               theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                             )}
                           >

@@ -21,7 +21,7 @@ interface ControlGroupProps {
 }
 const ControlGroup: React.FC<ControlGroupProps> = ({ label, icon, children }) => (
   <div className="flex flex-col gap-3 p-4 rounded-2xl bg-neutral-900/60 border border-border hover:border-border/70 transition-colors">
-    <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">
+    <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.2em] text-neutral-500 font-bold">
       {icon}
       {label}
     </div>
@@ -197,10 +197,10 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
 
             <div className="p-5 bg-neutral-900/50 border-t border-border flex items-center justify-between">
               <div className="flex flex-col gap-1">
-                <p className="text-[10px] text-neutral-500 uppercase tracking-[0.3em]">
+                <p className="text-2xs text-neutral-500 uppercase tracking-[0.3em]">
                   MP4 · {outputWidth}x{outputHeight}
                 </p>
-                <p className="text-[10px] text-neutral-600 uppercase tracking-[0.3em]">
+                <p className="text-2xs text-neutral-600 uppercase tracking-[0.3em]">
                   {fps} FPS · {(totalFrames / fps).toFixed(1)}s
                   {isMulti && ` · ${transition} transitions`}
                 </p>
@@ -285,7 +285,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
               ].map(({ label, icon, value, min, max, step, unit, setter, display }) => (
                 <ControlGroup key={label} label={label} icon={icon}>
                   <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-[10px] font-mono text-neutral-500">
+                    <div className="flex justify-between items-center text-2xs font-mono text-neutral-500">
                       <span>{label}</span>
                       <span className="text-white bg-neutral-800 px-2 py-0.5 rounded-lg border border-border/70">
                         {display ? display(value) : value}
@@ -312,7 +312,7 @@ export const RemotionPlayerModal: React.FC<RemotionPlayerModalProps> = ({
                   setSpeed(1);
                   setDurationPerSlide(5);
                 }}
-                className="w-full py-3 text-[10px] uppercase tracking-widest font-bold text-neutral-600 hover:text-white transition-colors mt-auto"
+                className="w-full py-3 text-2xs uppercase tracking-widest font-bold text-neutral-600 hover:text-white transition-colors mt-auto"
               >
                 Reset to Defaults
               </button>

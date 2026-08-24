@@ -17,7 +17,7 @@
  */
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, ChevronLeft, Command } from '@/lib/ui/icons';
+import { Menu, ChevronLeft } from '@/lib/ui/icons';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
@@ -168,11 +168,8 @@ export const AppSpine: React.FC<AppSpineProps> = ({ variant, onMenuClick, title 
           title={`${t('command.goto')} · Ctrl+K`}
           className="hidden sm:flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
-          {/* Ícone de comando (não lupa) — o Cmd+K é navegação global, distinto
-              do search de lista de cada página, que usa a lupa. */}
-          <Command size={13} />
           <span className="hidden md:inline">{t('command.search') || 'Buscar'}</span>
-          <kbd className="hidden md:inline font-mono text-[10px] px-1 py-0.5 rounded bg-background/60 border border-border">
+          <kbd className="hidden md:inline font-mono text-2xs px-1 py-0.5 rounded bg-background/60 border border-border">
             ⌘K
           </kbd>
         </button>

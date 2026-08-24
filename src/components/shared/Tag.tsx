@@ -35,7 +35,7 @@ export const Tag: React.FC<TagProps> = ({
 }) => {
   const { theme } = useTheme();
 
-  const sizeStyles = size === 'sm' ? 'h-6 px-2 py-1 text-[10px]' : 'h-7 px-3 py-1.5 text-xs';
+  const sizeStyles = size === 'sm' ? 'h-6 px-2 py-1 text-2xs' : 'h-7 px-3 py-1.5 text-xs';
   const baseStyles = cn(
     'font-medium rounded-full transition-all duration-200 border inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap',
     sizeStyles,
@@ -50,7 +50,7 @@ export const Tag: React.FC<TagProps> = ({
   const poolActiveStyles =
     theme === 'dark'
       ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan shadow-sm shadow-brand-cyan/10'
-      : 'bg-brand-cyan/20 text-neutral-800 border-brand-cyan shadow-sm shadow-brand-cyan/10';
+      : 'bg-brand-cyan/20 text-neutral-800 border-border shadow-sm shadow-brand-cyan/10';
 
   const themeStyles =
     inPool && selected

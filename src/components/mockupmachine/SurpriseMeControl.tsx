@@ -184,7 +184,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         {isSurpriseMeMode && (
           <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 animate-fade-in">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pool-dot-breathe inline-block" />
-            <span className="text-[10px] font-bold text-brand-cyan tracking-[0.15em] uppercase whitespace-nowrap">
+            <span className="text-2xs font-bold text-foreground tracking-[0.15em] uppercase whitespace-nowrap">
               {t('mockup.surpriseMeModeActiveTooltip')}
             </span>
           </div>

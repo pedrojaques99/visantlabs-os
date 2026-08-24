@@ -138,7 +138,7 @@ export function FlyingPaperLoader({ progress, label, className }: FlyingPaperLoa
               transition={{ duration: 0.3, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-[10px] font-mono text-neutral-500 text-center mt-1.5 tabular-nums">
+          <p className="text-2xs font-mono text-neutral-500 text-center mt-1.5 tabular-nums">
             <span className="text-brand-cyan/60 mr-1">{glitch}</span>
             {label || `${Math.round(progress)}%`}
           </p>
@@ -146,7 +146,7 @@ export function FlyingPaperLoader({ progress, label, className }: FlyingPaperLoa
       )}
 
       {progress == null && (
-        <p className="text-[10px] font-mono text-neutral-500 text-center mt-3">
+        <p className="text-2xs font-mono text-neutral-500 text-center mt-3">
           <span className="text-brand-cyan/60 mr-1">{glitch}</span>
           {label || 'Processing...'}
         </p>

@@ -123,14 +123,14 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-neutral-200 truncate">{preset.nome}</p>
-                      <p className="text-[10px] text-neutral-600 truncate">
+                      <p className="text-2xs text-neutral-600 truncate">
                         {preset.valores.slice(0, 2).join(', ')}
                       </p>
                     </div>
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuItem
-                  className="text-[10px] text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
+                  className="text-2xs text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
                   onClick={() => addItem('archetype')}
                 >
                   + Custom
@@ -172,7 +172,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                         a[i] = { ...a[i], role: arch.role === 'primary' ? 'secondary' : 'primary' };
                         update({ archetypes: a });
                       }}
-                      className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
+                      className="text-2xs font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
                     >
                       {arch.role || 'primary'}
                     </button>
@@ -188,7 +188,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
                     placeholder="Objetivo..."
                   />
                   {preset && (
-                    <p className="text-[10px] text-neutral-700 font-mono">
+                    <p className="text-2xs text-neutral-700 font-mono">
                       {preset.valores.join(' · ')}
                     </p>
                   )}
@@ -206,7 +206,7 @@ export const StrategySection: React.FC<StrategySectionProps> = ({ guideline, onU
             );
           })}
           {!local.archetypes?.length && (
-            <p className="text-[11px] text-neutral-700 pl-0.5">No archetypes</p>
+            <p className="text-2xs text-neutral-700 pl-0.5">No archetypes</p>
           )}
         </div>
       </div>

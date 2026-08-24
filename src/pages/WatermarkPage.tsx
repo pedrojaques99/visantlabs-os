@@ -398,7 +398,7 @@ export const WatermarkPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -433,7 +433,7 @@ export const WatermarkPage: React.FC = () => {
               className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
               <StatusBadge status={item.status} />
             </div>
             <button
@@ -515,7 +515,7 @@ export const WatermarkPage: React.FC = () => {
                 onClick={() => logoInputRef.current?.click()}
                 disabled={isProcessing}
                 className={cn(
-                  'flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
+                  'flex items-center gap-1 px-2.5 py-1 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
                   logoUrl
                     ? 'bg-neutral-800 text-neutral-300 border border-neutral-700'
                     : 'bg-neutral-900 text-neutral-500 border border-dashed border-neutral-700 hover:border-neutral-500'
@@ -577,7 +577,7 @@ export const WatermarkPage: React.FC = () => {
               }}
               disabled={isProcessing}
               className={cn(
-                'w-full px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
+                'w-full px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
                 position === 'tile'
                   ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
                   : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-600'
@@ -592,7 +592,7 @@ export const WatermarkPage: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-neutral-500">Opacity</span>
-            <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
+            <span className="text-2xs font-mono text-neutral-500 tabular-nums">
               {Math.round(opacity * 100)}%
             </span>
           </div>
@@ -612,7 +612,7 @@ export const WatermarkPage: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-neutral-500">Size</span>
-            <span className="text-[10px] font-mono text-neutral-500 tabular-nums">{scale}%</span>
+            <span className="text-2xs font-mono text-neutral-500 tabular-nums">{scale}%</span>
           </div>
           <input
             type="range"
@@ -630,9 +630,7 @@ export const WatermarkPage: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-neutral-500">Rotation</span>
-            <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
-              {rotation}deg
-            </span>
+            <span className="text-2xs font-mono text-neutral-500 tabular-nums">{rotation}deg</span>
           </div>
           <input
             type="range"
@@ -657,7 +655,7 @@ export const WatermarkPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -700,7 +698,7 @@ export const WatermarkPage: React.FC = () => {
   ) : undefined;
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneCount}/{items.length}
       </span>
@@ -820,7 +818,7 @@ export const WatermarkPage: React.FC = () => {
                     <motion.span
                       key="done-badge"
                       {...fadeScale}
-                      className="absolute top-2 right-2 text-[10px] font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded"
+                      className="absolute top-2 right-2 text-2xs font-mono uppercase tracking-wider bg-neutral-900/80 text-neutral-400 px-2 py-0.5 rounded"
                     >
                       WM
                     </motion.span>

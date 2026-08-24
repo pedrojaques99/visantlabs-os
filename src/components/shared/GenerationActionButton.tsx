@@ -75,7 +75,7 @@ export const GenerationActionButton: React.FC<GenerationActionButtonProps> = ({
         <span className="flex items-center gap-1.5 text-xs font-bold uppercase leading-none tracking-[0.1em]">
           {label}
           {credits != null && credits > 0 && (
-            <span className="text-[11px] font-semibold opacity-70">· {credits}</span>
+            <span className="text-2xs font-semibold opacity-70">· {credits}</span>
           )}
         </span>
       )}

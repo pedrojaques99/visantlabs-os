@@ -135,7 +135,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
     >
       <div className="py-6 space-y-5">
         {analyzing && (
-          <div className="flex items-center gap-2 text-[11px] text-neutral-400">
+          <div className="flex items-center gap-2 text-2xs text-neutral-400">
             <Loader2 size={12} className="animate-spin" />
             {progress && progress.total > 0
               ? `Analyzing assets with AI… ${progress.processed}/${progress.total}`
@@ -188,7 +188,7 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
                     title={`${h.label || ''} · ${Math.round(h.score * 100)}% match`}
                   >
                     <img src={h.url} alt={h.label || ''} className="w-full h-full object-cover" />
-                    <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-[10px] font-mono text-white/80">
+                    <span className="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-2xs font-mono text-white/80">
                       {Math.round(h.score * 100)}%
                     </span>
                   </div>

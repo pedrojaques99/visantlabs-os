@@ -290,7 +290,7 @@ export const FaviconPage: React.FC = () => {
   /* ── Panel: controls (only shown when source is loaded) ── */
   const panel = sourceUrl ? (
     <div className="space-y-5">
-      <h2 className="text-[11px] font-medium text-neutral-500">Settings</h2>
+      <h2 className="text-2xs font-medium text-neutral-500">Settings</h2>
 
       <BrandToolSelect value={brandId} onChange={setBrandId} />
 
@@ -301,7 +301,7 @@ export const FaviconPage: React.FC = () => {
           <button
             onClick={() => setBackgroundColor(isTransparentBg ? '#ffffff' : 'transparent')}
             className={cn(
-              'px-2 py-0.5 rounded text-[10px] font-mono transition-colors duration-200 border',
+              'px-2 py-0.5 rounded text-2xs font-mono transition-colors duration-200 border',
               isTransparentBg
                 ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40'
                 : 'bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-600'
@@ -314,7 +314,7 @@ export const FaviconPage: React.FC = () => {
               type="text"
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
-              className="h-6 w-24 text-[10px] font-mono bg-neutral-900 border-neutral-800"
+              className="h-6 w-24 text-2xs font-mono bg-neutral-900 border-neutral-800"
               placeholder="#ffffff"
             />
           )}
@@ -333,7 +333,7 @@ export const FaviconPage: React.FC = () => {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-neutral-500">Radius</span>
-          <span className="text-[10px] font-mono text-neutral-500">{borderRadius}%</span>
+          <span className="text-2xs font-mono text-neutral-500">{borderRadius}%</span>
         </div>
         <input
           type="range"
@@ -350,7 +350,7 @@ export const FaviconPage: React.FC = () => {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-neutral-500">Padding</span>
-          <span className="text-[10px] font-mono text-neutral-500">{padding}%</span>
+          <span className="text-2xs font-mono text-neutral-500">{padding}%</span>
         </div>
         <input
           type="range"
@@ -369,7 +369,7 @@ export const FaviconPage: React.FC = () => {
       <Button
         onClick={handleGenerate}
         disabled={isGenerating}
-        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
         asChild
       >
         <motion.button whileTap={{ scale: 0.98 }} disabled={isGenerating}>
@@ -382,11 +382,11 @@ export const FaviconPage: React.FC = () => {
 
   /* ── Status bar: Generate + Download actions ── */
   const statusBar = sourceUrl ? (
-    <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-widest">
+    <div className="flex items-center gap-3 text-2xs font-medium uppercase tracking-widest">
       <button
         onClick={handleGenerate}
         disabled={isGenerating}
-        className="text-brand-cyan hover:text-brand-cyan/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+        className="text-foreground hover:text-brand-cyan/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
       >
         <ImageIcon className="w-3.5 h-3.5" />
         {isGenerating ? 'Generating...' : 'Generate'}
@@ -396,7 +396,7 @@ export const FaviconPage: React.FC = () => {
           <span className="text-neutral-700">·</span>
           <button
             onClick={handleDownloadZip}
-            className="text-brand-cyan hover:text-brand-cyan/80 transition-colors flex items-center gap-1.5"
+            className="text-foreground hover:text-brand-cyan/80 transition-colors flex items-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" />
             Download ZIP
@@ -481,7 +481,7 @@ export const FaviconPage: React.FC = () => {
                 >
                   <img src={sourceUrl} alt={fileName} className="w-full h-full object-contain" />
                 </div>
-                <span className="text-[10px] font-mono text-neutral-500 truncate max-w-[200px]">
+                <span className="text-2xs font-mono text-neutral-500 truncate max-w-[200px]">
                   {fileName}
                 </span>
               </motion.div>
@@ -533,10 +533,10 @@ export const FaviconPage: React.FC = () => {
                               }}
                             />
                           </div>
-                          <span className="text-[10px] font-mono text-neutral-300">
+                          <span className="text-2xs font-mono text-neutral-300">
                             {icon.size}x{icon.size}
                           </span>
-                          <span className="text-[10px] text-neutral-600">
+                          <span className="text-2xs text-neutral-600">
                             {SIZE_LABELS[icon.size] || ''}
                           </span>
                         </motion.div>
@@ -549,11 +549,11 @@ export const FaviconPage: React.FC = () => {
                       transition={{ ...fadeUp.transition, delay: 0.15 }}
                       className="space-y-3"
                     >
-                      <h2 className="text-[11px] font-medium text-neutral-500">HTML Tags</h2>
+                      <h2 className="text-2xs font-medium text-neutral-500">HTML Tags</h2>
                       <div className="relative">
                         <pre
                           className={cn(
-                            'p-3 rounded-2xl text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
+                            'p-3 rounded-2xl text-2xs font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
                             glassSurface.panel
                           )}
                         >
@@ -569,11 +569,11 @@ export const FaviconPage: React.FC = () => {
                         </motion.button>
                       </div>
 
-                      <h2 className="text-[11px] font-medium text-neutral-500">Web Manifest</h2>
+                      <h2 className="text-2xs font-medium text-neutral-500">Web Manifest</h2>
                       <div className="relative">
                         <pre
                           className={cn(
-                            'p-3 rounded-2xl text-[10px] font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
+                            'p-3 rounded-2xl text-2xs font-mono text-neutral-400 overflow-x-auto whitespace-pre duration-200',
                             glassSurface.panel
                           )}
                         >

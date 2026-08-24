@@ -250,7 +250,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
       if (!put.ok) throw new Error(`upload falhou: ${put.status}`);
       await mockupApi.save({
         imageUrl: finalUrl,
-        prompt: `${current.faceName} · ${current.psdFileName}`,
+        prompt: `${current.faceName}, ${current.psdFileName}`,
         designType: 'brand-mockup',
         tags: ['mockup-gratis', current.surfaceKind].filter(Boolean),
         brandingTags: [],
@@ -375,7 +375,7 @@ export const SurpriseMockupHero: React.FC<SurpriseMockupHeroProps> = ({
                     aria-label={t('common.save')}
                   >
                     {isSaved ? (
-                      <Check className="size-4 text-brand-cyan" />
+                      <Check className="size-4 text-foreground" />
                     ) : (
                       <Bookmark className={cn('size-4', saving && 'animate-pulse')} />
                     )}

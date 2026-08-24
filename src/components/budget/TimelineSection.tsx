@@ -37,7 +37,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ timeline, onCh
         <Button
           variant="brand"
           onClick={addMilestone}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-brand-cyan font-mono text-sm transition-colors duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-neutral-600/50 rounded-xl text-foreground font-mono text-sm transition-colors duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addMilestone') || 'Adicionar Milestone'}
@@ -96,7 +96,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ timeline, onCh
                 <Button
                   variant="ghost"
                   onClick={() => removeMilestone(index)}
-                  className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                  className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                   title={t('budget.removeMilestone') || 'Remover milestone'}
                 >
                   <Trash2 size={18} />

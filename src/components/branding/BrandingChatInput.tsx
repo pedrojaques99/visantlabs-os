@@ -67,7 +67,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
         {/* Credits Badge (if needed) */}
         {calculatedCredits !== undefined && calculatedCredits > 0 && (
           <div className="flex items-center justify-end pt-1">
-            <Badge variant="secondary" className="text-[10px] py-0 px-2 h-5">
+            <Badge variant="secondary" className="text-2xs py-0 px-2 h-5">
               {calculatedCredits}{' '}
               {calculatedCredits === 1
                 ? t('mockup.creditUnitSingular')

@@ -16,10 +16,33 @@
    * rounded-md / md / lg / xl will now share the same curvature,
    * while rounded-md remains fully pill/circular for chips & dots.
    */
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
-  --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
+  /*
+   * Escala de raio: DOIS níveis, vindos da craft layer (Layer 2 do registry).
+   * Antes os quatro degraus eram achatados no mesmo valor "pra ficar
+   * consistente". Consistência sem hierarquia é mush: controle e superfície
+   * com a mesma curvatura fazem a tela inteira parecer bolha de SaaS.
+   *   sm/md -> --r-control  botão, input, select, chip acionável
+   *   lg/xl -> --r-surface  card, painel, dialog, popover
+   * A regra: o controle é sempre mais apertado que a superfície onde pousa.
+   */
+  --radius-sm: var(--r-control);
+  --radius-md: var(--r-control);
+  --radius-lg: var(--r-surface);
+  --radius-xl: var(--r-surface);
+  --radius-2xl: var(--r-surface);
+
+  /* Manrope é a face de DISPLAY da marca. O app a usava como texto de UI em
+   * tudo, num peso só, que é como se perde hierarquia tendo tipografia boa. */
+  /*
+   * Dois degraus ABAIXO de text-xs. Não é preciosismo: 1334 usos de
+   * text-[10px] e 339 de text-[11px] provam que o app precisa deles todo dia,
+   * e sem degrau nomeado cada tela inventava o seu em pixel cru.
+   */
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.875rem;
+  --text-3xs: 0.5625rem;
+  --text-3xs--line-height: 0.75rem;
+  --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -40,6 +63,7 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -72,6 +96,32 @@
    *   --dur-slow      → ceiling for UI. Nothing interactive goes past 300ms.
    * Never `ease-in` on UI. Only animate transform + opacity.
    */
+  /* >>> craft layer — gerado por scripts/sync-craft-tokens.mjs. Não editar à mão. */
+  /*
+   * Layer 2 do registry Visant (packages/brand-tokens/craft.json).
+   * Invariante DE PROPÓSITO: raio, densidade, elevação e foco não mudam por
+   * marca. A marca entra pela cor e pela tipografia, não pelo esqueleto.
+   *
+   *   --r-control  botão, input, chip        --r-surface  card, painel
+   *   --r-pill     pílula, avatar            --e-*        elevação
+   *   --pad-card   respiro interno de card   --control-h  altura de controle
+   */
+  --r-control: 0.375rem;
+  --r-surface: 0.625rem;
+  --r-pill: 9999px;
+
+  --pad-card: 1.25rem;
+  --control-h: 2.25rem;
+  --gap-zone: 1rem;
+
+  --e-flat: none;
+  --e-raised: 0 1px 2px hsl(var(--shadow) / 0.06), 0 6px 16px hsl(var(--shadow) / 0.1);
+  --e-overlay: 0 2px 6px hsl(var(--shadow) / 0.12), 0 12px 32px hsl(var(--shadow) / 0.14);
+  --e-modal: 0 8px 40px hsl(var(--shadow) / 0.22);
+
+  --focus: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground);
+  /* <<< craft layer */
+
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -96,41 +146,42 @@
 }
 
 :root {
-  --radius: 0.875rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --radius: 0.625rem;
+  --background: oklch(0.972 0.005 40);
+  --foreground: oklch(0.19 0.008 40);
+  --card: oklch(0.988 0.004 45);
+  --card-foreground: oklch(0.19 0.008 40);
+  --popover: oklch(0.988 0.004 45);
+  --popover-foreground: oklch(0.19 0.008 40);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.945 0.007 40);
+  --secondary-foreground: oklch(0.24 0.008 40);
+  --muted: oklch(0.945 0.007 40);
+  --muted-foreground: oklch(0.53 0.012 42);
+  --accent: oklch(0.945 0.007 40);
+  --accent-foreground: oklch(0.24 0.008 40);
   --destructive: oklch(0.577 0.245 27.325);
   --success: oklch(0.6 0.17 150);
   --success-foreground: oklch(0.985 0 0);
   --warning: oklch(0.68 0.16 65);
   --warning-foreground: oklch(0.145 0 0);
-  --border: oklch(0.922 0 0 / 8%);
-  --input: oklch(0.922 0 0 / 8%);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.19 0.008 40 / 11%);
+  --border-hover: oklch(0.19 0.008 40 / 24%);
+  --input: oklch(0.19 0.008 40 / 14%);
+  --ring: oklch(0.62 0.012 42);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar: oklch(0.955 0.006 40);
+  --sidebar-foreground: oklch(0.19 0.008 40);
+  --sidebar-primary: oklch(0.24 0.008 40);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0 / 15%);
+  --sidebar-accent: oklch(0.945 0.007 40);
+  --sidebar-accent-foreground: oklch(0.24 0.008 40);
+  --sidebar-border: oklch(0.19 0.008 40 / 13%);
   --sidebar-ring: oklch(0.708 0 0);
 
   /* 
@@ -169,6 +220,10 @@
 
   /* Brand specific colors (Cyan accent) */
   --brand-cyan: oklch(0.81 0.156 198.6);
+  /* A craft layer do registry fala `--brand`; este app sempre chamou a cor
+   * de `--brand-cyan`. O alias existe pro --focus e pros componentes do
+   * registry funcionarem aqui sem fork. */
+  --brand: var(--brand-cyan);
 }
 
 /* React Colorful Custom Styles */
@@ -214,35 +269,36 @@
 }
 
 .dark {
-  --background: oklch(0.18 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.26 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.26 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --background: oklch(0.165 0.005 45);
+  --foreground: oklch(0.965 0.004 60);
+  --card: oklch(0.205 0.006 45);
+  --card-foreground: oklch(0.965 0.004 60);
+  --popover: oklch(0.215 0.006 45);
+  --popover-foreground: oklch(0.965 0.004 60);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.32 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.28 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.32 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.26 0.007 45);
+  --secondary-foreground: oklch(0.965 0.004 60);
+  --muted: oklch(0.235 0.006 45);
+  --muted-foreground: oklch(0.68 0.011 50);
+  --accent: oklch(0.26 0.007 45);
+  --accent-foreground: oklch(0.965 0.004 60);
   --destructive: oklch(0.704 0.191 22.216);
   --success: oklch(0.72 0.19 150);
   --success-foreground: oklch(0.145 0 0);
   --warning: oklch(0.822 0.146 73.8);
   --warning-foreground: oklch(0.145 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.556 0 0);
+  --border: oklch(0.93 0.012 60 / 11%);
+  --border-hover: oklch(0.93 0.012 60 / 22%);
+  --input: oklch(0.93 0.012 60 / 14%);
+  --ring: oklch(0.58 0.011 50);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.22 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.185 0.005 45);
+  --sidebar-foreground: oklch(0.965 0.004 60);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.32 0 0);
@@ -2225,4 +2281,11 @@ select.w-full.font-mono.node-interactive {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Densidade compacta do registry — opt-in por atributo, igual à library. */
+[data-density='compact'] {
+  --pad-card: 0.875rem;
+  --control-h: 2rem;
+  --gap-zone: 0.75rem;
 }

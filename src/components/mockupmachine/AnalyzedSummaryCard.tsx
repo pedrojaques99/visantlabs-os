@@ -120,7 +120,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-foreground/5 to-transparent animate-scanline h-20 w-full" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-full border border-brand-cyan/30">
-                        <span className="text-[10px] text-muted-foreground tracking-widest uppercase">
+                        <span className="text-2xs text-muted-foreground tracking-widest uppercase">
                           Analyzing Structure...
                         </span>
                       </div>
@@ -155,7 +155,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-neutral-800">
                 <SkeletonText loading={isGenerating}>
-                  <span className="text-[12px] text-neutral-500">Empty</span>
+                  <span className="text-xs text-neutral-500">Empty</span>
                 </SkeletonText>
               </div>
             )}
@@ -165,7 +165,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
               <div className="absolute top-2 left-2 z-20 pointer-events-none">
                 <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-950/80 backdrop-blur-md rounded border border-white/10 shadow-lg animate-fade-in">
                   <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-pulse" />
-                  <span className="text-[10px] text-neutral-400 uppercase tracking-widest">
+                  <span className="text-2xs text-neutral-400 uppercase tracking-widest">
                     {detectedLanguage}
                   </span>
                 </div>

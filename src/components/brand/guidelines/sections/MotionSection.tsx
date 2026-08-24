@@ -65,11 +65,11 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
       <div className="space-y-3 py-1 group/motion">
         {isEmpty && (
           <div className="space-y-2">
-            <p className="text-[11px] text-neutral-700">No motion tokens yet.</p>
+            <p className="text-2xs text-neutral-700">No motion tokens yet.</p>
             <button
               type="button"
               onClick={() => persist(DEFAULT_MOTION)}
-              className="text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
+              className="text-2xs font-mono text-neutral-600 hover:text-neutral-400 transition-colors"
             >
               Seed defaults
             </button>
@@ -86,7 +86,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                 type="button"
                 onClick={() => patch({ philosophy: opt.value })}
                 className={cn(
-                  'flex-1 h-6 rounded border text-[10px] uppercase transition-colors',
+                  'flex-1 h-6 rounded border text-2xs uppercase transition-colors',
                   motion.philosophy === opt.value
                     ? 'border-white/20 bg-white/5 text-neutral-200'
                     : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -104,12 +104,12 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
           <div className="grid grid-cols-3 gap-1.5">
             {(['fast', 'medium', 'slow'] as const).map((key) => (
               <div key={key} className="space-y-0.5">
-                <MicroTitle className="text-neutral-700 text-[10px]">{key}</MicroTitle>
+                <MicroTitle className="text-neutral-700 text-2xs">{key}</MicroTitle>
                 <Input
                   type="number"
                   value={motion.durations?.[key] ?? DEFAULT_MOTION.durations![key]}
                   onChange={(e) => patchDuration(key, Number(e.target.value))}
-                  className="h-6 border-neutral-800 text-[10px] font-mono text-center"
+                  className="h-6 border-neutral-800 text-2xs font-mono text-center"
                 />
               </div>
             ))}
@@ -128,7 +128,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                   type="button"
                   onClick={() => patch({ easing: p.value })}
                   className={cn(
-                    'px-2 h-5 rounded border text-[10px] font-mono transition-colors',
+                    'px-2 h-5 rounded border text-2xs font-mono transition-colors',
                     motion.easing === p.value
                       ? 'border-white/20 bg-white/5 text-neutral-200'
                       : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -142,7 +142,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
           <Input
             value={motion.easing || ''}
             onChange={(e) => patch({ easing: e.target.value })}
-            className="h-7 border-neutral-800 text-[10px] font-mono text-neutral-400 placeholder:text-neutral-700"
+            className="h-7 border-neutral-800 text-2xs font-mono text-neutral-400 placeholder:text-neutral-700"
             placeholder="cubic-bezier(x1, y1, x2, y2)"
           />
         </div>
@@ -168,7 +168,7 @@ export const MotionSection: React.FC<MotionSectionProps> = ({ guideline, onUpdat
                 )}
               />
             </button>
-            <span className="text-[10px] font-mono text-neutral-500">prefers-reduced-motion</span>
+            <span className="text-2xs font-mono text-neutral-500">prefers-reduced-motion</span>
           </label>
         </div>
       </div>

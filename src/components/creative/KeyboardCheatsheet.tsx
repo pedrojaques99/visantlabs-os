@@ -9,18 +9,18 @@ import {
 import { SHORTCUTS, type Shortcut } from './lib/shortcuts';
 
 const Key: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded border border-white/10 bg-neutral-900/80 text-[10px] font-mono text-neutral-200">
+  <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded border border-white/10 bg-neutral-900/80 text-2xs font-mono text-neutral-200">
     {children}
   </kbd>
 );
 
 const Row: React.FC<{ s: Shortcut }> = ({ s }) => (
   <div className="flex items-center justify-between gap-3 py-1.5">
-    <span className="text-[11px] text-neutral-300">{s.label}</span>
+    <span className="text-2xs text-neutral-300">{s.label}</span>
     <div className="flex items-center gap-0.5">
       {s.keys.map((k, i) => (
         <React.Fragment key={i}>
-          {i > 0 && <span className="text-neutral-600 text-[10px] mx-0.5">+</span>}
+          {i > 0 && <span className="text-neutral-600 text-2xs mx-0.5">+</span>}
           <Key>{k}</Key>
         </React.Fragment>
       ))}
@@ -45,7 +45,7 @@ export const KeyboardCheatsheet: React.FC<Props> = ({ open, onOpenChange }) => {
           </DialogTitle>
           <DialogDescription className="text-neutral-500 text-xs">
             Aceleradores pra mover rápido. Pressione{' '}
-            <kbd className="inline-block px-1 py-0.5 rounded border border-white/10 bg-neutral-900 text-[10px] font-mono">
+            <kbd className="inline-block px-1 py-0.5 rounded border border-white/10 bg-neutral-900 text-2xs font-mono">
               ?
             </kbd>{' '}
             a qualquer momento.
@@ -58,7 +58,7 @@ export const KeyboardCheatsheet: React.FC<Props> = ({ open, onOpenChange }) => {
             if (!items.length) return null;
             return (
               <div key={g}>
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-cyan mb-1.5">
+                <h3 className="text-2xs font-bold uppercase tracking-widest text-foreground mb-1.5">
                   {g}
                 </h3>
                 <div className="divide-y divide-white/5">

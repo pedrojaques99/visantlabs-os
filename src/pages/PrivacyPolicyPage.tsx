@@ -389,7 +389,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                             href="https://tools.google.com/dlpage/gaoptout"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                            className="text-foreground hover:text-brand-cyan/80 underline"
                           >
                             Google Analytics Opt-out Browser Add-on
                           </a>
@@ -467,7 +467,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                           {item.split('contato@visant.co')[0]}
                           <a
                             href="mailto:contato@visant.co"
-                            className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                            className="text-foreground hover:text-brand-cyan/80 underline"
                           >
                             contato@visant.co
                           </a>
@@ -483,7 +483,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                             href="https://myaccount.google.com/permissions"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                            className="text-foreground hover:text-brand-cyan/80 underline"
                           >
                             myaccount.google.com/permissions
                           </a>
@@ -528,7 +528,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}
                 <a
                   href="mailto:contato@visant.co"
-                  className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                  className="text-foreground hover:text-brand-cyan/80 underline"
                 >
                   contato@visant.co
                 </a>

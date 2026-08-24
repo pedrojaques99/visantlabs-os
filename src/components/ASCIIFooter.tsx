@@ -195,7 +195,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onTermsClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.terms')}
                           </Button>
@@ -204,7 +204,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onUsagePolicyClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.usage')}
                           </Button>
@@ -213,7 +213,7 @@ export default function ASCIIFooter({
                           <Button
                             variant="ghost"
                             onClick={() => handlePolicyClick(onRefundClick)}
-                            className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                            className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                           >
                             {t('footer.refund')}
                           </Button>
@@ -262,14 +262,14 @@ export default function ASCIIFooter({
                       <Button
                         variant="ghost"
                         onClick={() => handleLocaleChange('en-US')}
-                        className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                        className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                       >
                         {t('footer.english')}
                       </Button>
                       <Button
                         variant="ghost"
                         onClick={() => handleLocaleChange('pt-BR')}
-                        className="w-full justify-start px-3 py-2 h-7 text-[10px] font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
+                        className="w-full justify-start px-3 py-2 h-7 text-2xs font-mono transition-colors text-muted-foreground hover:text-foreground hover:bg-accent border-none shadow-none"
                       >
                         {t('footer.portuguese')}
                       </Button>

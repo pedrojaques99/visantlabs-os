@@ -338,7 +338,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
             <Button
               variant="ghost"
               onClick={onCreditsClick}
-              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-[10px] md:text-[11px] font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm ${
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-[10px] text-2xs md:text-2xs font-mono bg-card/60 border border-border hover:bg-accent hover:border-border-hover transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm ${
                 isLowCredits ? 'text-warning border-warning/30' : 'text-foreground border-ring'
               }`}
               aria-label={t('auth.availableCredits', { count: availableCredits })}
@@ -361,7 +361,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
           <Button
             variant="ghost"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-[11px] text-muted-foreground font-mono bg-card/60 border border-border hover:bg-accent hover:border-ring hover:text-foreground transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm"
+            className="flex items-center gap-2 h-9 px-2 md:px-3 rounded-[10px] text-2xs text-muted-foreground font-mono bg-card/60 border border-border hover:bg-accent hover:border-border-hover hover:text-foreground transition-[color,background-color,border-color,box-shadow] cursor-pointer shadow-sm"
             title={t('auth.userMenu')}
           >
             {user.picture ? (
@@ -408,7 +408,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                     <UserIcon size={14} />
                     {t('common.profile')}
                   </span>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  <span className="text-2xs text-muted-foreground uppercase tracking-wider">
                     {tierLabel}
                   </span>
                 </Button>
@@ -458,7 +458,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                         window.history.pushState({}, '', '/admin');
                         window.dispatchEvent(new PopStateEvent('popstate'));
                       }}
-                      className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center justify-start gap-2"
+                      className="w-full text-left px-3 py-1.5 h-auto text-xs font-mono transition-colors cursor-pointer text-foreground hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center justify-start gap-2"
                     >
                       <ShieldCheck size={14} />
                       {t('auth.adminPanel') || 'Admin'}
@@ -490,7 +490,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
         <Button
           variant="ghost"
           onClick={() => setShowEmailModal(true)}
-          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-muted-foreground rounded-md border border-border hover:border-ring hover:text-foreground text-[10px] md:text-xs font-mono transition-colors"
+          className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-secondary text-muted-foreground rounded-md border border-border hover:border-border-hover hover:text-foreground text-2xs md:text-xs font-mono transition-colors"
         >
           <Mail size={12} className="md:w-[14px] md:h-[14px]" />
           <span className="hidden sm:inline">{t('auth.signInWithEmail')}</span>
@@ -582,7 +582,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
                       setShowEmailModal(false);
                       setShowForgotPassword(true);
                     }}
-                    className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
+                    className="text-xs text-foreground hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
                   >
                     {t('auth.forgotPassword')}
                   </Button>

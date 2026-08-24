@@ -180,7 +180,7 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
           transition={{ duration: 0.4 }}
         />
       </div>
-      <span className="font-mono text-[10px] text-muted-foreground">
+      <span className="font-mono text-2xs text-muted-foreground">
         {completed}/{steps.length}
       </span>
     </div>
@@ -201,14 +201,14 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
                   'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors',
                   done
                     ? 'border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan'
-                    : 'border-border text-transparent group-hover:border-ring'
+                    : 'border-border text-transparent group-hover:border-border-hover'
                 )}
               >
                 <Check size={10} strokeWidth={3} />
               </span>
               <span
                 className={cn(
-                  'flex-1 font-mono text-[11px] transition-colors',
+                  'flex-1 font-mono text-2xs transition-colors',
                   done
                     ? 'text-muted-foreground line-through'
                     : 'text-muted-foreground group-hover:text-foreground'
@@ -274,7 +274,7 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
             {t('brandGuidelines.createFirst')}
           </Button>
           {/* De onde a marca pode vir — mesmo trio da lista de marcas. */}
-          <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-4 text-2xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <FileText size={13} strokeWidth={1.5} /> PDF
             </span>
@@ -299,7 +299,7 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
               explorar antes de trazer a marca real. */}
           <button
             onClick={() => navigate('/welcome')}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="text-2xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {t('onboarding.pathDemoTitle')}
           </button>
@@ -344,7 +344,7 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
             <span className="text-xs font-medium text-foreground">Tudo pronto.</span>
             <button
               onClick={dismiss}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              className="text-2xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Fechar
             </button>

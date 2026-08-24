@@ -59,11 +59,11 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[10px] hover:bg-muted/30 transition-colors"
+        className="w-full flex items-center gap-1.5 px-2 py-1.5 text-2xs hover:bg-muted/30 transition-colors"
         aria-expanded={expanded}
       >
         {tc.status === 'running' && (
-          <Loader2 size={10} className="animate-spin shrink-0 text-brand-cyan" />
+          <Loader2 size={10} className="animate-spin shrink-0 text-foreground" />
         )}
         {tc.status === 'done' && <CircleCheck size={10} className="text-success shrink-0" />}
         {tc.status === 'error' && <CircleX size={10} className="text-destructive shrink-0" />}
@@ -79,7 +79,7 @@ export function ToolCallCard({ tc }: ToolCallCardProps) {
         />
       </button>
       {expanded && (
-        <div className="px-2 pb-1.5 text-[10px] border-t border-border/30 space-y-1">
+        <div className="px-2 pb-1.5 text-2xs border-t border-border/30 space-y-1">
           {tc.args && (
             <pre className="font-mono text-muted-foreground/60 whitespace-pre-wrap break-all leading-relaxed">
               {formatArgs(tc.args)}

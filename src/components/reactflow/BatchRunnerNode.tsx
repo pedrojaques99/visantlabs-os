@@ -72,14 +72,14 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
         <Play size={12} className="text-muted-foreground shrink-0" />
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-white/70">
+        <span className="text-2xs font-semibold uppercase tracking-widest text-white/70">
           Batch Runner
         </span>
         <span
           className={cn(
-            'ml-auto text-[10px] px-1.5 py-0.5 rounded font-medium',
+            'ml-auto text-2xs px-1.5 py-0.5 rounded font-medium',
             status === 'idle' && 'text-white/30 bg-white/5',
-            status === 'running' && 'text-brand-cyan bg-brand-cyan/10',
+            status === 'running' && 'text-foreground bg-brand-cyan/10',
             status === 'done' && 'text-success bg-success/10',
             status === 'cancelled' && 'text-orange-400 bg-orange-400/10'
           )}
@@ -91,11 +91,11 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Connection hints */}
       {status === 'idle' && total === 0 && (
         <div className="px-3 py-2 space-y-1">
-          <p className="text-[10px] text-white/25">
+          <p className="text-2xs text-white/25">
             <span className="text-purple-400">●</span> Connect a{' '}
             <span className="text-white/40">Data</span> node (rows)
           </p>
-          <p className="text-[10px] text-white/25">
+          <p className="text-2xs text-white/25">
             <span className="text-blue-400">●</span> Connect a{' '}
             <span className="text-white/40">Prompt</span> node (template)
           </p>
@@ -105,7 +105,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
       {/* Progress */}
       {total > 0 && (
         <div className="px-3 pt-2 pb-1">
-          <div className="flex justify-between text-[10px] text-white/40 mb-1">
+          <div className="flex justify-between text-2xs text-white/40 mb-1">
             <span>
               {done} done · {failed} failed · {total - done - failed} left
             </span>
@@ -126,7 +126,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           {results.map((r) => (
             <div key={r.rowIndex} className="flex items-center gap-2">
               {STATUS_ICON[r.status]}
-              <span className="text-[10px] text-white/40 flex-1 truncate">
+              <span className="text-2xs text-white/40 flex-1 truncate">
                 Row {r.rowIndex + 1}
                 {r.rowData && Object.values(r.rowData)[0]
                   ? ` — ${String(Object.values(r.rowData)[0]).slice(0, 24)}`
@@ -140,7 +140,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
                 />
               )}
               {r.status === 'error' && r.error && (
-                <span className="text-[10px] text-destructive/70 truncate max-w-[80px]">
+                <span className="text-2xs text-destructive/70 truncate max-w-[80px]">
                   {r.error}
                 </span>
               )}
@@ -156,7 +156,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
             onClick={handleRun}
             className={cn(
               'flex-1 flex items-center justify-center gap-1.5 rounded py-1.5',
-              'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan text-[10px] font-medium transition-colors'
+              'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-foreground text-2xs font-medium transition-colors'
             )}
           >
             <Play size={10} />
@@ -166,7 +166,7 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
         {isRunning && (
           <button
             onClick={handleCancel}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-[10px] font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-2xs font-medium transition-colors"
           >
             <Square size={10} />
             Cancel
@@ -176,14 +176,14 @@ export const BatchRunnerNode = memo(({ data, selected, id, dragging }: NodeProps
           <>
             <button
               onClick={handleReset}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-white/5 hover:bg-white/10 text-white/50 text-[10px] transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-white/5 hover:bg-white/10 text-white/50 text-2xs transition-colors"
             >
               <RotateCcw size={10} />
               Reset
             </button>
             <button
               onClick={handleRun}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan text-[10px] transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground text-2xs transition-colors"
             >
               <Play size={10} />
               Re-run

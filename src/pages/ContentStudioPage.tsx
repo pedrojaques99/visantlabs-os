@@ -255,7 +255,7 @@ export const ContentStudioPage: React.FC = () => {
                   key={opt.value}
                   onClick={() => setTone(opt.value)}
                   className={cn(
-                    'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-colors',
+                    'px-2.5 py-1.5 rounded-md text-2xs font-mono border transition-colors',
                     tone === opt.value
                       ? 'border-white/20 bg-white/10 text-neutral-200'
                       : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
@@ -291,7 +291,7 @@ export const ContentStudioPage: React.FC = () => {
                     key={fmt.id}
                     onClick={() => toggleFormat(fmt.id)}
                     className={cn(
-                      'px-2.5 py-1.5 rounded-md text-[11px] font-mono border transition-colors',
+                      'px-2.5 py-1.5 rounded-md text-2xs font-mono border transition-colors',
                       isSelected
                         ? 'border-white/20 bg-white/10 text-neutral-200'
                         : 'border-white/10 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700'
@@ -434,20 +434,18 @@ function ContentAssetCard({
       >
         {/* Platform badge */}
         <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm border border-white/10">
-          <span className="text-[10px] font-mono text-neutral-300 tracking-wide">
-            {asset.label}
-          </span>
+          <span className="text-2xs font-mono text-neutral-300 tracking-wide">{asset.label}</span>
         </div>
 
         {/* Ratio badge */}
         <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded bg-black/50 border border-neutral-800">
-          <span className="text-[10px] font-mono text-neutral-500">{asset.ratio}</span>
+          <span className="text-2xs font-mono text-neutral-500">{asset.ratio}</span>
         </div>
 
         {isLoading && (
           <div className="flex flex-col items-center gap-2">
             <Loader2 size={24} className="animate-spin text-neutral-600" />
-            <span className="text-[10px] font-mono text-neutral-600">
+            <span className="text-2xs font-mono text-neutral-600">
               {asset.status === 'generating'
                 ? t('contentStudio.generating')
                 : t('contentStudio.queued')}
@@ -458,7 +456,7 @@ function ContentAssetCard({
         {hasError && (
           <div className="flex flex-col items-center gap-2 px-4 text-center">
             <AlertCircle size={20} className="text-destructive/60" />
-            <span className="text-[10px] font-mono text-destructive">{asset.error}</span>
+            <span className="text-2xs font-mono text-destructive">{asset.error}</span>
           </div>
         )}
 
@@ -478,14 +476,14 @@ function ContentAssetCard({
           <>
             <div className="flex items-start gap-2">
               <Type size={10} className="text-neutral-600 mt-1 flex-shrink-0" />
-              <p className="text-[11px] text-neutral-400 leading-relaxed line-clamp-4">
+              <p className="text-2xs text-neutral-400 leading-relaxed line-clamp-4">
                 {asset.caption}
               </p>
             </div>
             {asset.hashtags && asset.hashtags.length > 0 && (
               <div className="flex items-start gap-2">
                 <Hash size={10} className="text-neutral-600 mt-0.5 flex-shrink-0" />
-                <p className="text-[10px] text-neutral-500 leading-relaxed">
+                <p className="text-2xs text-neutral-500 leading-relaxed">
                   {asset.hashtags.map((h) => (h.startsWith('#') ? h : `#${h}`)).join(' ')}
                 </p>
               </div>
@@ -503,7 +501,7 @@ function ContentAssetCard({
                     index
                   )
                 }
-                className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded text-2xs font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
               >
                 {copiedIndex === index ? <Check size={10} /> : <Copy size={10} />}
                 {copiedIndex === index ? t('contentStudio.copied') : t('contentStudio.copy')}
@@ -514,7 +512,7 @@ function ContentAssetCard({
                   download={`${asset.formatId}.png`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded text-2xs font-mono text-neutral-500 hover:text-neutral-300 border border-white/10 hover:border-neutral-700 transition-colors"
                 >
                   <Download size={10} />
                   {t('contentStudio.image')}

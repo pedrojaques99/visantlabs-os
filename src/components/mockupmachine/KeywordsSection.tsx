@@ -47,10 +47,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
           />
           <span
-            className={cn(
-              'text-[10px]',
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            )}
+            className={cn('text-2xs', theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}
           >
             {t('mockup.tags') || 'PALAVRAS-CHAVE'}
           </span>
@@ -98,7 +95,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             <div className="flex flex-wrap gap-1.5 mt-1">
               <span
                 className={cn(
-                  'text-[10px] self-center mr-1',
+                  'text-2xs self-center mr-1',
                   theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                 )}
               >
@@ -111,7 +108,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                   onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
                   disabled={selectedTags.includes(tag)}
                   className={cn(
-                    'px-2 py-0.5 text-[10px] font-mono rounded-full border transition-colors duration-200',
+                    'px-2 py-0.5 text-2xs font-mono rounded-full border transition-colors duration-200',
                     selectedTags.includes(tag)
                       ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
                       : theme === 'dark'

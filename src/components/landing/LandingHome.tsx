@@ -235,12 +235,12 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           <div data-hero className="flex flex-col items-center gap-7">
             <h1 className="text-5xl font-semibold leading-[0.91] tracking-[-0.08em] sm:text-7xl lg:text-[6rem]">
               <span className="block text-white">{t('landing.hero.titleLine1')}</span>
-              <span className="block text-brand-cyan">{t('landing.hero.titleLine2')}</span>
+              <span className="block text-foreground">{t('landing.hero.titleLine2')}</span>
             </h1>
             <p className="max-w-lg text-base text-neutral-400 sm:text-lg">
               {t('landing.hero.subtitle')}
             </p>
-            <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+            <p className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
               {t('landing.hero.icp')}
             </p>
             <div
@@ -272,7 +272,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       {/* ── On-brand proof ──────────────────────────────────────── */}
       <section className="relative z-10 py-16 sm:py-20">
         <div data-reveal className="mx-auto mb-10 flex max-w-6xl flex-col gap-3 px-6 text-center">
-          <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+          <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
             {t('landing.proof.eyebrow')}
           </span>
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -288,7 +288,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
       {/* ── How It Works ────────────────────────────────────────── */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28">
         <div data-reveal className="mb-14 flex flex-col gap-3 text-center">
-          <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+          <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
             {t('landing.howItWorks.eyebrow')}
           </span>
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -318,7 +318,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
               data-reveal
               className="flex flex-col gap-5 bg-neutral-950 p-8 sm:p-10"
             >
-              <span className="font-redhatmono text-[11px] text-neutral-600 tracking-widest">
+              <span className="font-redhatmono text-2xs text-neutral-600 tracking-widest">
                 {step.num}
               </span>
               <div className="flex flex-col gap-2">
@@ -336,7 +336,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
         className="relative z-10 mx-auto max-w-6xl px-6 py-20 sm:py-28 scroll-mt-16"
       >
         <div data-reveal className="mb-10 flex flex-col gap-3 text-center">
-          <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-500">
+          <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500">
             {t('landing.bento.eyebrow')}
           </span>
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -363,7 +363,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/30 to-transparent" />
               <div className="relative z-10 flex h-full flex-col justify-end p-5">
-                <span className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+                <span className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-400 mb-1">
                   {tool.name}
                 </span>
                 <p className="max-w-xs text-sm font-medium text-white">{tool.desc}</p>
@@ -384,7 +384,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           ].map((label) => (
             <span
               key={label}
-              className="font-redhatmono text-[11px] uppercase tracking-widest text-neutral-500"
+              className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-500"
             >
               {label}
             </span>
@@ -438,7 +438,7 @@ export const LandingHome: React.FC<LandingHomeProps> = ({ onGetStarted, isMobile
           >
             {t('landing.finalCta.button')}
           </Button>
-          <p className="font-redhatmono text-[10px] uppercase tracking-widest text-neutral-600">
+          <p className="font-redhatmono text-2xs uppercase tracking-widest text-neutral-600">
             {t('landing.finalCta.anchor')}
           </p>
         </div>

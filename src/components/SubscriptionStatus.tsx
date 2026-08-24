@@ -78,9 +78,7 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
           </span>
         </div>
         {creditsResetDate && (
-          <span className="text-neutral-600 text-[10px]">
-            Resets {formatDate(creditsResetDate)}
-          </span>
+          <span className="text-neutral-600 text-2xs">Resets {formatDate(creditsResetDate)}</span>
         )}
       </div>
     );
@@ -93,7 +91,7 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
         <span className="text-neutral-500">({totalCreditsAvailable} credits)</span>
       </div>
       {creditsResetDate && (
-        <span className="text-neutral-600 text-[10px]">Resets {formatDate(creditsResetDate)}</span>
+        <span className="text-neutral-600 text-2xs">Resets {formatDate(creditsResetDate)}</span>
       )}
     </div>
   );

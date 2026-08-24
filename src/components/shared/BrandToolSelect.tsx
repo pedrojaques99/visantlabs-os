@@ -27,7 +27,7 @@ export const BrandToolSelect: React.FC<BrandToolSelectProps> = ({ value, onChang
       <select
         value={value || ''}
         onChange={(e) => onChange(e.target.value || null)}
-        className="bg-transparent text-[10px] text-neutral-400 hover:text-neutral-200 uppercase tracking-wider cursor-pointer border-none outline-none appearance-none pr-3"
+        className="bg-transparent text-2xs text-neutral-400 hover:text-neutral-200 uppercase tracking-wider cursor-pointer border-none outline-none appearance-none pr-3"
         style={{ backgroundImage: 'none' }}
       >
         <option value="">No brand</option>

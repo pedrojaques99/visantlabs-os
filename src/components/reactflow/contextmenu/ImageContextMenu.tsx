@@ -139,7 +139,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                   isLiked && 'fill-current text-brand-cyan'
                 )}
               />
-              <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
+              <span className="font-medium text-2xs tracking-wide flex-1 text-left">
                 {isLiked ? 'Unlike' : 'Like'}
               </span>
             </DropdownMenu.Item>
@@ -159,7 +159,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               ) : (
                 <Download size={16} className="text-neutral-400 flex-shrink-0" />
               )}
-              <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
+              <span className="font-medium text-2xs tracking-wide flex-1 text-left">
                 {isDownloading ? 'Downloading...' : 'Download'}
               </span>
             </DropdownMenu.Item>
@@ -173,9 +173,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                 className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
               >
                 <Upload size={16} className="text-neutral-400 flex-shrink-0" />
-                <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
-                  Export
-                </span>
+                <span className="font-medium text-2xs tracking-wide flex-1 text-left">Export</span>
               </DropdownMenu.Item>
             )}
 
@@ -184,7 +182,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
             >
               <Maximize2 size={16} className="text-neutral-400 flex-shrink-0" />
-              <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
+              <span className="font-medium text-2xs tracking-wide flex-1 text-left">
                 Fullscreen
               </span>
             </DropdownMenu.Item>
@@ -198,7 +196,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                 className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
               >
                 <ExternalLink size={16} className="text-neutral-400 flex-shrink-0" />
-                <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
+                <span className="font-medium text-2xs tracking-wide flex-1 text-left">
                   Open in New Tab
                 </span>
               </DropdownMenu.Item>
@@ -213,8 +211,8 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             >
               <Copy size={16} className="text-neutral-400 flex-shrink-0" />
               <div className="flex-1 flex items-center justify-between gap-4">
-                <span className="font-medium text-[11px] tracking-wide text-left">Copy</span>
-                <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded flex-shrink-0">
+                <span className="font-medium text-2xs tracking-wide text-left">Copy</span>
+                <span className="text-2xs text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded flex-shrink-0">
                   Ctrl+C
                 </span>
               </div>
@@ -230,10 +228,8 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               >
                 <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
                 <div className="flex-1 flex items-center justify-between gap-4">
-                  <span className="font-medium text-[11px] tracking-wide text-left">
-                    Copy as PNG
-                  </span>
-                  <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded flex-shrink-0">
+                  <span className="font-medium text-2xs tracking-wide text-left">Copy as PNG</span>
+                  <span className="text-2xs text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded flex-shrink-0">
                     Ctrl+Shift+C
                   </span>
                 </div>
@@ -249,7 +245,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                 className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
               >
                 <FileText size={16} className="text-neutral-400 flex-shrink-0" />
-                <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
+                <span className="font-medium text-2xs tracking-wide flex-1 text-left">
                   Describe Image
                 </span>
               </DropdownMenu.Item>
@@ -262,10 +258,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                 onEditWithPrompt();
                 onClose();
               }}
-              className="w-full px-2 py-1.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold outline-none"
+              className="w-full px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold outline-none"
             >
-              <Diamond size={16} className="text-brand-cyan flex-shrink-0" />
-              <span className="text-[11px] tracking-wide flex-1 text-left">Edit with Prompt</span>
+              <Diamond size={16} className="text-foreground flex-shrink-0" />
+              <span className="text-2xs tracking-wide flex-1 text-left">Edit with Prompt</span>
             </DropdownMenu.Item>
 
             {onOpenImageEditor && (
@@ -274,10 +270,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                   onOpenImageEditor();
                   onClose();
                 }}
-                className="w-full px-2 py-1.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold outline-none"
+                className="w-full px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md font-semibold outline-none"
               >
-                <Scissors size={16} className="text-brand-cyan flex-shrink-0" />
-                <span className="text-[11px] tracking-wide flex-1 text-left">
+                <Scissors size={16} className="text-foreground flex-shrink-0" />
+                <span className="text-2xs tracking-wide flex-1 text-left">
                   Edit Image (Inpaint / Expand / Remove BG)
                 </span>
               </DropdownMenu.Item>
@@ -293,9 +289,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               className="w-full px-2 py-1.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
             >
               <CopyIcon size={16} className="text-neutral-400 flex-shrink-0" />
-              <span className="font-medium text-[11px] tracking-wide flex-1 text-left">
-                Duplicate
-              </span>
+              <span className="font-medium text-2xs tracking-wide flex-1 text-left">Duplicate</span>
             </DropdownMenu.Item>
 
             <DropdownMenu.Item
@@ -306,7 +300,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               className="w-full px-2 py-1.5 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors duration-150 flex items-center justify-start gap-2 cursor-pointer rounded-md outline-none"
             >
               <Trash2 size={16} className="text-destructive flex-shrink-0" />
-              <span className="font-medium text-[11px] tracking-wide flex-1 text-left">Delete</span>
+              <span className="font-medium text-2xs tracking-wide flex-1 text-left">Delete</span>
             </DropdownMenu.Item>
           </div>
         </DropdownMenu.Content>

@@ -230,7 +230,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                 <ImageIcon size={32} className="text-muted-foreground" strokeWidth={1} />
-                <MicroTitle className="text-[10px] text-muted-foreground tracking-tight">
+                <MicroTitle className="text-2xs text-muted-foreground tracking-tight">
                   {t('community.editProfileModal.noCover')}
                 </MicroTitle>
               </div>
@@ -260,7 +260,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               ) : (
                 <div className="flex flex-col items-center gap-2">
                   <Camera size={24} className="text-foreground" />
-                  <MicroTitle className="text-[10px] text-foreground">
+                  <MicroTitle className="text-2xs text-foreground">
                     {t('community.editProfileModal.changeCover')}
                   </MicroTitle>
                 </div>
@@ -268,10 +268,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
             </Button>
           </div>
           <div className="flex items-center gap-2 ml-1">
-            <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
+            <Badge variant="outline" className="text-2xs tracking-tighter py-0">
               {t('community.editProfileModal.coverAspect')}
             </Badge>
-            <Badge variant="outline" className="text-[10px] tracking-tighter py-0">
+            <Badge variant="outline" className="text-2xs tracking-tighter py-0">
               {t('community.editProfileModal.coverMaxSize')}
             </Badge>
           </div>

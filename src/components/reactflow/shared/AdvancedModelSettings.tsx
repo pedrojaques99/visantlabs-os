@@ -41,9 +41,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       <div>
-        <NodeLabel className="mb-1.5 text-[10px]">
-          {t('canvasNodes.promptNode.aspectRatio')}
-        </NodeLabel>
+        <NodeLabel className="mb-1.5 text-2xs">{t('canvasNodes.promptNode.aspectRatio')}</NodeLabel>
         <div>
           <AspectRatioSelector
             value={aspectRatio}
@@ -55,9 +53,7 @@ export const AdvancedModelSettings: React.FC<AdvancedModelSettingsProps> = ({
       </div>
 
       <div>
-        <NodeLabel className="mb-1.5 text-[10px]">
-          {t('canvasNodes.promptNode.resolution')}
-        </NodeLabel>
+        <NodeLabel className="mb-1.5 text-2xs">{t('canvasNodes.promptNode.resolution')}</NodeLabel>
         <div>
           <ResolutionSelector
             value={resolution}

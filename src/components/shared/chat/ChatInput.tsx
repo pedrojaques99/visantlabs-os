@@ -32,7 +32,7 @@ function OutputPills({
           onClick={() => onChange(item)}
           disabled={disabled}
           className={cn(
-            'px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors',
+            'px-1.5 py-0.5 text-2xs font-medium rounded transition-colors',
             value === item ? 'bg-white/15 text-white' : 'text-white/30 hover:text-white/60'
           )}
         >

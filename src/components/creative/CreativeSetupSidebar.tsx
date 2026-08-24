@@ -189,11 +189,11 @@ export const CreativeSetupSidebar: React.FC = () => {
         <header className="flex items-center justify-between">
           <button
             onClick={() => setShowVault(false)}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-2xs font-bold uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
           >
             <ArrowLeft size={14} /> Voltar
           </button>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 px-2 py-1 bg-white/5 rounded-full border border-white/10">
+          <div className="text-2xs font-bold uppercase tracking-widest text-neutral-400 px-2 py-1 bg-white/5 rounded-full border border-white/10">
             Brand Vault
           </div>
         </header>
@@ -220,7 +220,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-neutral-500 group-hover:text-brand-cyan transition-colors">
                     <Plus size={20} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 group-hover:text-neutral-400">
+                  <span className="text-2xs font-bold uppercase tracking-widest text-neutral-600 group-hover:text-neutral-400">
                     Clique para Subir à Brand
                   </span>
                 </>
@@ -232,7 +232,7 @@ export const CreativeSetupSidebar: React.FC = () => {
         <section className="flex flex-col gap-6">
           {(selectedGuideline.logos?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+              <h3 className="text-2xs font-bold uppercase tracking-widest text-neutral-600 px-1">
                 Logos
               </h3>
               <div className="grid grid-cols-3 gap-2">
@@ -261,7 +261,7 @@ export const CreativeSetupSidebar: React.FC = () => {
 
           {(selectedGuideline.media?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+              <h3 className="text-2xs font-bold uppercase tracking-widest text-neutral-600 px-1">
                 Brand Media
               </h3>
               <div className="grid grid-cols-2 gap-2">
@@ -290,7 +290,7 @@ export const CreativeSetupSidebar: React.FC = () => {
 
           {(selectedGuideline.colors?.length ?? 0) > 0 && (
             <div className="flex flex-col gap-3">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 px-1">
+              <h3 className="text-2xs font-bold uppercase tracking-widest text-neutral-600 px-1">
                 Cores
               </h3>
               <div className="flex flex-wrap gap-2 px-1">
@@ -326,7 +326,7 @@ export const CreativeSetupSidebar: React.FC = () => {
         <button
           onClick={() => navigate('/create/projects')}
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:border-neutral-700 text-[10px] font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan',
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:border-neutral-700 text-2xs font-mono uppercase tracking-wider text-neutral-400 hover:text-brand-cyan',
             glassSurface.control
           )}
           title="My Creatives"
@@ -337,7 +337,7 @@ export const CreativeSetupSidebar: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
+        <label className="text-2xs font-mono uppercase tracking-wider text-neutral-600 px-1">
           Identidade
         </label>
         <div className="flex gap-2">
@@ -370,7 +370,7 @@ export const CreativeSetupSidebar: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="creative-idea" className="text-[15px] font-semibold text-neutral-100 px-1">
+        <label htmlFor="creative-idea" className="text-base font-semibold text-neutral-100 px-1">
           Ideia
         </label>
         <div className="relative group">
@@ -402,7 +402,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   promptRef.current?.focus();
                 }}
                 className={cn(
-                  'px-3 py-1.5 rounded-full text-[11px] font-medium text-neutral-400 hover:text-brand-cyan hover:border-neutral-700 transition-colors',
+                  'px-3 py-1.5 rounded-full text-2xs font-medium text-neutral-400 hover:text-brand-cyan hover:border-neutral-700 transition-colors',
                   glassSurface.control
                 )}
               >
@@ -414,7 +414,7 @@ export const CreativeSetupSidebar: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
+        <label className="text-2xs font-mono uppercase tracking-wider text-neutral-600 px-1">
           Formato
         </label>
         <AspectRatioSelector
@@ -434,7 +434,7 @@ export const CreativeSetupSidebar: React.FC = () => {
           onClick={() => setAdvancedOpen((o) => !o)}
           disabled={status !== 'setup'}
           className={cn(
-            'flex items-center justify-between px-4 py-3 rounded-2xl text-[10px] font-mono uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-all disabled:opacity-50',
+            'flex items-center justify-between px-4 py-3 rounded-2xl text-2xs font-mono uppercase tracking-wider text-neutral-500 hover:text-neutral-300 transition-all disabled:opacity-50',
             glassSurface.control
           )}
         >
@@ -447,14 +447,14 @@ export const CreativeSetupSidebar: React.FC = () => {
         {advancedOpen && (
           <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-top-1">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-mono uppercase tracking-wider text-neutral-600 px-1">
+              <label className="text-2xs font-mono uppercase tracking-wider text-neutral-600 px-1">
                 Fundo
               </label>
               <div className="grid grid-cols-3 gap-1.5 p-1 bg-neutral-900/40 rounded-2xl border border-neutral-800">
                 <button
                   onClick={() => setBackgroundMode('ai')}
                   disabled={status !== 'setup'}
-                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
+                  className={`py-2 rounded-xl text-2xs font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                     backgroundMode === 'ai'
                       ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -472,7 +472,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                     setShowVault(true);
                   }}
                   disabled={status !== 'setup'}
-                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
+                  className={`py-2 rounded-xl text-2xs font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                     backgroundMode === 'brand'
                       ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -483,7 +483,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                 <button
                   onClick={() => setBackgroundMode('upload')}
                   disabled={status !== 'setup'}
-                  className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
+                  className={`py-2 rounded-xl text-2xs font-bold uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                     backgroundMode === 'upload'
                       ? 'bg-neutral-800 text-brand-cyan shadow-xl border border-neutral-800'
                       : 'text-neutral-500 hover:text-neutral-300'
@@ -502,7 +502,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                       onChange={handleLocalUpload}
                     />
                     {!uploadedBackgroundUrl ? (
-                      <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,opacity] flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
+                      <div className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-2xs font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-[color,background-color,border-color,box-shadow,opacity] flex flex-col items-center gap-2 group-hover:bg-neutral-900/60">
                         <Upload
                           size={16}
                           className="opacity-40 group-hover:text-brand-cyan transition-colors"
@@ -523,12 +523,12 @@ export const CreativeSetupSidebar: React.FC = () => {
                         />
                         <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
                           <Upload size={18} className="text-white" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                          <span className="text-2xs font-bold uppercase tracking-widest text-white">
                             Trocar Arquivo
                           </span>
                         </div>
                         <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-300">
+                          <span className="text-2xs font-bold uppercase tracking-[0.1em] text-neutral-300">
                             Local File
                           </span>
                         </div>
@@ -543,7 +543,7 @@ export const CreativeSetupSidebar: React.FC = () => {
                   {!uploadedBackgroundUrl ? (
                     <button
                       onClick={() => setShowVault(true)}
-                      className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-[10px] font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-[color,background-color,border-color,opacity] flex flex-col items-center gap-2 hover:bg-neutral-900/60"
+                      className="w-full bg-neutral-900/40 border border-dashed border-white/10 rounded-2xl px-4 py-8 text-center text-2xs font-bold text-neutral-600 hover:text-white hover:border-neutral-700 transition-[color,background-color,border-color,opacity] flex flex-col items-center gap-2 hover:bg-neutral-900/60"
                     >
                       <div className="flex flex-col items-center gap-2">
                         <Briefcase
@@ -568,12 +568,12 @@ export const CreativeSetupSidebar: React.FC = () => {
                       />
                       <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
                         <Briefcase size={18} className="text-white" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                        <span className="text-2xs font-bold uppercase tracking-widest text-white">
                           Trocar Asset
                         </span>
                       </div>
                       <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-neutral-300">
+                        <span className="text-2xs font-bold uppercase tracking-[0.1em] text-neutral-300">
                           Vault Asset
                         </span>
                       </div>
@@ -616,7 +616,7 @@ export const CreativeSetupSidebar: React.FC = () => {
               {/* Custo dobrado dentro do CTA (valor antes do preço) — não mais
                   uma linha de fricção depois do botão. */}
               {canGenerate && (
-                <span className="text-black/60 font-mono text-[11px] normal-case tracking-normal">
+                <span className="text-black/60 font-mono text-2xs normal-case tracking-normal">
                   · {creditsRequired} {creditsRequired === 1 ? 'crédito' : 'créditos'}
                 </span>
               )}

@@ -328,7 +328,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         {/* Selector row */}
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
+                            <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
                               {t('creditsPackages.credits') || 'Créditos'}
                             </p>
                             <div className="flex items-baseline gap-2">
@@ -349,7 +349,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               }}
                               disabled={selectedIndex === 0}
                               aria-label="Pacote anterior"
-                              className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-ring disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
+                              className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
                             >
                               <Minus size={14} />
                             </Button>
@@ -361,7 +361,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               }}
                               disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
                               aria-label="Próximo pacote"
-                              className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-ring disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
+                              className="h-8 w-8 p-0 border-border bg-muted hover:bg-accent hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
                             >
                               <Plus size={14} />
                             </Button>
@@ -391,7 +391,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         {currencyInfo && price > 0 && (
                           <div className="pt-4 border-t border-border flex items-end justify-between">
                             <div>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
+                              <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
                                 {t('pricing.oneTimePayment') || 'Pagamento único'}
                               </p>
                               <div className="flex items-baseline gap-1.5">
@@ -404,7 +404,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest text-right leading-relaxed">
+                            <span className="text-2xs font-mono text-muted-foreground uppercase tracking-widest text-right leading-relaxed">
                               $0.067 Google
                               <br />
                               $0.013 Infra
@@ -417,7 +417,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       <div className="border border-border rounded-xl overflow-hidden">
                         <button
                           onClick={() => setShowPackageCosts(!showPackageCosts)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                          className="w-full flex items-center justify-between px-4 py-3 text-2xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                           aria-expanded={showPackageCosts}
                         >
                           <span className="flex items-center gap-2">
@@ -429,14 +429,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                         {showPackageCosts && (
                           <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                            <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
+                            <div className="flex justify-between text-2xs font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
                               <span>Modelo / Resolução</span>
                               <span>Imagens</span>
                             </div>
                             {getCreditYieldRows().map((item, idx) => (
                               <div
                                 key={idx}
-                                className="flex justify-between text-[10px] font-mono items-center"
+                                className="flex justify-between text-2xs font-mono items-center"
                               >
                                 <span className="text-muted-foreground">{item.label}</span>
                                 <span className="text-foreground font-bold tabular-nums">
@@ -444,7 +444,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </span>
                               </div>
                             ))}
-                            <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-border mt-1">
+                            <div className="flex justify-between text-2xs font-mono items-center pt-2 border-t border-border mt-1">
                               <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
                               <span className="text-foreground font-bold tabular-nums">
                                 {Math.floor(currentPackage.credits / 15)} vídeos
@@ -484,13 +484,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             playClickSound();
                             setActiveTab('assinatura');
                           }}
-                          className="w-full text-muted-foreground hover:text-foreground text-[10px] uppercase tracking-widest transition-colors hover:bg-accent rounded-md py-2"
+                          className="w-full text-muted-foreground hover:text-foreground text-2xs uppercase tracking-widest transition-colors hover:bg-accent rounded-md py-2"
                         >
                           {t('pricing.tabs.subscriptions') || 'Ver Assinatura'} →
                         </button>
                       </div>
 
-                      <p className="text-[10px] font-mono text-muted-foreground text-center pt-1">
+                      <p className="text-2xs font-mono text-muted-foreground text-center pt-1">
                         {t('creditsPackages.note') ||
                           'Créditos não expiram e podem ser usados a qualquer momento'}
                       </p>
@@ -512,7 +512,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 playClickSound();
                                 setBillingCycle(cycle);
                               }}
-                              className={`py-1.5 text-[11px] uppercase tracking-wide rounded transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
+                              className={`py-1.5 text-2xs uppercase tracking-wide rounded transition-[color,background-color,border-color,box-shadow] flex items-center justify-center gap-1.5 ${
                                 billingCycle === cycle
                                   ? 'bg-secondary text-secondary-foreground shadow-sm'
                                   : 'text-muted-foreground hover:text-foreground'
@@ -523,7 +523,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 : t('pricing.yearly') || 'Anual'}
                               {cycle === 'yearly' && (
                                 <span
-                                  className={`text-[10px] px-1 py-0.5 rounded font-bold ${
+                                  className={`text-2xs px-1 py-0.5 rounded font-bold ${
                                     billingCycle === 'yearly'
                                       ? 'bg-brand-cyan/20 text-brand-cyan'
                                       : 'bg-muted text-muted-foreground'
@@ -558,7 +558,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               >
                                 {isPopular && (
                                   <div className="absolute -top-px left-1/2 -translate-x-1/2">
-                                    <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap">
+                                    <Badge className="bg-brand-cyan text-black font-bold text-2xs uppercase tracking-widest px-2 py-0.5 rounded-b-md rounded-t-none whitespace-nowrap">
                                       {t('pricing.popular') || 'Popular'}
                                     </Badge>
                                   </div>
@@ -566,7 +566,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                                 {/* Name */}
                                 <div className="pt-1">
-                                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
+                                  <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
                                     Plano
                                   </p>
                                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -575,7 +575,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     </span>
                                     {plan.metadata?.storageMB &&
                                       parseInt(plan.metadata.storageMB) >= 5120 && (
-                                        <Badge className="bg-muted text-muted-foreground border border-border text-[10px] px-1">
+                                        <Badge className="bg-muted text-muted-foreground border border-border text-2xs px-1">
                                           BYOK
                                         </Badge>
                                       )}
@@ -584,7 +584,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                                 {/* Price */}
                                 <div className="border-t border-border pt-3">
-                                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
+                                  <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
                                     {billingCycle === 'yearly'
                                       ? t('pricing.perYear') || '/ano'
                                       : t('pricing.perMonth') || '/mês'}
@@ -596,7 +596,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       currencyInfo?.locale || 'pt-BR'
                                     )}
                                   </span>
-                                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground uppercase mt-1">
+                                  <div className="flex items-center gap-1 text-2xs text-muted-foreground uppercase mt-1">
                                     <Pickaxe size={9} />
                                     <span>
                                       {plan.credits} {t('pricing.creditsLabel') || 'créd/mês'}
@@ -609,7 +609,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   {benefits.map((benefit: string, idx: number) => (
                                     <div
                                       key={idx}
-                                      className="flex items-start gap-1.5 text-[10px] font-mono text-muted-foreground"
+                                      className="flex items-start gap-1.5 text-2xs font-mono text-muted-foreground"
                                     >
                                       <CheckCircle2
                                         size={11}
@@ -688,7 +688,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Balance row */}
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
+                              <p className="text-2xs font-mono uppercase tracking-widest text-muted-foreground mb-1">
                                 {t('credits.available') || 'Disponíveis'}
                               </p>
                               <div className="flex items-baseline gap-2">
@@ -701,7 +701,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               </div>
                             </div>
                             {subscriptionTier && (
-                              <Badge className="bg-muted text-muted-foreground border border-border text-[10px] font-mono uppercase tracking-widest px-2.5 py-1">
+                              <Badge className="bg-muted text-muted-foreground border border-border text-2xs font-mono uppercase tracking-widest px-2.5 py-1">
                                 {subscriptionTier}
                               </Badge>
                             )}
@@ -710,7 +710,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Monthly usage bar */}
                           {monthlyCredits > 0 && (
                             <div className="space-y-1.5">
-                              <div className="flex justify-between text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                              <div className="flex justify-between text-2xs font-mono uppercase tracking-widest text-muted-foreground">
                                 <span>Uso mensal</span>
                                 <span>
                                   {creditsUsed} / {monthlyCredits}
@@ -727,7 +727,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                           {/* Reset date */}
                           {creditsResetDate && (
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                            <p className="text-2xs text-muted-foreground uppercase tracking-widest">
                               {hasActiveSubscription
                                 ? t('credits.renews', { date: formatDate(creditsResetDate) })
                                 : t('credits.resets', { date: formatDate(creditsResetDate) })}
@@ -739,7 +739,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         <div className="border border-border rounded-xl overflow-hidden">
                           <button
                             onClick={() => setShowStatusCosts(!showStatusCosts)}
-                            className="w-full flex items-center justify-between px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                            className="w-full flex items-center justify-between px-4 py-3 text-2xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                             aria-expanded={showStatusCosts}
                           >
                             <span className="flex items-center gap-2">
@@ -751,14 +751,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                           {showStatusCosts && (
                             <div className="px-4 pb-4 pt-1 bg-muted/40 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                              <div className="flex justify-between text-[10px] font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
+                              <div className="flex justify-between text-2xs font-mono font-bold uppercase tracking-tight text-muted-foreground border-b border-border pb-2 mb-2">
                                 <span>Modelo / Resolução</span>
                                 <span>Imagens</span>
                               </div>
                               {getCreditYieldRows().map((item, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex justify-between text-[10px] font-mono items-center"
+                                  className="flex justify-between text-2xs font-mono items-center"
                                 >
                                   <span className="text-muted-foreground">{item.label}</span>
                                   <span className="text-foreground font-bold tabular-nums">
@@ -766,7 +766,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   </span>
                                 </div>
                               ))}
-                              <div className="flex justify-between text-[10px] font-mono items-center pt-2 border-t border-border mt-1">
+                              <div className="flex justify-between text-2xs font-mono items-center pt-2 border-t border-border mt-1">
                                 <span className="text-muted-foreground">Veo 3 (Vídeo)</span>
                                 <span className="text-foreground font-bold tabular-nums">
                                   {Math.floor(totalCreditsAvailable / 15)} vídeos
@@ -800,7 +800,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }, 300);
                             }}
-                            className="w-full border-border hover:border-ring bg-card hover:bg-muted text-muted-foreground font-semibold rounded-md text-xs sm:text-sm font-mono transition-colors duration-200 flex items-center justify-center gap-2"
+                            className="w-full border-border hover:border-border-hover bg-card hover:bg-muted text-muted-foreground font-semibold rounded-md text-xs sm:text-sm font-mono transition-colors duration-200 flex items-center justify-center gap-2"
                           >
                             <FileText size={14} />
                             {t('usageHistory.title') || 'Histórico de Uso'}
@@ -822,7 +822,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         playClickSound();
                         setActiveTab('creditos');
                       }}
-                      className="text-[11px] text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-widest transition-colors px-3 py-2 hover:bg-accent rounded"
+                      className="text-2xs text-foreground hover:text-brand-cyan/80 font-mono uppercase tracking-widest transition-colors px-3 py-2 hover:bg-accent rounded"
                     >
                       {t('creditsPackages.buy') || 'Comprar'} →
                     </button>
@@ -836,7 +836,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <a
                     href="https://github.com/visantlabs"
                     target="_blank"
-                    className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
+                    className="flex items-center gap-2 text-2xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
                   >
                     <Pickaxe size={12} />
                     <span>OSS CORE</span>
@@ -844,13 +844,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <a
                     href="https://discord.gg/visant"
                     target="_blank"
-                    className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
+                    className="flex items-center gap-2 text-2xs font-mono text-muted-foreground hover:text-brand-cyan transition-colors"
                   >
                     <Info size={12} />
                     <span>LABS COMMUNITY</span>
                   </a>
                 </div>
-                <div className="text-[10px] font-mono text-muted-foreground">
+                <div className="text-2xs font-mono text-muted-foreground">
                   © 2026 VISANT LAB® — BUILDING IN PUBLIC
                 </div>
               </div>

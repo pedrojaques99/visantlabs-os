@@ -206,7 +206,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               <MicroTitle as="span">{title}</MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
-              <span className="text-[10px] font-mono truncate max-w-[200px]">
+              <span className="text-2xs font-mono truncate max-w-[200px]">
                 {hasSelection && <span className="text-foreground">{selectionSummary}</span>}
                 {hasSelection && poolTagsList.length > 0 && (
                   <span className="text-neutral-500"> · </span>
@@ -231,7 +231,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 // Clear all selected tags for this section
                 selectedTags.forEach((tag) => onTagToggle(tag));
               }}
-              className="text-[10px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
+              className="text-2xs font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
             >
               {t('mockup.clearAll') || 'Clear all'}
             </Button>
@@ -278,7 +278,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 placeholder={isGenerating ? '' : t('mockup.customCategoryPlaceholder')}
-                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-colors duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
+                className={`px-3 py-1.5 text-2xs font-medium rounded-md transition-colors duration-200 border border-neutral-600/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
                   theme === 'dark'
                     ? 'bg-brand-cyan/10 text-brand-cyan'
                     : 'bg-brand-cyan/5 text-neutral-800'
@@ -538,7 +538,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   <MicroTitle as="span">{t('mockup.negativePrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isNegativeExpanded && negativePrompt && (
-                  <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">
+                  <span className="text-2xs text-neutral-500 font-mono truncate max-w-[200px]">
                     {negativePrompt}
                   </span>
                 )}
@@ -588,7 +588,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   <MicroTitle as="span">{t('mockup.additionalPrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isAdditionalExpanded && additionalPrompt && (
-                  <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">
+                  <span className="text-2xs text-neutral-500 font-mono truncate max-w-[200px]">
                     {additionalPrompt}
                   </span>
                 )}

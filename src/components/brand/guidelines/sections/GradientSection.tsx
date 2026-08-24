@@ -111,7 +111,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
     >
       <div className="space-y-2 py-1">
         {items.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">No gradients yet. Click + to add.</p>
+          <p className="text-2xs text-neutral-700 py-2">No gradients yet. Click + to add.</p>
         )}
         {items.map((g, gi) => (
           <div
@@ -130,7 +130,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                 className="h-6 flex-1 bg-transparent border-none p-0 text-xs text-neutral-300 focus-visible:ring-0 placeholder:text-neutral-700"
                 placeholder="Gradient name"
               />
-              <span className="text-[10px] font-mono text-neutral-700">
+              <span className="text-2xs font-mono text-neutral-700">
                 {g.type} {g.type === 'linear' ? `${g.angle}°` : ''}
               </span>
               <Button
@@ -153,7 +153,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       type="button"
                       onClick={() => updateItem(gi, { type: t })}
                       className={cn(
-                        'flex-1 h-6 rounded border text-[10px] uppercase transition-colors',
+                        'flex-1 h-6 rounded border text-2xs uppercase transition-colors',
                         g.type === t
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -167,7 +167,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       type="number"
                       value={g.angle}
                       onChange={(e) => updateItem(gi, { angle: Number(e.target.value) })}
-                      className="h-6 w-14 border-neutral-800 text-[10px] font-mono text-center"
+                      className="h-6 w-14 border-neutral-800 text-2xs font-mono text-center"
                       min={0}
                       max={360}
                     />
@@ -180,7 +180,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                       type="button"
                       onClick={() => updateItem(gi, { usage: u })}
                       className={cn(
-                        'px-2 h-5 rounded border text-[10px] font-mono transition-colors',
+                        'px-2 h-5 rounded border text-2xs font-mono transition-colors',
                         g.usage === u
                           ? 'border-white/20 bg-white/5 text-neutral-200'
                           : 'border-neutral-800 text-neutral-600 hover:border-white/10'
@@ -196,7 +196,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                     <button
                       type="button"
                       onClick={() => addStop(gi)}
-                      className="text-[10px] font-mono text-neutral-700 hover:text-neutral-400 transition-colors"
+                      className="text-2xs font-mono text-neutral-700 hover:text-neutral-400 transition-colors"
                     >
                       + stop
                     </button>
@@ -215,7 +215,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                           className="absolute inset-0 opacity-0 cursor-pointer"
                         />
                       </div>
-                      <span className="text-[10px] font-mono text-neutral-600 w-14">{s.color}</span>
+                      <span className="text-2xs font-mono text-neutral-600 w-14">{s.color}</span>
                       <input
                         type="range"
                         min={0}
@@ -224,7 +224,7 @@ export const GradientSection: React.FC<GradientSectionProps> = ({ guideline, onU
                         onChange={(e) => updateStop(gi, si, 'position', Number(e.target.value))}
                         className="flex-1 h-1 accent-white"
                       />
-                      <span className="text-[10px] font-mono text-neutral-600 w-7 text-right">
+                      <span className="text-2xs font-mono text-neutral-600 w-7 text-right">
                         {s.position}%
                       </span>
                       {g.stops.length > 2 && (

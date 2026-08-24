@@ -26,7 +26,7 @@ const STATE_CONFIG = {
   approved: {
     icon: ThumbsUp,
     label: 'Approved',
-    color: 'text-brand-cyan',
+    color: 'text-foreground',
     bg: 'bg-brand-cyan/5 border-brand-cyan/20',
   },
   needs_work: {
@@ -67,16 +67,16 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-[11px] font-bold text-white truncate">{title}</p>
+            <p className="text-2xs font-bold text-white truncate">{title}</p>
             <div className={cn('flex items-center gap-1 px-1.5 py-0.5 rounded-md border', cfg.bg)}>
               <StateIcon size={9} className={cfg.color} />
-              <span className={cn('text-[10px] uppercase tracking-widest', cfg.color)}>
+              <span className={cn('text-2xs uppercase tracking-widest', cfg.color)}>
                 {cfg.label}
               </span>
             </div>
           </div>
           {subtitle && (
-            <p className="text-[10px] text-neutral-600 font-mono mt-0.5 truncate">{subtitle}</p>
+            <p className="text-2xs text-neutral-600 font-mono mt-0.5 truncate">{subtitle}</p>
           )}
         </div>
       </div>
@@ -90,7 +90,7 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
           onClick={() => onApprove(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-2xs font-mono uppercase tracking-wider transition-colors',
             state === 'approved'
               ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan cursor-default'
               : 'border-success/20 bg-success/5 text-success hover:bg-success/15 hover:border-success/40'
@@ -103,10 +103,10 @@ export const ComponentPreviewCard: React.FC<ComponentPreviewCardProps> = ({
           onClick={() => onNeedsWork(id)}
           disabled={state === 'approved'}
           className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-mono uppercase tracking-wider transition-colors',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-2xs font-mono uppercase tracking-wider transition-colors',
             state === 'approved'
               ? 'border-neutral-800 text-neutral-700 cursor-default'
-              : 'border-rose-400/20 bg-rose-400/5 text-rose-400 hover:bg-rose-400/15 hover:border-rose-400/40'
+              : 'border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/15 hover:border-destructive/40'
           )}
         >
           <Wrench size={10} />

@@ -73,7 +73,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
               <Button
                 variant="ghost"
                 onClick={() => handleRemoveItem(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${
+                className={`absolute top-2 right-2 p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive ${
                   theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}
                 title="Remover item"

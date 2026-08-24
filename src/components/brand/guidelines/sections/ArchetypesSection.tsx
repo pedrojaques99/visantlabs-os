@@ -95,14 +95,14 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                   />
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-neutral-200 truncate">{preset.nome}</p>
-                    <p className="text-[10px] text-neutral-600 truncate">
+                    <p className="text-2xs text-neutral-600 truncate">
                       {preset.valores.slice(0, 2).join(', ')}
                     </p>
                   </div>
                 </DropdownMenuItem>
               ))}
               <DropdownMenuItem
-                className="text-[10px] text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
+                className="text-2xs text-neutral-600 border-t border-neutral-800 mt-1 pt-2"
                 onClick={addBlank}
               >
                 + Custom
@@ -114,7 +114,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
     >
       <div className="space-y-0 py-1">
         {local.length === 0 && (
-          <p className="text-[11px] text-neutral-700 py-2">No archetypes. Click + to add.</p>
+          <p className="text-2xs text-neutral-700 py-2">No archetypes. Click + to add.</p>
         )}
         {local.map((arch, i) => {
           const preset = ARCHETYPE_PRESETS.find((p) => p.nome === arch.name);
@@ -144,7 +144,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                     onClick={() =>
                       set(i, { role: arch.role === 'primary' ? 'secondary' : 'primary' })
                     }
-                    className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
+                    className="text-2xs font-mono uppercase px-1.5 py-0.5 rounded border border-white/10 text-neutral-600 hover:text-neutral-400 hover:border-white/20 transition-colors shrink-0"
                   >
                     {arch.role || 'primary'}
                   </button>
@@ -156,7 +156,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
                   placeholder="Objetivo..."
                 />
                 {preset && (
-                  <p className="text-[10px] text-neutral-700 font-mono">
+                  <p className="text-2xs text-neutral-700 font-mono">
                     {preset.valores.join(' · ')}
                   </p>
                 )}

@@ -26,9 +26,9 @@ export const sb = {
     'flex flex-col h-full bg-sidebar text-sidebar-foreground border-r border-sidebar-border overflow-y-auto',
   /** Rótulo de seção (mono, uppercase, discreto). */
   sectionLabel:
-    'px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-sidebar-foreground/50',
+    'px-2.5 py-1 text-2xs font-mono uppercase tracking-wider text-sidebar-foreground/50',
   /** Item de navegação — estado ocioso. */
-  item: 'w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+  item: 'w-full min-w-0 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
   /** Item ativo (destino atual). */
   itemActive: 'bg-sidebar-accent text-sidebar-accent-foreground',
   /** Item primário ativo (destino de nível 1). */
@@ -37,7 +37,7 @@ export const sb = {
   searchInput:
     'h-8 pl-8 text-xs bg-sidebar-accent/40 border-sidebar-border placeholder:text-sidebar-foreground/40',
   /** Chip de filtro — ocioso / ativo. */
-  chip: 'flex items-center gap-1 px-2 py-1 rounded-md text-[10px] border transition-colors',
+  chip: 'flex items-center gap-1 px-2 py-1 rounded-md text-2xs border transition-colors',
   chipIdle:
     'border-transparent text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent',
   chipActive: 'bg-sidebar-accent border-sidebar-border text-sidebar-accent-foreground',

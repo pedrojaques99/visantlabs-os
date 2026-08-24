@@ -872,7 +872,7 @@ export const XProfileMock: React.FC<MockProps> = ({ tokens, className }) => {
               )}
             </div>
             <span
-              className="px-4 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+              className="px-4 py-1.5 rounded-full text-2xs font-semibold uppercase tracking-wider"
               style={{
                 background: ct.primary,
                 color: theme.accentText,
@@ -1010,7 +1010,7 @@ export const SocialCardMock: React.FC<MockProps> = ({ tokens, className }) => {
             </div>
           </div>
           <span
-            className="px-4 py-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wider"
+            className="px-4 py-1.5 rounded-full text-3xs font-semibold uppercase tracking-wider"
             style={{
               background: ct.primary,
               color: theme.accentText,
@@ -1183,12 +1183,12 @@ export const AppStoreMock: React.FC<MockProps> = ({ tokens, className }) => {
                 <path d="M6 0l1.8 3.7 4.2.6-3 2.9.7 4.1L6 9.5 2.3 11.3l.7-4.1-3-2.9 4.2-.6z" />
               </svg>
             ))}
-            <span className="text-[8px] opacity-40 ml-1" style={{ fontFamily: tokens.bodyFamily }}>
+            <span className="text-3xs opacity-40 ml-1" style={{ fontFamily: tokens.bodyFamily }}>
               4.8
             </span>
           </div>
           <span
-            className="px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold"
+            className="px-3 py-1 rounded-full text-3xs uppercase tracking-widest font-bold"
             style={{
               background: ct.primary,
               color: theme.accentText,
@@ -1218,10 +1218,10 @@ export const LetterheadMock: React.FC<MockProps> = ({ tokens, className }) => {
         >
           <Logo tokens={tokens} size={28} mode="dark" />
           <div className="flex flex-col items-end">
-            <span className="text-[7px] opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
+            <span className="text-3xs opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
               hello@{tokens.name.toLowerCase().replace(/\s+/g, '')}.com
             </span>
-            <span className="text-[7px] opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
+            <span className="text-3xs opacity-40" style={{ fontFamily: tokens.bodyFamily }}>
               {tokens.name.toLowerCase().replace(/\s+/g, '')}.com
             </span>
           </div>
@@ -1275,7 +1275,7 @@ export const LetterheadMock: React.FC<MockProps> = ({ tokens, className }) => {
             ))}
           </div>
           <span
-            className="text-[7px] opacity-30 uppercase tracking-widest"
+            className="text-3xs opacity-30 uppercase tracking-widest"
             style={{ fontFamily: tokens.bodyFamily }}
           >
             {tokens.name}
@@ -1299,7 +1299,7 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
           <div className="flex items-center gap-2">
             <Logo tokens={tokens} size={20} />
             <span
-              className="text-[8px] opacity-30 uppercase tracking-widest"
+              className="text-3xs opacity-30 uppercase tracking-widest"
               style={{ fontFamily: tokens.bodyFamily }}
             >
               Brand Deck
@@ -1308,7 +1308,7 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
 
           <div className="max-w-[90%]">
             <span
-              className="text-[9px] uppercase tracking-[0.4em] opacity-50 block mb-2"
+              className="text-3xs uppercase tracking-[0.4em] opacity-50 block mb-2"
               style={{ fontFamily: tokens.bodyFamily, color: ct.accent }}
             >
               {tokens.tagline || 'Introduction'}
@@ -1329,7 +1329,7 @@ export const PresentationSlideMock: React.FC<MockProps> = ({ tokens, className }
                 <span key={i} className="w-6 h-1.5 rounded-sm" style={{ background: c.hex }} />
               ))}
             </div>
-            <span className="text-[8px] opacity-30" style={{ fontFamily: tokens.bodyFamily }}>
+            <span className="text-3xs opacity-30" style={{ fontFamily: tokens.bodyFamily }}>
               01
             </span>
           </div>

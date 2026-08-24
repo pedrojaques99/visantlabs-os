@@ -54,7 +54,7 @@ const Tile: React.FC<{
           <button
             type="button"
             onClick={onView}
-            className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-[var(--brand-text)]/40 hover:text-[var(--accent)] transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+            className="flex items-center gap-1 text-2xs uppercase tracking-widest text-[var(--brand-text)]/40 hover:text-[var(--accent)] transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
           >
             {viewLabel}
             <ArrowRight size={11} />
@@ -111,7 +111,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
             &ldquo;{statement}&rdquo;
           </blockquote>
           {tokens.tagline && tokens.tagline !== statement && (
-            <p className="mt-5 text-[11px] uppercase tracking-widest text-[var(--accent)]/70">
+            <p className="mt-5 text-2xs uppercase tracking-widest text-[var(--accent)]/70">
               {tokens.tagline}
             </p>
           )}
@@ -163,7 +163,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
                   className="w-11 h-11 rounded-xl border border-[var(--brand-text)]/10 shadow-lg transition-transform group-hover/swatch:scale-110"
                   style={{ backgroundColor: c.hex }}
                 />
-                <span className="text-[9px] uppercase tracking-wider text-[var(--brand-text)]/40 opacity-0 group-hover/swatch:opacity-100 transition-opacity">
+                <span className="text-3xs uppercase tracking-wider text-[var(--brand-text)]/40 opacity-0 group-hover/swatch:opacity-100 transition-opacity">
                   {c.hex.replace('#', '')}
                 </span>
               </button>
@@ -191,7 +191,7 @@ export const BrandOverviewBento: React.FC<BrandOverviewBentoProps> = ({
                   >
                     {f.family}
                   </p>
-                  <span className="text-[9px] uppercase tracking-widest text-[var(--brand-text)]/40">
+                  <span className="text-3xs uppercase tracking-widest text-[var(--brand-text)]/40">
                     {f.role || 'Type'}
                   </span>
                 </div>

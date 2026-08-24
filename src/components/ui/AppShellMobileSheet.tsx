@@ -32,7 +32,7 @@ export const AppShellMobileSheet: React.FC<AppShellMobileSheetProps> = ({
       className="w-full flex items-center justify-center gap-1.5 h-[48px] bg-neutral-900/90 backdrop-blur-xl border-t border-neutral-800 text-neutral-400 active:bg-neutral-800/90"
     >
       {open ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-      <span className="text-[11px] uppercase tracking-widest">{label}</span>
+      <span className="text-2xs uppercase tracking-widest">{label}</span>
     </button>
     {open && (
       <div className="h-[calc(100%-48px)] bg-neutral-950/95 backdrop-blur-xl overflow-y-auto scrollbar-none pb-[env(safe-area-inset-bottom)]">

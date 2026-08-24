@@ -271,7 +271,7 @@ export const AdminReferenceLibrary: React.FC = () => {
         }}
       >
         {isUploading ? (
-          <div className="flex items-center justify-center gap-2 text-brand-cyan">
+          <div className="flex items-center justify-center gap-2 text-foreground">
             <RefreshCw className="h-5 w-5 animate-spin" />
             <span className="text-sm">Analisando e ingerindo imagens com AI...</span>
           </div>
@@ -309,7 +309,7 @@ export const AdminReferenceLibrary: React.FC = () => {
             <Badge
               key={key}
               variant="secondary"
-              className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 text-[10px]"
+              className="cursor-pointer bg-brand-cyan/20 text-foreground border-brand-cyan/30 text-2xs"
               onClick={() => {
                 const next = { ...activeFilters };
                 delete next[key];
@@ -388,7 +388,7 @@ export const AdminReferenceLibrary: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {Object.entries(stats.byDimension).map(([key, items]) => (
               <div key={key} className="space-y-1">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                <span className="text-2xs font-mono text-neutral-500 uppercase">
                   {DIMENSION_LABELS[key] || key}
                 </span>
                 <div className="flex flex-wrap gap-0.5">
@@ -396,7 +396,7 @@ export const AdminReferenceLibrary: React.FC = () => {
                     <Badge
                       key={item._id}
                       variant="outline"
-                      className="text-[10px] px-1 py-0 border-neutral-700 text-neutral-400 cursor-pointer hover:border-neutral-700"
+                      className="text-2xs px-1 py-0 border-neutral-700 text-neutral-400 cursor-pointer hover:border-neutral-700"
                       onClick={() => {
                         setActiveFilters((prev) => ({ ...prev, [key]: item._id }));
                         setRefs([]);
@@ -448,7 +448,7 @@ export const AdminReferenceLibrary: React.FC = () => {
             <CardContent className="p-2 space-y-1">
               <p className="text-xs font-medium text-neutral-200 truncate">{ref.name}</p>
               {ref.studio && (
-                <p className="text-[10px] font-mono text-neutral-500 truncate">{ref.studio}</p>
+                <p className="text-2xs font-mono text-neutral-500 truncate">{ref.studio}</p>
               )}
               <div className="flex flex-wrap gap-0.5">
                 {ref.dimensions &&
@@ -461,7 +461,7 @@ export const AdminReferenceLibrary: React.FC = () => {
                           <Badge
                             key={`${key}-${v}`}
                             variant="outline"
-                            className="text-[10px] px-1 py-0 border-neutral-700 text-neutral-400"
+                            className="text-2xs px-1 py-0 border-neutral-700 text-neutral-400"
                           >
                             {v}
                           </Badge>
@@ -482,7 +482,7 @@ export const AdminReferenceLibrary: React.FC = () => {
         </div>
       )}
       {!hasMore && refs.length > 0 && (
-        <p className="text-center text-[10px] text-neutral-600 py-2">
+        <p className="text-center text-2xs text-neutral-600 py-2">
           {refs.length} de {total} referências
         </p>
       )}
@@ -594,7 +594,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
           <div className="space-y-3">
             {/* Name */}
             <div>
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">Nome</label>
+              <label className="text-2xs font-mono text-neutral-500 uppercase">Nome</label>
               {editing ? (
                 <Input
                   value={name}
@@ -608,9 +608,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
 
             {/* Description */}
             <div>
-              <label className="text-[10px] font-mono text-neutral-500 uppercase">
-                Descrição AI
-              </label>
+              <label className="text-2xs font-mono text-neutral-500 uppercase">Descrição AI</label>
               {editing ? (
                 <textarea
                   value={description}
@@ -626,7 +624,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
             {/* Prompt */}
             <div>
               <div className="flex items-center gap-1">
-                <label className="text-[10px] font-mono text-neutral-500 uppercase">Prompt</label>
+                <label className="text-2xs font-mono text-neutral-500 uppercase">Prompt</label>
                 {!editing && ref_.prompt && (
                   <Button
                     size="sm"
@@ -655,7 +653,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
             </div>
 
             {/* Metadata */}
-            <div className="text-[10px] text-neutral-600 font-mono">
+            <div className="text-2xs text-neutral-600 font-mono">
               ID: {ref_.id} · {new Date(ref_.createdAt).toLocaleDateString('pt-BR')}
             </div>
           </div>
@@ -663,14 +661,14 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
 
         {/* Dimensions */}
         <div className="space-y-2 mt-2">
-          <label className="text-[10px] font-mono text-neutral-500 uppercase">Dimensões</label>
+          <label className="text-2xs font-mono text-neutral-500 uppercase">Dimensões</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
             {DIMENSION_KEYS.map((key) => (
               <div
                 key={key}
                 className="bg-neutral-900/50 border border-neutral-800 rounded-lg p-2 space-y-1"
               >
-                <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                <span className="text-2xs font-mono text-neutral-500 uppercase">
                   {DIMENSION_LABELS[key]}
                 </span>
                 <div className="flex flex-wrap gap-0.5">
@@ -679,7 +677,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
                       key={val}
                       variant="outline"
                       className={cn(
-                        'text-[10px] px-1.5 py-0 border-neutral-700 text-neutral-300',
+                        'text-2xs px-1.5 py-0 border-neutral-700 text-neutral-300',
                         editing &&
                           'cursor-pointer hover:border-destructive/50 hover:text-destructive'
                       )}
@@ -690,7 +688,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
                     </Badge>
                   ))}
                   {(dimensions[key] || []).length === 0 && !editing && (
-                    <span className="text-[10px] text-neutral-600 italic">—</span>
+                    <span className="text-2xs text-neutral-600 italic">—</span>
                   )}
                 </div>
                 {editing && (
@@ -700,7 +698,7 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
                       onChange={(e) => setDimInput({ ...dimInput, [key]: e.target.value })}
                       onKeyDown={(e) => e.key === 'Enter' && addDimensionTag(key)}
                       placeholder="add..."
-                      className="h-6 text-[10px] bg-neutral-950 border-neutral-700 flex-1"
+                      className="h-6 text-2xs bg-neutral-950 border-neutral-700 flex-1"
                     />
                     <Button
                       size="sm"
@@ -781,10 +779,10 @@ const ReferenceDetailModal: React.FC<DetailModalProps> = ({
 
 const StatCard: React.FC<{ label: string; value: number | string }> = ({ label, value }) => (
   <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-center">
-    <p className="text-lg font-bold text-brand-cyan">
+    <p className="text-lg font-bold text-foreground">
       {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
     </p>
-    <p className="text-[10px] font-mono text-neutral-500 uppercase">{label}</p>
+    <p className="text-2xs font-mono text-neutral-500 uppercase">{label}</p>
   </div>
 );
 

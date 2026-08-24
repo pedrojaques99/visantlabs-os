@@ -148,9 +148,11 @@ describe('resolveShell', () => {
 });
 
 describe('isBrandContext', () => {
-  it('marca aparece em produção (cockpit, copilot, canvas, criativos, campanhas)', () => {
+  it('marca aparece em produção (cockpit da marca, copilot, canvas, criativos)', () => {
     for (const p of [
-      '/cockpit',
+      // `/cockpit/:brandId` é o cockpit DE UMA marca — aqui o chip vale.
+      // `/cockpit` sem id virou o acervo e está no bloco de gestão abaixo.
+      '/cockpit/abc123',
       '/copilot',
       '/canvas/abc',
       '/create',
@@ -164,6 +166,8 @@ describe('isBrandContext', () => {
 
   it('marca some na gestão (biblioteca de marcas, apps, profile, admin)', () => {
     for (const p of [
+      // Acervo: a lista de marcas, onde não se está DENTRO de marca nenhuma.
+      '/cockpit',
       '/brand-guidelines',
       '/brand-guidelines?id=x',
       '/my-brandings',

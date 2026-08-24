@@ -109,8 +109,8 @@ export const RangeSlider = React.memo<RangeSliderProps>(
       <div className={cn('flex flex-col gap-1.5', className)}>
         {label && (
           <div className="flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
-            <span className="text-[11px] font-mono text-neutral-300 tabular-nums">
+            <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
+            <span className="text-2xs font-mono text-neutral-300 tabular-nums">
               {lo}
               {suffix} – {hi}
               {suffix}

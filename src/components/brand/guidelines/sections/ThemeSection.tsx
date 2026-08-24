@@ -27,7 +27,7 @@ function ContrastBadge({ fg, bg, label }: { fg: string; bg: string; label: strin
   const { normalAA } = checkWCAGCompliance(ratio);
   return (
     <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs font-mono uppercase tracking-wider ${
         normalAA ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
       }`}
       title={`${label}: ${ratio.toFixed(1)}:1 — ${normalAA ? 'WCAG AA ✓' : 'Low contrast'}`}
@@ -48,7 +48,7 @@ function ThemePreview({ theme }: { theme: BrandColorTheme }) {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: theme.primary }} />
           <span
-            className="text-[10px] uppercase tracking-widest opacity-60"
+            className="text-2xs uppercase tracking-widest opacity-60"
             style={{ color: theme.text }}
           >
             {theme.name || 'Theme'}
@@ -60,18 +60,18 @@ function ThemePreview({ theme }: { theme: BrandColorTheme }) {
         >
           Preview headline
         </h3>
-        <p className="text-[11px] opacity-70" style={{ color: theme.text }}>
+        <p className="text-2xs opacity-70" style={{ color: theme.text }}>
           Body text preview for contrast.
         </p>
         <div className="flex gap-2 pt-1">
           <span
-            className="px-3 py-1 rounded-md text-[10px] font-semibold"
+            className="px-3 py-1 rounded-md text-2xs font-semibold"
             style={{ background: theme.primary, color: theme.bg }}
           >
             Primary
           </span>
           <span
-            className="px-3 py-1 rounded-md text-[10px] font-semibold"
+            className="px-3 py-1 rounded-md text-2xs font-semibold"
             style={{ background: theme.accent, color: theme.bg }}
           >
             Accent
@@ -140,7 +140,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
           size="sm"
           variant="ghost"
           onClick={addTheme}
-          className="h-6 px-2 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-white"
+          className="h-6 px-2 text-2xs font-mono uppercase tracking-widest text-neutral-500 hover:text-white"
         >
           <Plus size={10} className="mr-1" /> Add
         </Button>
@@ -149,11 +149,11 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
       {themes.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
           <SwatchBook size={20} className="text-neutral-700" />
-          <p className="text-[10px] text-neutral-600 max-w-[280px] leading-relaxed">
+          <p className="text-2xs text-neutral-600 max-w-[280px] leading-relaxed">
             Define combinações de cores (fundo, texto, primary, accent) para garantir contraste e
             harmonia nos criativos gerados pela IA.
           </p>
-          <Button size="sm" variant="outline" onClick={addTheme} className="mt-2 h-7 text-[10px]">
+          <Button size="sm" variant="outline" onClick={addTheme} className="mt-2 h-7 text-2xs">
             <Plus size={10} className="mr-1" /> Create first theme
           </Button>
         </div>
@@ -185,7 +185,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                     <button
                       type="button"
                       onClick={() => setEditingId(isEditing ? null : theme.id)}
-                      className="flex-1 text-left text-[11px] font-medium text-neutral-300 hover:text-white transition-colors truncate"
+                      className="flex-1 text-left text-2xs font-medium text-neutral-300 hover:text-white transition-colors truncate"
                     >
                       {theme.name}
                     </button>
@@ -220,7 +220,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                           />
                           {ROLES.map((role) => (
                             <div key={role} className="flex items-center gap-2">
-                              <label className="text-[10px] uppercase tracking-widest text-neutral-600 w-16 shrink-0">
+                              <label className="text-2xs uppercase tracking-widest text-neutral-600 w-16 shrink-0">
                                 {ROLE_LABELS[role]}
                               </label>
                               <div className="flex items-center gap-1.5 flex-1">
@@ -237,7 +237,7 @@ export const ThemeSection: React.FC<ThemeSectionProps> = ({ guideline, onUpdate,
                                   onChange={(e) =>
                                     updateTheme(theme.id, { [role]: e.target.value })
                                   }
-                                  className="h-6 text-[10px] font-mono bg-transparent border-white/10 flex-1"
+                                  className="h-6 text-2xs font-mono bg-transparent border-white/10 flex-1"
                                 />
                               </div>
                               {colorOptions.length > 0 && (

@@ -47,7 +47,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
                 <MicroTitle className="text-neutral-600">Spacing</MicroTitle>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                   {Object.entries(tokens.spacing).map(([k, v]) => (
-                    <span key={k} className="text-[10px] font-mono text-neutral-500">
+                    <span key={k} className="text-2xs font-mono text-neutral-500">
                       <span className="text-neutral-600">{k}:</span> {String(v)}
                     </span>
                   ))}
@@ -59,7 +59,7 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
                 <MicroTitle className="text-neutral-600">Radius</MicroTitle>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5">
                   {Object.entries(tokens.radius).map(([k, v]) => (
-                    <span key={k} className="text-[10px] font-mono text-neutral-500">
+                    <span key={k} className="text-2xs font-mono text-neutral-500">
                       <span className="text-neutral-600">{k}:</span> {String(v)}
                     </span>
                   ))}
@@ -74,12 +74,12 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
             setJson(e.target.value);
             persist(e.target.value);
           }}
-          className={`border-neutral-800 text-[10px] font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${
+          className={`border-neutral-800 text-2xs font-mono min-h-[120px] resize-none placeholder:text-neutral-700 ${
             !isValid ? 'border-destructive/30' : ''
           }`}
           placeholder={'{"spacing": {"s": "4px"}, "radius": {"m": "10px"}}'}
         />
-        {!isValid && <p className="text-[10px] text-destructive font-mono">Invalid JSON</p>}
+        {!isValid && <p className="text-2xs text-destructive font-mono">Invalid JSON</p>}
       </div>
     </SectionBlock>
   );

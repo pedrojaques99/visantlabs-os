@@ -508,7 +508,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
               {t('brandMockupDialog.title')}
             </DialogTitle>
           </div>
-          <DialogDescription className="text-[11px] text-neutral-500">
+          <DialogDescription className="text-2xs text-neutral-500">
             {t('brandMockupDialog.description', { brandName })}
           </DialogDescription>
         </DialogHeader>
@@ -551,14 +551,14 @@ export const BrandMockupDialog: React.FC<Props> = ({
                           className="max-w-[60%] max-h-[60%] object-contain opacity-90"
                         />
                       ) : (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-white/70 px-1 text-center">
+                        <span className="text-2xs font-mono uppercase tracking-wider text-white/70 px-1 text-center">
                           {brandName}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="min-w-0 flex-1 flex flex-col justify-center gap-2">
-                    <p className="text-[10px] uppercase tracking-widest text-neutral-600">
+                    <p className="text-2xs uppercase tracking-widest text-neutral-600">
                       {t('brandMockupDialog.form.injectedFromBrand', { aspectRatio })}
                     </p>
                     <div className="flex items-center gap-1.5">
@@ -573,7 +573,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                     </div>
                     {brandPreview.font && (
                       <p
-                        className="text-[11px] text-neutral-400 truncate"
+                        className="text-2xs text-neutral-400 truncate"
                         style={{ fontFamily: brandPreview.font }}
                       >
                         {brandPreview.font}
@@ -589,7 +589,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                     </MicroTitle>
                     <button
                       onClick={handleSurpriseMe}
-                      className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 text-2xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Dices size={10} />
                       {t('brandMockupDialog.form.surpriseMe')}
@@ -641,7 +641,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                 </div>
 
                 <div className="flex items-center justify-between border-t border-neutral-800/60 pt-4">
-                  <span className="text-[10px] font-mono text-neutral-600">
+                  <span className="text-2xs font-mono text-neutral-600">
                     {t('brandMockupDialog.form.summary', {
                       modelLabel,
                       resolution,
@@ -667,11 +667,11 @@ export const BrandMockupDialog: React.FC<Props> = ({
               <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
                 <AlertCircle size={22} className="text-neutral-500" />
                 <p className="text-sm font-medium text-neutral-200">{errorInfo.title}</p>
-                <p className="text-[12px] text-neutral-500 max-w-xs leading-relaxed">
+                <p className="text-xs text-neutral-500 max-w-xs leading-relaxed">
                   {errorInfo.detail}
                 </p>
                 {errorInfo.refunded && (
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-600">
+                  <p className="text-2xs uppercase tracking-widest text-neutral-600">
                     {t('brandMockupDialog.error.noCreditsCharged')}
                   </p>
                 )}
@@ -701,19 +701,19 @@ export const BrandMockupDialog: React.FC<Props> = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <p className="text-[10px] uppercase tracking-widest text-neutral-500">
+                    <p className="text-2xs uppercase tracking-widest text-neutral-500">
                       {t('brandMockupDialog.suggestions.select')}
                     </p>
                     <button
                       onClick={toggleAllSuggestions}
-                      className="text-[10px] font-mono text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+                      className="text-2xs font-mono text-foreground hover:text-brand-cyan/80 transition-colors"
                     >
                       {selectedSuggestions.size === suggestions.length
                         ? t('brandMockupDialog.suggestions.none')
                         : t('brandMockupDialog.suggestions.all')}
                     </button>
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-600">
+                  <span className="text-2xs font-mono text-neutral-600">
                     {t('brandMockupDialog.suggestions.creditsSummary', {
                       used: selectedSuggestions.size,
                       total: suggestions.length,
@@ -738,7 +738,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                         )}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-neutral-400">
+                          <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-2xs text-neutral-400">
                             {s.aspectRatio}
                           </span>
                           <div
@@ -756,7 +756,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                           </div>
                         </div>
                         <span className="text-xs font-medium text-neutral-200">{s.label}</span>
-                        <p className="line-clamp-3 text-[11px] leading-relaxed text-neutral-500">
+                        <p className="line-clamp-3 text-2xs leading-relaxed text-neutral-500">
                           {s.prompt}
                         </p>
                       </button>
@@ -767,7 +767,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                 <div className="flex items-center justify-between pt-2">
                   <button
                     onClick={resetToForm}
-                    className="text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                    className="text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                   >
                     {t('brandMockupDialog.suggestions.back')}
                   </button>
@@ -791,7 +791,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <GlitchLoader size={12} />
-                  <p className="text-[10px] uppercase tracking-widest text-neutral-500">
+                  <p className="text-2xs uppercase tracking-widest text-neutral-500">
                     {t('brandMockupDialog.loading.analyzing')}
                   </p>
                 </div>
@@ -825,7 +825,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                   className="w-full max-w-[280px]"
                 />
                 {slowHint && (
-                  <p className="text-[10px] text-neutral-600 max-w-[16rem] text-center leading-relaxed animate-in fade-in duration-500">
+                  <p className="text-2xs text-neutral-600 max-w-[16rem] text-center leading-relaxed animate-in fade-in duration-500">
                     {t('brandMockupDialog.generating.slowHint', {
                       strategy: t('brandMockupDialog.generating.byQuality'),
                     })}
@@ -840,7 +840,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <GlitchLoader size={12} />
-                    <p className="text-[10px] uppercase tracking-widest text-neutral-500">
+                    <p className="text-2xs uppercase tracking-widest text-neutral-500">
                       {t('brandMockupDialog.generating.batch', {
                         done: batchProgress,
                         total: batchTotalRef.current,
@@ -856,7 +856,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                     </div>
                     <button
                       onClick={handleCancelBatch}
-                      className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-destructive hover:text-destructive transition-colors"
+                      className="flex items-center gap-1 text-2xs uppercase tracking-widest text-destructive hover:text-destructive transition-colors"
                     >
                       <Square size={8} />
                       {t('brandMockupDialog.generating.stop')}
@@ -883,7 +883,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                         />
                       ) : i < batchProgress ? (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-[10px] font-mono text-neutral-700">
+                          <span className="text-2xs font-mono text-neutral-700">
                             {t('brandMockupDialog.generating.errorTile')}
                           </span>
                         </div>
@@ -900,7 +900,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                       {r && (
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-2">
                           <div className="flex items-center justify-between w-full">
-                            <span className="text-[10px] text-neutral-300 font-medium truncate mr-2">
+                            <span className="text-2xs text-neutral-300 font-medium truncate mr-2">
                               {r.label}
                             </span>
                             <div className="flex gap-1 shrink-0">
@@ -943,14 +943,14 @@ export const BrandMockupDialog: React.FC<Props> = ({
                   />
                 </div>
                 {result.fellBack && result.providerUsed && (
-                  <p className="text-[10px] text-neutral-600 leading-relaxed">
+                  <p className="text-2xs text-neutral-600 leading-relaxed">
                     {t('brandMockupDialog.result.fellBack', { provider: result.providerUsed })}
                   </p>
                 )}
                 <div className="flex items-center justify-between">
                   <button
                     onClick={resetToForm}
-                    className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                    className="flex items-center gap-1.5 text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                   >
                     <RotateCcw size={10} />
                     {t('brandMockupDialog.result.generateAnother')}
@@ -991,7 +991,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
             {view === 'result' && batchResults.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] uppercase tracking-widest text-success">
+                  <p className="text-2xs uppercase tracking-widest text-success">
                     {t('brandMockupDialog.result.batchCount', {
                       count: batchResults.filter(Boolean).length,
                       plural: batchResults.filter(Boolean).length !== 1 ? 's' : '',
@@ -1016,7 +1016,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                           <img src={r.url} alt={r.label} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                             <div className="flex items-center justify-between w-full">
-                              <span className="text-[10px] text-neutral-300 font-medium truncate mr-2">
+                              <span className="text-2xs text-neutral-300 font-medium truncate mr-2">
                                 {r.label}
                               </span>
                               <div className="flex gap-1 shrink-0">
@@ -1049,7 +1049,7 @@ export const BrandMockupDialog: React.FC<Props> = ({
                 <div className="flex items-center justify-between pt-1">
                   <button
                     onClick={resetToForm}
-                    className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
+                    className="flex items-center gap-1.5 text-2xs uppercase tracking-widest text-neutral-500 hover:text-neutral-300"
                   >
                     <RotateCcw size={10} />
                     {t('brandMockupDialog.result.new')}

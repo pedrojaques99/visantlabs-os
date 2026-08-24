@@ -430,7 +430,7 @@ export const ApiKeysPage: React.FC = () => {
                           className={`px-3 py-2 rounded-md border text-sm transition-colors ${
                             newKeyScopes.includes(scope.value)
                               ? 'bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan'
-                              : 'bg-muted/40 border-border text-muted-foreground hover:border-ring'
+                              : 'bg-muted/40 border-border text-muted-foreground hover:border-border-hover'
                           }`}
                         >
                           <span className="font-medium">{scope.label}</span>

@@ -153,7 +153,7 @@ export const WaitlistPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => setIsSubmitted(false)}
-                    className="text-brand-cyan hover:text-brand-cyan/80 text-sm font-mono underline"
+                    className="text-foreground hover:text-brand-cyan/80 text-sm font-mono underline"
                   >
                     {t('waitlist.addAnotherEmail') || 'Add another email'}
                   </Button>

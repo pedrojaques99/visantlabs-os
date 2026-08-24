@@ -52,7 +52,7 @@ export const ToggleRow: React.FC<ToggleRowProps> = ({ checked, onClick, label, d
       {toggle}
       <span
         className={cn(
-          'text-[10px] uppercase tracking-widest transition-colors',
+          'text-2xs uppercase tracking-widest transition-colors',
           checked
             ? 'text-brand-cyan'
             : dark

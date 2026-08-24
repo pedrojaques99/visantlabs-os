@@ -138,7 +138,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                       style={{ backgroundColor: c.hex }}
                       title={`${c.name} — ${c.hex}`}
                     />
-                    <span className="text-[10px] font-mono text-neutral-600 max-w-[40px] truncate">
+                    <span className="text-2xs font-mono text-neutral-600 max-w-[40px] truncate">
                       {c.role || c.name}
                     </span>
                   </div>
@@ -160,7 +160,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
                     >
                       {t.family}
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-600">
+                    <span className="text-2xs font-mono text-neutral-600">
                       {t.role} · {t.style || 'Regular'}
                     </span>
                   </div>
@@ -197,7 +197,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               key={fmt}
               onClick={() => fetchOutput(fmt)}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-mono transition-[color,background-color,border-color,box-shadow]',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-2xs font-mono transition-[color,background-color,border-color,box-shadow]',
                 activeFormat === fmt
                   ? 'bg-white/10 text-neutral-200 shadow-sm'
                   : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
@@ -216,7 +216,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               variant="ghost"
               size="sm"
               onClick={handleCopy}
-              className="h-7 px-2 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 bg-neutral-900/80 backdrop-blur-sm"
+              className="h-7 px-2 text-2xs font-mono text-neutral-500 hover:text-neutral-200 bg-neutral-900/80 backdrop-blur-sm"
             >
               {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
               {copied ? 'Copied' : 'Copy'}
@@ -225,7 +225,7 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
               variant="ghost"
               size="sm"
               onClick={handleDownload}
-              className="h-7 px-2 text-[10px] font-mono text-neutral-500 hover:text-neutral-200 bg-neutral-900/80 backdrop-blur-sm"
+              className="h-7 px-2 text-2xs font-mono text-neutral-500 hover:text-neutral-200 bg-neutral-900/80 backdrop-blur-sm"
             >
               <Download size={12} />
               {currentOutput?.filename || 'Download'}
@@ -237,14 +237,14 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
             {currentOutput && (
               <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-800 bg-white/[0.03]">
                 <FileCode size={11} className="text-neutral-600" />
-                <span className="text-[10px] font-mono text-neutral-500">
+                <span className="text-2xs font-mono text-neutral-500">
                   {currentOutput.filename}
                 </span>
               </div>
             )}
 
             {/* Code block */}
-            <pre className="p-4 overflow-x-auto max-h-[400px] overflow-y-auto text-[11px] leading-relaxed font-mono text-neutral-400 selection:bg-brand-cyan/20">
+            <pre className="p-4 overflow-x-auto max-h-[400px] overflow-y-auto text-2xs leading-relaxed font-mono text-neutral-400 selection:bg-brand-cyan/20">
               {loading ? (
                 <span className="text-neutral-600 animate-pulse">Compiling tokens...</span>
               ) : currentOutput ? (
@@ -260,14 +260,14 @@ export const DesignSystemOutputSection: React.FC<DesignSystemOutputSectionProps>
 
         {/* Actions */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-mono text-neutral-600">
+          <p className="text-2xs font-mono text-neutral-600">
             {currentOutput ? `${currentOutput.content.split('\n').length} lines` : '—'}
           </p>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleDownloadAll}
-            className="h-7 px-3 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan border border-neutral-800 hover:border-neutral-700"
+            className="h-7 px-3 text-2xs font-mono text-neutral-500 hover:text-brand-cyan border border-neutral-800 hover:border-neutral-700"
           >
             <Download size={11} />
             Download All Formats
@@ -297,7 +297,7 @@ function TokenStat({ label, count }: { label: string; count: number }) {
       >
         {count}
       </span>
-      <span className="text-[10px] font-mono text-neutral-600">{label}</span>
+      <span className="text-2xs font-mono text-neutral-600">{label}</span>
     </div>
   );
 }

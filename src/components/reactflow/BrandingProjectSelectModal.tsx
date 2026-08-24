@@ -160,7 +160,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                     className="w-full px-4 py-3 text-left border-node rounded-md transition-colors bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-neutral-700 hover:bg-neutral-800/50 group"
                   >
                     <div className="flex items-start gap-3">
-                      <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
+                      <FolderOpen size={16} className="text-foreground flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-neutral-200 truncate">
                           {project.name ||
@@ -173,7 +173,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                           </div>
                         )}
                         {project.createdAt && (
-                          <div className="text-[10px] text-neutral-600 mt-1">
+                          <div className="text-2xs text-neutral-600 mt-1">
                             {formatDate(project.createdAt)}
                           </div>
                         )}

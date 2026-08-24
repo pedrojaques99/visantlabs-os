@@ -382,7 +382,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       )}
     >
       <span className="flex-shrink-0">{item.icon}</span>
-      <span className="text-[11px] font-medium tracking-wide">{item.label}</span>
+      <span className="text-2xs font-medium tracking-wide">{item.label}</span>
     </Command.Item>
   );
 
@@ -399,7 +399,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       <Command shouldFilter loop>
         <div className="sticky top-0 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-lg">
           <div className="px-3 py-2 flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+            <span className="text-2xs font-semibold text-neutral-400 uppercase tracking-widest">
               Add Node
             </span>
             <button
@@ -415,7 +415,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
             <Command.Input
               placeholder="Search..."
               autoFocus
-              className="w-full bg-neutral-900/60 border border-neutral-800/50 rounded px-2.5 py-1 text-[11px] text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+              className="w-full bg-neutral-900/60 border border-neutral-800/50 rounded px-2.5 py-1 text-2xs text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
               onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
@@ -428,14 +428,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         </div>
 
         <Command.List className="px-1.5 py-1.5 max-h-[55vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-          <Command.Empty className="px-3 py-6 text-center text-[11px] text-neutral-500">
+          <Command.Empty className="px-3 py-6 text-center text-2xs text-neutral-500">
             No results found
           </Command.Empty>
 
           {grouped.map(({ group, items }, gi) => (
             <Command.Group key={group}>
               <div className="px-2 pt-1.5 pb-0.5">
-                <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest">
+                <span className="text-2xs font-semibold text-neutral-500 uppercase tracking-widest">
                   {group}
                 </span>
               </div>

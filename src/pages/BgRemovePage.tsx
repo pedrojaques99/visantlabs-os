@@ -118,7 +118,7 @@ function FocusSelector({ region, onChange, disabled }: FocusSelectorProps) {
             }}
           />
           <div
-            className="absolute border-2 border-brand-cyan rounded-sm shadow-[0_0_20px_rgba(0,229,255,0.15)]"
+            className="absolute border-2 border-border rounded-sm shadow-[0_0_20px_rgba(0,229,255,0.15)]"
             style={{
               left: `${sel.x * 100}%`,
               top: `${sel.y * 100}%`,
@@ -149,10 +149,10 @@ function ProgressBar({ value, phase }: { value: number; phase?: string }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium text-neutral-500 truncate">
+        <span className="text-2xs font-medium text-neutral-500 truncate">
           {phase || 'Processing'}
         </span>
-        <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
+        <span className="text-2xs font-mono text-neutral-400 tabular-nums">
           {Math.round(value * 100)}%
         </span>
       </div>
@@ -405,7 +405,7 @@ export const BgRemovePage: React.FC = () => {
           onClick={() => setMode('ai')}
           disabled={isProcessing}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-colors duration-200',
+            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-2xs font-mono font-medium uppercase tracking-wider transition-colors duration-200',
             mode === 'ai'
               ? 'bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30'
               : 'text-neutral-500 hover:text-neutral-300'
@@ -417,7 +417,7 @@ export const BgRemovePage: React.FC = () => {
           onClick={() => setMode('simple')}
           disabled={isProcessing}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-colors duration-200',
+            'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-2xs font-mono font-medium uppercase tracking-wider transition-colors duration-200',
             mode === 'simple'
               ? 'bg-white/10 text-white border border-white/20'
               : 'text-neutral-500 hover:text-neutral-300'
@@ -428,7 +428,7 @@ export const BgRemovePage: React.FC = () => {
       </div>
 
       {/* Add more + thumbnail queue */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add images
         <input
@@ -477,11 +477,11 @@ export const BgRemovePage: React.FC = () => {
               className="w-10 h-10 rounded object-cover bg-neutral-900 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
               <div className="flex items-center gap-2">
                 <StatusBadge status={item.status} />
                 {item.status === 'processing' && item.progressValue != null && (
-                  <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
+                  <span className="text-2xs font-mono text-neutral-400 tabular-nums">
                     {Math.round(item.progressValue * 100)}%
                   </span>
                 )}
@@ -514,7 +514,7 @@ export const BgRemovePage: React.FC = () => {
                 }}
                 disabled={isProcessing}
                 className={cn(
-                  'w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-mono font-medium uppercase tracking-wider transition-colors duration-200 border',
+                  'w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-2xs font-mono font-medium uppercase tracking-wider transition-colors duration-200 border',
                   focusActive
                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                     : 'text-neutral-500 border-neutral-800 hover:border-neutral-600 hover:text-neutral-300'
@@ -526,7 +526,7 @@ export const BgRemovePage: React.FC = () => {
               <AnimatePresence>
                 {focusRegion && (
                   <motion.div
-                    className="flex items-center gap-1 text-[10px] font-mono text-neutral-400"
+                    className="flex items-center gap-1 text-2xs font-mono text-neutral-400"
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -8 }}
@@ -543,7 +543,7 @@ export const BgRemovePage: React.FC = () => {
                 )}
                 {focusActive && !focusRegion && (
                   <motion.span
-                    className="block text-[10px] font-mono text-neutral-600"
+                    className="block text-2xs font-mono text-neutral-600"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -560,7 +560,7 @@ export const BgRemovePage: React.FC = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-neutral-500">Threshold</span>
-                  <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
+                  <span className="text-2xs font-mono text-neutral-500 tabular-nums">
                     {threshold}%
                   </span>
                 </div>
@@ -579,7 +579,7 @@ export const BgRemovePage: React.FC = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-neutral-500">Feather</span>
-                  <span className="text-[10px] font-mono text-neutral-500 tabular-nums">
+                  <span className="text-2xs font-mono text-neutral-500 tabular-nums">
                     {feather}px
                   </span>
                 </div>
@@ -598,7 +598,7 @@ export const BgRemovePage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        <p className="text-[10px] font-mono text-neutral-600">
+        <p className="text-2xs font-mono text-neutral-600">
           {mode === 'ai'
             ? 'AI mode uses a neural network to detect subjects — works on complex scenes, hair, and transparent objects. First run downloads the model (~30 MB).'
             : 'Simple mode works best for solid-color backgrounds. For complex scenes, switch to AI mode.'}
@@ -615,7 +615,7 @@ export const BgRemovePage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium transition-colors duration-200"
               >
                 {isProcessing ? (
                   <GlitchLoader size={14} color="currentColor" />
@@ -664,7 +664,7 @@ export const BgRemovePage: React.FC = () => {
   // ─── Status bar ───────────────────────────────────────────────────────────
 
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneCount}/{items.length}
       </span>
@@ -814,7 +814,7 @@ export const BgRemovePage: React.FC = () => {
                   {previewItem.status === 'done' && (
                     <motion.button
                       onClick={toggleOriginal}
-                      className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider bg-black/50 backdrop-blur-sm text-neutral-300 px-2.5 py-1 rounded-lg hover:bg-black/70 transition-colors border border-white/10"
+                      className="absolute top-3 right-3 flex items-center gap-1.5 text-2xs font-mono uppercase tracking-wider bg-black/50 backdrop-blur-sm text-neutral-300 px-2.5 py-1 rounded-lg hover:bg-black/70 transition-colors border border-white/10"
                       title={showOriginal ? 'Show result' : 'Show original'}
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -833,7 +833,7 @@ export const BgRemovePage: React.FC = () => {
                 <AnimatePresence>
                   {previewItem.status === 'error' && (
                     <motion.div
-                      className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-[11px] font-mono text-destructive"
+                      className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-2xs font-mono text-destructive"
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}

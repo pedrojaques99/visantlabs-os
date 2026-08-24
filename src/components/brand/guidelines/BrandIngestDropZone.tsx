@@ -160,7 +160,7 @@ export function BrandIngestDropZone({ onFiles, disabled }: BrandIngestDropZonePr
                 whileHover={{ scale: 1.05, borderColor: color + '40' }}
               >
                 <Icon size={12} style={{ color }} />
-                <span className="text-[10px] font-mono text-neutral-500">{label}</span>
+                <span className="text-2xs font-mono text-neutral-500">{label}</span>
               </motion.div>
             ))}
           </div>

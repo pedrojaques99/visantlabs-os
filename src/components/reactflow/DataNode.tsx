@@ -61,14 +61,10 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     <NodeContainer selected={selected} dragging={dragging} className="min-w-[280px] max-w-[340px]">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10">
-        <Table2 size={13} className="text-brand-cyan shrink-0" />
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-white/70">
-          Data
-        </span>
+        <Table2 size={13} className="text-foreground shrink-0" />
+        <span className="text-2xs font-semibold uppercase tracking-widest text-white/70">Data</span>
         {fileName && (
-          <span className="ml-auto text-[10px] text-white/35 truncate max-w-[120px]">
-            {fileName}
-          </span>
+          <span className="ml-auto text-2xs text-white/35 truncate max-w-[120px]">{fileName}</span>
         )}
       </div>
 
@@ -82,13 +78,13 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           )}
         >
           <Upload size={18} />
-          <span className="text-[10px]">Upload CSV or JSON</span>
+          <span className="text-2xs">Upload CSV or JSON</span>
         </button>
       ) : (
         <>
           {/* Row preview table */}
           <div className="px-3 pt-2 pb-1 overflow-x-auto">
-            <table className="w-full text-[10px]">
+            <table className="w-full text-2xs">
               <thead>
                 <tr>
                   {previewCols.map((col) => (
@@ -126,7 +122,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             >
               <ChevronLeft size={13} />
             </button>
-            <span className="text-[10px] text-white/40 flex-1 text-center">
+            <span className="text-2xs text-white/40 flex-1 text-center">
               Row {selectedRowIndex + 1} / {totalRows}
             </span>
             <button
@@ -138,7 +134,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-[10px] text-white/25 hover:text-white/50 transition-colors ml-1"
+              className="text-2xs text-white/25 hover:text-white/50 transition-colors ml-1"
             >
               Replace
             </button>
@@ -147,7 +143,7 @@ export const DataNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           {/* Hint */}
           <div className="px-3 pb-2 flex items-start gap-1">
             <AlertCircle size={9} className="text-white/20 mt-0.5 shrink-0" />
-            <p className="text-[10px] text-white/20 leading-tight">
+            <p className="text-2xs text-white/20 leading-tight">
               Connect to a Prompt or Edit node — column names become{' '}
               <span className="font-mono text-brand-cyan/40">{`{{variables}}`}</span>
             </p>

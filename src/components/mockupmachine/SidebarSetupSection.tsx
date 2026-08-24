@@ -98,7 +98,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                   onStartOver();
                   onClose();
                 }}
-                className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-[10px] uppercase tracking-widest border border-transparent hover:border-white/10"
+                className="h-12 px-6 text-neutral-500 hover:text-white hover:bg-white/5 font-mono text-2xs uppercase tracking-widest border border-transparent hover:border-white/10"
               >
                 {t('common.cancel') || 'Fechar'}
               </Button>
@@ -109,14 +109,14 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
               isLoading={isAnalyzing}
               loadingText="INITIALIZING..."
               icon={ArrowRight}
-              className="flex-1 h-12 text-[10px] tracking-[0.1em] font-bold"
+              className="flex-1 h-12 text-2xs tracking-[0.1em] font-bold"
             >
               {t('mockup.continue') || 'CONTINUE SETUP'}
             </PremiumButton>
           </div>
 
           {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
-            <p className="text-center text-neutral-600 text-[10px] uppercase tracking-widest animate-pulse mt-1">
+            <p className="text-center text-neutral-600 text-2xs uppercase tracking-widest animate-pulse mt-1">
               {t('mockup.uploadRequired') || 'Waiting for design input...'}
             </p>
           )}

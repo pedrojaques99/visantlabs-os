@@ -45,20 +45,20 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
                 {selectedCount}
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                <span className="text-2xs font-bold uppercase tracking-widest text-neutral-500">
                   Selected
                 </span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={onClearSelection}
-                    className="text-[10px] font-bold uppercase tracking-widest text-white hover:opacity-60 transition-colors flex items-center gap-1"
+                    className="text-2xs font-bold uppercase tracking-widest text-white hover:opacity-60 transition-colors flex items-center gap-1"
                   >
                     Clear <X size={9} />
                   </button>
                   {selectedCount < totalCount && (
                     <button
                       onClick={onSelectAll}
-                      className="text-[10px] font-bold uppercase tracking-widest text-success hover:text-success transition-colors"
+                      className="text-2xs font-bold uppercase tracking-widest text-success hover:text-success transition-colors"
                     >
                       All
                     </button>
@@ -102,7 +102,7 @@ export const BatchToolbar: React.FC<BatchToolbarProps> = ({
                     <button
                       key={preset}
                       onClick={() => onBatchRemotion(preset)}
-                      className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-colors text-[10px] font-bold uppercase tracking-widest text-neutral-400"
+                      className="px-2.5 py-1.5 rounded-full hover:bg-white hover:text-black transition-colors text-2xs font-bold uppercase tracking-widest text-neutral-400"
                     >
                       {preset.split('-')[0]}
                     </button>

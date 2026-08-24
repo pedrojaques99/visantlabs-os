@@ -90,6 +90,20 @@ function writeLocal(id: string, suggestions: BrandSuggestion[], seasonal: Season
   }
 }
 
+/**
+ * Momento comercial da marca, direto do espelho local. Existe pro cockpit montar
+ * a linha de voz SEM disparar um segundo `/suggestions` (este hook é de estado
+ * próprio, não React Query: chamá-lo duas vezes na mesma tela = duas idas).
+ *
+ * Sem cache ainda, devolve null e o diretor de frase simplesmente pula a regra
+ * sazonal. Degradar em silêncio aqui é correto: a alternativa seria inventar
+ * uma data.
+ */
+export function readCachedSeasonal(id: string | null | undefined): SeasonalMoment | null {
+  if (!id) return null;
+  return readLocal(id)?.seasonal ?? null;
+}
+
 export function useBrandSuggestions(guidelineId: string | null | undefined, count = 4) {
   // Not loading by default — the panel opens on static starters, never on a spinner.
   const [loading, setLoading] = useState(false);
@@ -130,9 +144,14 @@ export function useBrandSuggestions(guidelineId: string | null | undefined, coun
         });
         const next = res.suggestions || [];
         const nextSeasonal = res.seasonal?.upcoming?.[0] || null;
-        // Persist whatever the server gave us (only when it actually has ideas).
+        // Persist whatever the server gave us, INCLUSIVE quando não veio ideia
+        // nenhuma: o `seasonal` vem junto na resposta e é o caso mais comum
+        // (sonda cache-only sem ideias geradas). Guardar só quando há ideia
+        // deixava o cockpit sem momento comercial justamente na primeira visita.
         // Fica ANTES do guard: o cache local vale mesmo se o componente saiu.
-        if (next.length) writeLocal(guidelineId, next, nextSeasonal);
+        // Ler de volta continua seguro — o consumidor checa `suggestions.length`
+        // antes de pintar, então um espelho vazio não vira "já carreguei".
+        writeLocal(guidelineId, next, nextSeasonal);
         if (isStale()) return;
         setSuggestions(next);
         setSeasonal(nextSeasonal);

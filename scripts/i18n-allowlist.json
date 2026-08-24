@@ -3,6 +3,7 @@
   "unresolved": [
     "brandCompleteness.${r.id}",
     "brandCompleteness.${rule.id}",
+    "cockpit.voice.${voice.key}",
     "${translationKeyPrefix}.addToFavorites",
     "${translationKeyPrefix}.analyzingImage",
     "${translationKeyPrefix}.brandKit",
@@ -53,6 +54,7 @@
   "comments": {
     "${...}": "All ${...} entries are dynamic key construction — t('prefix.' + var). Their resolved keys must be defined in the locale (we can't validate that statically).",
     "budget.myBudgets.*": "Collision: budget.myBudgets is used both as a leaf string AND as a namespace prefix in src. JSON cannot represent both. Refactor required: rename one usage.",
-    "onboarding.persona.${...}": "Keyed by SEGMENTS[].id — designer|agency|marketing|developer. All 20 resolved keys verified present in both locales. Adding a segment means adding its 5 keys to en-US and pt-BR; the scanner cannot catch that for you."
+    "onboarding.persona.${...}": "Keyed by SEGMENTS[].id — designer|agency|marketing|developer. All 20 resolved keys verified present in both locales. Adding a segment means adding its 5 keys to en-US and pt-BR; the scanner cannot catch that for you.",
+    "cockpit.voice.${voice.key}": "Uniao TS fechada (BrandVoiceKey, 7 chaves) montada em src/lib/brandVoice.ts. As 7 existem nos dois locales; o diretor de frase devolve chave, nao string."
   }
 }

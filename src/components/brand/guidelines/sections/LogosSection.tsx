@@ -188,8 +188,8 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
                       className="max-h-full max-w-full object-contain"
                     />
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-500 truncate w-full text-center">
-                    {isPrimary && <span className="text-brand-cyan">● </span>}
+                  <span className="text-2xs font-mono text-neutral-500 truncate w-full text-center">
+                    {isPrimary && <span className="text-foreground">● </span>}
                     {logo.label || `Logo ${i + 1}`}
                     {fmt && <span className="text-neutral-700"> · {fmt}</span>}
                   </span>
@@ -203,7 +203,7 @@ export const LogosSection: React.FC<LogosSectionProps> = ({
             onClick={() => fileInputRef.current?.click()}
           >
             <ImageIcon size={18} strokeWidth={1} />
-            <span className="text-[10px] font-mono">Drop or click to upload</span>
+            <span className="text-2xs font-mono">Drop or click to upload</span>
           </button>
         )}
       </div>

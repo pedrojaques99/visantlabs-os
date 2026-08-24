@@ -146,7 +146,7 @@ export function GenericPresetModal<T extends string>({
           )}
           {/* Community Badge */}
           {isCommunity && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-neutral-800/70 border border-neutral-700/50 rounded text-[10px] font-mono text-neutral-300">
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-neutral-800/70 border border-neutral-700/50 rounded text-2xs font-mono text-neutral-300">
               Community
             </div>
           )}
@@ -166,7 +166,7 @@ export function GenericPresetModal<T extends string>({
 
           {/* Description */}
           {preset.description && (
-            <div className="text-[10px] text-neutral-500 font-mono mb-2 line-clamp-2">
+            <div className="text-2xs text-neutral-500 font-mono mb-2 line-clamp-2">
               {preset.description}
             </div>
           )}
@@ -180,7 +180,7 @@ export function GenericPresetModal<T extends string>({
                 className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-300 transition-colors mb-1"
                 aria-expanded={isPromptExpanded}
               >
-                <span className="text-[10px] uppercase tracking-wider">Prompt</span>
+                <span className="text-2xs uppercase tracking-wider">Prompt</span>
                 {isPromptExpanded ? (
                   <ChevronUp size={12} className="flex-shrink-0" />
                 ) : (
@@ -188,7 +188,7 @@ export function GenericPresetModal<T extends string>({
                 )}
               </Button>
               {isPromptExpanded && (
-                <div className="text-[10px] text-neutral-500 font-mono leading-relaxed overflow-y-auto max-h-24">
+                <div className="text-2xs text-neutral-500 font-mono leading-relaxed overflow-y-auto max-h-24">
                   {preset.prompt}
                 </div>
               )}

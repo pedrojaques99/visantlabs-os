@@ -46,7 +46,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
       onClick={() => onTabChange(tab.id)}
       aria-current={activeTab === tab.id ? 'true' : undefined}
       className={cn(
-        'rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all',
+        'rounded-lg text-2xs font-bold uppercase tracking-wider transition-all',
         variant === 'mobile' ? 'px-3 py-1.5 whitespace-nowrap shrink-0' : 'px-4 py-2',
         activeTab === tab.id
           ? 'bg-[var(--accent)] text-[var(--accent-text)]'
@@ -123,7 +123,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
                 onKeyDown={(e) => e.key === 'Escape' && setSearchOpen(false)}
                 onBlur={() => !searchTerm && setSearchOpen(false)}
                 placeholder={searchPlaceholder}
-                className="w-48 h-7 pl-7 pr-7 rounded-full bg-[var(--brand-bg)]/60 backdrop-blur-md border border-[var(--brand-text)]/10 text-[11px] text-[var(--brand-text)] placeholder:opacity-40 focus:outline-none focus:border-[var(--accent)]/40"
+                className="w-48 h-7 pl-7 pr-7 rounded-full bg-[var(--brand-bg)]/60 backdrop-blur-md border border-[var(--brand-text)]/10 text-2xs text-[var(--brand-text)] placeholder:opacity-40 focus:outline-none focus:border-[var(--accent)]/40"
               />
               <button
                 onClick={() => {
@@ -171,7 +171,7 @@ export const BrandSectionNav: React.FC<BrandSectionNavProps> = ({
                   : 'bg-current opacity-20 group-hover:opacity-60'
               )}
             />
-            <span className="text-[10px] uppercase font-bold tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
+            <span className="text-2xs uppercase font-bold tracking-wider opacity-80 group-hover:opacity-100 transition-opacity">
               {tab.label}
             </span>
           </button>

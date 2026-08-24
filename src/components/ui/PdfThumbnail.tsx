@@ -73,7 +73,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
         <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/50 gap-1">
           <FileText size={16} className="text-neutral-600" />
           {fileName && (
-            <span className="text-[10px] font-mono text-neutral-600 truncate max-w-full px-1">
+            <span className="text-2xs font-mono text-neutral-600 truncate max-w-full px-1">
               {fileName}
             </span>
           )}
@@ -120,7 +120,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
 
       {/* File name tooltip on hover */}
       {fileName && (
-        <div className="absolute bottom-0 left-0 right-0 bg-neutral-950/80 text-white text-[10px] font-mono px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <div className="absolute bottom-0 left-0 right-0 bg-neutral-950/80 text-white text-2xs font-mono px-1 py-0.5 truncate opacity-0 group-hover:opacity-100 transition-opacity z-10">
           {fileName}
         </div>
       )}

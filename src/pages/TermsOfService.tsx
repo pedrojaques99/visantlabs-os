@@ -270,7 +270,7 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ isOpen, onClose 
               {t('terms.sections.contact.support').split('contato@visant.co')[0]}
               <a
                 href="mailto:contato@visant.co"
-                className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                className="text-foreground hover:text-brand-cyan/80 underline"
               >
                 contato@visant.co
               </a>

@@ -181,7 +181,12 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     idOverride ? appTheme : 'brand'
   );
   const themePinnedRef = useRef(false);
-  const [editMode, setEditMode] = useState(!!idOverride);
+  // Abre SEMPRE em modo ver, inclusive pro dono. `!!idOverride` fazia o dono
+  // cair direto na edição: quem clica numa marca quer OLHAR a marca, e chegar
+  // num editor sem ter pedido faz cada campo parecer um convite a mexer (e um
+  // clique errado vira alteração no guideline). Editar é um toque de distância,
+  // no botão que já existe no topo.
+  const [editMode, setEditMode] = useState(false);
   const [activeEditSection, setActiveEditSection] = useState<BrandViewSection | null>(null);
   const { connecting, connect } = useConnectBrandToAI();
   const [advancedEdit, setAdvancedEdit] = useState(false);
@@ -461,7 +466,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
     : 'bg-white/5 border-white/10 text-white hover:bg-white/10';
   // Unified top-right control pill — same design system as HOME/VOLTAR (contrast-safe hover).
   const ctrlBtnClass = cn(
-    'h-9 px-4 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+    'h-9 px-4 rounded-full text-2xs font-mono font-bold uppercase tracking-widest gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
     navBtnClass
   );
   // In admin context (idOverride) the global app Header (h-10 md:h-14) is present,
@@ -508,7 +513,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => navigate('/')}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+            'h-9 px-4 text-2xs font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
@@ -518,7 +523,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
           onClick={() => (onBack ? onBack() : navigate(-1))}
           variant="ghost"
           className={cn(
-            'h-9 px-4 text-[10px] font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
+            'h-9 px-4 text-2xs font-mono gap-2 border backdrop-blur-md transition-[color,background-color,border-color,filter]',
             navBtnClass
           )}
         >
@@ -624,7 +629,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {/* Import / Create — edit mode only */}
             {canEdit && editMode && (
               <>
-                <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
+                <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
                   Import / Create
                 </DropdownMenuLabel>
                 {guideline.id && (
@@ -640,7 +645,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             )}
 
             {/* Export / Connect — always available */}
-            <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
+            <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
               Export / Connect
             </DropdownMenuLabel>
             <Button variant="menuItem" onClick={handleDownloadJSON}>
@@ -673,7 +678,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
             {canEdit && editMode && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
+                <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
                   Quality
                 </DropdownMenuLabel>
                 <Button variant="menuItem" onClick={() => setIsReviewOpen(true)}>
@@ -684,7 +689,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
 
             {/* Display — theme (always) + advanced editor (edit mode) */}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[11px] font-medium text-neutral-500">
+            <DropdownMenuLabel className="text-2xs font-medium text-neutral-500">
               Display
             </DropdownMenuLabel>
             {canEdit && editMode && (
@@ -702,7 +707,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
               className="flex items-center gap-1.5 px-2 py-1.5"
               onPointerDown={(e) => e.stopPropagation()}
             >
-              <span className="text-[11px] font-medium opacity-60 mr-auto">Theme</span>
+              <span className="text-2xs font-medium opacity-60 mr-auto">Theme</span>
               {(
                 [
                   { k: 'brand', Icon: Palette, label: 'Brand theme' },
@@ -991,7 +996,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
                         type="button"
                         aria-label={`${t('public.brand.guideline.edit_section')}: ${SECTION_LABELS[section]}`}
                         onClick={() => setActiveEditSection(section)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/45 text-[10px] font-mono uppercase tracking-widest hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-transparent border border-[var(--brand-text)]/15 text-[var(--brand-text)]/45 text-2xs font-mono uppercase tracking-widest hover:border-warning/40 hover:text-warning hover:bg-warning/5 transition-colors"
                       >
                         <Pencil size={10} />
                         {SECTION_LABELS[section]}
@@ -1007,7 +1012,7 @@ export const PublicBrandGuideline: React.FC<{ idOverride?: string; onBack?: () =
         <footer className="mt-40 pt-20 border-t border-[var(--brand-text)]/10 text-center space-y-8">
           <div className="flex justify-center gap-12">
             <div className="text-left space-y-2">
-              <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">
+              <span className="text-2xs font-mono opacity-30 uppercase tracking-widest">
                 {t('public.brand.guideline.version')}
               </span>
               <p className="text-xs font-bold opacity-40">

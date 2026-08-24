@@ -117,7 +117,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
             <div className="space-y-6 max-w-3xl">
               {manifesto.provocation && (
                 <div className="space-y-1">
-                  <span className="text-[11px] font-medium text-neutral-600">Provocation</span>
+                  <span className="text-2xs font-medium text-neutral-600">Provocation</span>
                   <p className="text-base leading-relaxed text-neutral-300">
                     {manifesto.provocation}
                   </p>
@@ -125,13 +125,13 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
               )}
               {manifesto.tension && (
                 <div className="space-y-1">
-                  <span className="text-[11px] font-medium text-neutral-600">Tension</span>
+                  <span className="text-2xs font-medium text-neutral-600">Tension</span>
                   <p className="text-base leading-relaxed text-neutral-300">{manifesto.tension}</p>
                 </div>
               )}
               {manifesto.promise && (
                 <div className="space-y-1">
-                  <span className="text-[11px] font-medium text-neutral-600">Promise</span>
+                  <span className="text-2xs font-medium text-neutral-600">Promise</span>
                   <p className="text-base leading-relaxed text-neutral-300">{manifesto.promise}</p>
                 </div>
               )}
@@ -147,13 +147,13 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {coreMessage.product && (
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-medium text-neutral-600">Product</span>
+                  <span className="text-2xs font-medium text-neutral-600">Product</span>
                   <p className="text-sm text-neutral-300 leading-relaxed">{coreMessage.product}</p>
                 </div>
               )}
               {coreMessage.differential && (
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-medium text-neutral-600">Differential</span>
+                  <span className="text-2xs font-medium text-neutral-600">Differential</span>
                   <p className="text-sm text-neutral-300 leading-relaxed">
                     {coreMessage.differential}
                   </p>
@@ -161,7 +161,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
               )}
               {coreMessage.emotionalBond && (
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-medium text-neutral-600">Emotional Bond</span>
+                  <span className="text-2xs font-medium text-neutral-600">Emotional Bond</span>
                   <p className="text-sm text-neutral-300 leading-relaxed">
                     {coreMessage.emotionalBond}
                   </p>
@@ -198,7 +198,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                 {archetypes.map((a, i) => (
                   <GlassPanel key={i} intensity="subtle" className="px-3 py-2 rounded-lg">
                     <p className="text-xs font-medium text-neutral-200">{a.name}</p>
-                    {a.role && <p className="text-[10px] text-neutral-600 mt-0.5">{a.role}</p>}
+                    {a.role && <p className="text-2xs text-neutral-600 mt-0.5">{a.role}</p>}
                   </GlassPanel>
                 ))}
               </div>
@@ -237,12 +237,12 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                     />
                     <div className="hidden sm:block">
                       {c.name && <p className="text-xs text-neutral-300 leading-none">{c.name}</p>}
-                      <p className="text-[10px] font-mono text-neutral-600 mt-0.5">{c.hex}</p>
+                      <p className="text-2xs font-mono text-neutral-600 mt-0.5">{c.hex}</p>
                     </div>
                   </div>
                 ))}
                 {colors.length > 8 && (
-                  <span className="text-[11px] text-neutral-600 self-center">
+                  <span className="text-2xs text-neutral-600 self-center">
                     +{colors.length - 8}
                   </span>
                 )}
@@ -262,7 +262,7 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                     >
                       {headlineFont.family}
                     </p>
-                    <p className="text-[11px] text-neutral-600">{headlineFont.role}</p>
+                    <p className="text-2xs text-neutral-600">{headlineFont.role}</p>
                   </div>
                 )}
                 {bodyFont && bodyFont !== headlineFont && (
@@ -273,11 +273,11 @@ export const BrandOverview: React.FC<BrandOverviewProps> = ({ guideline }) => {
                     >
                       {bodyFont.family}
                     </p>
-                    <p className="text-[11px] text-neutral-600">{bodyFont.role}</p>
+                    <p className="text-2xs text-neutral-600">{bodyFont.role}</p>
                   </div>
                 )}
                 {typography.length > 2 && (
-                  <p className="text-[11px] text-neutral-600">+{typography.length - 2} more</p>
+                  <p className="text-2xs text-neutral-600">+{typography.length - 2} more</p>
                 )}
               </div>
             </div>

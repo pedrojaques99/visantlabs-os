@@ -118,7 +118,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
           </div>
           <button
             onClick={onSwitchToExpert}
-            className="flex items-center gap-1 group text-[10px] text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
+            className="flex items-center gap-1 group text-2xs text-neutral-600 hover:text-brand-cyan transition-colors uppercase tracking-widest"
           >
             {t('mockup.switchToExpert') || 'EXPERT'}
             <ChevronRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
@@ -190,7 +190,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
                   'Ex: No topo de uma montanha, iluminação de pôr do sol, estilo cinematográfico...'
                 }
                 className={cn(
-                  'w-full h-24 rounded-xl p-4 text-[11px] font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-colors resize-none',
+                  'w-full h-24 rounded-xl p-4 text-2xs font-mono text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:bg-neutral-950/60 transition-colors resize-none',
                   glassSurface.tile
                 )}
               />
@@ -206,7 +206,7 @@ export const EssentialSidebar: React.FC<EssentialSidebarProps> = ({
 
       {/* Hint when actions are disabled */}
       {!isSurpriseMeActive && (!selectedVibeSegment || !selectedVibeStyle) && (
-        <p className="text-center text-[10px] font-mono text-neutral-600 animate-fade-in">
+        <p className="text-center text-2xs font-mono text-neutral-600 animate-fade-in">
           {t('mockup.selectVibeHint') || 'Selecione um estilo acima para gerar'}
         </p>
       )}

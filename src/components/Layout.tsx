@@ -637,16 +637,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         classNames: {
           toast:
             theme === 'dark'
-              ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
-              : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-[11px] !font-mono',
+              ? 'bg-neutral-950/70 border-neutral-800 !text-white/70 !shadow-sm !p-2 !text-2xs !font-mono'
+              : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-2xs !font-mono',
           title:
             theme === 'dark'
-              ? '!text-white/70 !font-mono !text-[11px] !font-normal !leading-tight'
-              : 'text-neutral-900/70 !font-mono !text-[11px] !font-normal !leading-tight',
+              ? '!text-white/70 !font-mono !text-2xs !font-normal !leading-tight'
+              : 'text-neutral-900/70 !font-mono !text-2xs !font-normal !leading-tight',
           description:
             theme === 'dark'
-              ? '!text-white/60 !font-mono !text-[10px] !leading-tight'
-              : 'text-neutral-600/60 !font-mono !text-[10px] !leading-tight',
+              ? '!text-white/60 !font-mono !text-2xs !leading-tight'
+              : 'text-neutral-600/60 !font-mono !text-2xs !leading-tight',
           success:
             theme === 'dark'
               ? 'bg-neutral-950/70 border-brand-cyan/15 text-brand-cyan/70'

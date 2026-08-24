@@ -49,7 +49,7 @@ const HexTextInput: React.FC<{
       spellCheck={false}
       aria-label={ariaLabel || 'Color hex'}
       className={cn(
-        'bg-transparent text-[10px] text-neutral-400 font-mono uppercase tracking-wider outline-none focus:text-neutral-200 w-[8ch]',
+        'bg-transparent text-2xs text-neutral-400 font-mono uppercase tracking-wider outline-none focus:text-neutral-200 w-[8ch]',
         className
       )}
     />
@@ -79,7 +79,7 @@ export const SectionLabel: React.FC<{ children: React.ReactNode; className?: str
   children,
   className,
 }) => (
-  <span className={cn('text-[10px] uppercase tracking-widest text-muted-foreground', className)}>
+  <span className={cn('text-2xs uppercase tracking-widest text-muted-foreground', className)}>
     {children}
   </span>
 );
@@ -107,7 +107,7 @@ export const SegmentedControl: React.FC<{
         onClick={() => onChange(opt.value)}
         className={cn(
           'font-medium rounded-md transition-all flex-1 text-center',
-          size === 'sm' ? 'px-2 py-1 text-[10px] tracking-wider' : 'px-3 py-1 text-[11px]',
+          size === 'sm' ? 'px-2 py-1 text-2xs tracking-wider' : 'px-3 py-1 text-2xs',
           value === opt.value
             ? variant === 'brand'
               ? 'bg-brand-cyan text-black font-bold'
@@ -130,11 +130,11 @@ export const ToolPanelSection: React.FC<{
 }> = ({ title, children, className, id, onReset }) => (
   <div id={id} className={cn('space-y-3 scroll-mt-2', className)}>
     <div className="group -mx-4 px-4 py-1.5 flex items-center justify-between">
-      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{title}</span>
+      <span className="text-2xs uppercase tracking-widest text-muted-foreground">{title}</span>
       {onReset && (
         <button
           onClick={onReset}
-          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
+          className="text-2xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
         >
           Reset
         </button>
@@ -168,9 +168,7 @@ export const ToolPanelDisclosure: React.FC<{
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <span className="text-neutral-500">{icon}</span>}
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            {label}
-          </span>
+          <span className="text-2xs uppercase tracking-widest text-muted-foreground">{label}</span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {badge}
@@ -219,7 +217,7 @@ export const ToolPanelChip: React.FC<{
   <button
     onClick={onClick}
     className={cn(
-      'px-2.5 py-2 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors duration-200 text-left border',
+      'px-2.5 py-2 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors duration-200 text-left border',
       active
         ? 'bg-white/10 text-white border-white/20'
         : 'bg-neutral-900/50 text-neutral-400 border-neutral-800/50 hover:bg-neutral-800/30 hover:text-neutral-200 hover:border-neutral-700/50',
@@ -235,7 +233,7 @@ export const ToolPanelRow: React.FC<{
   children: React.ReactNode;
 }> = ({ label, children }) => (
   <div className="flex items-center justify-between py-1">
-    <span className="text-[11px] text-neutral-400">{label}</span>
+    <span className="text-2xs text-neutral-400">{label}</span>
     {children}
   </div>
 );
@@ -254,7 +252,7 @@ export const InlineColorPicker: React.FC<{
         aria-label={label || 'Color'}
         className="w-6 h-6 rounded-md cursor-pointer bg-transparent border-0"
       />
-      <span className="text-[10px] text-neutral-600 font-mono">#</span>
+      <span className="text-2xs text-neutral-600 font-mono">#</span>
       <HexTextInput
         value={value}
         onChange={onChange}
@@ -313,11 +311,11 @@ export const ChannelRow: React.FC<{
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
-        <span className="text-[10px] text-neutral-600 font-mono">#</span>
+        <span className="text-2xs text-neutral-600 font-mono">#</span>
         <HexTextInput value={color} onChange={onColorChange} ariaLabel={`${label} hex`} />
       </span>
       {!label.startsWith('#') && (
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">
+        <span className="text-2xs text-muted-foreground uppercase tracking-wider truncate">
           {label}
         </span>
       )}
@@ -445,7 +443,7 @@ export const ExpandableColorPicker: React.FC<{
           aria-label={label ? `Toggle ${label} color picker` : 'Toggle color picker'}
         />
         <div className="flex items-center flex-1 bg-white/5 border border-white/10 rounded px-2 py-0.5 min-w-0">
-          <span className="text-[10px] text-neutral-500 mr-1">#</span>
+          <span className="text-2xs text-neutral-500 mr-1">#</span>
           <input
             type="text"
             value={hexInput}
@@ -535,7 +533,7 @@ export const ExpandableColorPicker: React.FC<{
                   key={ch}
                   className="flex items-center gap-1 bg-white/5 border border-white/10 rounded px-1.5 py-0.5"
                 >
-                  <span className="text-[10px] font-mono text-neutral-500">{ch}</span>
+                  <span className="text-2xs font-mono text-neutral-500">{ch}</span>
                   <input
                     type="number"
                     min={0}
@@ -543,7 +541,7 @@ export const ExpandableColorPicker: React.FC<{
                     value={rgb[i]}
                     onChange={(e) => setChannel(i, e.target.value)}
                     aria-label={`${label ? label + ' ' : ''}${ch} channel`}
-                    className="bg-transparent text-[11px] text-white font-mono tabular-nums w-full focus:outline-none"
+                    className="bg-transparent text-2xs text-white font-mono tabular-nums w-full focus:outline-none"
                   />
                 </label>
               ))}
@@ -551,7 +549,7 @@ export const ExpandableColorPicker: React.FC<{
           )}
           {recentColors && recentColors.length > 0 && (
             <div className="space-y-1">
-              <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
+              <span className="text-3xs uppercase tracking-widest text-muted-foreground">
                 {t('common.recent')}
               </span>
               <div className="flex gap-1.5 flex-wrap">

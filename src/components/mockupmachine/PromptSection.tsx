@@ -281,7 +281,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             {isPromptReady ? (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-success/10 border border-success/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]">
                 <div className="w-1 h-1 rounded-full bg-success" />
-                <span className="text-[10px] text-success uppercase tracking-wider">
+                <span className="text-2xs text-success uppercase tracking-wider">
                   {t('mockup.promptSynced')}
                 </span>
               </div>
@@ -295,7 +295,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                     size={8}
                     className="text-warning group-hover/sync:rotate-180 transition-transform duration-500"
                   />
-                  <span className="text-[10px] text-warning uppercase tracking-wider">
+                  <span className="text-2xs text-warning uppercase tracking-wider">
                     {t('mockup.promptOutOfSync')}
                   </span>
                 </button>
@@ -347,7 +347,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               <span className="truncate flex-1">
                 Prompt {isSmartPromptActive ? 'configurado pela IA' : 'personalizado pronto'}
               </span>
-              <span className="text-[10px] uppercase opacity-50 shrink-0 ml-2">Editar</span>
+              <span className="text-2xs uppercase opacity-50 shrink-0 ml-2">Editar</span>
             </>
           ) : (
             <span className="opacity-50">Aguardando contexto...</span>
@@ -373,7 +373,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             ) : (
               isGeneratingPrompt && (
                 <div
-                  className="text-[11px] leading-relaxed space-y-1"
+                  className="text-2xs leading-relaxed space-y-1"
                   role="status"
                   aria-live="polite"
                   aria-label={statusMessages[messageIndex]}
@@ -414,12 +414,12 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       {!isCollapsed && promptPreview && injectedRules.length > 0 && (
         <div className="mt-2 pl-1">
           <div className="flex flex-wrap items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
-            <span className="text-[10px] mr-1 text-neutral-500">⚙️ Regras Injetadas:</span>
+            <span className="text-2xs mr-1 text-neutral-500">⚙️ Regras Injetadas:</span>
             {injectedRules.map((rule) => (
               <span
                 key={rule}
                 className={cn(
-                  'text-[10px] px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
+                  'text-2xs px-1.5 py-0.5 rounded-sm bg-neutral-500/10 border border-neutral-500/20',
                   theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'
                 )}
               >

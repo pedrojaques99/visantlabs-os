@@ -113,12 +113,12 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
     <motion.div {...fadeUp} className={cn('mt-6 rounded-xl p-4 space-y-3', glassSurface.tile)}>
       <h3 className="text-xs font-semibold text-neutral-400">WCAG Contrast Check</h3>
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-[10px] font-mono text-neutral-500">
+        <label className="text-2xs font-mono text-neutral-500">
           Color A
           <select
             value={a}
             onChange={(e) => setA(+e.target.value)}
-            className="ml-1 bg-neutral-900 border border-neutral-700 rounded text-[10px] text-neutral-300 px-1 py-0.5"
+            className="ml-1 bg-neutral-900 border border-neutral-700 rounded text-2xs text-neutral-300 px-1 py-0.5"
           >
             {colors.map((c, i) => (
               <option key={i} value={i}>
@@ -127,12 +127,12 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
             ))}
           </select>
         </label>
-        <label className="text-[10px] font-mono text-neutral-500">
+        <label className="text-2xs font-mono text-neutral-500">
           Color B
           <select
             value={b}
             onChange={(e) => setB(+e.target.value)}
-            className="ml-1 bg-neutral-900 border border-neutral-700 rounded text-[10px] text-neutral-300 px-1 py-0.5"
+            className="ml-1 bg-neutral-900 border border-neutral-700 rounded text-2xs text-neutral-300 px-1 py-0.5"
           >
             {colors.map((c, i) => (
               <option key={i} value={i}>
@@ -160,7 +160,7 @@ function ContrastPanel({ colors }: { colors: ConvertedColor[] }) {
       </div>
 
       {/* Results */}
-      <div className="flex flex-wrap gap-3 text-[10px] font-mono">
+      <div className="flex flex-wrap gap-3 text-2xs font-mono">
         <span className="text-neutral-300">
           Ratio: <strong>{ratio.toFixed(2)}:1</strong>
         </span>
@@ -177,7 +177,7 @@ function Badge({ pass, label }: { pass: boolean; label: string }) {
   return (
     <span
       className={cn(
-        'px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold',
+        'px-1.5 py-0.5 rounded text-2xs uppercase tracking-wider font-bold',
         pass ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
       )}
     >
@@ -287,16 +287,14 @@ export const ColorConverterPage: React.FC = () => {
           />
         </div>
         {inputColor.trim() && (
-          <p className="mt-1 text-[10px] uppercase tracking-wider text-neutral-600">
-            {inputFormat}
-          </p>
+          <p className="mt-1 text-2xs uppercase tracking-wider text-neutral-600">{inputFormat}</p>
         )}
       </div>
 
       <Button
         onClick={() => inputColor.trim() && addColor(inputColor)}
         disabled={!inputColor.trim()}
-        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+        className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
       >
         Add Color
       </Button>
@@ -339,11 +337,11 @@ export const ColorConverterPage: React.FC = () => {
   /* Status bar: color count summary */
   const statusBar =
     colors.length > 0 ? (
-      <span className="text-[10px] uppercase tracking-widest text-neutral-400">
+      <span className="text-2xs uppercase tracking-widest text-neutral-400">
         {colors.length} color{colors.length > 1 ? 's' : ''}
       </span>
     ) : (
-      <span className="text-[10px] uppercase tracking-widest text-neutral-600">
+      <span className="text-2xs uppercase tracking-widest text-neutral-600">
         Enter a color to get started
       </span>
     );
@@ -457,7 +455,7 @@ function ColorRow({
             transition={{ duration: 0.25, ease }}
             className="overflow-hidden"
           >
-            <div className="border-t border-neutral-800 px-3 py-2 flex flex-wrap gap-4 text-[10px] font-mono text-neutral-400">
+            <div className="border-t border-neutral-800 px-3 py-2 flex flex-wrap gap-4 text-2xs font-mono text-neutral-400">
               <div className="flex items-center gap-1.5">
                 <div
                   className="w-4 h-4 rounded border border-neutral-700"
@@ -491,10 +489,10 @@ function ColorRow({
 function ValueCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1 min-w-0">
-      <span className="text-[10px] uppercase tracking-wider text-neutral-600 w-8 flex-shrink-0">
+      <span className="text-2xs uppercase tracking-wider text-neutral-600 w-8 flex-shrink-0">
         {label}
       </span>
-      <span className="text-[11px] font-mono text-neutral-300 truncate">{value}</span>
+      <span className="text-2xs font-mono text-neutral-300 truncate">{value}</span>
       <CopyBtn value={value} />
     </div>
   );

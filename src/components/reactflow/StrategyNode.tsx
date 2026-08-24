@@ -1301,7 +1301,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 handleSave();
               }}
               disabled={!hasData || isGenerating}
-              className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
+              className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground font-semibold nodrag nopan"
               title={t('common.save')}
             >
               <Save size={14} />
@@ -1310,7 +1310,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         </NodeHeader>
         {projectName && (
           <span
-            className="text-[10px] text-neutral-400 font-mono -mt-2 node-margin truncate max-w-[200px]"
+            className="text-2xs text-neutral-400 font-mono -mt-2 node-margin truncate max-w-[200px]"
             title={projectName}
           >
             {projectName}
@@ -1507,7 +1507,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     handleGenerateAll();
                   }}
                   disabled={!prompt.trim() || isGenerating}
-                  className="px-2.5 py-1.5 text-[10px] nodrag nopan"
+                  className="px-2.5 py-1.5 text-2xs nodrag nopan"
                   title={t('canvasNodes.strategyNode.generateAllSections')}
                 >
                   {t('canvasNodes.strategyNode.generateAll')}
@@ -1641,7 +1641,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   e.stopPropagation();
                   toggleAllSections();
                 }}
-                className="text-[10px] text-neutral-400 hover:text-neutral-300 nodrag nopan"
+                className="text-2xs text-neutral-400 hover:text-neutral-300 nodrag nopan"
               >
                 {sections.every((s) => !hasSectionData(s.type) || expandedSections[s.type]) ? (
                   <>
@@ -1709,7 +1709,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         <NodeLabel className="mb-0 text-neutral-200">
                           {section.label}
                           {sectionHasData && !isGeneratingSection && (
-                            <span className="ml-2 text-success text-[10px]">✓</span>
+                            <span className="ml-2 text-success text-2xs">✓</span>
                           )}
                         </NodeLabel>
                       </div>

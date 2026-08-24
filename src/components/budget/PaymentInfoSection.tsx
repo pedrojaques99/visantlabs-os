@@ -256,7 +256,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
                     <Button
                       variant="ghost"
                       onClick={() => removePaymentMethod(index)}
-                      className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
+                      className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors self-start sm:self-auto"
                       title={t('budget.removePaymentMethod') || 'Remover método'}
                     >
                       <Trash2 size={18} />

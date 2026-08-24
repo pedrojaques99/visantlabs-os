@@ -66,8 +66,8 @@ function renderResolutionButton(
       title={`${res} (${credits} credits)`}
       onMouseDown={onMouseDown}
     >
-      <span className={compact ? 'text-[10px]' : 'font-semibold'}>{res}</span>
-      {!compact && <span className="text-[10px] text-neutral-500">{credits}c</span>}
+      <span className={compact ? 'text-2xs' : 'font-semibold'}>{res}</span>
+      {!compact && <span className="text-2xs text-neutral-500">{credits}c</span>}
     </NodeButton>
   );
 }

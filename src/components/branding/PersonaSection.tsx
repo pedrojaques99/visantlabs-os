@@ -213,7 +213,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemoveDesire(index)}
-                    className={`p-2 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start ${
+                    className={`p-2 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start ${
                       theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                     title="Remover desejo"
@@ -287,7 +287,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemovePain(index)}
-                    className={`p-2 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start ${
+                    className={`p-2 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start ${
                       theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                     title="Remover dor"

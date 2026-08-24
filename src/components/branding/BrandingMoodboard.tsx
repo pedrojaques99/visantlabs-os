@@ -257,7 +257,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       className={`p-1.5 rounded-md transition-colors ${
                         theme === 'dark'
                           ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
-                          : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                          : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-foreground'
                       }`}
                       title="Salvar (Enter)"
                     >

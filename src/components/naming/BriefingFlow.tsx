@@ -227,7 +227,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
                       setBrandGuidelineId(null);
                       setShowBrandPicker(false);
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-brand-cyan/40 bg-brand-cyan/10 px-3 py-1 text-xs text-brand-cyan transition-colors hover:bg-brand-cyan/20"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-brand-cyan/40 bg-brand-cyan/10 px-3 py-1 text-xs text-foreground transition-colors hover:bg-brand-cyan/20"
                   >
                     <BrandAvatar
                       brand={brandGuidelines.find((g: any) => g.id === brandGuidelineId)}
@@ -278,7 +278,7 @@ export const BriefingFlow: React.FC<BriefingFlowProps> = ({ onComplete }) => {
         {step === 'confirm' && (
           <motion.div key="confirm" {...screenAnim} className="space-y-6">
             <div className="space-y-1 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-neutral-600">Entendi isso</p>
+              <p className="text-2xs uppercase tracking-widest text-neutral-600">Entendi isso</p>
               <h2 className="text-xl font-semibold text-neutral-200">Confere pra mim?</h2>
             </div>
 

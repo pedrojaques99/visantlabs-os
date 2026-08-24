@@ -233,7 +233,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                       {t('canvasNodes.savePromptModal.private') || 'Private'}
                     </span>
                   </div>
-                  <p className="text-[10px] opacity-70 leading-relaxed">
+                  <p className="text-2xs opacity-70 leading-relaxed">
                     {t('canvasNodes.savePromptModal.privateHint') || 'Only you can see and use'}
                   </p>
                 </Button>
@@ -254,7 +254,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                       {t('canvasNodes.savePromptModal.public') || 'Public'}
                     </span>
                   </div>
-                  <p className="text-[10px] opacity-70 leading-relaxed">
+                  <p className="text-2xs opacity-70 leading-relaxed">
                     {t('canvasNodes.savePromptModal.publicHint') || 'Share with the community'}
                   </p>
                 </Button>

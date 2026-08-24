@@ -44,9 +44,9 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
 
   const bg =
     mode === 'halftone'
-      ? 'bg-cyan-950/30'
+      ? 'bg-brand-cyan/30'
       : mode === 'riso'
-        ? 'bg-amber-950/30'
+        ? 'bg-warning/30'
         : 'bg-purple-950/30';
 
   return (
@@ -63,7 +63,7 @@ const PresetSwatch: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
           ))}
         </div>
       ) : (
-        <span className="text-[10px] font-mono text-neutral-600 uppercase">{mode[0]}</span>
+        <span className="text-2xs font-mono text-neutral-600 uppercase">{mode[0]}</span>
       )}
     </div>
   );
@@ -94,7 +94,7 @@ const PresetDetails: React.FC<{ preset: ImageLabPreset }> = ({ preset }) => {
       {filtered.map((t, i) => (
         <span
           key={i}
-          className="text-[10px] font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded"
+          className="text-2xs font-mono text-neutral-600 bg-neutral-800/40 px-1 py-0.5 rounded"
         >
           {t}
         </span>
@@ -182,7 +182,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800/50 shrink-0">
-          <span className="text-[11px] uppercase tracking-widest text-neutral-300">
+          <span className="text-2xs uppercase tracking-widest text-neutral-300">
             Community Presets
           </span>
           <button
@@ -201,7 +201,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  'px-2.5 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-wider transition-colors border',
+                  'px-2.5 py-1.5 rounded-md text-2xs font-mono uppercase tracking-wider transition-colors border',
                   filter === f
                     ? 'bg-white/10 text-white border-white/20'
                     : 'text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -221,7 +221,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search presets..."
-              className="w-full bg-neutral-900/50 border border-neutral-800/50 rounded-md pl-8 pr-3 py-1.5 text-[11px] text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-neutral-700"
+              className="w-full bg-neutral-900/50 border border-neutral-800/50 rounded-md pl-8 pr-3 py-1.5 text-2xs text-neutral-300 placeholder:text-neutral-700 focus:outline-none focus:border-neutral-700"
             />
           </div>
         </div>
@@ -234,8 +234,8 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-[11px] text-neutral-600">No presets found</p>
-              <p className="text-[10px] text-neutral-700 mt-1">Be the first to share one!</p>
+              <p className="text-2xs text-neutral-600">No presets found</p>
+              <p className="text-2xs text-neutral-700 mt-1">Be the first to share one!</p>
             </div>
           ) : (
             filtered.map((preset) => (
@@ -249,11 +249,11 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                   <PresetSwatch preset={preset} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-neutral-300 truncate">{preset.name}</span>
+                      <span className="text-2xs text-neutral-300 truncate">{preset.name}</span>
                       <span
                         className={cn(
-                          'text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
-                          preset.data?.mode === 'halftone' && 'bg-cyan-400/10 text-cyan-400',
+                          'text-2xs font-mono uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0',
+                          preset.data?.mode === 'halftone' && 'bg-brand-cyan/10 text-brand-cyan',
                           preset.data?.mode === 'texture' && 'bg-purple-400/10 text-purple-400',
                           preset.data?.mode === 'riso' && 'bg-warning/10 text-warning'
                         )}
@@ -263,7 +263,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                     </div>
                     <PresetDetails preset={preset} />
                     {preset.author && (
-                      <span className="text-[10px] text-neutral-600 font-mono">
+                      <span className="text-2xs text-neutral-600 font-mono">
                         by {preset.author.name}
                       </span>
                     )}
@@ -274,7 +274,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
                       handleLike(preset._id);
                     }}
                     className={cn(
-                      'flex items-center gap-1 text-[10px] transition-colors p-1 shrink-0',
+                      'flex items-center gap-1 text-2xs transition-colors p-1 shrink-0',
                       preset.liked ? 'text-destructive' : 'text-neutral-600 hover:text-destructive'
                     )}
                   >
@@ -289,9 +289,7 @@ export const ImageLabPresetLibrary: React.FC<ImageLabPresetLibraryProps> = ({
 
         {/* Hint: save via panel */}
         <div className="px-5 py-2.5 border-t border-neutral-800/50 shrink-0">
-          <p className="text-[10px] text-neutral-600 text-center">
-            Save presets from the right panel
-          </p>
+          <p className="text-2xs text-neutral-600 text-center">Save presets from the right panel</p>
         </div>
       </div>
     </div>

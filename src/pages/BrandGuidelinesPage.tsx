@@ -75,7 +75,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => {
         {t('brandGuidelines.createFirst')}
       </Button>
       {/* Tell first-timers what a guideline can be built from — kills the "now what?" gap. */}
-      <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-4 text-2xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <FileText size={13} strokeWidth={1.5} /> PDF
         </span>
@@ -218,7 +218,7 @@ const BrandCard = ({
       transition={{ delay: index * 0.04, duration: 0.25 }}
       whileHover={{ y: -3 }}
       className={cn(
-        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-ring hover:shadow-lg hover:shadow-black/20 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-200 overflow-hidden text-left',
+        'group relative flex flex-col rounded-xl border border-border bg-card hover:border-border-hover hover:shadow-lg hover:shadow-black/20 transition-[color,background-color,border-color,box-shadow,opacity,filter] duration-200 overflow-hidden text-left',
         archived && 'opacity-60 grayscale-[0.6] hover:opacity-80'
       )}
     >
@@ -246,21 +246,23 @@ const BrandCard = ({
               onError={() => setCoverFailed(true)}
               className={cn(
                 'w-full h-full object-cover group-hover:scale-105 transition-all duration-500',
-                coverLoaded ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'
+                coverLoaded ? 'opacity-100' : 'opacity-0'
               )}
             />
           </>
         ) : (
           <CoverFallback colors={guideline.colors} name={brandName} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+        {/* Sem véu. O degradê subia até a metade da capa e lavava justo a parte
+            que identifica a marca; era ele que fazia o cinza sujo no meio do card. */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-border" />
 
         {/* Badges overlay */}
         <div className="absolute top-2 right-2 z-[2] flex items-center gap-1.5">
           {archived && (
             <Badge
               variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-[10px] px-1.5 py-0 h-5 gap-1"
+              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-2xs px-1.5 py-0 h-5 gap-1"
             >
               <Archive size={9} />
               {t('brandQuota.archivedBadge')}
@@ -322,7 +324,7 @@ const BrandCard = ({
           {guideline.isPublic && (
             <Badge
               variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-[10px] px-1.5 py-0 h-5 gap-1"
+              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/80 text-2xs px-1.5 py-0 h-5 gap-1"
             >
               <Globe size={9} />
               Public
@@ -331,7 +333,7 @@ const BrandCard = ({
           {guideline.folder && (
             <Badge
               variant="secondary"
-              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/70 text-[10px] px-1.5 py-0 h-5 gap-1"
+              className="bg-white/10 backdrop-blur-sm border-white/10 text-white/70 text-2xs px-1.5 py-0 h-5 gap-1"
             >
               <Folder size={9} />
               {guideline.folder}
@@ -354,7 +356,7 @@ const BrandCard = ({
             {brandName}
           </p>
           {guideline.identity?.tagline && (
-            <p className="text-[11px] text-muted-foreground truncate mt-0.5 leading-tight">
+            <p className="text-2xs text-muted-foreground truncate mt-0.5 leading-tight">
               {guideline.identity.tagline}
             </p>
           )}
@@ -370,13 +372,11 @@ const BrandCard = ({
                   style={{ width: `${report.score}%` }}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground tabular-nums">
-                {report.score}%
-              </span>
+              <span className="text-2xs text-muted-foreground tabular-nums">{report.score}%</span>
             </div>
           </Tooltip>
           {fontHint && (
-            <p className="text-[10px] text-muted-foreground truncate max-w-[50%]">{fontHint}</p>
+            <p className="text-2xs text-muted-foreground truncate max-w-[50%]">{fontHint}</p>
           )}
         </div>
       </div>
@@ -417,13 +417,13 @@ const BrandQuotaMeter = ({
           />
         </div>
       )}
-      <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
+      <span className="text-2xs text-muted-foreground tabular-nums whitespace-nowrap">
         {unlimited
           ? t('brandQuota.meterUnlimited', { used })
           : t('brandQuota.meter', { used, max })}
       </span>
       {full && (
-        <Button variant="subtle" size="sm" className="h-6 px-2 text-[11px]" onClick={onUpgrade}>
+        <Button variant="subtle" size="sm" className="h-6 px-2 text-2xs" onClick={onUpgrade}>
           {t('brandQuota.upgrade')}
         </Button>
       )}
@@ -577,7 +577,7 @@ const BrandGrid = ({
             <button
               onClick={() => setFolderFilter(null)}
               className={cn(
-                'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors',
+                'shrink-0 px-2.5 py-1 rounded-md text-2xs border transition-colors',
                 !folderFilter
                   ? 'bg-accent border-border text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -590,7 +590,7 @@ const BrandGrid = ({
                 key={f}
                 onClick={() => setFolderFilter(folderFilter === f ? null : f)}
                 className={cn(
-                  'shrink-0 px-2.5 py-1 rounded-md text-[11px] border transition-colors flex items-center gap-1',
+                  'shrink-0 px-2.5 py-1 rounded-md text-2xs border transition-colors flex items-center gap-1',
                   folderFilter === f
                     ? 'bg-accent border-border text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -606,7 +606,7 @@ const BrandGrid = ({
         <div className="sm:ml-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-colors">
+              <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-2xs text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-colors">
                 <ArrowUpDown size={11} />
                 {sort === 'recent'
                   ? t('brandGuidelines.sortRecent')
@@ -643,7 +643,7 @@ const BrandGrid = ({
       </div>
 
       {/* Count */}
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-2xs text-muted-foreground">
         {t('brandGuidelines.countBrands', {
           filtered: filtered.length,
           total: guidelines.length,
@@ -669,7 +669,7 @@ const BrandGrid = ({
         <div className="space-y-3 pt-2">
           <button
             onClick={() => setShowArchived((v) => !v)}
-            className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-2xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronDown
               size={12}
@@ -758,14 +758,17 @@ export const BrandGuidelinesPage: React.FC = () => {
     if (isAuthenticated === false) setShowAuthModal(true);
   }, [isAuthenticated]);
 
-  // Persist the open brand in the URL (?id=) so the per-tab routing inside the
-  // unified view is deep-linkable and survives refresh.
+  // O card abre o COCKPIT da marca, não a guideline. O acervo responde "quais
+  // marcas eu tenho"; a partir dali o destino é trabalhar naquela marca. Ver a
+  // guideline é um passo adiante, e o cockpit tem o botão pra isso.
+  //
+  // O deep link `?id=` continua de pé: outras telas mandam pra
+  // `/brand-guidelines?id=X` e essa entrada segue abrindo a view inline.
   const handleSelect = useCallback(
     (g: BrandGuideline) => {
-      setSelectedId(g.id!);
-      setSearchParams({ id: g.id! });
+      navigate(`/cockpit/${g.id}`);
     },
-    [setSearchParams]
+    [navigate]
   );
 
   const handleWizardSuccess = useCallback((id: string) => {

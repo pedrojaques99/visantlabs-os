@@ -318,7 +318,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     aria-label={`Set ink layer count to ${n}`}
                     onClick={() => store.updateSetting('colorCount', n)}
                     className={cn(
-                      'w-8 h-8 rounded-md text-[11px] font-mono transition-colors duration-200 border',
+                      'w-8 h-8 rounded-md text-2xs font-mono transition-colors duration-200 border',
                       store.colorCount === n
                         ? 'bg-white/10 text-white border-white/20'
                         : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -352,7 +352,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         className={cn(
                           'transition-colors p-1 rounded-md',
                           store.soloLayer === i
-                            ? 'text-cyan-400 bg-cyan-400/10'
+                            ? 'text-brand-cyan bg-brand-cyan/10'
                             : 'text-neutral-600 hover:text-neutral-300'
                         )}
                       >
@@ -416,7 +416,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                         setInkSearch('');
                         setInkCategory(null);
                       }}
-                      className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+                      className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
                     >
                       <Palette size={12} />
                       Riso Ink Catalog
@@ -440,14 +440,14 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                             value={inkSearch}
                             onChange={(e) => setInkSearch(e.target.value)}
                             placeholder="Search inks..."
-                            className="w-full h-6 pl-6 pr-2 rounded-md bg-neutral-900/80 border border-neutral-800/50 text-[10px] text-neutral-300 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
+                            className="w-full h-6 pl-6 pr-2 rounded-md bg-neutral-900/80 border border-neutral-800/50 text-2xs text-neutral-300 font-mono placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
                           />
                         </div>
                         <div className="flex gap-0.5 flex-wrap">
                           <button
                             onClick={() => setInkCategory(null)}
                             className={cn(
-                              'px-1.5 h-4 rounded text-[10px] font-mono border transition-colors',
+                              'px-1.5 h-4 rounded text-2xs font-mono border transition-colors',
                               !inkCategory
                                 ? 'bg-white/10 text-white border-white/20'
                                 : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
@@ -460,7 +460,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                               key={cat}
                               onClick={() => setInkCategory(inkCategory === cat ? null : cat)}
                               className={cn(
-                                'px-1.5 h-4 rounded text-[10px] font-mono border transition-colors',
+                                'px-1.5 h-4 rounded text-2xs font-mono border transition-colors',
                                 inkCategory === cat
                                   ? 'bg-white/10 text-white border-white/20'
                                   : 'text-neutral-600 border-neutral-800/50 hover:text-neutral-400'
@@ -489,7 +489,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                             />
                           ))}
                           {filteredInks.length === 0 && (
-                            <span className="col-span-8 text-[10px] text-neutral-600 font-mono py-2 text-center">
+                            <span className="col-span-8 text-2xs text-neutral-600 font-mono py-2 text-center">
                               No inks found
                             </span>
                           )}
@@ -500,7 +500,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                     {onExportLayer && (
                       <button
                         onClick={() => onExportLayer(i)}
-                        className="flex items-center gap-1.5 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+                        className="flex items-center gap-1.5 text-2xs text-neutral-500 hover:text-neutral-300 transition-colors"
                       >
                         <Layers size={12} />
                         Export Layer Separation
@@ -661,7 +661,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                       onExportSvg();
                       setExportOpen(false);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-[11px] text-neutral-300 hover:bg-neutral-800 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-neutral-300 hover:bg-neutral-800 transition-colors"
                   >
                     <FileType size={14} className="text-neutral-500" />
                     Export SVG (Vector)
@@ -673,7 +673,7 @@ export const RisoControls: React.FC<RisoControlsProps> = React.memo(
                       onExportHiRes();
                       setExportOpen(false);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-[11px] text-neutral-300 hover:bg-neutral-800 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-2xs text-neutral-300 hover:bg-neutral-800 transition-colors"
                   >
                     <FileImage size={14} className="text-neutral-500" />
                     Export Hi-Res PNG (2x)

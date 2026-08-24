@@ -174,7 +174,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="destructive"
               type="button"
               onClick={handleRemoveLogo}
-              className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-600 rounded-md text-white transition-colors"
+              className="absolute -top-2 -right-2 p-1 bg-destructive hover:bg-destructive rounded-md text-white transition-colors"
             >
               <X size={14} />
             </Button>
@@ -227,7 +227,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="ghost"
               type="button"
               onClick={() => onBrandBackgroundColorChange(undefined)}
-              className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl text-red-400 font-mono text-sm transition-colors"
+              className="px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-xl text-destructive font-mono text-sm transition-colors"
             >
               <X size={16} />
             </Button>
@@ -259,7 +259,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="ghost"
               type="button"
               onClick={() => onBrandAccentColorChange(undefined)}
-              className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-xl text-red-400 font-mono text-sm transition-colors"
+              className="px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/50 rounded-xl text-destructive font-mono text-sm transition-colors"
             >
               <X size={16} />
             </Button>

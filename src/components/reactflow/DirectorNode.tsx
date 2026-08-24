@@ -147,13 +147,13 @@ export const DirectorNode = memo(
                   className="w-full h-32 object-cover"
                 />
                 <div className="absolute top-2 right-2 bg-neutral-950/60 rounded-full p-1 border-node border-neutral-700/30 shadow-md">
-                  <Check size={12} className="text-brand-cyan" />
+                  <Check size={12} className="text-foreground" />
                 </div>
               </div>
             ) : (
               <div className="w-full h-24 rounded-md border-node border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
                 <ImageIcon size={16} className="text-neutral-600" />
-                <span className="text-[10px] font-medium text-neutral-500">
+                <span className="text-2xs font-medium text-neutral-500">
                   {t('canvasNodes.directorNode.noImage') || 'No image'}
                 </span>
               </div>
@@ -164,10 +164,10 @@ export const DirectorNode = memo(
           {activeGenerations > 0 && (
             <div className="p-2.5 rounded-md border-node border-neutral-800 bg-brand-cyan/5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-cyan">
+                <span className="text-2xs font-bold uppercase tracking-widest text-foreground">
                   {activeGenerations} {activeGenerations === 1 ? 'mockup' : 'mockups'}
                 </span>
-                <span className="text-[10px] font-mono text-neutral-500">
+                <span className="text-2xs font-mono text-neutral-500">
                   {t('canvasNodes.directorNode.generating') || 'generating'}
                 </span>
               </div>
@@ -189,7 +189,7 @@ export const DirectorNode = memo(
               <Zap size={14} className="mr-2" />
               <span>{t('canvasNodes.directorNode.generateMockup') || 'Generate Mockup'}</span>
               {activeGenerations > 0 && (
-                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/30 text-[10px] tabular-nums">
+                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/30 text-2xs tabular-nums">
                   +{activeGenerations}
                 </span>
               )}

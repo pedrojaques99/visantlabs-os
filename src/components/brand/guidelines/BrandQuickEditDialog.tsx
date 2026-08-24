@@ -45,7 +45,7 @@ const fileToBase64 = (file: File): Promise<string> =>
 
 const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <label className="block space-y-1.5">
-    <span className="text-[11px] uppercase tracking-widest text-neutral-500">{label}</span>
+    <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
     {children}
   </label>
 );
@@ -149,7 +149,7 @@ export const BrandQuickEditDialog: React.FC<Props> = ({ guideline, open, onOpenC
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {uploading ? 'Uploading…' : 'Upload logo'}
               </Button>
-              <p className="text-[11px] text-neutral-500">
+              <p className="text-2xs text-neutral-500">
                 Becomes the brand&apos;s avatar everywhere.
               </p>
             </div>

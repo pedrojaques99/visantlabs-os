@@ -2,11 +2,13 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { getBrandLogoUrl, getBrandInitial, type LogoPreference } from '@/utils/brandLogo';
 import { getProxiedUrl } from '@/utils/proxyUtils';
+import { brandAvatarBg } from '@/utils/brandAvatarBg';
 
 interface BrandLike {
   id?: string;
   identity?: { name?: string; logoUrl?: string } | null;
   logos?: Array<{ url: string; variant?: string; label?: string } | null | undefined> | null;
+  colors?: Array<{ hex?: string; role?: string; usageRank?: number } | null | undefined> | null;
 }
 
 interface BrandAvatarProps {
@@ -42,12 +44,17 @@ export const BrandAvatar: React.FC<BrandAvatarProps> = ({
   );
 
   if (url && !errored) {
+    // Fundo escolhido pela marca. `bg-white/5` era um quase-preto pra todo
+    // mundo, e logo escuro sumia dentro dele: no grid, marca com wordmark preto
+    // virava um quadradinho vazio, indistinguível de asset quebrado.
+    // Sem base pra decidir, `smartBg` devolve null e o neutro de sempre fica.
+    const smartBg = brandAvatarBg({ logos: brand?.logos, colors: brand?.colors, shownUrl: url });
     return (
       <img
         src={getProxiedUrl(url)}
         alt={brand?.identity?.name || ''}
-        className={cn(base, 'object-contain bg-white/5 p-0.5')}
-        style={{ width: size, height: size }}
+        className={cn(base, 'object-contain p-0.5', !smartBg && 'bg-white/5')}
+        style={{ width: size, height: size, backgroundColor: smartBg ?? undefined }}
         onError={() => setErrored(true)}
       />
     );

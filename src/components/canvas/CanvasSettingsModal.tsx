@@ -95,9 +95,9 @@ function SettingRow({
           />
         </div>
         <div className="min-w-0">
-          <p className="text-[13px] text-neutral-200 leading-tight">{label}</p>
+          <p className="text-sm text-neutral-200 leading-tight">{label}</p>
           {description && (
-            <p className="text-[11px] text-neutral-500 leading-snug mt-0.5">{description}</p>
+            <p className="text-2xs text-neutral-500 leading-snug mt-0.5">{description}</p>
           )}
         </div>
       </div>
@@ -121,7 +121,7 @@ function ColorSettingRow({
         <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/[0.03] border border-white/[0.04] shrink-0">
           <Icon size={14} className="text-neutral-500" />
         </div>
-        <span className="text-[13px] text-neutral-200">{label}</span>
+        <span className="text-sm text-neutral-200">{label}</span>
       </div>
       {children}
     </div>
@@ -200,7 +200,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         <div className="flex items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <Settings2 size={16} className="text-neutral-500" />
-            <h2 className="text-[13px] font-medium text-neutral-200">
+            <h2 className="text-sm font-medium text-neutral-200">
               {t('canvas.settings') || 'Canvas Settings'}
             </h2>
           </div>
@@ -218,15 +218,15 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         <Tabs defaultValue="canvas" className="flex-1 flex flex-col min-h-0 gap-0">
           <div className="px-4 pt-2.5 pb-0">
             <TabsList className="w-full bg-white/[0.03] border border-white/[0.05] h-8 p-0.5 rounded-lg">
-              <TabsTrigger value="canvas" className="flex-1 gap-1.5 text-[11px] h-full rounded-md">
+              <TabsTrigger value="canvas" className="flex-1 gap-1.5 text-2xs h-full rounded-md">
                 <LayoutGrid size={12} />
                 {t('canvas.settingsTabCanvas') || 'Canvas'}
               </TabsTrigger>
-              <TabsTrigger value="edges" className="flex-1 gap-1.5 text-[11px] h-full rounded-md">
+              <TabsTrigger value="edges" className="flex-1 gap-1.5 text-2xs h-full rounded-md">
                 <Link2 size={12} />
                 {t('canvas.settingsTabEdges') || 'Edges'}
               </TabsTrigger>
-              <TabsTrigger value="colors" className="flex-1 gap-1.5 text-[11px] h-full rounded-md">
+              <TabsTrigger value="colors" className="flex-1 gap-1.5 text-2xs h-full rounded-md">
                 <Paintbrush size={12} />
                 {t('canvas.settingsTabColors') || 'Colors'}
               </TabsTrigger>
@@ -312,7 +312,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             {/* Edge preview */}
             <div className="mt-3 p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.04]">
-              <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-2.5">
+              <p className="text-2xs font-mono text-neutral-600 uppercase tracking-widest mb-2.5">
                 {t('canvas.preview') || 'Preview'}
               </p>
               <svg viewBox="0 0 300 40" className="w-full" preserveAspectRatio="xMidYMid meet">
@@ -360,7 +360,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               <ColorSettingRow icon={Grid3x3} label={t('canvas.gridColor') || 'Grid'}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-neutral-500">
+                    <span className="text-2xs text-neutral-500">
                       {t('canvas.showGrid') || 'Visible'}
                     </span>
                     <Switch checked={showGrid} onCheckedChange={(v) => onShowGridChange?.(v)} />

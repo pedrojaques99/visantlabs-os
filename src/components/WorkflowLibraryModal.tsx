@@ -221,7 +221,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                 <h2 className="text-sm font-medium text-neutral-200">
                   {t('workflows.library.title') || 'Workflow Library'}
                 </h2>
-                <p className="text-[10px] text-neutral-500 font-mono hidden sm:block">
+                <p className="text-2xs text-neutral-500 font-mono hidden sm:block">
                   {t('workflows.library.description') ||
                     'Browse and load reusable workflow templates'}
                 </p>
@@ -288,7 +288,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                   variant="ghost"
                   onClick={() => setSelectedCategory('all')}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-colors whitespace-nowrap border',
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-mono uppercase transition-colors whitespace-nowrap border',
                     selectedCategory === 'all'
                       ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                       : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
@@ -305,7 +305,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                       key={key}
                       onClick={() => setSelectedCategory(key as WorkflowCategory)}
                       className={cn(
-                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-colors whitespace-nowrap border',
+                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-mono uppercase transition-colors whitespace-nowrap border',
                         selectedCategory === key
                           ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                           : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'

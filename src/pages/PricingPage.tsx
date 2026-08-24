@@ -188,7 +188,7 @@ export const PricingPage: React.FC = () => {
                 {copy.yearly}
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded-full font-bold',
+                    'text-2xs px-1.5 py-0.5 rounded-full font-bold',
                     billingCycle === 'yearly'
                       ? 'bg-neutral-950/20 text-black'
                       : 'bg-muted text-muted-foreground'
@@ -231,11 +231,11 @@ export const PricingPage: React.FC = () => {
                   {(tier.recommended || tier.earlyAccess) && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       {tier.recommended ? (
-                        <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full">
+                        <Badge className="bg-brand-cyan text-black font-bold text-2xs uppercase tracking-widest px-3 py-0.5 rounded-full">
                           {copy.recommended}
                         </Badge>
                       ) : (
-                        <Badge className="bg-muted text-muted-foreground border-none text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <Badge className="bg-muted text-muted-foreground border-none text-2xs uppercase tracking-widest px-3 py-0.5 rounded-full inline-flex items-center gap-1">
                           <Zap size={10} />
                           {copy.earlyAccess}
                         </Badge>
@@ -287,7 +287,7 @@ export const PricingPage: React.FC = () => {
 
                   {/* BYOK — badge discreto */}
                   <div className="mt-2">
-                    <Badge className="bg-muted text-muted-foreground border border-border text-[10px] font-mono px-2 py-0.5 rounded-md">
+                    <Badge className="bg-muted text-muted-foreground border border-border text-2xs font-mono px-2 py-0.5 rounded-md">
                       {copy.byokBadge}
                     </Badge>
                   </div>

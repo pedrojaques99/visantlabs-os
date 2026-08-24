@@ -29,7 +29,7 @@ export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string;
     aesthetics: { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
     themes: { icon: Diamond, color: 'text-warning', label: 'Themes' },
     mockup: { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
-    angle: { icon: Camera, color: 'text-cyan-400', label: 'Angle' },
+    angle: { icon: Camera, color: 'text-brand-cyan', label: 'Angle' },
     texture: { icon: Layers, color: 'text-success', label: 'Texture' },
     ambience: { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
     luminance: { icon: Sun, color: 'text-warning', label: 'Luminance' },
@@ -108,7 +108,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         {selected && (
           <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded flex items-center justify-center shadow-sm z-10">
             {selectionIndex !== undefined ? (
-              <span className="text-[10px] font-mono font-bold text-black">{selectionIndex}</span>
+              <span className="text-2xs font-mono font-bold text-black">{selectionIndex}</span>
             ) : (
               <Check size={10} className="text-black" strokeWidth={3} />
             )}
@@ -131,7 +131,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             className="p-1.5 rounded-md bg-neutral-950/70 backdrop-blur-sm border border-white/10 text-neutral-400 hover:text-white transition-colors"
           >
             {isCopying ? (
-              <span className="text-[10px] font-mono">{glitchText}</span>
+              <span className="text-2xs font-mono">{glitchText}</span>
             ) : (
               <Clipboard size={12} />
             )}
@@ -200,14 +200,14 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             >
               <Heart size={11} className={isLiked ? 'fill-current text-neutral-400' : ''} />
               {likesCount > 0 && (
-                <span className="text-[10px] font-mono tabular-nums">{likesCount}</span>
+                <span className="text-2xs font-mono tabular-nums">{likesCount}</span>
               )}
             </button>
           )}
         </div>
 
         {/* Description */}
-        <p className="text-[11px] text-neutral-600 font-mono leading-relaxed line-clamp-2 flex-1">
+        <p className="text-2xs text-neutral-600 font-mono leading-relaxed line-clamp-2 flex-1">
           {migrated.description || migrated.prompt}
         </p>
 
@@ -215,7 +215,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
           <span
             className={cn(
-              'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border',
+              'text-2xs font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border',
               config.color,
               'bg-white/[0.03] border-neutral-800'
             )}
@@ -225,7 +225,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           {migrated.difficulty && (
             <span
               className={cn(
-                'text-[10px] font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
+                'text-2xs font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border bg-white/[0.03] border-neutral-800',
                 migrated.difficulty === 'beginner'
                   ? 'text-success'
                   : migrated.difficulty === 'intermediate'
@@ -238,7 +238,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           )}
           <span
             className={cn(
-              'text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded',
+              'text-2xs font-mono text-neutral-700 px-1.5 py-0.5 rounded',
               glassSurface.control
             )}
           >
@@ -248,7 +248,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             <span
               key={tag}
               className={cn(
-                'text-[10px] font-mono text-neutral-700 px-1.5 py-0.5 rounded',
+                'text-2xs font-mono text-neutral-700 px-1.5 py-0.5 rounded',
                 glassSurface.control
               )}
             >
@@ -256,7 +256,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             </span>
           ))}
           {(migrated.tags?.length ?? 0) > 2 && (
-            <span className="text-[10px] font-mono text-neutral-800">
+            <span className="text-2xs font-mono text-neutral-800">
               +{(migrated.tags?.length ?? 0) - 2}
             </span>
           )}

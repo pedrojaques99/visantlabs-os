@@ -133,7 +133,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             </ul>
             <p className="text-muted-foreground mt-3">
               {t('usage.sections.dataUsage.note').split('Privacy Policy')[0]}
-              <a href="/privacy" className="text-brand-cyan hover:text-brand-cyan/80 underline">
+              <a href="/privacy" className="text-foreground hover:text-brand-cyan/80 underline">
                 Privacy Policy
               </a>
               {t('usage.sections.dataUsage.note').split('Privacy Policy')[1]}
@@ -273,7 +273,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
               {t('usage.sections.contact.support').split('contato@visant.co')[0]}
               <a
                 href="mailto:contato@visant.co"
-                className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                className="text-foreground hover:text-brand-cyan/80 underline"
               >
                 {t('usage.policy.contatovisantco')}
               </a>

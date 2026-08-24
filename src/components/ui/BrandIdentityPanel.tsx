@@ -84,7 +84,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                       className="w-3 h-3 rounded border border-neutral-700/50"
                       style={{ backgroundColor: color }}
                     />
-                    <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
+                    <span className="text-neutral-400 font-mono text-2xs">{color}</span>
                   </button>
                 ))}
               </div>
@@ -101,7 +101,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                     onClick={() =>
                       handleTypographyClick(brandIdentity.typography.primary, 'primary')
                     }
-                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-2xs transition-colors cursor-pointer"
                     title={`Click to insert {brand-typography: ${brandIdentity.typography.primary}}`}
                   >
                     {brandIdentity.typography.primary}
@@ -112,7 +112,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                     onClick={() =>
                       handleTypographyClick(brandIdentity.typography.secondary!, 'secondary')
                     }
-                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-2xs transition-colors cursor-pointer"
                     title={`Click to insert {brand-typography: ${brandIdentity.typography.secondary}}`}
                   >
                     {brandIdentity.typography.secondary}
@@ -130,7 +130,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                 {brandIdentity.personality.tone && (
                   <button
                     onClick={() => handlePersonalityClick(brandIdentity.personality.tone, 'tone')}
-                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-2xs transition-colors cursor-pointer"
                     title={`Click to insert {brand-tone: ${brandIdentity.personality.tone}}`}
                   >
                     Tone: {brandIdentity.personality.tone}
@@ -141,7 +141,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                     onClick={() =>
                       handlePersonalityClick(brandIdentity.personality.feeling, 'feeling')
                     }
-                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-2xs transition-colors cursor-pointer"
                     title={`Click to insert {brand-feeling: ${brandIdentity.personality.feeling}}`}
                   >
                     Feeling: {brandIdentity.personality.feeling}
@@ -160,14 +160,14 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                   <button
                     key={idx}
                     onClick={() => handleElementClick(element)}
-                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-2xs transition-colors cursor-pointer"
                     title={`Click to insert {brand-element: ${element}}`}
                   >
                     {element}
                   </button>
                 ))}
                 {brandIdentity.visualElements.length > 8 && (
-                  <span className="text-neutral-500 text-[10px] px-2 py-1">
+                  <span className="text-neutral-500 text-2xs px-2 py-1">
                     +{brandIdentity.visualElements.length - 8} more
                   </span>
                 )}
@@ -179,7 +179,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {brandIdentity.composition.style && (
             <div>
               <div className="text-neutral-500 font-mono mb-1.5">Composition</div>
-              <div className="text-neutral-400 text-[10px]">{brandIdentity.composition.style}</div>
+              <div className="text-neutral-400 text-2xs">{brandIdentity.composition.style}</div>
             </div>
           )}
         </div>

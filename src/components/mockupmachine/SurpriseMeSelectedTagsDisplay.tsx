@@ -185,11 +185,11 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       type="button"
       onClick={() => handleSelect(tag)}
       className={cn(
-        'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors',
+        'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-2xs font-mono text-left transition-colors',
         selectedTags.includes(tag)
           ? theme === 'dark'
             ? 'bg-brand-cyan/10 text-brand-cyan'
-            : 'bg-brand-cyan/10 text-brand-cyan'
+            : 'bg-brand-cyan/10 text-foreground'
           : theme === 'dark'
             ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
             : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
@@ -210,11 +210,11 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-colors duration-200 border',
+          'w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-2xs font-mono transition-colors duration-200 border',
           selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
-              : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-neutral-700'
+              : 'bg-white text-foreground border-brand-cyan/40 hover:border-neutral-700'
             : theme === 'dark'
               ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-neutral-100 text-neutral-500 border-neutral-300 hover:border-neutral-400'
@@ -263,7 +263,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               onKeyDown={handleKeyDown}
               placeholder={isGenerating ? '' : 'Pesquisar ou digitar...'}
               className={cn(
-                'w-full px-2 py-1 text-[10px] font-mono rounded border-none outline-none',
+                'w-full px-2 py-1 text-2xs font-mono rounded border-none outline-none',
                 theme === 'dark'
                   ? 'bg-neutral-800/60 text-neutral-300 placeholder:text-neutral-600'
                   : 'bg-neutral-100 text-neutral-700 placeholder:text-neutral-400'
@@ -280,10 +280,10 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                 type="button"
                 onClick={() => handleSelect(searchQuery.trim())}
                 className={cn(
-                  'w-full flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors',
+                  'w-full flex items-center gap-2 px-2.5 py-1.5 text-2xs font-mono text-left transition-colors',
                   theme === 'dark'
                     ? 'text-brand-cyan hover:bg-neutral-800'
-                    : 'text-brand-cyan hover:bg-neutral-100'
+                    : 'text-foreground hover:bg-neutral-100'
                 )}
               >
                 <Diamond size={12} className="text-muted-foreground" />
@@ -297,7 +297,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                   <div key={group.categoryName} className={cn(idx > 0 && 'mt-1')}>
                     <div
                       className={cn(
-                        'px-2.5 py-1 text-[10px] font-bold font-mono uppercase tracking-widest',
+                        'px-2.5 py-1 text-2xs font-bold font-mono uppercase tracking-widest',
                         theme === 'dark'
                           ? 'text-neutral-600 bg-black/20'
                           : 'text-neutral-400 bg-neutral-50'
@@ -314,7 +314,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             {filteredTags.length === 0 && !showCustomOption && (
               <div
                 className={cn(
-                  'px-2.5 py-2 text-[10px] font-mono text-center',
+                  'px-2.5 py-2 text-2xs font-mono text-center',
                   theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                 )}
               >
@@ -359,7 +359,7 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
     </div>
     <label
       className={cn(
-        'text-[10px] font-mono select-none cursor-pointer',
+        'text-2xs font-mono select-none cursor-pointer',
         theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
       )}
     >
@@ -562,7 +562,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
           <SkeletonText loading={isGenerating}>
             <h3
               className={cn(
-                'text-[10px] font-medium',
+                'text-2xs font-medium',
                 theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
               )}
             >
@@ -618,7 +618,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
               <SkeletonText loading={isGenerating}>
                 <span
                   className={cn(
-                    'text-[10px]',
+                    'text-2xs',
                     theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
                   )}
                 >
@@ -655,7 +655,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<SurpriseMeSelectedTagsDispl
         >
           <span
             className={cn(
-              'text-[10px] font-mono flex items-center gap-1.5 transition-colors',
+              'text-2xs font-mono flex items-center gap-1.5 transition-colors',
               theme === 'dark'
                 ? 'text-neutral-500 group-hover:text-neutral-300'
                 : 'text-neutral-500 group-hover:text-neutral-800'

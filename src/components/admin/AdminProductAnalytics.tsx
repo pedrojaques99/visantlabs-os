@@ -177,7 +177,7 @@ export function AdminProductAnalytics() {
         </div>
         <div className="flex items-center gap-2">
           {data.cached && (
-            <Badge variant="outline" className="text-[10px] border-neutral-700 text-neutral-500">
+            <Badge variant="outline" className="text-2xs border-neutral-700 text-neutral-500">
               cached
             </Badge>
           )}
@@ -226,7 +226,7 @@ export function AdminProductAnalytics() {
           <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
                   {kpi.label}
                 </span>
                 <kpi.icon className="h-3.5 w-3.5 text-neutral-600" />
@@ -273,7 +273,7 @@ export function AdminProductAnalytics() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-3.5 w-3.5 text-neutral-600" />
-          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+          <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
             Feature Adoption
           </span>
         </div>
@@ -287,7 +287,7 @@ export function AdminProductAnalytics() {
                     <span className="text-xs text-neutral-300">{FEATURE_LABELS[key]}</span>
                     <Badge
                       variant="outline"
-                      className="text-[10px] border-neutral-700 text-neutral-500"
+                      className="text-2xs border-neutral-700 text-neutral-500"
                     >
                       {f.distinctUsers} users
                     </Badge>
@@ -296,7 +296,7 @@ export function AdminProductAnalytics() {
                     <span className="text-xl font-semibold text-neutral-200">
                       {f.total.toLocaleString()}
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-600">
+                    <span className="text-2xs font-mono text-neutral-600">
                       {f.allTime.toLocaleString()} all-time
                     </span>
                   </div>
@@ -329,7 +329,7 @@ export function AdminProductAnalytics() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="h-3.5 w-3.5 text-neutral-600" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+            <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
               Naming Machine
             </span>
           </div>
@@ -342,7 +342,7 @@ export function AdminProductAnalytics() {
             ].map((kpi) => (
               <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
                 <CardContent className="p-5">
-                  <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-500 mb-2">
+                  <span className="block text-2xs font-mono uppercase tracking-wider text-neutral-500 mb-2">
                     {kpi.label}
                   </span>
                   <span className="text-2xl font-semibold text-neutral-200">
@@ -368,7 +368,7 @@ export function AdminProductAnalytics() {
                   { label: 'Superlike', value: data.naming.swipes.superlike },
                 ].map((s) => (
                   <div key={s.label}>
-                    <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-500 mb-1">
+                    <span className="block text-2xs font-mono uppercase tracking-wider text-neutral-500 mb-1">
                       {s.label}
                     </span>
                     <span className="text-xl font-semibold text-neutral-200">
@@ -393,13 +393,11 @@ export function AdminProductAnalytics() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-neutral-800 hover:bg-transparent">
-                        <TableHead className="text-neutral-500 text-[10px] font-mono">
-                          Model
-                        </TableHead>
-                        <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                        <TableHead className="text-neutral-500 text-2xs font-mono">Model</TableHead>
+                        <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                           Batches
                         </TableHead>
-                        <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                        <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                           Tokens
                         </TableHead>
                       </TableRow>
@@ -429,7 +427,7 @@ export function AdminProductAnalytics() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Plug className="h-3.5 w-3.5 text-neutral-600" />
-          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+          <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
             MCP Adoption
           </span>
         </div>
@@ -443,7 +441,7 @@ export function AdminProductAnalytics() {
             ].map((kpi) => (
               <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
                 <CardContent className="p-5">
-                  <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-500 mb-2">
+                  <span className="block text-2xs font-mono uppercase tracking-wider text-neutral-500 mb-2">
                     {kpi.label}
                   </span>
                   <span className="text-2xl font-semibold text-neutral-200">
@@ -467,8 +465,8 @@ export function AdminProductAnalytics() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-neutral-800 hover:bg-transparent">
-                      <TableHead className="text-neutral-500 text-[10px] font-mono">App</TableHead>
-                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                      <TableHead className="text-neutral-500 text-2xs font-mono">App</TableHead>
+                      <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                         Users
                       </TableHead>
                     </TableRow>
@@ -506,9 +504,9 @@ export function AdminProductAnalytics() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-neutral-800 hover:bg-transparent">
-                    <TableHead className="text-neutral-500 text-[10px] font-mono">User</TableHead>
-                    <TableHead className="text-neutral-500 text-[10px] font-mono">Tier</TableHead>
-                    <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                    <TableHead className="text-neutral-500 text-2xs font-mono">User</TableHead>
+                    <TableHead className="text-neutral-500 text-2xs font-mono">Tier</TableHead>
+                    <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                       Features
                     </TableHead>
                   </TableRow>
@@ -520,7 +518,7 @@ export function AdminProductAnalytics() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className="text-[10px] border-neutral-700 text-neutral-500"
+                          className="text-2xs border-neutral-700 text-neutral-500"
                         >
                           {u.tier}
                         </Badge>
@@ -558,11 +556,11 @@ export function AdminProductAnalytics() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-neutral-800 hover:bg-transparent">
-                    <TableHead className="text-neutral-500 text-[10px] font-mono">Tier</TableHead>
+                    <TableHead className="text-neutral-500 text-2xs font-mono">Tier</TableHead>
                     {featureKeys.map((key) => (
                       <TableHead
                         key={key}
-                        className="text-neutral-500 text-[10px] font-mono text-right"
+                        className="text-neutral-500 text-2xs font-mono text-right"
                       >
                         {(FEATURE_LABELS[key] || key).split(' ')[0]}
                       </TableHead>
@@ -575,7 +573,7 @@ export function AdminProductAnalytics() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className="text-[10px] border-neutral-700 text-neutral-400"
+                          className="text-2xs border-neutral-700 text-neutral-400"
                         >
                           {row.tier}
                         </Badge>
@@ -598,7 +596,7 @@ export function AdminProductAnalytics() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <BarChart2 className="h-3.5 w-3.5 text-neutral-600" />
-          <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+          <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
             Retention (generation activity)
           </span>
         </div>
@@ -612,7 +610,7 @@ export function AdminProductAnalytics() {
               <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                    <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
                       {kpi.label}
                     </span>
                     <Users className="h-3.5 w-3.5 text-neutral-600" />

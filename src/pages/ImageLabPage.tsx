@@ -898,7 +898,7 @@ export const ImageLabPage: React.FC = () => {
           )}
           <button
             onClick={() => setSavePresetOpen((v) => !v)}
-            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 text-2xs font-mono uppercase tracking-widest text-neutral-500 hover:text-neutral-200 transition-colors"
           >
             <Save size={12} />
             {savePresetOpen ? 'Hide preset' : 'Save preset'}
@@ -1050,7 +1050,7 @@ export const ImageLabPage: React.FC = () => {
                       width: '12px',
                     }}
                   />
-                  <span className="text-[10px] font-mono text-neutral-600">
+                  <span className="text-2xs font-mono text-neutral-600">
                     {videoCurrentTime.toFixed(1)}s
                   </span>
                 </div>
@@ -1124,7 +1124,7 @@ export const ImageLabPage: React.FC = () => {
                     key={m.id}
                     onClick={() => handleModeChange(m.id)}
                     className={cn(
-                      'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-[color,background-color,border-color,box-shadow] duration-200 text-[11px] font-medium whitespace-nowrap',
+                      'group/fx relative flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-[color,background-color,border-color,box-shadow] duration-200 text-2xs font-medium whitespace-nowrap',
                       isActive
                         ? 'bg-white/12 text-white shadow-sm'
                         : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
@@ -1141,7 +1141,7 @@ export const ImageLabPage: React.FC = () => {
                     <span>{m.label}</span>
                     <span
                       className={cn(
-                        'text-[10px] font-mono tabular-nums transition-colors',
+                        'text-2xs font-mono tabular-nums transition-colors',
                         isActive ? 'text-neutral-500' : 'text-neutral-700'
                       )}
                     >
@@ -1151,7 +1151,7 @@ export const ImageLabPage: React.FC = () => {
                       <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/fx:opacity-100 transition-opacity duration-200 z-50">
                         <div className="rounded-lg overflow-hidden border border-neutral-700/60 shadow-xl shadow-black/60 bg-neutral-900">
                           <img src={thumb} alt={m.label} className="w-28 h-28 object-cover" />
-                          <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
+                          <div className="px-2 py-1 text-2xs font-mono uppercase tracking-wider text-neutral-500 text-center bg-neutral-900/90">
                             {m.label} preview
                           </div>
                         </div>
@@ -1271,12 +1271,12 @@ export const ImageLabPage: React.FC = () => {
                   className="text-neutral-600 group-hover:text-neutral-400 transition-colors"
                 />
               </div>
-              <p className="text-[11px] uppercase tracking-widest">{t('imagelab.dropPrompt')}</p>
+              <p className="text-2xs uppercase tracking-widest">{t('imagelab.dropPrompt')}</p>
               <div className="flex flex-col items-center gap-1">
-                <p className="text-[10px] tracking-wide opacity-60">
+                <p className="text-2xs tracking-wide opacity-60">
                   Ctrl+V — paste · Tab — toggle panel · 1/2/3/4 — switch mode
                 </p>
-                <p className="text-[10px] tracking-wide opacity-40">
+                <p className="text-2xs tracking-wide opacity-40">
                   Alt+Z — before/after · Alt+X — split · [ ] — cycle presets
                 </p>
               </div>
@@ -1317,7 +1317,7 @@ export const ImageLabPage: React.FC = () => {
                   <span className="text-xs">ESC</span>
                 </button>
               </div>
-              <div className="space-y-3 text-[11px]">
+              <div className="space-y-3 text-2xs">
                 {(
                   [
                     ['Modes', [['1 / 2 / 3 / 4', 'Switch FX mode']]],
@@ -1353,13 +1353,13 @@ export const ImageLabPage: React.FC = () => {
                   ] as [string, [string, string][]][]
                 ).map(([section, items]) => (
                   <div key={section}>
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-1.5">
+                    <div className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-1.5">
                       {section}
                     </div>
                     {items.map(([key, desc]) => (
                       <div key={key} className="flex items-center justify-between py-0.5">
                         <span className="text-neutral-400">{desc}</span>
-                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-[10px]">
+                        <kbd className="px-1.5 py-0.5 rounded bg-neutral-800/60 text-neutral-500 font-mono text-2xs">
                           {key}
                         </kbd>
                       </div>
@@ -1589,7 +1589,7 @@ const OpacityToggle: React.FC<{ value: number; onChange: (v: number) => void }> 
       </button>
       {open && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-30 flex items-center gap-2 bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/60 rounded-lg px-3 py-2 shadow-2xl shadow-black/50 animate-fade-in">
-          <span className="text-[10px] font-mono text-neutral-600 w-6 text-right shrink-0">
+          <span className="text-2xs font-mono text-neutral-600 w-6 text-right shrink-0">
             {Math.round(value * 100)}
           </span>
           <input

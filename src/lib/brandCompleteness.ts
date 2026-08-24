@@ -35,7 +35,7 @@ export function computeBrandCompleteness(g: BrandGuideline | null | undefined): 
   }
 
   const rules: CompletenessRule[] = [
-    // Identity (15)
+    // Identity (14)
     {
       id: 'name',
       label: 'Nome da marca',
@@ -53,12 +53,12 @@ export function computeBrandCompleteness(g: BrandGuideline | null | undefined): 
     {
       id: 'description',
       label: 'Descrição da marca',
-      weight: 6,
+      weight: 5,
       group: 'identity',
       passed: filled(g.identity?.description || g.description),
     },
 
-    // Visual (35)
+    // Visual (32)
     {
       id: 'colors_2',
       label: 'Pelo menos 2 cores',
@@ -69,14 +69,14 @@ export function computeBrandCompleteness(g: BrandGuideline | null | undefined): 
     {
       id: 'colors_named',
       label: 'Cores com nomes ou roles',
-      weight: 5,
+      weight: 4,
       group: 'visual',
       passed: arr(g.colors).some((c) => filled(c.name) || filled(c.role)),
     },
     {
       id: 'colors_role',
       label: 'Pelo menos 1 cor com role',
-      weight: 4,
+      weight: 3,
       group: 'visual',
       passed: arr(g.colors).some((c) => filled(c.role)),
     },
@@ -97,16 +97,16 @@ export function computeBrandCompleteness(g: BrandGuideline | null | undefined): 
     {
       id: 'logo_variants',
       label: 'Logo com variantes (light/dark/icon)',
-      weight: 4,
+      weight: 3,
       group: 'visual',
       passed: new Set(arr(g.logos).map((l) => l.variant)).size >= 2,
     },
 
-    // Strategy (20)
+    // Strategy (18)
     {
       id: 'manifesto',
       label: 'Manifesto',
-      weight: 8,
+      weight: 7,
       group: 'strategy',
       passed: filled(g.strategy?.manifesto),
     },
@@ -120,12 +120,12 @@ export function computeBrandCompleteness(g: BrandGuideline | null | undefined): 
     {
       id: 'persona',
       label: 'Pelo menos 1 persona',
-      weight: 6,
+      weight: 5,
       group: 'strategy',
       passed: len(g.strategy?.personas) >= 1,
     },
 
-    // Voice & guidelines (15)
+    // Voice & guidelines (14)
     {
       id: 'voice_tone',
       label: 'Tom de voz',
@@ -143,25 +143,52 @@ export function computeBrandCompleteness(g: BrandGuideline | null | undefined): 
     {
       id: 'voice_donts',
       label: 'Lista de "Don\'ts"',
-      weight: 5,
+      weight: 4,
       group: 'voice',
       passed: len(g.guidelines?.donts) >= 1,
     },
 
-    // Tokens (10)
+    // Craft da marca (17) — a PERSONALIDADE, não só a cor.
+    // Estes cinco eixos existem no modelo (`tokens.*`, `shadows`, `borders`,
+    // `motion`), têm editor próprio e o `brand-token-compiler` já os emite.
+    // Enquanto ficam vazios, toda peça gerada de toda marca sai com o MESMO
+    // esqueleto — que é a razão de output on-brand ainda sair parecido entre
+    // clientes diferentes. Pesavam 10 de 100 e cobriam 2 dos 5 eixos.
     {
       id: 'spacing',
       label: 'Spacing tokens',
-      weight: 5,
+      weight: 4,
       group: 'tokens',
       passed: Object.keys(g.tokens?.spacing || {}).length >= 2,
     },
     {
       id: 'radius',
       label: 'Radius tokens',
-      weight: 5,
+      weight: 4,
       group: 'tokens',
       passed: Object.keys(g.tokens?.radius || {}).length >= 1,
+    },
+
+    {
+      id: 'shadow',
+      label: 'Sombra da marca',
+      weight: 3,
+      group: 'tokens',
+      passed: len(g.shadows) >= 1,
+    },
+    {
+      id: 'border',
+      label: 'Borda da marca',
+      weight: 3,
+      group: 'tokens',
+      passed: len(g.borders) >= 1,
+    },
+    {
+      id: 'motion',
+      label: 'Motion da marca',
+      weight: 3,
+      group: 'tokens',
+      passed: !!(g.motion?.easing || g.motion?.durations),
     },
 
     // Assets (5)

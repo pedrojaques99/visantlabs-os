@@ -28,9 +28,9 @@ function getAvatarColor(value: string): string {
   const colors = [
     'bg-violet-500/20 text-violet-300',
     'bg-blue-500/20 text-blue-300',
-    'bg-emerald-500/20 text-emerald-300',
-    'bg-amber-500/20 text-amber-300',
-    'bg-rose-500/20 text-rose-300',
+    'bg-success/20 text-success',
+    'bg-warning/20 text-warning',
+    'bg-destructive/20 text-destructive',
     'bg-sky-500/20 text-sky-300',
   ];
   return colors[value.charCodeAt(0) % colors.length];
@@ -189,7 +189,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <Link2 size={12} className="text-neutral-500" />
-            <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-[0.12em]">
+            <span className="text-2xs font-semibold text-neutral-500 uppercase tracking-[0.12em]">
               Link público
             </span>
           </div>
@@ -200,8 +200,8 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                 onClick={handleCopyLink}
                 className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   copied
-                    ? 'bg-green-500/15 text-green-400 border border-green-500/20'
-                    : 'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25'
+                    ? 'bg-success/15 text-success border border-success/20'
+                    : 'bg-brand-cyan/15 hover:bg-brand-cyan/25 text-foreground border border-brand-cyan/25'
                 }`}
               >
                 {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -212,7 +212,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <button
               onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/25 rounded-xl text-sm font-medium transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-cyan/15 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/25 rounded-xl text-sm font-medium transition-[color,background-color,border-color,opacity] disabled:opacity-50"
             >
               {isGenerating ? (
                 <>
@@ -262,7 +262,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
           <button
             onClick={handleRemoveShare}
             disabled={!isCollaborative || isLoading}
-            className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-destructive transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Trash2 size={12} />
             Remover acesso
@@ -278,7 +278,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               <button
                 onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/25 rounded-lg transition-[color,background-color,border-color,opacity] disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-brand-cyan/15 hover:bg-brand-cyan/25 text-foreground border border-brand-cyan/25 rounded-lg transition-[color,background-color,border-color,opacity] disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -340,7 +340,7 @@ const UserSection: React.FC<UserSectionProps> = ({
             className="flex items-center gap-2.5 px-3 py-2 bg-neutral-800/50 border border-neutral-700/40 rounded-xl group"
           >
             <div
-              className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-semibold shrink-0 ${getAvatarColor(
+              className={`w-7 h-7 rounded-lg flex items-center justify-center text-2xs font-semibold shrink-0 ${getAvatarColor(
                 userId
               )}`}
             >
@@ -351,7 +351,7 @@ const UserSection: React.FC<UserSectionProps> = ({
             </span>
             <button
               onClick={() => onRemove(userId)}
-              className="w-5 h-5 flex items-center justify-center text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] rounded"
+              className="w-5 h-5 flex items-center justify-center text-neutral-600 hover:text-destructive opacity-0 group-hover:opacity-100 transition-[color,background-color,border-color,opacity] rounded"
             >
               <X size={12} />
             </button>

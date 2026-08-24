@@ -408,7 +408,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                     animation: 'pulse 1.2s ease-in-out infinite',
                   }}
                 />
-                <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-brand-cyan text-sm font-mono font-semibold whitespace-nowrap">
+                <div className="px-4 py-2 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-foreground text-sm font-mono font-semibold whitespace-nowrap">
                   DROP FOR FULL WIDTH
                 </div>
                 <div
@@ -473,7 +473,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                                 animation: 'pulse 1.2s ease-in-out infinite',
                               }}
                             />
-                            <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-brand-cyan text-xs font-mono font-semibold whitespace-nowrap">
+                            <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-foreground text-xs font-mono font-semibold whitespace-nowrap">
                               DROP HERE
                             </div>
                             <div
@@ -533,7 +533,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
                                   animation: 'pulse 1.2s ease-in-out infinite',
                                 }}
                               />
-                              <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-brand-cyan text-xs font-mono font-semibold whitespace-nowrap">
+                              <div className="px-3 py-1 bg-brand-cyan/20 border border-neutral-600/50 rounded-md text-foreground text-xs font-mono font-semibold whitespace-nowrap">
                                 DROP HERE
                               </div>
                               <div
@@ -584,7 +584,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
             }`}
           >
-            <div className="text-brand-cyan text-2xl font-semibold mb-3 flex items-center justify-center gap-2">
+            <div className="text-foreground text-2xl font-semibold mb-3 flex items-center justify-center gap-2">
               <div className="w-8 h-8 border-2 border-neutral-600 rounded flex items-center justify-center">
                 <div className="w-4 h-4 bg-brand-cyan rounded-md" />
               </div>
@@ -936,8 +936,8 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               }`}
             >
               <div className="text-center space-y-3">
-                <div className="text-brand-cyan text-2xl font-semibold">+</div>
-                <div className="text-sm font-medium text-brand-cyan">Nova coluna</div>
+                <div className="text-foreground text-2xl font-semibold">+</div>
+                <div className="text-sm font-medium text-foreground">Nova coluna</div>
                 <div className="text-xs opacity-70">Solte aqui para criar</div>
               </div>
             </div>

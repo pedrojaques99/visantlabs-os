@@ -149,7 +149,7 @@ export const AboutPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
-                className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 mb-3"
+                className="font-mono text-2xs uppercase tracking-widest text-neutral-700 mb-3"
               >
                 Brasil · São Paulo · {time}
               </motion.p>
@@ -258,7 +258,7 @@ export const AboutPage: React.FC = () => {
                       <p className="text-xs font-semibold text-neutral-200 group-hover:text-white transition-colors">
                         {tool.label}
                       </p>
-                      <p className="text-[11px] text-neutral-500 mt-0.5 leading-relaxed">
+                      <p className="text-2xs text-neutral-500 mt-0.5 leading-relaxed">
                         {tool.description}
                       </p>
                     </div>
@@ -283,7 +283,7 @@ export const AboutPage: React.FC = () => {
                     <span className="text-neutral-700 group-hover:text-neutral-400 transition-colors text-sm">
                       ›
                     </span>
-                    <span className="font-mono text-[11px] text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
+                    <span className="font-mono text-2xs text-neutral-500 group-hover:text-neutral-200 transition-colors tracking-wider flex-1">
                       {l.label}
                     </span>
                     {l.external ? (
@@ -318,7 +318,7 @@ export const AboutPage: React.FC = () => {
               </a>
               <Link
                 to="/apps"
-                className="font-mono text-[11px] text-neutral-500 hover:text-neutral-200 transition-colors"
+                className="font-mono text-2xs text-neutral-500 hover:text-neutral-200 transition-colors"
               >
                 /apps →
               </Link>
@@ -357,7 +357,7 @@ const Section: React.FC<{ label: string; delay: number; children: React.ReactNod
     className="mb-12"
     aria-label={label}
   >
-    <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-700 mb-4">{label}</p>
+    <p className="font-mono text-2xs uppercase tracking-widest text-neutral-700 mb-4">{label}</p>
     {children}
   </motion.section>
 );

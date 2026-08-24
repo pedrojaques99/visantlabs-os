@@ -80,7 +80,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
               </div>
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-white">Frame Animation</h2>
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-500">
+                <span className="text-2xs font-bold uppercase tracking-[0.3em] text-neutral-500">
                   Veo 3 Pro Engine
                 </span>
               </div>
@@ -96,7 +96,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
           <div className="p-10 overflow-y-auto flex flex-col gap-10">
             <div className="grid grid-cols-2 gap-10">
               <div className="flex flex-col gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-neutral-500">
+                <span className="text-2xs font-bold uppercase tracking-[0.4em] text-neutral-500">
                   Start Frame
                 </span>
                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-border group">
@@ -106,7 +106,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                     alt="Start"
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
+                    <span className="text-2xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
                       <ImageIcon size={12} /> Source Active
                     </span>
                   </div>
@@ -114,7 +114,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
               </div>
 
               <div className="flex flex-col gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-neutral-500">
+                <span className="text-2xs font-bold uppercase tracking-[0.4em] text-neutral-500">
                   End Frame
                 </span>
                 <div
@@ -132,7 +132,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                         alt="End"
                       />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
+                        <span className="text-2xs font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
                           <Upload size={12} /> Change Frame
                         </span>
                       </div>
@@ -145,7 +145,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                           className="text-neutral-500 group-hover:text-white transition-colors"
                         />
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 group-hover:text-white transition-colors">
+                      <span className="text-2xs font-bold uppercase tracking-widest text-neutral-500 group-hover:text-white transition-colors">
                         Upload End Frame
                       </span>
                     </>
@@ -163,7 +163,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
 
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-neutral-500">
+                <span className="text-2xs font-bold uppercase tracking-[0.4em] text-neutral-500">
                   Cinematic Vision
                 </span>
                 <div className="flex gap-2">
@@ -171,7 +171,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
                     <button
                       key={p.id}
                       onClick={() => setPrompt(p.prompt)}
-                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-full bg-neutral-800/50 border border-border/70 text-2xs font-bold uppercase tracking-widest text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors flex items-center gap-1.5"
                     >
                       <Film size={9} />
                       {p.name}
@@ -189,7 +189,7 @@ export const FrameAnimateModal: React.FC<FrameAnimateModalProps> = ({
           </div>
 
           <div className="p-7 bg-neutral-900/30 border-t border-border flex justify-end items-center gap-4">
-            <span className="text-[10px] font-serif italic text-neutral-600 mr-auto">
+            <span className="text-2xs font-serif italic text-neutral-600 mr-auto">
               Veo 3 interpolates motion between frames
             </span>
             <button

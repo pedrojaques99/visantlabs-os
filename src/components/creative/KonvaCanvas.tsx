@@ -598,7 +598,7 @@ export const KonvaCanvas = forwardRef<Konva.Stage, Props>(
 
         {/* Distortion hint — only while Ctrl is held with a selection active */}
         {allowDistort && selectedLayerIds.length > 0 && (
-          <div className="pointer-events-none absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 backdrop-blur text-[10px] font-mono uppercase tracking-wider text-cyan-300 border border-cyan-400/30">
+          <div className="pointer-events-none absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 backdrop-blur text-2xs font-mono uppercase tracking-wider text-brand-cyan border border-brand-cyan/30">
             Distort
           </div>
         )}

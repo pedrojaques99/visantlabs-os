@@ -255,7 +255,7 @@ export const PdfCompressPage: React.FC = () => {
               <Button
                 onClick={handleProcessAll}
                 disabled={isProcessing}
-                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                className="w-full bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
               >
                 {isProcessing ? (
                   <>
@@ -296,7 +296,7 @@ export const PdfCompressPage: React.FC = () => {
 
   /* ── Status bar ─────────────────────────────────────────── */
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneCount}/{items.length}
       </span>
@@ -346,7 +346,7 @@ export const PdfCompressPage: React.FC = () => {
               <p className="text-sm text-neutral-400">
                 Drop PDFs here or <span className="text-neutral-300">browse</span>
               </p>
-              <p className="text-[10px] text-neutral-600 mt-2 font-mono tracking-wider">
+              <p className="text-2xs text-neutral-600 mt-2 font-mono tracking-wider">
                 PDF · Max 50MB per file
               </p>
             </motion.div>
@@ -375,13 +375,13 @@ export const PdfCompressPage: React.FC = () => {
                     {item.fileName}
                   </span>
                   {item.originalSize > 0 && (
-                    <span className="text-[10px] text-neutral-600 font-mono">
+                    <span className="text-2xs text-neutral-600 font-mono">
                       {formatBytes(item.originalSize)}
                     </span>
                   )}
                   <StatusBadge status={item.status} />
                   {item.status === 'done' && item.compressedSize > 0 && (
-                    <span className="text-[10px] font-mono text-success">
+                    <span className="text-2xs font-mono text-success">
                       -{Math.round((1 - item.compressedSize / item.originalSize) * 100)}%
                     </span>
                   )}

@@ -70,7 +70,7 @@ const KeyRow: React.FC<KeyRowProps> = ({
         {hasKey && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-success/10 border border-success/20 rounded-full">
             <span className="w-1.5 h-1.5 bg-success rounded-full" />
-            <span className="text-[10px] font-mono text-success">active</span>
+            <span className="text-2xs font-mono text-success">active</span>
           </span>
         )}
       </div>
@@ -377,7 +377,7 @@ export const ApiSettings: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-mono text-brand-cyan shrink-0">Configure</span>
+              <span className="text-xs font-mono text-foreground shrink-0">Configure</span>
             </button>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-top-1 duration-200">

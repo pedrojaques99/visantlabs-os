@@ -46,7 +46,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
 
       <div className="flex-1 min-w-0 flex flex-col justify-center">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-white truncate pr-2">
+          <span className="text-2xs font-bold uppercase tracking-[0.1em] text-white truncate pr-2">
             {label}
           </span>
           <button
@@ -67,10 +67,10 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
               />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono text-neutral-500">
+              <span className="text-2xs font-mono text-neutral-500">
                 {Math.round(job.progress)}%
               </span>
-              <span className="text-[10px] font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
+              <span className="text-2xs font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
             </div>
           </div>
         )}
@@ -83,22 +83,22 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
           >
             <div className="flex items-center gap-1.5">
               <CheckCircle2 size={12} className="text-success" />
-              <span className="text-[10px] font-bold text-success uppercase tracking-widest">
+              <span className="text-2xs font-bold text-success uppercase tracking-widest">
                 Saved!
               </span>
             </div>
-            <span className="text-[10px] font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
+            <span className="text-2xs font-mono text-neutral-500">{elapsed.toFixed(1)}s</span>
           </motion.div>
         )}
 
         {job.status === 'completed' && (
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
+            <span className="text-2xs text-neutral-400 font-bold uppercase tracking-widest">
               Ready
             </span>
             <button
               onClick={handleDownload}
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:opacity-90 transition-[color,background-color,border-color,opacity]"
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-white text-black text-2xs font-bold uppercase tracking-widest hover:opacity-90 transition-[color,background-color,border-color,opacity]"
             >
               <Download size={10} /> Save
             </button>
@@ -108,7 +108,7 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
         {job.status === 'error' && (
           <div className="flex items-center gap-1.5">
             <AlertCircle size={12} className="text-destructive" />
-            <span className="text-[10px] text-destructive truncate font-medium">
+            <span className="text-2xs text-destructive truncate font-medium">
               {job.error || 'Failed'}
             </span>
           </div>
@@ -117,14 +117,14 @@ const JobToast: React.FC<{ job: RenderJob; onCancel: () => void; onDismiss: () =
         {job.status === 'queued' && (
           <div className="flex items-center gap-1.5">
             <GlitchLoader size={12} />
-            <span className="text-[10px] text-neutral-500 font-medium">Waiting...</span>
+            <span className="text-2xs text-neutral-500 font-medium">Waiting...</span>
           </div>
         )}
 
         {job.status === 'cancelled' && (
           <div className="flex items-center gap-1.5 text-neutral-600">
             <XCircle size={12} />
-            <span className="text-[10px] font-medium uppercase tracking-widest">Cancelled</span>
+            <span className="text-2xs font-medium uppercase tracking-widest">Cancelled</span>
           </div>
         )}
       </div>

@@ -56,7 +56,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
               Auditoria da marca
             </DialogTitle>
           </div>
-          <DialogDescription className="text-[11px] text-neutral-500">
+          <DialogDescription className="text-2xs text-neutral-500">
             Análise de coerência da marca pra geração IA — gerada por LLM.
           </DialogDescription>
         </DialogHeader>
@@ -65,7 +65,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
           {isLoading && (
             <div className="flex flex-col items-center justify-center gap-3 py-16">
               <GlitchLoader size={20} />
-              <p className="text-[11px] text-neutral-500 uppercase tracking-widest">
+              <p className="text-2xs text-neutral-500 uppercase tracking-widest">
                 Auditando marca…
               </p>
             </div>
@@ -80,7 +80,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={onRetry}
-                  className="text-[10px] uppercase tracking-widest"
+                  className="text-2xs uppercase tracking-widest"
                 >
                   Tentar novamente
                 </Button>
@@ -95,7 +95,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                   {report.score}
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-1">
+                  <p className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-1">
                     Coerência
                   </p>
                   <p className="text-xs text-neutral-300 leading-relaxed">{report.summary}</p>
@@ -104,7 +104,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
 
               {report.insights.length > 0 && (
                 <div>
-                  <h3 className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2.5">
+                  <h3 className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2.5">
                     Insights
                   </h3>
                   <ul className="flex flex-col gap-2">
@@ -120,7 +120,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-2 flex-wrap">
                               <span className="font-bold">{ins.title}</span>
-                              <span className="text-[10px] uppercase tracking-widest opacity-50">
+                              <span className="text-2xs uppercase tracking-widest opacity-50">
                                 {ins.category}
                               </span>
                             </div>
@@ -135,7 +135,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
 
               {report.recommendations.length > 0 && (
                 <div>
-                  <h3 className="text-[10px] font-mono uppercase tracking-widest text-neutral-600 mb-2.5">
+                  <h3 className="text-2xs font-mono uppercase tracking-widest text-neutral-600 mb-2.5">
                     Recomendações
                   </h3>
                   <ul className="flex flex-col gap-2">
@@ -145,9 +145,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                         className="p-3 rounded-lg border border-neutral-800 bg-white/[0.03]"
                       >
                         <p className="text-xs text-neutral-200 font-semibold">{rec.action}</p>
-                        <p className="mt-1 text-[11px] text-neutral-500 leading-snug">
-                          {rec.reason}
-                        </p>
+                        <p className="mt-1 text-2xs text-neutral-500 leading-snug">{rec.reason}</p>
                       </li>
                     ))}
                   </ul>
@@ -155,7 +153,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
               )}
 
               <div className="flex items-center justify-between pt-3 border-t border-neutral-800">
-                <span className="text-[10px] text-neutral-700 uppercase tracking-widest">
+                <span className="text-2xs text-neutral-700 uppercase tracking-widest">
                   {report.model} · {formatDateTime(report.generatedAt)}
                 </span>
                 {onRetry && (
@@ -163,7 +161,7 @@ export const BrandHealthDialog: React.FC<BrandHealthDialogProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={onRetry}
-                    className="h-7 text-[10px] uppercase tracking-widest gap-1.5 text-neutral-500 hover:text-brand-cyan"
+                    className="h-7 text-2xs uppercase tracking-widest gap-1.5 text-neutral-500 hover:text-brand-cyan"
                   >
                     <Stethoscope size={11} />
                     Re-analisar

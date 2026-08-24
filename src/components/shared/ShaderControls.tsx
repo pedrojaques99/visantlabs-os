@@ -62,7 +62,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
             key={d.id}
             onClick={() => onTypeChange(d.id)}
             className={cn(
-              'px-2.5 py-2 rounded text-[10px] uppercase tracking-wider transition-colors text-left',
+              'px-2.5 py-2 rounded text-2xs uppercase tracking-wider transition-colors text-left',
               shaderType === d.id
                 ? 'bg-white/10 text-white'
                 : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -81,7 +81,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
             key={o.value}
             onClick={() => onValueChange(def.variants!.key, o.value)}
             className={cn(
-              'px-2 py-1.5 rounded text-[10px] uppercase tracking-wider transition-colors text-center',
+              'px-2 py-1.5 rounded text-2xs uppercase tracking-wider transition-colors text-center',
               (values[def.variants!.key] ?? def.variants!.defaultValue) === o.value
                 ? 'bg-white/10 text-white'
                 : 'bg-white/5 text-neutral-400 hover:bg-white/10'
@@ -145,7 +145,7 @@ export const ShaderControls: React.FC<ShaderControlsProps> = React.memo(
           {enabled ? (
             <PanelSectionTabs tabs={tabs} />
           ) : (
-            <div className="p-4 text-[11px] text-neutral-600">
+            <div className="p-4 text-2xs text-neutral-600">
               Enable the shader effect to edit its parameters.
             </div>
           )}
@@ -227,7 +227,7 @@ const SelectParam: React.FC<{
   const current = value ?? param.defaultValue;
   return (
     <div>
-      <span className="text-[10px] text-neutral-500 uppercase tracking-wider block mb-1">
+      <span className="text-2xs text-neutral-500 uppercase tracking-wider block mb-1">
         {param.label}
       </span>
       <div className="grid grid-cols-2 gap-1">
@@ -236,7 +236,7 @@ const SelectParam: React.FC<{
             key={o.value}
             onClick={() => onChange(o.value)}
             className={cn(
-              'px-2 py-1 rounded text-[10px] uppercase tracking-wider transition-colors',
+              'px-2 py-1 rounded text-2xs uppercase tracking-wider transition-colors',
               current === o.value
                 ? 'bg-white/10 text-white'
                 : 'bg-white/5 text-neutral-500 hover:bg-white/10'
@@ -258,7 +258,7 @@ const ToggleParam: React.FC<{
   onChange: (v: number) => void;
 }> = React.memo(({ param, value, onChange }) => (
   <div className="flex items-center justify-between">
-    <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{param.label}</span>
+    <span className="text-2xs text-neutral-500 uppercase tracking-wider">{param.label}</span>
     <Switch
       checked={(value ?? param.defaultValue) === 1}
       onCheckedChange={(v) => onChange(v ? 1 : 0)}
@@ -304,7 +304,7 @@ const ColorParam: React.FC<{
 
   return (
     <div className="flex items-center justify-between">
-      <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{param.label}</span>
+      <span className="text-2xs text-neutral-500 uppercase tracking-wider">{param.label}</span>
       <input
         type="color"
         value={hex}

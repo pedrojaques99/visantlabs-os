@@ -393,7 +393,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                             disabled={deletingSessionId === session._id}
                             className="opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <Trash2 size={14} className="text-red-400 hover:text-red-300" />
+                            <Trash2 size={14} className="text-destructive hover:text-destructive" />
                           </button>
                         )}
                       </div>
@@ -436,7 +436,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                       <h3 className="font-semibold text-neutral-100 text-sm md:text-base truncate">
                         Especialista em Branding
                       </h3>
-                      <p className="text-[10px] md:text-xs text-neutral-400">
+                      <p className="text-2xs md:text-xs text-neutral-400">
                         Metodologia Visant Labs
                       </p>
                     </div>
@@ -490,7 +490,7 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                   {isLoading && (
                     <div className="flex gap-3">
                       <div className="w-8 h-8 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center">
-                        <Bot size={16} className="text-brand-cyan animate-pulse" />
+                        <Bot size={16} className="text-foreground animate-pulse" />
                       </div>
                       <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center gap-2">
                         <GlitchLoader size={16} />
@@ -515,11 +515,11 @@ export const BrandingExpertChat: React.FC<BrandingExpertChatProps> = ({
                       {attachedFiles.map((file, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-2 px-2 py-1 bg-white/10 rounded-md border border-white/5 text-[10px] text-neutral-300"
+                          className="flex items-center gap-2 px-2 py-1 bg-white/10 rounded-md border border-white/5 text-2xs text-neutral-300"
                         >
                           {getFileIcon(file.type)}
                           <span className="truncate max-w-[100px]">{file.name}</span>
-                          <button onClick={() => removeFile(i)} className="hover:text-red-400">
+                          <button onClick={() => removeFile(i)} className="hover:text-destructive">
                             <X size={12} />
                           </button>
                         </div>

@@ -83,7 +83,7 @@ export const BrandSwitcher: React.FC<BrandSwitcherProps> = ({
         className="h-full min-w-[160px] bg-transparent border-none text-xs hover:text-neutral-200 shadow-none focus:ring-0"
         footer={
           brands.length > 1 ? (
-            <div className="flex items-center justify-between px-2 py-1.5 text-[10px] text-neutral-500">
+            <div className="flex items-center justify-between px-2 py-1.5 text-2xs text-neutral-500">
               <span>{t('nav.lastBrand')}</span>
               <kbd className="font-mono px-1 py-0.5 rounded bg-neutral-800/60 border border-neutral-700/50 text-neutral-400">
                 ⌥B

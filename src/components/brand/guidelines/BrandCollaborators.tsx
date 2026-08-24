@@ -59,7 +59,7 @@ export const BrandCollaboratorAvatars: React.FC = () => {
           return (
             <Tooltip key={c.connectionId} content={name}>
               <div
-                className="w-6 h-6 rounded-full ring-2 ring-black overflow-hidden shrink-0 flex items-center justify-center text-[10px] font-semibold text-white"
+                className="w-6 h-6 rounded-full ring-2 ring-black overflow-hidden shrink-0 flex items-center justify-center text-2xs font-semibold text-white"
                 style={{ backgroundColor: color }}
               >
                 {picture ? (
@@ -72,12 +72,12 @@ export const BrandCollaboratorAvatars: React.FC = () => {
           );
         })}
         {collaboratorCount > 4 && (
-          <div className="w-6 h-6 rounded-full ring-2 ring-black bg-neutral-700 flex items-center justify-center text-[10px] font-mono text-neutral-400 shrink-0">
+          <div className="w-6 h-6 rounded-full ring-2 ring-black bg-neutral-700 flex items-center justify-center text-2xs font-mono text-neutral-400 shrink-0">
             +{collaboratorCount - 4}
           </div>
         )}
       </div>
-      <span className="text-[10px] font-mono text-neutral-600">{collaboratorCount} online</span>
+      <span className="text-2xs font-mono text-neutral-600">{collaboratorCount} online</span>
     </div>
   );
 };

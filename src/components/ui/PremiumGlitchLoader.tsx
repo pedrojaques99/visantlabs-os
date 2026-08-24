@@ -107,7 +107,7 @@ export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-3 font-mono text-[11px] font-bold uppercase ${className}`}
+      className={`flex items-center gap-3 font-mono text-2xs font-bold uppercase ${className}`}
       style={{ color }}
     >
       <span className="opacity-40">{glitch}</span>
@@ -115,7 +115,7 @@ export const PremiumGlitchLoader: React.FC<PremiumGlitchLoaderProps> = ({
         {word}
         {dots}
       </span>
-      <span className="ml-auto text-[10px] opacity-50 tabular-nums">{timer}</span>
+      <span className="ml-auto text-2xs opacity-50 tabular-nums">{timer}</span>
     </div>
   );
 };

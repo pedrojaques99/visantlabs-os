@@ -68,7 +68,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       }}
       variant="outline"
       className={cn(
-        'flex items-center justify-center gap-2 font-semibold border-neutral-800 text-brand-cyan hover:bg-brand-cyan/10 hover:text-brand-cyan',
+        'flex items-center justify-center gap-2 font-semibold border-neutral-800 text-foreground hover:bg-brand-cyan/10 hover:text-brand-cyan',
         variant === 'floating'
           ? embed
             ? 'h-12 px-4 py-2 text-sm'
@@ -146,9 +146,9 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
               <span className="sm:hidden">{t('mockup.outputsShort')}</span>
             </div>
             {isUnlimited ? (
-              <span className="text-[10px] md:text-xs font-bold text-black/80">∞ UNLIMITED</span>
+              <span className="text-2xs md:text-xs font-bold text-black/80">∞ UNLIMITED</span>
             ) : creditsRequired !== undefined && creditsRequired > 0 ? (
-              <span className="text-[10px] md:text-xs font-mono text-black/70">
+              <span className="text-2xs md:text-xs font-mono text-black/70">
                 {creditsRequired}{' '}
                 {creditsRequired === 1
                   ? t('mockup.creditUnitSingular')

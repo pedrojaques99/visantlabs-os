@@ -187,7 +187,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             reset();
             navigate('/create');
           }}
-          className="flex items-center gap-2 text-[11px] font-mono text-neutral-500 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-2xs font-mono text-neutral-500 hover:text-white transition-colors"
         >
           <ArrowLeft size={12} /> Novo
         </button>
@@ -285,7 +285,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'text');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-2xs font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
           >
             <Type size={12} /> Texto
           </button>
@@ -296,7 +296,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
               e.dataTransfer.setData('application/vsn-asset-type', 'shape');
               e.dataTransfer.dropEffect = 'copy';
             }}
-            className="px-2 py-2.5 rounded text-[11px] font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
+            className="px-2 py-2.5 rounded text-2xs font-mono border bg-neutral-900/60 border-white/10 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors flex items-center justify-center gap-1.5"
           >
             <Square size={12} /> Shape
           </button>
@@ -310,7 +310,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
         </label>
         <div className="flex flex-col gap-1 overflow-y-auto pr-1 max-h-[300px]">
           {layers.length === 0 && (
-            <p className="text-[11px] text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
+            <p className="text-2xs text-neutral-600 px-2 py-2">Nenhuma camada ainda</p>
           )}
           {[...layers].reverse().map((layer) => {
             if (groupedChildIds.has(layer.id)) return null;
@@ -336,7 +336,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                     setSelectedLayerIds([layer.id]);
                   }
                 }}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-mono cursor-pointer transition-colors ${
+                className={`flex items-center gap-2 px-2 py-1.5 rounded text-2xs font-mono cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan'
                     : 'text-neutral-400 hover:bg-white/5'
@@ -400,7 +400,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
                   setSelectedLayerIds([]);
                   setBackgroundSelected(true);
                 }}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded text-[11px] font-mono cursor-pointer transition-colors border-t border-neutral-800 mt-1 pt-2 ${
+                className={`flex items-center gap-2 px-2 py-1.5 rounded text-2xs font-mono cursor-pointer transition-colors border-t border-neutral-800 mt-1 pt-2 ${
                   backgroundSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan'
                     : 'text-neutral-500 hover:bg-white/5'
@@ -435,7 +435,7 @@ export const CreativeEditorSidebar: React.FC<Props> = ({
             creative is in flight (creativeId not yet persisted), so a failure on
             the most consequential save isn't invisible. */}
         {(isPersistedId(creativeId) || autoSaveStatus !== 'idle') && (
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-500">
+          <div className="flex items-center gap-1.5 text-2xs font-mono text-neutral-500">
             {autoSaveStatus === 'saving' && <GlitchLoader size={10} />}
             {autoSaveStatus === 'saved' && <Check size={10} className="text-success" />}
             {autoSaveStatus === 'error' && <AlertTriangle size={10} className="text-destructive" />}

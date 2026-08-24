@@ -164,7 +164,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
           {hiddenLines.size > 0 && (
             <button
               onClick={() => useGridMachineStore.setState({ hiddenLines: new Set() })}
-              className="text-[11px] text-cyan-400/70 hover:text-cyan-400 mt-1"
+              className="text-2xs text-brand-cyan/70 hover:text-brand-cyan mt-1"
             >
               Show {hiddenLines.size} hidden line{hiddenLines.size > 1 ? 's' : ''}
             </button>
@@ -228,7 +228,7 @@ export const GridMachineControls: React.FC<Props> = React.memo(({ onExportPng, o
               key={mode}
               onClick={() => updateSetting('bgMode', mode)}
               className={cn(
-                'flex-1 py-2 rounded-md text-[10px] uppercase tracking-wider transition-colors duration-200 border',
+                'flex-1 py-2 rounded-md text-2xs uppercase tracking-wider transition-colors duration-200 border',
                 bgMode === mode
                   ? 'bg-white/10 text-white border-white/20'
                   : 'bg-neutral-900/50 text-neutral-500 border-neutral-800/50 hover:bg-neutral-800/30'
@@ -310,7 +310,7 @@ const ColorInput: React.FC<{ label: string; value: string; onChange: (v: string)
   onChange,
 }) => (
   <div className="space-y-1">
-    <span className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</span>
+    <span className="text-2xs uppercase tracking-widest text-neutral-500">{label}</span>
     <InlineColorPicker value={value} onChange={onChange} label={label} />
   </div>
 );

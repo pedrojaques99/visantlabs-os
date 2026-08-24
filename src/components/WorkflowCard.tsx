@@ -143,24 +143,24 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
-                'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0 whitespace-nowrap',
+                'px-2 py-0.5 rounded border font-mono text-2xs flex-shrink-0 whitespace-nowrap',
                 categoryConfig.badgeClass
               )}
             >
               {categoryConfig.label}
             </span>
-            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
+            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-2xs flex-shrink-0 whitespace-nowrap">
               {t('workflows.stats.nodes')
                 ? t('workflows.stats.nodes').replace('{count}', String(nodeCount))
                 : `${nodeCount} nodes`}
             </span>
-            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
+            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-2xs flex-shrink-0 whitespace-nowrap">
               {t('workflows.stats.edges')
                 ? t('workflows.stats.edges').replace('{count}', String(edgeCount))
                 : `${edgeCount} edges`}
             </span>
             {usageCount > 0 && (
-              <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap flex items-center gap-1">
+              <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-2xs flex-shrink-0 whitespace-nowrap flex items-center gap-1">
                 <Play size={10} />
                 {usageCount}
               </span>
@@ -172,7 +172,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                   e.stopPropagation();
                   onToggleLike();
                 }}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-[10px] font-mono flex-shrink-0 whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors text-2xs font-mono flex-shrink-0 whitespace-nowrap ${
                   isLiked
                     ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
                     : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'
@@ -195,7 +195,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
               {workflow.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-1.5 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-500 font-mono text-[10px] hover:border-neutral-600/40 hover:text-neutral-400 transition-colors"
+                  className="px-1.5 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-500 font-mono text-2xs hover:border-neutral-600/40 hover:text-neutral-400 transition-colors"
                   title={tag}
                 >
                   #{tag}

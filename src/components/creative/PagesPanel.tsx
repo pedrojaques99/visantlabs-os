@@ -79,7 +79,7 @@ const Thumb: React.FC<ThumbProps> = ({
     >
       {/* Thumbnail body — placeholder canvas. Real render is too heavy at 56px. */}
       <div
-        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-[10px] font-mono uppercase tracking-widest text-neutral-600"
+        className="rounded-md overflow-hidden border border-white/10 bg-neutral-900 flex items-center justify-center text-2xs font-mono uppercase tracking-widest text-neutral-600"
         style={{ height: THUMB_HEIGHT }}
       >
         {page.format}
@@ -123,7 +123,7 @@ const Thumb: React.FC<ThumbProps> = ({
       {/* Name + index */}
       <div className="mt-1 flex items-center justify-between gap-1 px-0.5">
         <span
-          className={`text-[10px] font-mono tabular-nums ${
+          className={`text-2xs font-mono tabular-nums ${
             isActive ? 'text-brand-cyan' : 'text-neutral-500'
           }`}
         >
@@ -144,7 +144,7 @@ const Thumb: React.FC<ThumbProps> = ({
               e.stopPropagation();
             }}
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 bg-neutral-800/60 border border-brand-cyan/40 rounded px-1 text-[10px] text-white outline-none"
+            className="flex-1 min-w-0 bg-neutral-800/60 border border-brand-cyan/40 rounded px-1 text-2xs text-white outline-none"
           />
         ) : (
           <button
@@ -153,7 +153,7 @@ const Thumb: React.FC<ThumbProps> = ({
               e.stopPropagation();
               setEditing(true);
             }}
-            className="flex-1 min-w-0 text-left truncate text-[10px] text-neutral-400 hover:text-white flex items-center gap-1"
+            className="flex-1 min-w-0 text-left truncate text-2xs text-neutral-400 hover:text-white flex items-center gap-1"
             title="Duplo-clique pra renomear"
           >
             <span className="truncate">{page.name ?? `Página ${index + 1}`}</span>

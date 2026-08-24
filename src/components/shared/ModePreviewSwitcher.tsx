@@ -142,7 +142,7 @@ export const ModePreviewSwitcher: React.FC<ModePreviewSwitcherProps> = React.mem
             key={m.id}
             onClick={() => onChange(m.id)}
             className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest transition-[color,background-color,border-color,box-shadow] duration-150 rounded-[3px]',
+              'flex items-center gap-1.5 px-2.5 py-1 text-2xs font-mono uppercase tracking-widest transition-[color,background-color,border-color,box-shadow] duration-150 rounded-[3px]',
               mode === m.id
                 ? 'bg-white/10 text-white shadow-sm'
                 : 'text-neutral-600 hover:text-neutral-400'

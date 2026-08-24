@@ -857,7 +857,7 @@ export const AdminPage: React.FC = () => {
               { label: 'Pro', value: 'pro' },
               { label: 'Enterprise', value: 'enterprise' },
             ]}
-            className="text-xs font-mono text-brand-cyan"
+            className="text-xs font-mono text-foreground"
             onSave={handleSaveUser}
           />
         ),
@@ -919,7 +919,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'creditsRemaining',
         header: t('admin.remaining'),
         cell: ({ row }) => (
-          <span className="text-xs font-mono text-brand-cyan tabular-nums">
+          <span className="text-xs font-mono text-foreground tabular-nums">
             {row.original.creditsRemaining}
           </span>
         ),
@@ -965,7 +965,7 @@ export const AdminPage: React.FC = () => {
         header: t('admin.referredBy'),
         cell: ({ row }) => (
           <span
-            className="text-[11px] text-neutral-500 truncate max-w-[150px] inline-block"
+            className="text-2xs text-neutral-500 truncate max-w-[150px] inline-block"
             title={row.original.referredBy || ''}
           >
             {row.original.referredBy
@@ -1042,7 +1042,7 @@ export const AdminPage: React.FC = () => {
                     maximumFractionDigits: 2,
                   })}
                 </p>
-                <p className="text-neutral-400 text-[10px]">
+                <p className="text-neutral-400 text-2xs">
                   {(row.original.apiCostUSD * 6).toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
@@ -1072,7 +1072,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'totalGenerations',
         header: 'Imagens',
         cell: ({ row }) => (
-          <span className="font-mono text-brand-cyan text-center block">
+          <span className="font-mono text-foreground text-center block">
             {row.original.totalGenerations ?? 0}
           </span>
         ),
@@ -1083,7 +1083,7 @@ export const AdminPage: React.FC = () => {
         accessorKey: 'totalTokensUsed',
         header: 'Tokens',
         cell: ({ row }) => (
-          <span className="text-[10px] font-mono text-neutral-400 text-center block">
+          <span className="text-2xs font-mono text-neutral-400 text-center block">
             {(row.original.totalTokensUsed ?? 0).toLocaleString()}
           </span>
         ),
@@ -1101,17 +1101,17 @@ export const AdminPage: React.FC = () => {
           return (
             <div className="flex gap-1 flex-wrap">
               {b.gemini && (
-                <span className="px-1 py-px rounded text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                <span className="px-1 py-px rounded text-2xs font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
                   G
                 </span>
               )}
               {b.seedream && (
-                <span className="px-1 py-px rounded text-[10px] font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                <span className="px-1 py-px rounded text-2xs font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30">
                   SD
                 </span>
               )}
               {b.openai && (
-                <span className="px-1 py-px rounded text-[10px] font-bold bg-success/15 text-success border border-success/30">
+                <span className="px-1 py-px rounded text-2xs font-bold bg-success/15 text-success border border-success/30">
                   OAI
                 </span>
               )}
@@ -1128,7 +1128,7 @@ export const AdminPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 border-neutral-800 hover:bg-neutral-800 text-[10px] font-mono"
+              className="h-8 border-neutral-800 hover:bg-neutral-800 text-2xs font-mono"
               onClick={() => handleViewHistory(row.original)}
             >
               <History className="h-3 w-3 mr-1" />
@@ -1262,10 +1262,10 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <User className="h-6 w-6 text-brand-cyan" />
+                                  <User className="h-6 w-6 text-foreground" />
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                                  <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                                  <TrendingUp className="h-3 w-3 text-foreground" />
                                   <span>+12.5%</span>
                                 </div>
                               </div>
@@ -1288,11 +1288,11 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <CreditCard className="h-6 w-6 text-brand-cyan" />
+                                  <CreditCard className="h-6 w-6 text-foreground" />
                                 </div>
                               </div>
                               <div>
-                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                                   {data.activeSubscriptions}
                                 </p>
                                 <p className="text-sm text-neutral-500 font-mono">
@@ -1310,7 +1310,7 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <ShoppingCart className="h-6 w-6 text-brand-cyan" />
+                                  <ShoppingCart className="h-6 w-6 text-foreground" />
                                 </div>
                               </div>
                               <div>
@@ -1332,10 +1332,10 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <UserPlus className="h-6 w-6 text-brand-cyan" />
+                                  <UserPlus className="h-6 w-6 text-foreground" />
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                                  <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                                  <TrendingUp className="h-3 w-3 text-foreground" />
                                   <span>30d</span>
                                 </div>
                               </div>
@@ -1361,11 +1361,11 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <Image className="h-6 w-6 text-brand-cyan" />
+                                  <Image className="h-6 w-6 text-foreground" />
                                 </div>
                               </div>
                               <div>
-                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                                   {data.totalMockupsGenerated}
                                 </p>
                                 <p className="text-sm text-neutral-500 font-mono">
@@ -1383,11 +1383,11 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <CreditCard className="h-6 w-6 text-brand-cyan" />
+                                  <CreditCard className="h-6 w-6 text-foreground" />
                                 </div>
                               </div>
                               <div>
-                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                                   {data.totalCreditsUsed}
                                 </p>
                                 <p className="text-sm text-neutral-500 font-mono">
@@ -1405,11 +1405,11 @@ export const AdminPage: React.FC = () => {
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                  <HardDrive className="h-6 w-6 text-brand-cyan" />
+                                  <HardDrive className="h-6 w-6 text-foreground" />
                                 </div>
                               </div>
                               <div>
-                                <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                                <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                                   {data.totalStorageUsed !== undefined
                                     ? formatBytes(data.totalStorageUsed)
                                     : '—'}
@@ -1512,11 +1512,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Image className="h-6 w-6 text-brand-cyan" />
+                              <Image className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {Object.values(data.generationStats.imagesByModel).reduce(
                                 (sum, stats) => sum + stats.total,
                                 0
@@ -1536,11 +1536,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Image className="h-6 w-6 text-brand-cyan" />
+                              <Image className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {data.generationStats.videos.total}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
@@ -1557,11 +1557,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Type className="h-6 w-6 text-brand-cyan" />
+                              <Type className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {data.generationStats.textTokens.totalSteps}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
@@ -1578,11 +1578,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Type className="h-6 w-6 text-brand-cyan" />
+                              <Type className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {(
                                 data.generationStats.textTokens.inputTokens +
                                 data.generationStats.textTokens.outputTokens
@@ -1624,22 +1624,22 @@ export const AdminPage: React.FC = () => {
                                   <div className="flex items-start justify-between mb-4">
                                     <div className="p-3 bg-brand-cyan/10 rounded-md">
                                       {feature === 'mockupmachine' ? (
-                                        <Image className="h-6 w-6 text-brand-cyan" />
+                                        <Image className="h-6 w-6 text-foreground" />
                                       ) : feature === 'brandingmachine' ? (
-                                        <Type className="h-6 w-6 text-brand-cyan" />
+                                        <Type className="h-6 w-6 text-foreground" />
                                       ) : (
-                                        <Palette className="h-6 w-6 text-brand-cyan" />
+                                        <Palette className="h-6 w-6 text-foreground" />
                                       )}
                                     </div>
                                     <Badge
                                       variant="outline"
-                                      className="text-[10px] bg-neutral-950/70 border-neutral-600/30 text-brand-cyan"
+                                      className="text-2xs bg-neutral-950/70 border-neutral-600/30 text-foreground"
                                     >
                                       {total} total
                                     </Badge>
                                   </div>
                                   <div className="mb-4">
-                                    <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">
+                                    <p className="text-sm font-semibold text-foreground font-mono mb-4 uppercase">
                                       {feature}
                                     </p>
                                     <div className="space-y-3">
@@ -1647,7 +1647,7 @@ export const AdminPage: React.FC = () => {
                                         <span className="text-xs text-neutral-400 font-mono">
                                           {t('admin.images')}
                                         </span>
-                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                        <span className="text-sm font-bold text-foreground font-mono">
                                           {stats.images}
                                         </span>
                                       </div>
@@ -1655,7 +1655,7 @@ export const AdminPage: React.FC = () => {
                                         <span className="text-xs text-neutral-400 font-mono">
                                           {t('admin.videos')}
                                         </span>
-                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                        <span className="text-sm font-bold text-foreground font-mono">
                                           {stats.videos}
                                         </span>
                                       </div>
@@ -1663,7 +1663,7 @@ export const AdminPage: React.FC = () => {
                                         <span className="text-xs text-neutral-400 font-mono">
                                           {t('admin.textSteps')}
                                         </span>
-                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                        <span className="text-sm font-bold text-foreground font-mono">
                                           {stats.textSteps}
                                         </span>
                                       </div>
@@ -1671,7 +1671,7 @@ export const AdminPage: React.FC = () => {
                                         <span className="text-xs text-neutral-400 font-mono">
                                           {t('admin.promptsGenerated')}
                                         </span>
-                                        <span className="text-sm font-bold text-brand-cyan font-mono">
+                                        <span className="text-sm font-bold text-foreground font-mono">
                                           {stats.promptGenerations}
                                         </span>
                                       </div>
@@ -1689,7 +1689,7 @@ export const AdminPage: React.FC = () => {
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-600/30 transition-colors duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Image className="h-5 w-5 text-brand-cyan" />
+                          <Image className="h-5 w-5 text-foreground" />
                           {t('admin.generationsByModel')}
                         </CardTitle>
                         <CardDescription className="text-neutral-500">
@@ -1729,7 +1729,7 @@ export const AdminPage: React.FC = () => {
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-600/30 transition-colors duration-300">
                         <CardHeader>
                           <CardTitle className="text-neutral-300 flex items-center gap-2">
-                            <Image className="h-5 w-5 text-brand-cyan" />
+                            <Image className="h-5 w-5 text-foreground" />
                             {t('admin.imagesByModel')}
                           </CardTitle>
                           <CardDescription className="text-neutral-500">
@@ -1746,7 +1746,7 @@ export const AdminPage: React.FC = () => {
                                 >
                                   <CardContent className="p-4">
                                     <p
-                                      className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate"
+                                      className="text-xs font-semibold text-foreground font-mono mb-2 truncate"
                                       title={model}
                                     >
                                       {model}
@@ -1756,7 +1756,7 @@ export const AdminPage: React.FC = () => {
                                     </p>
                                     {Object.keys(stats.byResolution).length > 0 && (
                                       <div className="mt-3 pt-3 border-t border-white/10">
-                                        <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">
+                                        <p className="text-2xs text-neutral-500 font-mono mb-2 uppercase">
                                           {t('admin.resolues')}
                                         </p>
                                         <div className="flex flex-wrap gap-1">
@@ -1765,7 +1765,7 @@ export const AdminPage: React.FC = () => {
                                               <Badge
                                                 key={resolution}
                                                 variant="outline"
-                                                className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400"
+                                                className="text-2xs px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400"
                                               >
                                                 {resolution}: {count}
                                               </Badge>
@@ -1786,7 +1786,7 @@ export const AdminPage: React.FC = () => {
                       <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-600/30 transition-colors duration-300">
                         <CardHeader>
                           <CardTitle className="text-neutral-300 flex items-center gap-2">
-                            <Image className="h-5 w-5 text-brand-cyan" />
+                            <Image className="h-5 w-5 text-foreground" />
                             {t('admin.videosByModel')}
                           </CardTitle>
                           <CardDescription className="text-neutral-500">
@@ -1830,7 +1830,7 @@ export const AdminPage: React.FC = () => {
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-600/30 transition-colors duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Type className="h-5 w-5 text-brand-cyan" />
+                          <Type className="h-5 w-5 text-foreground" />
                           {t('admin.textProcessing')}
                         </CardTitle>
                         <CardDescription className="text-neutral-500">
@@ -1857,7 +1857,7 @@ export const AdminPage: React.FC = () => {
                               <p className="text-xs text-neutral-500 font-mono mb-2">
                                 {t('admin.inputTokens')}
                               </p>
-                              <p className="text-2xl font-bold text-brand-cyan font-mono">
+                              <p className="text-2xl font-bold text-foreground font-mono">
                                 {data.generationStats.textTokens.inputTokens.toLocaleString()}
                               </p>
                             </CardContent>
@@ -1869,7 +1869,7 @@ export const AdminPage: React.FC = () => {
                               <p className="text-xs text-neutral-500 font-mono mb-2">
                                 {t('admin.outputTokens')}
                               </p>
-                              <p className="text-2xl font-bold text-brand-cyan font-mono">
+                              <p className="text-2xl font-bold text-foreground font-mono">
                                 {data.generationStats.textTokens.outputTokens.toLocaleString()}
                               </p>
                             </CardContent>
@@ -1905,7 +1905,7 @@ export const AdminPage: React.FC = () => {
                               <p className="text-xs text-neutral-500 font-mono mb-2">
                                 {t('admin.promptInput')}
                               </p>
-                              <p className="text-2xl font-bold text-brand-cyan font-mono">
+                              <p className="text-2xl font-bold text-foreground font-mono">
                                 {data.generationStats.byFeature[
                                   'prompt-generation'
                                 ].inputTokens.toLocaleString()}
@@ -1920,7 +1920,7 @@ export const AdminPage: React.FC = () => {
                     <Card className="bg-neutral-900 border border-white/10 rounded-xl hover:border-neutral-600/30 transition-colors duration-300">
                       <CardHeader>
                         <CardTitle className="text-neutral-300 flex items-center gap-2">
-                          <Database className="h-5 w-5 text-brand-cyan" />
+                          <Database className="h-5 w-5 text-foreground" />
                           Canvas Node Analytics
                         </CardTitle>
                         <CardDescription className="text-neutral-500">
@@ -1930,7 +1930,7 @@ export const AdminPage: React.FC = () => {
                       <CardContent>
                         {canvasEventsLoading ? (
                           <div className="flex items-center justify-center py-12">
-                            <RefreshCw className="h-5 w-5 animate-spin text-brand-cyan" />
+                            <RefreshCw className="h-5 w-5 animate-spin text-foreground" />
                             <span className="ml-2 text-neutral-500 font-mono text-sm">
                               {t('admin.carregando_analytics')}
                             </span>
@@ -1954,7 +1954,7 @@ export const AdminPage: React.FC = () => {
                                           ? 'text-destructive'
                                           : e.event === 'generation_completed'
                                             ? 'text-success'
-                                            : 'text-brand-cyan'
+                                            : 'text-foreground'
                                       }`}
                                     >
                                       {e.count.toLocaleString()}
@@ -1991,7 +1991,7 @@ export const AdminPage: React.FC = () => {
                                             style={{ width: `${pct}%` }}
                                           />
                                         </div>
-                                        <span className="text-sm font-bold text-brand-cyan font-mono w-16 text-right">
+                                        <span className="text-sm font-bold text-foreground font-mono w-16 text-right">
                                           {n.count}
                                         </span>
                                       </div>
@@ -2047,7 +2047,7 @@ export const AdminPage: React.FC = () => {
                             </p>
                             <button
                               onClick={() => fetchCanvasEventStats()}
-                              className="mt-3 text-brand-cyan hover:underline text-sm font-mono"
+                              className="mt-3 text-foreground hover:underline text-sm font-mono"
                             >
                               Carregar agora
                             </button>
@@ -2066,7 +2066,7 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Users className="h-6 w-6 text-brand-cyan" />
+                              <Users className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
@@ -2087,11 +2087,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <CreditCard className="h-6 w-6 text-brand-cyan" />
+                              <CreditCard className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {data.activeSubscriptions}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
@@ -2108,11 +2108,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <CreditCard className="h-6 w-6 text-brand-cyan" />
+                              <CreditCard className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {data.totalMonthlyCredits + data.totalManualCredits}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
@@ -2129,11 +2129,11 @@ export const AdminPage: React.FC = () => {
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-brand-cyan/10 rounded-md">
-                              <Image className="h-6 w-6 text-brand-cyan" />
+                              <Image className="h-6 w-6 text-foreground" />
                             </div>
                           </div>
                           <div>
-                            <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                            <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                               {data.totalMockupsSaved}
                             </p>
                             <p className="text-sm text-neutral-500 font-mono">
@@ -2154,15 +2154,15 @@ export const AdminPage: React.FC = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between mb-4">
                               <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                <Link2 className="h-6 w-6 text-brand-cyan" />
+                                <Link2 className="h-6 w-6 text-foreground" />
                               </div>
                               <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
-                                <TrendingUp className="h-3 w-3 text-brand-cyan" />
+                                <TrendingUp className="h-3 w-3 text-foreground" />
                                 <span>+10.2%</span>
                               </div>
                             </div>
                             <div>
-                              <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
+                              <p className="text-3xl font-bold text-foreground mb-2 font-mono">
                                 {data.referralStats.totalReferralCount}
                               </p>
                               <p className="text-sm text-neutral-500 font-mono">
@@ -2179,7 +2179,7 @@ export const AdminPage: React.FC = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between mb-4">
                               <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                <UserPlus className="h-6 w-6 text-brand-cyan" />
+                                <UserPlus className="h-6 w-6 text-foreground" />
                               </div>
                             </div>
                             <div>
@@ -2200,7 +2200,7 @@ export const AdminPage: React.FC = () => {
                           <CardContent className="p-6">
                             <div className="flex items-start justify-between mb-4">
                               <div className="p-3 bg-brand-cyan/10 rounded-md">
-                                <Link2 className="h-6 w-6 text-brand-cyan" />
+                                <Link2 className="h-6 w-6 text-foreground" />
                               </div>
                             </div>
                             <div>
@@ -2231,7 +2231,7 @@ export const AdminPage: React.FC = () => {
                             searchKey="name"
                             searchPlaceholder={t('admin.searchPlaceholder')}
                             title={t('admin.userList')}
-                            icon={<Users className="h-5 w-5 text-brand-cyan" />}
+                            icon={<Users className="h-5 w-5 text-foreground" />}
                           />
                         ) : (
                           <TableSkeleton rows={10} />
@@ -2280,7 +2280,7 @@ export const AdminPage: React.FC = () => {
                             </div>
                             <Badge
                               variant="outline"
-                              className="text-[10px] bg-neutral-950/70 border-orange-500/30 text-orange-500"
+                              className="text-2xs bg-neutral-950/70 border-orange-500/30 text-orange-500"
                             >
                               {t('admin.estimated')}
                             </Badge>
@@ -2326,7 +2326,7 @@ export const AdminPage: React.FC = () => {
                             </div>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] bg-neutral-950/70 ${
+                              className={`text-2xs bg-neutral-950/70 ${
                                 profitStats.isPositive
                                   ? 'border-blue-500/30 text-blue-500'
                                   : 'border-destructive/30 text-destructive'
@@ -2780,7 +2780,7 @@ export const AdminPage: React.FC = () => {
 
                     {feedbackLoading && !feedbackStats ? (
                       <div className="flex items-center justify-center py-20">
-                        <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
+                        <RotateCcw className="h-8 w-8 text-foreground animate-spin" />
                       </div>
                     ) : feedbackStats ? (
                       <>
@@ -2791,7 +2791,7 @@ export const AdminPage: React.FC = () => {
                               <p className="text-xs font-mono text-neutral-500 uppercase mb-1">
                                 {t('admin.approval_rate')}
                               </p>
-                              <p className="text-4xl font-bold text-brand-cyan">
+                              <p className="text-4xl font-bold text-foreground">
                                 {feedbackStats.overall.approvalRate.toFixed(1)}%
                               </p>
                               <p className="text-xs text-neutral-500 mt-1">
@@ -2950,10 +2950,10 @@ export const AdminPage: React.FC = () => {
                                         <Badge
                                           className={`text-xs font-mono ${
                                             row.approvalRate >= 70
-                                              ? 'bg-emerald-900/40 text-success border-emerald-800'
+                                              ? 'bg-success/40 text-success border-success'
                                               : row.approvalRate >= 40
-                                                ? 'bg-yellow-900/40 text-warning border-yellow-800'
-                                                : 'bg-red-900/40 text-destructive border-red-800'
+                                                ? 'bg-warning/40 text-warning border-warning'
+                                                : 'bg-destructive/40 text-destructive border-destructive'
                                           }`}
                                         >
                                           {row.approvalRate.toFixed(1)}%
@@ -3014,7 +3014,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="text-destructive text-xs font-mono">
                                           {r.down}
                                         </TableCell>
-                                        <TableCell className="text-xs font-mono text-brand-cyan">
+                                        <TableCell className="text-xs font-mono text-foreground">
                                           {r.approvalRate?.toFixed(1)}%
                                         </TableCell>
                                       </TableRow>
@@ -3070,7 +3070,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="text-destructive text-xs font-mono">
                                           {r.down}
                                         </TableCell>
-                                        <TableCell className="text-xs font-mono text-brand-cyan">
+                                        <TableCell className="text-xs font-mono text-foreground">
                                           {r.approvalRate?.toFixed(1)}%
                                         </TableCell>
                                       </TableRow>
@@ -3126,7 +3126,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="text-destructive text-xs font-mono">
                                           {r.down}
                                         </TableCell>
-                                        <TableCell className="text-xs font-mono text-brand-cyan">
+                                        <TableCell className="text-xs font-mono text-foreground">
                                           {r.approvalRate?.toFixed(1)}%
                                         </TableCell>
                                       </TableRow>
@@ -3221,7 +3221,7 @@ export const AdminPage: React.FC = () => {
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                                             : t.category === 'category'
                                               ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                              : 'bg-amber-900/30 text-warning border-amber-800/50'
+                                              : 'bg-warning/30 text-warning border-warning/50'
                                         }`}
                                       >
                                         {t.tag}
@@ -3259,7 +3259,7 @@ export const AdminPage: React.FC = () => {
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
                                             : t.category === 'category'
                                               ? 'bg-purple-900/30 text-purple-300 border-purple-800/50'
-                                              : 'bg-amber-900/30 text-warning border-amber-800/50'
+                                              : 'bg-warning/30 text-warning border-warning/50'
                                         }`}
                                       >
                                         {t.tag}
@@ -3349,7 +3349,7 @@ export const AdminPage: React.FC = () => {
                                                   .map((tag: string, j: number) => (
                                                     <Badge
                                                       key={j}
-                                                      className="mr-1 text-[10px] bg-neutral-800 text-neutral-400 border-neutral-700"
+                                                      className="mr-1 text-2xs bg-neutral-800 text-neutral-400 border-neutral-700"
                                                     >
                                                       {tag}
                                                     </Badge>
@@ -3378,7 +3378,7 @@ export const AdminPage: React.FC = () => {
                         <Button
                           size="sm"
                           onClick={() => fetchFeedbackStats(feedbackFeatureFilter)}
-                          className="bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/20"
+                          className="bg-brand-cyan/10 text-foreground border-brand-cyan/30 hover:bg-brand-cyan/20"
                         >
                           Load Stats
                         </Button>
@@ -3448,7 +3448,7 @@ export const AdminPage: React.FC = () => {
                             <Card key={kpi.label} className="bg-neutral-900 border border-white/10">
                               <CardContent className="p-5">
                                 <div className="flex items-center justify-between mb-2">
-                                  <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+                                  <span className="text-2xs font-mono uppercase tracking-wider text-neutral-500">
                                     {kpi.label}
                                   </span>
                                   <kpi.icon className="h-3.5 w-3.5 text-neutral-600" />
@@ -3473,7 +3473,7 @@ export const AdminPage: React.FC = () => {
                                     </span>
                                     <Badge
                                       variant="outline"
-                                      className="text-[10px] border-neutral-700 text-neutral-500"
+                                      className="text-2xs border-neutral-700 text-neutral-500"
                                     >
                                       {s.avgDuration}ms avg
                                     </Badge>
@@ -3547,16 +3547,16 @@ export const AdminPage: React.FC = () => {
                                 <Table>
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono">
                                         Tool
                                       </TableHead>
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                                         Calls
                                       </TableHead>
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                                         Avg ms
                                       </TableHead>
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                                         Scope
                                       </TableHead>
                                     </TableRow>
@@ -3576,7 +3576,7 @@ export const AdminPage: React.FC = () => {
                                         <TableCell className="text-right">
                                           <Badge
                                             variant="outline"
-                                            className="text-[10px] border-neutral-700 text-neutral-500"
+                                            className="text-2xs border-neutral-700 text-neutral-500"
                                           >
                                             {tool.scope}
                                           </Badge>
@@ -3601,13 +3601,13 @@ export const AdminPage: React.FC = () => {
                                 <Table>
                                   <TableHeader>
                                     <TableRow className="border-neutral-800 hover:bg-transparent">
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono">
                                         User
                                       </TableHead>
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                                         Calls
                                       </TableHead>
-                                      <TableHead className="text-neutral-500 text-[10px] font-mono text-right">
+                                      <TableHead className="text-neutral-500 text-2xs font-mono text-right">
                                         Last Active
                                       </TableHead>
                                     </TableRow>
@@ -3678,7 +3678,7 @@ export const AdminPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl flex items-center gap-2 text-neutral-200">
-                    <History className="h-5 w-5 text-brand-cyan" />
+                    <History className="h-5 w-5 text-foreground" />
                     Histórico de Uso
                   </CardTitle>
                   <CardDescription className="text-neutral-500 font-mono text-xs">
@@ -3698,7 +3698,7 @@ export const AdminPage: React.FC = () => {
             <CardContent className="p-0 overflow-y-auto flex-1 custom-scrollbar">
               {isHistoryLoading && historyRecords.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
-                  <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
+                  <RotateCcw className="h-8 w-8 text-foreground animate-spin" />
                   <p className="text-neutral-500 font-mono text-sm">
                     {t('admin.carregando_registros')}
                   </p>
@@ -3737,7 +3737,7 @@ export const AdminPage: React.FC = () => {
                     <TableBody>
                       {historyRecords.map((record) => (
                         <TableRow key={record.id} className="border-white/10 hover:bg-white/5">
-                          <TableCell className="py-3 text-[11px] font-mono text-neutral-400">
+                          <TableCell className="py-3 text-2xs font-mono text-neutral-400">
                             {new Date(record.timestamp).toLocaleString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
@@ -3749,13 +3749,13 @@ export const AdminPage: React.FC = () => {
                           <TableCell className="py-3">
                             <Badge
                               variant="outline"
-                              className="text-[10px] bg-neutral-800/50 border-neutral-700/50 text-neutral-400 capitalize"
+                              className="text-2xs bg-neutral-800/50 border-neutral-700/50 text-neutral-400 capitalize"
                             >
                               {record.feature}
                             </Badge>
                           </TableCell>
                           <TableCell className="py-3">
-                            <span className="text-[11px] font-mono text-neutral-300">
+                            <span className="text-2xs font-mono text-neutral-300">
                               {record.model || '—'}
                             </span>
                           </TableCell>
@@ -3763,7 +3763,7 @@ export const AdminPage: React.FC = () => {
                             <Badge
                               variant="outline"
                               className={cn(
-                                'text-[10px] border-none',
+                                'text-2xs border-none',
                                 record.imagesGenerated > 0
                                   ? 'bg-brand-cyan/20 text-brand-cyan'
                                   : 'bg-purple-500/20 text-purple-400'
@@ -3775,13 +3775,13 @@ export const AdminPage: React.FC = () => {
                           <TableCell className="py-3">
                             <div className="flex flex-col gap-0.5">
                               {record.imagesGenerated > 0 && (
-                                <span className="text-[10px] font-mono text-neutral-300">
+                                <span className="text-2xs font-mono text-neutral-300">
                                   {record.imagesGenerated} img{' '}
                                   {record.resolution && `(${record.resolution})`}
                                 </span>
                               )}
                               {(record.inputTokens > 0 || record.outputTokens > 0) && (
-                                <span className="text-[10px] font-mono text-neutral-500">
+                                <span className="text-2xs font-mono text-neutral-500">
                                   {record.inputTokens + record.outputTokens} tokens
                                 </span>
                               )}
@@ -3790,7 +3790,7 @@ export const AdminPage: React.FC = () => {
                           <TableCell className="py-3 text-right">
                             <span
                               className={cn(
-                                'text-[11px] font-mono font-bold',
+                                'text-2xs font-mono font-bold',
                                 record.creditsDeducted > 0 ? 'text-brand-cyan' : 'text-neutral-600'
                               )}
                             >
@@ -3826,7 +3826,7 @@ export const AdminPage: React.FC = () => {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="border-t border-neutral-800 py-3 bg-neutral-950/20 flex justify-between text-[10px] font-mono text-neutral-500">
+            <CardFooter className="border-t border-neutral-800 py-3 bg-neutral-950/20 flex justify-between text-2xs font-mono text-neutral-500">
               <span>Total de registros: {historyPagination.total}</span>
               <span>{t('admin.todos_os_tipos_de_gerao_includos')}</span>
             </CardFooter>

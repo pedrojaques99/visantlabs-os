@@ -1003,10 +1003,10 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
             nenhum: um default silencioso é uma recomendação anônima. Só
             renderiza quando há de fato uma lente (nada é "zero informação"). */}
         {(activeBrandName || sourcePrefix || color) && !similar && !collectionView && (
-          <div className="flex flex-wrap items-center gap-2 mb-4 text-[11px] text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 mb-4 text-2xs text-muted-foreground">
             {activeBrandName && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1">
-                <Sparkles className="h-3 w-3 text-brand-cyan" />
+                <Sparkles className="h-3 w-3 text-foreground" />
                 Ordenado por afinidade com{' '}
                 <strong className="font-medium text-foreground">{activeBrandName}</strong>
               </span>
@@ -1262,7 +1262,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                               'cursor-pointer text-xs',
                               active
                                 ? 'bg-muted text-foreground border-border'
-                                : 'border-border text-muted-foreground hover:border-ring hover:text-foreground'
+                                : 'border-border text-muted-foreground hover:border-border-hover hover:text-foreground'
                             )}
                             onClick={() => setDim(dk, v.value)}
                           >
@@ -1393,7 +1393,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
           scope !== 'collections' &&
           grid.length > 0 &&
           page >= pages && (
-            <p className="text-center text-[10px] text-muted-foreground py-6">
+            <p className="text-center text-2xs text-muted-foreground py-6">
               {grid.length} de {total} referências
             </p>
           )}
@@ -1550,12 +1550,12 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
         !!facets?.tags?.length &&
         createPortal(
           <div className="px-2 pb-3">
-            <p className="px-1 pb-1.5 text-[11px] text-sidebar-foreground/50">Tags</p>
+            <p className="px-1 pb-1.5 text-2xs text-sidebar-foreground/50">Tags</p>
             <div className="flex flex-wrap gap-1">
               {activeTag && (
                 <button
                   onClick={() => setActiveTag('')}
-                  className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-[11px]"
+                  className="inline-flex items-center gap-1 rounded-md bg-sidebar-accent text-sidebar-accent-foreground px-1.5 py-0.5 text-2xs"
                 >
                   {activeTag}
                   <X className="h-2.5 w-2.5" />
@@ -1568,7 +1568,7 @@ export const ReferencesPage: React.FC<{ embedded?: boolean }> = ({ embedded = fa
                   <button
                     key={t.value}
                     onClick={() => setActiveTag(t.value)}
-                    className="rounded-md px-1.5 py-0.5 text-[11px] text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                    className="rounded-md px-1.5 py-0.5 text-2xs text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                   >
                     {t.value}
                   </button>
@@ -1645,7 +1645,7 @@ const CollectionsGrid: React.FC<{
       ) : (
         <button
           onClick={() => setCreating(true)}
-          className="aspect-[4/3] rounded-xl border border-dashed border-border hover:border-ring text-muted-foreground hover:text-foreground transition-colors flex flex-col items-center justify-center gap-2"
+          className="aspect-[4/3] rounded-xl border border-dashed border-border hover:border-border-hover text-muted-foreground hover:text-foreground transition-colors flex flex-col items-center justify-center gap-2"
         >
           <FolderPlus className="h-6 w-6" />
           <span className="text-xs">Nova coleção</span>
@@ -1689,7 +1689,7 @@ const CollectionsGrid: React.FC<{
               {!c.isPublic && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
               {c.name}
             </p>
-            <p className="text-[10px] font-mono text-muted-foreground">
+            <p className="text-2xs font-mono text-muted-foreground">
               {c.count} {c.count === 1 ? 'item' : 'itens'}
             </p>
           </div>
@@ -1796,9 +1796,9 @@ const SaveToCollectionDialog: React.FC<{ items: ReferenceItem[]; onClose: () => 
                   {c.name}
                 </span>
                 {savedIds.has(c.id) ? (
-                  <Check className="h-4 w-4 text-brand-cyan shrink-0" />
+                  <Check className="h-4 w-4 text-foreground shrink-0" />
                 ) : (
-                  <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+                  <span className="text-2xs font-mono text-muted-foreground tabular-nums">
                     {c.count}
                   </span>
                 )}
@@ -2109,13 +2109,13 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
                   className="w-full aspect-square object-cover"
                 />
                 <div className="p-2 space-y-2">
-                  <p className="text-[11px] truncate" title={ref.name}>
+                  <p className="text-2xs truncate" title={ref.name}>
                     {ref.name}
                   </p>
                   <div className="flex gap-1.5">
                     <Button
                       size="sm"
-                      className="h-7 flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-[11px]"
+                      className="h-7 flex-1 bg-brand-cyan text-black hover:bg-brand-cyan/80 text-2xs"
                       disabled={busy === ref.id}
                       onClick={() => act(ref.id, 'approve')}
                     >
@@ -2124,7 +2124,7 @@ const ModerationQueue: React.FC<{ onClose: () => void; onResolved: () => void }>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 text-[11px]"
+                      className="h-7 flex-1 border-destructive/40 text-destructive hover:bg-destructive/10 text-2xs"
                       disabled={busy === ref.id}
                       onClick={() => act(ref.id, 'reject')}
                     >
@@ -2147,12 +2147,12 @@ const DuplicateAdminBar: React.FC<{
   onDedupe: () => void;
   deduping: boolean;
 }> = ({ report, onDedupe, deduping }) => (
-  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
-    <span className="text-xs font-mono text-amber-500">
+  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+    <span className="text-xs font-mono text-warning">
       {report.groups.length} grupo(s) · {report.redundant} cópia(s) redundante(s)
     </span>
-    <span className="text-[11px] text-muted-foreground">
-      Marcadas no grid: <span className="text-amber-500">×N</span> = mantida,{' '}
+    <span className="text-2xs text-muted-foreground">
+      Marcadas no grid: <span className="text-warning">×N</span> = mantida,{' '}
       <span className="text-destructive">dup</span> = removível
       {report.unhashed > 0 && ` · ${report.unhashed} sem hash (não comparáveis)`}
     </span>
@@ -2189,11 +2189,11 @@ const LowResAdminBar: React.FC<{
 }> = ({ report, onPurge, purging }) => {
   const deletable = report.total - report.protected;
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
-      <span className="text-xs font-mono text-amber-500">
+    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+      <span className="text-xs font-mono text-warning">
         {report.total} abaixo de {report.maxShortSide}px
       </span>
-      <span className="text-[11px] text-muted-foreground">
+      <span className="text-2xs text-muted-foreground">
         Tiras e fragmentos raspados (ex.: 654×4) que não carregam ideia de design
         {report.protected > 0 && ` · ${report.protected} em coleção, preservada(s)`}
       </span>
@@ -2265,7 +2265,7 @@ const FilterControls: React.FC<{
               : 'Busca exata (substring). Clique para busca por significado.'
           }
           className={cn(
-            'absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-[10px] font-mono transition-colors',
+            'absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 py-0.5 text-2xs font-mono transition-colors',
             semantic
               ? 'bg-brand-cyan/15 text-brand-cyan'
               : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -2399,11 +2399,9 @@ const MasonryCard: React.FC<{
             />
             {/* gradient + meta on hover */}
             <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-[11px] font-medium text-white truncate">
-                {refTitle(item, locale)}
-              </p>
+              <p className="text-2xs font-medium text-white truncate">{refTitle(item, locale)}</p>
               {item.country && (
-                <p className="text-[10px] font-mono text-neutral-300 truncate">
+                <p className="text-2xs font-mono text-neutral-300 truncate">
                   {countryFlag(item.country)} {item.country}
                 </p>
               )}
@@ -2420,7 +2418,7 @@ const MasonryCard: React.FC<{
               </span>
             )}
             {typeof item.score === 'number' && (
-              <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur px-1.5 py-0.5 text-[10px] font-mono text-neutral-100">
+              <span className="absolute top-2 right-2 rounded-full bg-black/60 backdrop-blur px-1.5 py-0.5 text-2xs font-mono text-neutral-100">
                 {Math.round(item.score * 100)}%
               </span>
             )}
@@ -2430,9 +2428,9 @@ const MasonryCard: React.FC<{
             {dupe && (
               <span
                 className={cn(
-                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-[10px] font-mono backdrop-blur',
+                  'absolute bottom-2 right-2 rounded-full px-1.5 py-0.5 text-2xs font-mono backdrop-blur',
                   dupe.isKeeper
-                    ? 'bg-amber-500/80 text-black'
+                    ? 'bg-warning/80 text-black'
                     : 'bg-destructive/80 text-destructive-foreground'
                 )}
                 title={
@@ -2655,7 +2653,7 @@ const Lightbox: React.FC<{
               {/* Resolução — só quando é BAIXA. Um selo em 100% das refs seria
                   ruído; aqui ele explica por que a imagem está pixelada. */}
               {isLowRes && item.width && (
-                <p className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                <p className="inline-flex items-center gap-1.5 text-2xs font-mono text-muted-foreground border border-border rounded-full px-2 py-0.5">
                   <ImageIcon className="h-3 w-3" />
                   Baixa resolução · {item.width}×{item.height}
                 </p>
@@ -2666,7 +2664,7 @@ const Lightbox: React.FC<{
                   referência visual. */}
               {item.palette && item.palette.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground mb-1.5">
+                  <p className="text-2xs font-mono uppercase tracking-wide text-muted-foreground mb-1.5">
                     Paleta
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -2710,7 +2708,7 @@ const Lightbox: React.FC<{
 
               <div className="flex flex-wrap gap-1.5">
                 {item.country && (
-                  <Badge className="bg-muted text-foreground border-border text-[11px]">
+                  <Badge className="bg-muted text-foreground border-border text-2xs">
                     {flag ? (
                       <span className="mr-1">{flag}</span>
                     ) : (
@@ -2723,27 +2721,18 @@ const Lightbox: React.FC<{
                   </Badge>
                 )}
                 {item.region && (
-                  <Badge
-                    variant="outline"
-                    className="border-border text-muted-foreground text-[11px]"
-                  >
+                  <Badge variant="outline" className="border-border text-muted-foreground text-2xs">
                     <Globe className="h-3 w-3 mr-1" />
                     {REGION_LABELS[item.region] || item.region}
                   </Badge>
                 )}
                 {prov.year && (
-                  <Badge
-                    variant="outline"
-                    className="border-border text-muted-foreground text-[11px]"
-                  >
+                  <Badge variant="outline" className="border-border text-muted-foreground text-2xs">
                     {prov.year}
                   </Badge>
                 )}
                 {prov.awardSource && (
-                  <Badge
-                    variant="outline"
-                    className="border-border text-muted-foreground text-[11px]"
-                  >
+                  <Badge variant="outline" className="border-border text-muted-foreground text-2xs">
                     {prov.awardSource}
                   </Badge>
                 )}
@@ -2751,14 +2740,14 @@ const Lightbox: React.FC<{
 
               {prov.designer && (
                 <div>
-                  <span className="text-[11px] text-muted-foreground">Designer</span>
+                  <span className="text-2xs text-muted-foreground">Designer</span>
                   <p className="text-sm text-muted-foreground">{prov.designer}</p>
                 </div>
               )}
 
               {item.description && (
                 <div>
-                  <span className="text-[11px] text-muted-foreground">Descrição</span>
+                  <span className="text-2xs text-muted-foreground">Descrição</span>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-6">
                     {item.description}
                   </p>
@@ -2768,15 +2757,15 @@ const Lightbox: React.FC<{
               {/* Tags — click to drop into the library filtered by it (shareable route) */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <span className="text-[11px] text-muted-foreground">Tags</span>
+                  <span className="text-2xs text-muted-foreground">Tags</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(showAllTags ? item.tags : item.tags.slice(0, 6)).map((t) => (
                       <Badge
                         key={t}
                         variant="outline"
                         className={cn(
-                          'text-[10px] px-1.5 py-0 border-border text-muted-foreground transition-colors',
-                          onTag && 'cursor-pointer hover:border-ring hover:text-foreground'
+                          'text-2xs px-1.5 py-0 border-border text-muted-foreground transition-colors',
+                          onTag && 'cursor-pointer hover:border-border-hover hover:text-foreground'
                         )}
                         onClick={onTag ? () => onTag(t) : undefined}
                       >
@@ -2786,7 +2775,7 @@ const Lightbox: React.FC<{
                     {!showAllTags && item.tags.length > 6 && (
                       <button
                         onClick={() => setShowAllTags(true)}
-                        className="text-[10px] font-mono text-muted-foreground hover:text-foreground px-1 transition-colors"
+                        className="text-2xs font-mono text-muted-foreground hover:text-foreground px-1 transition-colors"
                       >
                         +{item.tags.length - 6}
                       </button>
@@ -2807,8 +2796,8 @@ const Lightbox: React.FC<{
                         key={`${v}-${i}`}
                         variant="outline"
                         className={cn(
-                          'text-[10px] px-1.5 py-0 border-border text-muted-foreground transition-colors',
-                          onTag && 'cursor-pointer hover:border-ring hover:text-foreground'
+                          'text-2xs px-1.5 py-0 border-border text-muted-foreground transition-colors',
+                          onTag && 'cursor-pointer hover:border-border-hover hover:text-foreground'
                         )}
                         onClick={onTag ? () => onTag(v) : undefined}
                       >
@@ -3054,7 +3043,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
         <div className="space-y-4">
           <div
             onClick={pick}
-            className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-ring transition-colors cursor-pointer"
+            className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-border-hover transition-colors cursor-pointer"
           >
             <Upload className="h-7 w-7 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground">
@@ -3062,7 +3051,7 @@ const UploadDialog: React.FC<{ onClose: () => void; onDone: (madePublic: boolean
                 ? `${files.length} imagem(ns) selecionada(s)`
                 : 'Clique para selecionar imagens (máx 10)'}
             </p>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-2xs text-muted-foreground mt-1">
               Grátis — as imagens entram na fila de revisão. Após aprovação, a IA extrai dimensões e
               infere a origem.
             </p>

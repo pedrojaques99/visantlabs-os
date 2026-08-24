@@ -109,9 +109,7 @@ export const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onEditAI }
     >
       <div className="flex items-center gap-1.5 pr-1">
         <ImageIcon size={12} className="text-neutral-400" />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-          Fundo
-        </span>
+        <span className="text-2xs font-bold uppercase tracking-widest text-neutral-400">Fundo</span>
       </div>
       <Divider />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
@@ -204,7 +202,7 @@ export const CreativeToolbar: React.FC = () => {
         <>
           <div className="flex items-center gap-1.5 pr-1">
             <Layers size={12} className="text-neutral-400" />
-            <span className="text-[10px] font-mono text-neutral-400 tabular-nums">
+            <span className="text-2xs font-mono text-neutral-400 tabular-nums">
               {selectedCount}
             </span>
           </div>
@@ -225,7 +223,7 @@ export const CreativeToolbar: React.FC = () => {
             <select
               value={logoUrl || ''}
               onChange={(e) => updateLogo(e.target.value)}
-              className="bg-neutral-800 text-[10px] font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
+              className="bg-neutral-800 text-2xs font-bold uppercase tracking-widest text-neutral-300 px-3 py-1.5 rounded-md border border-white/10 outline-none focus:border-neutral-600 max-w-[120px] appearance-none cursor-pointer pr-7 transition-colors hover:bg-neutral-750"
             >
               <option disabled value="">
                 Trocar...
@@ -389,7 +387,7 @@ export const CreativeToolbar: React.FC = () => {
 
           {/* Stroke width + color */}
           <div className="flex items-center gap-1 pl-1" title="Borda">
-            <span className="text-[10px] font-medium text-neutral-500">B</span>
+            <span className="text-2xs font-medium text-neutral-500">B</span>
             <input
               type="number"
               value={Math.round(shapeData.strokeWidth ?? 0)}

@@ -46,7 +46,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = React.memo(
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 'flex-1 uppercase tracking-widest transition-colors',
-                isMobile ? 'py-3 text-[11px]' : 'py-2 text-[10px]',
+                isMobile ? 'py-3 text-2xs' : 'py-2 text-2xs',
                 activeTab === tab.id
                   ? 'text-white border-b border-white'
                   : 'text-neutral-600 hover:text-neutral-400'

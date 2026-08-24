@@ -106,7 +106,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                   <Button
                     variant="ghost"
                     onClick={() => handleRemoveItem(category, index)}
-                    className={`p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start mt-2 ${
+                    className={`p-1 hover:bg-destructive/20 rounded transition-colors hover:text-destructive self-start mt-2 ${
                       theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                     title="Remover item"
@@ -149,14 +149,14 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
       {renderCategory(
         'strengths',
         t('branding.strengths') || 'Strengths',
-        'text-green-400',
-        'hover:border-green-400/30'
+        'text-success',
+        'hover:border-success/30'
       )}
       {renderCategory(
         'weaknesses',
         t('branding.weaknesses') || 'Weaknesses',
-        'text-red-400',
-        'hover:border-red-400/30'
+        'text-destructive',
+        'hover:border-destructive/30'
       )}
       {renderCategory(
         'opportunities',

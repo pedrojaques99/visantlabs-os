@@ -162,9 +162,9 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       case 'saving':
         return <GlitchLoader size={12} color="brand-cyan" className="inline-block ml-1" />;
       case 'saved':
-        return <Check size={12} className="inline-block ml-1 text-green-500" />;
+        return <Check size={12} className="inline-block ml-1 text-success" />;
       case 'error':
-        return <AlertCircle size={12} className="inline-block ml-1 text-red-500" />;
+        return <AlertCircle size={12} className="inline-block ml-1 text-destructive" />;
       default:
         return null;
     }
@@ -192,7 +192,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       ) : (
         <Edit2
           size={12}
-          className="inline-block ml-1 opacity-0 group-hover:opacity-50 text-brand-cyan"
+          className="inline-block ml-1 opacity-0 group-hover:opacity-50 text-foreground"
         />
       )}
     </span>

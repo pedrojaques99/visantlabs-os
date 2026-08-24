@@ -19,7 +19,7 @@ import type {
 
 const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{children}</span>
+    <span className="text-2xs uppercase tracking-wider text-muted-foreground">{children}</span>
   );
 };
 
@@ -141,14 +141,17 @@ export const MarketResearchV2Section: React.FC<{ data: MarketResearchV2 }> = ({ 
 
   const colorMap = {
     green: {
-      dark: 'border-green-500/40 bg-green-950/20',
-      light: 'border-green-500/40 bg-green-50/50',
+      dark: 'border-success/40 bg-success/20',
+      light: 'border-success/40 bg-success/50',
     },
     amber: {
-      dark: 'border-amber-500/40 bg-amber-950/20',
-      light: 'border-amber-500/40 bg-amber-50/50',
+      dark: 'border-warning/40 bg-warning/20',
+      light: 'border-warning/40 bg-warning/50',
     },
-    cyan: { dark: 'border-cyan-500/40 bg-cyan-950/20', light: 'border-cyan-500/40 bg-cyan-50/50' },
+    cyan: {
+      dark: 'border-brand-cyan/40 bg-brand-cyan/20',
+      light: 'border-brand-cyan/40 bg-brand-cyan/50',
+    },
   };
 
   return (
@@ -269,8 +272,8 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
           {data.painPoints.map((pain, i) => (
             <SectionCard key={i} className="!p-3">
               <div
-                className={`text-[10px] font-mono uppercase ${
-                  theme === 'dark' ? 'text-red-400/70' : 'text-red-600'
+                className={`text-2xs font-mono uppercase ${
+                  theme === 'dark' ? 'text-destructive/70' : 'text-destructive'
                 }`}
               >
                 {pain.id}
@@ -297,8 +300,8 @@ export const PersonaV2Section: React.FC<{ data: PersonaV2 }> = ({ data }) => {
           {data.desires.map((desire, i) => (
             <SectionCard key={i} className="!p-3">
               <div
-                className={`text-[10px] font-mono uppercase ${
-                  theme === 'dark' ? 'text-green-400/70' : 'text-green-600'
+                className={`text-2xs font-mono uppercase ${
+                  theme === 'dark' ? 'text-success/70' : 'text-success'
                 }`}
               >
                 {desire.id}
@@ -372,7 +375,7 @@ export const ArchetypesV2Section: React.FC<{
                     {item.arch.examples.map((ex, j) => (
                       <span
                         key={j}
-                        className={`px-2 py-0.5 rounded text-[10px] font-manrope ${
+                        className={`px-2 py-0.5 rounded text-2xs font-manrope ${
                           theme === 'dark'
                             ? 'bg-neutral-800/60 text-neutral-300'
                             : 'bg-neutral-100 text-neutral-700'
@@ -526,9 +529,7 @@ export const ColorPaletteV2Section: React.FC<{ colors: NamedColor[] }> = ({ colo
                 >
                   {color.name}
                 </h5>
-                <span className={`text-[10px] font-mono uppercase text-neutral-500`}>
-                  {color.hex}
-                </span>
+                <span className={`text-2xs font-mono uppercase text-neutral-500`}>{color.hex}</span>
               </div>
               <p
                 className={`text-xs font-manrope mt-0.5 ${

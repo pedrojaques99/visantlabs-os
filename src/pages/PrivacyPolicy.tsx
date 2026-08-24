@@ -324,7 +324,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                             href="https://tools.google.com/dlpage/gaoptout"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                            className="text-foreground hover:text-brand-cyan/80 underline"
                           >
                             {t('privacy.policy.google_analytics_optout_browser_add')}
                           </a>
@@ -390,7 +390,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                           {item.split('contato@visant.co')[0]}
                           <a
                             href="mailto:contato@visant.co"
-                            className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                            className="text-foreground hover:text-brand-cyan/80 underline"
                           >
                             {t('privacy.policy.contatovisantco')}
                           </a>
@@ -406,7 +406,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                             href="https://myaccount.google.com/permissions"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                            className="text-foreground hover:text-brand-cyan/80 underline"
                           >
                             myaccount.google.com/permissions
                           </a>
@@ -451,7 +451,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}
                 <a
                   href="mailto:contato@visant.co"
-                  className="text-brand-cyan hover:text-brand-cyan/80 underline"
+                  className="text-foreground hover:text-brand-cyan/80 underline"
                 >
                   {t('privacy.policy.contatovisantco_2')}
                 </a>

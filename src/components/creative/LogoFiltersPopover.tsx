@@ -15,7 +15,7 @@ const Slider: React.FC<{
   suffix?: string;
 }> = ({ label, value, min, max, step = 1, onChange, suffix }) => (
   <div className="flex flex-col gap-1">
-    <div className="flex items-center justify-between text-[10px] font-mono">
+    <div className="flex items-center justify-between text-2xs font-mono">
       <span className="text-neutral-400 uppercase tracking-wider">{label}</span>
       <span className="text-white tabular-nums">
         {value.toFixed(step < 1 ? 2 : 0)}
@@ -44,9 +44,9 @@ const NumPair: React.FC<{
   labelB: string;
 }> = ({ label, ax, ay, onA, onB, labelA, labelB }) => (
   <div className="flex flex-col gap-1">
-    <span className="text-[10px] text-neutral-400 uppercase tracking-wider">{label}</span>
+    <span className="text-2xs text-neutral-400 uppercase tracking-wider">{label}</span>
     <div className="grid grid-cols-2 gap-1">
-      <label className="flex items-center gap-1 text-[10px] font-mono">
+      <label className="flex items-center gap-1 text-2xs font-mono">
         <span className="text-neutral-500 w-4">{labelA}</span>
         <input
           type="number"
@@ -55,7 +55,7 @@ const NumPair: React.FC<{
           className="w-full bg-neutral-800/60 border border-white/10 rounded px-1 py-0.5 text-white text-right focus:outline-none focus:border-neutral-600"
         />
       </label>
-      <label className="flex items-center gap-1 text-[10px] font-mono">
+      <label className="flex items-center gap-1 text-2xs font-mono">
         <span className="text-neutral-500 w-4">{labelB}</span>
         <input
           type="number"
@@ -157,7 +157,7 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
             className="fixed z-[10001] bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl p-3 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-300">
+              <span className="text-2xs font-bold uppercase tracking-widest text-neutral-300">
                 Ajustes
               </span>
               <button
@@ -196,7 +196,7 @@ export const LogoFiltersPopover: React.FC<Props> = ({ layerId, data }) => {
               suffix="px"
             />
 
-            <label className="flex items-center gap-2 text-[10px] font-mono text-neutral-300">
+            <label className="flex items-center gap-2 text-2xs font-mono text-neutral-300">
               <input
                 type="checkbox"
                 checked={!!filters.grayscale}

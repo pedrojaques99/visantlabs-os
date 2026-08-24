@@ -225,7 +225,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
             size="sm"
             onClick={() => setReloadNonce((n) => n + 1)}
             disabled={isLoadingHistory}
-            className="h-7 px-3 text-[11px] font-mono shrink-0"
+            className="h-7 px-3 text-2xs font-mono shrink-0"
           >
             {t('usageHistory.retry') || 'Tentar novamente'}
           </Button>
@@ -263,7 +263,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
               <p className="text-xl font-bold text-neutral-100 font-mono tabular-nums leading-none">
                 {stat.value}
               </p>
-              <p className="text-[10px] tracking-wide text-neutral-600 mt-1.5 truncate">
+              <p className="text-2xs tracking-wide text-neutral-600 mt-1.5 truncate">
                 {stat.label}
               </p>
             </div>
@@ -279,7 +279,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
               key={opt.value}
               onClick={() => setHistoryFilter(opt.value)}
               className={cn(
-                'px-3 py-1 rounded-md text-[11px] font-mono transition-colors',
+                'px-3 py-1 rounded-md text-2xs font-mono transition-colors',
                 historyFilter === opt.value
                   ? 'bg-white/10 text-neutral-200'
                   : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.03]'
@@ -353,7 +353,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                     {record.model ? (
                       <Badge
                         variant="outline"
-                        className="text-[10px] bg-white/[0.03] border-white/10 text-neutral-500"
+                        className="text-2xs bg-white/[0.03] border-white/10 text-neutral-500"
                       >
                         {record.model}
                       </Badge>
@@ -364,12 +364,12 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                   <TableCell className="px-4 py-3 text-xs text-neutral-500 font-mono">
                     <div className="flex flex-wrap gap-1">
                       {record.stepNumber && (
-                        <span className="text-[10px] bg-white/[0.03] px-1.5 py-0.5 rounded text-neutral-600">
+                        <span className="text-2xs bg-white/[0.03] px-1.5 py-0.5 rounded text-neutral-600">
                           Step {record.stepNumber}
                         </span>
                       )}
                       {record.resolution && (
-                        <span className="text-[10px] bg-white/[0.03] px-1.5 py-0.5 rounded text-neutral-600">
+                        <span className="text-2xs bg-white/[0.03] px-1.5 py-0.5 rounded text-neutral-600">
                           {record.resolution}
                         </span>
                       )}
@@ -387,7 +387,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
         {/* Pagination */}
         {historyPagination.total > historyPagination.limit && (
           <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-neutral-800">
-            <p className="text-[10px] text-neutral-600 font-mono">
+            <p className="text-2xs text-neutral-600 font-mono">
               {historyPagination.offset + 1}–
               {Math.min(
                 historyPagination.offset + historyPagination.limit,
@@ -406,7 +406,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                   }))
                 }
                 disabled={historyPagination.offset === 0}
-                className="h-7 px-3 text-[11px] font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30"
+                className="h-7 px-3 text-2xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30"
               >
                 {t('usageHistory.previous') || 'Anterior'}
               </Button>
@@ -420,7 +420,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                   }))
                 }
                 disabled={!historyPagination.hasMore}
-                className="h-7 px-3 text-[11px] font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30"
+                className="h-7 px-3 text-2xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30"
               >
                 {t('usageHistory.next') || 'Próximo'}
               </Button>

@@ -62,7 +62,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 px-1">
           <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-          <span className="text-[10px] font-medium text-neutral-400">
+          <span className="text-2xs font-medium text-neutral-400">
             {t('mockup.segmentTitle') || '01. SEGMENTO'}
           </span>
         </div>
@@ -96,7 +96,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
 
                 <span
                   className={cn(
-                    'text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
+                    'text-2xs font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
                     isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
                   )}
                 >
@@ -118,7 +118,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2 px-1">
           <div className="w-1.5 h-1.5 rounded-full bg-neutral-600" />
-          <span className="text-[10px] font-medium text-neutral-400">
+          <span className="text-2xs font-medium text-neutral-400">
             {t('mockup.vibeTitle') || '02. VIBE / DIREÇÃO'}
           </span>
         </div>
@@ -154,7 +154,7 @@ export const VibeGrid: React.FC<VibeGridProps> = ({
 
                 <span
                   className={cn(
-                    'text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
+                    'text-2xs font-bold uppercase tracking-widest transition-colors duration-300 text-center leading-tight',
                     isSelected ? 'text-brand-cyan' : 'text-neutral-500 group-hover:text-neutral-300'
                   )}
                 >

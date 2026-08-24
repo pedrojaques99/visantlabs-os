@@ -165,7 +165,7 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
       )}
     >
       {app.isHidden && (
-        <div className="absolute top-0 right-0 z-50 bg-warning/90 text-black px-2.5 py-0.5 text-[10px] font-semibold rounded-bl-xl">
+        <div className="absolute top-0 right-0 z-50 bg-warning/90 text-black px-2.5 py-0.5 text-2xs font-semibold rounded-bl-xl">
           {t('apps.hidden')}
         </div>
       )}
@@ -253,27 +253,27 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
           <h3
             className={cn(
               'font-semibold text-neutral-100 group-hover:text-white transition-colors leading-snug',
-              featured ? 'text-base sm:text-lg' : 'text-[15px]'
+              featured ? 'text-base sm:text-lg' : 'text-base'
             )}
           >
             {app.name}
           </h3>
           <div className="flex items-center gap-1.5 shrink-0">
             {isComingSoon ? (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600">
+              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-white/5 text-neutral-600">
                 {t('apps.badge.soon')}
               </span>
             ) : isFree ? (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-success/10 text-success/80">
+              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success/80">
                 {t('apps.badge.free')}
               </span>
             ) : isPremium ? (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80">
+              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan/80">
                 {t('apps.badge.pro')}
               </span>
             ) : null}
             {isAlpha && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20">
+              <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400/80 border border-violet-500/20">
                 {t('apps.badge.alpha')}
               </span>
             )}
@@ -282,13 +282,13 @@ function AppCard({ app, isAdmin, hasAccess, featured = false, onOpen, onEdit }: 
         <p
           className={cn(
             'text-neutral-500 leading-relaxed flex-1',
-            featured ? 'text-sm line-clamp-2 max-w-2xl' : 'text-[13px] line-clamp-2'
+            featured ? 'text-sm line-clamp-2 max-w-2xl' : 'text-sm line-clamp-2'
           )}
         >
           {description}
         </p>
         {isPremium && !hasAccess && (
-          <span className="mt-1 inline-flex items-center gap-1 text-[11px] text-neutral-600">
+          <span className="mt-1 inline-flex items-center gap-1 text-2xs text-neutral-600">
             <Lock size={10} /> {t('apps.requiresPro')}
           </span>
         )}
@@ -322,7 +322,7 @@ function CategoryChip({ icon: Icon, label, count, active, onClick }: RailItemPro
     >
       <Icon size={13} className="shrink-0" />
       {label}
-      <span className={cn('text-[10px]', active ? 'text-neutral-400' : 'text-neutral-600')}>
+      <span className={cn('text-2xs', active ? 'text-neutral-400' : 'text-neutral-600')}>
         {count}
       </span>
     </button>
@@ -988,7 +988,7 @@ export const AppsPage: React.FC = () => {
         {railSlot &&
           createPortal(
             <nav className="space-y-0.5">
-              <p className="px-2.5 pb-1.5 text-[11px] text-sidebar-foreground/50">
+              <p className="px-2.5 pb-1.5 text-2xs text-sidebar-foreground/50">
                 {t('apps.categoriesLabel')}
               </p>
               {[
@@ -1018,7 +1018,7 @@ export const AppsPage: React.FC = () => {
                       )
                     }
                     className={cn(
-                      'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition-colors',
+                      'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
                       active
                         ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
                         : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -1026,7 +1026,7 @@ export const AppsPage: React.FC = () => {
                   >
                     <Icon size={14} className="shrink-0" />
                     <span className="flex-1 truncate text-left">{item.label}</span>
-                    <span className="text-[11px] tabular-nums text-sidebar-foreground/40">
+                    <span className="text-2xs tabular-nums text-sidebar-foreground/40">
                       {item.count}
                     </span>
                   </button>
@@ -1181,7 +1181,7 @@ export const AppsPage: React.FC = () => {
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="text-sm font-medium text-brand-cyan hover:text-white transition-colors flex items-center gap-1.5 mt-2"
+                  className="text-sm font-medium text-foreground hover:text-white transition-colors flex items-center gap-1.5 mt-2"
                 >
                   <X size={14} /> {t('apps.empty.clearFilters')}
                 </button>

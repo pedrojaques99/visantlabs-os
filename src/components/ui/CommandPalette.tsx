@@ -248,7 +248,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       }
                       className="flex-1 bg-transparent py-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
-                    <kbd className="hidden select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:flex">
+                    <kbd className="hidden select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground sm:flex">
                       ESC
                     </kbd>
                   </div>
@@ -282,7 +282,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           className={cn(
                             'mb-1 last:mb-0',
                             '[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2',
-                            '[&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[10px]',
+                            '[&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-2xs',
                             '[&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase',
                             '[&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground'
                           )}
@@ -321,7 +321,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   </Command.List>
 
                   {/* Footer — dicas de teclado (Figma / Linear style) */}
-                  <div className="flex items-center gap-4 border-t border-border px-4 py-2.5 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-4 border-t border-border px-4 py-2.5 text-2xs text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <KbdIcon>
                         <ArrowUp className="h-3 w-3" />

@@ -97,7 +97,7 @@ const TabCode: React.FC<TabCodeProps> = ({ js, python }) => {
             className={`px-3 py-1.5 text-xs font-mono rounded-md transition-colors ${
               tab === t
                 ? 'bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30'
-                : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-ring'
+                : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border-hover'
             }`}
           >
             {t === 'js' ? 'JavaScript' : 'Python'}
@@ -369,7 +369,7 @@ export const GettingStartedPage: React.FC = () => {
                   >
                     <ChevronRight
                       size={12}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-brand-cyan"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-foreground"
                     />
                     {s.label}
                   </a>
@@ -410,7 +410,7 @@ export const GettingStartedPage: React.FC = () => {
                       <span>Don't have a key yet?</span>
                       <Link
                         to="/settings/api-keys"
-                        className="text-brand-cyan hover:text-brand-cyan/80 transition-colors flex items-center gap-1 font-mono text-xs"
+                        className="text-foreground hover:text-brand-cyan/80 transition-colors flex items-center gap-1 font-mono text-xs"
                       >
                         Create an API key <ExternalLink size={12} />
                       </Link>
@@ -427,7 +427,7 @@ export const GettingStartedPage: React.FC = () => {
                         with dynamic client registration. See{' '}
                         <Link
                           to="/settings/connected-apps"
-                          className="text-brand-cyan hover:text-brand-cyan/80 transition-colors"
+                          className="text-foreground hover:text-brand-cyan/80 transition-colors"
                         >
                           Connected Apps
                         </Link>{' '}
@@ -632,7 +632,7 @@ export const GettingStartedPage: React.FC = () => {
                     <div className="grid sm:grid-cols-3 gap-4">
                       <Link
                         to="/api/docs"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-colors"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-border-hover hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <BookOpen size={16} className="text-muted-foreground" />
@@ -648,7 +648,7 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/settings/api-keys"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-colors"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-border-hover hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <Key size={16} className="text-muted-foreground" />
@@ -664,7 +664,7 @@ export const GettingStartedPage: React.FC = () => {
                       </Link>
                       <Link
                         to="/profile?tab=overview"
-                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-ring hover:bg-muted transition-colors"
+                        className="group flex flex-col gap-2 p-4 bg-muted/40 border border-border rounded-lg hover:border-border-hover hover:bg-muted transition-colors"
                       >
                         <div className="flex items-center justify-between">
                           <Zap size={16} className="text-muted-foreground" />

@@ -278,7 +278,7 @@ export const SvgOptimizerPage: React.FC = () => {
   const panelContent = hasItems ? (
     <div className="space-y-5">
       {/* Queue: Add more */}
-      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-[10px] font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
+      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900/30 text-neutral-500 hover:text-neutral-300 text-2xs font-mono uppercase tracking-wider cursor-pointer transition-colors duration-200">
         <Upload size={12} />
         Add files
         <input
@@ -311,9 +311,9 @@ export const SvgOptimizerPage: React.FC = () => {
               <FileCode size={14} className="text-neutral-600 flex-shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono text-neutral-300 truncate">{item.fileName}</p>
+              <p className="text-2xs font-mono text-neutral-300 truncate">{item.fileName}</p>
               {item.status === 'done' && (
-                <span className="text-[10px] font-mono text-neutral-500">
+                <span className="text-2xs font-mono text-neutral-500">
                   {item.source === 'png'
                     ? formatBytes(item.originalSize) + ' png'
                     : formatBytes(item.originalSize)}{' '}
@@ -321,16 +321,16 @@ export const SvgOptimizerPage: React.FC = () => {
                 </span>
               )}
               {item.status === 'tracing' && (
-                <span className="text-[10px] font-mono text-warning">tracing...</span>
+                <span className="text-2xs font-mono text-warning">tracing...</span>
               )}
               {item.status === 'error' && (
-                <span className="text-[10px] font-mono text-destructive">error</span>
+                <span className="text-2xs font-mono text-destructive">error</span>
               )}
             </div>
             {item.status === 'done' && (
               <span
                 className={cn(
-                  'text-[10px] font-mono flex-shrink-0',
+                  'text-2xs font-mono flex-shrink-0',
                   item.savings > 0 ? 'text-success' : 'text-neutral-600'
                 )}
               >
@@ -366,7 +366,7 @@ export const SvgOptimizerPage: React.FC = () => {
                 type="checkbox"
                 checked={options[key as keyof typeof options]}
                 onChange={(e) => setOption(key as keyof typeof options, e.target.checked)}
-                className="w-3 h-3 rounded border-neutral-700 bg-neutral-900 text-brand-cyan accent-brand-cyan"
+                className="w-3 h-3 rounded border-neutral-700 bg-neutral-900 text-foreground accent-brand-cyan"
               />
               <span className="text-xs font-medium text-neutral-500">{OPTION_LABELS[key]}</span>
             </label>
@@ -390,7 +390,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   whileTap={{ scale: 0.96, transition: transitions.press }}
                   onClick={() => handlePresetChange(p)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
+                    'px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
                     localPreset === p
                       ? 'bg-brand-cyan/20 text-brand-cyan ring-1 ring-brand-cyan/30'
                       : 'bg-neutral-900 text-neutral-500 hover:text-neutral-300'
@@ -487,7 +487,7 @@ export const SvgOptimizerPage: React.FC = () => {
 
   // ── Status bar ───────────────────────────────────────────────────────────
   const statusBarContent = hasItems ? (
-    <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest tabular-nums">
+    <div className="flex items-center gap-3 text-2xs font-mono uppercase tracking-widest tabular-nums">
       <span className="text-neutral-400">
         {doneItems.length}/{items.length}
       </span>
@@ -524,7 +524,7 @@ export const SvgOptimizerPage: React.FC = () => {
             <div className="flex flex-col items-center gap-2">
               <FileCode size={28} className="text-neutral-500" />
               <h2 className="text-sm font-medium text-neutral-300">Optimize & trace SVG files</h2>
-              <p className="text-[11px] text-neutral-600">
+              <p className="text-2xs text-neutral-600">
                 Drop SVG or PNG — PNG auto-traced to vector
               </p>
             </div>
@@ -543,7 +543,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <span className="text-xs font-medium text-neutral-500 text-center px-4">
                 Drop PNG or SVG files — batch supported
               </span>
-              <span className="text-[11px] text-neutral-600">
+              <span className="text-2xs text-neutral-600">
                 PNG will be traced to vector automatically
               </span>
               <input
@@ -562,7 +562,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   key="paste-toggle"
                   {...fadeInUp}
                   onClick={() => setPasteMode(true)}
-                  className="w-full max-w-md text-center text-[11px] font-medium text-neutral-600 hover:text-neutral-400 transition-colors duration-200"
+                  className="w-full max-w-md text-center text-2xs font-medium text-neutral-600 hover:text-neutral-400 transition-colors duration-200"
                 >
                   or paste SVG code
                 </motion.button>
@@ -577,7 +577,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   <div className="flex gap-2">
                     <Button
                       onClick={handlePasteSubmit}
-                      className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 text-xs font-medium"
+                      className="bg-brand-cyan/10 hover:bg-brand-cyan/20 text-foreground border border-brand-cyan/30 text-xs font-medium"
                     >
                       Optimize
                     </Button>
@@ -616,7 +616,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <button
                 onClick={() => setViewMode('preview')}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
                   viewMode === 'preview'
                     ? 'bg-brand-cyan/20 text-brand-cyan'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -627,7 +627,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <button
                 onClick={() => setViewMode('edit')}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
                   viewMode === 'edit'
                     ? 'bg-warning/20 text-warning'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -638,7 +638,7 @@ export const SvgOptimizerPage: React.FC = () => {
               <button
                 onClick={() => setViewMode('code')}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider transition-colors duration-200',
+                  'flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono uppercase tracking-wider transition-colors duration-200',
                   viewMode === 'code'
                     ? 'bg-brand-cyan/20 text-brand-cyan'
                     : 'text-neutral-500 hover:text-neutral-300'
@@ -673,7 +673,7 @@ export const SvgOptimizerPage: React.FC = () => {
                   className="flex-1 flex flex-col items-center justify-center gap-3 p-4"
                 >
                   <AlertCircle size={24} className="text-destructive" />
-                  <span className="text-[11px] font-medium text-destructive text-center">
+                  <span className="text-2xs font-medium text-destructive text-center">
                     {selectedItem.error || 'Trace failed'}
                   </span>
                   {selectedItem.source === 'png' && (
@@ -749,11 +749,11 @@ export const SvgOptimizerPage: React.FC = () => {
             {selectedItem && selectedItem.status === 'done' && (
               <div className="absolute top-2 right-2 flex items-center gap-1">
                 {selectedItem.source === 'png' && (
-                  <span className="text-[10px] font-mono uppercase tracking-wider bg-warning/10 text-warning px-2 py-0.5 rounded">
+                  <span className="text-2xs font-mono uppercase tracking-wider bg-warning/10 text-warning px-2 py-0.5 rounded">
                     traced
                   </span>
                 )}
-                <span className="text-[10px] font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded">
+                <span className="text-2xs font-mono uppercase tracking-wider bg-neutral-800 text-neutral-200 px-2 py-0.5 rounded">
                   {selectedItem.savings > 0 ? `-${selectedItem.savings}%` : '0%'}
                 </span>
               </div>

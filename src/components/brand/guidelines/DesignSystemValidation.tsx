@@ -23,15 +23,15 @@ import type { BrandGuideline } from '@/lib/figma-types';
 const ColorsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const colors = guideline.colors || [];
   if (colors.length === 0)
-    return <p className="text-[10px] text-neutral-600 font-mono">No colors defined yet</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No colors defined yet</p>;
   return (
     <div className="grid grid-cols-4 gap-2">
       {colors.slice(0, 8).map((c, i) => (
         <div key={i} className="rounded-lg overflow-hidden border border-white/5">
           <div className="h-12" style={{ backgroundColor: c.hex }} />
           <div className="px-2 py-1.5 bg-neutral-900/60">
-            <p className="text-[9px] font-bold text-white truncate">{c.name}</p>
-            <p className="text-[9px] font-mono text-neutral-500 uppercase">{c.hex}</p>
+            <p className="text-3xs font-bold text-white truncate">{c.name}</p>
+            <p className="text-3xs font-mono text-neutral-500 uppercase">{c.hex}</p>
           </div>
         </div>
       ))}
@@ -42,12 +42,12 @@ const ColorsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
 const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const fonts = guideline.typography || [];
   if (fonts.length === 0)
-    return <p className="text-[10px] text-neutral-600 font-mono">No typography defined yet</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No typography defined yet</p>;
   const primary = fonts[0];
   return (
     <div className="space-y-3">
       <div className="p-3 rounded-xl bg-neutral-900/40 border border-white/[0.03]">
-        <p className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest mb-1">
+        <p className="text-3xs font-mono text-neutral-600 uppercase tracking-widest mb-1">
           {primary.role}
         </p>
         <p
@@ -60,7 +60,7 @@ const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline 
         >
           {guideline.identity?.name || 'Brand Name'}
         </p>
-        <p className="text-[9px] font-mono text-neutral-500 mt-1">
+        <p className="text-3xs font-mono text-neutral-500 mt-1">
           {primary.family} · {primary.style || 'Regular'} · {primary.size || 16}px
         </p>
       </div>
@@ -69,7 +69,7 @@ const TypographyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline 
           {fonts.slice(1).map((f, i) => (
             <span
               key={i}
-              className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/5 text-[10px] text-neutral-400"
+              className="px-2 py-1 rounded-md bg-white/[0.03] border border-white/5 text-2xs text-neutral-400"
               style={{ fontFamily: f.family }}
             >
               {f.family} <span className="text-neutral-600">· {f.role}</span>
@@ -265,7 +265,7 @@ const CardsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =>
 const GradientsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const grads = guideline.gradients || [];
   if (grads.length === 0)
-    return <p className="text-[10px] text-neutral-600 font-mono">No gradients defined</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No gradients defined</p>;
   return (
     <div className="grid grid-cols-3 gap-2">
       {grads.slice(0, 6).map((g) => (
@@ -281,7 +281,7 @@ const GradientsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
             }}
           />
           <div className="px-2 py-1 bg-neutral-900/60">
-            <p className="text-[9px] font-mono text-neutral-400 truncate">{g.name}</p>
+            <p className="text-3xs font-mono text-neutral-400 truncate">{g.name}</p>
           </div>
         </div>
       ))}
@@ -292,7 +292,7 @@ const GradientsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
 const ShadowsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const shadows = guideline.shadows || [];
   if (shadows.length === 0)
-    return <p className="text-[10px] text-neutral-600 font-mono">No shadows defined</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No shadows defined</p>;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
   const radius = guideline.tokens?.radius?.md || 10;
   return (
@@ -330,13 +330,13 @@ const ShadowsPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) 
 const MotionPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const m = guideline.motion;
   if (!m?.easing && !m?.durations)
-    return <p className="text-[10px] text-neutral-600 font-mono">No motion tokens defined</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No motion tokens defined</p>;
   return (
     <div className="space-y-2">
       {m.easing && (
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-mono text-neutral-600 uppercase">Easing</span>
-          <span className="text-[10px] font-mono text-neutral-300 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/5">
+          <span className="text-3xs font-mono text-neutral-600 uppercase">Easing</span>
+          <span className="text-2xs font-mono text-neutral-300 bg-white/[0.03] px-2 py-0.5 rounded-md border border-white/5">
             {m.easing}
           </span>
         </div>
@@ -350,15 +350,15 @@ const MotionPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
                   key={k}
                   className="flex-1 text-center p-2 rounded-lg bg-white/[0.03] border border-white/5"
                 >
-                  <p className="text-[9px] font-mono text-neutral-600 uppercase">{k}</p>
-                  <p className="text-[12px] font-mono text-white font-bold">{m.durations[k]}ms</p>
+                  <p className="text-3xs font-mono text-neutral-600 uppercase">{k}</p>
+                  <p className="text-xs font-mono text-white font-bold">{m.durations[k]}ms</p>
                 </div>
               )
           )}
         </div>
       )}
       {m.philosophy && (
-        <span className="inline-flex px-2 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 text-[9px] font-mono text-brand-cyan uppercase tracking-wider">
+        <span className="inline-flex px-2 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 text-3xs font-mono text-foreground uppercase tracking-wider">
           {m.philosophy}
         </span>
       )}
@@ -370,7 +370,7 @@ const EditorialPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
   const g = guideline.guidelines;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
   if (!g?.voice && !g?.dos?.length && !g?.person)
-    return <p className="text-[10px] text-neutral-600 font-mono">No editorial rules defined</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No editorial rules defined</p>;
   return (
     <div className="space-y-3">
       {g?.voice && (
@@ -382,12 +382,12 @@ const EditorialPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
       )}
       <div className="flex gap-2 flex-wrap">
         {g?.person && (
-          <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">
+          <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-3xs font-mono text-neutral-400">
             2nd person: you/você
           </span>
         )}
         {g?.emojiPolicy === 'none' && (
-          <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400">
+          <span className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-3xs font-mono text-neutral-400">
             No emoji
           </span>
         )}
@@ -395,7 +395,7 @@ const EditorialPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
       {g?.dos && g.dos.length > 0 && (
         <div className="space-y-1">
           {g.dos.slice(0, 3).map((d, i) => (
-            <p key={i} className="text-[10px] text-neutral-400 flex items-center gap-1.5">
+            <p key={i} className="text-2xs text-neutral-400 flex items-center gap-1.5">
               <span className="text-brand-cyan/60">✓</span> {d}
             </p>
           ))}
@@ -408,7 +408,7 @@ const EditorialPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }
 const LogosPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) => {
   const logos = guideline.logos || [];
   if (logos.length === 0)
-    return <p className="text-[10px] text-neutral-600 font-mono">No logos uploaded</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No logos uploaded</p>;
   return (
     <div className="flex gap-3 flex-wrap">
       {logos.slice(0, 4).map((l, i) => (
@@ -420,7 +420,7 @@ const LogosPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =>
               className="max-w-full max-h-full object-contain p-2"
             />
           </div>
-          <p className="text-[8px] font-mono text-neutral-600 uppercase">{l.variant}</p>
+          <p className="text-3xs font-mono text-neutral-600 uppercase">{l.variant}</p>
         </div>
       ))}
     </div>
@@ -431,7 +431,7 @@ const StrategyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline })
   const s = guideline.strategy;
   const fontFamily = guideline.typography?.[0]?.family || 'inherit';
   if (!s?.manifesto && !s?.archetypes?.length)
-    return <p className="text-[10px] text-neutral-600 font-mono">No strategy defined</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No strategy defined</p>;
   return (
     <div className="space-y-3">
       {s?.manifesto && (
@@ -448,7 +448,7 @@ const StrategyPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline })
           {s.archetypes.map((a, i) => (
             <span
               key={i}
-              className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-[9px] font-mono text-neutral-400"
+              className="px-2 py-1 rounded-md bg-white/[0.04] border border-white/8 text-3xs font-mono text-neutral-400"
             >
               {a.name}
             </span>
@@ -463,7 +463,7 @@ const TokensPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
   const radius = guideline.tokens?.radius;
   const spacing = guideline.tokens?.spacing;
   if (!radius && !spacing)
-    return <p className="text-[10px] text-neutral-600 font-mono">No tokens defined</p>;
+    return <p className="text-2xs text-neutral-600 font-mono">No tokens defined</p>;
   const accent =
     guideline.colors?.find((c) => c.role?.toLowerCase().includes('accent'))?.hex || '#52DDEB';
   return (
@@ -483,7 +483,7 @@ const TokensPreview: React.FC<{ guideline: BrandGuideline }> = ({ guideline }) =
                     border: `1px solid ${accent}40`,
                   }}
                 />
-                <p className="text-[8px] font-mono text-neutral-600">{k}</p>
+                <p className="text-3xs font-mono text-neutral-600">{k}</p>
               </div>
             ))}
         </div>
@@ -668,10 +668,10 @@ const EmptyDropZone: React.FC<{ onExtractFiles?: (files: FileList) => void }> = 
           dragging ? 'text-brand-cyan' : 'text-neutral-600'
         )}
       />
-      <p className="text-[11px] font-mono text-neutral-600 uppercase tracking-widest">
+      <p className="text-2xs font-mono text-neutral-600 uppercase tracking-widest">
         No sections to review yet
       </p>
-      <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
+      <p className="text-2xs text-neutral-500 max-w-sm mx-auto">
         Drop a PDF, .fig, image, .txt or .md file here to extract brand tokens — or click to browse.
         You can also paste from clipboard (Ctrl+V).
       </p>
@@ -742,7 +742,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-mono text-neutral-600 uppercase tracking-widest mb-1">
+            <p className="text-2xs font-mono text-neutral-600 uppercase tracking-widest mb-1">
               Design System Review
             </p>
             <h2 className="text-2xl font-bold text-white" style={{ fontFamily: primaryFont }}>
@@ -750,10 +750,10 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
             </h2>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-mono text-neutral-600">
+            <p className="text-2xs font-mono text-neutral-600">
               {approvedCount}/{total} approved
             </p>
-            {allDone && <p className="text-[10px] font-mono text-brand-cyan">All done ✓</p>}
+            {allDone && <p className="text-2xs font-mono text-foreground">All done ✓</p>}
           </div>
         </div>
 
@@ -768,7 +768,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
           />
         </div>
 
-        <p className="text-[11px] text-neutral-500">
+        <p className="text-2xs text-neutral-500">
           Review each component rendered with your brand tokens. Approve or request changes — you
           can always edit and re-review later.
         </p>
@@ -801,7 +801,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
       <div className="flex items-center justify-between pt-4 border-t border-white/[0.04]">
         <div className="flex gap-2">
           {availableSections.filter((s) => getState(s.id) === 'needs_work').length > 0 && (
-            <p className="text-[10px] font-mono text-amber-400">
+            <p className="text-2xs font-mono text-warning">
               {availableSections.filter((s) => getState(s.id) === 'needs_work').length} section(s)
               need attention
             </p>
@@ -810,7 +810,7 @@ export const DesignSystemValidation: React.FC<DesignSystemValidationProps> = ({
         <Button
           onClick={onComplete}
           className={cn(
-            'h-10 px-6 gap-2 text-[11px] font-mono uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] rounded-full',
+            'h-10 px-6 gap-2 text-2xs font-mono uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] rounded-full',
             allDone
               ? 'bg-brand-cyan text-black hover:bg-brand-cyan/90 shadow-lg shadow-brand-cyan/20'
               : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white border border-white/10'

@@ -266,7 +266,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <div className="p-3 rounded-full bg-brand-cyan text-black shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.4)]">
               <ArrowLeftRight size={20} />
             </div>
-            <span className="text-[10px] font-bold tracking-widest text-white uppercase">
+            <span className="text-2xs font-bold tracking-widest text-white uppercase">
               {t('mockup.replace') || 'Substituir'}
             </span>
           </button>
@@ -281,7 +281,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.03] pb-6">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <MicroTitle className="text-neutral-600 font-mono text-[10px] mb-1">
+            <MicroTitle className="text-neutral-600 font-mono text-2xs mb-1">
               WORKSPACE INITIALIZED
             </MicroTitle>
             <p className="text-sm font-bold text-white tracking-tight">
@@ -298,7 +298,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('layout')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'px-3 py-1.5 rounded-lg text-2xs font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
                   designType === 'layout'
                     ? 'bg-white/10 text-white shadow-lg'
                     : 'text-neutral-600 hover:text-neutral-400'
@@ -309,7 +309,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <button
                 onClick={() => onDesignTypeChange('logo')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
+                  'px-3 py-1.5 rounded-lg text-2xs font-bold font-mono tracking-widest uppercase transition-[color,background-color,border-color,box-shadow]',
                   designType === 'logo'
                     ? 'bg-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]'
                     : 'text-neutral-600 hover:text-neutral-400'
@@ -355,7 +355,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             />
             <div className="absolute bottom-3 right-3 flex items-center gap-2 pointer-events-none">
               <Diamond size={12} className="text-neutral-500 opacity-40" />
-              <span className="text-[10px] text-neutral-600">Context Engine Active</span>
+              <span className="text-2xs text-neutral-600">Context Engine Active</span>
             </div>
           </div>
         </div>
@@ -397,7 +397,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <MicroTitle className="text-neutral-600 group-hover:text-brand-cyan/60">
               Initialize Workspace
             </MicroTitle>
-            <p className="text-[10px] text-neutral-700 mt-1 group-hover:text-neutral-500 transition-colors">
+            <p className="text-2xs text-neutral-700 mt-1 group-hover:text-neutral-500 transition-colors">
               Drop primary design asset
             </p>
           </label>
@@ -424,7 +424,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-neutral-800 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.03] transition-colors cursor-pointer group"
           >
             <Plus className="text-neutral-700 group-hover:text-neutral-500 mb-2" size={16} />
-            <span className="text-[10px] font-medium text-neutral-600 group-hover:text-neutral-400">
+            <span className="text-2xs font-medium text-neutral-600 group-hover:text-neutral-400">
               + Add Reference
             </span>
           </label>
