@@ -716,6 +716,22 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
         // conta passwordless (comprou produto antes de ter conta): ainda não
         // definiu senha — o front oferece "garantir acesso" sem bloquear.
         hasPassword: !!user.password,
+        /**
+         * Desde quando esta conta existe.
+         *
+         * Pedido pelo visant-club: a /conta de lá foi redesenhada pra contar o
+         * PERCURSO do membro, e "no Club desde <mês>/<ano>" é a única linha
+         * dessa tese que o Club não conseguia escrever sozinho. Ele tentou
+         * derivar de `min(entitlement.grantedAt)` e descartou: aquilo data a
+         * primeira COMPRA AVULSA, não a entrada, e some justamente pro
+         * assinante puro — data derivada de outra coisa é a UI mentindo com
+         * cara de carinho.
+         *
+         * ISO 8601, porque quem formata é quem sabe o idioma da tela. Mandar
+         * "ago/2026" daqui seria este backend decidindo a localidade de todo
+         * cliente que ele atende.
+         */
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
