@@ -17,8 +17,12 @@ não vídeo. Todo projeto de vídeo novo paga o mesmo pedágio enquanto não con
 `server/services/videoService.ts:240-245`
 
 ```ts
-if (aspectRatio) { requestParams.aspectRatio = aspectRatio; }
-if (duration)   { requestParams.numberOfSeconds = parseInt(duration, 10) || undefined; }
+if (aspectRatio) {
+  requestParams.aspectRatio = aspectRatio;
+}
+if (duration) {
+  requestParams.numberOfSeconds = parseInt(duration, 10) || undefined;
+}
 ```
 
 Dois erros no mesmo bloco:
@@ -47,7 +51,7 @@ parameters: {
 `server/mcp/platform-mcp.ts:1502`
 
 ```ts
-duration: z.enum(['5s', '10s']).default('5s')
+duration: z.enum(['5s', '10s']).default('5s');
 ```
 
 Esse literal atravessa a rota e o `klingService` sem tradução (`klingService.ts:77,101` passa
