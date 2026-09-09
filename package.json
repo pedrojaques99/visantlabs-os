@@ -203,7 +203,7 @@
     "marked": "^18.0.5",
     "mongodb": "^6.21.0",
     "mp4-muxer": "^5.2.2",
-    "multer": "^2.1.1",
+    "multer": "^2.3.0",
     "nanoid": "^5.1.7",
     "onnxruntime-web": "1.21.0",
     "openai": "^6.34.0",
