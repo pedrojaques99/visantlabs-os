@@ -81,6 +81,21 @@ export const forgotPasswordSchema = z.object({
   app: z.enum(['club']).optional(),
 });
 
+/** Pedido de link mágico. Mesmo par do forgot: e-mail e, opcional, quem pediu. */
+export const magicLinkRequestSchema = z.object({
+  email: emailSchema,
+  app: z.enum(['club']).optional(),
+});
+
+/** Troca do link mágico por sessão. O token é base64url de 32 bytes (43 chars). */
+export const magicLinkVerifySchema = z.object({
+  token: z
+    .string()
+    .min(20, 'Token is required')
+    .max(200)
+    .regex(/^[A-Za-z0-9_-]+$/, 'Invalid token'),
+});
+
 export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   skip: z.coerce.number().int().min(0).default(0),
