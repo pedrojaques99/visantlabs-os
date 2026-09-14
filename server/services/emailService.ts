@@ -56,23 +56,35 @@ export const getEmailService = (): Resend | null => {
 const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** Paleta do e-mail. `accent` espelha --brand-cyan (src/utils/colorUtils.ts:465). */
+/**
+ * Paleta do e-mail. `accent` espelha --brand-cyan (src/utils/colorUtils.ts:465).
+ *
+ * CLARA desde 14/09/2026, a pedido do dono. E-mail escuro briga com a caixa de
+ * entrada, que é clara pra quase todo mundo, e o Outlook e o Gmail no modo
+ * escuro já invertem um e-mail claro sozinhos. O contrário (escuro forçado
+ * sobre cliente claro) chegava como um bloco preto no meio da lista.
+ * `quiet` é o fundo de citação/destaque; `footer` o texto de rodapé.
+ */
 const MAIL = {
-  page: '#0a0a0a',
-  card: '#161616',
-  border: '#262626',
-  heading: '#fafafa',
-  body: '#a3a3a3',
-  muted: '#737373',
+  page: '#f4f4f5',
+  card: '#ffffff',
+  border: '#e4e4e7',
+  heading: '#18181b',
+  body: '#3f3f46',
+  muted: '#71717a',
+  quiet: '#f4f4f5',
+  footer: '#71717a',
   accent: '#00d9ff',
   onAccent: '#0a1416',
+  /** Ciano legível sobre branco: o accent puro dá ~1,7:1 como texto. */
+  accentText: '#0e7490',
   font: "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif",
   /** Mesma marca do Header.tsx:187. Servida pelo frontend na Vercel. */
   logo: `${FRONTEND_URL}/logo-vsn-labs.png`,
 } as const;
 
 const P = `margin:0 0 14px;color:${MAIL.body};font-size:15px;line-height:1.6`;
-const SMALL = `margin:20px 0 0;color:#737373;font-size:13px;line-height:1.5`;
+const SMALL = `margin:20px 0 0;color:${MAIL.muted};font-size:13px;line-height:1.5`;
 const STRONG = `color:${MAIL.heading};font-weight:600`;
 
 /** Botão em tabela: <a> puro perde o preenchimento de fundo no Outlook. */
@@ -92,7 +104,7 @@ const brandHeader = `
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px">
 <tr>
 <td style="padding-right:9px" valign="middle"><img src="${MAIL.logo}" width="22" height="22" alt="" style="display:block;width:22px;height:22px;border:0"></td>
-<td valign="middle" style="font-family:${MAIL.font};font-size:15px;font-weight:600;color:${MAIL.heading};letter-spacing:0.2px">Visant<span style="color:${MAIL.accent}"> Labs</span></td>
+<td valign="middle" style="font-family:${MAIL.font};font-size:15px;font-weight:600;color:${MAIL.heading};letter-spacing:0.2px">Visant<span style="color:${MAIL.accentText}"> Labs</span></td>
 </tr>
 </table>`;
 
@@ -105,6 +117,8 @@ const baseHtml = (heading: string, content: string, preheader: string) => `<!DOC
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <title>${escapeHtml(heading)}</title>
 </head>
 <body style="margin:0;padding:0;background:${MAIL.page}">
@@ -118,7 +132,7 @@ ${brandHeader}
 <h1 style="margin:0 0 18px;color:${MAIL.heading};font-size:21px;line-height:1.3;font-weight:600">${escapeHtml(heading)}</h1>
 ${content}
 </td></tr>
-<tr><td align="center" style="padding:20px 8px 0;font-family:${MAIL.font};color:#525252;font-size:12px;line-height:1.6">Visant Labs, plataforma de marca<br>Dúvida? Responde este e-mail que a gente lê.</td></tr>
+<tr><td align="center" style="padding:20px 8px 0;font-family:${MAIL.font};color:${MAIL.footer};font-size:12px;line-height:1.6">Visant Labs, plataforma de marca<br>Dúvida? Responde este e-mail que a gente lê.</td></tr>
 </table>
 </td></tr></table>
 </body></html>`;
@@ -235,7 +249,7 @@ const brandList = (names: string[]) => `
 ${names
   .map(
     (b) =>
-      `<tr><td style="padding:9px 12px;border-left:2px solid ${MAIL.accent};background:#1d1d1d;font-family:${MAIL.font};font-size:15px;color:${MAIL.heading}">${escapeHtml(b)}</td></tr><tr><td height="6" style="height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>`
+      `<tr><td style="padding:9px 12px;border-left:2px solid ${MAIL.accent};background:${MAIL.quiet};font-family:${MAIL.font};font-size:15px;color:${MAIL.heading}">${escapeHtml(b)}</td></tr><tr><td height="6" style="height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>`
   )
   .join('\n')}
 </table>`;
