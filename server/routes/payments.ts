@@ -16,6 +16,11 @@ import { validateSafeId } from '../utils/securityValidation.js';
 import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_GENERATIONS_LIMIT, FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
+import {
+  getStripePlanInfo as planInfoFromStripe,
+  findOrCreateSubscriber,
+  type StripePlanInfo,
+} from '../services/subscriptionCheckoutService.js';
 import { enforceBrandQuotaOnDowngrade, getBrandQuota, getSeatOverview } from '../lib/brandQuota.js';
 
 // API rate limiter - general authenticated endpoints
@@ -286,58 +291,11 @@ const fetchStripeTransactionsForCustomer = async (customerId: string) => {
   return transactions.slice(0, 100);
 };
 
-// Helper function to get subscription tier and monthly credits from Stripe metadata
-interface StripePlanInfo {
-  tier: string;
-  monthlyCredits: number;
-  /** Stripe subscription item quantity — for the agency tier, quantity = contracted active brands. */
-  quantity?: number;
-}
-
-const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo | null> => {
-  if (!stripe) return null;
-
-  try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const priceId = subscription.items.data[0]?.price?.id;
-    const quantity = subscription.items.data[0]?.quantity;
-
-    if (!priceId) return null;
-
-    const price = await stripe.prices.retrieve(priceId);
-    const productId = typeof price.product === 'string' ? price.product : price.product?.id;
-
-    if (!productId) return null;
-
-    const product = await stripe.products.retrieve(productId);
-    const metadata = product.metadata || {};
-
-    // Extract tier and monthlyCredits from metadata.
-    // Legacy tiers (premium/pro/agency) coexist with the v3 pricing tiers
-    // (starter/pro/vision) — 'pro' is shared by both generations and is
-    // numerically compatible (500 credits either way; only maxBrands differs,
-    // see FALLBACK_MAX_BRANDS in brandQuota.ts for that reconciliation).
-    const tier = metadata.tier || 'premium';
-    const monthlyCredits = metadata.monthlyCredits
-      ? parseInt(metadata.monthlyCredits, 10)
-      : tier === 'premium'
-        ? 100
-        : tier === 'pro'
-          ? 500
-          : tier === 'agency'
-            ? 1000
-            : tier === 'starter'
-              ? 50
-              : tier === 'vision'
-                ? 1000
-                : 3;
-
-    return { tier, monthlyCredits, quantity };
-  } catch (error) {
-    console.error('Error fetching Stripe plan info:', error);
-    return null;
-  }
-};
+// Helper function to get subscription tier and monthly credits from Stripe metadata.
+// A regra mora em services/subscriptionCheckoutService.ts desde 14/09/2026, pra
+// o /auth/session-from-checkout ler o mesmo tier que este webhook grava.
+const getStripePlanInfo = (subscriptionId: string): Promise<StripePlanInfo | null> =>
+  planInfoFromStripe(stripe, subscriptionId);
 
 // Helper function to calculate next reset date based on subscription period
 const calculateCreditsResetDate = (subscription: Stripe.Subscription): Date => {
@@ -1980,9 +1938,13 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             let user = await db.collection('users').findOne({ stripeCustomerId: customerId });
 
             if (!user && customerEmail) {
-              // Payment Link case: find user by email and associate customerId
+              // Payment Link case: find user by email and associate customerId.
+              // As duas grafias: a conta criada por compra guarda o e-mail em
+              // minúsculas, e o Stripe devolve como a pessoa digitou.
               console.log('🔍 User not found by customerId, searching by email:', customerEmail);
-              user = await db.collection('users').findOne({ email: customerEmail });
+              user = await db
+                .collection('users')
+                .findOne({ email: { $in: [customerEmail, customerEmail.toLowerCase()] } });
 
               if (user) {
                 // Associate the Stripe customer with our user
@@ -2003,6 +1965,25 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
               user = await db.collection('users').findOne({ stripeSubscriptionId: subscriptionId });
             }
 
+            // Assinou antes de ter conta: a conta nasce aqui, sem senha.
+            //
+            // Até 14/09/2026 este caso caía no `else` lá embaixo e só escrevia
+            // "User not found for customer": a pessoa pagava a assinatura do
+            // Club pela landing e não recebia tier nenhum. Entra depois por
+            // Google ou pelo e-mail de "definir senha" (/auth/forgot-password).
+            if (!user && customerEmail) {
+              const subscriber = await findOrCreateSubscriber({
+                email: customerEmail,
+                name: session.customer_details?.name || undefined,
+                stripeCustomerId: customerId,
+              });
+              user = await db.collection('users').findOne({ _id: new ObjectId(subscriber.id) });
+              console.log('🆕 Conta criada pela assinatura (sem senha):', {
+                userId: subscriber.id,
+                created: subscriber.created,
+              });
+            }
+
             if (user) {
               console.log('👤 User found, updating subscription status:', {
                 userId: user._id,
@@ -2010,6 +1991,16 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 currentStatus: user.subscriptionStatus,
                 currentTier: user.subscriptionTier,
               });
+
+              // Idempotência, a mesma do ramo do Club. Há DOIS endpoints de
+              // webhook no Stripe apontando pra esta URL, então toda sessão
+              // chega duas vezes: sem a trava, a segunda zerava o `creditsUsed`
+              // e gravava a transação em dobro.
+              const claimed = await claimPaymentEvent(db, 'stripe', session.id);
+              if (!claimed) {
+                console.log('⏭️ Assinatura: sessão já processada, pulando:', session.id);
+                break;
+              }
 
               const checkoutSetData: Record<string, any> = {
                 subscriptionStatus: 'active',
@@ -2026,9 +2017,15 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
                 checkoutSetData['metadata.agencyBrandQuantity'] = planInfo.quantity;
               }
 
-              const updateResult = await db
-                .collection('users')
-                .updateOne({ _id: user._id }, { $set: checkoutSetData });
+              let updateResult;
+              try {
+                updateResult = await db
+                  .collection('users')
+                  .updateOne({ _id: user._id }, { $set: checkoutSetData });
+              } catch (grantError) {
+                await releasePaymentEvent(db, 'stripe', session.id);
+                throw grantError;
+              }
 
               if (updateResult.modifiedCount > 0) {
                 console.log('✅ User subscription activated successfully:', {

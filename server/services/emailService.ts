@@ -368,12 +368,14 @@ export interface SendPasswordResetEmailParams {
   email: string;
   name?: string;
   resetToken: string;
+  /** Página que recebe o token. Sem valor, a do visantlabs.com. */
+  resetPageUrl?: string;
 }
 
 export const sendPasswordResetEmail = async (
   params: SendPasswordResetEmailParams
 ): Promise<void> => {
-  const { email, name, resetToken } = params;
+  const { email, name, resetToken, resetPageUrl } = params;
 
   const emailService = getEmailService();
   if (!emailService) {
@@ -382,7 +384,7 @@ export const sendPasswordResetEmail = async (
     );
   }
 
-  const resetUrl = `${FRONTEND_URL}/forgot-password?token=${resetToken}`;
+  const resetUrl = `${resetPageUrl || `${FRONTEND_URL}/forgot-password`}?token=${resetToken}`;
   const userName = name || email.split('@')[0];
 
   try {
@@ -397,6 +399,56 @@ export const sendPasswordResetEmail = async (
   } catch (error: any) {
     console.error('Error sending password reset email:', error);
     throw new Error(`Failed to send password reset email: ${error.message || 'Unknown error'}`);
+  }
+};
+
+const magicLinkMail = (userName: string, loginUrl: string, minutos: number): MailBody => ({
+  html: baseHtml(
+    'Teu link de entrada',
+    `<p style="${P}">Oi, <strong style="${STRONG}">${escapeHtml(userName)}</strong>.</p>
+<p style="${P}">Clica no botão pra entrar, sem senha. O link vale por ${minutos} minutos e funciona uma vez só.</p>
+${button(loginUrl, 'Entrar agora')}
+<p style="${SMALL}">Se não foi você que pediu, pode ignorar. Ninguém entra sem clicar neste link.</p>`,
+    `Teu link de entrada vale por ${minutos} minutos.`
+  ),
+  text: `Oi, ${userName}.
+
+Use o link abaixo pra entrar, sem senha. Ele vale por ${minutos} minutos e funciona uma vez só.
+${loginUrl}
+
+Se não foi você que pediu, pode ignorar.`,
+});
+
+export interface SendMagicLinkEmailParams {
+  email: string;
+  name?: string;
+  loginUrl: string;
+  minutos: number;
+}
+
+export const sendMagicLinkEmail = async (params: SendMagicLinkEmailParams): Promise<void> => {
+  const { email, name, loginUrl, minutos } = params;
+
+  const emailService = getEmailService();
+  if (!emailService) {
+    throw new Error(
+      'Email service is not configured. Please set RESEND_API_KEY and RESEND_FROM_EMAIL environment variables.'
+    );
+  }
+
+  const userName = name || email.split('@')[0];
+  try {
+    await emailService.emails.send(
+      withTemplate(
+        { from: RESEND_FROM_EMAIL, to: email, subject: 'Teu link de entrada' },
+        process.env.RESEND_TEMPLATE_MAGIC_LINK || '',
+        { USER_NAME: userName, LOGIN_URL: loginUrl, MINUTOS: minutos },
+        magicLinkMail(userName, loginUrl, minutos)
+      )
+    );
+  } catch (error: any) {
+    console.error('Error sending magic link email:', error);
+    throw new Error(`Failed to send magic link email: ${error.message || 'Unknown error'}`);
   }
 };
 

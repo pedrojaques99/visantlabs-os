@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 import mockupRoutes from './routes/mockups.js';
 import mockupTagRoutes from './routes/mockupTags.js';
 import authRoutes from './routes/auth.js';
+import magicLinkRoutes from './routes/magicLink.js';
 import healthRoutes from './routes/health.js';
 import paymentRoutes from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
@@ -337,6 +338,7 @@ export function createApp() {
   // Feature routes — keep this list sorted and flat for grep-ability
   const mounts: Array<[string, express.Router]> = [
     ['/auth', authRoutes],
+    ['/auth/magic-link', magicLinkRoutes],
     ['/mockups', mockupRoutes],
     ['/mockup-tags', mockupTagRoutes],
     ['/payments', paymentRoutes],
