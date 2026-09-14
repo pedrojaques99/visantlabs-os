@@ -368,12 +368,14 @@ export interface SendPasswordResetEmailParams {
   email: string;
   name?: string;
   resetToken: string;
+  /** Página que recebe o token. Sem valor, a do visantlabs.com. */
+  resetPageUrl?: string;
 }
 
 export const sendPasswordResetEmail = async (
   params: SendPasswordResetEmailParams
 ): Promise<void> => {
-  const { email, name, resetToken } = params;
+  const { email, name, resetToken, resetPageUrl } = params;
 
   const emailService = getEmailService();
   if (!emailService) {
@@ -382,7 +384,7 @@ export const sendPasswordResetEmail = async (
     );
   }
 
-  const resetUrl = `${FRONTEND_URL}/forgot-password?token=${resetToken}`;
+  const resetUrl = `${resetPageUrl || `${FRONTEND_URL}/forgot-password`}?token=${resetToken}`;
   const userName = name || email.split('@')[0];
 
   try {

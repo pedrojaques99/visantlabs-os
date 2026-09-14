@@ -4,6 +4,12 @@ export const MCP_BETA_HEADER = 'mcp-client-2025-11-20';
 export const API_BASE_URL = process.env.API_BASE_URL || 'https://api.visantlabs.com';
 export const FRONTEND_BASE_URL =
   process.env.FRONTEND_URL?.split(',')[0]?.trim() || 'https://visantlabs.com';
+// A área de membros do Visant Club. O e-mail de "definir senha" pedido pelo
+// Club precisa voltar pra lá, não pro visantlabs.com.
+export const CLUB_BASE_URL = (process.env.CLUB_URL || 'https://app.visant.club').replace(
+  /\/+$/,
+  ''
+);
 export const MCP_ENDPOINT = `${API_BASE_URL}/api/mcp`;
 
 export const MCP_SCOPES = ['read', 'write', 'generate'] as const;

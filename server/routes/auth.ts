@@ -35,10 +35,17 @@ import {
 import { isValidEmail } from '../utils/validation.js';
 import { bruteForceGuard } from '../middleware/bruteForceGuard.js';
 import crypto from 'crypto';
-import { FRONTEND_BASE_URL } from '../lib/mcp-constants.js';
+import { FRONTEND_BASE_URL, CLUB_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { toEntitlements } from '../lib/entitlements.js';
 import { grantProduct } from '../services/productGrantService.js';
+import {
+  findOrCreateSubscriber,
+  getStripePlanInfo,
+  periodEndOf,
+  activateIfPending,
+} from '../services/subscriptionCheckoutService.js';
+import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import {
   POPUP_OAUTH_SOURCES,
   isPopupOAuthSource,
@@ -793,7 +800,10 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
     }
 
     const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(stripeKey);
+    // Mesmo transporte do cliente de server/routes/payments.ts: fetch em vez de
+    // node:http, idêntico em produção no Node 18+ e interceptável pelo MSW. Sem
+    // isto, os testes deste endpoint iam pra rede e travavam no timeout.
+    const stripe = new Stripe(stripeKey, { httpClient: Stripe.createFetchHttpClient() });
 
     let session: any;
     try {
@@ -808,7 +818,10 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
 
     const kind = session.metadata?.kind;
     const sku = session.metadata?.sku;
-    if (kind !== 'product' || !sku) {
+    // Assinatura do Visant Club (metadata.club, gravada pela landing). Todo o
+    // resto que não é produto avulso continua recusado.
+    const assinaturaDoClub = session.mode === 'subscription' && !!session.metadata?.club;
+    if (!assinaturaDoClub && (kind !== 'product' || !sku)) {
       return res.status(400).json({ error: 'Not a product checkout session' });
     }
 
@@ -832,6 +845,68 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
     const customerIdRaw = session.customer;
     const stripeCustomerId =
       typeof customerIdRaw === 'string' ? customerIdRaw : customerIdRaw?.id || undefined;
+
+    // ── Assinatura do Club: a chave vem na compra ─────────────────────────
+    // Desde 14/09/2026. Quem assinava pela landing ia pro /obrigado e dali pro
+    // /entrar, com uma conta sem senha que não passava na porta. Agora o
+    // success_url leva ao /p/club/bem-vindo do Club, que chega aqui.
+    //
+    // O webhook continua sendo a VERDADE do acesso. Este ramo corre em paralelo
+    // com ele e só aplica o tier se ele ainda não aplicou (`activateIfPending`):
+    // quem chega na tela antes do webhook não pode cair num dashboard de free.
+    if (assinaturaDoClub) {
+      const subscriptionId =
+        typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+      if (!subscriptionId) {
+        return res.status(400).json({ error: 'No subscription on checkout session' });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      if (!['active', 'trialing'].includes(subscription.status)) {
+        return res.status(402).json({ error: 'Subscription not active' });
+      }
+
+      const planInfo = await getStripePlanInfo(stripe, subscriptionId);
+      const tier = planInfo?.tier || String(session.metadata?.tier || 'club');
+      const monthlyCredits =
+        planInfo?.monthlyCredits ?? parseInt(String(session.metadata?.monthlyCredits || '60'), 10);
+
+      const subscriber = await findOrCreateSubscriber({
+        email,
+        name: session.customer_details?.name || undefined,
+        stripeCustomerId,
+      });
+
+      await connectToMongoDB();
+      const aplicou = await activateIfPending({
+        db: getDb(),
+        userId: subscriber.id,
+        subscriptionId,
+        customerId: stripeCustomerId,
+        tier,
+        monthlyCredits,
+        periodEnd: periodEndOf(subscription),
+      });
+
+      const clubToken = jwt.sign(
+        { userId: subscriber.id, email: subscriber.email, scope: 'checkout', sku: 'club' },
+        JWT_SECRET,
+        { expiresIn: CHECKOUT_TOKEN_TTL }
+      );
+      recordSession(subscriber.id, req).catch(() => {});
+
+      console.log('✅ Session minted from club subscription checkout:', {
+        userId: subscriber.id,
+        accountCreated: subscriber.created,
+        tierAppliedNow: aplicou,
+      });
+
+      return res.json({
+        token: clubToken,
+        sku: 'club',
+        user: { id: subscriber.id, email: subscriber.email, entitlements: [] },
+      });
+    }
 
     // Garante o entitlement (defensivo: cobre o caso do webhook atrasar)
     const result = await grantProduct({
@@ -1206,16 +1281,26 @@ router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (
     if (!parsed.success) {
       return res.status(400).json({ error: formatZodError(parsed.error) });
     }
-    const { email } = parsed.data;
+    const { email, app } = parsed.data;
 
     // Find user
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
-    // Always return success message (security: don't reveal if email exists)
-    // But only send email if user exists and has a password (not OAuth-only)
-    if (user && user.password) {
+    // A página que recebe o token. O Club pede com `app: 'club'` e o link volta
+    // pra área de membros; sem isso a pessoa terminava no visantlabs.com.
+    const resetPageUrl =
+      app === 'club' ? `${CLUB_BASE_URL}/definir-senha` : `${getFrontendUrl()}/forgot-password`;
+
+    // Always return success message (security: don't reveal if email exists).
+    //
+    // Conta SEM senha também recebe o e-mail, e é o caso que mais importa: a
+    // conta criada pela compra (produto avulso ou assinatura do Club) nasce
+    // passwordless. Até 14/09/2026 a condição era `user && user.password`, e
+    // o link "Comprei e nunca criei senha" do Club respondia sucesso sem mandar
+    // nada. Pra essas contas, o link CRIA a primeira senha.
+    if (user) {
       // Generate reset token (JWT with 1 hour expiration)
       const resetToken = jwt.sign(
         { userId: user.id, email: user.email, type: 'password-reset' },
@@ -1245,13 +1330,14 @@ router.post('/forgot-password', passwordResetRateLimiter, forgotBackoff, async (
           // In development, log the token for testing
           if (process.env.NODE_ENV === 'development') {
             console.log('🔑 Password reset token (dev only):', resetToken);
-            console.log('🔗 Reset URL:', `${getFrontendUrl()}/forgot-password?token=${resetToken}`);
+            console.log('🔗 Reset URL:', `${resetPageUrl}?token=${resetToken}`);
           }
         } else {
           await sendPasswordResetEmail({
             email: user.email,
             name: user.name || undefined,
             resetToken,
+            resetPageUrl,
           });
         }
       } catch (emailError: any) {

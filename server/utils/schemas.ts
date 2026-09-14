@@ -76,6 +76,9 @@ export const resetPasswordSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
+  // Quem pediu: sem valor, o link cai no visantlabs.com; 'club' manda pra
+  // app.visant.club/definir-senha. Enum fechado, nunca URL livre (open redirect).
+  app: z.enum(['club']).optional(),
 });
 
 export const paginationSchema = z.object({
