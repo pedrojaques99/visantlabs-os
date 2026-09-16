@@ -102,6 +102,7 @@ Exemplo: `... vsn-exporter.ps1 -Path "D:\Entrega" -Merge`
 
 - **Organização** — avatares/ícones, extrair transparentes, separar por extensão, agrupar vetores, “Organizar Tudo”.
 - **PDF & Vetor** — merge, split, PDF↔PNG, vetorizar, reordenar/substituir/extrair páginas, OCR (com estimativa de custo LLM), metadados, comprimir, arte final CMYK, extrair imagens.
+  - _Comprimir PDF p/ celular (18c)_ — PDF que trava no celular quase nunca é problema de **MB**: é **megapixel + CMYK**. O visualizador mobile descomprime a imagem inteira na RAM, então uma lona 9600×5400 em CMYK custa 52 Mpx × 4 canais ≈ **207 MB de RAM** só pra abrir uma página — e comprimir mais o arquivo não muda isso. O item faz CMYK→sRGB, reamostra pra 150 dpi (ponto doce; 120 já amolece texto miúdo), re-encoda em JPEG 85% e lineariza (_fast web view_). Saída em `<nome> - MOBILE.pdf`, **o original de impressão fica intacto**. Responda **s** em "Só diagnosticar" pra ver Mpx, espaço de cor e RAM estimada de cada PDF sem gravar nada. Caso real: 108 MB → 1,3 MB, idêntico ao olho com zoom.
 - **Imagem & JPG** — PNG→JPG, **comprimir JPG sem perda (lossless)**, WebP, limpar EXIF, mudar qualidade.
   - _Comprimir JPG sem perda_ reescreve o JPEG em progressivo com Huffman otimizado (`jpegoptim`): os pixels ficam **bit a bit idênticos**. Ganho típico 5-20%, muito mais quando o arquivo carrega EXIF/XMP/thumbnail gordos. Saída em `JPG_Comprimido`, originais intactos. Arte final CMYK: responda **s** em "Preservar EXIF/ICC".
 - **Entrega** — gerar INDEX/README, empacotar `.zip`.

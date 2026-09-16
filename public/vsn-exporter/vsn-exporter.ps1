@@ -193,6 +193,38 @@ function Get-MenuItems {
             & $ext -Input $target -Recurse -Aggressive -Dpi $dpi -JpegQuality $q
         } },
 
+        @{ Label = "18c. Comprimir PDF p/ CELULAR (WhatsApp)"; Group = "PDF & VETOR"; NoPause = $true; Action = {
+            $ext = Join-Path $script:ScriptsDir "compress-pdf.ps1"
+            if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
+            $target = if (Test-Path $Path -PathType Container) { $Path } else { Split-Path $Path -Parent }
+            Write-Host ""
+            Write-Host "    PDF que trava no celular quase nunca e problema de MB: e MEGAPIXEL + CMYK." -ForegroundColor DarkGray
+            Write-Host "    O viewer mobile descomprime a imagem INTEIRA na RAM. Uma lona 9600x5400" -ForegroundColor DarkGray
+            Write-Host "    em CMYK = 52 Mpx x 4 canais = ~207 MB de RAM so pra abrir uma pagina." -ForegroundColor DarkGray
+            Write-Host ""
+            Write-Host "    Este modo: CMYK->sRGB + reamostra + JPEG + linearize (fast web view)." -ForegroundColor DarkGray
+            Write-Host "    Saida em '<nome> - MOBILE.pdf'. O original de impressao fica intacto." -ForegroundColor DarkGray
+            Write-Host ""
+            $rep = (Read-Host "    So diagnosticar, sem gravar? (s/N)") -match '^[sSyY]'
+            if ($rep) {
+                $rec = (Read-Host "    Recursivo? Processa subpastas (s/N)") -match '^[sSyY]'
+                Write-Host ""
+                & $ext -Input $target -ReportOnly -Recurse:$rec
+                Read-Host "    [Enter para continuar]" | Out-Null
+                return
+            }
+            Write-Host "    Ref: 150 = ponto doce, identico ao olho | 120 = mais leve, amolece texto miudo" -ForegroundColor DarkGray
+            $dpiIn = Read-Host "    DPI alvo (Enter = 150)"
+            $dpi   = if ($dpiIn -match '^\d+$') { [int]$dpiIn } else { 150 }
+            $qIn   = Read-Host "    JPEG Quality 1-100 (Enter = 85)"
+            $q     = if ($qIn -match '^\d+$' -and [int]$qIn -ge 1 -and [int]$qIn -le 100) { [int]$qIn } else { 85 }
+            Write-Host ""
+            Write-Host "    Config: $dpi dpi | sRGB | JPEG $q% | linearizado | inclui subpastas" -ForegroundColor DarkGray
+            Write-Host ""
+            & $ext -Input $target -Recurse -Mobile -Dpi $dpi -JpegQuality $q
+            Read-Host "    [Enter para continuar]" | Out-Null
+        } },
+
         @{ Label = "19. Arte Final CMYK (PDF/X-1a)"; Group = "PDF & VETOR"; NoPause = $true; Action = {
             $pyScript = Join-Path $script:ScriptsDir "arte_final.py"
             if (-not (Test-Path $pyScript)) { Write-Host "    [X] Script nao encontrado: $pyScript" -ForegroundColor Red; return }
