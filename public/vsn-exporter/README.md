@@ -13,6 +13,7 @@ Roda no **Windows + PowerShell**. Menu navegável por setas — sem decorar coma
 | **Windows 10/11**                       | ✅          | Sistema                                |
 | **PowerShell 5.1+** (já vem no Windows) | ✅          | Roda o script                          |
 | ImageMagick (`magick`)                  | opcional    | Imagens, WebP, PDF→PNG                 |
+| jpegoptim                               | opcional    | Comprimir JPG sem perda (lossless)     |
 | Ghostscript (`gswin64c`)                | opcional    | Comprimir / rasterizar / CMYK          |
 | qpdf                                    | opcional    | Merge / split / páginas de PDF         |
 | Inkscape                                | opcional    | AI/EPS→SVG e raster de alta fidelidade |
@@ -25,6 +26,7 @@ Roda no **Windows + PowerShell**. Menu navegável por setas — sem decorar coma
 
 ```powershell
 winget install ImageMagick.ImageMagick
+winget install TimoKokkonen.Jpegoptim
 winget install ArtifexSoftware.GhostScript
 winget install qpdf.qpdf
 winget install Inkscape.Inkscape
@@ -100,7 +102,8 @@ Exemplo: `... vsn-exporter.ps1 -Path "D:\Entrega" -Merge`
 
 - **Organização** — avatares/ícones, extrair transparentes, separar por extensão, agrupar vetores, “Organizar Tudo”.
 - **PDF & Vetor** — merge, split, PDF↔PNG, vetorizar, reordenar/substituir/extrair páginas, OCR (com estimativa de custo LLM), metadados, comprimir, arte final CMYK, extrair imagens.
-- **Imagem & JPG** — PNG→JPG, WebP, limpar EXIF, mudar qualidade.
+- **Imagem & JPG** — PNG→JPG, **comprimir JPG sem perda (lossless)**, WebP, limpar EXIF, mudar qualidade.
+  - _Comprimir JPG sem perda_ reescreve o JPEG em progressivo com Huffman otimizado (`jpegoptim`): os pixels ficam **bit a bit idênticos**. Ganho típico 5-20%, muito mais quando o arquivo carrega EXIF/XMP/thumbnail gordos. Saída em `JPG_Comprimido`, originais intactos. Arte final CMYK: responda **s** em "Preservar EXIF/ICC".
 - **Entrega** — gerar INDEX/README, empacotar `.zip`.
 - **Sistema** — gerar `.ico`, abrir log, trocar caminho, sair.
 

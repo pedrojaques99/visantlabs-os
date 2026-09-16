@@ -221,9 +221,68 @@ function Get-MenuItems {
             Read-Host "    [Enter para continuar]" | Out-Null
         } },
 
+        @{ Label = "20. Otimizar Arte Final (grande formato)"; Group = "PDF & VETOR"; NoPause = $true; Action = {
+            $ext = Join-Path $script:ScriptsDir "optimize-print-pdf.ps1"
+            if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
+            Write-Host ""
+            Write-Host "    Arte de lona/outdoor vem em escala reduzida (ex: 1:10)." -ForegroundColor DarkGray
+            Write-Host "    O DPI abaixo e no TAMANHO IMPRESSO, nao na pagina - a escala" -ForegroundColor DarkGray
+            Write-Host "    e detectada pela medida no nome ou no titulo do PDF." -ForegroundColor DarkGray
+            Write-Host "    Ref: 150 painel de perto | 120 lona de feira | 72 banner a 1,5m | 40 outdoor" -ForegroundColor DarkGray
+            Write-Host ""
+            $rec = (Read-Host "    Recursivo? Processa subpastas (s/N)") -match '^[sSyY]'
+            $rep = (Read-Host "    So diagnosticar, sem gravar? (s/N)") -match '^[sSyY]'
+            if ($rep) {
+                & $ext -Path $Path -ReportOnly -Recurse:$rec
+                Read-Host "    [Enter para continuar]" | Out-Null
+                return
+            }
+            $dpiIn = Read-Host "    DPI no tamanho impresso (Enter = 120)"
+            $dpi   = if ($dpiIn -match '^\d+$') { [int]$dpiIn } else { 120 }
+            $qIn   = Read-Host "    JPEG Quality 1-100 (Enter = 95)"
+            $q     = if ($qIn -match '^\d+$' -and [int]$qIn -ge 1 -and [int]$qIn -le 100) { [int]$qIn } else { 95 }
+            Write-Host ""
+            Write-Host "    Config: $dpi dpi reais | JPEG $q% | saida em _Otimizado, originais intactos" -ForegroundColor DarkGray
+            Write-Host ""
+            & $ext -Path $Path -TargetDpi $dpi -JpegQuality $q -Recurse:$rec
+            Read-Host "    [Enter para continuar]" | Out-Null
+        } },
+
         @{ Label = "20. Extrair Imagens de PDFs"; Group = "PDF & VETOR"; NoPause = $true; Action = { Extract-PDFImages } },
 
         @{ Label = "21. Converter PNG p/ JPG (Q$JPGQuality)"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "JPG_Convert" { Convert-PNGParaJPG } } },
+        @{ Label = "21b. Comprimir JPG SEM PERDA (lossless)"; Group = "IMAGEM & JPG"; NoPause = $true; Action = {
+            $ext = Join-Path $script:ScriptsDir "compress-jpg.ps1"
+            if (-not (Test-Path $ext)) { Write-Host "    [X] Script nao encontrado: $ext" -ForegroundColor Red; return }
+            $target = if (Test-Path $Path -PathType Container) { $Path } else { Split-Path $Path -Parent }
+            Write-Host ""
+            Write-Host "    Lossless = so reescreve a tabela de Huffman em progressivo." -ForegroundColor DarkGray
+            Write-Host "    Os pixels ficam BIT A BIT identicos. Ganho tipico 5-20%." -ForegroundColor DarkGray
+            Write-Host ""
+            $rec = (Read-Host "    Recursivo? Processa subpastas (s/N)") -match '^[sSyY]'
+            $rep = (Read-Host "    So diagnosticar, sem gravar? (s/N)") -match '^[sSyY]'
+            if ($rep) {
+                & $ext -Path $target -ReportOnly -Recurse:$rec
+                Read-Host "    [Enter para continuar]" | Out-Null
+                return
+            }
+            $icc = (Read-Host "    Preservar EXIF/ICC? Arte final CMYK precisa (s/N)") -match '^[sSyY]'
+            $vis = (Read-Host "    Ganho lossless nao basta? Usar modo VISUAL, com perda (s/N)") -match '^[sSyY]'
+            Write-Host ""
+            if ($vis) {
+                $qIn = Read-Host "    JPEG Quality 1-100 (Enter = 92)"
+                $q   = if ($qIn -match '^\d+$' -and [int]$qIn -ge 1 -and [int]$qIn -le 100) { [int]$qIn } else { 92 }
+                Write-Host "    Config: VISUAL Q$q | saida em JPG_Comprimido, originais intactos" -ForegroundColor DarkGray
+                Write-Host ""
+                & $ext -Path $target -Mode visual -Quality $q -Recurse:$rec -KeepMetadata:$icc
+            } else {
+                Write-Host "    Config: LOSSLESS | saida em JPG_Comprimido, originais intactos" -ForegroundColor DarkGray
+                Write-Host ""
+                & $ext -Path $target -Recurse:$rec -KeepMetadata:$icc
+            }
+            Read-Host "    [Enter para continuar]" | Out-Null
+        } },
+
         @{ Label = "22. Converter p/ WebP (Social/Web)"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "WebP_Convert" { Convert-ToWebP } } },
         @{ Label = "23. Limpar Metadados/Exif"; Group = "IMAGEM & JPG"; Action = { Invoke-Glitch "Optimizing" { Optimize-ImagesMetadata } } },
         @{ Label = "24. Alterar Qualidade JPG"; Group = "IMAGEM & JPG"; NoPause = $true; Action = {
