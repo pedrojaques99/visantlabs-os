@@ -18,7 +18,7 @@ function generateKlingToken(): string {
   const payload = {
     iss: ak,
     exp: now + 1800, // 30 min validity
-    nbf: now - 5,
+    nbf: now - 300, // tolera relógio local adiantado (o Kling devolve 1003 se nbf estiver no futuro)
   };
 
   return jwt.sign(payload, sk, { algorithm: 'HS256' });
@@ -71,10 +71,10 @@ export interface KlingGenerateParams {
 
 async function createTextToVideoTask(params: KlingGenerateParams): Promise<string> {
   const body: Record<string, any> = {
-    model_name: params.model,
+    model_name: toKlingModelName(params.model),
     prompt: params.prompt,
     aspect_ratio: params.aspectRatio ?? '16:9',
-    duration: params.duration ?? '5',
+    duration: (params.duration ?? '5').replace(/s$/, ''), // MCP manda "5s", a API quer "5"
     mode: params.klingMode ?? 'std',
   };
 
@@ -95,10 +95,10 @@ async function createTextToVideoTask(params: KlingGenerateParams): Promise<strin
 
 async function createImageToVideoTask(params: KlingGenerateParams): Promise<string> {
   const body: Record<string, any> = {
-    model_name: params.model,
+    model_name: toKlingModelName(params.model),
     prompt: params.prompt ?? '',
     aspect_ratio: params.aspectRatio ?? '16:9',
-    duration: params.duration ?? '5',
+    duration: (params.duration ?? '5').replace(/s$/, ''), // MCP manda "5s", a API quer "5"
     mode: params.klingMode ?? 'std',
   };
 
@@ -127,6 +127,11 @@ async function createImageToVideoTask(params: KlingGenerateParams): Promise<stri
   const data: KlingTaskResponse = await resp.json();
   if (data.code !== 0) throw new Error(`Kling API error: ${data.message}`);
   return data.data.task_id;
+}
+
+/** O enum do MCP usa "kling-v2.6"; a API do Kling só conhece "kling-v2-6". */
+function toKlingModelName(model: string): string {
+  return model.replace(/\./g, '-');
 }
 
 /** Resolve base64 or URL to what Kling expects (URL preferred, base64 as fallback) */
