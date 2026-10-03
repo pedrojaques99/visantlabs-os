@@ -95,8 +95,13 @@ router.post('/verify', trocaRateLimiter, async (req, res) => {
     const dono = await consumirLinkMagico(parsed.data.token);
     if (!dono) return res.status(400).json({ error: 'Invalid or expired token' });
 
-    const user = await prisma.user.findUnique({ where: { id: dono.userId } });
+    let user = await prisma.user.findUnique({ where: { id: dono.userId } });
     if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
+
+    // Abrir o link que chegou na caixa de entrada prova posse do e-mail.
+    if (!user.emailVerified) {
+      user = await prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } });
+    }
 
     // A mesma sessão de quem entra com senha no /signin.
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {

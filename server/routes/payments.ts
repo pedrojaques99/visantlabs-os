@@ -113,6 +113,64 @@ const stripe = STRIPE_SECRET_KEY
     })
   : null;
 
+/**
+ * Reembolso total / chargeback de PRODUTO AVULSO → tira o entitlement.
+ *
+ * Charge → payment_intent → checkout session (metadata.kind='product' + sku).
+ * Assinatura NÃO é tratada aqui: customer.subscription.* já cuida dela. O
+ * Fundador one-time (metadata.club) também fica de fora, de propósito: é tier,
+ * não entitlement, e pede decisão do dono antes de rebaixar alguém.
+ *
+ * Erro de rede/Stripe sobe pro handler → 500 → o Stripe reenvia. A revogação é
+ * idempotente (revokeProductGrant), então o reenvio é seguro.
+ */
+const revokeProductForPayment = async (
+  paymentIntent: string | Stripe.PaymentIntent | null | undefined,
+  reason: 'refund' | 'dispute',
+  eventId: string
+): Promise<void> => {
+  const paymentIntentId = typeof paymentIntent === 'string' ? paymentIntent : paymentIntent?.id;
+  if (!paymentIntentId || !stripe) {
+    console.warn('⚠️ Revoke skipped: no payment_intent on event', { reason, eventId });
+    return;
+  }
+
+  const sessions = await stripe.checkout.sessions.list({
+    payment_intent: paymentIntentId,
+    limit: 1,
+  });
+  const session = sessions.data[0];
+  if (!session) {
+    console.log('ℹ️ Revoke skipped: no checkout session for payment', { reason, paymentIntentId });
+    return;
+  }
+  if (
+    session.mode !== 'payment' ||
+    session.metadata?.kind !== 'product' ||
+    !session.metadata?.sku
+  ) {
+    console.log('ℹ️ Revoke skipped: not a product purchase', {
+      reason,
+      sessionId: session.id,
+      mode: session.mode,
+    });
+    return;
+  }
+
+  const { revokeProductGrant } = await import('../services/productGrantService.js');
+  const result = await revokeProductGrant({ sessionId: session.id });
+
+  // Sem e-mail no log (mesma regra do /auth/session-from-checkout).
+  console.warn('🚫 Product entitlement revoked by ' + reason + ':', {
+    sku: result.sku || session.metadata.sku,
+    userId: result.userId,
+    sessionId: session.id,
+    revokedNow: result.revoked,
+    alreadyRevoked: result.already,
+    eventId,
+  });
+};
+
 const recordTransaction = async (
   db: ReturnType<typeof getDb>,
   transaction: {
@@ -715,6 +773,14 @@ router.post('/claim-club', apiRateLimiter, authenticate, async (req: AuthRequest
 
     const email = (user.email || '').toLowerCase();
     if (!email) return res.json({ granted: false, reason: 'no-email' });
+
+    // O claim casa a compra SÓ pelo e-mail, então o e-mail tem que ser provado:
+    // sem isso, quem soubesse o e-mail de um comprador criava conta com ele
+    // (signup não verifica) e levava o Fundador vitalício. Login Google conta
+    // como prova (o Google entrega o e-mail da conta autenticada).
+    if (user.emailVerified !== true && !user.googleId) {
+      return res.json({ granted: false, reason: 'verify-email' });
+    }
 
     // Procura uma sessão paga de fundador com esse email
     let found: Stripe.Checkout.Session | null = null;
@@ -2941,6 +3007,25 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
             customerId,
           });
         }
+        break;
+      }
+
+      // Reembolso e chargeback tiram o acesso ao produto avulso. Os dois eventos
+      // precisam estar ASSINADOS no endpoint de webhook do Stripe.
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge;
+        // Reembolso parcial também dispara este evento; só o total revoga.
+        if (!charge.refunded) {
+          console.log('ℹ️ Partial refund, access kept:', { chargeId: charge.id });
+          break;
+        }
+        await revokeProductForPayment(charge.payment_intent, 'refund', event.id);
+        break;
+      }
+
+      case 'charge.dispute.created': {
+        const dispute = event.data.object as Stripe.Dispute;
+        await revokeProductForPayment(dispute.payment_intent, 'dispute', event.id);
         break;
       }
     }
