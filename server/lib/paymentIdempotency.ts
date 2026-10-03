@@ -73,3 +73,15 @@ export async function releasePaymentEvent(
     });
   }
 }
+
+/** Read-only: was this event already claimed? (used as a durable marker) */
+export async function isPaymentEventClaimed(
+  db: Db,
+  provider: 'abacatepay' | 'stripe',
+  eventId: string
+): Promise<boolean> {
+  const hit = await db
+    .collection(COLLECTION)
+    .findOne({ provider, eventId }, { projection: { _id: 1 } });
+  return !!hit;
+}

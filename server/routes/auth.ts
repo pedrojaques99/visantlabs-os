@@ -38,7 +38,9 @@ import crypto from 'crypto';
 import { FRONTEND_BASE_URL, CLUB_BASE_URL } from '../lib/mcp-constants.js';
 import { FREE_MONTHLY_CREDITS } from '../lib/credits.js';
 import { toEntitlements } from '../lib/entitlements.js';
-import { grantProduct } from '../services/productGrantService.js';
+import { resolveOnboardingPersona, PRIVILEGED_USER_CATEGORIES } from '../lib/onboardingPersona.js';
+import { grantProduct, ProductGrantRevokedError } from '../services/productGrantService.js';
+import { claimPaymentEvent, releasePaymentEvent } from '../lib/paymentIdempotency.js';
 import {
   findOrCreateSubscriber,
   getStripePlanInfo,
@@ -753,9 +755,14 @@ router.get('/verify', verifyRateLimiter, async (req, res) => {
 //  - só aceita sessão com payment_status === 'paid' e metadata.kind === 'product';
 //  - o email vem da SESSÃO DO STRIPE, nunca do cliente;
 //  - janela de validade desde a criação da sessão (o link mágico serve pro
-//    pós-compra imediato; URL vazada antiga para de funcionar). Optamos por
-//    janela em vez de one-time estrito para que um refresh da página não quebre
-//    o acesso do comprador legítimo;
+//    pós-compra imediato; URL vazada antiga para de funcionar);
+//  - USO ÚNICO: a primeira troca bem-sucedida carimba o session_id
+//    (`processed_payment_events`, índice único) e a segunda devolve 410
+//    "já foi usado". O refresh deixou de ser argumento: o Club grava o cookie
+//    na primeira troca e tira o session_id da barra (Welcome.tsx), então quem
+//    recarrega já está logado. Antes, quem abrisse um print do link dentro da
+//    janela entrava na conta do comprador;
+//  - compra reembolsada/contestada não vira login (ProductGrantRevokedError);
 //  - rate-limit por IP;
 //  - o grant em si é idempotente (productGrantService).
 const checkoutExchangeRateLimiter = rateLimit({
@@ -766,7 +773,7 @@ const checkoutExchangeRateLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again later' },
 });
 
-// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 2h.
+// Janela (horas) em que a sessão do Stripe ainda pode virar login. Default 30 min.
 //
 // Era 24h. O `session_id` viaja na QUERY STRING do success_url, ou seja, fica
 // na barra de endereços, no histórico do navegador, no autocomplete e em
@@ -775,10 +782,20 @@ const checkoutExchangeRateLimiter = rateLimit({
 // coisas, o link era uma credencial de login válida por um dia inteiro pra
 // quem quer que o tivesse, inclusive colado num grupo.
 //
-// 2h preserva o caso de uso real (o pós-compra imediato, com refresh à
-// vontade) e corta a cauda longa, que é onde mora o vazamento. Quem voltar
-// depois disso entra por e-mail, que é o caminho normal.
-const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 2);
+// Depois virou 2h e, com o uso único, 30 min: a troca acontece no segundo
+// seguinte ao redirect do Stripe, a janela só cobre quem demora a voltar pra
+// aba. Quem voltar depois disso entra por e-mail, que é o caminho normal.
+const CHECKOUT_EXCHANGE_WINDOW_HOURS = Number(process.env.CHECKOUT_EXCHANGE_WINDOW_HOURS || 0.5);
+
+// Resposta da segunda troca do mesmo session_id. `expired: true` é o que o
+// Club (app/api/product-session) lê pra mostrar "já foi usado ou passou da
+// validade" em vez de "não consegui liberar".
+const checkoutLinkUsed = (res: express.Response) =>
+  res.status(410).json({
+    error: 'Link already used',
+    message: 'Esse link de acesso já foi usado. Entre com seu email para continuar.',
+    expired: true,
+  });
 
 // Validade do token nascido desta troca. Curta de propósito: 7 dias é a
 // validade de uma sessão que começou com SENHA, e esta começou com um link
@@ -787,6 +804,8 @@ const CHECKOUT_TOKEN_TTL = (process.env.CHECKOUT_TOKEN_TTL ||
   '12h') as jwt.SignOptions['expiresIn'];
 
 router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, res) => {
+  // Carimbo de uso único tomado nesta requisição; solto no catch se falhar.
+  let claimedMarker: string | null = null;
   try {
     const sessionId = typeof req.body?.sessionId === 'string' ? req.body.sessionId.trim() : '';
     if (!sessionId) {
@@ -846,6 +865,18 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
     const stripeCustomerId =
       typeof customerIdRaw === 'string' ? customerIdRaw : customerIdRaw?.id || undefined;
 
+    // Uso único. Carimbado só depois de todas as recusas baratas (não pago,
+    // fora da janela, sem e-mail), logo antes do efeito colateral. Se a troca
+    // falhar depois daqui, o catch solta o carimbo pra o comprador tentar de
+    // novo. Namespace próprio: `session.id` cru já é o carimbo do grant.
+    await connectToMongoDB();
+    const exchangeMarker = `checkout-exchange:${session.id}`;
+    const consumeExchange = async () => {
+      if (!(await claimPaymentEvent(getDb(), 'stripe', exchangeMarker))) return false;
+      claimedMarker = exchangeMarker;
+      return true;
+    };
+
     // ── Assinatura do Club: a chave vem na compra ─────────────────────────
     // Desde 14/09/2026. Quem assinava pela landing ia pro /obrigado e dali pro
     // /entrar, com uma conta sem senha que não passava na porta. Agora o
@@ -866,6 +897,8 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
         return res.status(402).json({ error: 'Subscription not active' });
       }
 
+      if (!(await consumeExchange())) return checkoutLinkUsed(res);
+
       const planInfo = await getStripePlanInfo(stripe, subscriptionId);
       const tier = planInfo?.tier || String(session.metadata?.tier || 'club');
       const monthlyCredits =
@@ -877,7 +910,6 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
         stripeCustomerId,
       });
 
-      await connectToMongoDB();
       const aplicou = await activateIfPending({
         db: getDb(),
         userId: subscriber.id,
@@ -908,15 +940,31 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
       });
     }
 
+    if (!(await consumeExchange())) return checkoutLinkUsed(res);
+
     // Garante o entitlement (defensivo: cobre o caso do webhook atrasar)
-    const result = await grantProduct({
-      email,
-      sku,
-      sessionId: session.id,
-      source: 'stripe',
-      name: session.customer_details?.name || undefined,
-      stripeCustomerId,
-    });
+    let result: Awaited<ReturnType<typeof grantProduct>>;
+    try {
+      result = await grantProduct({
+        email,
+        sku,
+        sessionId: session.id,
+        source: 'stripe',
+        name: session.customer_details?.name || undefined,
+        stripeCustomerId,
+      });
+    } catch (grantError) {
+      if (grantError instanceof ProductGrantRevokedError) {
+        // Reembolsada/contestada: o link morre de vez (carimbo mantido).
+        claimedMarker = null;
+        return res.status(410).json({
+          error: 'Purchase refunded',
+          message: 'Essa compra foi reembolsada ou contestada.',
+          expired: true,
+        });
+      }
+      throw grantError;
+    }
 
     // `scope: 'checkout'` marca a origem do token. Hoje ele ainda é um token
     // de conta (é o que o Club consome), mas com a marca no payload dá pra,
@@ -951,6 +999,7 @@ router.post('/session-from-checkout', checkoutExchangeRateLimiter, async (req, r
       },
     });
   } catch (error: any) {
+    if (claimedMarker) await releasePaymentEvent(getDb(), 'stripe', claimedMarker);
     console.error('❌ session-from-checkout failed:', error?.message || error);
     return res.status(500).json({ error: 'Failed to create session from checkout' });
   }
@@ -1412,6 +1461,8 @@ router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
         password: hashedPassword,
         passwordResetToken: null,
         passwordResetExpires: null,
+        // O token chegou por e-mail: usá-lo prova posse da caixa de entrada.
+        emailVerified: true,
       },
     });
 
@@ -1637,11 +1688,11 @@ router.post(
 // Complete onboarding — Fase 3 (brand-first): also persists the brand chosen
 // during the wizard. `brandGuidelineId` is the NEW optional param (added at the
 // end of the payload contract, repo rule) — real, minimal or demo brand id.
-// userCategory values that grant privileges beyond the normal persona-based
-// gates (e.g. 'tester' unlocks premium-gated tools — see canvasAuth.ts,
-// canvas.ts). Onboarding must NEVER downgrade a privileged category back to
+// `userCategory` is ALLOWLISTED (server/lib/onboardingPersona.ts): only the
+// personas the wizard offers can be written here. Privileged categories
+// ('tester' unlocks premium-gated tools — see canvasAuth.ts, canvas.ts) are
+// never settable by this route, and onboarding never downgrades them back to
 // a plain persona string.
-const PRIVILEGED_USER_CATEGORIES = new Set(['tester']);
 
 router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
@@ -1658,15 +1709,18 @@ router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: Au
     const newMeta: Record<string, any> = { ...currentMeta };
 
     const updateData: Record<string, unknown> = { onboardingCompleted: true };
-    if (userCategory && typeof userCategory === 'string') {
+    // Unknown values (including 'tester'/'team') are silently ignored: the
+    // wizard only ever sends a known persona, so anything else is a forged body.
+    const persona = resolveOnboardingPersona(userCategory);
+    if (persona) {
       // Persona is always recorded — analytics/onboarding needs it regardless
       // of whether it's allowed to overwrite the billing-relevant userCategory.
-      newMeta.onboardingPersona = userCategory;
+      newMeta.onboardingPersona = persona;
       const isPrivilegedCurrent =
         typeof current?.userCategory === 'string' &&
         PRIVILEGED_USER_CATEGORIES.has(current.userCategory);
       if (!isPrivilegedCurrent) {
-        updateData.userCategory = userCategory;
+        updateData.userCategory = persona;
       }
     }
 
@@ -1699,7 +1753,7 @@ router.post('/complete-onboarding', apiRateLimiter, authenticate, async (req: Au
       const { trackFunnelEvent } = await import('../lib/funnelEvents.js');
       await trackFunnelEvent('onboarding_step', userId, {
         step: 'completed',
-        persona: typeof userCategory === 'string' ? userCategory : undefined,
+        persona: persona ?? undefined,
         skipped: brandGuidelineId === undefined,
       });
     })().catch(() => {});
